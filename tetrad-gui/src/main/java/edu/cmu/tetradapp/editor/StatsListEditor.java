@@ -3,9 +3,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.TextTable;
-import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.TabularComparison;
 
 import javax.swing.*;
@@ -41,6 +39,7 @@ public class StatsListEditor extends JPanel {
         if (targetGraphs.size() != 1) throw new IllegalArgumentException("Expecting one target graph.");
 
         referenceGraph = referenceGraphs.get(0);
+//        referenceGraph = SearchGraphUtils.patternForDag(referenceGraphs.get(0));
         targetGraph = targetGraphs.get(0);
 
         targetGraph = GraphUtils.replaceNodes(targetGraph, referenceGraph.getNodes());
@@ -109,6 +108,28 @@ public class StatsListEditor extends JPanel {
         statistics.add(new TwoCycleFalsePositive());
         statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
+        statistics.add(new TriangleFp());
+        statistics.add(new TriangleFn());
+        statistics.add(new TriangleTp());
+        statistics.add(new TriangleTp1());
+        statistics.add(new TriangleTp2());
+        statistics.add(new TriangleTp3());
+        statistics.add(new TriangleRecall());
+        statistics.add(new UnshieldedTriplePrecision());
+        statistics.add(new UnshieldedTripleRecall());
+
+
+        statistics.add(new ArrowheadFP());
+        statistics.add(new UnshieldedTripleFP());
+
+        statistics.add(new ArrowheadTP());
+        statistics.add(new UnshieldedTripleTP());
+
+        statistics.add(new UnshieldedTripleInvolvedEdges());
+        statistics.add(new AHPCBound());
+
+        statistics.add(new PrintColliderFlips());
+
 
         TextTable table = new TextTable(statistics.size(), 3);
         NumberFormat nf = new DecimalFormat("0.####");
@@ -128,8 +149,7 @@ public class StatsListEditor extends JPanel {
         );
 
         area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
-        area.setMinimumSize(area.getPreferredSize());
-        area.setMaximumSize(area.getPreferredSize());
+        area.setPreferredSize(new Dimension(700, 1100));
 
         JScrollPane pane = new JScrollPane(area);
         pane.setPreferredSize(new Dimension(700, 600));

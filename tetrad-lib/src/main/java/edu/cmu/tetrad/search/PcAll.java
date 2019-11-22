@@ -233,12 +233,8 @@ public final class PcAll implements GraphSearch {
 
         long start = System.currentTimeMillis();
 
-//        if (colliderDiscovery == OrientColliders.ColliderMethod.MPC) {
-//            G = kpartial(test);
-//        } else {
         findAdjacencies();
         G = reorient(G);
-//        }
 
         System.out.println("doMarkovLoop = " + doMarkovLoop);
 

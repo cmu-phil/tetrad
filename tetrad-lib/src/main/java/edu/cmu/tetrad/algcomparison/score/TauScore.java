@@ -30,19 +30,19 @@ public class TauScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.SemBicScore semBicScore;
+        edu.cmu.tetrad.search.TauScore tauScore;
 
         if (dataSet instanceof DataSet) {
-            semBicScore = new edu.cmu.tetrad.search.SemBicScore((DataSet) this.dataSet);
+            tauScore = new edu.cmu.tetrad.search.TauScore((DataSet) this.dataSet);
         } else if (dataSet instanceof ICovarianceMatrix) {
-            semBicScore = new edu.cmu.tetrad.search.SemBicScore((ICovarianceMatrix) this.dataSet);
+            tauScore = new edu.cmu.tetrad.search.TauScore((ICovarianceMatrix) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
 
-        semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        semBicScore.setStructurePrior(parameters.getDouble("structurePrior"));
-        return semBicScore;
+        tauScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
+        tauScore.setStructurePrior(parameters.getDouble("structurePrior"));
+        return tauScore;
     }
 
     @Override
@@ -58,7 +58,7 @@ public class TauScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-//        parameters.add("penaltyDiscount");
+        parameters.add("penaltyDiscount");
 //        parameters.add("structurePrior");
         return parameters;
     }

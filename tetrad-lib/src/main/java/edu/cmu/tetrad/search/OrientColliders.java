@@ -18,7 +18,7 @@ public class OrientColliders {
 
     private List<Triple> colliders = new ArrayList<>();
 
-    public enum ColliderMethod {SEPSETS, CPC, MPC, PC_MAX, FIRST_EMPTY}
+    public enum ColliderMethod {SEPSETS, CPC, MPC, PC_MAX, PC_MAX2, FIRST_EMPTY}
 
     public enum IndependenceDetectionMethod {ALPHA, FDR}
 
@@ -77,11 +77,11 @@ public class OrientColliders {
                 if (sepsets != null) {
                     List<Node> sepset = sepsets.get(a, c);
 //                    if (sepset != null) {
-                        if (sepset.contains(b)) {
-                            noncolliders.add(new Triple(a, b, c));
-                        } else {
-                            colliders.add(new Triple(a, b, c));
-                        }
+                    if (sepset.contains(b)) {
+                        noncolliders.add(new Triple(a, b, c));
+                    } else {
+                        colliders.add(new Triple(a, b, c));
+                    }
 //                    }
                 } else {
                     orientTriple(graph, a, b, c, colliders, ambiguous, noncolliders, notBMap);
@@ -90,7 +90,8 @@ public class OrientColliders {
         }
 
         if (colliderMethod != ColliderMethod.SEPSETS) {
-            colliders.sort(comparingDouble(a -> -notBMap.get(new NodePair(a.getX(), a.getZ())).get(0).getP()));
+            colliders.sort(comparingDouble(a -> -notBMap.get(new NodePair(a.getX(), a.getZ()))
+                    .get(notBMap.get(new NodePair(a.getX(), a.getZ())).size() - 1).getP()));
         }
 
         for (Triple triple : colliders) {
@@ -193,14 +194,32 @@ public class OrientColliders {
                 return SearchGraphUtils.CpcTripleType.AMBIGUOUS;
             }
         } else if (colliderMethod == ColliderMethod.PC_MAX) {
-            List<PValue> above = getFalseNegatives(pValues, orientationQ);
+            List<PValue> above = pValues;// getFalseNegatives(pValues, orientationQ);
 
-            above.sort(comparingDouble(PValue::getP));
+            pValues.sort(comparingDouble(PValue::getP));
 
             Set<Node> sepset = null;
 
             if (!above.isEmpty()) {
                 sepset = above.get(above.size() - 1).getSepset();
+            }
+
+            if (sepset != null && sepset.contains(b)) {
+                return SearchGraphUtils.CpcTripleType.NONCOLLIDER;
+            } else if (sepset != null && !sepset.contains(b)) {
+                return SearchGraphUtils.CpcTripleType.COLLIDER;
+            } else {
+                return SearchGraphUtils.CpcTripleType.AMBIGUOUS;
+            }
+        } else if (colliderMethod == ColliderMethod.PC_MAX2) {
+            List<PValue> above = pValues;// getFalseNegatives(pValues, orientationQ);
+
+            pValues.sort(comparingDouble(PValue::getP));
+
+            Set<Node> sepset = null;
+
+            if (!above.isEmpty()) {
+                sepset = above.get(0).getSepset();
             }
 
             if (sepset != null && sepset.contains(b)) {
@@ -349,30 +368,16 @@ public class OrientColliders {
 
             if (sepset != null && sepset.contains(b)) {
                 noncolliders.add(new Triple(a, b, c));
-//                if (verbose) {
-//                    out.println(a + " --- " + b + " --- " + c + " depth = " + orientationQ + ": noncollider"
-//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-//                }
             } else if (sepset != null && !sepset.contains(b)) {
                 colliders.add(new Triple(a, b, c));
 
-                notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
-                notBMap.put(new NodePair(a, c), notbPvals);
-
-//                if (verbose) {
-//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
-//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-//                }
+                above.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
+                notBMap.put(new NodePair(a, c), above);
             } else {
                 ambiguous.add(new Triple(a, b, c));
-
-//                if (verbose) {
-//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
-//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-//                }
             }
-        } else if (colliderMethod == ColliderMethod.FIRST_EMPTY) {
-            List<PValue> above = getFalseNegatives(pValues, orientationQ);
+        } else if (colliderMethod == ColliderMethod.PC_MAX2) {
+            List<PValue> above = notbPvals;// getFalseNegatives(pValues, orientationQ);
 
             above.sort(comparingDouble(PValue::getP));
 
@@ -384,26 +389,13 @@ public class OrientColliders {
 
             if (sepset != null && sepset.contains(b)) {
                 noncolliders.add(new Triple(a, b, c));
-//                if (verbose) {
-//                    out.println(a + " --- " + b + " --- " + c + " depth = " + orientationQ + ": noncollider"
-//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-//                }
             } else if (sepset != null && !sepset.contains(b)) {
                 colliders.add(new Triple(a, b, c));
 
-                notbPvals.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
-
-//                if (verbose) {
-//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": COLLIDER"
-//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-//                }
+                above.sort((p1, p2) -> Double.compare(p2.getP(), p1.getP()));
+                notBMap.put(new NodePair(a, c), above);
             } else {
                 ambiguous.add(new Triple(a, b, c));
-
-//                if (verbose) {
-//                    out.println(a + " --- " + b + " --- " + c + " depth = " + depth + ": ...ambiguous"
-//                            + " bVals = " + bPvals.size() + " notbVals " + notbPvals.size());
-//                }
             }
         } else {
             throw new IllegalArgumentException("Undefined collider method");

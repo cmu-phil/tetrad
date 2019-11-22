@@ -108,32 +108,15 @@ public class TauScore implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        double sp1 = getStructurePrior(z.length + 1);
-        double sp2 = getStructurePrior(z.length);
+        double s12 = getS2(y, append(z, x));
+        double s22 = getS2(y, z);
 
-//        if (false) {
-//            int n = covariances.getSampleSize();
-//            Node _x = variables.get(x);
-//            Node _y = variables.get(y);
-//            List<Node> _z = getVariableList(z);
-//            double r = partialCorrelation(_x, _y, _z);
-//
-//            return -n * Math.log(1.0 - r * r) - log(n)// - getErrorThreshold()
-//                    +  signum(getStructurePrior()) * (sp1 - sp2);
-//        } else {
-//            return (localScore(y, append(z, x)) - localScore(y, z));// - getErrorThreshold();
-//        }
+        double f = s12 / s22;
+        double r = exp(-2 * log(sampleSize) / sampleSize);
 
-        double s1 = getS2(y, z);
-        double s2 = getS2(y, append(z, x));
+        r = r - (1 - r) * getPenaltyDiscount();
 
-        double f = s1 / s2;
-
-        double p = z.length + 1;
-
-        double score = (f - 1) / (f * p - f - p);
-
-        return score;
+        return s22 * (r - f);
 
     }
 
@@ -177,14 +160,20 @@ public class TauScore implements Score {
     }
 
     private double getS2(int i, int...parents) {
-        final int p = parents.length;
-        int k = p + 1;
-        double n = getSampleSize();
-
         int[] ii = {i};
         TetradMatrix X = getCovariances().getSelection(parents, parents);
         TetradMatrix Y = getCovariances().getSelection(parents, ii);
-        return getCovariances().getValue(i, i);
+        double s2 = getCovariances().getValue(i, i);
+
+        TetradVector coefs = getCoefs(X, Y).getColumn(0);
+
+        for (int q = 0; q < X.rows(); q++) {
+            for (int r = 0; r < X.columns(); r++) {
+                s2 -= coefs.get(q) * coefs.get(r) * X.get(r, q);
+            }
+        }
+
+        return s2;
     }
 
     private TetradMatrix getCoefs(TetradMatrix x, TetradMatrix y) {

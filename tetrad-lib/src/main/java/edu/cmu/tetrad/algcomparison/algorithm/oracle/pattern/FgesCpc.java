@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -11,8 +12,9 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.IndependenceScore;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -64,12 +66,16 @@ public class FgesCpc implements Algorithm, TakesInitialGraph, HasKnowledge, Take
 //                initialGraph = algorithm.search(dataSet, parameters);
 //            }
 
-            Score score = new FisherZScore().getScore(dataSet, parameters);
+//            Score score = new FisherZScore().getScore(dataSet, parameters);
 
 //            Score score = new IndependenceScore(test.getTest(dataSet, parameters));
 
+            IndependenceWrapper test = new FisherZ();
+
+            Score score = new ScoredIndTest(test.getTest(dataSet, parameters));
+
             edu.cmu.tetrad.search.FgesCpc search
-                    = new edu.cmu.tetrad.search.FgesCpc(score, Runtime.getRuntime().availableProcessors());
+                    = new edu.cmu.tetrad.search.FgesCpc(score, test.getTest(dataSet, parameters), Runtime.getRuntime().availableProcessors());
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
             search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));

@@ -67,23 +67,18 @@ public class PcMaxStudy {
         Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn(Params.COLLIDER_DISCOVERY_RULE));
-        statistics.add(new ParameterColumn(Params.STABLE_FAS));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
-        statistics.add(new ParameterColumn(Params.ALPHA));
-        statistics.add(new ParameterColumn(Params.MAX_DEGREE_FGES));
         statistics.add(new ParameterColumn(Params.NUM_MEASURES));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
+        statistics.add(new ParameterColumn(Params.ALPHA));
 
-        statistics.add(new AdjacencyPrecision());
-        statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
-        statistics.add(new ArrowheadRecall());
         statistics.add(new ArrowheadPrecisionCommonEdges());
-        statistics.add(new ArrowheadRecallCommonEdges());
-        statistics.add(new DensityTrueGraph());
-        statistics.add(new ElapsedTime());
-//        statistics.setWeight("AR", 1);
+//        statistics.add(new SparsityTrueGraph());
+//        statistics.add(new UnshieldedTriplePrecision());
+        statistics.add(new AHPBound());
+        statistics.add(new AHPCBound());
+
         statistics.setWeight("AHP", 1);
 
         Algorithms algorithms = new Algorithms();
@@ -118,25 +113,25 @@ public class PcMaxStudy {
         parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, false);
         parameters.set(Params.CONFLICT_RULE, 3);
-        parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
+        parameters.set(Params.SYMMETRIC_FIRST_STEP, false);
         parameters.set(Params.FAITHFULNESS_ASSUMED, false);
-        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 1);
+        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 1, 2, 3, 4);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
 
         parameters.set(Params.NUM_MEASURES, //100, 500, 1000);
-                20, 30, 40, 50, 100, 200);
-        parameters.set(Params.AVG_DEGREE, 4);
-        parameters.set(Params.MAX_DEGREE_FGES, -1);
+                20);//30, 40, 50, 100);
+        parameters.set(Params.AVG_DEGREE, 2, 4, 6, 8);
+//        parameters.set(Params.MAX_DEGREE_FGES, -1);
 
-        parameters.set(Params.NUM_RUNS, 2);
+        parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DEPTH, 5);
-//        parameters.set(Params.ALPHA, 0.001, 0.01, 0.05, 0.1);
+        parameters.set(Params.ALPHA, 0.001, 0.01, 0.05, 0.1, 0.2);
         parameters.set(Params.ORIENTATION_ALPHA, -1);
         parameters.set(Params.PENALTY_DISCOUNT, 1);//, 2, 3);
         parameters.set(Params.SAMPLE_SIZE, 1000);
-        parameters.set(Params.DO_MARKOV_LOOP, false);
-        parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, true);
-        parameters.set(Params.MAX_DEGREE, 5);
+//        parameters.set(Params.DO_MARKOV_LOOP, false);
+//        parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, false);
+//        parameters.set(Params.MAX_DEGREE, 5);
 
 
 //        parameters.set(Params.ERRORS_NORMAL, false);
@@ -337,7 +332,7 @@ public class PcMaxStudy {
         statistics.add(new ArrowheadRecall());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
-        statistics.add(new DensityTrueGraph());
+        statistics.add(new SparsityTrueGraph());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AR", 1);

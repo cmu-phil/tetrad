@@ -20,11 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
-import jdk.nashorn.internal.runtime.ListAdapter;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -57,6 +55,7 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.basicPattern;
  */
 public final class FgesCpc implements GraphSearch, GraphScorer {
 
+    private final IndependenceTest test;
     private int depth = -1;
 
     public void setDepth(int depth) {
@@ -191,18 +190,19 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
      * consistent scoring criterion. This by default uses all of the processors on
      * the machine.
      */
-    public FgesCpc(Score score) {
-        this(score, Runtime.getRuntime().availableProcessors() * 10);
+    public FgesCpc(Score score, IndependenceTest test) {
+        this(score, test, Runtime.getRuntime().availableProcessors() * 10);
     }
 
     /**
      * Lets one construct with a score and a parallelism, that is, the number of threads to effectively use.
      */
-    public FgesCpc(Score score, int parallelism) {
+    public FgesCpc(Score score, IndependenceTest test, int parallelism) {
         if (score == null) {
             throw new NullPointerException();
         }
         setScore(score);
+        this.test = test;
         this.maxThreads = parallelism;
         this.pool = new ForkJoinPool(parallelism);
         this.graph = new EdgeListGraphSingleConnections(getVariables());
@@ -234,7 +234,7 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
      * @return the resulting Pattern.
      */
     public Graph search() {
-        IndependenceTest test = ((ScoredIndTest) score).getTest();
+//        IndependenceTest test = ((ScoredIndTest) score).getTest();
 
         orientColliders = new OrientColliders(test, OrientColliders.ColliderMethod.CPC);
         orientColliders.setConflictRule(OrientColliders.ConflictRule.PRIORITY);
@@ -1148,17 +1148,37 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
             }
 
             updateOrientation(graph, x, y);
-            removeUnnecessaryMarks(graph);
+//            removeUnnecessaryMarks(graph);
 //            applyMeekRules(graph);
 
-            Set<Node> nodes = new HashSet<>();
-            nodes.add(x);
-            nodes.add(y);
-            nodes.addAll(getCommonAdjacents(x, y));
+//            Set<Node> nodes = new HashSet<>();
+//            nodes.add(x);
+//            nodes.add(y);
+//            nodes.addAll(getCommonAdjacents(x, y));
+//
+//            meekOrientRestricted(new ArrayList<>(nodes), knowledge);
 
-            meekOrientRestricted(new ArrayList<>(nodes), knowledge);
+//            initializeArrowsBackward();
 
-            initializeArrowsBackward();
+            Set<Node> visited = reapplyOrientation(x, y, arrow.getHOrT());
+            removeUnnecessaryMarks(graph);
+
+            Set<Node> toProcess = new HashSet<>();
+
+            for (Node node : visited) {
+                final Set<Node> neighbors1 = getNeighbors(node);
+                final Set<Node> storedNeighbors = this.neighbors.get(node);
+
+                if (!(neighbors1.equals(storedNeighbors))) {
+                    toProcess.add(node);
+                }
+            }
+
+            toProcess.add(x);
+            toProcess.add(y);
+            toProcess.addAll(getCommonAdjacents(x, y));
+
+            reevaluateBackward(toProcess);
         }
     }
 

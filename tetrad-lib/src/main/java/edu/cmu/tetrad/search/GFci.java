@@ -101,7 +101,7 @@ public final class GFci implements GraphSearch {
 
         this.graph = new EdgeListGraphSingleConnections(nodes);
 
-        FgesCpc fges = new FgesCpc(score);
+        FgesCpc fges = new FgesCpc(score, independenceTest);
         fges.setKnowledge(getKnowledge());
         fges.setVerbose(verbose);
         fges.setFaithfulnessAssumed(faithfulnessAssumed);

@@ -71,6 +71,9 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
                 case 4:
                     colliderDiscovery = edu.cmu.tetrad.search.OrientColliders.ColliderMethod.PC_MAX;
                     break;
+                case 5:
+                    colliderDiscovery = edu.cmu.tetrad.search.OrientColliders.ColliderMethod.PC_MAX2;
+                    break;
                 default:
                     throw new IllegalArgumentException("Not a choice.");
             }
