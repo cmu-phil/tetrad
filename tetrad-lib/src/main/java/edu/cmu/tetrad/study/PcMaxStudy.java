@@ -66,26 +66,31 @@ public class PcMaxStudy {
     public void test0() {
         Statistics statistics = new Statistics();
 
-        statistics.add(new ParameterColumn(Params.COLLIDER_DISCOVERY_RULE));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.NUM_MEASURES));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
         statistics.add(new ParameterColumn(Params.ALPHA));
+        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
 
-        statistics.add(new ArrowheadPrecision());
-        statistics.add(new ArrowheadPrecisionCommonEdges());
-//        statistics.add(new SparsityTrueGraph());
+//        statistics.add(new ArrowheadPrecision());
 //        statistics.add(new UnshieldedTriplePrecision());
-        statistics.add(new AHPBound());
+//        statistics.add(new AHPBound());
+        statistics.add(new SparsityTrueGraph());
         statistics.add(new AHPCBound());
+        statistics.add(new ArrowheadPrecisionCommonEdges());
+        statistics.add(new AHRCBound());
+        statistics.add(new ArrowheadRecallCommonEdges());
 
-        statistics.setWeight("AHP", 1);
+        statistics.setWeight("AHPC", 1);
 
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new FgesCpc(new SemBicTest()));
         algorithms.add(new Fges(new SemBicScore()));
-//        algorithms.add(new PcAll(new FisherZ()));
+//        algorithms.add(new Pc(new FisherZ()));
+//        algorithms.add(new Cpc(new FisherZ()));
+//        algorithms.add(new Mpc(new FisherZ()));
+//        algorithms.add(new PcMax(new FisherZ()));
 
         Comparison comparison = new Comparison();
 
@@ -93,7 +98,7 @@ public class PcMaxStudy {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
 //        comparison.setShowUtilities(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -115,26 +120,17 @@ public class PcMaxStudy {
         parameters.set(Params.CONFLICT_RULE, 3);
         parameters.set(Params.SYMMETRIC_FIRST_STEP, false);
         parameters.set(Params.FAITHFULNESS_ASSUMED, false);
-        parameters.set(Params.COLLIDER_DISCOVERY_RULE, 1, 2, 3, 4);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
 
-        parameters.set(Params.NUM_MEASURES, //100, 500, 1000);
-                20);//30, 40, 50, 100);
+        parameters.set(Params.NUM_MEASURES, 15, 50, 100);
         parameters.set(Params.AVG_DEGREE, 2, 4, 6, 8);
-//        parameters.set(Params.MAX_DEGREE_FGES, -1);
-
         parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DEPTH, 5);
-        parameters.set(Params.ALPHA, 0.001, 0.01, 0.05, 0.1, 0.2);
+        parameters.set(Params.ALPHA, 0.001);
         parameters.set(Params.ORIENTATION_ALPHA, -1);
-        parameters.set(Params.PENALTY_DISCOUNT, 1);//, 2, 3);
+//        parameters.set(Params.PENALTY_DISCOUNT, 1, 3, 5, 8, 9);
+        parameters.set(Params.ALPHA, 0.001, 0.01, 0.1);
         parameters.set(Params.SAMPLE_SIZE, 1000);
-//        parameters.set(Params.DO_MARKOV_LOOP, false);
-//        parameters.set(Params.USE_FDR_FOR_INDEPENDENCE, false);
-//        parameters.set(Params.MAX_DEGREE, 5);
-
-
-//        parameters.set(Params.ERRORS_NORMAL, false);
 
         parameters.set(Params.VERBOSE, false);
 

@@ -1,9 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.score.FisherZScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
@@ -12,49 +10,42 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.ScoredIndTest;
+import edu.cmu.tetrad.search.OrientColliders;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FGES (the heuristic version).
+ * CPC.
  *
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FGES-CPC",
-        command = "fges-cpc",
+        name = "MPC",
+        command = "mpc",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class FgesCpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class Mpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
-
-//    private boolean compareToTrue = true;
     private IndependenceWrapper test;
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FgesCpc() {
-
+    public Mpc() {
     }
 
-    public FgesCpc(IndependenceWrapper test) {
+    public Mpc(IndependenceWrapper test) {
         this.test = test;
-//        this.compareToTrue = false;
     }
 
-    public FgesCpc(IndependenceWrapper test, Algorithm algorithm) {
+    public Mpc(IndependenceWrapper test, Algorithm algorithm) {
         this.test = test;
         this.algorithm = algorithm;
     }
@@ -62,44 +53,69 @@ public class FgesCpc implements Algorithm, TakesInitialGraph, HasKnowledge, Take
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-//            if (algorithm != null) {
-//                initialGraph = algorithm.search(dataSet, parameters);
-//            }
+            OrientColliders.ColliderMethod colliderDiscovery;
 
-//            Score score = new FisherZScore().getScore(dataSet, parameters);
+            colliderDiscovery = OrientColliders.ColliderMethod.MPC;
 
-//            Score score = new IndependenceScore(test.getTest(dataSet, parameters));
+            OrientColliders.ConflictRule conflictRule;
 
-            IndependenceWrapper test = new FisherZ();
+            switch (parameters.getInt(Params.CONFLICT_RULE)) {
+                case 1:
+                    conflictRule = OrientColliders.ConflictRule.OVERWRITE;
+                    break;
+                case 2:
+                    conflictRule = OrientColliders.ConflictRule.BIDIRECTED;
+                    break;
+                case 3:
+                    conflictRule = OrientColliders.ConflictRule.PRIORITY;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Not a choice.");
+            }
 
-            Score score = new ScoredIndTest(test.getTest(dataSet, parameters));
-
-            edu.cmu.tetrad.search.FgesCpc search
-                    = new edu.cmu.tetrad.search.FgesCpc(score, test.getTest(dataSet, parameters), Runtime.getRuntime().availableProcessors());
-            search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
+            search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
+
+            if (parameters.getBoolean(Params.STABLE_FAS)) {
+                search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
+            } else {
+                search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.REGULAR);
+            }
+
+            if (parameters.getBoolean(Params.CONCURRENT_FAS)) {
+                search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.YES);
+            } else {
+                search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
+            }
+
+            OrientColliders.IndependenceDetectionMethod independence_detection_method;
+
+            if (parameters.getBoolean(Params.USE_FDR_FOR_INDEPENDENCE)) {
+                independence_detection_method = OrientColliders.IndependenceDetectionMethod.FDR;
+            } else {
+                independence_detection_method = OrientColliders.IndependenceDetectionMethod.ALPHA;
+            }
+
+//            search.setOrientationAlpha(parameters.getDouble(Params.ORIENTATION_ALPHA));
+            search.setColliderDiscovery(colliderDiscovery);
+            search.setConflictRule(conflictRule);
+            search.setDoMarkovLoop(parameters.getBoolean(Params.DO_MARKOV_LOOP));
+//            search.setIndependenceMethod(independence_detection_method);
+//            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
+//            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
-
-            search.setMaxDegree(10);//parameters.getInt(Params.MAX_DEGREE));
-            search.setDepth(5);//parameters.getInt(Params.DEPTH));
-
-            Object obj = parameters.get(Params.PRINT_STREAM);
-            if (obj instanceof PrintStream) {
-                search.setOut((PrintStream) obj);
-            }
-
-            if (initialGraph != null) {
-                search.setInitialGraph(initialGraph);
-            }
 
             return search.search();
         } else {
-            FgesCpc fges = new FgesCpc(test, algorithm);
+            PcAll pcAll = new PcAll(test, algorithm);
 
-            //fges.setKnowledge(knowledge);
+            if (initialGraph != null) {
+                pcAll.setInitialGraph(initialGraph);
+            }
+
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fges, parameters.getInt(Params.NUMBER_RESAMPLING));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -123,21 +139,18 @@ public class FgesCpc implements Algorithm, TakesInitialGraph, HasKnowledge, Take
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
-
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-//        if (compareToTrue) {
         return new EdgeListGraph(graph);
-//        } else {
-//            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
-//        }
+//        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "FGES-CPC using " + test.getDescription();
+        return "MPC using " + test.getDescription() + (algorithm != null ? " with initial graph from "
+                + algorithm.getDescription() : "");
     }
 
     @Override
@@ -148,13 +161,17 @@ public class FgesCpc implements Algorithm, TakesInitialGraph, HasKnowledge, Take
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.FAITHFULNESS_ASSUMED);
-        parameters.add(Params.SYMMETRIC_FIRST_STEP);
-        parameters.add(Params.MAX_DEGREE_FGES);
-        parameters.add(Params.ALPHA);
+        parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.CONCURRENT_FAS);
+        parameters.add(Params.CONFLICT_RULE);
+        parameters.add(Params.USE_FDR_FOR_INDEPENDENCE);
+        parameters.add(Params.DO_MARKOV_LOOP);
+        parameters.add(Params.DEPTH);
+        parameters.add(Params.ORIENTATION_ALPHA);
+//        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
+//        parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
 
         parameters.add(Params.VERBOSE);
-
         return parameters;
     }
 
@@ -167,10 +184,6 @@ public class FgesCpc implements Algorithm, TakesInitialGraph, HasKnowledge, Take
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
-
-//    public void setCompareToTrue(boolean compareToTrue) {
-//        this.compareToTrue = compareToTrue;
-//    }
 
     @Override
     public Graph getInitialGraph() {
@@ -185,7 +198,6 @@ public class FgesCpc implements Algorithm, TakesInitialGraph, HasKnowledge, Take
     @Override
     public void setInitialGraph(Algorithm algorithm) {
         this.algorithm = algorithm;
-
     }
 
     @Override

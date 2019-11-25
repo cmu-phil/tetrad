@@ -2,10 +2,9 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.statistic.utils.UnshieldedTripleConfusion;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
-
-import java.util.HashSet;
-import java.util.Set;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 
 /**
  * The number of triangle true positives.
@@ -36,9 +35,9 @@ public class AHPCBound implements Statistic {
         int numEdges = 0;
 
         for (Edge edge : estGraph.getEdges()) {
-            if (trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {// && Edges.isDirectedEdge(edge)) {
+//            if (trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 numEdges++;
-            }
+//            }
         }
 
         return (numEdges - uti / 2.0) / numEdges;

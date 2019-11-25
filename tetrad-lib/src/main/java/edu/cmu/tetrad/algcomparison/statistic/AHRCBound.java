@@ -2,42 +2,44 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.statistic.utils.UnshieldedTripleConfusion;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-
-import java.util.HashSet;
-import java.util.Set;
+import edu.cmu.tetrad.graph.*;
 
 /**
  * The number of triangle true positives.
  *
  * @author jdramsey
  */
-public class AHPBound implements Statistic {
+public class AHRCBound implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "AHPBound";
+        return "AHRCBound";
     }
 
     @Override
     public String getDescription() {
-        return "Bound for AHP";
+        return "Bound for AHRC";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
+
         UnshieldedTripleConfusion confusion = new UnshieldedTripleConfusion(trueGraph, estGraph);
 
-        int uti = confusion.getInvolvedUtFp();
+        int uti = confusion.getInvolvedUtFn();
 
-        int count = estGraph.getNumEdges();
+        int numEdges = 0;
 
-        return (count - uti / 2.0) / count;
+        for (Edge edge : estGraph.getEdges()) {
+//            if (trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                numEdges++;
+//            }
+        }
+
+//        return (numEdges - confusion.getTriangles().size()) / (double) numEdges;
+        return (numEdges - uti / 2.) / (double) numEdges;
     }
 
     @Override

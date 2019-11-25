@@ -126,7 +126,7 @@ public class StatsListEditor extends JPanel {
         statistics.add(new UnshieldedTripleTP());
 
         statistics.add(new UnshieldedTripleInvolvedEdges());
-        statistics.add(new AHPCBound());
+        statistics.add(new AHRCBound());
 
         statistics.add(new PrintColliderFlips());
 
