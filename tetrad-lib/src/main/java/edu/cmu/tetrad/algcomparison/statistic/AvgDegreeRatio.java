@@ -1,31 +1,31 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.UnshieldedTripleConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * The number of triangle true positives.
+ * The average degree of the true graph.
  *
  * @author jdramsey
  */
-public class UnshieldedTripleInvolvedEdges implements Statistic {
+public class AvgDegreeRatio implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "UTInvolved";
+        return "AvgDRatio";
     }
 
     @Override
     public String getDescription() {
-        return "Unshielded triple involved edges";
+        return "Average degree ratio";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        UnshieldedTripleConfusion confusion = new UnshieldedTripleConfusion(trueGraph, estGraph);
-        return (double) confusion.getInvolvedUtFp().size() / 2.;
+        double avgDegreeEst = 2 * estGraph.getNumEdges() / (double) estGraph.getNumNodes();
+        double avgDegreeTrue = 2 * trueGraph.getNumEdges() / (double) trueGraph.getNumNodes();
+        return avgDegreeEst / avgDegreeTrue;
     }
 
     @Override

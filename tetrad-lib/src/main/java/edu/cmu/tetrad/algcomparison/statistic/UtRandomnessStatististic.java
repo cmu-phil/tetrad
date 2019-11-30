@@ -3,11 +3,12 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.algcomparison.statistic.utils.UnshieldedTripleConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -15,29 +16,44 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public class AHPBound implements Statistic {
+public class UtRandomnessStatististic implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "AHPBound";
+        return "UtRandomness";
     }
 
     @Override
     public String getDescription() {
-        return "Bound for AHP";
+        return "0 = completely reversed, .5 = completely random, 1 = completely correct";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
+
         UnshieldedTripleConfusion confusion = new UnshieldedTripleConfusion(trueGraph, estGraph);
 
-        int uti = confusion.getInvolvedUtFp().size();
+        Set<Edge> edges = confusion.getInvolvedUtFp();
 
-        int count = estGraph.getNumEdges();
+        if (edges.isEmpty()) return 1;
 
-        return (count - uti / 2.0) / count;
+        int correct = 0;
+        int count = 0;
+
+        for (Edge edge : edges) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            if (trueGraph.isDirectedFromTo(a, b) == estGraph.isDirectedFromTo(a, b)) {
+                correct++;
+            }
+
+            count++;
+        }
+
+        return correct / (double) count;
     }
 
     @Override

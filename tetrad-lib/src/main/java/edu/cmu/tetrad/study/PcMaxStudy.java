@@ -72,10 +72,16 @@ public class PcMaxStudy {
         statistics.add(new ParameterColumn(Params.ALPHA));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
 
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
 //        statistics.add(new ArrowheadPrecision());
 //        statistics.add(new UnshieldedTriplePrecision());
 //        statistics.add(new AHPBound());
-        statistics.add(new SparsityTrueGraph());
+        statistics.add(new AvgDegreeTrueGraph());
+        statistics.add(new AvgDegreeEstGraph());
+        statistics.add(new AvgDegreeRatio());
+        statistics.add(new SparsityEstGraph());
+        statistics.add(new UtRandomnessStatististic());
         statistics.add(new AHPCBound());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new AHRCBound());
@@ -118,17 +124,18 @@ public class PcMaxStudy {
         parameters.set(Params.STABLE_FAS, true);
         parameters.set(Params.CONCURRENT_FAS, false);
         parameters.set(Params.CONFLICT_RULE, 3);
-        parameters.set(Params.SYMMETRIC_FIRST_STEP, false);
+        parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
         parameters.set(Params.FAITHFULNESS_ASSUMED, false);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
+        parameters.set(Params.MAX_DEGREE_FGES, 100);
 
-        parameters.set(Params.NUM_MEASURES, 15, 50, 100);
+        parameters.set(Params.NUM_MEASURES, 20, 30, 50, 100, 200);
         parameters.set(Params.AVG_DEGREE, 2, 4, 6, 8);
         parameters.set(Params.NUM_RUNS, 5);
         parameters.set(Params.DEPTH, 5);
         parameters.set(Params.ALPHA, 0.001);
         parameters.set(Params.ORIENTATION_ALPHA, -1);
-//        parameters.set(Params.PENALTY_DISCOUNT, 1, 3, 5, 8, 9);
+        parameters.set(Params.PENALTY_DISCOUNT, 10);
         parameters.set(Params.ALPHA, 0.001, 0.01, 0.1);
         parameters.set(Params.SAMPLE_SIZE, 1000);
 

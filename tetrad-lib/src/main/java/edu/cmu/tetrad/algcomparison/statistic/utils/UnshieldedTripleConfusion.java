@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.statistic.utils;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
 import java.util.HashSet;
@@ -19,17 +20,13 @@ public class UnshieldedTripleConfusion {
     private int tn;
     private Set<Edge> involvedUtFp;
     private Set<Edge> involvedUtFn;
-    private Set<Edge> involvedUtTrue;
     private Set<Set<Node>> triangles = new HashSet<>();
-    private int ambiguousTriple;
-    private int nonambiguousTriangle;
 
     public UnshieldedTripleConfusion(Graph truth, Graph est) {
         Set<Triple> trueTriangles = getUnshieldedTriples(truth);
         Set<Triple> estTriangles = getUnshieldedTriples(est);
         involvedUtFp = getInvolvedUtFp(truth, est);
         involvedUtFn = getInvolvedUtFn(truth, est);
-        involvedUtTrue = getInvolvedNotFpUt(truth, est);
 
         Set<Triple> allTriangles = new HashSet<>(trueTriangles);
         allTriangles.addAll(estTriangles);
@@ -108,11 +105,9 @@ public class UnshieldedTripleConfusion {
     }
 
     private Set<Edge> getInvolvedUtFn(Graph _true, Graph _est) {
+        _true = SearchGraphUtils.patternForDag(_true);
         Set<Edge> involved = new HashSet<>();
         triangles = new HashSet<>();
-
-        ambiguousTriple = 0;
-        nonambiguousTriangle = 0;
 
         for (Node b : _est.getNodes()) {
             List<Node> adjb = _est.getAdjacentNodes(b);
@@ -136,39 +131,7 @@ public class UnshieldedTripleConfusion {
                     triangle.add(a);
                     triangle.add(c);
 
-                    if (_est.isAmbiguousTriple(a, b, c)) {
-                        ambiguousTriple++;
-                    } else {
-                        nonambiguousTriangle++;
-                    }
-
                     getTriangles().add(triangle);
-                }
-            }
-        }
-
-        return involved;
-    }
-
-    private Set<Edge> getInvolvedNotFpUt(Graph _true, Graph _est) {
-        Set<Edge> involved = new HashSet<>();
-
-        for (Node b : _est.getNodes()) {
-            List<Node> adjb = _est.getAdjacentNodes(b);
-
-            if (adjb.size() < 2) continue;
-
-            ChoiceGenerator gen = new ChoiceGenerator(adjb.size(), 2);
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                List<Node> _adj = GraphUtils.asList(choice, adjb);
-                Node a = _adj.get(0);
-                Node c = _adj.get(1);
-
-                if (!(_true.isAdjacentTo(a, c) && !_est.isAdjacentTo(a, c))) {
-                    involved.add(Edges.undirectedEdge(a, b));
-                    involved.add(Edges.undirectedEdge(c, b));
                 }
             }
         }
@@ -192,12 +155,12 @@ public class UnshieldedTripleConfusion {
         return tn;
     }
 
-    public int getInvolvedUtFp() {
-        return involvedUtFp.size();//* (1 - ambiguousTriple / (nonambiguousTriangle + 1));
+    public Set<Edge> getInvolvedUtFp() {
+        return involvedUtFp;
     }
 
-    public int getInvolvedUtFn() {
-        return involvedUtFn.size();
+    public Set<Edge> getInvolvedUtFn() {
+        return involvedUtFn;
     }
 
     public Set<Set<Node>> getTriangles() {
