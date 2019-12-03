@@ -80,13 +80,8 @@ public class AHPCBound implements Statistic {
             hist[estGraph.getDegree(node)]++;
         }
 
-        int Ve = estGraph.getNumNodes();
-        int Vt = trueGraph.getNumNodes();
+        int V = trueGraph.getNumNodes();
 
-        double aE = 2 * estGraph.getNumEdges() / (double) Ve;
-        double aT = 2 * trueGraph.getNumEdges() / (double) Vt;
-
-        System.out.println("a = " + aE);
         System.out.println("HISTOGRAM " + Arrays.toString(hist));
 
         int E = 0;
@@ -97,25 +92,17 @@ public class AHPCBound implements Statistic {
             }
         }
 
-        double Ee = estGraph.getNumEdges();
-        double Et = estGraph.getNumEdges();
+        double aT = new AvgDegreeTrueGraph().getValue(trueGraph, estGraph, dataModel);
+        double aE = new AvgDegreeEstGraph().getValue(trueGraph, estGraph, dataModel);
+//        double aE = 2 * E / (double) (V);// new AvgDegreeEstGraph().getValue(trueGraph, estGraph, dataModel);
 
-        int all = 0;
-
-        for (Node node : estGraph.getNodes()) {
-            all += trueGraph.getDegree(node) * estGraph.getDegree(node);
-        }
-
-//        int E = estGraph.getNumEdges();
-
-//        return 1.0 - 0.5 * all / (double) E;
-
-        aT = new AvgDegreeTrueGraph().getValue(trueGraph, estGraph, dataModel);
         double ar = new AdjacencyRecall().getValue(trueGraph, estGraph, dataModel);
-//
-        return 1.0 - (aT * aT) / (2.0 * Et);// * (Ve / (double) (Ve - 1)) / (2.0 * E);
-//        return 1.0 - 0.3 * (VV * a) / (E);
-//        return 1.0 - wrong / (double) E;
+
+//        return 1.0 - (aT) / (double) (V - 1);
+//        return 1.0 - (aE) / ((double) (V - 1) * 0.8);
+
+        return 1.0 - aT / (double) (V - 1);
+
     }
 
     @Override
