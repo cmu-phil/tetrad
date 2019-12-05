@@ -761,8 +761,9 @@ public final class CgPm implements PM, TetradSerializable {
             valueList.add(DataUtils.defaultCategory(i));
         }
 
-        mapDiscreteNodeToVariable(node, valueList);
-    }
+//        mapDiscreteNodeToVariable(node, valueList);
+		mapDiscreteNodeToVariable(node, ((DiscreteVariable)node).getCategories());
+	}
     
     private void mapDiscreteNodeToVariable(Node node, List<String> categories) {
         if (categories.size() != new HashSet<>(categories).size()) {
