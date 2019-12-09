@@ -21,9 +21,10 @@
 
 package edu.cmu.tetrad.bayes;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -31,6 +32,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
@@ -861,7 +863,7 @@ public final class DirichletBayesIm implements BayesIm {
             map[index] = j;
         }
 
-        DataSet dataSet = new ColtDataSet(sampleSize, variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(sampleSize, variables.size()), variables);
         constructSample(sampleSize, randomUtil, numMeasured, dataSet, map);
         return dataSet;
     }
@@ -966,97 +968,6 @@ public final class DirichletBayesIm implements BayesIm {
             }
         }
     }
-
-//    /**
-//     * Simulates a sample with the number of cases equal to
-//     * <code>sampleSize</code>.
-//     *
-//     * @param sampleSize      the sample size, >= 0.
-//     * @param randomUtil      optional random number generator to use when
-//     *                        creating the data
-//     * @param latentDataSaved true iff data for latent variables should be
-//     *                        included in the simulated data set.
-//     * @return the simulated sample as a RectangularDataSet.
-//     */
-//    private RectangularDataSet simulateDataHelper(int sampleSize,
-//                                                  RandomUtil randomUtil,
-//                                                  boolean latentDataSaved) {
-//        // Get a tier ordering and convert it to an int array.
-//        Graph graph = getBayesPm().getDag();
-//        Dag dag = (Dag) graph;
-//        List<Node> tierOrdering = dag.getTierOrdering();
-//        int[] tiers = new int[tierOrdering.size()];
-//
-//        for (int i = 0; i < tierOrdering.size(); i++) {
-//            tiers[i] = getNodeIndex(tierOrdering.get(i));
-//        }
-//
-//        // Construct the sample.
-//        int[][] sample = new int[nodes.length][sampleSize];
-//        int[] combination = new int[nodes.length];
-//
-//        for (int i = 0; i < sampleSize; i++) {
-//            int[] point = new int[nodes.length];
-//
-//            for (int nodeIndex : tiers) {
-//                double cutoff = randomUtil.nextDouble();
-//
-//                for (int k = 0; k < getNumParents(nodeIndex); k++) {
-//                    combination[k] = point[getParent(nodeIndex, k)];
-//                }
-//
-//                int rowIndex = getRowIndex(nodeIndex, combination);
-//                double sum = 0.0;
-//
-//                for (int k = 0; k < getNumColumns(nodeIndex); k++) {
-//                    double probability = getProbability(nodeIndex, rowIndex, k);
-//
-//                    if (Double.isNaN(probability)) {
-//                        throw new IllegalStateException("Some probability " +
-//                                "values in the DirichletBayesIm are not " +
-//                                "available; cannot simulate data.");
-//                    }
-//
-//                    sum += probability;
-//
-//                    if (sum >= cutoff) {
-//                        point[nodeIndex] = k;
-//                        break;
-//                    }
-//                }
-//            }
-//
-//            for (int j = 0; j < tiers.length; j++) {
-//                sample[j][i] = point[j];
-//            }
-//        }
-//
-//        List<Node> variables = new LinkedList<Node>();
-//
-//        for (Node node : nodes) {
-//            if (node.getNodeType() == NodeType.MEASURED) {
-//                int numCategories = bayesPm.getNumCategories(node);
-//                List<String> categories = new LinkedList<String>();
-//                for (int k = 0; k < numCategories; k++) {
-//                    categories.add(bayesPm.getCategory(node, k));
-//                }
-//
-//                DiscreteVariable ar =
-//                        new DiscreteVariable(node.getNode(), categories);
-//                variables.add(ar);
-//            }
-//        }
-//
-//        RectangularDataSet dataSet = new ColtDataSet(sampleSize, variables);
-//
-//        for (int i = 0; i < nodes.length; i++) {
-//            for (int j = 0; j < sample[i].length; j++) {
-//                dataSet.setInt(j, i, sample[i][j]);
-//            }
-//        }
-//
-//        return dataSet;
-//    }
 
     /**
      * Assigns random probability values to the child values of this row that

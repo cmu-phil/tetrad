@@ -222,11 +222,11 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
         List<Node> variables = new LinkedList<>();
         ContinuousVariable x = new ContinuousVariable("X");
         variables.add(x);
-        
-        DataBox dataBox = new DoubleDataBox(10, variables.size());
-        for (int i = 0; i < dataBox.numRows(); i++) {
-            for (int j = 0; j < dataBox.numCols(); j++) {
-            	dataBox.set(i, j, RandomUtil.getInstance().nextDouble());
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(10, variables.size()), variables);
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                dataSet.setDouble(i, j, RandomUtil.getInstance().nextDouble());
             }
         }
         

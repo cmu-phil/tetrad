@@ -117,7 +117,7 @@ final class BayesEstimatorEditorWizard extends JPanel {
         // Add listeners.
         varNamesComboBox.addActionListener((e) -> {
             getWorkbench().scrollWorkbenchToNode((Node) varNamesComboBox.getSelectedItem());
-            setCurrentNode(node);
+            setCurrentNode((Node) varNamesComboBox.getSelectedItem());
         });
 
         nextButton.addActionListener((e) -> {

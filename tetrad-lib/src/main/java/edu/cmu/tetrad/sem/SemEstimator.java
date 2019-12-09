@@ -440,7 +440,7 @@ public final class SemEstimator implements TetradSerializable {
             vars.add(_node);
         }
 
-        DataSet _dataSet = ColtDataSet.makeContinuousData(vars, dataSet.getDoubleData());
+        DataSet _dataSet = new BoxDataSet(new VerticalDoubleDataBox(dataSet.getDoubleData().transpose().toArray()), vars);
         _dataSet.setName(dataSet.getName());
 
         this.dataSet = _dataSet;

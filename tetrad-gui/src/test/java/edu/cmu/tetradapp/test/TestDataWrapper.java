@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.test;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -70,10 +67,10 @@ public class TestDataWrapper {
             variables2.add(new ContinuousVariable("X" + i));
         }
 
-        DataSet first = new ColtDataSet(10, variables1);
+        DataSet first = new BoxDataSet(new VerticalDoubleDataBox(10, variables1.size()), variables1);
         first.setName("first");
 
-        DataSet second = new ColtDataSet(10, variables2);
+        DataSet second = new BoxDataSet(new VerticalDoubleDataBox(10, variables2.size()), variables2);
         second.setName("second");
 
         modelList.add(first);

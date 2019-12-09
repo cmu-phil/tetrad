@@ -117,10 +117,6 @@ public abstract class AbstractAlgorithmRunner
 
         DataModelList dataSource = dataWrapper.getDataModelList();
 
-//        if (dataSource instanceof ColtDataSet) {
-//            dataSource = new ColtDataSet((ColtDataSet) dataSource);
-//        }
-
         this.dataWrapper = dataWrapper;
 
         //temporary workaround to get the knowledge box to coexist with the dataWrapper's knowledge
@@ -180,10 +176,6 @@ public abstract class AbstractAlgorithmRunner
         this.sourceGraph = dataWrapper.getSourceGraph();
 
         DataModel dataSource = getSelectedDataModel(dataWrapper);
-
-//        if (dataSource instanceof ColtDataSet) {
-//            dataSource = new ColtDataSet((ColtDataSet) dataSource);
-//        }
 
         this.dataWrapper = dataWrapper;
 

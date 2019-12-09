@@ -57,7 +57,7 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
             VerticalIntDataBox box = (VerticalIntDataBox) dataBox;
 
             data = box.getVariableVectors();
-            this.sampleSize = dataSet.getNumRows();
+            this.sampleSize = box.numRows();
         } else {
             data = new int[dataSet.getNumColumns()][];
             this.variables = dataSet.getVariables();

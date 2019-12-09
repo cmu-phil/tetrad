@@ -93,8 +93,7 @@ public class BooleanGlassGeneIm implements SessionModel {
             this.initializer = new BasalInitializer(glassFunction, 0, 1);
             this.history = new GeneHistory(initializer, glassFunction);
             this.simulator = new MeasurementSimulatorParams(parameters);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -198,8 +197,8 @@ public class BooleanGlassGeneIm implements SessionModel {
      * measurement simulator, see that class.
      *
      * @return a DataModelList containing either one or two models, depending on
-     *         whether measurement data alone is saved or whether raw data is
-     *         additionally saved.
+     * whether measurement data alone is saved or whether raw data is
+     * additionally saved.
      */
     public DataModelList simulateData() {
 
@@ -236,7 +235,7 @@ public class BooleanGlassGeneIm implements SessionModel {
         }
 
         DataSet measuredDataSet =
-                new ColtDataSet(measuredData[0][0].length, variables);
+                new BoxDataSet(new DoubleDataBox(measuredData[0][0].length, variables.size()), variables);
 
 //        System.out.println(measuredDataSet);
 
@@ -281,7 +280,7 @@ public class BooleanGlassGeneIm implements SessionModel {
             }
 
             DataSet rawDataSet =
-                    new ColtDataSet(rawData[0][0].length, _variables);
+                    new BoxDataSet(new DoubleDataBox(rawData[0][0].length, _variables.size()), variables);
 
             for (int i = 0; i < rawData[0].length; i++) {
                 for (int j = 0; j < rawData.length; j++) {

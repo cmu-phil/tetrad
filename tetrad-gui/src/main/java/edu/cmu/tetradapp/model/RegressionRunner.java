@@ -122,7 +122,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
 
         variables.add(var1);
         variables.add(var2);
-        DataSet _dataSet = new ColtDataSet(3, variables);
+        DataSet _dataSet = new BoxDataSet(new DoubleDataBox(3, variables.size()), variables);
         double[] col1data = new double[]{0.0, 1.0, 2.0};
         double[] col2data = new double[]{2.3, 4.3, 2.5};
 

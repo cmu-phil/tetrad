@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.CellTable;
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
@@ -301,7 +298,7 @@ public final class TestCellTable {
         variables.add(new DiscreteVariable("X3", 2));
         variables.add(new DiscreteVariable("X4", 2));
 
-        DataSet dataSet = new ColtDataSet(data.length, variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(data.length, variables.size()), variables);
 
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[0].length; j++) {

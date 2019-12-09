@@ -34,13 +34,13 @@ public class TextTable {
      * Set <code>justification</code> to this if the columns should be left
      * justified.
      */
-    private static final int LEFT_JUSTIFIED = 0;
+    public static final int LEFT_JUSTIFIED = 0;
 
     /**
      * Set <code>justification</code> to this if the columns should be right
      * justified.
      */
-    private static final int RIGHT_JUSTIFIED = 1;
+    public static final int RIGHT_JUSTIFIED = 1;
 
     /**
      * The tokens to be printed out.

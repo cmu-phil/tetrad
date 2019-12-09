@@ -21,9 +21,8 @@
 
 package edu.cmu.tetrad.regression;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
@@ -74,7 +73,7 @@ public class LogisticRegression2 implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static LogisticRegression2 serializableInstance() {
-        return new LogisticRegression2(ColtDataSet.serializableInstance());
+        return new LogisticRegression2(BoxDataSet.serializableInstance());
     }
 
     // I am going to try to maximize the liklehood function directly using the Powell Estimator.

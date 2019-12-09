@@ -46,6 +46,9 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static java.lang.Math.log;
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -528,7 +531,7 @@ public class TestFges {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", /*"A---B,B-->C,D",*/"A---B,B-->C,A---D,A---C,C-->D",
+        checkWithKnowledge("A-->B,C-->B,B-->D", /*"A---B,B-->C,D",*/"A---B,B-->C,A---C,D---A",
                 knowledge);
     }
 
@@ -584,11 +587,11 @@ public class TestFges {
                 "Graph Edges:\n" +
                 "1. ABILITY --> GPQ\n" +
                 "2. ABILITY --> PREPROD\n" +
-//                "3. ABILITY --> PUBS\n" +
+                "3. ABILITY --> PUBS\n" +
                 "4. GPQ --> QFJ\n" +
                 "5. PREPROD --> CITES\n" +
                 "6. PUBS --> CITES\n" +
-//                "7. QFJ --> CITES\n" +
+                "7. QFJ --> CITES\n" +
                 "8. QFJ --> PUBS\n" +
                 "9. SEX --> PUBS";
 
@@ -705,14 +708,14 @@ public class TestFges {
 
     @Test
     public void testFromGraph() {
-        int numNodes = 20;
+        int numNodes = 10;
         int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
 //            System.out.println("Iteration " + (i + 1));
             Graph dag = GraphUtils.randomDag(numNodes, 0, 2 * numNodes, 10, 10, 10, false);
             Fges fges = new Fges(new GraphScore(dag));
-            fges.setFaithfulnessAssumed(true);
+            fges.setFaithfulnessAssumed(false);
             Graph pattern1 = fges.search();
             Graph pattern2 = new Pc(new IndTestDSep(dag)).search();
 //            System.out.println(pattern2);
@@ -1652,6 +1655,82 @@ public class TestFges {
         System.out.println("AHR = " + ahr.getValue(trueGraph, estGraph, null));
     }
 
+    @Test
+    public void testSemBicDiffs() {
+        final int N = 1000;
+        int numCond = 3;
+
+        Graph graph = GraphUtils.randomGraph(10,0, 20, 100,
+                100, 100, false);
+        final List<Node> nodes = graph.getNodes();
+        buildIndexing(nodes);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet dataSet = im.simulateData(N, false);
+        SemBicScore score = new SemBicScore(dataSet);
+
+        IndTestDSep dsep = new IndTestDSep(graph);
+        int count = 1;
+
+        for (int i = 0; i < 10000; i++) {
+            Collections.shuffle(nodes);
+
+            Node x = nodes.get(0);
+            Node y = nodes.get(1);
+            Set<Node> z = new HashSet<>();
+
+            for (int c = 3; c <= 2 + numCond; c++) {
+                z.add(nodes.get(c));
+            }
+
+            final boolean _dsep = dsep.isIndependent(x, y, new ArrayList<>(z));
+            final double diff = scoreGraphChange(x, y, z, hashIndices, score) ;
+            final boolean diffNegative = diff < 0;
+
+            if (!_dsep && _dsep != diffNegative) {
+                System.out.println(count++ + "\t" + (_dsep ? "dsep" : "dconn") + "\t" + (diffNegative ? "indep" : "dep") + "\tdiff = " + diff);
+            }
+        }
+
+    }
+
+    private double scoreGraphChange(Node x, Node y, Set<Node> parents,
+                                    Map<Node, Integer> hashIndices, SemBicScore score) {
+        int yIndex = hashIndices.get(y);
+
+        if (x == y) {
+            throw new IllegalArgumentException();
+        }
+        if (parents.contains(y)) {
+            throw new IllegalArgumentException();
+        }
+
+        if (parents.contains(x)) {
+            throw new IllegalArgumentException();
+        }
+
+        int[] parentIndices = new int[parents.size()];
+
+        int count = 0;
+        for (Node parent : parents) {
+            parentIndices[count++] = hashIndices.get(parent);
+        }
+
+        return score.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
+    }
+
+    private HashMap<Node, Integer> hashIndices;
+
+    // Maps adj to their indices for quick lookup.
+    private void buildIndexing(List<Node> nodes) {
+        this.hashIndices = new HashMap<>();
+
+        int i = -1;
+
+        for (Node n : nodes) {
+            this.hashIndices.put(n, ++i);
+        }
+    }
 
     public static void main(String... args) {
         if (args.length > 0) {
@@ -1694,7 +1773,6 @@ public class TestFges {
 
             for (int i = 0; i < 5; i++) {
                 Graph out1 = alg.search(sim.getDataModel(0), parameters);
-
                 System.out.println(out1);
             }
 

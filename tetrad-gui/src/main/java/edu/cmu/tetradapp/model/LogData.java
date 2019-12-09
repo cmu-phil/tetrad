@@ -61,7 +61,7 @@ public class LogData extends DataWrapper {
             TetradMatrix tetradMatrix = DataUtils.logData(dataSet.getDoubleData(), a, isUnlog, base);
             List<Node> list = dataSet.getVariables();
 
-            DataSet dataSet2 = ColtDataSet.makeContinuousData(list, tetradMatrix);
+            DataSet dataSet2 = new BoxDataSet(new DoubleDataBox(tetradMatrix.toArray()), list);
             outList.add(dataSet2);
         }
 

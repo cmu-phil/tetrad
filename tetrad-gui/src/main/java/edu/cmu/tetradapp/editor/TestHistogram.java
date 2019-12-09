@@ -21,9 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.ColtDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
 import junit.framework.Test;
@@ -77,7 +75,7 @@ public class TestHistogram extends TestCase {
         dataMatrix.set(9, 1, 1);
 
 
-        DataSet dataSet = ColtDataSet.makeContinuousData(nodes, dataMatrix);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(dataMatrix.transpose().toArray()), nodes);
 
 //        Histogram histogram = new Histogram(dataSet, );
     }

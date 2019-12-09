@@ -21,7 +21,8 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.ColtDataSet;
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -229,7 +230,7 @@ class ScatterPlotDisplayPanelOld extends JPanel {
 
             if(scatterPlot.getIndexSet().size() != scatterPlot.getDataSet().getNumRows())
             {
-                ColtDataSet newDataSet = new ColtDataSet((ColtDataSet) scatterPlot.getDataSet());
+                DataSet newDataSet = scatterPlot.getDataSet().copy();
 
                 int throwAway[] = new int[scatterPlot.getComplementIndexSet().size()];
                 for(int j = 0; j < throwAway.length; j++)

@@ -74,7 +74,7 @@ public final class ExtraCategoryInterpolator implements DataFilter {
             variables.add(newVariable);
         }
 
-        DataSet newDataSet = new ColtDataSet(dataSet.getNumRows(), variables);
+        DataSet newDataSet = new BoxDataSet(new DoubleDataBox(dataSet.getNumRows(), variables.size()), variables);
 
         // Copy old values to new data set, replacing missing values with new
         // "MissingValue" categories.

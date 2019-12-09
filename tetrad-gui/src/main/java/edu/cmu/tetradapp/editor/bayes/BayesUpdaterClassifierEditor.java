@@ -306,9 +306,8 @@ public class BayesUpdaterClassifierEditor extends JPanel {
 
         classVar.setName("Result");
 
-        //DataSet dataSet =
-        //        new ColtDataSet(classifications.length, variables);
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(classifications.length, marginals.length+1), variables);
+        DataSet dataSet =
+                new BoxDataSet(new DoubleDataBox(classifications.length, variables.size()), variables);
 
         for (int i = 0; i < classifications.length; i++) {
             dataSet.setInt(i, 0, classifications[i]);

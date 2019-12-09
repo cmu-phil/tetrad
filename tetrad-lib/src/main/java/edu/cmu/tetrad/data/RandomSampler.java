@@ -65,7 +65,7 @@ public final class RandomSampler {
         int ncols = dataSet.getNumColumns();
 
         DataSet newDataSet =
-                new ColtDataSet(newSampleSize, dataSet.getVariables());
+                new BoxDataSet(new VerticalDoubleDataBox(newSampleSize, dataSet.getVariables().size()), dataSet.getVariables());
 
         for (int i = 0; i < newSampleSize; i++) {
             int oldCase = indices.get(i);

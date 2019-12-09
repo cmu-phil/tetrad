@@ -121,7 +121,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
     public IndTestCorrelationT(TetradMatrix data, List<Node> variables, double alpha) {
-        this.dataSet = ColtDataSet.makeContinuousData(variables, data);
+        this.dataSet = new BoxDataSet(new DoubleDataBox(data.toArray()), variables);
         this.dataSet = DataUtils.center(dataSet);
         this.covMatrix = new CovarianceMatrix(dataSet);
         this._covMatrix = covMatrix.getMatrix();

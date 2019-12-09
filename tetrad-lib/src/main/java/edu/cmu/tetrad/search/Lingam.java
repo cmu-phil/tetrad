@@ -41,6 +41,9 @@ import static java.lang.StrictMath.abs;
  */
 public class Lingam {
     private double penaltyDiscount = 2;
+    private double fastIcaA = 1.1;
+    private int fastIcaMaxIter = 2000;
+    private double fastIcaTolerance = 1e-6;
 
     //================================CONSTRUCTORS==========================//
 
@@ -51,76 +54,80 @@ public class Lingam {
     }
 
     public Graph search(DataSet data) {
-        data = DataUtils.center(data);
-
         TetradMatrix X = data.getDoubleData();
-        FastIca fastIca = new FastIca(X, 30);
+        X = DataUtils.centerData(X).transpose();
+        FastIca fastIca = new FastIca(X, X.rows());
         fastIca.setVerbose(false);
+        fastIca.setMaxIterations(fastIcaMaxIter);
+        fastIca.setAlgorithmType(FastIca.PARALLEL);
+        fastIca.setTolerance(fastIcaTolerance);
+        fastIca.setFunction(FastIca.EXP);
+        fastIca.setRowNorm(false);
+        fastIca.setAlpha(fastIcaA);
         FastIca.IcaResult result11 = fastIca.findComponents();
         TetradMatrix W = result11.getW();
 
-        System.out.println("W = " + W);
-
         PermutationGenerator gen1 = new PermutationGenerator(W.columns());
         int[] perm1 = new int[0];
-        double sum1 = Double.POSITIVE_INFINITY;
+        double sum1 = Double.NEGATIVE_INFINITY;
         int[] choice1;
 
         while ((choice1 = gen1.next()) != null) {
             double sum = 0.0;
 
             for (int i = 0; i < W.columns(); i++) {
-                final double wij = W.get(i, choice1[i]);
-                sum += 1.0 / abs(wij);
+                final double wii = W.get(choice1[i], i);
+                sum += abs(wii);
             }
 
-            if (sum < sum1) {
+            if (sum > sum1) {
                 sum1 = sum;
                 perm1 = Arrays.copyOf(choice1, choice1.length);
             }
         }
 
-        TetradMatrix WTilde = W.getSelection(perm1, perm1);
+        int[] cols = new int[W.columns()];
+        for (int i = 0; i < cols.length; i++) cols[i] = i;
 
-        System.out.println("WTilde before normalization = " + WTilde);
+        TetradMatrix WTilde = W.getSelection(perm1, cols);
 
-        for (int i = 0; i < WTilde.rows(); i++) {
-            for (int j = 0; j < WTilde.columns(); j++) {
-                WTilde.set(i, j, WTilde.get(j, i) / WTilde.get(i, i));
+        TetradMatrix WPrime = WTilde.copy();
+
+        for (int i = 0; i < WPrime.rows(); i++) {
+            for (int j = 0; j < WPrime.columns(); j++) {
+                WPrime.assignRow(i, WTilde.getRow(i).scalarMult(1.0 / WTilde.get(i, i)));
             }
         }
 
-        System.out.println("WTilde after normalization = " + WTilde);
+//        System.out.println("WPrime = " + WPrime);
 
         final int m = data.getNumColumns();
-        TetradMatrix B = TetradMatrix.identity(m).minus(WTilde);
+        TetradMatrix BHat = TetradMatrix.identity(m).minus(WPrime);
 
-        System.out.println("B = " + B);
-
-        PermutationGenerator gen2 = new PermutationGenerator(B.rows());
+        PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
         int[] perm2 = new int[0];
-        double sum2 = Double.POSITIVE_INFINITY;
+        double sum2 = Double.NEGATIVE_INFINITY;
         int[] choice2;
 
         while ((choice2 = gen2.next()) != null) {
             double sum = 0.0;
 
             for (int i = 0; i < W.rows(); i++) {
-                for (int j = i + 1; j < W.columns(); j++) {
-                    final double c = B.get(choice2[i], choice2[j]);
+                for (int j = 0; j < i; j++) {
+                    final double c = BHat.get(choice2[i], choice2[j]);
                     sum += abs(c);
                 }
             }
 
-            if (sum < sum2) {
+            if (sum > sum2) {
                 sum2 = sum;
                 perm2 = Arrays.copyOf(choice2, choice2.length);
             }
         }
 
-        TetradMatrix BTilde = B.getSelection(perm2, perm2);
-
-        System.out.println("BTilde = " + BTilde);
+//        TetradMatrix BTilde = BHat.getSelection(perm2, perm2);
+//
+//        System.out.println("BTilde = " + BTilde);
 
         final SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(penaltyDiscount);
@@ -130,7 +137,7 @@ public class Lingam {
         final List<Node> variables = data.getVariables();
 
         for (int i = 0; i < variables.size(); i++) {
-            knowledge.addToTier(i + 1, variables.get(perm2[i]).getName());
+            knowledge.addToTier(i, variables.get(perm2[i]).getName());
         }
 
         fges.setKnowledge(knowledge);
@@ -146,5 +153,16 @@ public class Lingam {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    public void setFastIcaA(double fastIcaA) {
+        this.fastIcaA = fastIcaA;
+    }
+
+    public void setFastMaxIter(int maxIter) {
+        this.fastIcaMaxIter = maxIter;
+    }
+
+    public void setFastIcaTolerance(double tolerance) {
+        this.fastIcaTolerance = tolerance;
+    }
 }
 
