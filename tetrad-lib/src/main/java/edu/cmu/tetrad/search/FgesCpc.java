@@ -1103,7 +1103,7 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
     }
 
     private void bes2() {
-        graph = reorient(graph);
+//        graph = reorient(graph);
 
         if (verbose) {
             TetradLogger.getInstance().forceLogMessage("** BACKWARD EQUIVALENCE SEARCH");
@@ -1147,7 +1147,9 @@ public final class FgesCpc implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            updateOrientation(graph, x, y);
+            reorient(graph);
+
+//            updateOrientation(graph, x, y);
 //            removeUnnecessaryMarks(graph);
 //            applyMeekRules(graph);
 

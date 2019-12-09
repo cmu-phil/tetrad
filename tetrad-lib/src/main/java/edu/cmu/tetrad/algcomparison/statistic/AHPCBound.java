@@ -80,28 +80,26 @@ public class AHPCBound implements Statistic {
             hist[estGraph.getDegree(node)]++;
         }
 
-        int V = trueGraph.getNumNodes();
+        int V = estGraph.getNumNodes();
 
         System.out.println("HISTOGRAM " + Arrays.toString(hist));
 
-        int E = 0;
+        int Ec = 0;
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isDirectedEdge(edge)) {
-                E++;
+                Ec++;
             }
         }
 
-        double aT = new AvgDegreeTrueGraph().getValue(trueGraph, estGraph, dataModel);
-        double aE = new AvgDegreeEstGraph().getValue(trueGraph, estGraph, dataModel);
-//        double aE = 2 * E / (double) (V);// new AvgDegreeEstGraph().getValue(trueGraph, estGraph, dataModel);
+        int Et = trueGraph.getNumEdges();
+        int Ee = estGraph.getNumEdges();
 
-        double ar = new AdjacencyRecall().getValue(trueGraph, estGraph, dataModel);
+        double aT = 2 * Et / (double) V;
+        double aE = 2 * Ee / (double) V;
+        double aC = 2 * Ec / (double) V;
 
-//        return 1.0 - (aT) / (double) (V - 1);
-//        return 1.0 - (aE) / ((double) (V - 1) * 0.8);
-
-        return 1.0 - aT / (double) (V - 1);
+        return 1.0 - aE / (double) (V - 1);
 
     }
 
