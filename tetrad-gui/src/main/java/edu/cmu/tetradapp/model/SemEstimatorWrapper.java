@@ -29,6 +29,7 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -230,8 +231,6 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
             }
         }
         
-        DataSet dataSet = new BoxDataSet(dataBox, variables);
-
         Dag dag = new Dag();
         dag.addNode(x);
         SemPm pm = new SemPm(dag);
