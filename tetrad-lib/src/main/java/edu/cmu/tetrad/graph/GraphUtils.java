@@ -407,6 +407,34 @@ public final class GraphUtils {
         return dag;
     }
 
+    public static Graph erdosRenyiGibsonDag(int numNodes,
+                                            double expectedNumEdges,
+                                            boolean layoutAsCircle) {
+
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        Graph dag = new EdgeListGraph(nodes);
+        double p = (2 * expectedNumEdges) / (double) (numNodes * (numNodes - 1));
+
+        for (int i = 0; i < numNodes; i++) {
+            for (int j = i + 1; j < numNodes; j++) {
+                if (RandomUtil.getInstance().nextDouble() < p) {
+                    dag.addDirectedEdge(nodes.get(i), nodes.get(j));
+                }
+            }
+        }
+
+        if (layoutAsCircle) {
+            GraphUtils.circleLayout(dag, 200, 200, 150);
+        }
+
+        return dag;
+    }
+
     public static Graph scaleFreeGraph(int numNodes, int numLatentConfounders,
                                        double alpha, double beta,
                                        double delta_in, double delta_out) {
@@ -1841,7 +1869,7 @@ public final class GraphUtils {
         Graph convertedGraph = new EdgeListGraph(newVariables);
 
         if (originalGraph == null) {
-            return null;
+            throw new NullPointerException("Null graph.");
         }
 
         for (Edge edge : originalGraph.getEdges()) {

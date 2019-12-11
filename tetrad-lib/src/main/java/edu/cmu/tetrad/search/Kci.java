@@ -48,7 +48,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
     private final int N;
 
     // Bowman and Azzalini optimal bandwidths for each variable.
-    private final double[] h;
+//    private final double[] h;
 
     // The supplied data set, standardized
     private final DataSet data;
@@ -132,24 +132,24 @@ public class Kci implements IndependenceTest, ScoreForFact {
             hash.put(getVariables().get(i), i);
         }
 
-        h = new double[this.data.getNumColumns()];
-        double sum = 0.0;
-        int count = 0;
-
-        for (int i = 0; i < this.data.getNumColumns(); i++) {
-            h[i] = h(this.data.getVariables().get(i).toString());
-
-            if (h[i] != 0) {
-                sum += h[i];
-                count++;
-            }
-        }
-
-        double avg = sum / count;
-
-        for (int i = 0; i < h.length; i++) {
-            if (h[i] == 0) h[i] = avg;
-        }
+//        h = new double[this.data.getNumColumns()];
+//        double sum = 0.0;
+//        int count = 0;
+//
+//        for (int i = 0; i < this.data.getNumColumns(); i++) {
+//            h[i] = h(this.data.getVariables().get(i).toString());
+//
+//            if (h[i] != 0) {
+//                sum += h[i];
+//                count++;
+//            }
+//        }
+//
+//        double avg = sum / count;
+//
+//        for (int i = 0; i < h.length; i++) {
+//            if (h[i] == 0) h[i] = avg;
+//        }
     }
 
     //====================================PUBLIC METHODS==================================//
@@ -684,20 +684,32 @@ public class Kci implements IndependenceTest, ScoreForFact {
             }
         }
 
-        double h = getH(_z);
+//        double h = getH(_z);
+
+        widthMultiplier = 1;
+
+        double w;
+
+        if (N < 200) {
+            w = 0.8;
+        } else if (N < 1200) {
+            w = 0.5;
+        } else {
+            w = 0.3;
+        }
 
         TetradMatrix result = new TetradMatrix(N, N);
 
         for (int i = 0; i < N; i++) {
             for (int j = i + 1; j < N; j++) {
                 double d = distance(_data, _z, i, j);
-                final double k = kernelGaussian(d, widthMultiplier * h);
+                final double k = kernelGaussian(d, widthMultiplier * w);
                 result.set(i, j, k);
                 result.set(j, i, k);
             }
         }
 
-        final double k = kernelGaussian(0, widthMultiplier * h);
+        final double k = kernelGaussian(0, widthMultiplier * w);
 
         for (int i = 0; i < N; i++) {
             result.set(i, i, k);
@@ -706,18 +718,18 @@ public class Kci implements IndependenceTest, ScoreForFact {
         return result;
     }
 
-    private double getH(List<Integer> _z) {
-        double h = 0;
-
-        for (int c : _z) {
-            if (this.h[c] > h) {
-                h = this.h[c];
-            }
-        }
-
-        h *= sqrt(_z.size());
-        return h;
-    }
+//    private double getH(List<Integer> _z) {
+//        double h = 0;
+//
+//        for (int c : _z) {
+//            if (this.h[c] > h) {
+//                h = this.h[c];
+//            }
+//        }
+//
+//        h *= sqrt(_z.size());
+//        return h;
+//    }
 
     private double kernelGaussian(double z, double width) {
         if (width == 0) {

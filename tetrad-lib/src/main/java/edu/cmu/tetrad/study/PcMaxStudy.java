@@ -24,6 +24,7 @@ package edu.cmu.tetrad.study;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.graph.ErdosRenyiGibson;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
@@ -76,12 +77,11 @@ public class PcMaxStudy {
         statistics.add(new AdjacencyRecall());
         statistics.add(new AvgDegreeTrueGraph());
         statistics.add(new AvgDegreeEstGraph());
-        statistics.add(new AvgDegreeRatio());
+        statistics.add(new NumberOfEdgesTrue());
         statistics.add(new UtRandomnessStatististic());
         statistics.add(new SparsityTrueGraph());
         statistics.add(new AHPCBound());
         statistics.add(new ArrowheadPrecisionCommonEdges());
-        statistics.add(new ArrowheadPrecision());
         statistics.add(new AHRCBound());
         statistics.add(new ArrowheadRecallCommonEdges());
 
@@ -105,7 +105,7 @@ public class PcMaxStudy {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
 
         Simulations simulations = new Simulations();
-        simulations.add(new SemSimulation(new RandomForward()));
+        simulations.add(new SemSimulation(new ErdosRenyiGibson()));
 
         comparison.compareFromSimulations("pcmax", simulations, algorithms, statistics, getParameters());
 
@@ -130,12 +130,9 @@ public class PcMaxStudy {
         parameters.set(Params.NUM_MEASURES, 20, 30, 50, 100, 200);
         parameters.set(Params.AVG_DEGREE, 2, 4, 6, 8);
         parameters.set(Params.NUM_RUNS, 5);
-        parameters.set(Params.DEPTH, 5);
-        parameters.set(Params.ALPHA, 0.001);
-        parameters.set(Params.ORIENTATION_ALPHA, -1);
-        parameters.set(Params.PENALTY_DISCOUNT, 1);
-        parameters.set(Params.ALPHA, 0.001, 0.01, 0.1);
         parameters.set(Params.SAMPLE_SIZE, 1000);
+        parameters.set(Params.ALPHA, 0.001, 0.01, 0.1);
+        parameters.set(Params.PENALTY_DISCOUNT, 1, 3, 5);
 
         parameters.set(Params.VERBOSE, false);
 
