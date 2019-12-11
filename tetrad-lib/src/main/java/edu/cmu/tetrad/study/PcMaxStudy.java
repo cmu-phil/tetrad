@@ -90,11 +90,11 @@ public class PcMaxStudy {
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new FgesCpc(new SemBicTest()));
-        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new Pc(new FisherZ()));
 //        algorithms.add(new Cpc(new FisherZ()));
 //        algorithms.add(new Mpc(new FisherZ()));
-//        algorithms.add(new PcMax(new FisherZ()));
+        algorithms.add(new PcMax(new FisherZ()));
 
         Comparison comparison = new Comparison();
 

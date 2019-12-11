@@ -213,7 +213,7 @@ public class Condition2 {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_2",
-                "/Users/user/causal-comparisons/condition_2", "Comparison.txt",
+                "/Users/user/causal-comparisons/condition_2", "cpc.txt",
                 algorithms, statistics, parameters);
 
 

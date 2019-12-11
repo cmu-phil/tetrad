@@ -1,0 +1,715 @@
+Wed Dec 11 11:20:59 EST 2019
+
+Statistics:
+
+sampleSize = Extra column for sampleSize
+numMeasures = Extra column for numMeasures
+avgDegree = Extra column for avgDegree
+alpha = Extra column for alpha
+penaltyDiscount = Extra column for penaltyDiscount
+AP = Adjacency Precision
+AR = Adjacency Recall
+AvgDTrue = Average degree of True Graph
+AvgDEst = Average degree of Estimated Graph
+EdgesT = Number of Edges in the True Graph
+UtRandomness = 0 = completely reversed, .5 = completely random, 1 = completely correct
+SpT = Sparsity for True Graph
+AHPCBound = Bound for AHPC
+AHPC = Arrowhead precision (common edges)
+AHRCBound = Bound for AHRC
+AHRC = Arrowhead recall (common edges)
+
+Simulations:
+
+Simulation 1: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 20
+Average degree of graph (min = 0) = 2
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 2: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 20
+Average degree of graph (min = 0) = 4
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 3: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 20
+Average degree of graph (min = 0) = 6
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 4: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 20
+Average degree of graph (min = 0) = 8
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 5: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 30
+Average degree of graph (min = 0) = 2
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 6: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 30
+Average degree of graph (min = 0) = 4
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 7: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 30
+Average degree of graph (min = 0) = 6
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 8: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 30
+Average degree of graph (min = 0) = 8
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 9: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 50
+Average degree of graph (min = 0) = 2
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 10: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 50
+Average degree of graph (min = 0) = 4
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 11: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 50
+Average degree of graph (min = 0) = 6
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 12: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 50
+Average degree of graph (min = 0) = 8
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 13: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 100
+Average degree of graph (min = 0) = 2
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 14: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 100
+Average degree of graph (min = 0) = 4
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 15: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 100
+Average degree of graph (min = 0) = 6
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 16: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 100
+Average degree of graph (min = 0) = 8
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 17: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 200
+Average degree of graph (min = 0) = 2
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 18: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 200
+Average degree of graph (min = 0) = 4
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 19: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 200
+Average degree of graph (min = 0) = 6
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Simulation 20: Linear, Gaussian SEM simulation using Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability
+
+Comparison.printParameters
+Number of measured variables (min = 1) = 200
+Average degree of graph (min = 0) = 8
+Low end of coefficient range (min = 0.0) = 0
+High end of coefficient range (min = 0.0) = 0.7
+Low end of covariance range (min = 0.0) = 0.0
+High end of covariance range (min = 0.0) = 0.0
+Low end of variance range (min = 0.0) = 0.5
+High end of variance range (min = 0.0) = 0.9
+Yes if negative coefficient values should be considered = Yes
+Yes if negative covariance values should be considered = Yes
+Additive measurement noise variance (min = 0.0) = 0.0
+Number of runs (min = 1) = 5
+Yes if a different graph should be used for each run = Yes
+Yes if the order of the columns in each datasets should be randomized = Yes
+Sample size (min = 1) = 1000
+Save latent variables. = No
+Yes if the data should be standardized = No
+
+Algorithms:
+
+1. FGES using Sem BIC Score, penaltyDiscount = 1
+2. FGES using Sem BIC Score, penaltyDiscount = 3
+3. FGES using Sem BIC Score, penaltyDiscount = 5
+
+Graphs are being compared to the Pattern of the true DAG.
+
+AVERAGE STATISTICS
+
+All edges
+
+  Sim  Alg  sampleSize  numMeasures  avgDegree  alpha  penaltyDiscount    AP    AR  AvgDTrue  AvgDEst  EdgesT  UtRandomness   SpT  AHPCBound  AHPC  AHRCBound  AHRC
+    1    1     1000.00        20.00       2.00      *             1.00  0.91  0.82      2.32     2.12   23.20          0.65  0.88       0.88  0.79       0.91  0.89
+    1    2     1000.00        20.00       2.00      *             3.00  0.98  0.75      2.32     1.78   23.20          0.60  0.88       0.88  0.85       0.92  0.91
+    1    3     1000.00        20.00       2.00      *             5.00  0.99  0.67      2.32     1.56   23.20          0.60  0.88       0.88  0.93       0.93  0.92
+    2    1     1000.00        20.00       4.00      *             1.00  0.80  0.80      4.12     4.20   41.20          0.61  0.78       0.78  0.74       0.78  0.78
+    2    2     1000.00        20.00       4.00      *             3.00  0.89  0.69      4.12     3.24   41.20          0.57  0.78       0.78  0.71       0.83  0.83
+    2    3     1000.00        20.00       4.00      *             5.00  0.96  0.59      4.12     2.62   41.20          0.55  0.78       0.78  0.74       0.86  0.86
+    3    1     1000.00        20.00       6.00      *             1.00  0.76  0.77      6.20     6.30   62.00          0.62  0.67       0.67  0.67       0.67  0.67
+    3    2     1000.00        20.00       6.00      *             3.00  0.83  0.63      6.20     4.80   62.00          0.64  0.67       0.67  0.68       0.75  0.75
+    3    3     1000.00        20.00       6.00      *             5.00  0.86  0.57      6.20     4.16   62.00          0.61  0.67       0.67  0.69       0.78  0.78
+    4    1     1000.00        20.00       8.00      *             1.00  0.70  0.76      7.98     8.58   79.80          0.47  0.58       0.58  0.48       0.55  0.55
+    4    2     1000.00        20.00       8.00      *             3.00  0.80  0.68      7.98     6.76   79.80          0.52  0.58       0.58  0.51       0.64  0.64
+    4    3     1000.00        20.00       8.00      *             5.00  0.83  0.58      7.98     5.58   79.80          0.54  0.58       0.58  0.50       0.71  0.71
+    5    1     1000.00        30.00       2.00      *             1.00  0.95  0.84      2.00     1.77   30.00          0.97  0.93       0.93  0.90       0.98  0.94
+    5    2     1000.00        30.00       2.00      *             3.00  1.00  0.78      2.00     1.56   30.00          0.90  0.93       0.93  0.92       0.97  0.95
+    5    3     1000.00        30.00       2.00      *             5.00  0.99  0.74      2.00     1.48   30.00          0.90  0.93       0.93  0.91       0.97  0.95
+    6    1     1000.00        30.00       4.00      *             1.00  0.87  0.83      4.03     3.91   60.40          0.65  0.86       0.86  0.77       0.87  0.87
+    6    2     1000.00        30.00       4.00      *             3.00  0.94  0.75      4.03     3.23   60.40          0.66  0.86       0.86  0.80       0.89  0.89
+    6    3     1000.00        30.00       4.00      *             5.00  0.95  0.64      4.03     2.69   60.40          0.66  0.86       0.86  0.79       0.91  0.91
+    7    1     1000.00        30.00       6.00      *             1.00  0.84  0.80      6.40     6.17   96.00          0.72  0.78       0.78  0.80       0.79  0.79
+    7    2     1000.00        30.00       6.00      *             3.00  0.88  0.71      6.40     5.11   96.00          0.73  0.78       0.78  0.80       0.82  0.82
+    7    3     1000.00        30.00       6.00      *             5.00  0.93  0.65      6.40     4.44   96.00          0.68  0.78       0.78  0.79       0.85  0.85
+    8    1     1000.00        30.00       8.00      *             1.00  0.66  0.80      7.57     9.32  113.60          0.57  0.74       0.74  0.65       0.68  0.68
+    8    2     1000.00        30.00       8.00      *             3.00  0.79  0.70      7.57     6.76  113.60          0.60  0.74       0.74  0.67       0.77  0.77
+    8    3     1000.00        30.00       8.00      *             5.00  0.85  0.60      7.57     5.35  113.60          0.62  0.74       0.74  0.67       0.82  0.82
+    9    1     1000.00        50.00       2.00      *             1.00  0.97  0.83      2.26     1.94   56.60          0.80  0.95       0.95  0.96       0.97  0.96
+    9    2     1000.00        50.00       2.00      *             3.00  0.99  0.74      2.26     1.70   56.60          0.85  0.95       0.95  0.98       0.97  0.97
+    9    3     1000.00        50.00       2.00      *             5.00  1.00  0.68      2.26     1.55   56.60          0.90  0.95       0.95  0.98       0.98  0.97
+   10    1     1000.00        50.00       4.00      *             1.00  0.90  0.82      4.14     3.81  103.60          0.72  0.92       0.92  0.86       0.92  0.92
+   10    2     1000.00        50.00       4.00      *             3.00  0.95  0.75      4.14     3.29  103.60          0.75  0.92       0.92  0.87       0.93  0.93
+   10    3     1000.00        50.00       4.00      *             5.00  0.97  0.71      4.14     3.02  103.60          0.82  0.92       0.92  0.88       0.94  0.94
+   11    1     1000.00        50.00       6.00      *             1.00  0.79  0.84      5.94     6.35  148.40          0.67  0.88       0.88  0.81       0.87  0.87
+   11    2     1000.00        50.00       6.00      *             3.00  0.89  0.74      5.94     4.94  148.40          0.71  0.88       0.88  0.83       0.90  0.90
+   11    3     1000.00        50.00       6.00      *             5.00  0.93  0.68      5.94     4.34  148.40          0.70  0.88       0.88  0.81       0.91  0.91
+   12    1     1000.00        50.00       8.00      *             1.00  0.66  0.79      8.18    10.06  204.40          0.59  0.83       0.83  0.71       0.79  0.79
+   12    2     1000.00        50.00       8.00      *             3.00  0.81  0.71      8.18     7.15  204.40          0.63  0.83       0.83  0.73       0.85  0.85
+   12    3     1000.00        50.00       8.00      *             5.00  0.86  0.64      8.18     6.09  204.40          0.66  0.83       0.83  0.76       0.88  0.88
+   13    1     1000.00       100.00       2.00      *             1.00  0.94  0.81      2.09     1.82  104.60          0.70  0.98       0.98  0.86       0.98  0.98
+   13    2     1000.00       100.00       2.00      *             3.00  0.99  0.74      2.09     1.57  104.60          0.72  0.98       0.98  0.90       0.99  0.98
+   13    3     1000.00       100.00       2.00      *             5.00  1.00  0.66      2.09     1.40  104.60          0.75  0.98       0.98  0.95       0.99  0.99
+   14    1     1000.00       100.00       4.00      *             1.00  0.93  0.85      4.06     3.69  202.80          0.64  0.96       0.96  0.89       0.96  0.96
+   14    2     1000.00       100.00       4.00      *             3.00  0.97  0.76      4.06     3.17  202.80          0.69  0.96       0.96  0.89       0.97  0.97
+   14    3     1000.00       100.00       4.00      *             5.00  0.99  0.71      4.06     2.90  202.80          0.70  0.96       0.96  0.90       0.97  0.97
+   15    1     1000.00       100.00       6.00      *             1.00  0.86  0.85      5.90     5.86  295.00          0.69  0.94       0.94  0.88       0.94  0.94
+   15    2     1000.00       100.00       6.00      *             3.00  0.93  0.77      5.90     4.86  295.00          0.74  0.94       0.94  0.90       0.95  0.95
+   15    3     1000.00       100.00       6.00      *             5.00  0.96  0.69      5.90     4.26  295.00          0.73  0.94       0.94  0.90       0.96  0.96
+   16    1     1000.00       100.00       8.00      *             1.00  0.81  0.83      8.07     8.37  403.40          0.69  0.92       0.92  0.87       0.92  0.92
+   16    2     1000.00       100.00       8.00      *             3.00  0.91  0.76      8.07     6.80  403.40          0.77  0.92       0.92  0.88       0.93  0.93
+   16    3     1000.00       100.00       8.00      *             5.00  0.95  0.70      8.07     5.98  403.40          0.81  0.92       0.92  0.88       0.94  0.94
+   17    1     1000.00       200.00       2.00      *             1.00  0.93  0.84      2.01     1.82  201.00          0.68  0.99       0.99  0.83       0.99  0.99
+   17    2     1000.00       200.00       2.00      *             3.00  1.00  0.75      2.01     1.51  201.00          0.70  0.99       0.99  0.95       0.99  0.99
+   17    3     1000.00       200.00       2.00      *             5.00  1.00  0.69      2.01     1.39  201.00          0.70  0.99       0.99  0.93       0.99  0.99
+   18    1     1000.00       200.00       4.00      *             1.00  0.95  0.83      4.08     3.55  407.60          0.73  0.98       0.98  0.92       0.98  0.98
+   18    2     1000.00       200.00       4.00      *             3.00  0.99  0.75      4.08     3.08  407.60          0.81  0.98       0.98  0.95       0.98  0.98
+   18    3     1000.00       200.00       4.00      *             5.00  0.99  0.69      4.08     2.83  407.60          0.77  0.98       0.98  0.95       0.99  0.99
+   19    1     1000.00       200.00       6.00      *             1.00  0.90  0.83      5.99     5.60  598.60          0.82  0.97       0.97  0.90       0.97  0.97
+   19    2     1000.00       200.00       6.00      *             3.00  0.96  0.77      5.99     4.79  598.60          0.85  0.97       0.97  0.92       0.98  0.98
+   19    3     1000.00       200.00       6.00      *             5.00  0.97  0.69      5.99     4.27  598.60          0.84  0.97       0.97  0.92       0.98  0.98
+   20    1     1000.00       200.00       8.00      *             1.00  0.86  0.84      8.02     7.89  801.80          0.76  0.96       0.96  0.92       0.96  0.96
+   20    2     1000.00       200.00       8.00      *             3.00  0.93  0.77      8.02     6.63  801.80          0.81  0.96       0.96  0.93       0.97  0.97
+   20    3     1000.00       200.00       8.00      *             5.00  0.96  0.69      8.02     5.84  801.80          0.83  0.96       0.96  0.93       0.97  0.97
+
+STANDARD DEVIATIONS
+
+All edges
+
+  Sim  Alg  sampleSize  numMeasures  avgDegree  alpha  penaltyDiscount       AP       AR  AvgDTrue  AvgDEst  EdgesT  UtRandomness      SpT  AHPCBound     AHPC  AHRCBound     AHRC
+    1    1     1000.00        20.00       2.00      *             1.00     0.09     0.08      0.31     0.47    3.11          0.33     0.02       0.02     0.18       0.06     0.02
+    1    2     1000.00        20.00       2.00      *             3.00     0.05     0.07      0.31     0.30    3.11          0.38     0.02       0.02     0.14       0.05     0.02
+    1    3     1000.00        20.00       2.00      *             5.00     0.02     0.05      0.31     0.15    3.11          0.29     0.02       0.02     0.10       0.04  7.98E-3
+    2    1     1000.00        20.00       4.00      *             1.00     0.09     0.07      0.59     0.80    5.93          0.09     0.03       0.03     0.10       0.04     0.04
+    2    2     1000.00        20.00       4.00      *             3.00     0.08     0.06      0.59     0.74    5.93          0.06     0.03       0.03     0.08       0.04     0.04
+    2    3     1000.00        20.00       4.00      *             5.00     0.05     0.08      0.59     0.79    5.93          0.15     0.03       0.03     0.15       0.04     0.04
+    3    1     1000.00        20.00       6.00      *             1.00     0.07     0.07      0.57     1.25    5.74          0.07     0.03       0.03     0.06       0.07     0.07
+    3    2     1000.00        20.00       6.00      *             3.00     0.08     0.05      0.57     0.89    5.74          0.07     0.03       0.03     0.05       0.05     0.05
+    3    3     1000.00        20.00       6.00      *             5.00     0.09     0.03      0.57     0.61    5.74          0.08     0.03       0.03     0.06       0.03     0.03
+    4    1     1000.00        20.00       8.00      *             1.00     0.04     0.07      0.59     0.81    5.93          0.09     0.03       0.03     0.13       0.04     0.04
+    4    2     1000.00        20.00       8.00      *             3.00     0.04     0.04      0.59     0.51    5.93          0.15     0.03       0.03     0.17       0.03     0.03
+    4    3     1000.00        20.00       8.00      *             5.00     0.06     0.02      0.59     0.52    5.93          0.12     0.03       0.03     0.16       0.03     0.03
+    5    1     1000.00        30.00       2.00      *             1.00     0.07     0.05      0.27     0.25    4.06          0.07  9.34E-3    9.34E-3     0.18       0.03  8.69E-3
+    5    2     1000.00        30.00       2.00      *             3.00        0     0.05      0.27     0.25    4.06          0.22  9.34E-3    9.34E-3     0.13       0.03  8.69E-3
+    5    3     1000.00        30.00       2.00      *             5.00     0.02     0.06      0.27     0.19    4.06          0.22  9.34E-3    9.34E-3     0.12       0.03  6.58E-3
+    6    1     1000.00        30.00       4.00      *             1.00     0.11     0.06      0.65     0.83    9.76          0.11     0.02       0.02     0.10       0.03     0.03
+    6    2     1000.00        30.00       4.00      *             3.00     0.07     0.09      0.65     0.72    9.76          0.14     0.02       0.02     0.06       0.02     0.02
+    6    3     1000.00        30.00       4.00      *             5.00     0.08     0.08      0.65     0.49    9.76          0.18     0.02       0.02     0.10       0.02     0.02
+    7    1     1000.00        30.00       6.00      *             1.00     0.08     0.04      0.40     0.74    6.00          0.10     0.01       0.01     0.10       0.03     0.03
+    7    2     1000.00        30.00       6.00      *             3.00     0.06     0.06      0.40     0.53    6.00          0.12     0.01       0.01     0.11       0.02     0.02
+    7    3     1000.00        30.00       6.00      *             5.00     0.04     0.05      0.40     0.34    6.00          0.13     0.01       0.01     0.12       0.01     0.01
+    8    1     1000.00        30.00       8.00      *             1.00     0.07     0.06      0.53     1.49    7.99          0.05     0.02       0.02     0.11       0.05     0.05
+    8    2     1000.00        30.00       8.00      *             3.00     0.06     0.02      0.53     0.89    7.99          0.08     0.02       0.02     0.10       0.03     0.03
+    8    3     1000.00        30.00       8.00      *             5.00     0.05     0.03      0.53     0.90    7.99          0.07     0.02       0.02     0.08       0.03     0.03
+    9    1     1000.00        50.00       2.00      *             1.00     0.04     0.03      0.13     0.12    3.13          0.27  2.56E-3    2.56E-3     0.06       0.02  2.42E-3
+    9    2     1000.00        50.00       2.00      *             3.00     0.03     0.06      0.13     0.20    3.13          0.22  2.56E-3    2.56E-3     0.03       0.02  4.15E-3
+    9    3     1000.00        50.00       2.00      *             5.00        0     0.05      0.13     0.18    3.13          0.22  2.56E-3    2.56E-3     0.04       0.02  3.62E-3
+   10    1     1000.00        50.00       4.00      *             1.00     0.05  8.96E-3      0.36     0.54    8.99          0.10  7.34E-3    7.34E-3     0.06       0.01     0.01
+   10    2     1000.00        50.00       4.00      *             3.00     0.03     0.03      0.36     0.28    8.99          0.20  7.34E-3    7.34E-3     0.04    5.64E-3  5.64E-3
+   10    3     1000.00        50.00       4.00      *             5.00     0.03     0.03      0.36     0.17    8.99          0.05  7.34E-3    7.34E-3     0.05    3.54E-3  3.54E-3
+   11    1     1000.00        50.00       6.00      *             1.00     0.08     0.02      0.32     0.60    7.99          0.09  6.52E-3    6.52E-3     0.05       0.01     0.01
+   11    2     1000.00        50.00       6.00      *             3.00     0.05     0.03      0.32     0.46    7.99          0.06  6.52E-3    6.52E-3     0.07    9.32E-3  9.32E-3
+   11    3     1000.00        50.00       6.00      *             5.00     0.03  7.98E-3      0.32     0.28    7.99          0.07  6.52E-3    6.52E-3     0.06    5.73E-3  5.73E-3
+   12    1     1000.00        50.00       8.00      *             1.00     0.10     0.02      0.46     1.95   11.59          0.07  9.46E-3    9.46E-3     0.10       0.04     0.04
+   12    2     1000.00        50.00       8.00      *             3.00     0.06     0.03      0.46     0.82   11.59          0.08  9.46E-3    9.46E-3     0.10       0.02     0.02
+   12    3     1000.00        50.00       8.00      *             5.00     0.04     0.03      0.46     0.39   11.59          0.07  9.46E-3    9.46E-3     0.08    8.03E-3  8.03E-3
+   13    1     1000.00       100.00       2.00      *             1.00     0.02     0.06      0.22     0.30   10.95          0.27  2.21E-3    2.21E-3     0.04    8.94E-3  3.05E-3
+   13    2     1000.00       100.00       2.00      *             3.00     0.01     0.04      0.22     0.27   10.95          0.44  2.21E-3    2.21E-3     0.10    8.94E-3  2.69E-3
+   13    3     1000.00       100.00       2.00      *             5.00     0.01     0.06      0.22     0.28   10.95          0.43  2.21E-3    2.21E-3     0.08    8.14E-3  2.81E-3
+   14    1     1000.00       100.00       4.00      *             1.00     0.03     0.02      0.26     0.17   13.07          0.17  2.64E-3    2.64E-3     0.04    1.73E-3  1.73E-3
+   14    2     1000.00       100.00       4.00      *             3.00  6.10E-3     0.03      0.26     0.20   13.07          0.04  2.64E-3    2.64E-3     0.05    2.01E-3  2.01E-3
+   14    3     1000.00       100.00       4.00      *             5.00  6.49E-3     0.03      0.26     0.21   13.07          0.13  2.64E-3    2.64E-3     0.03    2.07E-3  2.07E-3
+   15    1     1000.00       100.00       6.00      *             1.00     0.04  9.72E-3      0.26     0.39   12.94          0.11  2.61E-3    2.61E-3     0.03    3.91E-3  3.91E-3
+   15    2     1000.00       100.00       6.00      *             3.00     0.02     0.02      0.26     0.20   12.94          0.07  2.61E-3    2.61E-3     0.03    1.98E-3  1.98E-3
+   15    3     1000.00       100.00       6.00      *             5.00     0.03     0.03      0.26     0.21   12.94          0.14  2.61E-3    2.61E-3     0.04    2.09E-3  2.09E-3
+   16    1     1000.00       100.00       8.00      *             1.00     0.03     0.02      0.27     0.62   13.72          0.06  2.77E-3    2.77E-3     0.03    6.23E-3  6.23E-3
+   16    2     1000.00       100.00       8.00      *             3.00     0.01     0.02      0.27     0.40   13.72          0.04  2.77E-3    2.77E-3     0.04    4.01E-3  4.01E-3
+   16    3     1000.00       100.00       8.00      *             5.00     0.02     0.03      0.27     0.42   13.72          0.07  2.77E-3    2.77E-3     0.03    4.27E-3  4.27E-3
+   17    1     1000.00       200.00       2.00      *             1.00     0.02     0.02      0.04     0.06    3.74          0.32  1.88E-4    1.88E-4     0.03    4.08E-3  2.81E-4
+   17    2     1000.00       200.00       2.00      *             3.00  5.72E-3     0.02      0.04     0.04    3.74          0.45  1.88E-4    1.88E-4     0.04    3.41E-3  2.15E-4
+   17    3     1000.00       200.00       2.00      *             5.00  6.10E-3     0.02      0.04     0.07    3.74          0.45  1.88E-4    1.88E-4     0.03    3.15E-3  3.27E-4
+   18    1     1000.00       200.00       4.00      *             1.00     0.02     0.01      0.07     0.10    6.69          0.21  3.36E-4    3.36E-4     0.02    4.81E-4  4.81E-4
+   18    2     1000.00       200.00       4.00      *             3.00     0.01     0.01      0.07     0.08    6.69          0.13  3.36E-4    3.36E-4     0.02    3.84E-4  3.84E-4
+   18    3     1000.00       200.00       4.00      *             5.00     0.02     0.01      0.07     0.11    6.69          0.21  3.36E-4    3.36E-4     0.02    5.50E-4  5.50E-4
+   19    1     1000.00       200.00       6.00      *             1.00     0.05     0.02      0.27     0.53   26.98          0.08  1.36E-3    1.36E-3     0.03    2.68E-3  2.68E-3
+   19    2     1000.00       200.00       6.00      *             3.00     0.02     0.02      0.27     0.34   26.98          0.06  1.36E-3    1.36E-3     0.03    1.71E-3  1.71E-3
+   19    3     1000.00       200.00       6.00      *             5.00     0.01     0.02      0.27     0.26   26.98          0.03  1.36E-3    1.36E-3     0.03    1.28E-3  1.28E-3
+   20    1     1000.00       200.00       8.00      *             1.00     0.02     0.01      0.27     0.43   26.67          0.05  1.34E-3    1.34E-3  5.40E-3    2.17E-3  2.17E-3
+   20    2     1000.00       200.00       8.00      *             3.00  9.05E-3     0.01      0.27     0.31   26.67          0.06  1.34E-3    1.34E-3  5.98E-3    1.55E-3  1.55E-3
+   20    3     1000.00       200.00       8.00      *             5.00     0.01     0.02      0.27     0.32   26.67          0.02  1.34E-3    1.34E-3  6.08E-3    1.59E-3  1.59E-3
+
+WORST CASE
+
+All edges
+
+  Sim  Alg  sampleSize  numMeasures  avgDegree  alpha  penaltyDiscount    AP    AR  AvgDTrue  AvgDEst  EdgesT  UtRandomness   SpT  AHPCBound  AHPC  AHRCBound  AHRC
+    1    1     1000.00        20.00       2.00      *             1.00  0.76  0.71      2.00     1.60   20.00          0.33  0.85       0.85  0.54       0.86  0.86
+    1    2     1000.00        20.00       2.00      *             3.00  0.89  0.67      2.00     1.60   20.00             -  0.85       0.85  0.71       0.88  0.88
+    1    3     1000.00        20.00       2.00      *             5.00  0.94  0.61      2.00     1.40   20.00          0.25  0.85       0.85  0.77       0.91  0.91
+    2    1     1000.00        20.00       4.00      *             1.00  0.68  0.72      3.50     3.40   35.00          0.50  0.73       0.73  0.61       0.72  0.72
+    2    2     1000.00        20.00       4.00      *             3.00  0.78  0.62      3.50     2.30   35.00          0.50  0.73       0.73  0.63       0.79  0.79
+    2    3     1000.00        20.00       4.00      *             5.00  0.89  0.51      3.50     1.80   35.00          0.38  0.73       0.73  0.56       0.80  0.80
+    3    1     1000.00        20.00       6.00      *             1.00  0.66  0.67      5.50     4.60   55.00          0.53  0.63       0.63  0.59       0.61  0.61
+    3    2     1000.00        20.00       6.00      *             3.00  0.70  0.56      5.50     3.60   55.00          0.56  0.63       0.63  0.59       0.70  0.70
+    3    3     1000.00        20.00       6.00      *             5.00  0.71  0.53      5.50     3.30   55.00          0.49  0.63       0.63  0.59       0.75  0.75
+    4    1     1000.00        20.00       8.00      *             1.00  0.66  0.66      7.60     7.50   76.00          0.34  0.53       0.53  0.31       0.50  0.50
+    4    2     1000.00        20.00       8.00      *             3.00  0.76  0.62      7.60     6.20   76.00          0.34  0.53       0.53  0.33       0.61  0.61
+    4    3     1000.00        20.00       8.00      *             5.00  0.72  0.56      7.60     5.20   76.00          0.40  0.53       0.53  0.32       0.66  0.66
+    5    1     1000.00        30.00       2.00      *             1.00  0.85  0.76      1.73     1.53   26.00          0.83  0.92       0.92  0.59       0.94  0.92
+    5    2     1000.00        30.00       2.00      *             3.00  1.00  0.72      1.73     1.40   26.00          0.50  0.92       0.92  0.69       0.93  0.93
+    5    3     1000.00        30.00       2.00      *             5.00  0.95  0.66      1.73     1.33   26.00          0.50  0.92       0.92  0.75       0.94  0.94
+    6    1     1000.00        30.00       4.00      *             1.00  0.72  0.73      3.20     2.60   48.00          0.52  0.83       0.83  0.61       0.84  0.84
+    6    2     1000.00        30.00       4.00      *             3.00  0.82  0.60      3.20     2.47   48.00          0.50  0.83       0.83  0.72       0.86  0.86
+    6    3     1000.00        30.00       4.00      *             5.00  0.81  0.53      3.20     2.13   48.00          0.40  0.83       0.83  0.66       0.89  0.89
+    7    1     1000.00        30.00       6.00      *             1.00  0.76  0.74      5.93     5.47   89.00          0.61  0.76       0.76  0.65       0.74  0.74
+    7    2     1000.00        30.00       6.00      *             3.00  0.82  0.61      5.93     4.73   89.00          0.57  0.76       0.76  0.65       0.79  0.79
+    7    3     1000.00        30.00       6.00      *             5.00  0.87  0.57      5.93     4.13   89.00          0.56  0.76       0.76  0.63       0.83  0.83
+    8    1     1000.00        30.00       8.00      *             1.00  0.57  0.74      7.13     7.40  107.00          0.53  0.71       0.71  0.54       0.61  0.61
+    8    2     1000.00        30.00       8.00      *             3.00  0.72  0.67      7.13     5.87  107.00          0.48  0.71       0.71  0.59       0.73  0.73
+    8    3     1000.00        30.00       8.00      *             5.00  0.79  0.56      7.13     4.33  107.00          0.54  0.71       0.71  0.61       0.77  0.77
+    9    1     1000.00        50.00       2.00      *             1.00  0.92  0.80      2.08     1.80   52.00          0.50  0.95       0.95  0.87       0.96  0.96
+    9    2     1000.00        50.00       2.00      *             3.00  0.93  0.68      2.08     1.44   52.00          0.50  0.95       0.95  0.93       0.96  0.96
+    9    3     1000.00        50.00       2.00      *             5.00  1.00  0.63      2.08     1.36   52.00          0.50  0.95       0.95  0.91       0.96  0.96
+   10    1     1000.00        50.00       4.00      *             1.00  0.84  0.81      3.80     3.36   95.00          0.57  0.90       0.90  0.79       0.91  0.91
+   10    2     1000.00        50.00       4.00      *             3.00  0.91  0.71      3.80     2.96   95.00          0.40  0.90       0.90  0.81       0.92  0.92
+   10    3     1000.00        50.00       4.00      *             5.00  0.93  0.67      3.80     2.80   95.00          0.74  0.90       0.90  0.80       0.93  0.93
+   11    1     1000.00        50.00       6.00      *             1.00  0.70  0.82      5.64     5.80  141.00          0.57  0.87       0.87  0.75       0.85  0.85
+   11    2     1000.00        50.00       6.00      *             3.00  0.83  0.70      5.64     4.72  141.00          0.64  0.87       0.87  0.74       0.88  0.88
+   11    3     1000.00        50.00       6.00      *             5.00  0.90  0.67      5.64     4.16  141.00          0.65  0.87       0.87  0.74       0.90  0.90
+   12    1     1000.00        50.00       8.00      *             1.00  0.56  0.77      7.52     7.44  188.00          0.53  0.82       0.82  0.53       0.74  0.74
+   12    2     1000.00        50.00       8.00      *             3.00  0.75  0.68      7.52     6.12  188.00          0.52  0.82       0.82  0.58       0.84  0.84
+   12    3     1000.00        50.00       8.00      *             5.00  0.81  0.61      7.52     5.72  188.00          0.56  0.82       0.82  0.63       0.87  0.87
+   13    1     1000.00       100.00       2.00      *             1.00  0.91  0.77      1.92     1.56   96.00          0.50  0.98       0.98  0.82       0.98  0.98
+   13    2     1000.00       100.00       2.00      *             3.00  0.97  0.70      1.92     1.36   96.00             -  0.98       0.98  0.77       0.98  0.98
+   13    3     1000.00       100.00       2.00      *             5.00  0.98  0.60      1.92     1.16   96.00             -  0.98       0.98  0.82       0.98  0.98
+   14    1     1000.00       100.00       4.00      *             1.00  0.90  0.82      3.72     3.42  186.00          0.46  0.96       0.96  0.83       0.96  0.96
+   14    2     1000.00       100.00       4.00      *             3.00  0.97  0.73      3.72     2.86  186.00          0.62  0.96       0.96  0.82       0.97  0.97
+   14    3     1000.00       100.00       4.00      *             5.00  0.97  0.66      3.72     2.64  186.00          0.50  0.96       0.96  0.86       0.97  0.97
+   15    1     1000.00       100.00       6.00      *             1.00  0.80  0.84      5.50     5.46  275.00          0.50  0.94       0.94  0.83       0.93  0.93
+   15    2     1000.00       100.00       6.00      *             3.00  0.89  0.74      5.50     4.62  275.00          0.67  0.94       0.94  0.86       0.95  0.95
+   15    3     1000.00       100.00       6.00      *             5.00  0.93  0.65      5.50     4.04  275.00          0.55  0.94       0.94  0.83       0.95  0.95
+   16    1     1000.00       100.00       8.00      *             1.00  0.77  0.81      7.62     7.42  381.00          0.60  0.92       0.92  0.84       0.91  0.91
+   16    2     1000.00       100.00       8.00      *             3.00  0.89  0.73      7.62     6.14  381.00          0.73  0.92       0.92  0.83       0.93  0.93
+   16    3     1000.00       100.00       8.00      *             5.00  0.92  0.66      7.62     5.32  381.00          0.74  0.92       0.92  0.84       0.93  0.93
+   17    1     1000.00       200.00       2.00      *             1.00  0.92  0.82      1.96     1.76  196.00          0.25  0.99       0.99  0.80       0.99  0.99
+   17    2     1000.00       200.00       2.00      *             3.00  0.99  0.73      1.96     1.45  196.00             -  0.99       0.99  0.91       0.99  0.99
+   17    3     1000.00       200.00       2.00      *             5.00  0.99  0.67      1.96     1.33  196.00             -  0.99       0.99  0.90       0.99  0.99
+   18    1     1000.00       200.00       4.00      *             1.00  0.93  0.81      3.97     3.46  397.00          0.50  0.98       0.98  0.89       0.98  0.98
+   18    2     1000.00       200.00       4.00      *             3.00  0.96  0.73      3.97     3.02  397.00          0.58  0.98       0.98  0.92       0.98  0.98
+   18    3     1000.00       200.00       4.00      *             5.00  0.96  0.67      3.97     2.75  397.00          0.40  0.98       0.98  0.92       0.98  0.98
+   19    1     1000.00       200.00       6.00      *             1.00  0.84  0.81      5.62     4.96  562.00          0.69  0.97       0.97  0.88       0.97  0.97
+   19    2     1000.00       200.00       6.00      *             3.00  0.92  0.75      5.62     4.44  562.00          0.76  0.97       0.97  0.89       0.97  0.97
+   19    3     1000.00       200.00       6.00      *             5.00  0.95  0.66      5.62     3.99  562.00          0.81  0.97       0.97  0.89       0.98  0.98
+   20    1     1000.00       200.00       8.00      *             1.00  0.82  0.82      7.79     7.49  779.00          0.70  0.96       0.96  0.91       0.96  0.96
+   20    2     1000.00       200.00       8.00      *             3.00  0.92  0.76      7.79     6.24  779.00          0.72  0.96       0.96  0.92       0.97  0.97
+   20    3     1000.00       200.00       8.00      *             5.00  0.94  0.67      7.79     5.39  779.00          0.81  0.96       0.96  0.92       0.97  0.97
+
+MEDIAN CASE
+
+All edges
+
+  Sim  Alg  sampleSize  numMeasures  avgDegree  alpha  penaltyDiscount    AP    AR  AvgDTrue  AvgDEst  EdgesT  UtRandomness   SpT  AHPCBound  AHPC  AHRCBound  AHRC
+    1    1     1000.00        20.00       2.00      *             1.00  0.93  0.83      2.30     2.00   23.00          0.50  0.88       0.88  0.78       0.89  0.89
+    1    2     1000.00        20.00       2.00      *             3.00  1.00  0.76      2.30     1.60   23.00          0.75  0.88       0.88  0.83       0.92  0.92
+    1    3     1000.00        20.00       2.00      *             5.00  1.00  0.67      2.30     1.50   23.00          0.50  0.88       0.88  1.00       0.92  0.92
+    2    1     1000.00        20.00       4.00      *             1.00  0.81  0.80      4.00     4.10   40.00          0.60  0.79       0.79  0.71       0.78  0.78
+    2    2     1000.00        20.00       4.00      *             3.00  0.89  0.71      4.00     3.30   40.00          0.59  0.79       0.79  0.70       0.83  0.83
+    2    3     1000.00        20.00       4.00      *             5.00  0.96  0.62      4.00     2.70   40.00          0.60  0.79       0.79  0.73       0.86  0.86
+    3    1     1000.00        20.00       6.00      *             1.00  0.76  0.79      6.10     6.70   61.00          0.63  0.68       0.68  0.67       0.65  0.65
+    3    2     1000.00        20.00       6.00      *             3.00  0.85  0.66      6.10     4.80   61.00          0.64  0.68       0.68  0.69       0.75  0.75
+    3    3     1000.00        20.00       6.00      *             5.00  0.88  0.58      6.10     4.10   61.00          0.62  0.68       0.68  0.69       0.78  0.78
+    4    1     1000.00        20.00       8.00      *             1.00  0.69  0.76      7.70     8.90   77.00          0.46  0.59       0.59  0.51       0.53  0.53
+    4    2     1000.00        20.00       8.00      *             3.00  0.78  0.66      7.70     6.50   77.00          0.56  0.59       0.59  0.54       0.66  0.66
+    4    3     1000.00        20.00       8.00      *             5.00  0.86  0.58      7.70     5.30   77.00          0.57  0.59       0.59  0.57       0.72  0.72
+    5    1     1000.00        30.00       2.00      *             1.00  0.97  0.85      1.93     1.73   29.00          1.00  0.93       0.93  1.00       1.00  0.94
+    5    2     1000.00        30.00       2.00      *             3.00  1.00  0.81      1.93     1.47   29.00          1.00  0.93       0.93  1.00       0.95  0.95
+    5    3     1000.00        30.00       2.00      *             5.00  1.00  0.75      1.93     1.47   29.00          1.00  0.93       0.93  1.00       0.95  0.95
+    6    1     1000.00        30.00       4.00      *             1.00  0.92  0.84      4.00     4.00   60.00          0.67  0.86       0.86  0.82       0.86  0.86
+    6    2     1000.00        30.00       4.00      *             3.00  0.95  0.77      4.00     3.27   60.00          0.67  0.86       0.86  0.82       0.89  0.89
+    6    3     1000.00        30.00       4.00      *             5.00  1.00  0.64      4.00     2.80   60.00          0.67  0.86       0.86  0.78       0.90  0.90
+    7    1     1000.00        30.00       6.00      *             1.00  0.82  0.81      6.33     6.07   95.00          0.71  0.78       0.78  0.78       0.79  0.79
+    7    2     1000.00        30.00       6.00      *             3.00  0.87  0.71      6.33     4.87   95.00          0.76  0.78       0.78  0.78       0.83  0.83
+    7    3     1000.00        30.00       6.00      *             5.00  0.94  0.65      6.33     4.33   95.00          0.61  0.78       0.78  0.76       0.85  0.85
+    8    1     1000.00        30.00       8.00      *             1.00  0.65  0.79      7.27     9.80  109.00          0.56  0.75       0.75  0.60       0.66  0.66
+    8    2     1000.00        30.00       8.00      *             3.00  0.79  0.71      7.27     6.47  109.00          0.61  0.75       0.75  0.65       0.78  0.78
+    8    3     1000.00        30.00       8.00      *             5.00  0.85  0.59      7.27     5.13  109.00          0.60  0.75       0.75  0.63       0.82  0.82
+    9    1     1000.00        50.00       2.00      *             1.00  0.98  0.84      2.24     1.88   56.00          1.00  0.95       0.95  1.00       0.96  0.96
+    9    2     1000.00        50.00       2.00      *             3.00  1.00  0.75      2.24     1.68   56.00          1.00  0.95       0.95  1.00       0.97  0.97
+    9    3     1000.00        50.00       2.00      *             5.00  1.00  0.68      2.24     1.52   56.00          1.00  0.95       0.95  1.00       0.97  0.97
+   10    1     1000.00        50.00       4.00      *             1.00  0.92  0.83      4.12     3.52  103.00          0.73  0.92       0.92  0.88       0.93  0.93
+   10    2     1000.00        50.00       4.00      *             3.00  0.94  0.76      4.12     3.24  103.00          0.81  0.92       0.92  0.87       0.93  0.93
+   10    3     1000.00        50.00       4.00      *             5.00  0.97  0.71      4.12     3.04  103.00          0.83  0.92       0.92  0.89       0.94  0.94
+   11    1     1000.00        50.00       6.00      *             1.00  0.79  0.84      5.88     6.16  147.00          0.64  0.88       0.88  0.81       0.87  0.87
+   11    2     1000.00        50.00       6.00      *             3.00  0.89  0.75      5.88     4.76  147.00          0.69  0.88       0.88  0.83       0.90  0.90
+   11    3     1000.00        50.00       6.00      *             5.00  0.93  0.68      5.88     4.24  147.00          0.68  0.88       0.88  0.81       0.91  0.91
+   12    1     1000.00        50.00       8.00      *             1.00  0.62  0.80      8.20    10.08  205.00          0.57  0.83       0.83  0.73       0.79  0.79
+   12    2     1000.00        50.00       8.00      *             3.00  0.79  0.72      8.20     7.00  205.00          0.61  0.83       0.83  0.73       0.86  0.86
+   12    3     1000.00        50.00       8.00      *             5.00  0.88  0.64      8.20     5.96  205.00          0.66  0.83       0.83  0.77       0.88  0.88
+   13    1     1000.00       100.00       2.00      *             1.00  0.95  0.79      1.96     1.66   98.00          0.50  0.98       0.98  0.86       0.98  0.98
+   13    2     1000.00       100.00       2.00      *             3.00  1.00  0.72      1.96     1.40   98.00          1.00  0.98       0.98  0.88       0.99  0.99
+   13    3     1000.00       100.00       2.00      *             5.00  1.00  0.66      1.96     1.26   98.00          1.00  0.98       0.98  1.00       0.99  0.99
+   14    1     1000.00       100.00       4.00      *             1.00  0.93  0.85      4.00     3.74  200.00          0.69  0.96       0.96  0.90       0.96  0.96
+   14    2     1000.00       100.00       4.00      *             3.00  0.97  0.76      4.00     3.18  200.00          0.69  0.96       0.96  0.88       0.97  0.97
+   14    3     1000.00       100.00       4.00      *             5.00  0.99  0.70      4.00     2.94  200.00          0.69  0.96       0.96  0.90       0.97  0.97
+   15    1     1000.00       100.00       6.00      *             1.00  0.86  0.85      5.96     5.78  298.00          0.73  0.94       0.94  0.88       0.94  0.94
+   15    2     1000.00       100.00       6.00      *             3.00  0.94  0.76      5.96     4.82  298.00          0.75  0.94       0.94  0.90       0.95  0.95
+   15    3     1000.00       100.00       6.00      *             5.00  0.98  0.71      5.96     4.20  298.00          0.73  0.94       0.94  0.90       0.96  0.96
+   16    1     1000.00       100.00       8.00      *             1.00  0.82  0.83      8.08     8.58  404.00          0.71  0.92       0.92  0.87       0.91  0.91
+   16    2     1000.00       100.00       8.00      *             3.00  0.91  0.78      8.08     6.90  404.00          0.74  0.92       0.92  0.88       0.93  0.93
+   16    3     1000.00       100.00       8.00      *             5.00  0.95  0.71      8.08     6.04  404.00          0.81  0.92       0.92  0.88       0.94  0.94
+   17    1     1000.00       200.00       2.00      *             1.00  0.93  0.83      2.03     1.82  203.00          0.67  0.99       0.99  0.83       0.99  0.99
+   17    2     1000.00       200.00       2.00      *             3.00  1.00  0.75      2.03     1.52  203.00          1.00  0.99       0.99  0.95       0.99  0.99
+   17    3     1000.00       200.00       2.00      *             5.00  1.00  0.68      2.03     1.39  203.00          1.00  0.99       0.99  0.95       0.99  0.99
+   18    1     1000.00       200.00       4.00      *             1.00  0.95  0.83      4.11     3.53  411.00          0.75  0.98       0.98  0.93       0.98  0.98
+   18    2     1000.00       200.00       4.00      *             3.00  0.99  0.74      4.11     3.05  411.00          0.88  0.98       0.98  0.95       0.98  0.98
+   18    3     1000.00       200.00       4.00      *             5.00  1.00  0.69      4.11     2.81  411.00          0.88  0.98       0.98  0.95       0.99  0.99
+   19    1     1000.00       200.00       6.00      *             1.00  0.88  0.83      6.01     5.87  601.00          0.84  0.97       0.97  0.89       0.97  0.97
+   19    2     1000.00       200.00       6.00      *             3.00  0.97  0.77      6.01     4.85  601.00          0.85  0.97       0.97  0.92       0.98  0.98
+   19    3     1000.00       200.00       6.00      *             5.00  0.97  0.69      6.01     4.23  601.00          0.84  0.97       0.97  0.92       0.98  0.98
+   20    1     1000.00       200.00       8.00      *             1.00  0.86  0.84      7.87     7.72  787.00          0.73  0.96       0.96  0.92       0.96  0.96
+   20    2     1000.00       200.00       8.00      *             3.00  0.93  0.76      7.87     6.67  787.00          0.85  0.96       0.96  0.93       0.97  0.97
+   20    3     1000.00       200.00       8.00      *             5.00  0.96  0.70      7.87     5.83  787.00          0.84  0.96       0.96  0.93       0.97  0.97
+
