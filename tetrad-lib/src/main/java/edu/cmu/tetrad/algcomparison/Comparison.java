@@ -178,7 +178,7 @@ public class Comparison {
 
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters) {
-        generateReportFromExternalAlgorithms(dataPath, resultsPath, "cpc.txt", algorithms,
+        generateReportFromExternalAlgorithms(dataPath, resultsPath, "Comparison.txt", algorithms,
                 statistics, parameters);
     }
 
@@ -227,7 +227,7 @@ public class Comparison {
 
     public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
-        compareFromSimulations(resultsPath, simulations, "cpc.txt", algorithms, statistics, parameters);
+        compareFromSimulations(resultsPath, simulations, "Comparison.txt", algorithms, statistics, parameters);
     }
 
     /**

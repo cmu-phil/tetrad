@@ -85,7 +85,7 @@ public class TimeoutComparisonTest {
         System.out.println("================================================================================");
         System.out.println("Output File:");
         System.out.println("================================================================================");
-        Path outputFile = Paths.get(resultsPath, "cpc.txt");
+        Path outputFile = Paths.get(resultsPath, "Comparison.txt");
         if (Files.exists(outputFile)) {
             try (Stream<String> stream = Files.lines(outputFile)) {
                 stream.forEach(out::println);

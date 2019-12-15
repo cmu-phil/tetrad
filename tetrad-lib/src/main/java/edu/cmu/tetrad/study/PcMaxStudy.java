@@ -90,11 +90,11 @@ public class PcMaxStudy {
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new FgesCpc(new SemBicTest()));
-//        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new Pc(new FisherZ()));
 //        algorithms.add(new Cpc(new FisherZ()));
 //        algorithms.add(new Mpc(new FisherZ()));
-        algorithms.add(new PcMax(new FisherZ()));
+//        algorithms.add(new PcMax(new FisherZ()));
 
         Comparison comparison = new Comparison();
 
@@ -127,12 +127,12 @@ public class PcMaxStudy {
         parameters.set(Params.DIFFERENT_GRAPHS, true);
         parameters.set(Params.MAX_DEGREE_FGES, 100);
 
-        parameters.set(Params.NUM_MEASURES, 20, 30, 50, 100, 200);
-        parameters.set(Params.AVG_DEGREE, 2, 4, 6, 8);
-        parameters.set(Params.NUM_RUNS, 5);
-        parameters.set(Params.SAMPLE_SIZE, 1000);
-        parameters.set(Params.ALPHA, 0.001, 0.01, 0.1);
-        parameters.set(Params.PENALTY_DISCOUNT, 1, 3, 5);
+        parameters.set(Params.NUM_MEASURES, /*20, 30, 50, 100, 200*/ 1000);
+        parameters.set(Params.AVG_DEGREE, 4);//2, 4, 6, 8);
+        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.SAMPLE_SIZE, 10000);
+        parameters.set(Params.ALPHA, 0.001);//, 0.01, 0.1);
+        parameters.set(Params.PENALTY_DISCOUNT, 1);//1, 3, 5);
 
         parameters.set(Params.VERBOSE, false);
 

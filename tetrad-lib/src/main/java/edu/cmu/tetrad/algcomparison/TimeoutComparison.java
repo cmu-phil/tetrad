@@ -142,7 +142,7 @@ public class TimeoutComparison {
 
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
             Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
-        generateReportFromExternalAlgorithms(dataPath, resultsPath, "cpc.txt", algorithms,
+        generateReportFromExternalAlgorithms(dataPath, resultsPath, "Comparison.txt", algorithms,
                 statistics, parameters, timeout, unit);
     }
 
@@ -191,7 +191,7 @@ public class TimeoutComparison {
 
     public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
             Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
-        compareFromSimulations(resultsPath, simulations, "cpc.txt", algorithms, statistics, parameters, timeout, unit);
+        compareFromSimulations(resultsPath, simulations, "Comparison.txt", algorithms, statistics, parameters, timeout, unit);
     }
 
     /**
