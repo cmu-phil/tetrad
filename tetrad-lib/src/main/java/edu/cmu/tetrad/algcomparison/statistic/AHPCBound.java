@@ -1,13 +1,7 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.UnshieldedTripleConfusion;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import edu.cmu.tetrad.graph.Graph;
 
 /**
  * The number of triangle true positives.

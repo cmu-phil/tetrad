@@ -327,6 +327,10 @@ public final class BayesProperties {
             }
 
             if (d > 0) dof += c - 1;
+
+            if (dof == 0) {
+                System.out.println();
+            }
         }
 
         return new Ret(lik, dof);
