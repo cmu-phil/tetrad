@@ -26,7 +26,7 @@ public class UtRandomnessStatististic implements Statistic {
 
     @Override
     public String getDescription() {
-        return "0 = completely reversed, .5 = completely random, 1 = completely correct";
+        return "0 = completely reversed, 1 = completely correct";
     }
 
     @Override

@@ -1672,8 +1672,8 @@ public class Comparison {
         int numTables = statTables.length;
         int numStats = statistics.size();
 
-        NumberFormat nf = new DecimalFormat("0.00");
-        NumberFormat smallNf = new DecimalFormat("0.00E0");
+        NumberFormat nf = new DecimalFormat("0.0000");
+        NumberFormat smallNf = new DecimalFormat("0.0000E0");
 
         out.println();
 

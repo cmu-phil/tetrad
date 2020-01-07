@@ -113,7 +113,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 //            search.setOrientationAlpha(parameters.getDouble(Params.ORIENTATION_ALPHA));
             search.setColliderDiscovery(colliderDiscovery);
             search.setConflictRule(conflictRule);
-            search.setDoMarkovLoop(parameters.getBoolean(Params.DO_MARKOV_LOOP));
+//            search.setDoMarkovLoop(parameters.getBoolean(Params.DO_MARKOV_LOOP));
 //            search.setIndependenceMethod(independence_detection_method);
 //            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
 //            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));

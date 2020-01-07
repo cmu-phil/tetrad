@@ -117,7 +117,8 @@ public class StatsListEditor extends JPanel {
         statistics.add(new TriangleRecall());
         statistics.add(new UnshieldedTriplePrecision());
         statistics.add(new UnshieldedTripleRecall());
-
+        statistics.add(new UtRandomnessStatististic());
+        statistics.add(new AHPCBound());
 
         statistics.add(new ArrowheadFP());
         statistics.add(new UnshieldedTripleFP());
@@ -126,7 +127,6 @@ public class StatsListEditor extends JPanel {
         statistics.add(new UnshieldedTripleTP());
 
         statistics.add(new UnshieldedTripleInvolvedEdges());
-        statistics.add(new AHRCBound());
 
         statistics.add(new PrintColliderFlips());
 

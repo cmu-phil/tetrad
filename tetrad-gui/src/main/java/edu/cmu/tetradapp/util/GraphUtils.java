@@ -90,10 +90,12 @@ public class GraphUtils {
                 nodes.add(new GraphNode("X" + (i + 1)));
             }
 
+            //                        graph = edu.cmu.tetrad.graph.GraphUtils.randomGraphRandomForwardEdges(nodes, newGraphNumLatents,
+
             if (graphRandomFoward) {
-                graph = edu.cmu.tetrad.graph.GraphUtils.randomGraphRandomForwardEdges(nodes, newGraphNumLatents,
-                        newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
-                        false, true);
+                graph = edu.cmu.tetrad.graph.GraphUtils.erdosRenyiDag(nodes, newGraphNumLatents,
+                                newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
+                        true);
                 edu.cmu.tetrad.graph.GraphUtils.arrangeBySourceGraph(graph, _graph);
                 HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphUtils.grabLayout(nodes);
                 edu.cmu.tetrad.graph.GraphUtils.arrangeByLayout(graph, layout);

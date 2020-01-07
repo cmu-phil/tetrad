@@ -74,15 +74,15 @@ public class AHRCBound implements Statistic {
             }
         }
 
-        int[] hist = new int[30];
-
-        for (Node node : estGraph.getNodes()) {
-            hist[estGraph.getDegree(node)]++;
-        }
+//        int[] hist = new int[30];
+//
+//        for (Node node : estGraph.getNodes()) {
+//            hist[estGraph.getDegree(node)]++;
+//        }
 
         int V = trueGraph.getNumNodes();
 
-        System.out.println("HISTOGRAM " + Arrays.toString(hist));
+//        System.out.println("HISTOGRAM " + Arrays.toString(hist));
 
         int E = 0;
 

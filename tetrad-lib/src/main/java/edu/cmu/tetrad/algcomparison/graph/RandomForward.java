@@ -1,14 +1,16 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Creates a random graph by adding forward edges.
+ * Generates a DAG where the underlying undirected graph has E edges (unless that's
+ * not possible) and places equal probability over all graphs with E edges, subject
+ * to constraints on maximum degree, maximum indegree, and maximum outdegree.
  *
  * @author jdramsey
  */
@@ -17,19 +19,34 @@ public class RandomForward implements RandomGraph {
 
     @Override
     public Graph createGraph(Parameters parameters) {
-        return GraphUtils.randomGraphRandomForwardEdges(
+//        return GraphUtils.randomGraphRandomForwardEdges(
+//                parameters.getInt("numMeasures") + parameters.getInt("numLatents"),
+//                parameters.getInt("numLatents"),
+//                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
+//                parameters.getInt("maxDegree"),
+//                parameters.getInt("maxIndegree"),
+//                parameters.getInt("maxOutdegree"),
+//                parameters.getBoolean("connected"));
+
+        return GraphUtils.erdosRenyiDag(
                 parameters.getInt("numMeasures") + parameters.getInt("numLatents"),
                 parameters.getInt("numLatents"),
                 parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
                 parameters.getInt("maxDegree"),
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
-                parameters.getBoolean("connected"));
+                true);
+
+//        return GraphUtils.erdosRenyiGibsonDag(parameters.getInt("numMeasures") + parameters.getInt("numLatents"),
+//                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2.d,
+//                true);
     }
 
     @Override
     public String getDescription() {
-        return "Graph constructed by adding random forward edges";
+//        return "Graph constructed by adding random forward edges";
+        return "Erdos-Renyi graph constructed by selecting graphs with a fixed number of edges, where these graphs " +
+                "have equal probability";
     }
 
     @Override
@@ -41,7 +58,9 @@ public class RandomForward implements RandomGraph {
         parameters.add("maxDegree");
         parameters.add("maxIndegree");
         parameters.add("maxOutdegree");
-        parameters.add("connected");
+
+        // For random forward.
+//        parameters.add("connected");
         return parameters;
     }
 }

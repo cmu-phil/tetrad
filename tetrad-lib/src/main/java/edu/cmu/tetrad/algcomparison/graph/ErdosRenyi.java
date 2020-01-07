@@ -8,16 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Creates a random graph by selecting edges from among possible edges with equal probability. (Erdos-Renyi-Gibson.)
- *
+ * Generates a DAG where the underlying undirected graph has E edges (unless that's
+ * not possible) and places equal probability over all graphs with E edges, subject
+ * to constraints on maximum degree, maximum indegree, and maximum outdegree.
  * @author jdramsey
  */
-public class ErdosRenyiGibson implements RandomGraph {
+public class ErdosRenyi implements RandomGraph {
     static final long serialVersionUID = 23L;
 
     @Override
     public Graph createGraph(Parameters parameters) {
-        return GraphUtils.erdosRenyiGibsonDag(
+        return GraphUtils.erdosRenyiDag(
                 parameters.getInt("numMeasures") + parameters.getInt("numLatents"),
                 parameters.getInt("numLatents"),
                 parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
@@ -29,14 +30,19 @@ public class ErdosRenyiGibson implements RandomGraph {
 
     @Override
     public String getDescription() {
-        return "Erdos-Renyi-Gibson graph constructed by selecting edges from among possible edges with equal probability";
+        return "Erdos-Renyi graph constructed by selecting graphs with a fixed number of edges, where these graphs " +
+                "have equal probability";
     }
 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("numMeasures");
+        parameters.add("numLatents");
         parameters.add("avgDegree");
+        parameters.add("maxDegree");
+        parameters.add("maxIndegree");
+        parameters.add("maxOutdegree");
         return parameters;
     }
 }

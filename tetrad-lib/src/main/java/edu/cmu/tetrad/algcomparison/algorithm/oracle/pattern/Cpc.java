@@ -95,11 +95,11 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
 
             OrientColliders.IndependenceDetectionMethod independence_detection_method;
 
-            if (parameters.getBoolean(Params.USE_FDR_FOR_INDEPENDENCE)) {
-                independence_detection_method = OrientColliders.IndependenceDetectionMethod.FDR;
-            } else {
-                independence_detection_method = OrientColliders.IndependenceDetectionMethod.ALPHA;
-            }
+//            if (parameters.getBoolean(Params.USE_FDR_FOR_INDEPENDENCE)) {
+////                independence_detection_method = OrientColliders.IndependenceDetectionMethod.FDR;
+////            } else {
+////                independence_detection_method = OrientColliders.IndependenceDetectionMethod.ALPHA;
+////            }
 
 //            search.setOrientationAlpha(parameters.getDouble(Params.ORIENTATION_ALPHA));
             search.setColliderDiscovery(colliderDiscovery);

@@ -18,14 +18,15 @@ public class AHPCBound implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Bound for AHPC";
+        return "Bound for AHPC assuming sparse Erdos-Renyi Gtrue";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int V = trueGraph.getNumNodes();
         int E = trueGraph.getNumEdges();
-        double a = 2 * E / (double) V;
+        double a = 2.0 * E / (double) V;
+//        double r = 1.0 - new UtRandomnessStatististic().getValue(trueGraph, estGraph, dataModel);
         return 1.0 - a / (double) (V - 1);
     }
 

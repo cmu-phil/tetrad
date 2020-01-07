@@ -23,9 +23,10 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FgesCpc;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
 import edu.cmu.tetrad.algcomparison.graph.ErdosRenyiGibson;
-import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -37,7 +38,10 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -115,7 +119,7 @@ public class PcMaxStudy {
         Parameters parameters = new Parameters();
 
         parameters.set(Params.COEF_LOW, 0);
-        parameters.set(Params.COEF_HIGH, .7);
+        parameters.set(Params.COEF_HIGH, .8);
         parameters.set(Params.VAR_LOW, .5);
         parameters.set(Params.VAR_HIGH, .9);
 
@@ -127,12 +131,12 @@ public class PcMaxStudy {
         parameters.set(Params.DIFFERENT_GRAPHS, true);
         parameters.set(Params.MAX_DEGREE_FGES, 100);
 
-        parameters.set(Params.NUM_MEASURES, /*20, 30, 50, 100, 200*/ 1000);
-        parameters.set(Params.AVG_DEGREE, 4);//2, 4, 6, 8);
-        parameters.set(Params.NUM_RUNS, 1);
-        parameters.set(Params.SAMPLE_SIZE, 10000);
+        parameters.set(Params.NUM_MEASURES, /*20, 30, 50, 100, 200*/ 20);
+        parameters.set(Params.AVG_DEGREE, 6);//2, 4, 6, 8);
+        parameters.set(Params.NUM_RUNS, 20);
+        parameters.set(Params.SAMPLE_SIZE, 200);
         parameters.set(Params.ALPHA, 0.001);//, 0.01, 0.1);
-        parameters.set(Params.PENALTY_DISCOUNT, 1);//1, 3, 5);
+        parameters.set(Params.PENALTY_DISCOUNT, 10);
 
         parameters.set(Params.VERBOSE, false);
 

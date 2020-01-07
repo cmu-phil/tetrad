@@ -407,26 +407,118 @@ public final class GraphUtils {
         return dag;
     }
 
-    public static Graph erdosRenyiGibsonDag(int numNodes,
-                                            double expectedNumEdges,
-                                            boolean layoutAsCircle) {
-
+    public static Graph erdosRenyiDag(int numNodes, int numLatentConfounders,
+                                      int numEdges, int maxDegree,
+                                      int maxIndegree, int maxOutdegree,
+                                      boolean layoutAsCircle) {
         List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
             nodes.add(new GraphNode("X" + (i + 1)));
         }
 
+        return erdosRenyiDag(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree,
+                maxOutdegree, layoutAsCircle);
+    }
+
+    /**
+     * Generates a DAG where the underlying undirected graph has E edges (unless that's
+     * not possible) and places equal probability over all graphs with E edges, subject
+     * to constraints on maximum degree, maximum indegree, and maximum outdegree.
+     */
+    public static Graph erdosRenyiDag(List<Node> nodes, int numLatentConfounders,
+                                      int numEdges, int maxDegree,
+                                      int maxIndegree, int maxOutdegree,
+                                      boolean layoutAsCircle) {
+
+        LinkedList<NodePair> allEdges = new LinkedList<>();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                allEdges.add(new NodePair(nodes.get(i), nodes.get(j)));
+            }
+        }
+
+        Graph dag = new EdgeListGraph(nodes);
+
+        Collections.shuffle(allEdges);
+
+        while (dag.getNumEdges() < numEdges) {
+            NodePair edge = allEdges.removeLast();
+
+            Node x = edge.getFirst();
+            Node y = edge.getSecond();
+
+            if (maxDegree != -1 && dag.getDegree(x) >= maxDegree) continue;
+            if (maxDegree != -1 && dag.getDegree(y) >= maxDegree) continue;
+
+            if (nodes.indexOf(x) < nodes.indexOf(y)) {
+                if (maxIndegree != -1 && dag.getIndegree(y) >= maxIndegree) continue;
+                if (maxOutdegree != -1 && dag.getOutdegree(x) >= maxOutdegree) continue;
+
+                dag.addDirectedEdge(x, y);
+            } else {
+                if (maxIndegree != -1 && dag.getIndegree(x) >= maxIndegree) continue;
+                if (maxOutdegree != -1 && dag.getOutdegree(y) >= maxOutdegree) continue;
+
+                dag.addDirectedEdge(y, x);
+            }
+        }
+
+        fixLatents4(numLatentConfounders, dag);
+
+        if (layoutAsCircle) {
+            GraphUtils.circleLayout(dag, 200, 200, 150);
+        }
+
+        return dag;
+    }
+
+    public static Graph erdosRenyiGibsonDag(int numNodes, int numLatentConfounders,
+                                      int expectedNnumEdges, int maxDegree,
+                                      int maxIndegree, int maxOutdegree,
+                                      boolean layoutAsCircle) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        return erdosRenyiGibsonDag(nodes, numLatentConfounders, expectedNnumEdges, maxDegree, maxIndegree,
+                maxOutdegree, layoutAsCircle);
+    }
+
+    public static Graph erdosRenyiGibsonDag(List<Node> nodes, int numLatentConfounders,
+                                            int expectedNumEdges, int maxDegree,
+                                            int maxIndegree, int maxOutdegree,
+                                            boolean layoutAsCircle) {
+
+        int numNodes = nodes.size();
+
         Graph dag = new EdgeListGraph(nodes);
         double p = (2 * expectedNumEdges) / (double) (numNodes * (numNodes - 1));
 
+        LOOP:
         for (int i = 0; i < numNodes; i++) {
             for (int j = i + 1; j < numNodes; j++) {
+//                if (dag.getNumEdges() > numEdges) break LOOP;
+
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (maxDegree != -1 && dag.getDegree(x) >= maxDegree) continue;
+                if (maxDegree != -1 && dag.getDegree(y) >= maxDegree) continue;
+
+                if (maxIndegree != -1 && dag.getIndegree(y) >= maxIndegree) continue;
+                if (maxOutdegree != -1 && dag.getOutdegree(x) >= maxOutdegree) continue;
+
                 if (RandomUtil.getInstance().nextDouble() < p) {
                     dag.addDirectedEdge(nodes.get(i), nodes.get(j));
                 }
             }
         }
+
+        fixLatents4(numLatentConfounders, dag);
 
         if (layoutAsCircle) {
             GraphUtils.circleLayout(dag, 200, 200, 150);
