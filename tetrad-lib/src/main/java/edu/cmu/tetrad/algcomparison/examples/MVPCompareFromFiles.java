@@ -45,7 +45,7 @@ import edu.cmu.tetrad.util.Parameters;
  *
  * @author jdramsey
  */
-public class CompareFromFiles {
+public class MVPCompareFromFiles {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 

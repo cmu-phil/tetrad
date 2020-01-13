@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author jdramsey
@@ -30,19 +31,20 @@ public class LoadDataAndGraphs implements Simulation {
     private List<String> usedParameters = new ArrayList<>();
     private String description = "";
 
-    private transient PrintStream stdout;
+    private transient PrintStream stdout = System.out;
 
     public LoadDataAndGraphs(String path) {
         this.path = path;
-        this.stdout = stdout;
     }
 
     @Override
     public void createData(Parameters parameters) {
         this.dataSets = new ArrayList<>();
 
-        if (new File(path + "/data").exists()) {
-            int numDataSets = new File(path + "/data").listFiles().length;
+        File path = new File(this.path);
+
+        if (path.exists()) {
+            int numDataSets = Objects.requireNonNull(new File(path, "/data").listFiles()).length;
 
             try {
                 for (int i = 0; i < numDataSets; i++) {
