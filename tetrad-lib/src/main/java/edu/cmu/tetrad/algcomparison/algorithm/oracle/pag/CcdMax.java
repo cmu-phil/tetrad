@@ -12,6 +12,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -37,7 +38,7 @@ public class CcdMax implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             IndependenceTest test = this.test.getTest(dataSet, parameters);
             edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
             search.setDoColliderOrientations(parameters.getBoolean(Params.DO_COLLIDER_ORIENTATION));
@@ -48,16 +49,16 @@ public class CcdMax implements Algorithm, HasKnowledge {
             search.setApplyOrientAwayFromCollider(parameters.getBoolean(Params.APPLY_R1));
             search.setUseOrientTowardDConnections(parameters.getBoolean(Params.ORIENT_TOWARD_DCONNECTIONS));
             return search.search();
-    	}else{
-    		CcdMax algorithm = new CcdMax(test);
-    		
-    		DataSet data = (DataSet) dataSet;
-    		GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+        } else {
+            CcdMax algorithm = new CcdMax(test);
+
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
-    		
+
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -69,13 +70,13 @@ public class CcdMax implements Algorithm, HasKnowledge {
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
-    		search.setEdgeEnsemble(edgeEnsemble);
-    		search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-    		
-    		search.setParameters(parameters);    		
-    		search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-    		return search.search();
-    	}
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            return search.search();
+        }
     }
 
     @Override
@@ -95,7 +96,10 @@ public class CcdMax implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
+        List<String> parameters = new LinkedList<>();
+        if (test != null) {
+            parameters.addAll(test.getParameters());
+        }
         parameters.add(Params.DEPTH);
         parameters.add(Params.ORIENT_VISIBLE_FEEDBACK_LOOPS);
         parameters.add(Params.DO_COLLIDER_ORIENTATION);
