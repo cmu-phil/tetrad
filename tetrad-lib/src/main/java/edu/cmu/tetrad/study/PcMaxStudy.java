@@ -131,10 +131,10 @@ public class PcMaxStudy {
         parameters.set(Params.DIFFERENT_GRAPHS, true);
         parameters.set(Params.MAX_DEGREE_FGES, 100);
 
-        parameters.set(Params.NUM_MEASURES, /*20, 30, 50, 100, 200*/ 20);
+        parameters.set(Params.NUM_MEASURES, /*20, 30, 50, 100, 200*/ 10);
         parameters.set(Params.AVG_DEGREE, 6);//2, 4, 6, 8);
         parameters.set(Params.NUM_RUNS, 20);
-        parameters.set(Params.SAMPLE_SIZE, 200);
+        parameters.set(Params.SAMPLE_SIZE, 10000);
         parameters.set(Params.ALPHA, 0.001);//, 0.01, 0.1);
         parameters.set(Params.PENALTY_DISCOUNT, 10);
 
