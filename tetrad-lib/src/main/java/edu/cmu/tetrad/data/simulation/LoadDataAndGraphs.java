@@ -30,6 +30,8 @@ public class LoadDataAndGraphs implements Simulation {
     private List<String> usedParameters = new ArrayList<>();
     private String description = "";
 
+    private transient PrintStream stdout = System.out;
+
     public LoadDataAndGraphs(String path) {
         this.path = path;
     }
@@ -40,31 +42,24 @@ public class LoadDataAndGraphs implements Simulation {
 
         File path = new File(this.path);
 
-        System.out.println(path);
-
         if (path.exists()) {
-            int numDataSets = new File(this.path + "/data").listFiles().length;
+            int numDataSets = new File(path, "/data").listFiles().length;
 
             try {
                 for (int i = 0; i < numDataSets; i++) {
-                    File file = new File(this.path + "/graph/graph." + (i + 1) + ".txt");
                     try {
-                        System.out.println("Loading graph from " + file.getAbsolutePath());
-                        this.graphs.add(GraphUtils.loadGraphTxt(file));
+                        File file2 = new File(path + "/graph/graph." + (i + 1) + ".txt");
+                        stdout.println("Loading graph from " + file2.getAbsolutePath());
+                        this.graphs.add(GraphUtils.loadGraphTxt(file2));
                     } catch (Exception e) {
-                        e.printStackTrace();
-                        throw new NullPointerException("Graph must not null, at " + file.getAbsolutePath());
+                        this.graphs.add(null);
                     }
 
                     GraphUtils.circleLayout(this.graphs.get(i), 225, 200, 150);
 
-                    File file1 = new File(this.path + "/data/data." + (i + 1) + ".txt");
+                    File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 
-                    String absolutePath = file1.getAbsolutePath();
-
-                    System.out.println(absolutePath);
-
-                    System.out.println("Loading data from " + absolutePath);
+                    stdout.println("Loading data from " + file1.getAbsolutePath());
 
                     DataReader dataReader = new DataReader();
                     dataReader.setVariablesSupplied(true);
@@ -90,7 +85,7 @@ public class LoadDataAndGraphs implements Simulation {
                     dataSets.add(ds);
                 }
 
-                File file = new File(this.path, "parameters.txt");
+                File file = new File(path, "parameters.txt");
                 BufferedReader r = new BufferedReader(new FileReader(file));
 
                 String line;
@@ -201,4 +196,9 @@ public class LoadDataAndGraphs implements Simulation {
 
         return DataType.Mixed;
     }
+
+    public void setStdout(PrintStream stdout) {
+        this.stdout = stdout;
+    }
+
 }
