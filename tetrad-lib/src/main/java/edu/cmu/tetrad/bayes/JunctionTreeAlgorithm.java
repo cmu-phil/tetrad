@@ -35,10 +35,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Junction Tree Algorithm.
+ *
+ * This implementation follows the Weka's implementation.
  *
  * Nov 8, 2019 2:22:34 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @see
+ * <a href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
  */
 public class JunctionTreeAlgorithm {
 
@@ -84,6 +89,11 @@ public class JunctionTreeAlgorithm {
         }
     }
 
+    /**
+     * Create the junction tree.
+     *
+     * @return the root of the junction tree
+     */
     private TreeNode buildJunctionTree() {
         // moralize dag
         Graph undirectedGraph = GraphTools.moralize(bayesIm.getDag());
