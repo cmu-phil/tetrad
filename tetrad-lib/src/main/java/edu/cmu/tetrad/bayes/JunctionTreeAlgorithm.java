@@ -20,8 +20,9 @@ package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import java.util.Arrays;
@@ -169,13 +170,17 @@ public class JunctionTreeAlgorithm {
     }
 
     private BayesPm createBayesPm(DataModel dataModel, Graph graph) {
-        BayesPm myBayesPm = new BayesPm(new Dag(graph));
+        Dag dag = new Dag(dataModel.getVariables());
+        (new Dag(graph)).getEdges().forEach(edge -> {
+            Node node1 = dag.getNode(edge.getNode1().getName());
+            Node node2 = dag.getNode(edge.getNode2().getName());
+            Endpoint endpoint1 = edge.getEndpoint1();
+            Endpoint endpoint2 = edge.getEndpoint2();
 
-        dataModel.getVariables().stream()
-                .map(e -> (DiscreteVariable) e)
-                .forEach(var -> myBayesPm.setCategories(var, var.getCategories()));
+            dag.addEdge(new Edge(node1, node2, endpoint1, endpoint2));
+        });
 
-        return myBayesPm;
+        return new BayesPm(dag);
     }
 
     private BayesIm createBayesIm(DataModel dataModel, BayesPm bayesPm) {
