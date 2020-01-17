@@ -338,21 +338,21 @@ public class JunctionTreeAlgorithm {
 
         if (isValid(iNode, value) && isValid(parents, parentValues)) {
             if (parents == null || parents.length == 0) {
-                return getMarginalProbability(iNode, value);
-            }
-
-            try {
-                for (int i = 0; i < parents.length; i++) {
-                    setEvidence(parents[i], parentValues[i]);
+                margCondProb = margins[iNode][value];
+            } else {
+                try {
+                    for (int i = 0; i < parents.length; i++) {
+                        setEvidence(parents[i], parentValues[i]);
+                    }
+                } catch (Exception exception) {
+                    exception.printStackTrace(System.err);
                 }
-            } catch (Exception exception) {
-                exception.printStackTrace(System.err);
+
+                margCondProb = margins[iNode][value];
+
+                // reset
+                initialize();
             }
-
-            margCondProb = margins[iNode][value];
-
-            // reset
-            initialize();
         }
 
         return margCondProb;
@@ -564,7 +564,7 @@ public class JunctionTreeAlgorithm {
 
         /**
          * Calculate marginal probabilities for the individual nodes in the
-         * clique. Store results in m_MarginalP
+         * clique.
          */
         private void calculateMarginalProbabilities() {
             // reset
