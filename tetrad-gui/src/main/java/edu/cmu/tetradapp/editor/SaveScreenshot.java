@@ -36,7 +36,7 @@ import java.io.IOException;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class SaveScreenshot extends AbstractAction {
+public class SaveScreenshot extends AbstractAction {
 
     /**
      * The component whose image is to be saved.

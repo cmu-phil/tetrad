@@ -31,8 +31,11 @@ import edu.cmu.tetrad.graph.Node;
  *
  * @author Joseph Ramsey
  */
-public final class DirichletEstimator {
-    public static DirichletBayesIm estimate(DirichletBayesIm prior,
+public final class DirichletEstimator implements BayesEstimator {
+
+	private static final long serialVersionUID = 1L;
+
+	public static DirichletBayesIm estimate(DirichletBayesIm prior,
                                             DataSet dataSet) {
         if (prior == null) {
             throw new NullPointerException();

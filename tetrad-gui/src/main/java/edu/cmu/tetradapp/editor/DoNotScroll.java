@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 /**
  * Tags elements that should not scroll.
  */
-interface DoNotScroll {
+public interface DoNotScroll {
 }
 
 

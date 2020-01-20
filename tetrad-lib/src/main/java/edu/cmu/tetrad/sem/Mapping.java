@@ -145,7 +145,7 @@ public class Mapping implements TetradSerializable {
     }
 
     /**
-     * @return the paramter that this mapping maps.
+     * @return the parameter that this mapping maps.
      */
     public Parameter getParameter() {
         return this.parameter;

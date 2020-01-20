@@ -34,7 +34,7 @@ import java.util.EventObject;
  *
  * @author Joseph Ramsey
  */
-class DataCellEditor extends DefaultCellEditor {
+public class DataCellEditor extends DefaultCellEditor {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final JTextField textField;
 

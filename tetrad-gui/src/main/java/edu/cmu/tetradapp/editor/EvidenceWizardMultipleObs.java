@@ -48,7 +48,7 @@ import java.util.List;
  * @author William Taysom -- Jun 14, 2003
  * @author Joseph Ramsey
  */
-class EvidenceWizardMultipleObs extends JPanel {
+public class EvidenceWizardMultipleObs extends JPanel {
     private UpdaterWrapper updaterWrapper;
     private GraphWorkbench workbench;
     private final EvidenceEditorObs evidenceEditor;

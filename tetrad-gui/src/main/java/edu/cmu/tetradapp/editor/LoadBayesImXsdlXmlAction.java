@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.XdslXmlParser;
+import edu.cmu.tetradapp.editor.bayes.BayesImEditor;
 import edu.cmu.tetradapp.model.BayesImWrapper;
 import nu.xom.Builder;
 import nu.xom.Document;
@@ -37,7 +38,7 @@ import java.io.IOException;
 import java.util.prefs.Preferences;
 
 
-class LoadBayesImXsdlXmlAction extends AbstractAction {
+public class LoadBayesImXsdlXmlAction extends AbstractAction {
     private BayesImWrapper bayesImWrapper;
     private BayesImEditor bayesImEditor;
 

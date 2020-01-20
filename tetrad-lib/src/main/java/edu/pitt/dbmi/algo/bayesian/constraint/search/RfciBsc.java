@@ -66,6 +66,8 @@ public class RfciBsc implements GraphSearch {
 
 	private List<Graph> pAGs = Collections.synchronizedList(new ArrayList<>());
 
+	private List<Graph> bsPAGs = Collections.synchronizedList(new ArrayList<>());
+
 	private int numRandomizedSearchModels = 10;
 
 	private int numBscBootstrapSamples = 100;
@@ -252,14 +254,15 @@ public class RfciBsc implements GraphSearch {
 				}
 				return true;
 			}
-			
+
 		}
 		
 		tasks.clear();
 		
 		final int rows = dataSet.getNumRows();
 		for (int b = 0; b < numBscBootstrapSamples; b++) {
-			tasks.add(new BootstrapDepDataTask(b,rows));
+			BootstrapDepDataTask task = new BootstrapDepDataTask(b,rows);
+			tasks.add(task);
 		}
 
 		ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
@@ -274,7 +277,7 @@ public class RfciBsc implements GraphSearch {
         }
 
         shutdownAndAwaitTermination(pool);
-
+        
 		// learn structure of constraints using empirical data => constraint data
 		BDeuScore sd = new BDeuScore(depData);
 		sd.setSamplePrior(1.0);
@@ -409,10 +412,56 @@ public class RfciBsc implements GraphSearch {
 		if (!outputRBD) {
 			output = graphRBI;
 		}
+		
+		// calculate bootstrapping RFCI
+		/*class BootstrapPagSearchTask implements Callable<Boolean> {
+			
+			private final IndTestProbabilistic test;
+			private final Rfci rfci;
+			
+			public BootstrapPagSearchTask(DataSet bsData) {
+				this.test = new IndTestProbabilistic(bsData);
+				this.test.setThreshold(thresholdNoRandomDataSearch);
+				if(thresholdNoRandomDataSearch) {
+					this.test.setCutoff(cutoffDataSearch);
+				}
+				
+				this.rfci = new Rfci(test);
+			}
+			
+			@Override
+			public Boolean call() throws Exception {
+				Graph pag = this.rfci.search();
+				pag = GraphUtils.replaceNodes(pag, this.test.getVariables());
+				bsPAGs.add(pag);
+				return true;
+			}
+
+		}
+
+        bsPAGs.clear();
+        tasks.clear();
+        
+        for (int b = 0; b < numRandomizedSearchModels; b++) {
+        	DataSet bsData = DataUtils.getBootstrapSample(dataSet, rows);
+        	BootstrapPagSearchTask task = new BootstrapPagSearchTask(bsData);
+        	tasks.add(task);
+        }
+        
+        pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
+
+        try {
+            pool.invokeAll(tasks);
+        } catch (InterruptedException exception) {
+        	if(verbose) {
+                logger.log("error","Task has been interrupted");
+        	}
+            Thread.currentThread().interrupt();
+        }
+
+        shutdownAndAwaitTermination(pool);*/
 
 		return generateBootstrappingAttributes(output);
-		
-		
 	}
 	
 	private Graph generateBootstrappingAttributes(Graph graph) {

@@ -45,7 +45,7 @@ import java.util.List;
  */
 public class BayesEstimatorWrapper implements SessionModel {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Cannot be null.

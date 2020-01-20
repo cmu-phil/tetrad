@@ -35,7 +35,7 @@ import java.text.NumberFormat;
  * @author Joseph Ramsey
  * @see NumberCellEditor
  */
-class NumberCellRenderer extends DefaultTableCellRenderer {
+public class NumberCellRenderer extends DefaultTableCellRenderer {
     private NumberFormat nf;
     private String emptyString = "";
 

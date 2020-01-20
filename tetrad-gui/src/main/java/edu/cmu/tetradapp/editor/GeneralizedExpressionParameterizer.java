@@ -42,7 +42,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-class GeneralizedExpressionParameterizer extends JComponent {
+public class GeneralizedExpressionParameterizer extends JComponent {
     private Node node;
     private GeneralizedSemPm semPm;
 

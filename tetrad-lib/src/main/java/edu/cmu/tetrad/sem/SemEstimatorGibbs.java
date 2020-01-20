@@ -32,7 +32,7 @@ import java.text.NumberFormat;
 import java.util.List;
 
 /**
- * Implements the Gibbs sampler apporach to obtain samples of arbitrary size
+ * Implements the Gibbs sampler approach to obtain samples of arbitrary size
  * from the posterior distribution over the freeParameters of a SEM given a
  * continuous dataset and a SemPm. Point estimates, standard deviations and
  * interval estimates for the freeParameters can be computed from these samples. See

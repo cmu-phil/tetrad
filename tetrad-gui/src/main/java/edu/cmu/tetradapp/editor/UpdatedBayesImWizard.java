@@ -27,6 +27,7 @@ import edu.cmu.tetrad.bayes.Evidence;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetradapp.editor.bayes.BayesImEditorWizard;
 import edu.cmu.tetradapp.model.UpdaterWrapper;
 import edu.cmu.tetradapp.util.SortingComboBox;
 import edu.cmu.tetradapp.util.WatchedProcess;

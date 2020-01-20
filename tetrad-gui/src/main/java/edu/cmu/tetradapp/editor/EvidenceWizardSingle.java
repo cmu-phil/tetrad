@@ -41,7 +41,7 @@ import java.awt.event.ActionListener;
  * @author William Taysom -- Jun 14, 2003
  * @author Joseph Ramsey
  */
-class EvidenceWizardSingle extends JPanel {
+public class EvidenceWizardSingle extends JPanel {
     private UpdaterWrapper updaterWrapper;
     private GraphWorkbench workbench;
     private final EvidenceEditor evidenceEditor;

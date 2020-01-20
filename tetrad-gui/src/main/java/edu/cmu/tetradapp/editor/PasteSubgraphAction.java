@@ -39,7 +39,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
+public class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
     /**
      * The desktop containing the target session editor.
      */

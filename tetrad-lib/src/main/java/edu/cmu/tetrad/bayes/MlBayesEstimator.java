@@ -32,8 +32,11 @@ import java.util.List;
  *
  * @author Shane Harwood, Joseph Ramsey
  */
-public final class MlBayesEstimator {
-    private DataSet reorderedDataSetDiscrete;
+public final class MlBayesEstimator implements BayesEstimator {
+
+	private static final long serialVersionUID = 1L;
+
+	private DataSet reorderedDataSetDiscrete;
 
     /**
      * 33 Estimates a Bayes IM using the variables, graph, and parameters in the

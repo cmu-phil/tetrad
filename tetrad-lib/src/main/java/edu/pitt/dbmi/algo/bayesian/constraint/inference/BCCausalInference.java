@@ -71,7 +71,7 @@ public class BCCausalInference {
      * given the data in cases and assumed prior probability for that constraint
      * given the data in cases and assumed prior probabilities. Currently, it
      * assumes uniform parameter priors and a structure prior of 0.5. A
-     * structure prior of 0.5 means taht a priori we have that P(X independent Y
+     * structure prior of 0.5 means that a priori we have that P(X independent Y
      * given Z) = P(X dependent Y given Z) = 0.5.
      * <p/>
      * Z[0] is the length of the set represented by array Z. For an example,

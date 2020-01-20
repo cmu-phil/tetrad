@@ -42,8 +42,11 @@ import java.util.List;
  * @author Frank Wimberly based on related classes by Shane Harwood, Joseph
  *         Ramsey
  */
-public final class EmBayesEstimator {
-    private BayesPm bayesPm;
+public final class EmBayesEstimator implements BayesEstimator{
+
+	private static final long serialVersionUID = 1L;
+
+	private BayesPm bayesPm;
 
     private DataSet dataSet;
     //private DataSet ddsNm;

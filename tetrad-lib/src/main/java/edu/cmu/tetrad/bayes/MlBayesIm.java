@@ -76,7 +76,7 @@ public final class MlBayesIm implements BayesIm {
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
 
     /**
-     * Inidicates that new rows in this BayesIm should be initialized as
+     * Indicates that new rows in this BayesIm should be initialized as
      * unknowns, forcing them to be specified manually. This is the default.
      */
     public static final int MANUAL = 0;

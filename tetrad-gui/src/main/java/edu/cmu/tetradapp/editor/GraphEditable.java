@@ -45,7 +45,7 @@ public interface GraphEditable {
      * @return the selected components (display nodes and display edges) in the
      * editor.
      */
-    List getSelectedModelComponents();
+    List<?> getSelectedModelComponents();
 
     /**
      * Pastes a list of components (display nodes and display edges) into the
@@ -53,7 +53,7 @@ public interface GraphEditable {
      * @param sessionElements The session elements.
      * @param upperLeft the upper left point of the paste area.
      */
-    void pasteSubsession(List sessionElements, Point upperLeft);
+    void pasteSubsession(List<?> sessionElements, Point upperLeft);
 
     /**
      * @return the graph workbench.
