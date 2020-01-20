@@ -1,0 +1,7 @@
+Graph Nodes:
+V1;V2;V3
+
+Graph Edges:
+1. V2 --> V1
+2. V2 --> V3
+
