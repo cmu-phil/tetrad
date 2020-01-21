@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.TetradSerializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,7 +47,9 @@ import java.util.stream.Collectors;
  * @see
  * <a href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
  */
-public class JunctionTreeAlgorithm {
+public class JunctionTreeAlgorithm implements TetradSerializable {
+
+    static final long serialVersionUID = 23L;
 
     private static final double[] NO_PROBABILITIES = new double[0];
     private static final double NO_PROBABILITY = -1.0;
@@ -67,6 +70,20 @@ public class JunctionTreeAlgorithm {
         this.treeNodes = new HashMap<>();
 
         int numOfNodes = graph.getNumNodes();
+        this.graphNodes = bayesIm.getDag().getNodes().toArray(new Node[numOfNodes]);
+        this.margins = new double[numOfNodes][];
+        this.maxCardOrdering = new Node[numOfNodes];
+        this.root = buildJunctionTree();
+
+        initialize();
+    }
+
+    public JunctionTreeAlgorithm(BayesIm bayesIm) {
+        this.bayesPm = bayesIm.getBayesPm();
+        this.bayesIm = bayesIm;
+        this.treeNodes = new HashMap<>();
+
+        int numOfNodes = bayesPm.getDag().getNumNodes();
         this.graphNodes = bayesIm.getDag().getNodes().toArray(new Node[numOfNodes]);
         this.margins = new double[numOfNodes][];
         this.maxCardOrdering = new Node[numOfNodes];
@@ -388,7 +405,9 @@ public class JunctionTreeAlgorithm {
         return root.toString().trim();
     }
 
-    private class TreeSeparator {
+    private class TreeSeparator implements TetradSerializable {
+
+        static final long serialVersionUID = 23L;
 
         private final double[] parentPotentials;
         private final double[] childPotentials;
@@ -444,7 +463,9 @@ public class JunctionTreeAlgorithm {
 
     }
 
-    private class TreeNode {
+    private class TreeNode implements TetradSerializable {
+
+        static final long serialVersionUID = 23L;
 
         /**
          * Distribution over this junction node according to its potentials.
