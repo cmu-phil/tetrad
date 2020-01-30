@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.study;
 
+import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecision;
+import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecisionCommonEdges;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
@@ -14,7 +16,7 @@ import java.util.*;
 public class CalibrationQuestion {
 
     public static void main(String... args) {
-        scenario6();
+        scenario5();
     }
 
     private static void scenario1() {
@@ -320,8 +322,8 @@ public class CalibrationQuestion {
         int total = 0;
         int sampleSize = 1000;
         int numRuns = 1;
-        int numVars = 11;
-        double avgDegree = 2 * 25 / (double) (11);
+        int numVars = 100;
+        double avgDegree = 4;//2 * 25 / (double) (11);
         double numEdges = avgDegree * numVars / 2;
         double p = avgDegree / (double) (numVars - 1);
 
@@ -355,8 +357,8 @@ public class CalibrationQuestion {
             SemPm pm = new SemPm(gt);
 
             Parameters parameters = new Parameters();
-            parameters.set("coefLow", 0.1);
-            parameters.set("coefHigh", 0.5);
+            parameters.set("coefLow", 0.);
+            parameters.set("coefHigh", 0.7);
 
             SemIm im = new SemIm(pm);
 
@@ -372,7 +374,8 @@ public class CalibrationQuestion {
             int[] choice;
             int t = 0;
 
-            Set<Node> visited = new HashSet<>();
+            Set<Edge> L = new HashSet<>();
+            Set<Edge> M = new HashSet<>();
 
             while ((choice = gen.next()) != null) {
                 List<Node> v = GraphUtils.asList(choice, nodes);
@@ -382,7 +385,14 @@ public class CalibrationQuestion {
                 Node v3 = v.get(2);
 
                 if (ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && !ge.isAdjacentTo(v1, v3)) {
-                    if (visited.contains(v1) && visited.contains(v3)) continue;
+                    M.add(Edges.undirectedEdge(v1, v2));
+
+                    for (Node w : ge.getAdjacentNodes(v1)) {
+                        if (ge.isAdjacentTo(w, v2)) {
+                            L.add(Edges.undirectedEdge(w, v1));
+                            L.add(Edges.undirectedEdge(w, v2));
+                        }
+                    }
 
                     if (gt.isAdjacentTo(v1, v3)) {
                         c++;
@@ -390,16 +400,40 @@ public class CalibrationQuestion {
 
                     total++;
 
-                    visited.add(v1);
-                    visited.add(v3);
-
                     System.out.println("Triple " + ++t + " p = " + p + " c = " + c + " total = " + total + " Q = " + (c / (double) total));
 
                 }
             }
-        }
 
-        System.out.println("p = " + p + " q = " + (c / (double) total));
+            int P = 0;
+
+            for (Edge e : ge.getEdges()) {
+                if (Edges.isDirectedEdge(e)) P++;
+            }
+
+            System.out.println("L = " + L.size() + " M = " + M.size() + " P = " + P);
+            double alpha = L.size() / (double) M.size();
+            double beta = M.size() / (double) P;
+            double gamma = L.size() / (double) P;
+            double r = 0.3;
+
+            System.out.println("alpha = " + alpha);
+            System.out.println("beta = " + beta);
+            System.out.println("gamma = " + gamma);
+            System.out.println("r = " + r);
+
+            System.out.println("1 - alpha * beta * r = " + (1 - alpha * beta * r));
+            System.out.println("1 - gamma * r = " + (1 - gamma * r));
+            System.out.println("1 - p = " + (1 - p));
+
+            System.out.println("p = " + p + " q = " + (c / (double) total));
+
+            ArrowheadPrecision ahp = new ArrowheadPrecision();
+            ArrowheadPrecisionCommonEdges ahpc = new ArrowheadPrecisionCommonEdges();
+
+            System.out.println("AHP = " + ahp.getValue(gt, ge, data));
+            System.out.println("AHPC = " + ahpc.getValue(gt, ge, data));
+        }
     }
 
     private static void scenario6() {
