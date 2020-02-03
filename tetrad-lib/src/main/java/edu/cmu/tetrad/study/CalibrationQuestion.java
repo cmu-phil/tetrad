@@ -1,16 +1,22 @@
 package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecision;
-import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecisionCommonEdges;
+import edu.cmu.tetrad.algcomparison.statistic.UtRStatistic;
+import edu.cmu.tetrad.algcomparison.statistic.UtRandomnessStatististic;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.IndTestFisherZ;
+import edu.cmu.tetrad.search.OrientColliders;
+import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 
 public class CalibrationQuestion {
@@ -318,121 +324,177 @@ public class CalibrationQuestion {
     // Make GT, simulate data, run FGES, yielding GE. Then find a nonredundant set of possible false negative shields ~XZ
     // touching all UTFP legs in GE and count for how many of these XZt is in GT.
     private static void scenario5() {
-        int c = 0;
-        int total = 0;
         int sampleSize = 1000;
-        int numRuns = 1;
-        int numVars = 100;
-        double avgDegree = 4;//2 * 25 / (double) (11);
-        double numEdges = avgDegree * numVars / 2;
-        double p = avgDegree / (double) (numVars - 1);
+        int[] numVars = new int[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+        int[] avgDegree = new int[]{2, 4, 6, 8};
 
-        System.out.println("p = " + p + " avgDegree = " + avgDegree);
+        double sumr = 0.0;
+        double count = 0;
 
-        for (int i = 0; i < numRuns; i++) {
-            Node x = new ContinuousVariable("X");
-            Node y = new ContinuousVariable("Y");
-            Node z = new ContinuousVariable("Z");
+        NumberFormat nf = new DecimalFormat("0.00");
 
-            List<Node> nodes = new ArrayList<>();
-            nodes.add(x);
-            nodes.add(y);
-            nodes.add(z);
+        for (int _numVars : numVars) {
+            for (int _avgDegree : avgDegree) {
 
-            for (int n = 3; n <= numVars; n++) {
-                nodes.add(new ContinuousVariable("V" + n));
-            }
+                double numEdges = (double) _avgDegree * _numVars / 2.;
+                double p = _avgDegree / (double) (_numVars - 1);
 
-            Graph gt = GraphUtils.randomGraph(nodes, 0, (int) numEdges, 100, 100, 100, false);
+//                System.out.println("\nProblem: numVars = " + _numVars + " avgDegree = " + _avgDegree + " p = " + nf.format(p) + "\n");
 
-//            if (!gt.isAdjacentTo(x, y)) gt.addDirectedEdge(x, y);
-//            if (!gt.isAdjacentTo(y, z)) gt.addDirectedEdge(y, z);
-//            if (!gt.isAdjacentTo(x, z)) gt.addDirectedEdge(x, z);
+                Node x = new ContinuousVariable("X");
+                Node y = new ContinuousVariable("Y");
+                Node z = new ContinuousVariable("Z");
 
-//            gt.removeEdge(x, z);
+                List<Node> nodes = new ArrayList<>();
+                nodes.add(x);
+                nodes.add(y);
+                nodes.add(z);
 
+                for (int n = 3; n <= _numVars; n++) {
+                    nodes.add(new ContinuousVariable("V" + n));
+                }
 
-//            if (gt.isAdjacentTo(x, y) && gt.isAdjacentTo(y, z)) {
+                Graph gt = GraphUtils.randomGraph(nodes, 0, (int) numEdges, 100, 100, 100, false);
 
-            SemPm pm = new SemPm(gt);
+                SemPm pm = new SemPm(gt);
 
-            Parameters parameters = new Parameters();
-            parameters.set("coefLow", 0.);
-            parameters.set("coefHigh", 0.7);
+                Parameters parameters = new Parameters();
+                parameters.set("coefLow", 0.);
+                parameters.set("coefHigh", 0.7);
 
-            SemIm im = new SemIm(pm);
+                SemIm im = new SemIm(pm);
 
-            DataSet data = im.simulateData(sampleSize, false);
+                DataSet data = im.simulateData(sampleSize, false);
 
-            edu.cmu.tetrad.search.Fges s = new edu.cmu.tetrad.search.Fges(new edu.cmu.tetrad.search.SemBicScore(data));
-//            edu.cmu.tetrad.search.PcStable s = new edu.cmu.tetrad.search.PcStable(new edu.cmu.tetrad.search.IndTestFisherZ(data, 0.01));
+//                edu.cmu.tetrad.search.Fges s = new edu.cmu.tetrad.search.Fges(new edu.cmu.tetrad.search.SemBicScore(data));
+//                edu.cmu.tetrad.search.PcStableMax s = new edu.cmu.tetrad.search.PcStableMax(new edu.cmu.tetrad.search.IndTestFisherZ(data, 0.001));
+//                s.setVerbose(false);
 
-            Graph ge = s.search();
-            ge = GraphUtils.replaceNodes(ge, gt.getNodes());
+                PcAll s = new PcAll(new IndTestFisherZ(data, 0.001), null);
+                s.setColliderDiscovery(OrientColliders.ColliderMethod.PC_MAX);
 
-            ChoiceGenerator gen = new ChoiceGenerator(numVars, 3);
-            int[] choice;
-            int t = 0;
+                Graph ge = s.search();
+                ge = GraphUtils.replaceNodes(ge, gt.getNodes());
 
-            Set<Edge> L = new HashSet<>();
-            Set<Edge> M = new HashSet<>();
+                Graph g2 = new EdgeListGraph(ge.getNodes());
 
-            while ((choice = gen.next()) != null) {
-                List<Node> v = GraphUtils.asList(choice, nodes);
-
-                Node v1 = v.get(0);
-                Node v2 = v.get(1);
-                Node v3 = v.get(2);
-
-                if (ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && !ge.isAdjacentTo(v1, v3)) {
-                    M.add(Edges.undirectedEdge(v1, v2));
-
-                    for (Node w : ge.getAdjacentNodes(v1)) {
-                        if (ge.isAdjacentTo(w, v2)) {
-                            L.add(Edges.undirectedEdge(w, v1));
-                            L.add(Edges.undirectedEdge(w, v2));
-                        }
+                for (Edge e : ge.getEdges()) {
+                    if (gt.isAdjacentTo(e.getNode1(), e.getNode2())) {
+                        g2.addEdge(e);
                     }
+                }
 
-                    if (gt.isAdjacentTo(v1, v3)) {
-                        c++;
-                    }
+                ge = g2;
 
-                    total++;
+                ChoiceGenerator gen = new ChoiceGenerator(_numVars, 3);
+                int[] choice;
+                int t = 0;
 
-                    System.out.println("Triple " + ++t + " p = " + p + " c = " + c + " total = " + total + " Q = " + (c / (double) total));
+                Set<Edge> L = new HashSet<>();
+                Set<Edge> M = new HashSet<>();
+
+
+//                Set<Node> visited = new HashSet<>();
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> v = GraphUtils.asList(choice, nodes);
+
+                    Node v1 = v.get(0);
+                    Node v2 = v.get(1);
+                    Node v3 = v.get(2);
+
+                    count(ge, L, M, v1, v2, v3);
+                    count(ge, L, M, v1, v3, v2);
+                    count(ge, L, M, v2, v3, v1);
 
                 }
+
+                int P = 0;
+
+                for (Edge e : ge.getEdges()) {
+                    if (Edges.isDirectedEdge(e)) P++;
+                }
+
+                double alpha = L.size() / (double) M.size();
+                double beta = M.size() / (double) P;
+                double gamma = L.size() / (double) P;
+
+//                System.out.println("Manually setting r");
+
+                UtRandomnessStatististic r22 = new UtRandomnessStatististic();
+                double r2 = 1.0 - r22.getValue(gt, ge, data);
+
+//                printStats(p, alpha, gamma, beta, 0.5, gt, ge, data, r2);
+//                printStats(p, alpha, gamma, beta, 0.31, gt, ge, data, r2);
+
+                UtRStatistic utr = new UtRStatistic();
+                double rhat = utr.getValue(gt, ge, data);
+//                System.out.println("\nEstimating r hat from graphs and data = " + nf.format(rhat));
+
+                if (p < 0.2 ) {
+//                    continue;
+//                    sumr += rhat;
+//                    count++;
+                }
+
+                System.out.println("L = " + L.size() + " P = " + P);
+
+
+                printStats(p, alpha, gamma, beta, rhat, gt, ge, data, r2);
+
+//                System.out.println("\n---\n");
+
+//                UtRStatistic utr = new UtRStatistic();
+//                double rhat = utr.getValue(gt, ge, data);
+//
+//                printDensityAndR(p, rhat);
             }
+        }
 
-            int P = 0;
+        System.out.println("E(r) = " + sumr / count);
+    }
 
-            for (Edge e : ge.getEdges()) {
-                if (Edges.isDirectedEdge(e)) P++;
+    private static void printStats(double p, double alpha,
+                                   double gamma, double beta, double r, Graph gt, Graph ge, DataSet data, double r2) {
+        NumberFormat nf = new DecimalFormat("0.00");
+
+//        System.out.println("\nSetting r := " + nf.format(r));
+//        System.out.println("alpha = " + nf.format(alpha));
+//        System.out.println("beta = " + nf.format(beta));
+//        System.out.println("gamma = " + nf.format(gamma));
+//        System.out.println("r = " + nf.format(r));
+////        System.out.println("r2 = " + nf.format(r2));
+//        System.out.println("Gamma Bound = 1 - gamma * r = " + nf.format((1 - gamma * r)));
+////        System.out.println("Alpha Beta bound = 1 - alpha * beta * r = " + nf.format((1 - alpha * beta * r)));
+//        System.out.println("Density bound = 1 - p  = " + nf.format((1 - p)));
+////        System.out.println("Density Bound = 1 - 2 * r * p = " + nf.format((1 - 2 *  r * p )));
+
+        ArrowheadPrecision ahp = new ArrowheadPrecision();
+
+
+
+        ArrowheadPrecision ahpc = new ArrowheadPrecision();
+//        System.out.println("AHP = " + ahp.getValue(gt, ge, data));
+//        System.out.println("AHPC = " + nf.format(ahpc.getValue(gt, g2, data)));
+
+        double _ahpc = ahpc.getValue(gt, ge, data);
+
+        System.out.println("density = " + p + " gamma = " + gamma + " r = " + r + " 1 - gamma * r = "
+                + nf.format((1 - gamma * r)) + "\t" + _ahpc);
+
+    }
+
+    private static void count(Graph ge, Set<Edge> l, Set<Edge> m, Node v1, Node v2, Node v3) {
+
+        if (ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && !ge.isAdjacentTo(v1, v3)) {
+            m.add(Edges.undirectedEdge(v1, v2));
+
+            for (Node w : ge.getAdjacentNodes(v1)) {
+                if (ge.isAdjacentTo(w, v2)) {
+                    l.add(Edges.undirectedEdge(w, v1));
+                    l.add(Edges.undirectedEdge(w, v2));
+                }
             }
-
-            System.out.println("L = " + L.size() + " M = " + M.size() + " P = " + P);
-            double alpha = L.size() / (double) M.size();
-            double beta = M.size() / (double) P;
-            double gamma = L.size() / (double) P;
-            double r = 0.3;
-
-            System.out.println("alpha = " + alpha);
-            System.out.println("beta = " + beta);
-            System.out.println("gamma = " + gamma);
-            System.out.println("r = " + r);
-
-            System.out.println("1 - alpha * beta * r = " + (1 - alpha * beta * r));
-            System.out.println("1 - gamma * r = " + (1 - gamma * r));
-            System.out.println("1 - p = " + (1 - p));
-
-            System.out.println("p = " + p + " q = " + (c / (double) total));
-
-            ArrowheadPrecision ahp = new ArrowheadPrecision();
-            ArrowheadPrecisionCommonEdges ahpc = new ArrowheadPrecisionCommonEdges();
-
-            System.out.println("AHP = " + ahp.getValue(gt, ge, data));
-            System.out.println("AHPC = " + ahpc.getValue(gt, ge, data));
         }
     }
 

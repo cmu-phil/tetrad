@@ -363,7 +363,7 @@ public class Fasts implements IFas {
                     }
 
                 } else if (!forbiddenEdge(x, y)) {
-                    System.out.println("adding edge between x = " + x + " and y = " + y);
+//                    System.out.println("adding edge between x = " + x + " and y = " + y);
                     adjacencies.get(x).add(y);
                     adjacencies.get(y).add(x);
                     // This would add edges to all similar pairs which are found to be dependent...
