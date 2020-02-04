@@ -14,6 +14,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -62,9 +63,11 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
             search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
-            search.setColliderDiscovery(OrientColliders.ColliderMethod.PC_MAX);
-            search.setConflictRule(edu.cmu.tetrad.search.OrientColliders.ConflictRule.PRIORITY);
+            search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+            search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
+            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             return search.search();
         } else {
             PcStableMax pcStableMax = new PcStableMax(test, compareToTrue);
@@ -78,7 +81,7 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -92,7 +95,7 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();

@@ -47,7 +47,7 @@ public final class OrientCollidersMaxP {
     private IKnowledge knowledge = new Knowledge2();
     private boolean useHeuristic = false;
     private int maxPathLength = 3;
-    private OrientColliders.ConflictRule conflictRule = OrientColliders.ConflictRule.OVERWRITE;
+    private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
     public OrientCollidersMaxP(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
@@ -146,16 +146,16 @@ public final class OrientCollidersMaxP {
         // Most independent ones first.
         tripleList.sort((o1, o2) -> Double.compare(scores.get(o2), scores.get(o1)));
 
-//        for (Triple triple : tripleList) {
-//            System.out.println(triple + " score = " + scores.get(triple));
-//        }
+        for (Triple triple : tripleList) {
+            System.out.println(triple + " score = " + scores.get(triple));
+        }
 
         for (Triple triple : tripleList) {
             Node a = triple.getX();
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            orientCollider(a, b, c, getConflictRule(), graph);
+            orientCollider(graph, a, b, c, getConflictRule());
         }
     }
 
@@ -309,6 +309,12 @@ public final class OrientCollidersMaxP {
         }
     }
 
+    private void orientCollider(Graph graph, Node a, Node b, Node c, PcAll.ConflictRule conflictRule) {
+        if (knowledge.isForbidden(a.getName(), b.getName())) return;
+        if (knowledge.isForbidden(c.getName(), b.getName())) return;
+        orientCollider(a, b, c, conflictRule, graph);
+    }
+
     private boolean wouldCreateBadCollider(Graph graph, Node x, Node y) {
         for (Node z : graph.getAdjacentNodes(y)) {
             if (x == z) continue;
@@ -448,18 +454,18 @@ public final class OrientCollidersMaxP {
         this.maxPathLength = maxPathLength;
     }
 
-    public static void orientCollider(Node x, Node y, Node z, OrientColliders.ConflictRule conflictRule, Graph graph) {
-        if (conflictRule == OrientColliders.ConflictRule.PRIORITY) {
+    public static void orientCollider(Node x, Node y, Node z, PcAll.ConflictRule conflictRule, Graph graph) {
+        if (conflictRule == PcAll.ConflictRule.PRIORITY) {
             if (!(graph.getEndpoint(y, x) == Endpoint.ARROW || graph.getEndpoint(y, z) == Endpoint.ARROW)) {
                 graph.removeEdge(x, y);
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
                 graph.addDirectedEdge(z, y);
             }
-        } else if (conflictRule == OrientColliders.ConflictRule.BIDIRECTED) {
+        } else if (conflictRule == PcAll.ConflictRule.BIDIRECTED) {
             graph.setEndpoint(x, y, Endpoint.ARROW);
             graph.setEndpoint(z, y, Endpoint.ARROW);
-        } else if (conflictRule == OrientColliders.ConflictRule.OVERWRITE) {
+        } else if (conflictRule == PcAll.ConflictRule.OVERWRITE) {
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);
@@ -469,11 +475,11 @@ public final class OrientCollidersMaxP {
         TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
     }
 
-    public OrientColliders.ConflictRule getConflictRule() {
+    public PcAll.ConflictRule getConflictRule() {
         return conflictRule;
     }
 
-    public void setConflictRule(OrientColliders.ConflictRule conflictRule) {
+    public void setConflictRule(PcAll.ConflictRule conflictRule) {
         this.conflictRule = conflictRule;
     }
 }

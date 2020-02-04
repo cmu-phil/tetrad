@@ -31,9 +31,8 @@ public class UtRStatistic implements Statistic {
         ge = GraphUtils.replaceNodes(ge, gt.getNodes());
 
         List<Node> nodes = ge.getNodes();
-        int numVars = ge.getNumNodes();
 
-        ChoiceGenerator gen = new ChoiceGenerator(numVars, 3);
+        ChoiceGenerator gen = new ChoiceGenerator(nodes.size(), 3);
         int[] choice;
 
         Set<Edge> l = new HashSet<>();
@@ -45,9 +44,9 @@ public class UtRStatistic implements Statistic {
             Node v2 = v.get(1);
             Node v3 = v.get(2);
 
-            collect(gt, ge, l, v1, v2, v3);
-            collect(gt, ge, l, v1, v3, v2);
-            collect(gt, ge, l, v2, v3, v1);
+            count(gt, ge, l, v1, v3, v2);
+            count(gt, ge, l, v1, v2, v3);
+            count(gt, ge, l, v2, v1, v3);
         }
 
         int c = 0;
@@ -67,13 +66,14 @@ public class UtRStatistic implements Statistic {
         return c / (double) t;
     }
 
-    private static void collect(Graph gt, Graph ge, Set<Edge> l, Node v1, Node v2, Node v3) {
+    private static void count(Graph gt, Graph ge, Set<Edge> l, Node v1, Node v2, Node v3) {
         if (ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && !ge.isAdjacentTo(v1, v3)) {
-            for (Node w : ge.getAdjacentNodes(v1)) {
-                if (ge.isAdjacentTo(w, v2)) {
-                    l.add(Edges.undirectedEdge(w, v1));
-                    l.add(Edges.undirectedEdge(w, v2));
-                }
+            List<Node> adj = ge.getAdjacentNodes(v1);
+            adj.retainAll(ge.getAdjacentNodes(v2));
+
+            for (Node w : adj) {
+                l.add(Edges.undirectedEdge(w, v1));
+                l.add(Edges.undirectedEdge(w, v2));
             }
         }
     }

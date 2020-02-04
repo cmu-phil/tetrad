@@ -12,7 +12,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.OrientColliders;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -59,8 +58,8 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
             search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
-            search.setColliderDiscovery(OrientColliders.ColliderMethod.CPC);
-            search.setConflictRule(edu.cmu.tetrad.search.OrientColliders.ConflictRule.PRIORITY);
+            search.setColliderDiscovery(edu.cmu.tetrad.search.PcAll.ColliderDiscovery.CONSERVATIVE);
+            search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
@@ -72,7 +71,7 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -86,7 +85,7 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -131,7 +130,7 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
-    
+
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return test;

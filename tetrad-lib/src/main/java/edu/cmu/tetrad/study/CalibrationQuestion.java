@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.study;
 
-import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecision;
-import edu.cmu.tetrad.algcomparison.statistic.UtRStatistic;
-import edu.cmu.tetrad.algcomparison.statistic.UtRandomnessStatististic;
+import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
@@ -329,7 +327,7 @@ public class CalibrationQuestion {
         int[] avgDegree = new int[]{2, 4, 6, 8};
 
         double sumr = 0.0;
-        double count = 0;
+        int count = 0;
 
         NumberFormat nf = new DecimalFormat("0.00");
 
@@ -339,22 +337,9 @@ public class CalibrationQuestion {
                 double numEdges = (double) _avgDegree * _numVars / 2.;
                 double p = _avgDegree / (double) (_numVars - 1);
 
-//                System.out.println("\nProblem: numVars = " + _numVars + " avgDegree = " + _avgDegree + " p = " + nf.format(p) + "\n");
+//                System.out.println("\nProblem: numEdges = " + numEdges + " numVars = " + _numVars + " avgDegree = " + _avgDegree + " p = " + nf.format(p) + "\n");
 
-                Node x = new ContinuousVariable("X");
-                Node y = new ContinuousVariable("Y");
-                Node z = new ContinuousVariable("Z");
-
-                List<Node> nodes = new ArrayList<>();
-                nodes.add(x);
-                nodes.add(y);
-                nodes.add(z);
-
-                for (int n = 3; n <= _numVars; n++) {
-                    nodes.add(new ContinuousVariable("V" + n));
-                }
-
-                Graph gt = GraphUtils.randomGraph(nodes, 0, (int) numEdges, 100, 100, 100, false);
+                Graph gt = GraphUtils.randomGraph(_numVars, 0, (int) numEdges, 100, 100, 100, false);
 
                 SemPm pm = new SemPm(gt);
 
@@ -366,35 +351,23 @@ public class CalibrationQuestion {
 
                 DataSet data = im.simulateData(sampleSize, false);
 
-//                edu.cmu.tetrad.search.Fges s = new edu.cmu.tetrad.search.Fges(new edu.cmu.tetrad.search.SemBicScore(data));
-//                edu.cmu.tetrad.search.PcStableMax s = new edu.cmu.tetrad.search.PcStableMax(new edu.cmu.tetrad.search.IndTestFisherZ(data, 0.001));
-//                s.setVerbose(false);
+                edu.cmu.tetrad.search.Fges s = new edu.cmu.tetrad.search.Fges(new edu.cmu.tetrad.search.SemBicScore(data));
 
-                PcAll s = new PcAll(new IndTestFisherZ(data, 0.001), null);
-                s.setColliderDiscovery(OrientColliders.ColliderMethod.PC_MAX);
+//                PcAll s = new PcAll(new IndTestFisherZ(data, 0.001), null);
+//                s.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+//                s.setConflictRule(PcAll.ConflictRule.PRIORITY);
 
                 Graph ge = s.search();
                 ge = GraphUtils.replaceNodes(ge, gt.getNodes());
 
-                Graph g2 = new EdgeListGraph(ge.getNodes());
 
-                for (Edge e : ge.getEdges()) {
-                    if (gt.isAdjacentTo(e.getNode1(), e.getNode2())) {
-                        g2.addEdge(e);
-                    }
-                }
+                List<Node> nodes = ge.getNodes();
 
-                ge = g2;
-
-                ChoiceGenerator gen = new ChoiceGenerator(_numVars, 3);
+                ChoiceGenerator gen = new ChoiceGenerator(nodes.size(), 3);
                 int[] choice;
-                int t = 0;
 
                 Set<Edge> L = new HashSet<>();
                 Set<Edge> M = new HashSet<>();
-
-
-//                Set<Node> visited = new HashSet<>();
 
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, nodes);
@@ -403,10 +376,9 @@ public class CalibrationQuestion {
                     Node v2 = v.get(1);
                     Node v3 = v.get(2);
 
-                    count(ge, L, M, v1, v2, v3);
                     count(ge, L, M, v1, v3, v2);
-                    count(ge, L, M, v2, v3, v1);
-
+                    count(ge, L, M, v1, v2, v3);
+                    count(ge, L, M, v2, v1, v3);
                 }
 
                 int P = 0;
@@ -419,28 +391,19 @@ public class CalibrationQuestion {
                 double beta = M.size() / (double) P;
                 double gamma = L.size() / (double) P;
 
-//                System.out.println("Manually setting r");
-
-                UtRandomnessStatististic r22 = new UtRandomnessStatististic();
-                double r2 = 1.0 - r22.getValue(gt, ge, data);
-
-//                printStats(p, alpha, gamma, beta, 0.5, gt, ge, data, r2);
-//                printStats(p, alpha, gamma, beta, 0.31, gt, ge, data, r2);
-
                 UtRStatistic utr = new UtRStatistic();
                 double rhat = utr.getValue(gt, ge, data);
-//                System.out.println("\nEstimating r hat from graphs and data = " + nf.format(rhat));
 
-                if (p < 0.2 ) {
-//                    continue;
-//                    sumr += rhat;
-//                    count++;
+                if (!Double.isNaN(rhat)) {
+                    sumr += rhat;
+                    count++;
                 }
 
-                System.out.println("L = " + L.size() + " P = " + P);
+                System.out.println("L = " + L.size() + " P = " + P + " numVars = " + _numVars + " avgDegree = " + _avgDegree);
 
+//                System.out.println(ge);
 
-                printStats(p, alpha, gamma, beta, rhat, gt, ge, data, r2);
+                printStats(p, alpha, gamma, beta, rhat, gt, ge, data, .31);
 
 //                System.out.println("\n---\n");
 
@@ -451,7 +414,7 @@ public class CalibrationQuestion {
             }
         }
 
-        System.out.println("E(r) = " + sumr / count);
+        System.out.println("E(r) = " + sumr / (double) count + " sumr = " + sumr + " count = " + count);
     }
 
     private static void printStats(double p, double alpha,
@@ -469,18 +432,30 @@ public class CalibrationQuestion {
 //        System.out.println("Density bound = 1 - p  = " + nf.format((1 - p)));
 ////        System.out.println("Density Bound = 1 - 2 * r * p = " + nf.format((1 - 2 *  r * p )));
 
-        ArrowheadPrecision ahp = new ArrowheadPrecision();
 
+        Graph g2 = new EdgeListGraph(ge.getNodes());
 
+        for (Edge e : ge.getEdges()) {
+            if (gt.isAdjacentTo(e.getNode1(), e.getNode2())) {
+                g2.addEdge(e);
+            }
+        }
 
-        ArrowheadPrecision ahpc = new ArrowheadPrecision();
+        ge = g2;
+
+        Statistic ahpc = new ArrowheadPrecision();
 //        System.out.println("AHP = " + ahp.getValue(gt, ge, data));
 //        System.out.println("AHPC = " + nf.format(ahpc.getValue(gt, g2, data)));
 
         double _ahpc = ahpc.getValue(gt, ge, data);
 
-        System.out.println("density = " + p + " gamma = " + gamma + " r = " + r + " 1 - gamma * r = "
-                + nf.format((1 - gamma * r)) + "\t" + _ahpc);
+        System.out.println(
+                "density = " + nf.format(p)
+                        + " gamma = " + nf.format(gamma)
+                        + " r = " + nf.format(r)
+                        + " 1 - p = " + nf.format(1. - p)
+                        + " 1 - gamma * r = " + nf.format((1 - gamma * r))
+                        + "\t" + " AHPC = " + nf.format(_ahpc));
 
     }
 
@@ -489,11 +464,12 @@ public class CalibrationQuestion {
         if (ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && !ge.isAdjacentTo(v1, v3)) {
             m.add(Edges.undirectedEdge(v1, v2));
 
-            for (Node w : ge.getAdjacentNodes(v1)) {
-                if (ge.isAdjacentTo(w, v2)) {
-                    l.add(Edges.undirectedEdge(w, v1));
-                    l.add(Edges.undirectedEdge(w, v2));
-                }
+            List<Node> adj = ge.getAdjacentNodes(v1);
+            adj.retainAll(ge.getAdjacentNodes(v2));
+
+            for (Node w : adj) {
+                l.add(Edges.undirectedEdge(w, v1));
+                l.add(Edges.undirectedEdge(w, v2));
             }
         }
     }

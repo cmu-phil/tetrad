@@ -14,7 +14,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.OrientColliders;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -56,39 +56,33 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.OrientColliders.ColliderMethod colliderDiscovery;
+            edu.cmu.tetrad.search.PcAll.ColliderDiscovery colliderDiscovery;
 
             switch (parameters.getInt(Params.COLLIDER_DISCOVERY_RULE)) {
                 case 1:
-                    colliderDiscovery = OrientColliders.ColliderMethod.SEPSETS;
+                    colliderDiscovery = edu.cmu.tetrad.search.PcAll.ColliderDiscovery.FAS_SEPSETS;
                     break;
                 case 2:
-                    colliderDiscovery = OrientColliders.ColliderMethod.CPC;
+                    colliderDiscovery = edu.cmu.tetrad.search.PcAll.ColliderDiscovery.CONSERVATIVE;
                     break;
                 case 3:
-                    colliderDiscovery = OrientColliders.ColliderMethod.MPC;
-                    break;
-                case 4:
-                    colliderDiscovery = edu.cmu.tetrad.search.OrientColliders.ColliderMethod.PC_MAX;
-                    break;
-                case 5:
-                    colliderDiscovery = edu.cmu.tetrad.search.OrientColliders.ColliderMethod.PC_MAX2;
+                    colliderDiscovery = edu.cmu.tetrad.search.PcAll.ColliderDiscovery.MAX_P;
                     break;
                 default:
                     throw new IllegalArgumentException("Not a choice.");
             }
 
-            edu.cmu.tetrad.search.OrientColliders.ConflictRule conflictRule;
+            edu.cmu.tetrad.search.PcAll.ConflictRule conflictRule;
 
             switch (parameters.getInt(Params.CONFLICT_RULE)) {
                 case 1:
-                    conflictRule = edu.cmu.tetrad.search.OrientColliders.ConflictRule.OVERWRITE;
+                    conflictRule = edu.cmu.tetrad.search.PcAll.ConflictRule.OVERWRITE;
                     break;
                 case 2:
-                    conflictRule = edu.cmu.tetrad.search.OrientColliders.ConflictRule.BIDIRECTED;
+                    conflictRule = edu.cmu.tetrad.search.PcAll.ConflictRule.BIDIRECTED;
                     break;
                 case 3:
-                    conflictRule = edu.cmu.tetrad.search.OrientColliders.ConflictRule.PRIORITY;
+                    conflictRule = edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY;
                     break;
                 default:
                     throw new IllegalArgumentException("Not a choice.");
@@ -110,13 +104,10 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
                 search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
             }
 
-//            search.setOrientationAlpha(parameters.getDouble(Params.ORIENTATION_ALPHA));
             search.setColliderDiscovery(colliderDiscovery);
             search.setConflictRule(conflictRule);
-//            search.setDoMarkovLoop(parameters.getBoolean(Params.DO_MARKOV_LOOP));
-//            search.setIndependenceMethod(independence_detection_method);
-//            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
-//            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
+            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
+            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
@@ -133,7 +124,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -147,7 +138,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -156,13 +147,12 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
-//        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "PC Variants using " + test.getDescription() + (algorithm != null ? " with initial graph from "
+        return "PC using " + test.getDescription() + (algorithm != null ? " with initial graph from "
                 + algorithm.getDescription() : "");
     }
 
@@ -178,12 +168,9 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
         parameters.add(Params.CONCURRENT_FAS);
         parameters.add(Params.COLLIDER_DISCOVERY_RULE);
         parameters.add(Params.CONFLICT_RULE);
-        parameters.add(Params.USE_FDR_FOR_INDEPENDENCE);
-        parameters.add(Params.DO_MARKOV_LOOP);
         parameters.add(Params.DEPTH);
-        parameters.add(Params.ORIENTATION_ALPHA);
-//        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
-//        parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
+        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
+        parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
 
         parameters.add(Params.VERBOSE);
         return parameters;
@@ -218,7 +205,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
-    
+
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return test;
