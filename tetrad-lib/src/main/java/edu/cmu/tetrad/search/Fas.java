@@ -158,7 +158,7 @@ public class Fas implements IFas {
         this.logger.log("info", "Starting Fast Adjacency Search.");
 
         sepset = new SepsetMap();
-        sepset.setReturnEmptyIfNotSet(sepsetsReturnEmptyIfNotFixed);
+//        sepset.setReturnEmptyIfNotSet(sepsetsReturnEmptyIfNotFixed);
 
         int _depth = depth;
 
