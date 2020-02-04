@@ -1,3 +1,6 @@
+6.7.1
+Bug fix for FCI issue using the chi square test
+
 6.7.0
 Can override variable datatypes using metafile
 Functions for handling experimental variables
