@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.cmu</groupId>
     <artifactId>tetrad</artifactId>
-    <version>6.7.0</version>
+    <version>6.7.1</version>
     <packaging>pom</packaging>
 
     <name>Tetrad Project</name>
