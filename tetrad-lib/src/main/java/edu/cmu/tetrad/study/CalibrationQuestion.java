@@ -5,7 +5,6 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestFisherZ;
-import edu.cmu.tetrad.search.OrientColliders;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -351,11 +350,13 @@ public class CalibrationQuestion {
 
                 DataSet data = im.simulateData(sampleSize, false);
 
-                edu.cmu.tetrad.search.Fges s = new edu.cmu.tetrad.search.Fges(new edu.cmu.tetrad.search.SemBicScore(data));
+//                edu.cmu.tetrad.search.Fges s = new edu.cmu.tetrad.search.Fges(new edu.cmu.tetrad.search.SemBicScore(data));
 
-//                PcAll s = new PcAll(new IndTestFisherZ(data, 0.001), null);
-//                s.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
-//                s.setConflictRule(PcAll.ConflictRule.PRIORITY);
+                PcAll s = new PcAll(new IndTestFisherZ(data, 0.001), null);
+                s.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+                s.setConflictRule(PcAll.ConflictRule.PRIORITY);
+                s.setFasType(PcAll.FasType.STABLE);
+                s.setConcurrent(PcAll.Concurrent.NO);
 
                 Graph ge = s.search();
                 ge = GraphUtils.replaceNodes(ge, gt.getNodes());
@@ -399,13 +400,39 @@ public class CalibrationQuestion {
                     count++;
                 }
 
-                System.out.println("L = " + L.size() + " P = " + P + " numVars = " + _numVars + " avgDegree = " + _avgDegree);
 
 //                System.out.println(ge);
 
-                printStats(p, alpha, gamma, beta, rhat, gt, ge, data, .31);
+                NumberFormat nf1 = new DecimalFormat("0.00");
 
-//                System.out.println("\n---\n");
+//                System.out.println("\nSetting r := " + nf.format(r));
+//                System.out.println("alpha = " + nf.format(alpha));
+//                System.out.println("beta = " + nf.format(beta));
+//                System.out.println("gamma = " + nf.format(gamma));
+//                System.out.println("r = " + nf.format(r));
+//                System.out.println("r2 = " + nf.format(r2));
+//                System.out.println("Gamma Bound = 1 - gamma * r = " + nf.format((1 - gamma * r)));
+//                System.out.println("Alpha Beta bound = 1 - alpha * beta * r = " + nf.format((1 - alpha * beta * r)));
+//                System.out.println("Density bound = 1 - p  = " + nf.format((1 - p)));
+//                System.out.println("Density Bound = 1 - 2 * r * p = " + nf.format((1 - 2 * r * p)));
+
+
+                Statistic ahpc = new ArrowheadPrecision();
+//                System.out.println("AHPC = " + nf.format(ahpc.getValue(gt, gc, data)));
+
+                double _ahpc = ahpc.getValue(gt, getCommonGraph(gt, ge), data);
+
+                System.out.print("L = " + L.size() + " P = " + P + " numVars = " + _numVars + " avgDegree = " + _avgDegree);
+
+                System.out.println(
+                        " density = " + nf1.format(p)
+                                + " gamma = " + nf1.format(gamma)
+                                + " r = " + nf1.format(rhat)
+                                + " 1 - p = " + nf1.format(1. - p)
+                                + " 1 - gamma * r = " + nf1.format((1 - gamma * rhat))
+                                + "\t" + " AHPC = " + nf1.format(_ahpc));
+
+                //                System.out.println("\n---\n");
 
 //                UtRStatistic utr = new UtRStatistic();
 //                double rhat = utr.getValue(gt, ge, data);
@@ -417,46 +444,15 @@ public class CalibrationQuestion {
         System.out.println("E(r) = " + sumr / (double) count + " sumr = " + sumr + " count = " + count);
     }
 
-    private static void printStats(double p, double alpha,
-                                   double gamma, double beta, double r, Graph gt, Graph ge, DataSet data, double r2) {
-        NumberFormat nf = new DecimalFormat("0.00");
+    private static Graph getCommonGraph(Graph gt, Graph ge1) {
+        Graph g2 = new EdgeListGraph(ge1.getNodes());
 
-//        System.out.println("\nSetting r := " + nf.format(r));
-//        System.out.println("alpha = " + nf.format(alpha));
-//        System.out.println("beta = " + nf.format(beta));
-//        System.out.println("gamma = " + nf.format(gamma));
-//        System.out.println("r = " + nf.format(r));
-////        System.out.println("r2 = " + nf.format(r2));
-//        System.out.println("Gamma Bound = 1 - gamma * r = " + nf.format((1 - gamma * r)));
-////        System.out.println("Alpha Beta bound = 1 - alpha * beta * r = " + nf.format((1 - alpha * beta * r)));
-//        System.out.println("Density bound = 1 - p  = " + nf.format((1 - p)));
-////        System.out.println("Density Bound = 1 - 2 * r * p = " + nf.format((1 - 2 *  r * p )));
-
-
-        Graph g2 = new EdgeListGraph(ge.getNodes());
-
-        for (Edge e : ge.getEdges()) {
+        for (Edge e : ge1.getEdges()) {
             if (gt.isAdjacentTo(e.getNode1(), e.getNode2())) {
                 g2.addEdge(e);
             }
         }
-
-        ge = g2;
-
-        Statistic ahpc = new ArrowheadPrecision();
-//        System.out.println("AHP = " + ahp.getValue(gt, ge, data));
-//        System.out.println("AHPC = " + nf.format(ahpc.getValue(gt, g2, data)));
-
-        double _ahpc = ahpc.getValue(gt, ge, data);
-
-        System.out.println(
-                "density = " + nf.format(p)
-                        + " gamma = " + nf.format(gamma)
-                        + " r = " + nf.format(r)
-                        + " 1 - p = " + nf.format(1. - p)
-                        + " 1 - gamma * r = " + nf.format((1 - gamma * r))
-                        + "\t" + " AHPC = " + nf.format(_ahpc));
-
+        return g2;
     }
 
     private static void count(Graph ge, Set<Edge> l, Set<Edge> m, Node v1, Node v2, Node v3) {

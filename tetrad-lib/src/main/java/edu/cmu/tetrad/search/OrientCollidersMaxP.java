@@ -146,9 +146,9 @@ public final class OrientCollidersMaxP {
         // Most independent ones first.
         tripleList.sort((o1, o2) -> Double.compare(scores.get(o2), scores.get(o1)));
 
-        for (Triple triple : tripleList) {
-            System.out.println(triple + " score = " + scores.get(triple));
-        }
+//        for (Triple triple : tripleList) {
+//            System.out.println(triple + " score = " + scores.get(triple));
+//        }
 
         for (Triple triple : tripleList) {
             Node a = triple.getX();
