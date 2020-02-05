@@ -146,7 +146,7 @@ public class FasStableConcurrentFdr implements IFas {
         sepsets = new SepsetMap();
 
         //this is bad when starting from init graph --AJ
-        sepsets.setReturnEmptyIfNotSet(true);
+//        sepsets.setReturnEmptyIfNotSet(true);
 
         int _depth = depth;
 
@@ -377,7 +377,7 @@ public class FasStableConcurrentFdr implements IFas {
                                     knowledge.noEdgeRequired(x.getName(), y.getName());
 
                             if (test.getPValue() > cutoff && noEdgeRequired) {
-                                if (recordSepsets && !sepsets.isReturnEmptyIfNotSet()) {
+                                if (recordSepsets /*&& !sepsets.isReturnEmptyIfNotSet()*/) {
                                     getSepsets().set(x, y, empty);
                                 }
                             } else if (!forbiddenEdge(x, y)) {

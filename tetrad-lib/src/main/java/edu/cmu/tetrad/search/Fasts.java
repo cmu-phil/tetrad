@@ -42,12 +42,11 @@ import java.util.*;
  * S({x, y}) is returned for edges x *-* y that have been removed.
  *
  * @author Joseph Ramsey.
- *
- *
+ * <p>
+ * <p>
  * This is a copy of Fas.java for the tsFCI algorithm. The main difference is that if an edge is removed, it will also
  * remove all homologous edges to preserve the time-repeating structure assumed by tsFCI. Based on (but not identicial
  * to) code by Entner and Hoyer for their 2010 paper. Modified by DMalinsky 4/21/2016.
- *
  */
 public class Fasts implements IFas {
 
@@ -157,7 +156,7 @@ public class Fasts implements IFas {
         graph.removeEdges(graph.getEdges());
 
         sepset = new SepsetMap();
-        sepset.setReturnEmptyIfNotSet(true);
+//        sepset.setReturnEmptyIfNotSet(true);
 
         int _depth = depth;
 
@@ -288,20 +287,20 @@ public class Fasts implements IFas {
 
                 Iterator itx1 = simListX.iterator();
                 Iterator ity1 = simListY.iterator();
-                while(itx1.hasNext() && ity1.hasNext()){
-                    Node x1 = (Node)itx1.next();
-                    Node y1 = (Node)ity1.next();
+                while (itx1.hasNext() && ity1.hasNext()) {
+                    Node x1 = (Node) itx1.next();
+                    Node y1 = (Node) ity1.next();
                     String simX = x1.getName();
                     String simY = y1.getName();
-                    if( (Objects.equals(xName,simX) && Objects.equals(yName,simY)) ||
-                            (Objects.equals(xName,simY) && Objects.equals(yName,simX)) ){
+                    if ((Objects.equals(xName, simX) && Objects.equals(yName, simY)) ||
+                            (Objects.equals(xName, simY) && Objects.equals(yName, simX))) {
                         skippair = true;
                         System.out.println("Skipping pair x,y = " + xName + ", " + yName);
                         break;
                     }
                 }
 
-                if(skippair) continue;
+                if (skippair) continue;
 
                 if (initialGraph != null) {
                     Node x2 = initialGraph.getNode(x.getName());
@@ -333,26 +332,26 @@ public class Fasts implements IFas {
                 boolean noEdgeRequired =
                         knowledge.noEdgeRequired(x.getName(), y.getName());
 
-                getSepsets().setReturnEmptyIfNotSet(false); // added 05.30.2016
+//                getSepsets().setReturnEmptyIfNotSet(false); // added 05.30.2016
                 if (independent && noEdgeRequired) {
-                    if (!getSepsets().isReturnEmptyIfNotSet()) {
-                        getSepsets().set(x, y, empty);
-                        System.out.println("$$$$$$$$$$$ look for similar pairs x,y = " + x + ", " + y);
-                        List<List<Node>> simList = returnSimilarPairs(test,x,y);
-                        if(simList.isEmpty()) continue;
-                        List<Node> x1List = simList.get(0);
-                        List<Node> y1List = simList.get(1);
-                        simListX.addAll(x1List);
-                        simListY.addAll(y1List);
-                        Iterator itx = x1List.iterator();
-                        Iterator ity = y1List.iterator();
-                        while(itx.hasNext() && ity.hasNext()){
-                            Node x1 = (Node)itx.next();
-                            Node y1 = (Node)ity.next();
-                            System.out.println("$$$$$$$$$$$ found similar pair x,y = " + x1 + ", " + y1);
-                            getSepsets().set(x1, y1, empty);
-                        }
+//                    if (!getSepsets().isReturnEmptyIfNotSet()) {
+                    getSepsets().set(x, y, empty);
+                    System.out.println("$$$$$$$$$$$ look for similar pairs x,y = " + x + ", " + y);
+                    List<List<Node>> simList = returnSimilarPairs(test, x, y);
+                    if (simList.isEmpty()) continue;
+                    List<Node> x1List = simList.get(0);
+                    List<Node> y1List = simList.get(1);
+                    simListX.addAll(x1List);
+                    simListY.addAll(y1List);
+                    Iterator itx = x1List.iterator();
+                    Iterator ity = y1List.iterator();
+                    while (itx.hasNext() && ity.hasNext()) {
+                        Node x1 = (Node) itx.next();
+                        Node y1 = (Node) ity.next();
+                        System.out.println("$$$$$$$$$$$ found similar pair x,y = " + x1 + ", " + y1);
+                        getSepsets().set(x1, y1, empty);
                     }
+//                    }
 
                     TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
                             nf.format(test.getScore()));
@@ -367,17 +366,17 @@ public class Fasts implements IFas {
                     adjacencies.get(x).add(y);
                     adjacencies.get(y).add(x);
                     // This would add edges to all similar pairs which are found to be dependent...
-                    List<List<Node>> simList = returnSimilarPairs(test,x,y);
-                    if(simList.isEmpty()) continue;
+                    List<List<Node>> simList = returnSimilarPairs(test, x, y);
+                    if (simList.isEmpty()) continue;
                     List<Node> x1List = simList.get(0);
                     List<Node> y1List = simList.get(1);
                     simListX.addAll(x1List);
                     simListY.addAll(y1List);
                     Iterator itx = x1List.iterator();
                     Iterator ity = y1List.iterator();
-                    while(itx.hasNext() && ity.hasNext()){
-                        Node x1 = (Node)itx.next();
-                        Node y1 = (Node)ity.next();
+                    while (itx.hasNext() && ity.hasNext()) {
+                        Node x1 = (Node) itx.next();
+                        Node y1 = (Node) ity.next();
                         System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
                         System.out.println("adding edge between x = " + x1 + " and y = " + y1);
                         adjacencies.get(x1).add(y1);
@@ -520,7 +519,7 @@ public class Fasts implements IFas {
     private void removeSimilarPairs(Map<Node, Set<Node>> adjacencies, final IndependenceTest test, Node x, Node y, List<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
         System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
-        if(x.getName().equals("time") || y.getName().equals("time")){
+        if (x.getName().equals("time") || y.getName().equals("time")) {
             System.out.println("Not removing similar pairs b/c variable pair includes time.");
             return;
         }
@@ -543,15 +542,15 @@ public class Fasts implements IFas {
 //        Collections.sort(tier_y);
 
         int i;
-        for(i = 0; i < tier_x.size(); ++i) {
-            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+        for (i = 0; i < tier_x.size(); ++i) {
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
                 indx_comp = i;
                 break;
             }
         }
 
-        for(i = 0; i < tier_y.size(); ++i) {
-            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+        for (i = 0; i < tier_y.size(); ++i) {
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
                 indy_comp = i;
                 break;
             }
@@ -560,8 +559,8 @@ public class Fasts implements IFas {
         if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
         if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
 
-        for(i = 0; i < ntiers - tier_diff; ++i) {
-            if(knowledge.getTier(i).size()==1) continue;
+        for (i = 0; i < ntiers - tier_diff; ++i) {
+            if (knowledge.getTier(i).size() == 1) continue;
             String A;
             Node x1;
             String B;
@@ -603,12 +602,12 @@ public class Fasts implements IFas {
 //                    System.out.println("condAB_tier = " + condAB_tier);
 //                    System.out.println("max_tier = " + max_tier);
 //                    System.out.println("ntiers = " + ntiers);
-                    if(condAB_tier < 0 || condAB_tier > (ntiers-1)
-                            || knowledge.getTier(condAB_tier).size()==1) { // added condition for time tier 05.29.2016
+                    if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
+                            || knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
 //                        List<Node> empty = Collections.emptyList();
 //                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
-                        + "of window, so not added to SepSet");
+                                + "of window, so not added to SepSet");
                         continue;
                     }
                     List new_tier = knowledge.getTier(condAB_tier);
@@ -658,8 +657,8 @@ public class Fasts implements IFas {
 //                    System.out.println("condAB_tier = " + condAB_tier);
 //                    System.out.println("max_tier = " + max_tier);
 //                    System.out.println("ntiers = " + ntiers);
-                    if(condAB_tier < 0 || condAB_tier > (ntiers-1)
-                            || knowledge.getTier(condAB_tier).size()==1) { // added condition for time tier 05.29.2016
+                    if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
+                            || knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
 //                        List<Node> empty = Collections.emptyList();
 //                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
@@ -681,7 +680,7 @@ public class Fasts implements IFas {
     // returnSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(final IndependenceTest test, Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
-        if(x.getName().equals("time") || y.getName().equals("time")){
+        if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
 //        System.out.println("Knowledge within returnSimilar : " + knowledge);
@@ -697,15 +696,15 @@ public class Fasts implements IFas {
 //        Collections.sort(tier_y);
 
         int i;
-        for(i = 0; i < tier_x.size(); ++i) {
-            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+        for (i = 0; i < tier_x.size(); ++i) {
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
                 indx_comp = i;
                 break;
             }
         }
 
-        for(i = 0; i < tier_y.size(); ++i) {
-            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+        for (i = 0; i < tier_y.size(); ++i) {
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
                 indy_comp = i;
                 break;
             }
@@ -720,8 +719,8 @@ public class Fasts implements IFas {
         List<Node> simListX = new ArrayList<>();
         List<Node> simListY = new ArrayList<>();
 
-        for(i = 0; i < ntiers - tier_diff; ++i) {
-            if(knowledge.getTier(i).size()==1) continue;
+        for (i = 0; i < ntiers - tier_diff; ++i) {
+            if (knowledge.getTier(i).size() == 1) continue;
             String A;
             Node x1;
             String B;
@@ -764,13 +763,13 @@ public class Fasts implements IFas {
         List<List<Node>> pairList = new ArrayList<>();
         pairList.add(simListX);
         pairList.add(simListY);
-        return(pairList);
+        return (pairList);
     }
 
 
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
-        if(tempS.indexOf(':')== -1) {
+        if (tempS.indexOf(':') == -1) {
             return tempS;
         } else return tempS.substring(0, tempS.indexOf(':'));
     }

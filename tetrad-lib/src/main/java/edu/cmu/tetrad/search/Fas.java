@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -158,7 +159,7 @@ public class Fas implements IFas {
         this.logger.log("info", "Starting Fast Adjacency Search.");
 
         sepset = new SepsetMap();
-        sepset.setReturnEmptyIfNotSet(sepsetsReturnEmptyIfNotFixed);
+//        sepset.setReturnEmptyIfNotSet(sepsetsReturnEmptyIfNotFixed);
 
         int _depth = depth;
 
@@ -313,14 +314,14 @@ public class Fas implements IFas {
 
 
                 if (independent && noEdgeRequired) {
-                    if (!getSepsets().isReturnEmptyIfNotSet()) {
-                        getSepsets().set(x, y, empty);
-                    }
+//                    if (!getSepsets().isReturnEmptyIfNotSet()) {
+                    getSepsets().set(x, y, empty);
+//                    }
 
                     if (verbose) {
                         TetradLogger.getInstance().forceLogMessage(
                                 SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-                                nf.format(test.getScore()));
+                                        nf.format(test.getScore()));
                         out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
                                 nf.format(test.getScore()));
                     }
@@ -394,7 +395,7 @@ public class Fas implements IFas {
             for (Node y : adjx) {
                 List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
                 _adjx.remove(y);
-                List<Node> ppx = possibleParents(x, _adjx, knowledge);
+                List<Node> ppx = possibleParents(x, _adjx, knowledge, y);
 
                 if (ppx.size() >= depth) {
                     ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
@@ -452,11 +453,12 @@ public class Fas implements IFas {
     }
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       IKnowledge knowledge) {
+                                       IKnowledge knowledge, Node y) {
         List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : adjx) {
+            if (z == y) continue;
             String _z = z.getName();
 
             if (possibleParentOf(_z, _x, knowledge)) {

@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -22,11 +23,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "FCI-Max",
-//        command = "fcimax",
-//        algoType = AlgType.allow_latent_common_causes
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "FCI-Max",
+        command = "fcimax",
+        algoType = AlgType.allow_latent_common_causes
+)
 @Bootstrapping
 public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
