@@ -321,7 +321,7 @@ public class CalibrationQuestion {
     // Make GT, simulate data, run FGES, yielding GE. Then find a nonredundant set of possible false negative shields ~XZ
     // touching all UTFP legs in GE and count for how many of these XZt is in GT.
     private static void scenario5() {
-        int sampleSize = 1000;
+        int sampleSize = 10000;
         int[] numVars = new int[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
         int[] avgDegree = new int[]{2, 4, 6, 8};
 
@@ -350,13 +350,13 @@ public class CalibrationQuestion {
 
                 DataSet data = im.simulateData(sampleSize, false);
 
-//                edu.cmu.tetrad.search.Fges s = new edu.cmu.tetrad.search.Fges(new edu.cmu.tetrad.search.SemBicScore(data));
-
-                PcAll s = new PcAll(new IndTestFisherZ(data, 0.001), null);
-                s.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
-                s.setConflictRule(PcAll.ConflictRule.PRIORITY);
-                s.setFasType(PcAll.FasType.STABLE);
-                s.setConcurrent(PcAll.Concurrent.NO);
+                edu.cmu.tetrad.search.Fges s = new edu.cmu.tetrad.search.Fges(new edu.cmu.tetrad.search.SemBicScore(data));
+//
+//                PcAll s = new PcAll(new IndTestFisherZ(data, 0.001), null);
+//                s.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+//                s.setConflictRule(PcAll.ConflictRule.PRIORITY);
+//                s.setFasType(PcAll.FasType.STABLE);
+//                s.setConcurrent(PcAll.Concurrent.NO);
 
                 Graph ge = s.search();
                 ge = GraphUtils.replaceNodes(ge, gt.getNodes());
@@ -403,8 +403,6 @@ public class CalibrationQuestion {
 
 //                System.out.println(ge);
 
-                NumberFormat nf1 = new DecimalFormat("0.00");
-
 //                System.out.println("\nSetting r := " + nf.format(r));
 //                System.out.println("alpha = " + nf.format(alpha));
 //                System.out.println("beta = " + nf.format(beta));
@@ -425,12 +423,12 @@ public class CalibrationQuestion {
                 System.out.print("L = " + L.size() + " P = " + P + " numVars = " + _numVars + " avgDegree = " + _avgDegree);
 
                 System.out.println(
-                        " density = " + nf1.format(p)
-                                + " gamma = " + nf1.format(gamma)
-                                + " r = " + nf1.format(rhat)
-                                + " 1 - p = " + nf1.format(1. - p)
-                                + " 1 - gamma * r = " + nf1.format((1 - gamma * rhat))
-                                + "\t" + " AHPC = " + nf1.format(_ahpc));
+                        " density = " + nf.format(p)
+                                + " gamma = " + nf.format(gamma)
+                                + " r = " + nf.format(rhat)
+                                + " 1 - p = " + nf.format(1. - p)
+                                + " 1 - gamma * r = " + nf.format((1 - gamma * rhat))
+                                + "\t" + " AHPC = " + nf.format(_ahpc));
 
                 //                System.out.println("\n---\n");
 
