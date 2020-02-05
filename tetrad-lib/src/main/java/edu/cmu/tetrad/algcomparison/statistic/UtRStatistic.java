@@ -74,7 +74,7 @@ public class UtRStatistic implements Statistic {
 
             for (Node w : adj) {
                 l.add(Edges.undirectedEdge(w, v1));
-                l.add(Edges.undirectedEdge(w, v2));
+                l.add(Edges.undirectedEdge(w, v3));
             }
         }
     }

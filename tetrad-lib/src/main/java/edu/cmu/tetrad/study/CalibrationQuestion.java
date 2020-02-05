@@ -403,7 +403,7 @@ public class CalibrationQuestion {
 
 //                System.out.println(ge);
 
-//                System.out.println("\nSetting r := " + nf.format(r));
+//                System.out.println("\nSetting r :  = " + nf.format(r));
 //                System.out.println("alpha = " + nf.format(alpha));
 //                System.out.println("beta = " + nf.format(beta));
 //                System.out.println("gamma = " + nf.format(gamma));
@@ -424,6 +424,7 @@ public class CalibrationQuestion {
 
                 System.out.println(
                         " density = " + nf.format(p)
+                                + " alpha = " + nf.format(alpha)
                                 + " gamma = " + nf.format(gamma)
                                 + " r = " + nf.format(rhat)
                                 + " 1 - p = " + nf.format(1. - p)
@@ -456,14 +457,14 @@ public class CalibrationQuestion {
     private static void count(Graph ge, Set<Edge> l, Set<Edge> m, Node v1, Node v2, Node v3) {
 
         if (ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && !ge.isAdjacentTo(v1, v3)) {
-            m.add(Edges.undirectedEdge(v1, v2));
+            m.add(Edges.undirectedEdge(v1, v3));
 
             List<Node> adj = ge.getAdjacentNodes(v1);
-            adj.retainAll(ge.getAdjacentNodes(v2));
+            adj.retainAll(ge.getAdjacentNodes(v3));
 
             for (Node w : adj) {
                 l.add(Edges.undirectedEdge(w, v1));
-                l.add(Edges.undirectedEdge(w, v2));
+                l.add(Edges.undirectedEdge(w, v3));
             }
         }
     }
