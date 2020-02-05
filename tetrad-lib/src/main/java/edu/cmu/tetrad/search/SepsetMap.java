@@ -50,10 +50,9 @@ public final class SepsetMap implements TetradSerializable {
      */
     private Map<Set<Node>, List<Node>> sepsets = new ConcurrentHashMap<>();
     private Map<Set<Node>, Double> pValues = new ConcurrentHashMap<>();
-
     private Map<Node, HashSet<Node>> parents = new HashMap<>();
-    private Set<Set<Node>> correlations;
-    private boolean returnEmptyIfNotSet = false;
+//    private Set<Set<Node>> correlations;
+//    private boolean returnEmptyIfNotSet = false;
 
     //=============================CONSTRUCTORS===========================//
 
@@ -88,12 +87,12 @@ public final class SepsetMap implements TetradSerializable {
         }
     }
 
-    public void setPValue(Node x, Node y, double p) {
-        Set<Node> pair = new HashSet<>(2);
-        pair.add(x);
-        pair.add(y);
-        pValues.put(pair, p);
-    }
+//    public void setPValue(Node x, Node y, double p) {
+//        Set<Node> pair = new HashSet<>(2);
+//        pair.add(x);
+//        pair.add(y);
+//        pValues.put(pair, p);
+//    }
 
     /**
      * Retrieves the sepset previously set for {a, b}, or null if no such set was previously set.
@@ -103,13 +102,13 @@ public final class SepsetMap implements TetradSerializable {
         pair.add(a);
         pair.add(b);
 
-        if (correlations != null && !correlations.contains(pair)) {
-            return Collections.emptyList();
-        }
+//        if (correlations != null && !correlations.contains(pair)) {
+//            return Collections.emptyList();
+//        }
 
-        if (returnEmptyIfNotSet && sepsets.get(pair) == null) {
-            return Collections.emptyList();
-        }
+//        if (/*returnEmptyIfNotSet && */ sepsets.get(pair) == null) {
+//            return Collections.emptyList();
+//        }
 
         return sepsets.get(pair);
     }
@@ -173,20 +172,20 @@ public final class SepsetMap implements TetradSerializable {
     }
 
     /**
-     * ( Sets the set of node pairs that are correlated. These are returned by the depth zero search of PC. This set
-     * must be complete; it will be assumed that the sepset for any node pair not in this set is the empty set.
-     */
-    public void setCorrelations(Set<Set<Node>> pairs) {
-        this.correlations = pairs;
-    }
+//     * ( Sets the set of node pairs that are correlated. These are returned by the depth zero search of PC. This set
+//     * must be complete; it will be assumed that the sepset for any node pair not in this set is the empty set.
+//     */
+//    public void setCorrelations(Set<Set<Node>> pairs) {
+//        this.correlations = pairs;
+//    }
 
-    public boolean isReturnEmptyIfNotSet() {
-        return returnEmptyIfNotSet;
-    }
-
-    public void setReturnEmptyIfNotSet(boolean returnEmptyIfNotSet) {
-        this.returnEmptyIfNotSet = returnEmptyIfNotSet;
-    }
+//    public boolean isReturnEmptyIfNotSet() {
+//        return returnEmptyIfNotSet;
+//    }
+//
+//    public void setReturnEmptyIfNotSet(boolean returnEmptyIfNotSet) {
+//        this.returnEmptyIfNotSet = returnEmptyIfNotSet;
+//    }
 
     public void addAll(SepsetMap newSepsets) {
         sepsets.putAll(newSepsets.sepsets);

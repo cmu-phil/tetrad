@@ -48,8 +48,8 @@ public class SepsetsSet implements SepsetProducer {
     @Override
     public boolean isCollider(Node i, Node j, Node k) {
         List<Node> sepset = sepsets.get(i, k);
-        isIndependent(i, k, sepsets.get(i, k));
-        return sepset != null && !sepset.contains(j);
+        if (sepset == null) return false;
+        else return !sepset.contains(j);
     }
 
     @Override
