@@ -56,7 +56,9 @@ public class UtRStatistic implements Statistic {
             Node x = e.getNode1();
             Node y = e.getNode2();
 
-            if (ge.isDirectedFromTo(x, y) != gt.isDirectedFromTo(x, y)) {
+            if (gt.isDirectedFromTo(x, y) && !ge.isDirectedFromTo(x, y)) {
+                c++;
+            } else if (gt.isDirectedFromTo(y, x) && !ge.isDirectedFromTo(y, x)) {
                 c++;
             }
 
@@ -67,15 +69,9 @@ public class UtRStatistic implements Statistic {
     }
 
     private static void count(Graph ge, Set<Edge> l, Node v1, Node v2, Node v3) {
-
         if (ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && !ge.isAdjacentTo(v1, v3)) {
-            List<Node> adj = ge.getAdjacentNodes(v1);
-            adj.retainAll(ge.getAdjacentNodes(v2));
-
-            for (Node w : adj) {
-                l.add(Edges.undirectedEdge(w, v1));
-                l.add(Edges.undirectedEdge(w, v3));
-            }
+            l.add(Edges.undirectedEdge(v2, v1));
+            l.add(Edges.undirectedEdge(v2, v3));
         }
     }
 

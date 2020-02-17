@@ -321,7 +321,7 @@ public class CalibrationQuestion {
     // Make GT, simulate data, run FGES, yielding GE. Then find a nonredundant set of possible false negative shields ~XZ
     // touching all UTFP legs in GE and count for how many of these XZt is in GT.
     private static void scenario5() {
-        int sampleSize = 10000;
+        int sampleSize = 20000;
         int[] numVars = new int[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
         int[] avgDegree = new int[]{2, 4, 6, 8};
 
@@ -423,15 +423,18 @@ public class CalibrationQuestion {
                 System.out.print("L = " + L.size() + " P = " + P + " numVars = " + _numVars + " avgDegree = " + _avgDegree);
 
                 System.out.println(
-                        " density = " + nf.format(p)
+                        " p = " + nf.format(p)
+                                + " gamma * r = " + nf.format(gamma * rhat)
                                 + " alpha = " + nf.format(alpha)
+                                + " beta = " + nf.format(beta)
                                 + " gamma = " + nf.format(gamma)
                                 + " r = " + nf.format(rhat)
                                 + " 1 - p = " + nf.format(1. - p)
                                 + " 1 - gamma * r = " + nf.format((1 - gamma * rhat))
-                                + "\t" + " AHPC = " + nf.format(_ahpc));
-
-                //                System.out.println("\n---\n");
+                                + " AHPC = " + nf.format(_ahpc)
+//                                + " " + (_ahpc < 1 - gamma * rhat)
+                                + " " + (_ahpc <= 1 - p)
+                );
 
 //                UtRStatistic utr = new UtRStatistic();
 //                double rhat = utr.getValue(gt, ge, data);
@@ -443,14 +446,15 @@ public class CalibrationQuestion {
         System.out.println("E(r) = " + sumr / (double) count + " sumr = " + sumr + " count = " + count);
     }
 
-    private static Graph getCommonGraph(Graph gt, Graph ge1) {
-        Graph g2 = new EdgeListGraph(ge1.getNodes());
+    private static Graph getCommonGraph(Graph gt, Graph ge) {
+        Graph g2 = new EdgeListGraph(ge.getNodes());
 
-        for (Edge e : ge1.getEdges()) {
+        for (Edge e : ge.getEdges()) {
             if (gt.isAdjacentTo(e.getNode1(), e.getNode2())) {
                 g2.addEdge(e);
             }
         }
+
         return g2;
     }
 
@@ -458,14 +462,8 @@ public class CalibrationQuestion {
 
         if (ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && !ge.isAdjacentTo(v1, v3)) {
             m.add(Edges.undirectedEdge(v1, v3));
-
-            List<Node> adj = ge.getAdjacentNodes(v1);
-            adj.retainAll(ge.getAdjacentNodes(v3));
-
-            for (Node w : adj) {
-                l.add(Edges.undirectedEdge(w, v1));
-                l.add(Edges.undirectedEdge(w, v3));
-            }
+            l.add(Edges.undirectedEdge(v2, v1));
+            l.add(Edges.undirectedEdge(v2, v3));
         }
     }
 
