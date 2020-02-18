@@ -34,7 +34,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -44,6 +47,34 @@ import org.junit.Test;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class JunctionTreeAlgorithmTest {
+
+    private static int[][] THREE_NODE_VALUES = {
+        {0, 0, 0},
+        {0, 0, 1},
+        {0, 1, 0},
+        {0, 1, 1},
+        {1, 0, 0},
+        {1, 0, 1},
+        {1, 1, 0},
+        {1, 1, 1}
+    };
+
+    @Ignore
+    @Test
+    public void testJointProbability() {
+        String graphFile = this.getClass().getResource("/jta/graph.txt").getFile();
+        String dataFile = this.getClass().getResource("/jta/data.txt").getFile();
+        try {
+            JunctionTreeAlgorithm jta = getJunctionTreeAlgorithm(graphFile, dataFile);
+            for (int[] values : THREE_NODE_VALUES) {
+                printExampleProof(jta, values);
+                System.out.printf("JTA: %f%n", jta.getJointProbability(values));
+                System.out.println();
+            }
+        } catch (IOException exception) {
+            exception.printStackTrace(System.err);
+        }
+    }
 
     @Test
     public void testJunctionTree() {
@@ -105,6 +136,27 @@ public class JunctionTreeAlgorithmTest {
         } catch (IOException exception) {
             exception.printStackTrace(System.err);
         }
+    }
+
+    private static void printExampleProof(JunctionTreeAlgorithm jta, int[] values) {
+        int v1 = 0;
+        int v2 = 1;
+        int v3 = 2;
+
+        double v1GivenV2 = jta.getConditionalProbability(v1, values[v1], new int[]{v2}, new int[]{values[v2]});
+        double v2Parent = jta.getMarginalProbability(v2, values[v2]);
+        double v3Givenv2 = jta.getConditionalProbability(v3, values[v3], new int[]{v2}, new int[]{values[v2]});
+
+        System.out.println(
+                Arrays.stream(values)
+                        .mapToObj(String::valueOf)
+                        .collect(Collectors.joining(",")));
+        System.out.println("--------------------------------------------------------------------------------");
+        System.out.printf("P(v1=0|v2=0) = %f%n", v1GivenV2);
+        System.out.printf("P(v2=0) = %f%n", v2Parent);
+        System.out.printf("P(v3=0|v2=0) = %f%n", v3Givenv2);
+        System.out.println("-------------------------------------------------");
+        System.out.printf("P(v1=0|v2=0)P(v2=0)P(v3=0|v2=0) = %f%n", v1GivenV2 * v2Parent * v3Givenv2);
     }
 
     private JunctionTreeAlgorithm getJunctionTreeAlgorithm(String graphFile, String dataFile) throws IOException {
