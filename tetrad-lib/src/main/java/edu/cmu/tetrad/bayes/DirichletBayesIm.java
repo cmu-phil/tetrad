@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.BoxDataSet;
@@ -32,17 +31,17 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * <p>Stores Dirichlet pseudocounts for the distributions of each variable
+ * <p>
+ * Stores Dirichlet pseudocounts for the distributions of each variable
  * conditional on particular combinations of its parent values and, together
- * with Bayes Pm and Dag, provides methods to manipulate these tables.  The
- * division of labor is as follows.  The Dag is responsible for manipulating the
+ * with Bayes Pm and Dag, provides methods to manipulate these tables. The
+ * division of labor is as follows. The Dag is responsible for manipulating the
  * basic graphical structure of the Dirichlet Bayes net. Dag also stores and
  * manipulates the names of the nodes in the graph; there are no method in
  * either BayesPm or DiriculetBayesIm to do this. BayesPm stores and manipulates
@@ -52,11 +51,11 @@ import java.util.*;
  * parameter pseudocounts whose structures are implied by the structures in the
  * other two classes. The implied parameters take the form of conditional
  * probabilities--e.g., P(V=v0|P1=v1, P2=v2, ...), for all nodes and all
- * combinations of their parent values.  The set of all such probabilities is
+ * combinations of their parent values. The set of all such probabilities is
  * organized in this class as a three-dimensional table of double values. The
- * first dimension corresponds to the nodes in the DAG.  For each such node, the
+ * first dimension corresponds to the nodes in the DAG. For each such node, the
  * second dimension corresponds to a flat list of combinations of parent values
- * for that node.  The third dimension corresponds to the list of pseudocounts
+ * for that node. The third dimension corresponds to the list of pseudocounts
  * for each node/row combination. Two methods in this class allow these values
  * to be set and retrieved: <ul> <li>getPseudocount(int nodeIndex, int rowIndex,
  * int colIndex); and, <li>setPseudocount(int nodeIndex, int rowIndex, int
@@ -73,11 +72,14 @@ import java.util.*;
  * method <ul> <li> getParents(int nodeIndex) </ul> To determine the index of a
  * value, use the method <ul> <li> getCategoryIndex(Node node) </ul> in BayesPm.
  * The rest of the methods in this class are easily understood as variants of
- * the methods above. </p> <p>Thanks to Bill Taysom for an earlier version.</p>
+ * the methods above. </p>
+ * <p>
+ * Thanks to Bill Taysom for an earlier version.</p>
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 public final class DirichletBayesIm implements BayesIm {
+
     static final long serialVersionUID = 23L;
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
 
@@ -89,15 +91,14 @@ public final class DirichletBayesIm implements BayesIm {
     private BayesPm bayesPm;
 
     /**
-     * 1.0000
-     * The default row size for randomly creating new rows.
+     * 1.0000 The default row size for randomly creating new rows.
      *
      * @serial
      */
     private double nextRowTotal = 100.0;
 
     /**
-     * The array of nodes from the graph.  Order is important.
+     * The array of nodes from the graph. Order is important.
      *
      * @serial
      */
@@ -112,7 +113,7 @@ public final class DirichletBayesIm implements BayesIm {
     private int[][] parentDims;
 
     /**
-     * The list of parents for each node from the graph.  Order or nodes
+     * The list of parents for each node from the graph. Order or nodes
      * corresponds to the order of nodes in 'nodes', and order in subarrays is
      * important.
      *
@@ -122,14 +123,14 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * The main data structure; stores the values of all of the pseudocounts for
-     * the Dirichlet Bayes net of the form row by row, for each node.  The first
-     * dimension is the node N, in the order of 'nodes'.  The second dimension
-     * is the row index for the table of parameters associated with node N; the
-     * third dimension is the column index.  The row index is calculated by the
+     * the Dirichlet Bayes net of the form row by row, for each node. The first
+     * dimension is the node N, in the order of 'nodes'. The second dimension is
+     * the row index for the table of parameters associated with node N; the
+     * third dimension is the column index. The row index is calculated by the
      * function getRowIndex(int[] values) where 'values' is an array of
      * numerical indices for each of the parent values; the order of the values
      * in this array is the same as the order of node in 'parents'; the value
-     * indices are obtained from the Bayes PM for each node.  The column is the
+     * indices are obtained from the Bayes PM for each node. The column is the
      * index of the value of N, where this index is obtained from the Bayes PM.
      * If a pseudocount is -1, that means its value should be filled in
      * manually.
@@ -139,16 +140,15 @@ public final class DirichletBayesIm implements BayesIm {
     private double[][][] pseudocounts;
 
     //===============================CONSTRUCTORS=========================//
-
     /**
      * Constructs a new DirichletBayesIm from the given BayesPm, initializing
      * all values to -1.0, forcing them to be set manually.
      *
-     * @param bayesPm the given Bayes PM.  Carries with it the underlying graph
-     *                model.
+     * @param bayesPm the given Bayes PM. Carries with it the underlying graph
+     * model.
      * @throws IllegalArgumentException if the array of nodes provided is not a
-     *                                  permutation of the nodes contained in
-     *                                  the bayes parametric model provided.
+     * permutation of the nodes contained in the bayes parametric model
+     * provided.
      */
     private DirichletBayesIm(BayesPm bayesPm) throws IllegalArgumentException {
         this(bayesPm, null, Double.NaN);
@@ -164,21 +164,20 @@ public final class DirichletBayesIm implements BayesIm {
      * values that cannot be retrieved from oldBayesIm will distributed randomly
      * in each such row.
      *
-     * @param bayesPm        the given Bayes PM.  Carries with it the underlying
-     *                       graph model.
-     * @param oldBayesIm     an already-constructed DirichletBayesIm whose
-     *                       values may be used where possible to initialize
-     *                       this DirichletBayesIm. May be null.
+     * @param bayesPm the given Bayes PM. Carries with it the underlying graph
+     * model.
+     * @param oldBayesIm an already-constructed DirichletBayesIm whose values
+     * may be used where possible to initialize this DirichletBayesIm. May be
+     * null.
      * @param symmetricAlpha the value that all Dirichlet parameters are
-     *                       initially set to, which must be nonnegative, or
-     *                       Double.naN if all parameters should be set
-     *                       initially to "unspecified."
+     * initially set to, which must be nonnegative, or Double.naN if all
+     * parameters should be set initially to "unspecified."
      * @throws IllegalArgumentException if the array of nodes provided is not a
-     *                                  permutation of the nodes contained in
-     *                                  the bayes parametric model provided.
+     * permutation of the nodes contained in the bayes parametric model
+     * provided.
      */
     private DirichletBayesIm(BayesPm bayesPm, DirichletBayesIm oldBayesIm,
-                             double symmetricAlpha) throws IllegalArgumentException {
+            double symmetricAlpha) throws IllegalArgumentException {
         if (bayesPm == null) {
             throw new NullPointerException("BayesPm must not be null.");
         }
@@ -206,15 +205,14 @@ public final class DirichletBayesIm implements BayesIm {
      * Double.NaN, all parameters will be initialized as unspecified, requiring
      * manual setting.)
      *
-     * @param bayesPm        the given Bayes PM.  Carries with it the underlying
-     *                       graph model.
+     * @param bayesPm the given Bayes PM. Carries with it the underlying graph
+     * model.
      * @param symmetricAlpha the value that all Dirichlet parameters are
-     *                       initially set to, which must be nonnegative, or
-     *                       Double.NaN if all parameters should be set
-     *                       initially to "unspecified."
+     * initially set to, which must be nonnegative, or Double.NaN if all
+     * parameters should be set initially to "unspecified."
      * @throws IllegalArgumentException if the array of nodes provided is not a
-     *                                  permutation of the nodes contained in
-     *                                  the bayes parametric model provided.
+     * permutation of the nodes contained in the bayes parametric model
+     * provided.
      */
     private DirichletBayesIm(BayesPm bayesPm, double symmetricAlpha)
             throws IllegalArgumentException {
@@ -253,9 +251,8 @@ public final class DirichletBayesIm implements BayesIm {
 //                                                        DirichletBayesIm oldBayesIm, double symmetricAlpha) {
 //        return new DirichletBayesIm(bayesPm, oldBayesIm, symmetricAlpha);
 //    }
-
     public static DirichletBayesIm symmetricDirichletIm(BayesPm bayesPm,
-                                                        double symmetricAlpha) {
+            double symmetricAlpha) {
         return new DirichletBayesIm(bayesPm, symmetricAlpha);
     }
 
@@ -267,7 +264,6 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     //===============================PUBLIC METHODS========================//
-
     /**
      * @return this PM.
      */
@@ -409,7 +405,7 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * @param nodeIndex the index of the node.
-     * @param rowIndex  the index of the row in question.
+     * @param rowIndex the index of the row in question.
      * @return the array representing the combination of parent values for this
      * row.
      * @see #getNodeIndex
@@ -429,17 +425,17 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * @param nodeIndex the index of the node in question.
-     * @param rowIndex  the row in the table for this for node which represents
-     *                  the combination of parent values in question.
-     * @param colIndex  the column in the table for this node which represents
-     *                  the value of the node in question.
+     * @param rowIndex the row in the table for this for node which represents
+     * the combination of parent values in question.
+     * @param colIndex the column in the table for this node which represents
+     * the value of the node in question.
      * @return the probability stored for this parameter.
      * @see #getNodeIndex
      * @see #getRowIndex
      */
     public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
-        double parameterPseudocount =
-                getPseudocount(nodeIndex, rowIndex, colIndex);
+        double parameterPseudocount
+                = getPseudocount(nodeIndex, rowIndex, colIndex);
         double rowPseudocount = getRowPseudocount(nodeIndex, rowIndex);
 
         if (parameterPseudocount < 0.0) {
@@ -507,7 +503,6 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     //=============================PRIVATE METHODS=======================//
-
     /**
      * This method initializes the probability tables for all of the nodes in
      * the Bayes net.
@@ -516,7 +511,7 @@ public final class DirichletBayesIm implements BayesIm {
      * @see #randomizeRow
      */
     private void initialize(DirichletBayesIm oldBayesIm,
-                            double symmetricAlpha) {
+            double symmetricAlpha) {
         parents = new int[this.nodes.length][];
         parentDims = new int[this.nodes.length][];
         pseudocounts = new double[this.nodes.length][][];
@@ -530,7 +525,7 @@ public final class DirichletBayesIm implements BayesIm {
      * This method initializes the node indicated.
      */
     private void initializeNode(int nodeIndex, DirichletBayesIm oldBayesIm,
-                                double symmetricAlpha) {
+            double symmetricAlpha) {
         Node node = nodes[nodeIndex];
 
         // Set up parents array.  Should store the parents of
@@ -587,7 +582,7 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     private void initializeRowSymmetrically(int nodeIndex, int rowIndex,
-                                            double symmetricAlpha) {
+            double symmetricAlpha) {
         final int size = getNumColumns(nodeIndex);
         double[] row = new double[size];
         Arrays.fill(row, symmetricAlpha);
@@ -595,8 +590,7 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     /**
-     * @return true iff any value in the table for the given node is
-     * Double.NaN.
+     * @return true iff any value in the table for the given node is Double.NaN.
      */
     public boolean isIncomplete(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -654,8 +648,8 @@ public final class DirichletBayesIm implements BayesIm {
 
         if (total != 0.0) {
             for (int colIndex = 0; colIndex < numColumns; colIndex++) {
-                double probability =
-                        getProbability(nodeIndex, rowIndex, colIndex);
+                double probability
+                        = getProbability(nodeIndex, rowIndex, colIndex);
                 double prob = probability / total;
                 setProbability(nodeIndex, rowIndex, colIndex, prob);
             }
@@ -669,7 +663,7 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     private void overwriteRow(int nodeIndex, int rowIndex,
-                              double symmetricAlpha) {
+            double symmetricAlpha) {
         if (Double.isNaN(symmetricAlpha)) {
             initializeRowAsBlank(nodeIndex, rowIndex);
         } else if (symmetricAlpha >= 0.0) {
@@ -685,7 +679,7 @@ public final class DirichletBayesIm implements BayesIm {
      * Double.NaN value in it.
      *
      * @param nodeIndex the node for the table whose incomplete rows are to be
-     *                  randomized.
+     * randomized.
      */
     public void randomizeIncompleteRows(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -700,7 +694,7 @@ public final class DirichletBayesIm implements BayesIm {
      * add to 1.
      *
      * @param nodeIndex the node for the table that this row belongs to.
-     * @param rowIndex  the index of the row.
+     * @param rowIndex the index of the row.
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
         final int size = getNumColumns(nodeIndex);
@@ -723,7 +717,7 @@ public final class DirichletBayesIm implements BayesIm {
      * This method initializes the node indicated.
      */
     private void retainOldRowIfPossible(int nodeIndex, int rowIndex,
-                                        DirichletBayesIm oldBayesIm, double symmetricAlpha) {
+            DirichletBayesIm oldBayesIm, double symmetricAlpha) {
         int oldNodeIndex = getCorrespondingNodeIndex(nodeIndex, oldBayesIm);
 
         if (oldNodeIndex == -1) {
@@ -731,8 +725,8 @@ public final class DirichletBayesIm implements BayesIm {
         } else if (getNumColumns(nodeIndex) != oldBayesIm.getNumColumns(oldNodeIndex)) {
             overwriteRow(nodeIndex, rowIndex, symmetricAlpha);
         } else {
-            int oldRowIndex =
-                    getUniqueCompatibleOldRow(nodeIndex, rowIndex, oldBayesIm);
+            int oldRowIndex
+                    = getUniqueCompatibleOldRow(nodeIndex, rowIndex, oldBayesIm);
 
             if (oldRowIndex >= 0) {
                 copyValuesFromOldToNew(oldNodeIndex, oldRowIndex, nodeIndex,
@@ -752,31 +746,48 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     /**
+     * Sets the probability for the given node. The matrix row represent row
+     * index, the row in the table for this for node which represents the
+     * combination of parent values in question. of the CPT. The matrix column
+     * represent column index, the column in the table for this node which
+     * represents the value of the node in question.
+     *
+     * @param nodeIndex the index of the node in question.
+     * @param probMatrix a matrix containing probabilities of a node along with
+     * its parents
+     */
+    @Override
+    public void setProbability(int nodeIndex, double[][] probMatrix) {
+        throw new UnsupportedOperationException("Please set pseudocounts and "
+                + "not probabilities for this Dirichlet Bayes IM.");
+    }
+
+    /**
      * Sets the probability for the given node at a given row and column in the
-     * table for that node.  To get the node index, use getNodeIndex().  To get
-     * the row index, use getRowIndex().  To get the column index, use
-     * getCategoryIndex() from the underlying BayesPm().  The value returned
-     * will represent a conditional probability of the form P(N=v0 | P1=v1,
-     * P2=v2, ... , Pn=vn), where N is the node referenced by nodeIndex, v0 is
-     * the value referenced by colIndex, and the combination of parent values
+     * table for that node. To get the node index, use getNodeIndex(). To get
+     * the row index, use getRowIndex(). To get the column index, use
+     * getCategoryIndex() from the underlying BayesPm(). The value returned will
+     * represent a conditional probability of the form P(N=v0 | P1=v1, P2=v2,
+     * ... , Pn=vn), where N is the node referenced by nodeIndex, v0 is the
+     * value referenced by colIndex, and the combination of parent values
      * indicated is the combination indicated by rowIndex.
      *
      * @param nodeIndex the index of the node in question.
-     * @param rowIndex  the row in the table for this for node which represents
-     *                  the combination of parent values in question.
-     * @param colIndex  the column in the table for this node which represents
-     *                  the value of the node in question.
-     * @param value     the desired probability to be set.
+     * @param rowIndex the row in the table for this for node which represents
+     * the combination of parent values in question.
+     * @param colIndex the column in the table for this node which represents
+     * the value of the node in question.
+     * @param value the desired probability to be set.
      * @see #getProbability
      */
     public void setProbability(int nodeIndex, int rowIndex, int colIndex,
-                               double value) {
-        throw new UnsupportedOperationException("Please set pseudocounts and " +
-                "not probabilities for this Dirichlet Bayes IM.");
+            double value) {
+        throw new UnsupportedOperationException("Please set pseudocounts and "
+                + "not probabilities for this Dirichlet Bayes IM.");
     }
 
     public void setPseudocount(int nodeIndex, int rowIndex, int colIndex,
-                               double pseudocount) {
+            double pseudocount) {
         if (pseudocount < 0) {
             throw new IllegalArgumentException(
                     "Pseudocounts must be nonnegative.");
@@ -809,16 +820,16 @@ public final class DirichletBayesIm implements BayesIm {
      * Simulates a random sample with the number of cases equal to
      * <code>sampleSize</code>.
      *
-     * @param sampleSize      the sample size.
-     * @param seed            the random number generator seed allows you
-     *                        recreate the simulated data by passing in the same
-     *                        seed (so you don't have to store the sample data
+     * @param sampleSize the sample size.
+     * @param seed the random number generator seed allows you recreate the
+     * simulated data by passing in the same seed (so you don't have to store
+     * the sample data
      * @param latentDataSaved true iff data for latent variables should be
-     *                        included in the simulated data set.
+     * included in the simulated data set.
      * @return the simulated sample as a DataSet.
      */
     public DataSet simulateData(int sampleSize, long seed,
-                                boolean latentDataSaved) {
+            boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
         long _seed = random.getSeed();
         random.setSeed(seed);
@@ -830,16 +841,16 @@ public final class DirichletBayesIm implements BayesIm {
     /**
      * Simulates a sample with the given sample size.
      *
-     * @param sampleSize      the sample size.
-     * @param randomUtil      optional random number generator to use when
-     *                        creating the data
+     * @param sampleSize the sample size.
+     * @param randomUtil optional random number generator to use when creating
+     * the data
      * @param latentDataSaved true iff data for latent variables should be
-     *                        saved.
+     * saved.
      * @return the simulated sample as a DataSet.
      */
     private DataSet simulateDataHelper(int sampleSize,
-                                       RandomUtil randomUtil,
-                                       boolean latentDataSaved) {
+            RandomUtil randomUtil,
+            boolean latentDataSaved) {
         int numMeasured = 0;
         int[] map = new int[nodes.length];
         List<Node> variables = new LinkedList<>();
@@ -856,8 +867,8 @@ public final class DirichletBayesIm implements BayesIm {
                 categories.add(bayesPm.getCategory(nodes[j], k));
             }
 
-            DiscreteVariable var =
-                    new DiscreteVariable(nodes[j].getName(), categories);
+            DiscreteVariable var
+                    = new DiscreteVariable(nodes[j].getName(), categories);
             variables.add(var);
             int index = ++numMeasured - 1;
             map[index] = j;
@@ -915,10 +926,9 @@ public final class DirichletBayesIm implements BayesIm {
 //        constructSample(sampleSize, randomUtil, numMeasured, dataSet, map);
 //        return dataSet;
 //    }
-
     private void constructSample(int sampleSize, RandomUtil randomUtil,
-                                 int numMeasured, DataSet dataSet,
-                                 int[] map) {
+            int numMeasured, DataSet dataSet,
+            int[] map) {
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
         Dag dag = new Dag(graph);
@@ -949,9 +959,9 @@ public final class DirichletBayesIm implements BayesIm {
                     double probability = getProbability(nodeIndex, rowIndex, k);
 
                     if (Double.isNaN(probability)) {
-                        throw new IllegalStateException("Some probability " +
-                                "values in the BayesIm are not filled in; " +
-                                "cannot simulate data.");
+                        throw new IllegalStateException("Some probability "
+                                + "values in the BayesIm are not filled in; "
+                                + "cannot simulate data.");
                     }
 
                     sum += probability;
@@ -974,7 +984,7 @@ public final class DirichletBayesIm implements BayesIm {
      * add to 1.
      *
      * @param nodeIndex the node for the table that this row belongs to.
-     * @param rowIndex  the index of the row.
+     * @param rowIndex the index of the row.
      */
     public void clearRow(int nodeIndex, int rowIndex) {
         for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
@@ -1028,13 +1038,13 @@ public final class DirichletBayesIm implements BayesIm {
                     double probability = getProbability(i, j, k);
                     double otherProbability = otherIm.getPseudocount(i, j, k);
 
-                    if (Double.isNaN(probability) &&
-                            Double.isNaN(otherProbability)) {
+                    if (Double.isNaN(probability)
+                            && Double.isNaN(otherProbability)) {
                         continue;
                     }
 
-                    if (Math.abs(probability - otherProbability) >
-                            ALLOWABLE_DIFFERENCE) {
+                    if (Math.abs(probability - otherProbability)
+                            > ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }
@@ -1089,28 +1099,27 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     //=============================PRIVATE METHODS=========================//
-
     private void copyValuesFromOldToNew(int oldNodeIndex, int oldRowIndex,
-                                        int nodeIndex, int rowIndex, DirichletBayesIm oldBayesIm) {
+            int nodeIndex, int rowIndex, DirichletBayesIm oldBayesIm) {
         if (getNumColumns(nodeIndex) != oldBayesIm.getNumColumns(oldNodeIndex)) {
-            throw new IllegalArgumentException("It's only possible to copy " +
-                    "one row of probability values to another in a Bayes IM " +
-                    "if the number of columns in the table are the same.");
+            throw new IllegalArgumentException("It's only possible to copy "
+                    + "one row of probability values to another in a Bayes IM "
+                    + "if the number of columns in the table are the same.");
         }
 
         for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
-            pseudocounts[nodeIndex][rowIndex][colIndex] =
-                    oldBayesIm.getPseudocount(oldNodeIndex, oldRowIndex,
+            pseudocounts[nodeIndex][rowIndex][colIndex]
+                    = oldBayesIm.getPseudocount(oldNodeIndex, oldRowIndex,
                             colIndex);
         }
     }
 
     /**
      * This method chooses random probabilities for a row which add up to 1.0.
-     * The method is as follows.  If n probabilities are required for the row,
+     * The method is as follows. If n probabilities are required for the row,
      * random values are chosen from a uniform distribution over [0.0, 1.0); the
-     * final value is set to 1.0.  Next, these values are sorted from least to
-     * greatest.  Finally, the difference of each value with its predecessor is
+     * final value is set to 1.0. Next, these values are sorted from least to
+     * greatest. Finally, the difference of each value with its predecessor is
      * calculated, and this array of differences is returned.
      *
      * @param size the length of the row.
@@ -1175,7 +1184,7 @@ public final class DirichletBayesIm implements BayesIm {
      * which case -1 is returned.
      */
     private int getUniqueCompatibleOldRow(int nodeIndex, int rowIndex,
-                                          BayesIm oldBayesIm) {
+            BayesIm oldBayesIm) {
         int oldNodeIndex = getCorrespondingNodeIndex(nodeIndex, oldBayesIm);
         int oldNumParents = oldBayesIm.getNumParents(oldNodeIndex);
 
@@ -1191,8 +1200,8 @@ public final class DirichletBayesIm implements BayesIm {
             // graph. If it's no longer in the new graph, skip to the next
             // parent.
             int parentNodeIndex = getParent(nodeIndex, i);
-            int oldParentNodeIndex =
-                    getCorrespondingNodeIndex(parentNodeIndex, oldBayesIm);
+            int oldParentNodeIndex
+                    = getCorrespondingNodeIndex(parentNodeIndex, oldBayesIm);
             int oldParentIndex = -1;
 
             for (int j = 0; j < oldBayesIm.getNumParents(oldNodeIndex); j++) {
@@ -1202,8 +1211,8 @@ public final class DirichletBayesIm implements BayesIm {
                 }
             }
 
-            if (oldParentIndex == -1 ||
-                    oldParentIndex >= oldBayesIm.getNumParents(oldNodeIndex)) {
+            if (oldParentIndex == -1
+                    || oldParentIndex >= oldBayesIm.getNumParents(oldNodeIndex)) {
                 continue;
             }
 
@@ -1211,8 +1220,8 @@ public final class DirichletBayesIm implements BayesIm {
             // If it was a valid value index in the old DirichletBayesIm, record
             // that value in oldParentValues. Otherwise return -1.
             int newParentValue = parentValues[i];
-            int oldParentDim =
-                    oldBayesIm.getParentDim(oldNodeIndex, oldParentIndex);
+            int oldParentDim
+                    = oldBayesIm.getParentDim(oldNodeIndex, oldParentIndex);
 
             if (newParentValue < oldParentDim) {
                 oldParentValues[oldParentIndex] = newParentValue;
@@ -1232,7 +1241,6 @@ public final class DirichletBayesIm implements BayesIm {
         // old DirichletBayesIm.
         return oldBayesIm.getRowIndex(oldNodeIndex, oldParentValues);
     }
-
 
     /**
      * Adds semantic checks to the default deserialization method. This method
@@ -1272,8 +1280,3 @@ public final class DirichletBayesIm implements BayesIm {
         }
     }
 }
-
-
-
-
-

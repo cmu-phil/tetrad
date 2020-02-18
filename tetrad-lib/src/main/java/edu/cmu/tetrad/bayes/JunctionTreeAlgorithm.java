@@ -355,6 +355,40 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         treeNode.setEvidence(node, value);
     }
 
+    /**
+     * Get the conditional probability of a node for all of its values.
+     *
+     * @param iNode
+     * @param parents
+     * @param parentValues
+     * @return
+     */
+    public double[] getConditionalProbability(int iNode, int[] parents, int[] parentValues) {
+        if (isValid(iNode) && isValid(parents, parentValues)) {
+            if (parents == null || parents.length == 0) {
+                return margins[iNode];
+            } else {
+                try {
+                    for (int i = 0; i < parents.length; i++) {
+                        setEvidence(parents[i], parentValues[i]);
+                    }
+                } catch (Exception exception) {
+                    exception.printStackTrace(System.err);
+                }
+
+                double[] margCondProb = new double[margins[iNode].length];
+                System.arraycopy(margins[iNode], 0, margCondProb, 0, margCondProb.length);
+
+                // reset
+                initialize();
+
+                return margCondProb;
+            }
+        }
+
+        return NO_PROBABILITIES;
+    }
+
     public double getConditionalProbability(int iNode, int value, int[] parents, int[] parentValues) {
         double margCondProb = NO_PROBABILITY;
 
