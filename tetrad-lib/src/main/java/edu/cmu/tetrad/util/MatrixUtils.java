@@ -751,14 +751,16 @@ public final class MatrixUtils {
         if (variables == null) {
             variables = new ArrayList<>();
 
-            for (int i = 0; i < m[0].length; i++) {
-                variables.add("V" + (i + 1));
+            if (m.length > 0) {
+                for (int i = 0; i < m[0].length; i++) {
+                    variables.add("V" + (i + 1));
+                }
             }
         }
 
         if (m == null) {
             result = nullMessage();
-        } else {
+        } else if (m.length > 0) {
             TextTable textTable = new TextTable(m.length + 1, m[0].length);
 
             for (int i = 0; i < variables.size(); i++) {
@@ -772,6 +774,8 @@ public final class MatrixUtils {
             }
 
             result = "\n" + textTable.toString();
+        } else {
+            result = nullMessage();
         }
 
         return result;

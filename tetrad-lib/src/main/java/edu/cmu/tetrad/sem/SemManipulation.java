@@ -66,6 +66,11 @@ public final class SemManipulation implements TetradSerializable {
         this.manipulated = new boolean[semIm.getVariableNodes().size()];
     }
 
+    public SemManipulation(SemManipulation manipulation) {
+        this.semIm = manipulation.semIm;
+        this.manipulated = Arrays.copyOf(manipulation.manipulated, manipulation.manipulated.length);
+    }
+
 //    /**
 //     * Copy constructor.
 //     */

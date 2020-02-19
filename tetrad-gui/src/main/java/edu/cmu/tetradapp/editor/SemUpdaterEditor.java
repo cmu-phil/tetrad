@@ -138,7 +138,7 @@ public class SemUpdaterEditor extends JPanel {
                     }
 
                     evidence.getProposition().setValue(nodeIndex, value);
-                    semIm.setMean(node, value);
+//                    semIm.setMean(node, value);
                     SemIm updatedSem = semUpdater.getUpdatedSemIm();
                     semImEditor.displaySemIm(updatedSem,
                             semImEditor.getTabSelectionIndex(),
@@ -210,7 +210,7 @@ public class SemUpdaterEditor extends JPanel {
             semImEditor.displaySemIm(updatedSem,
                     semImEditor.getTabSelectionIndex(),
                     semImEditor.getMatrixSelection());
-            semUpdater.setEvidence(new SemEvidence(updatedSem));
+//            semUpdater.setEvidence(new SemEvidence(updatedSem));
         });
 
         b2.add(button);

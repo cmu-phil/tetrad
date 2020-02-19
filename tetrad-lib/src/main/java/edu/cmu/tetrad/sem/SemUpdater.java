@@ -20,12 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.sem;
 
-import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.jet.math.Functions;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -33,6 +29,9 @@ import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradVector;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -58,7 +57,9 @@ public class SemUpdater implements TetradSerializable {
             throw new NullPointerException();
         }
 
-        setEvidence(new SemEvidence(semIm));
+        this.semIm = semIm;
+        SemEvidence evidence = new SemEvidence(this.semIm);
+        setEvidence(evidence);
     }
 
     /**
@@ -82,7 +83,7 @@ public class SemUpdater implements TetradSerializable {
         }
 
         this.evidence = evidence;
-        this.semIm = evidence.getSemIm();
+//        this.semIm = evidence.getSemIm();
     }
 
     /**
@@ -96,101 +97,96 @@ public class SemUpdater implements TetradSerializable {
      * See http://en.wikipedia.org/wiki/Multivariate_normal_distribution.
      */
     public SemIm getUpdatedSemIm() {
-        Algebra algebra = new Algebra();
 
         // First manipulate the old semIm.
         SemIm manipulatedSemIm = getManipulatedSemIm();
 
         // Get out the means and implied covariances.
-        double[] means = new double[manipulatedSemIm.getVariableNodes().size()];
+        TetradVector means = new TetradVector(manipulatedSemIm.getVariableNodes().size());
 
-        for (int i = 0; i < means.length; i++) {
-            means[i] = manipulatedSemIm.getMean(manipulatedSemIm.getVariableNodes().get(i));
+        for (int i = 0; i < means.size(); i++) {
+            means.set(i, manipulatedSemIm.getMean(manipulatedSemIm.getVariableNodes().get(i)));
         }
 
-        DoubleMatrix1D mu = new DenseDoubleMatrix1D(means);
-        DoubleMatrix2D sigma = new DenseDoubleMatrix2D(manipulatedSemIm.getImplCovar(true).toArray());
+//        System.out.println("vars = " + semIm.getVariableNodes());
+//        System.out.println("means = " + means);
 
-        // Updating on x2 = a.
+        TetradMatrix implcov = manipulatedSemIm.getImplCovar(true);
+
+        // Updating on x2 = X.
         SemEvidence evidence = getEvidence();
-        List nodesInEvidence = evidence.getNodesInEvidence();
+        List<Node> nodesInEvidence = new ArrayList<>(evidence.getNodesInEvidence());
+
+//        System.out.println("evidence = " + evidence);
+
+        List<Node> XVars = new ArrayList<>(evidence.getNodesInEvidence());
+        List<Node> YVars = new ArrayList<>(manipulatedSemIm.getVariableNodes());
+        YVars.removeAll(nodesInEvidence);
+
+        int[] xIndices = new int[XVars.size()];
+        int[] yIndices = new int[YVars.size()];
+
+        for (int i = 0; i < XVars.size(); i++) {
+            xIndices[i] = manipulatedSemIm.getVariableNodes().indexOf(XVars.get(i));
+        }
+
+        for (int i = 0; i < YVars.size(); i++) {
+            yIndices[i] = manipulatedSemIm.getVariableNodes().indexOf(YVars.get(i));
+        }
+
+        TetradMatrix covyx = implcov.getSelection(yIndices, xIndices);
+
+        TetradMatrix varx = manipulatedSemIm.getErrCovar().getSelection(xIndices, xIndices);
+
+        TetradVector EX = means.viewSelection(xIndices);
+        TetradVector EY = means.viewSelection(yIndices);
 
         int[] x2 = new int[nodesInEvidence.size()];
-        DoubleMatrix1D a = new DenseDoubleMatrix1D(nodesInEvidence.size());
+        TetradVector X = new TetradVector(nodesInEvidence.size());
 
         for (int i = 0; i < nodesInEvidence.size(); i++) {
-            Node _node = (Node) nodesInEvidence.get(i);
+            Node _node = nodesInEvidence.get(i);
             x2[i] = evidence.getNodeIndex(_node);
         }
 
         for (int i = 0; i < nodesInEvidence.size(); i++) {
-            int j = evidence.getNodeIndex((Node) nodesInEvidence.get(i));
-            a.set(i, evidence.getProposition().getValue(j));
+            int j = evidence.getNodeIndex(nodesInEvidence.get(i));
+            X.set(i, evidence.getProposition().getValue(j));
         }
 
-        // x1 is all the variables.
-//        int[] x1 = new int[sigma.rows() - x2.length];
-        int[] x1 = new int[sigma.rows()];
+//        System.out.println("covyx = " + covyx);
+//        System.out.println("varx = " + varx);
+//        System.out.println("X = " + X);
+//        System.out.println("EX = " + EX);
+//        System.out.println("EY = " + EY);
+        TetradVector xminusex = X.minus(EX);
 
-        for (int i = 0; i < sigma.rows(); i++) {
-            x1[i] = i;
-        }
-
-//        int index = -1;
-//        for (int i = 0; i < sigma.rows(); i++) {
-//            if (Arrays.binarySearch(x2, i) == -1) {
-//                x1[++index] = i;
-//            }
-//        }
-        // Calculate sigmaBar. (Don't know how to use it yet.)
-//        DoubleMatrix2D sigma11 = sigma.viewSelection(x1, x1);
-        DoubleMatrix2D sigma12 = sigma.viewSelection(x1, x2);
-        DoubleMatrix2D sigma22 = sigma.viewSelection(x2, x2);
-//        DoubleMatrix2D sigma21 = sigma.viewSelection(x2, x1);
-        DoubleMatrix2D inv_sigma22 = algebra.inverse(sigma22);
-        DoubleMatrix2D temp1 = algebra.mult(sigma12, inv_sigma22);
-//        DoubleMatrix2D temp2 = algebra.times(temp1, sigma21.copy());
-//        DoubleMatrix2D sigmaBar = sigma11.copy().assign(temp2, Functions.minus);
-
-        // Calculate muBar.
-        DoubleMatrix1D mu1 = mu.viewSelection(x1);
-        DoubleMatrix1D mu2 = mu.viewSelection(x2);
-        DoubleMatrix1D temp4 = a.copy().assign(mu2, Functions.minus);
-        DoubleMatrix1D temp5 = algebra.mult(temp1, temp4);
-        DoubleMatrix1D muBar = mu1.copy().assign(temp5, Functions.plus);
-
-        // Estimate a SEM with this sigmaBar and muBar.
-//        List variableNodes = manipulatedSemIm.getVariableNodes();
-//        String[] varNames = new String[variableNodes.size()];
-//
-//        for (int i = 0; i < variableNodes.size(); i++) {
-//            varNames[i] = ((Node) variableNodes.get(i)).getNode();
-//        }
-//        System.out.println(sigmaBar);
-//
-//        CovarianceMatrix covMatrix = new CovarianceMatrix(varNames,
-//                sigmaBar, 100);
-//        SemPm semPm = manipulatedSemIm.getEstIm();
-//        SemEstimator estimator = new SemEstimator(covMatrix, semPm);
-//        estimator.estimate();
-//        SemIm semIm = estimator.getEstimatedSem();
-//        semIm.setMeanValues(muBar.toArray());
-//        return semIm;
+        TetradVector mu = new TetradVector(manipulatedSemIm.getVariableNodes().size());
         DoubleMatrix2D sigma2 = new DenseDoubleMatrix2D(manipulatedSemIm.getErrCovar().toArray());
 
-//        for (int aX2 : x2) {
-//            for (int j = 0; j < sigma2.columns(); j++) {
-//                sigma2.set(aX2, j, 0.d);
-//            }
-//        }
-//
-//        for (int i = 0; i < sigma2.rows(); i++) {
-//            for (int aX2 : x2) {
-//                sigma2.set(i, aX2, 0.d);
-//                sigma2.set(aX2, i, 0.d);
-//            }
-//        }
-        return manipulatedSemIm.updatedIm(new TetradMatrix(sigma2.toArray()), new TetradVector(muBar.toArray()));
+        if (xminusex.size() == 0) {
+            mu = new TetradVector(means.toArray());
+        } else {
+
+//            System.out.println("xminusex = " + xminusex);
+
+            TetradVector times = (covyx.times(varx.inverse())).times(xminusex);
+//            System.out.println("times = " + times);
+
+            TetradVector YHatX = EY.plus(times);
+
+//            System.out.println("YHatX = " + YHatX);
+
+            for (int i = 0; i < xIndices.length; i++) {
+                mu.set(xIndices[i], X.get(i));
+            }
+
+            for (int i = 0; i < yIndices.length; i++) {
+                mu.set(yIndices[i], YHatX.get(i));
+            }
+        }
+
+        return manipulatedSemIm.updatedIm(new TetradMatrix(sigma2.toArray()), mu);
     }
 
     public Graph getManipulatedGraph() {

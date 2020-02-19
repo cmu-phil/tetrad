@@ -49,7 +49,7 @@ class SemEvidenceEditor extends JPanel {
             throw new NullPointerException();
         }
 
-        this.evidence = evidence;
+        this.evidence = new SemEvidence(evidence);
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -60,6 +60,7 @@ class SemEvidenceEditor extends JPanel {
         add(d);
 
         for (int i = 0; i < evidence.getNumNodes(); i++) {
+            int _i = i;
             Box c = Box.createHorizontalBox();
             SemIm semIm = evidence.getSemIm();
             String name = (semIm.getVariableNodes().get(i)).getName();
@@ -71,7 +72,17 @@ class SemEvidenceEditor extends JPanel {
             c.add(label);
 
             DoubleTextField field = new DoubleTextField(
-                    evidence.getProposition().getValue(i), 5, NumberFormatUtil.getInstance().getNumberFormat());
+                    evidence.getProposition().getValue(_i), 5, NumberFormatUtil.getInstance().getNumberFormat());
+
+            field.setFilter((value, oldValue) -> {
+                try {
+                    evidence.getProposition().setValue(_i, value);
+                    return value;
+                }
+                catch (IllegalArgumentException e) {
+                    return oldValue;
+                }
+            });
 
             c.add(field);
             c.add(Box.createHorizontalStrut(2));
@@ -105,7 +116,7 @@ class SemEvidenceEditor extends JPanel {
     }
 
     public SemEvidence getEvidence() {
-        return evidence;
+        return new SemEvidence(evidence);
     }
 }
 

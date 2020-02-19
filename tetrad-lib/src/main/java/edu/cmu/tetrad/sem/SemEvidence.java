@@ -75,6 +75,12 @@ public final class SemEvidence implements TetradSerializable {
         this.manipulation = new SemManipulation(semIm);
     }
 
+    public SemEvidence(SemEvidence evidence) {
+        this.semIm = evidence.semIm;
+        this.proposition = new SemProposition(evidence.proposition);
+        this.manipulation = new SemManipulation(evidence.manipulation);
+    }
+
 //    /**
 //     * Copy constructor.
 //     */
