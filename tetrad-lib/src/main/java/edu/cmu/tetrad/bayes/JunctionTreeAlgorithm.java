@@ -422,7 +422,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * @param nodeValues an array of values for each node
      * @return
      */
-    public double getJointProbability(int[] nodeValues) {
+    public double getJointProbabilityAll(int[] nodeValues) {
         if (nodeValues.length != graphNodes.length) {
             throw new IllegalArgumentException("The number of values must be equal to the number of nodes.");
         }

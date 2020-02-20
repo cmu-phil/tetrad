@@ -68,7 +68,7 @@ public class JunctionTreeAlgorithmTest {
             JunctionTreeAlgorithm jta = getJunctionTreeAlgorithm(graphFile, dataFile);
             for (int[] values : THREE_NODE_VALUES) {
                 printExampleProof(jta, values);
-                System.out.printf("JTA: %f%n", jta.getJointProbability(values));
+                System.out.printf("JTA: %f%n", jta.getJointProbabilityAll(values));
                 System.out.println();
             }
         } catch (IOException exception) {
