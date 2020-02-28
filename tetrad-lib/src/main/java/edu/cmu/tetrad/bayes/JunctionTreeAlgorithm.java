@@ -414,6 +414,25 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return margCondProb;
     }
 
+    /**
+     * Get the joint probability of all nodes (variables). Given the nodes are
+     * X1, X2,...,Xn, then nodeValues[0] = value(X1), nodeValues[1] =
+     * value(X2),...,nodeValues[n-1] = value(Xn).
+     *
+     * @param nodeValues an array of values for each node
+     * @return
+     */
+    public double getJointProbabilityAll(int[] nodeValues) {
+        if (nodeValues.length != graphNodes.length) {
+            throw new IllegalArgumentException("The number of values must be equal to the number of nodes.");
+        }
+
+        double logJointClusterPotentials = root.getLogJointClusterPotentials(nodeValues);
+        double logJointSeparatorPotentials = root.getLogJointSeparatorPotentials(nodeValues);
+
+        return Math.exp(logJointClusterPotentials - logJointSeparatorPotentials);
+    }
+
     public double[] getMarginalProbability(int iNode) {
         return isValid(iNode)
                 ? margins[iNode]
@@ -728,6 +747,42 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                 parentSeparator.parentNode.updateEvidence(this);
                 parentSeparator.updateFromParent();
             }
+        }
+
+        private double getLogJointSeparatorPotentials(int[] nodeValues) {
+            double logJointPotentials = Math.log(1);
+
+            if (parentSeparator != null) {
+                Node[] parentNodes = parentSeparator.nodes;
+                int size = parentNodes.length;
+                int[] values = new int[size];
+                for (int iNode = 0; iNode < size; iNode++) {
+                    values[iNode] = nodeValues[bayesIm.getNodeIndex(parentNodes[iNode])];
+                }
+
+                logJointPotentials += Math.log(parentSeparator.childPotentials[getIndexOfCPT(parentNodes, values)]);
+            }
+
+            logJointPotentials = children.stream()
+                    .map(child -> child.getLogJointSeparatorPotentials(nodeValues))
+                    .reduce(logJointPotentials, (accumulator, value) -> accumulator + value);
+
+            return logJointPotentials;
+        }
+
+        private double getLogJointClusterPotentials(int[] nodeValues) {
+            int size = nodes.length;
+            int[] values = new int[size];
+            for (int iNode = 0; iNode < size; iNode++) {
+                values[iNode] = nodeValues[bayesIm.getNodeIndex(nodes[iNode])];
+            }
+
+            double logJointPotentials = Math.log(prob[getIndexOfCPT(nodes, values)]);
+            logJointPotentials = children.stream()
+                    .map(child -> child.getLogJointClusterPotentials(nodeValues))
+                    .reduce(logJointPotentials, (accumulator, value) -> accumulator + value);
+
+            return logJointPotentials;
         }
 
         public void setParentSeparator(TreeSeparator parentSeparator) {
