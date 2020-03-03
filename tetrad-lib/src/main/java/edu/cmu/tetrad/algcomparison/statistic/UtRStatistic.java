@@ -35,7 +35,7 @@ public class UtRStatistic implements Statistic {
         ChoiceGenerator gen = new ChoiceGenerator(nodes.size(), 3);
         int[] choice;
 
-        Set<Edge> l = new HashSet<>();
+        Set<Triple> l = new HashSet<>();
 
         while ((choice = gen.next()) != null) {
             List<Node> v = GraphUtils.asList(choice, nodes);
@@ -44,34 +44,38 @@ public class UtRStatistic implements Statistic {
             Node v2 = v.get(1);
             Node v3 = v.get(2);
 
-            count(ge, l, v1, v3, v2);
-            count(ge, l, v1, v2, v3);
-            count(ge, l, v2, v1, v3);
+            collect(gt, ge, l, v1, v3, v2);
+            collect(gt, ge, l, v1, v2, v3);
+            collect(gt, ge, l, v2, v1, v3);
         }
 
-        int c = 0;
-        int t = 0;
+        int count = 0;
+        int total = 0;
 
-        for (Edge e : l) {
-            Node x = e.getNode1();
-            Node y = e.getNode2();
+        for (Triple t : l) {
+            Node x = t.getX();
+            Node y = t.getY();
+            Node z = t.getZ();
 
-            if (gt.isDirectedFromTo(x, y) && !ge.isDirectedFromTo(x, y)) {
-                c++;
-            } else if (gt.isDirectedFromTo(y, x) && !ge.isDirectedFromTo(y, x)) {
-                c++;
+            if (gt.isDirectedFromTo(x, y) == ge.isDirectedFromTo(y, x)) {
+                count++;
+                total++;
             }
 
-            t++;
+            if (gt.isDirectedFromTo(y, z) == ge.isDirectedFromTo(z, y)) {
+                count++;
+            }
+
+            total++;
+            total++;
         }
 
-        return c / (double) t;
+        return count / (double) total;
     }
 
-    private static void count(Graph ge, Set<Edge> l, Node v1, Node v2, Node v3) {
-        if (ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && !ge.isAdjacentTo(v1, v3)) {
-            l.add(Edges.undirectedEdge(v2, v1));
-            l.add(Edges.undirectedEdge(v2, v3));
+    private static void collect(Graph gt, Graph ge, Set<Triple> l, Node v1, Node v2, Node v3) {
+        if (/*gt.isAdjacentTo(v1, v2) && gt.isAdjacentTo(v2, v3) &&*/ ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && gt.isAdjacentTo(v1, v3) && !ge.isAdjacentTo(v1, v3)) {
+            l.add(new Triple(v1, v2, v3));
         }
     }
 

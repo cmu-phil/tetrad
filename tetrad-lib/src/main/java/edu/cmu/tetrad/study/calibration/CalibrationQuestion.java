@@ -1,9 +1,11 @@
-package edu.cmu.tetrad.study;
+package edu.cmu.tetrad.study.calibration;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.sem.SemIm;
@@ -12,6 +14,10 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -321,129 +327,148 @@ public class CalibrationQuestion {
     // Make GT, simulate data, run FGES, yielding GE. Then find a nonredundant set of possible false negative shields ~XZ
     // touching all UTFP legs in GE and count for how many of these XZt is in GT.
     private static void scenario5() {
-        int sampleSize = 20000;
+        int sampleSize = 1000;
         int[] numVars = new int[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
         int[] avgDegree = new int[]{2, 4, 6, 8};
 
-        double sumr = 0.0;
-        int count = 0;
-
         NumberFormat nf = new DecimalFormat("0.00");
 
-        for (int _numVars : numVars) {
-            for (int _avgDegree : avgDegree) {
+        String[] algorithms = {"FGES", "PC", "CPC", "PC-Max"};
 
-                double numEdges = (double) _avgDegree * _numVars / 2.;
-                double p = _avgDegree / (double) (_numVars - 1);
+        PrintStream out = null;
+        PrintStream rOut = null;
 
-//                System.out.println("\nProblem: numEdges = " + numEdges + " numVars = " + _numVars + " avgDegree = " + _avgDegree + " p = " + nf.format(p) + "\n");
-
-                Graph gt = GraphUtils.randomGraph(_numVars, 0, (int) numEdges, 100, 100, 100, false);
-
-                SemPm pm = new SemPm(gt);
-
-                Parameters parameters = new Parameters();
-                parameters.set("coefLow", 0.);
-                parameters.set("coefHigh", 0.7);
-
-                SemIm im = new SemIm(pm);
-
-                DataSet data = im.simulateData(sampleSize, false);
-
-                edu.cmu.tetrad.search.Fges s = new edu.cmu.tetrad.search.Fges(new edu.cmu.tetrad.search.SemBicScore(data));
-//
-//                PcAll s = new PcAll(new IndTestFisherZ(data, 0.001), null);
-//                s.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
-//                s.setConflictRule(PcAll.ConflictRule.PRIORITY);
-//                s.setFasType(PcAll.FasType.STABLE);
-//                s.setConcurrent(PcAll.Concurrent.NO);
-
-                Graph ge = s.search();
-                ge = GraphUtils.replaceNodes(ge, gt.getNodes());
-
-
-                List<Node> nodes = ge.getNodes();
-
-                ChoiceGenerator gen = new ChoiceGenerator(nodes.size(), 3);
-                int[] choice;
-
-                Set<Edge> L = new HashSet<>();
-                Set<Edge> M = new HashSet<>();
-
-                while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, nodes);
-
-                    Node v1 = v.get(0);
-                    Node v2 = v.get(1);
-                    Node v3 = v.get(2);
-
-                    count(ge, L, M, v1, v3, v2);
-                    count(ge, L, M, v1, v2, v3);
-                    count(ge, L, M, v2, v1, v3);
-                }
-
-                int P = 0;
-
-                for (Edge e : ge.getEdges()) {
-                    if (Edges.isDirectedEdge(e)) P++;
-                }
-
-                double alpha = L.size() / (double) M.size();
-                double beta = M.size() / (double) P;
-                double gamma = L.size() / (double) P;
-
-                UtRStatistic utr = new UtRStatistic();
-                double rhat = utr.getValue(gt, ge, data);
-
-                if (!Double.isNaN(rhat)) {
-                    sumr += rhat;
-                    count++;
-                }
-
-
-//                System.out.println(ge);
-
-//                System.out.println("\nSetting r :  = " + nf.format(r));
-//                System.out.println("alpha = " + nf.format(alpha));
-//                System.out.println("beta = " + nf.format(beta));
-//                System.out.println("gamma = " + nf.format(gamma));
-//                System.out.println("r = " + nf.format(r));
-//                System.out.println("r2 = " + nf.format(r2));
-//                System.out.println("Gamma Bound = 1 - gamma * r = " + nf.format((1 - gamma * r)));
-//                System.out.println("Alpha Beta bound = 1 - alpha * beta * r = " + nf.format((1 - alpha * beta * r)));
-//                System.out.println("Density bound = 1 - p  = " + nf.format((1 - p)));
-//                System.out.println("Density Bound = 1 - 2 * r * p = " + nf.format((1 - 2 * r * p)));
-
-
-                Statistic ahpc = new ArrowheadPrecision();
-//                System.out.println("AHPC = " + nf.format(ahpc.getValue(gt, gc, data)));
-
-                double _ahpc = ahpc.getValue(gt, getCommonGraph(gt, ge), data);
-
-                System.out.print("L = " + L.size() + " P = " + P + " numVars = " + _numVars + " avgDegree = " + _avgDegree);
-
-                System.out.println(
-                        " p = " + nf.format(p)
-                                + " gamma * r = " + nf.format(gamma * rhat)
-                                + " alpha = " + nf.format(alpha)
-                                + " beta = " + nf.format(beta)
-                                + " gamma = " + nf.format(gamma)
-                                + " r = " + nf.format(rhat)
-                                + " 1 - p = " + nf.format(1. - p)
-                                + " 1 - gamma * r = " + nf.format((1 - gamma * rhat))
-                                + " AHPC = " + nf.format(_ahpc)
-//                                + " " + (_ahpc < 1 - gamma * rhat)
-                                + " " + (_ahpc <= 1 - p)
-                );
-
-//                UtRStatistic utr = new UtRStatistic();
-//                double rhat = utr.getValue(gt, ge, data);
-//
-//                printDensityAndR(p, rhat);
+        for (String algorithm : algorithms) {
+            try {
+                out = new PrintStream(new File("/Users/user/Tetrad/tetrad-lib/src/main/" +
+                        "java/edu/cmu/tetrad/study/calibration/data.for.calibration." + algorithm + ".txt"));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             }
+
+            try {
+                rOut = new PrintStream(new File("/Users/user/Tetrad/tetrad-lib/src/main/" +
+                        "java/edu/cmu/tetrad/study/calibration/data.for.calibration.rOut." + algorithm + ".txt"));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            if (out == null) throw new NullPointerException("out not initialized");
+            if (rOut == null) throw new NullPointerException("rOut not initialized");
+
+            out.println("AvgDeg\t#Vars\tL\tP\tSparsity\tG1\tR2\tBound\tAHPC2\tHolds");
+            rOut.println("R2");
+
+
+            for (int _numVars : numVars) {
+                for (int _avgDegree : avgDegree) {
+
+                    double numEdges = (double) _avgDegree * _numVars / 2.;
+                    double p = _avgDegree / (double) (_numVars - 1);
+
+                    Graph gt = GraphUtils.randomGraph(_numVars, 0, (int) numEdges, 100, 100, 100, false);
+
+                    SemPm pm = new SemPm(gt);
+
+                    Parameters parameters = new Parameters();
+                    parameters.set("coefLow", 0.);
+                    parameters.set("coefHigh", 0.7);
+
+                    SemIm im = new SemIm(pm);
+
+                    DataSet data = im.simulateData(sampleSize, false);
+
+                    GraphSearch s = null;
+
+                    if (algorithm.equals("FGES")) {
+                        s = new edu.cmu.tetrad.search.Fges(new edu.cmu.tetrad.search.SemBicScore(data));
+                    } else if (algorithm.equals("PC")) {
+                         s = new PcAll(new IndTestFisherZ(data, 0.001), null);
+                        ((PcAll) s).setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+                        ((PcAll) s).setConflictRule(PcAll.ConflictRule.PRIORITY);
+                        ((PcAll) s).setFasType(PcAll.FasType.STABLE);
+                        ((PcAll) s).setConcurrent(PcAll.Concurrent.NO);
+                    } else if (algorithm.equals("CPC")) {
+                        s = new PcAll(new IndTestFisherZ(data, 0.001), null);
+                        ((PcAll) s).setColliderDiscovery(PcAll.ColliderDiscovery.CONSERVATIVE);
+                        ((PcAll) s).setConflictRule(PcAll.ConflictRule.PRIORITY);
+                        ((PcAll) s).setFasType(PcAll.FasType.STABLE);
+                        ((PcAll) s).setConcurrent(PcAll.Concurrent.NO);
+                    } else if (algorithm.equals("PC-Max")) {
+                        s = new PcAll(new IndTestFisherZ(data, 0.001), null);
+                        ((PcAll) s).setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+                        ((PcAll) s).setConflictRule(PcAll.ConflictRule.PRIORITY);
+                        ((PcAll) s).setFasType(PcAll.FasType.STABLE);
+                        ((PcAll) s).setConcurrent(PcAll.Concurrent.NO);
+                    }
+
+                    if (s == null) {
+                        throw new NullPointerException("Unrecognized algorthm type: " + algorithm);
+                    }
+
+                    Graph ge = s.search();
+                    ge = GraphUtils.replaceNodes(ge, gt.getNodes());
+
+                    List<Node> nodes = ge.getNodes();
+
+                    ChoiceGenerator gen = new ChoiceGenerator(nodes.size(), 3);
+                    int[] choice;
+
+                    Set<Edge> L = new HashSet<>();
+                    Set<Edge> M = new HashSet<>();
+
+                    while ((choice = gen.next()) != null) {
+                        List<Node> v = GraphUtils.asList(choice, nodes);
+
+                        Node v1 = v.get(0);
+                        Node v2 = v.get(1);
+                        Node v3 = v.get(2);
+
+                        count(ge, L, M, v1, v3, v2);
+                        count(ge, L, M, v1, v2, v3);
+                        count(ge, L, M, v2, v1, v3);
+                    }
+
+                    int P = 0;
+
+                    for (Edge e : ge.getEdges()) {
+                        if (Edges.isDirectedEdge(e)) P++;
+                    }
+
+                    double gamma1 = L.size() / (double) P;
+
+                    UtRStatistic utr = new UtRStatistic();
+                    double r2 = utr.getValue(gt, ge, data);
+
+                    Statistic ahpc = new ArrowheadPrecision();
+                    double ahpc2 = ahpc.getValue(gt, getCommonGraph(gt, ge), data);
+
+                    double bound = 1. - 0.4 * gamma1 * p;
+
+                    if (Double.isNaN(r2)) bound = 1;
+                    if (bound < 0) continue;
+
+                    out.println(
+                            _avgDegree + "\t" + _numVars
+                                    + "\t" + L.size() + "\t" + P
+                                    + "\t" + nf.format(1. - p)
+                                    + "\t" + nf.format(gamma1)
+                                    + "\t" + (Double.isNaN(r2) ? "*" : nf.format(r2))
+                                    + "\t" + nf.format(bound)
+                                    + "\t" + nf.format(ahpc2)
+                                    + "\t" + (ahpc2 <= 1 - gamma1 * p + 0.01 ? 1 : 0)
+                    );
+
+                    if (Double.isNaN(r2)) continue;
+
+                    rOut.println(nf.format(r2));
+                }
+            }
+
+            out.close();
+            rOut.close();
         }
 
-        System.out.println("E(r) = " + sumr / (double) count + " sumr = " + sumr + " count = " + count);
     }
 
     private static Graph getCommonGraph(Graph gt, Graph ge) {
