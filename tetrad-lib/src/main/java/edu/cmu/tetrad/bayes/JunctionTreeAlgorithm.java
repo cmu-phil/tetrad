@@ -51,10 +51,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
     static final long serialVersionUID = 23L;
 
-    private static final double[] NO_PROBABILITIES = new double[0];
-    private static final double NO_PROBABILITY = -1.0;
-
-    final private TreeNode root;
+    private final TreeNode root;
 
     private final Node[] graphNodes;
     private final double[][] margins;
@@ -303,77 +300,92 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return null;
     }
 
-    private boolean isValid(int iNode) {
-        return (iNode >= 0 && iNode < margins.length);
+    private void validate(int iNode) {
+        int maxIndex = margins.length - 1;
+        if (iNode < 0 || iNode > maxIndex) {
+            String msg = String.format(
+                    "Invalid node index %d. Node index must be between 0 and %d.",
+                    iNode,
+                    maxIndex);
+            throw new IllegalArgumentException(msg);
+        }
     }
 
-    private boolean isValid(int iNode, int value) {
-        return (iNode >= 0 && iNode < margins.length)
-                && (value >= 0 && value < margins[iNode].length);
+    private void validate(int iNode, int value) {
+        validate(iNode);
+
+        int maxValue = margins[iNode].length - 1;
+        if (value < 0 && value > maxValue) {
+            String msg = String.format(
+                    "Invalid value %d for node index %d. Value must be between 0 and %d.",
+                    value,
+                    iNode,
+                    maxValue);
+            throw new IllegalArgumentException(msg);
+        }
     }
 
-    private boolean isValid(int[] parents, int[] parentValues) {
-        if (parents != null && parents.length > 0) {
-            // make sure we have values for parents
-            if (parentValues == null || parentValues.length == 0) {
-                return false;
-            }
-            // make sure the number of parents equals to the number of values.
-            if (parentValues.length != parents.length) {
-                return false;
-            }
-
-            int len = margins.length;
-            for (int i = 0; i < parents.length; i++) {
-                // make sure the parent index is valid
-                if (parents[i] < 0 || parents[i] >= len) {
-                    return false;
-                }
-
-                // make sure the parent value is valid
-                int size = margins[parents[i]].length;
-                if (parentValues[i] < 0 || parentValues[i] >= size) {
-                    return false;
-                }
-            }
+    private void validate(int[] nodes) {
+        if (nodes == null) {
+            throw new IllegalArgumentException("Node indices cannot be null.");
         }
 
-        return true;
+        if (nodes.length == 0) {
+            throw new IllegalArgumentException("Node indices are required.");
+        }
+        if (nodes.length > graphNodes.length) {
+            String msg = String.format(
+                    "Number of nodes cannot exceed %d.",
+                    graphNodes.length);
+            throw new IllegalArgumentException(msg);
+        }
     }
 
-    public void setEvidence(int iNode, int value) throws Exception {
-        if (!isValid(iNode, value)) {
-            throw new Exception(String.format("No such node of index %d with value of %d found.", iNode, value));
+    private void validate(int[] nodes, int[] values) {
+        validate(nodes);
+
+        if (values == null) {
+            throw new IllegalArgumentException("Node values cannot be null.");
         }
+        if (values.length == 0) {
+            throw new IllegalArgumentException("Node values are required.");
+        }
+        if (values.length != nodes.length) {
+            throw new IllegalArgumentException("Number of nodes values must be equal to the number of nodes.");
+        }
+
+        for (int i = 0; i < nodes.length; i++) {
+            validate(nodes[i], values[i]);
+        }
+    }
+
+    public void setEvidence(int iNode, int value) {
+        validate(iNode, value);
 
         Node node = graphNodes[iNode];
         TreeNode treeNode = getCliqueContainsNode(node);
         if (treeNode == null) {
-            throw new Exception(String.format("Node %s is not in junction tree.", node.getName()));
+            String msg = String.format("Node %s is not in junction tree.", node.getName());
+            throw new IllegalArgumentException(msg);
         }
 
         treeNode.setEvidence(node, value);
     }
 
     private double[] getConditionalProbabilities(int iNode, int parent, int parentValue) {
-        if (isValid(iNode) && isValid(parent, parentValue)) {
-            try {
-                setEvidence(parent, parentValue);
-            } catch (Exception exception) {
-                exception.printStackTrace(System.err);
-            }
+        validate(iNode);
+        validate(parent, parentValue);
 
-            double[] condProbs = new double[margins[iNode].length];
-            System.arraycopy(margins[iNode], 0, condProbs, 0, condProbs.length);
-            normalize(condProbs);
+        setEvidence(parent, parentValue);
 
-            // reset
-            initialize();
+        double[] condProbs = new double[margins[iNode].length];
+        System.arraycopy(margins[iNode], 0, condProbs, 0, condProbs.length);
+        normalize(condProbs);
 
-            return condProbs;
-        }
+        // reset
+        initialize();
 
-        return NO_PROBABILITIES;
+        return condProbs;
     }
 
     /**
@@ -385,42 +397,31 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * @return
      */
     public double[] getConditionalProbabilities(int iNode, int[] parents, int[] parentValues) {
-        if (isValid(iNode) && isValid(parents, parentValues)) {
-            if (parents == null || parents.length == 0) {
-                return margins[iNode];
-            } else if (parents.length == 1) {
-                return getConditionalProbabilities(iNode, parents[0], parentValues[0]);
-            } else {
-                try {
-                    for (int i = 0; i < parents.length; i++) {
-                        setEvidence(parents[i], parentValues[i]);
-                    }
-                } catch (Exception exception) {
-                    exception.printStackTrace(System.err);
-                }
+        validate(iNode);
+        validate(parents, parentValues);
 
-                double[] condProbs = new double[margins[iNode].length];
-                System.arraycopy(margins[iNode], 0, condProbs, 0, condProbs.length);
-                normalize(condProbs);
-
-                // reset
-                initialize();
-
-                return condProbs;
+        if (parents.length == 1) {
+            return getConditionalProbabilities(iNode, parents[0], parentValues[0]);
+        } else {
+            for (int i = 0; i < parents.length; i++) {
+                setEvidence(parents[i], parentValues[i]);
             }
-        }
 
-        return NO_PROBABILITIES;
+            double[] condProbs = new double[margins[iNode].length];
+            System.arraycopy(margins[iNode], 0, condProbs, 0, condProbs.length);
+            normalize(condProbs);
+
+            // reset
+            initialize();
+
+            return condProbs;
+        }
     }
 
     public double getConditionalProbability(int iNode, int value, int[] parents, int[] parentValues) {
-        if (isValid(iNode, value) && isValid(parents, parentValues)) {
-            double[] condProbs = getConditionalProbabilities(iNode, parents, parentValues);
+        validate(iNode, value);
 
-            return condProbs[value];
-        }
-
-        return NO_PROBABILITY;
+        return getConditionalProbabilities(iNode, parents, parentValues)[value];
     }
 
     /**
@@ -443,21 +444,19 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     }
 
     public double[] getMarginalProbability(int iNode) {
-        if (isValid(iNode)) {
-            double[] marginals = new double[margins[iNode].length];
-            System.arraycopy(margins[iNode], 0, marginals, 0, marginals.length);
-            normalize(marginals);
+        validate(iNode);
 
-            return marginals;
-        }
+        double[] marginals = new double[margins[iNode].length];
+        System.arraycopy(margins[iNode], 0, marginals, 0, marginals.length);
+        normalize(marginals);
 
-        return NO_PROBABILITIES;
+        return marginals;
     }
 
     public double getMarginalProbability(int iNode, int value) {
-        return isValid(iNode, value)
-                ? margins[iNode][value]
-                : NO_PROBABILITY;
+        validate(iNode, value);
+
+        return margins[iNode][value];
     }
 
     public List<Node> getNodes() {
@@ -703,10 +702,11 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             return -1;
         }
 
-        public void setEvidence(Node node, int value) throws Exception {
+        public void setEvidence(Node node, int value) {
             int nodeIndex = getNodeIndex(node);
             if (nodeIndex < 0) {
-                throw new Exception(String.format("Unable to find node %s in clique.", node.getName()));
+                String msg = String.format("Unable to find node %s in clique.", node.getName());
+                throw new IllegalArgumentException(msg);
             }
 
             int size = nodes.length;
