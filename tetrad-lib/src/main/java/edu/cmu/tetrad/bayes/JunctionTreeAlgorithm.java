@@ -355,6 +355,27 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         treeNode.setEvidence(node, value);
     }
 
+    private double[] getConditionalProbabilities(int iNode, int parent, int parentValue) {
+        if (isValid(iNode) && isValid(parent, parentValue)) {
+            try {
+                setEvidence(parent, parentValue);
+            } catch (Exception exception) {
+                exception.printStackTrace(System.err);
+            }
+
+            double[] condProbs = new double[margins[iNode].length];
+            System.arraycopy(margins[iNode], 0, condProbs, 0, condProbs.length);
+            normalize(condProbs);
+
+            // reset
+            initialize();
+
+            return condProbs;
+        }
+
+        return NO_PROBABILITIES;
+    }
+
     /**
      * Get the conditional probability of a node for all of its values.
      *
@@ -363,10 +384,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * @param parentValues
      * @return
      */
-    public double[] getConditionalProbability(int iNode, int[] parents, int[] parentValues) {
+    public double[] getConditionalProbabilities(int iNode, int[] parents, int[] parentValues) {
         if (isValid(iNode) && isValid(parents, parentValues)) {
             if (parents == null || parents.length == 0) {
                 return margins[iNode];
+            } else if (parents.length == 1) {
+                return getConditionalProbabilities(iNode, parents[0], parentValues[0]);
             } else {
                 try {
                     for (int i = 0; i < parents.length; i++) {
@@ -376,13 +399,14 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                     exception.printStackTrace(System.err);
                 }
 
-                double[] margCondProb = new double[margins[iNode].length];
-                System.arraycopy(margins[iNode], 0, margCondProb, 0, margCondProb.length);
+                double[] condProbs = new double[margins[iNode].length];
+                System.arraycopy(margins[iNode], 0, condProbs, 0, condProbs.length);
+                normalize(condProbs);
 
                 // reset
                 initialize();
 
-                return margCondProb;
+                return condProbs;
             }
         }
 
@@ -390,28 +414,13 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     }
 
     public double getConditionalProbability(int iNode, int value, int[] parents, int[] parentValues) {
-        double margCondProb = NO_PROBABILITY;
-
         if (isValid(iNode, value) && isValid(parents, parentValues)) {
-            if (parents == null || parents.length == 0) {
-                margCondProb = margins[iNode][value];
-            } else {
-                try {
-                    for (int i = 0; i < parents.length; i++) {
-                        setEvidence(parents[i], parentValues[i]);
-                    }
-                } catch (Exception exception) {
-                    exception.printStackTrace(System.err);
-                }
+            double[] condProbs = getConditionalProbabilities(iNode, parents, parentValues);
 
-                margCondProb = margins[iNode][value];
-
-                // reset
-                initialize();
-            }
+            return condProbs[value];
         }
 
-        return margCondProb;
+        return NO_PROBABILITY;
     }
 
     /**
@@ -434,9 +443,15 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     }
 
     public double[] getMarginalProbability(int iNode) {
-        return isValid(iNode)
-                ? margins[iNode]
-                : NO_PROBABILITIES;
+        if (isValid(iNode)) {
+            double[] marginals = new double[margins[iNode].length];
+            System.arraycopy(margins[iNode], 0, marginals, 0, marginals.length);
+            normalize(marginals);
+
+            return marginals;
+        }
+
+        return NO_PROBABILITIES;
     }
 
     public double getMarginalProbability(int iNode, int value) {
@@ -501,8 +516,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
                     updateValues(size, values, node.nodes);
                 }
-
-                normalize(potentials);
             }
         }
 
@@ -602,8 +615,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                 }
             });
 
-            normalize(prob);
-
             if (parentSeparator != null) { // not a root node
                 parentSeparator.updateFromChild();
             }
@@ -629,8 +640,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
                     updateValues(size, values, nodes);
                 }
-
-                normalize(prob);
 
                 parentSeparator.updateFromChild();
                 calculateMarginalProbabilities();
@@ -711,7 +720,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                 updateValues(size, values, nodes);
             }
 
-            normalize(prob);
             calculateMarginalProbabilities();
             updateEvidence(this);
         }
@@ -732,8 +740,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
                     updateValues(size, values, nodes);
                 }
-
-                normalize(prob);
 
                 calculateMarginalProbabilities();
             }
