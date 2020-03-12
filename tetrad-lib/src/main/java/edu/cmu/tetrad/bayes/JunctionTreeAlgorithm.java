@@ -315,7 +315,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         validate(iNode);
 
         int maxValue = margins[iNode].length - 1;
-        if (value < 0 && value > maxValue) {
+        if (value < 0 || value > maxValue) {
             String msg = String.format(
                     "Invalid value %d for node index %d. Value must be between 0 and %d.",
                     value,
