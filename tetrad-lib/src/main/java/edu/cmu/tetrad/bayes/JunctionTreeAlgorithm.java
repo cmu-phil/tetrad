@@ -359,6 +359,30 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
+    private void validateAll(int[] values) {
+        if (values == null) {
+            throw new IllegalArgumentException("Node values cannot be null.");
+        }
+        if (values.length == 0) {
+            throw new IllegalArgumentException("Node values are required.");
+        }
+        if (values.length != graphNodes.length) {
+            throw new IllegalArgumentException("Number of nodes values must be equal to the number of nodes.");
+        }
+
+        for (int i = 0; i < values.length; i++) {
+            int maxValue = margins[i].length - 1;
+            if (values[i] < 0 && values[i] > maxValue) {
+                String msg = String.format(
+                        "Invalid value %d for node index %d. Value must be between 0 and %d.",
+                        values[i],
+                        i,
+                        maxValue);
+                throw new IllegalArgumentException(msg);
+            }
+        }
+    }
+
     public void setEvidence(int iNode, int value) {
         validate(iNode, value);
 
@@ -386,6 +410,17 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         initialize();
 
         return condProbs;
+    }
+
+    private boolean isAllNodes(int[] nodes) {
+        if (nodes.length == graphNodes.length) {
+            long sum = Arrays.stream(nodes).sum();
+            long total = ((graphNodes.length - 1) * graphNodes.length) / 2;
+
+            return sum == total;
+        }
+
+        return false;
     }
 
     /**
@@ -433,14 +468,40 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * @return
      */
     public double getJointProbabilityAll(int[] nodeValues) {
-        if (nodeValues.length != graphNodes.length) {
-            throw new IllegalArgumentException("The number of values must be equal to the number of nodes.");
-        }
+        validateAll(nodeValues);
 
         double logJointClusterPotentials = root.getLogJointClusterPotentials(nodeValues);
         double logJointSeparatorPotentials = root.getLogJointSeparatorPotentials(nodeValues);
 
         return Math.exp(logJointClusterPotentials - logJointSeparatorPotentials);
+    }
+
+    public double getJointProbability(int[] nodes, int[] values) {
+        validate(nodes, values);
+        if (isAllNodes(nodes)) {
+            return getJointProbabilityAll(values);
+        } else {
+            for (int i = 0; i < nodes.length; i++) {
+                setEvidence(nodes[i], values[i]);
+            }
+
+            // sum out a non-evidence variable
+            double prob = 0;
+            int index = 0;
+            for (int i = 0; i < margins.length; i++) {
+                if (i < nodes.length && i == nodes[index]) {
+                    index++;
+                } else {
+                    prob += Arrays.stream(margins[i]).sum();
+                    break;
+                }
+            }
+
+            // reset
+            initialize();
+
+            return prob;
+        }
     }
 
     public double[] getMarginalProbability(int iNode) {
