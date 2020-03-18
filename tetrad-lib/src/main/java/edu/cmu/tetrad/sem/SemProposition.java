@@ -59,7 +59,7 @@ public final class SemProposition implements TetradSerializable {
     /**
      * Creates a new Proposition which allows all values.
      */
-    private SemProposition(SemIm semIm) {
+    public SemProposition(SemIm semIm) {
         if (semIm == null) {
             throw new NullPointerException();
         }
@@ -70,6 +70,11 @@ public final class SemProposition implements TetradSerializable {
         for (int i = 0; i < values.length; i++) {
             values[i] = Double.NaN;
         }
+    }
+
+    public SemProposition(SemProposition proposition) {
+        this.semIm = proposition.semIm;
+        this.values = Arrays.copyOf(proposition.values, proposition.values.length);
     }
 
     public static SemProposition tautology(SemIm semIm) {
