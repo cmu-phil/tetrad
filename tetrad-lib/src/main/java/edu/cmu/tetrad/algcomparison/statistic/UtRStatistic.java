@@ -57,6 +57,10 @@ public class UtRStatistic implements Statistic {
             Node y = t.getY();
             Node z = t.getZ();
 
+            if (!(gt.getEdge(x, y).isDirected() && ge.getEdge(x, y).isDirected())) {
+                continue;
+            }
+
             if (gt.isDirectedFromTo(x, y) == ge.isDirectedFromTo(y, x)) {
                 count++;
                 total++;
@@ -74,7 +78,7 @@ public class UtRStatistic implements Statistic {
     }
 
     private static void collect(Graph gt, Graph ge, Set<Triple> l, Node v1, Node v2, Node v3) {
-        if (/*gt.isAdjacentTo(v1, v2) && gt.isAdjacentTo(v2, v3) &&*/ ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && gt.isAdjacentTo(v1, v3) && !ge.isAdjacentTo(v1, v3)) {
+        if (gt.isAdjacentTo(v1, v2) && gt.isAdjacentTo(v2, v3) && ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && gt.isAdjacentTo(v1, v3) && !ge.isAdjacentTo(v1, v3)) {
             l.add(new Triple(v1, v2, v3));
         }
     }
