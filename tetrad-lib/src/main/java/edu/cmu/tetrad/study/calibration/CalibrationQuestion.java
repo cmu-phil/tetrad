@@ -662,7 +662,7 @@ public class CalibrationQuestion {
             if (out == null) throw new NullPointerException("out not initialized");
             if (rOut == null) throw new NullPointerException("rOut not initialized");
 
-            out.println("AvgDeg\t#Vars\tL\tP\tDensity\tSparsity\tR2\tBound\tAHP\tAHPC");
+            out.println("AvgDeg\t#Vars\tDensity\tSparsity\tR2\tAHP\tAHPC\trho\tA\tS1");
             rOut.println("R2");
 
 
@@ -750,33 +750,8 @@ public class CalibrationQuestion {
                     }
 
 
-//                    int l1 = 0;
                     Set<Edge> L1 = new HashSet<>();
                     Set<Edge> S1 = new HashSet<>();
-
-//                    int shared = 0;
-
-
-//                    for (int i = 0; i < nodes.size() - 1; i++) {
-//                        List<Node> adj = R.getAdjacentNodes(nodes.get(i));
-//
-//                        for (int j = 1; j < adj.size(); j++) {
-//
-//                            for (int k = j + 1; k < adj.size(); k++) {
-//                                boolean b1 = L1.contains(Edges.undirectedEdge(nodes.get(i), adj.get(j)));
-//                                boolean b2 = L1.contains(Edges.undirectedEdge(nodes.get(i), adj.get(k)));
-//
-//                                if (!R.isAdjacentTo(adj.get(j), adj.get(k)) && !(b1 && b2)
-//                                        && G2.isAdjacentTo(nodes.get(i), adj.get(j))
-//                                        && G2.isAdjacentTo(nodes.get(i), adj.get(k))
-//                                        && G2.isAdjacentTo(adj.get(j), adj.get(k))) {
-//                                    L1.add(Edges.undirectedEdge(nodes.get(i), adj.get(j)));
-//                                    L1.add(Edges.undirectedEdge(nodes.get(i), adj.get(k)));
-//                                    S1.add(Edges.undirectedEdge(adj.get(j), adj.get(k)));
-//                                }
-//                            }
-//                        }
-//                    }
 
                     for (int i = 0; i < nodes.size() - 1; i++) {
                         List<Node> adj = R.getAdjacentNodes(nodes.get(i));
@@ -787,7 +762,13 @@ public class CalibrationQuestion {
                                 boolean b1 = L1.contains(Edges.undirectedEdge(nodes.get(i), adj.get(j)));
                                 boolean b2 = L1.contains(Edges.undirectedEdge(nodes.get(i), adj.get(k)));
 
-                                if (!R.isAdjacentTo(adj.get(j), adj.get(k)) && !(b1 && b2)) {
+//                                if (!R.isAdjacentTo(adj.get(j), adj.get(k)) && !(b1 && b2)) {
+//                                    L1.add(Edges.undirectedEdge(nodes.get(i), adj.get(j)));
+//                                    L1.add(Edges.undirectedEdge(nodes.get(i), adj.get(k)));
+//                                    S1.add(Edges.undirectedEdge(adj.get(j), adj.get(k)));
+//                                }
+
+                                if (!R.isAdjacentTo(adj.get(j), adj.get(k))) {
                                     L1.add(Edges.undirectedEdge(nodes.get(i), adj.get(j)));
                                     L1.add(Edges.undirectedEdge(nodes.get(i), adj.get(k)));
                                     S1.add(Edges.undirectedEdge(adj.get(j), adj.get(k)));
@@ -827,25 +808,25 @@ public class CalibrationQuestion {
                         }
                     }
 
-                    Set<Edge> L2 = new HashSet<>();
-                    Set<Edge> S2 = new HashSet<>();
-
-                    for (int i = 0; i < nodes.size() - 1; i++) {
-                        List<Node> adj = R.getAdjacentNodes(nodes.get(i));
-
-                        for (int j = 1; j < adj.size(); j++) {
-
-                            for (int k = j + 1; k < adj.size(); k++) {
-                                if (!S1.contains(Edges.undirectedEdge(adj.get(j), adj.get(k)))) continue;
-
-                                if (G2.isAdjacentTo(adj.get(j), adj.get(k))) {
-                                    L2.add(Edges.undirectedEdge(nodes.get(i), adj.get(j)));
-                                    L2.add(Edges.undirectedEdge(nodes.get(i), adj.get(k)));
-                                    S2.add(Edges.undirectedEdge(adj.get(j), adj.get(k)));
-                                }
-                            }
-                        }
-                    }
+//                    Set<Edge> L2 = new HashSet<>();
+//                    Set<Edge> S2 = new HashSet<>();
+//
+//                    for (int i = 0; i < nodes.size() - 1; i++) {
+//                        List<Node> adj = R.getAdjacentNodes(nodes.get(i));
+//
+//                        for (int j = 1; j < adj.size(); j++) {
+//
+//                            for (int k = j + 1; k < adj.size(); k++) {
+//                                if (!S1.contains(Edges.undirectedEdge(adj.get(j), adj.get(k)))) continue;
+//
+//                                if (G2.isAdjacentTo(adj.get(j), adj.get(k))) {
+//                                    L2.add(Edges.undirectedEdge(nodes.get(i), adj.get(j)));
+//                                    L2.add(Edges.undirectedEdge(nodes.get(i), adj.get(k)));
+//                                    S2.add(Edges.undirectedEdge(adj.get(j), adj.get(k)));
+//                                }
+//                            }
+//                        }
+//                    }
 
                     UtRStatistic utr = new UtRStatistic();
                     double r2 = utr.getValue(G2, R, data);
@@ -882,23 +863,23 @@ public class CalibrationQuestion {
 
                     switch (algorithm) {
                         case "FGES":
-                            rho = 0.3;
+                            rho = 0.34;
                             break;
                         case "PC":
-                            rho = 0.6;
+                            rho = 0.51;
                             break;
                         case "CPC":
-                            rho = 0.3;
+                            rho = .29;
                             break;
                         case "PC-Max":
-                            rho = 0.3;
+                            rho = 0.25;
                             break;
                         case "FASK":
-                            rho = 0.1;
+                            rho = 0.17;
                             break;
                     }
 
-                    double bound = 1. - 2 * rho * (L1.size() / (double) A) * density;
+//                    double bound = 1. - 2 * rho * (L1.size() / (double) A) * density;
 
                     // Dom't divide by zero anywhere.
 
@@ -913,26 +894,26 @@ public class CalibrationQuestion {
                     double d = _avgDegree / (double) (_numVars - 1);
 
                     System.out.println(
-                            "S2/S1 = " + (nf.format(((double) S2.size()) / (S1.size()))
-                                    + " d = " + nf.format(d))
+//                            "S2/S1 = " + (nf.format(((double) S2.size()) / (S1.size()))
+                                    " d = " + nf.format(d)
                                     + " Avg degree = " + _avgDegree
                                     + " num vars = " + _numVars
                                     + " R.numedges = " + R.getNumEdges()
                                     + " L1 = " + L1.size()
                                     + " A = " + A
-                                    + " S2 = " + S2.size()
+//                                    + " S2 = " + S2.size()
                     );
 
                     out.println(
                             _avgDegree + "\t" + _numVars
-                                    + "\t" + L.size()
-                                    + "\t" + A
                                     + "\t" + nf.format(density)
                                     + "\t" + nf.format(1.0 - density)
                                     + "\t" + nf.format(r2)
-                                    + "\t" + nf.format(bound)
                                     + "\t" + nf.format(ahp2)
                                     + "\t" + nf.format(ahpc2)
+                                    + "\t" + nf.format(rho)
+                                    + "\t" + nf.format(A)
+                                    + "\t" + nf.format(S1.size())
                     );
 
 
@@ -946,6 +927,10 @@ public class CalibrationQuestion {
             rOut.close();
         }
 
+    }
+
+    private static void scenario7() {
+        
     }
 
     private static Graph getCommonGraph(Graph gt, Graph ge) {
