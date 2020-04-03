@@ -66,8 +66,6 @@ public class ArrowConfusion {
                 edge1 = this.est.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
 
-            //      System.out.println(edge1 + "(est)");
-
             Endpoint e1Est = null;
             Endpoint e2Est = null;
 
@@ -75,20 +73,15 @@ public class ArrowConfusion {
                 e1Est = edge1.getProximalEndpoint(edge.getNode1());
                 e2Est = edge1.getProximalEndpoint(edge.getNode2());
             }
-            //      System.out.println(e1Est);
-            //      System.out.println(e2Est);
 
             List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge2;
 
             if (edges2.size() == 1) {
                 edge2 = edges2.get(0);
-//                if (Edges.isUndirectedEdge(edge2)) continue;
             } else {
                 edge2 = this.truth.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
-
-            //       System.out.println(edge2 + "(truth)");
 
             Endpoint e1True = null;
             Endpoint e2True = null;
@@ -97,63 +90,15 @@ public class ArrowConfusion {
                 e1True = edge2.getProximalEndpoint(edge.getNode1());
                 e2True = edge2.getProximalEndpoint(edge.getNode2());
             }
-            //       System.out.println(e1True);
-            //       System.out.println(e2True);
 
-
-            if (e1True == Endpoint.ARROW && e1Est != Endpoint.ARROW) {
-                arrowsFn++;
-            }
-
-            if (e2True == Endpoint.ARROW && e2Est != Endpoint.ARROW) {
-                arrowsFn++;
-            }
-
-            if (e1True == Endpoint.ARROW && e1Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                arrowsFnc = getArrowsFnc() + 1;
-            }
-
-            if (e2True == Endpoint.ARROW && e2Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                arrowsFnc = getArrowsFnc() + 1;
-            }
-
-
-            if (e1True == Endpoint.ARROW && e1Est == Endpoint.ARROW) {
-                arrowsTp++;
-            }
-
-            if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW) {
-                arrowsTp++;
-            }
-
-            if (e1True == Endpoint.ARROW && e1Est == Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                arrowsTpc = getArrowsTpc() + 1;
-            }
-
-            if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                arrowsTpc = getArrowsTpc() + 1;
-            }
-
-            if (e1True != Endpoint.ARROW && e1Est != Endpoint.ARROW) {
-                arrowsTn++;
-            }
-
-            if (e2True != Endpoint.ARROW && e2Est != Endpoint.ARROW) {
-                arrowsTn++;
-            }
-
-            if (e1True != Endpoint.ARROW && e1Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                arrowsTnc = getArrowsTnc() + 1;
-            }
-
-            if (e2True != Endpoint.ARROW && e2Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                arrowsTnc = getArrowsTnc() + 1;
-            }
+            count(truth, est, edge, edge1, e1Est, e2Est, edge2, e1True, e2True);
         }
-// Get edges from the estimated graph to compute only FalsePositives
+
+        // Get edges from the estimated graph to compute only FalsePositives for adjacencies not in truth.
         // System.out.println(this.est.getEdges());
 
         for (Edge edge : this.est.getEdges()) {
+            if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) continue;
 
             List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge1;
@@ -163,7 +108,6 @@ public class ArrowConfusion {
             } else {
                 edge1 = this.est.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
-            //      System.out.println(edge1 + "(est)");
 
             Endpoint e1Est = null;
             Endpoint e2Est = null;
@@ -172,21 +116,15 @@ public class ArrowConfusion {
                 e1Est = edge1.getProximalEndpoint(edge.getNode1());
                 e2Est = edge1.getProximalEndpoint(edge.getNode2());
             }
-            //       System.out.println(e1Est);
-            //       System.out.println(e2Est);
-
 
             List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge2;
 
             if (edges2.size() == 1) {
                 edge2 = edges2.get(0);
-//                if (Edges.isUndirectedEdge(edge2)) continue;
             } else {
                 edge2 = this.truth.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
-
-            //          System.out.println(edge2 + "(truth)");
 
             Endpoint e1True = null;
             Endpoint e2True = null;
@@ -195,49 +133,15 @@ public class ArrowConfusion {
                 e1True = edge2.getProximalEndpoint(edge.getNode1());
                 e2True = edge2.getProximalEndpoint(edge.getNode2());
             }
-            //          System.out.println(e1True);
-            //          System.out.println(e2True);
-
-//            if ((isTruthAdj() && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()))) {
-//                if (e1Est == Endpoint.ARROW && e1True!= Endpoint.ARROW) {
-//                    arrowsFp++;
-//                }
-//
-//                if (e2Est == Endpoint.ARROW && e2True!= Endpoint.ARROW) {
-//                    arrowsFp++;
-//                }
-//            }
 
             if (isTruthAdj()) {
                 if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                    if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW) {
-                        arrowsFp++;
-                    }
-
-                    if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW) {
-                        arrowsFp++;
-                    }
+                    count(truth, est, edge, edge1, e1Est, e2Est, edge2, e1True, e2True);
                 }
             } else {
-                if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW) {
-                    arrowsFp++;
-                }
-
-                if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW) {
-                    arrowsFp++;
-                }
+                count(truth, est, edge, edge1, e1Est, e2Est, edge2, e1True, e2True);
             }
-
-            if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW && edge1 != null && edge2 != null) {
-                arrowsFpc = getArrowsFpc() + 1;
-            }
-
-            if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW && edge1 != null && edge2 != null) {
-                arrowsFpc = getArrowsFpc() + 1;
-            }
-
         }
-
 
         // test for 2-cycle
         //Set<Edge> allOriented = new HashSet<>();
@@ -245,8 +149,6 @@ public class ArrowConfusion {
         //allOriented.addAll(this.est.getEdges());
 
         for (Edge edge : this.truth.getEdges()) {
-
-
             List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
             List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
 
@@ -262,7 +164,6 @@ public class ArrowConfusion {
         }
 
         for (Edge edge : this.est.getEdges()) {
-
             List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
             List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
 
@@ -272,19 +173,77 @@ public class ArrowConfusion {
             }
         }
 
-  /*      System.out.println(arrowsTp);
-        System.out.println(arrowsTn);
-        System.out.println(arrowsFn);
-        System.out.println(arrowsFp);
-*/
         //divide by 2, the 2cycle accuracy is duplicated due to how getEdges is used
         TCtp = TCtp / 2;
         TCfn = TCfn / 2;
         TCfp = TCfp / 2;
-        //       System.out.println(TCtp);
-        //       System.out.println(TCfn);
-        //       System.out.println(TCfp);
 
+    }
+
+    private void count(Graph truth, Graph est, Edge edge, Edge edge1, Endpoint e1Est, Endpoint e2Est, Edge edge2, Endpoint e1True, Endpoint e2True) {
+        if (e1True == Endpoint.ARROW && e1Est != Endpoint.ARROW) {
+            arrowsFn++;
+        }
+
+        if (e2True == Endpoint.ARROW && e2Est != Endpoint.ARROW) {
+            arrowsFn++;
+        }
+
+        if (e1True == Endpoint.ARROW && e1Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            arrowsFnc = getArrowsFnc() + 1;
+        }
+
+        if (e2True == Endpoint.ARROW && e2Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            arrowsFnc = getArrowsFnc() + 1;
+        }
+
+        if (e1True == Endpoint.ARROW && e1Est == Endpoint.ARROW) {
+            arrowsTp++;
+        }
+
+        if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW) {
+            arrowsTp++;
+        }
+
+        if (e1True == Endpoint.ARROW && e1Est == Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            arrowsTpc = getArrowsTpc() + 1;
+        }
+
+        if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            arrowsTpc = getArrowsTpc() + 1;
+        }
+
+        if (e1True != Endpoint.ARROW && e1Est != Endpoint.ARROW) {
+            arrowsTn++;
+        }
+
+        if (e2True != Endpoint.ARROW && e2Est != Endpoint.ARROW) {
+            arrowsTn++;
+        }
+
+        if (e1True != Endpoint.ARROW && e1Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            arrowsTnc = getArrowsTnc() + 1;
+        }
+
+        if (e2True != Endpoint.ARROW && e2Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            arrowsTnc = getArrowsTnc() + 1;
+        }
+
+        if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW) {
+            arrowsFp++;
+        }
+
+        if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW) {
+            arrowsFp++;
+        }
+
+        if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW && edge1 != null && edge2 != null) {
+            arrowsFpc = getArrowsFpc() + 1;
+        }
+
+        if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW && edge1 != null && edge2 != null) {
+            arrowsFpc = getArrowsFpc() + 1;
+        }
     }
 
 

@@ -35,7 +35,7 @@ public class UtRStatistic implements Statistic {
         ChoiceGenerator gen = new ChoiceGenerator(nodes.size(), 3);
         int[] choice;
 
-        Set<Triple> l = new HashSet<>();
+        Set<NodePair> l = new HashSet<>();
 
         while ((choice = gen.next()) != null) {
             List<Node> v = GraphUtils.asList(choice, nodes);
@@ -52,31 +52,30 @@ public class UtRStatistic implements Statistic {
         int count = 0;
         int total = 0;
 
-        for (Triple t : l) {
-            Node x = t.getX();
-            Node y = t.getY();
-            Node z = t.getZ();
+        for (NodePair t : l) {
+            Node x = t.getFirst();
+            Node y = t.getSecond();
 
-            if (gt.isDirectedFromTo(x, y) == ge.isDirectedFromTo(y, x)) {
+            if (gt.isDirectedFromTo(x, y) && ge.isDirectedFromTo(y, x)) {
                 count++;
             }
 
-            if (gt.isDirectedFromTo(y, z) == ge.isDirectedFromTo(z, y)) {
+            if (gt.isDirectedFromTo(y, x) && ge.isDirectedFromTo(x, y)) {
                 count++;
             }
 
-            total++;
             total++;
         }
 
         return count / (double) total;
     }
 
-    private static void collect(Graph gt, Graph ge, Set<Triple> l, Node v1, Node v2, Node v3) {
+    private static void collect(Graph gt, Graph ge, Set<NodePair> l, Node v1, Node v2, Node v3) {
 
         // Check that 1--2--3 is a falsely unshielded triple
         if (gt.isAdjacentTo(v1, v2) && gt.isAdjacentTo(v2, v3) && gt.isAdjacentTo(v1, v3) && ge.isAdjacentTo(v1, v2) && ge.isAdjacentTo(v2, v3) && !ge.isAdjacentTo(v1, v3)) {
-            l.add(new Triple(v1, v2, v3));
+            l.add(new NodePair(v1, v2));
+            l.add(new NodePair(v2, v3));
         }
     }
 
