@@ -613,7 +613,6 @@ public class CalibrationQuestion {
         String[] algorithms = {"FGES", "PC", "CPC", "PC-Max", "FASK"};
 
         PrintStream out = null;
-        PrintStream rOut = null;
 
         for (String algorithm : algorithms) {
             System.out.println("\n============================");
@@ -627,18 +626,9 @@ public class CalibrationQuestion {
                 e.printStackTrace();
             }
 
-            try {
-                rOut = new PrintStream(new File("/Users/user/Tetrad/tetrad-lib/src/main/" +
-                        "java/edu/cmu/tetrad/study/calibration/data.for.calibration.rOut." + algorithm + ".txt"));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
             if (out == null) throw new NullPointerException("out not initialized");
-            if (rOut == null) throw new NullPointerException("rOut not initialized");
 
-            out.println("AvgDeg\t#Vars\tDensity\tSparsity\tR2\tAHP\tAHPC\tA\tS1");
-            rOut.println("R2");
+            out.println("AvgDeg\t#Vars\tDensity\tSparsity\tR2\tAHP\tAHPC\tA\tU");
 
             for (int _numVars : numVars) {
                 for (int _avgDegree : avgDegree) {
@@ -738,7 +728,7 @@ public class CalibrationQuestion {
                     for (int i = 0; i < nodes.size() - 1; i++) {
                         List<Node> adj = R.getAdjacentNodes(nodes.get(i));
 
-                        for (int j = 1; j < adj.size(); j++) {
+                        for (int j = 0; j < adj.size(); j++) {
                             for (int k = j + 1; k < adj.size(); k++) {
                                 if (!R.isAdjacentTo(adj.get(j), adj.get(k))) {
                                     S1.add(Edges.undirectedEdge(adj.get(j), adj.get(k)));
@@ -765,33 +755,6 @@ public class CalibrationQuestion {
                     UtRStatistic utr = new UtRStatistic();
                     double r2 = utr.getValue(G2, R, data);
 
-                    int tp = 0;
-
-                    for (Edge e2 : R.getEdges()) {
-                        Edge e1 = G2.getEdge(e2.getNode1(), e2.getNode2());
-
-                        if (e1 == null) {
-                            continue;
-                        }
-
-                        Node n1 = e1.getNode1();
-                        Node n2 = e1.getNode2();
-
-                        if (e1.getProximalEndpoint(n1) == Endpoint.ARROW
-                                && e2.getProximalEndpoint(n1) == Endpoint.ARROW) {
-                            tp++;
-                        }
-
-                        if (e1.getProximalEndpoint(n2) == Endpoint.ARROW
-                                && e2.getProximalEndpoint(n2) == Endpoint.ARROW) {
-                            tp++;
-                        }
-                    }
-
-                    if (A == 0) {
-                        continue;
-                    }
-
                     double d = _avgDegree / (double) (_numVars - 1);
 
                     System.out.println(
@@ -813,16 +776,10 @@ public class CalibrationQuestion {
                                     + "\t" + nf.format(A)
                                     + "\t" + nf.format(S1.size())
                     );
-
-
-                    if (Double.isNaN(r2)) continue;
-
-                    rOut.println(getFormat(nf, r2));
                 }
             }
 
             out.close();
-            rOut.close();
         }
     }
 
@@ -834,10 +791,9 @@ public class CalibrationQuestion {
 
     private static void scenario7() {
         String[] algorithms = {"sachs.model", "fask.5E-5", "fask.5E-2", "friedman", "aragam.discrete", "aragam.continuous",
-                "henao", "desgranges", "goudet", "magliacane", "kalainathan"};
+                "henao", "desgranges", "goudet", "magliacane", "kalainathan", "fges", "pc", "cpc", "pcmax"};
 
         PrintStream out = null;
-        PrintStream rOut = null;
 
 //        Graph G2 = loadGraphTxt(new File("/Users/user/Box/data/Sachs/files.for.fask.sachs.report/txt/ground.truth.sachs.txt"));
         Graph G2 = loadGraphTxt(new File("/Users/user/Box/data/Sachs/files.for.fask.sachs.report/txt/sachgroundtruth.txt"));
@@ -853,19 +809,9 @@ public class CalibrationQuestion {
             e.printStackTrace();
         }
 
-        try {
-            rOut = new PrintStream(new File("/Users/user/Tetrad/tetrad-lib/src/main/" +
-                    "java/edu/cmu/tetrad/study/calibration/data.for.calibration.rOut.sachs.txt"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
         if (out == null) throw new NullPointerException("out not initialized");
-        if (rOut == null) throw new NullPointerException("rOut not initialized");
-
 
         out.println("Alg & R2 & AHPC & A & S1 & r2max \\\\");
-        rOut.println("R2");
 
         for (String algorithm : algorithms) {
 
@@ -876,9 +822,6 @@ public class CalibrationQuestion {
             Graph R = loadGraphTxt(new File("/Users/user/Box/data/Sachs/files.for.fask.sachs.report/txt/" + algorithm + ".txt"));
 
             R = GraphUtils.replaceNodes(R, G2.getNodes());
-
-            Statistic ahp = new ArrowheadPrecision();
-            double ahp2 = ahp.getValue(G2, R, null);
 
             Statistic ahpc = new ArrowheadPrecisionCommonEdges();
             double ahpc2 = ahpc.getValue(G2, R, null);
@@ -922,7 +865,7 @@ public class CalibrationQuestion {
             for (int i = 0; i < nodes.size() - 1; i++) {
                 List<Node> adj = R.getAdjacentNodes(nodes.get(i));
 
-                for (int j = 1; j < adj.size(); j++) {
+                for (int j = 0; j < adj.size(); j++) {
                     for (int k = j + 1; k < adj.size(); k++) {
                         if (!R.isAdjacentTo(adj.get(j), adj.get(k))) {
                             L1.add(Edges.undirectedEdge(nodes.get(i), adj.get(j)));
@@ -951,31 +894,8 @@ public class CalibrationQuestion {
             UtRStatistic utr = new UtRStatistic();
             double r2 = utr.getValue(G2, R, null);
 
-            int tp = 0;
-
-            for (Edge e2 : R.getEdges()) {
-                Edge e1 = G2.getEdge(e2.getNode1(), e2.getNode2());
-
-                if (e1 == null) {
-                    continue;
-                }
-
-                Node n1 = e1.getNode1();
-                Node n2 = e1.getNode2();
-
-                if (e1.getProximalEndpoint(n1) == Endpoint.ARROW
-                        && e2.getProximalEndpoint(n1) == Endpoint.ARROW) {
-                    tp++;
-                }
-
-                if (e1.getProximalEndpoint(n2) == Endpoint.ARROW
-                        && e2.getProximalEndpoint(n2) == Endpoint.ARROW) {
-                    tp++;
-                }
-            }
-
-
             double r2max = (1 - ahpc2) * (A / (2 * S1.size() * density));
+            r2max = Math.min(r2max, 1.0);
 
             NumberFormat nf = new DecimalFormat("0.00");
 
@@ -997,13 +917,9 @@ public class CalibrationQuestion {
                             + " & " + getFormat(nf, r2max)
                     + " \\\\ "
             );
-
-            if (Double.isNaN(r2)) continue;
-            rOut.println(getFormat(nf, r2));
         }
 
         out.close();
-        rOut.close();
     }
 
     private static void makeBidirectedCycleUndirected(Graph r) {
