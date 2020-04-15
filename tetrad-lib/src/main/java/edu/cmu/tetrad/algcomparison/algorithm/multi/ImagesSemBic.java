@@ -145,8 +145,10 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
+        parameters.addAll(new SemBicScore().getParameters());
+
         parameters.addAll((new Fges()).getParameters());
-        parameters.addAll((new SemBicScore()).getParameters());
+        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
 
