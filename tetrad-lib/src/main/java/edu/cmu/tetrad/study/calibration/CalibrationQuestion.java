@@ -1,11 +1,11 @@
 package edu.cmu.tetrad.study.calibration;
 
-import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecision;
-import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecisionCommonEdges;
-import edu.cmu.tetrad.algcomparison.statistic.Statistic;
-import edu.cmu.tetrad.algcomparison.statistic.UtRStatistic;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.search.GraphSearch;
@@ -606,11 +606,13 @@ public class CalibrationQuestion {
 
         int sampleSize = 1000;
         int[] numVars = new int[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
-        int[] avgDegree = new int[]{2, 4, 6, 8, 10};
+        int[] avgDegree = new int[]{2, 4, 6, 8, 10, 12, 14, 16, 18, 20};
 
         NumberFormat nf = new DecimalFormat("0.00");
 
-        String[] algorithms = {"FGES", "PC", "CPC", "PC-Max", "FASK"};
+        String[] algorithms = {
+                "FGES", "PC", "CPC", "PC-Max",
+                "FASK"};
 
         PrintStream out = null;
 
@@ -628,7 +630,7 @@ public class CalibrationQuestion {
 
             if (out == null) throw new NullPointerException("out not initialized");
 
-            out.println("AvgDeg\t#Vars\tDensity\tSparsity\tR2\tAHP\tAHPC\tA\tU");
+            out.println("AvgDeg\t#Vars\tDensity\tSparsity\tR2\tAP\tAR\tAHP\tAHPC\tAHR\tAHRC\tA\tU\tE");
 
             for (int _numVars : numVars) {
                 for (int _avgDegree : avgDegree) {
@@ -652,6 +654,8 @@ public class CalibrationQuestion {
                     lgs.setErrorsNormal(false);
 
                     DataSet data = lgs.simulateDataFisher(100, 100, sampleSize, 1e-3, false);
+
+                    data = DataUtils.shuffleColumns(data);
 
                     GraphSearch s = null;
 
@@ -681,9 +685,12 @@ public class CalibrationQuestion {
                             ((PcAll) s).setConcurrent(PcAll.Concurrent.NO);
                             break;
                         case "FASK":
-                            s = new Fask(data, new EdgeListGraph(data.getVariables()));
-                            ((Fask) s).setExtraEdgeThreshold(0.1);
-                            ((Fask) s).setAlpha(0.0);
+                            Parameters parameters = new Parameters();
+                            IndependenceWrapper test = new FisherZ();
+                            s = new Fask(data, test.getTest(data, parameters));
+                            ((Fask) s).setUseSkewAdjacencies(true);
+                            ((Fask) s).setExtraEdgeThreshold(0.5);
+                            ((Fask) s).setAlpha(0.2);
                             break;
                     }
 
@@ -691,16 +698,33 @@ public class CalibrationQuestion {
                         throw new NullPointerException("Unrecognized algorthm type: " + algorithm);
                     }
 
+                    long start = System.currentTimeMillis();
                     Graph R = s.search();
+                    long stop = System.currentTimeMillis();
+                    long elapsed = stop - start;
+
                     R = GraphUtils.replaceNodes(R, G2.getNodes());
+
+                    Statistic ap = new AdjacencyPrecision();
+                    double ap2 = ap.getValue(G2, R, data);
+
+                    Statistic ar = new ArrowheadRecall();
+                    double ar2 = ar.getValue(G2, R, data);
 
                     Statistic ahp = new ArrowheadPrecision();
                     double ahp2 = ahp.getValue(G2, R, data);
 
-                    Statistic ahpc = new ArrowheadPrecisionCommonEdges();
-                    double ahpc2 = ahpc.getValue(G2, R, data);
+                    Statistic ahr = new ArrowheadRecall();
+                    double ahr2 = ahr.getValue(G2, R, data);
 
                     R = getCommonGraph(R, G2);  // for AHPC
+
+                    Statistic ahpc = new ArrowheadPrecision();
+                    double ahpc2 = ahpc.getValue(G2, R, data);
+
+                    Statistic ahrc = new ArrowheadRecall();
+                    double ahrc2 = ahrc.getValue(G2, R, data);
+
 
                     List<Node> nodes = R.getNodes();
 
@@ -723,7 +747,7 @@ public class CalibrationQuestion {
                     }
 
 
-                    Set<Edge> S1 = new HashSet<>();
+                    int Ut = 0;
 
                     for (int i = 0; i < nodes.size() - 1; i++) {
                         List<Node> adj = R.getAdjacentNodes(nodes.get(i));
@@ -731,7 +755,7 @@ public class CalibrationQuestion {
                         for (int j = 0; j < adj.size(); j++) {
                             for (int k = j + 1; k < adj.size(); k++) {
                                 if (!R.isAdjacentTo(adj.get(j), adj.get(k))) {
-                                    S1.add(Edges.undirectedEdge(adj.get(j), adj.get(k)));
+                                    Ut++;
                                 }
                             }
                         }
@@ -740,14 +764,7 @@ public class CalibrationQuestion {
                     int A = 0;
 
                     for (Edge e2 : R.getEdges()) {
-                        Node n1 = e2.getNode1();
-                        Node n2 = e2.getNode2();
-
-                        if (e2.getProximalEndpoint(n1) == Endpoint.ARROW) {
-                            A++;
-                        }
-
-                        if (e2.getProximalEndpoint(n2) == Endpoint.ARROW) {
+                        if (e2.isDirected()) {
                             A++;
                         }
                     }
@@ -757,24 +774,35 @@ public class CalibrationQuestion {
 
                     double d = _avgDegree / (double) (_numVars - 1);
 
+                    if (A == 0) continue;
+                    if (Double.isNaN(ahpc2)) continue;
+
                     System.out.println(
                             " d = " + getFormat(nf, d)
                                     + " Avg degree = " + _avgDegree
                                     + " num vars = " + _numVars
                                     + " R.numedges = " + R.getNumEdges()
-                                    + " S1 = " + S1.size()
+                                    + " Ut = " + Ut
                                     + " A = " + A
                     );
+
+//                    out.println("AvgDeg\t#Vars\tDensity\tSparsity\tR2\tAP\tAR\tAHP\tAHPC\tAHR\tAHRC\tA\tU");
+
 
                     out.println(
                             _avgDegree + "\t" + _numVars
                                     + "\t" + getFormat(nf, density)
                                     + "\t" + getFormat(nf, 1.0 - density)
                                     + "\t" + getFormat(nf, r2)
+                                    + "\t" + getFormat(nf, ap2)
+                                    + "\t" + getFormat(nf, ar2)
                                     + "\t" + getFormat(nf, ahp2)
                                     + "\t" + getFormat(nf, ahpc2)
+                                    + "\t" + getFormat(nf, ahr2)
+                                    + "\t" + getFormat(nf, ahrc2)
                                     + "\t" + nf.format(A)
-                                    + "\t" + nf.format(S1.size())
+                                    + "\t" + nf.format(Ut)
+                                    + "\t" + elapsed
                     );
                 }
             }

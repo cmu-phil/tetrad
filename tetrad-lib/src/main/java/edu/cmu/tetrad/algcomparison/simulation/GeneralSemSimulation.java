@@ -88,9 +88,9 @@ public class GeneralSemSimulation implements Simulation {
                 }
             }
 
-            if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.reorderColumns(dataSet);
-            }
+//            if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
+//                dataSet = DataUtils.reorderColumns(dataSet);
+//            }
 
             dataSet.setName("" + (i + 1));
             dataSets.add(DataUtils.restrictToMeasured(dataSet));

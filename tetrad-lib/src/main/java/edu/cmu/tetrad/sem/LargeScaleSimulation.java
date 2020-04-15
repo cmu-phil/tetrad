@@ -29,15 +29,14 @@ import edu.cmu.tetrad.util.dist.Uniform;
 
 import java.io.PrintStream;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.sqrt;
-
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.Well1024a;
+
+import static java.lang.Math.*;
 
 /**
  * Stores a SEM model, pared down, for purposes of simulating data sets with
@@ -396,7 +395,7 @@ public final class LargeScaleSimulation {
                 t2[j] += getSelfLoopCoef() * t1[j];
 
                 for (int k = 0; k < parents[j].length; k++) {
-                    t2[j] += t1[parents[j][k]] * coefs[j][k];
+                    t2[j] += (t1[parents[j][k]] * coefs[j][k]);
                 }
             }
 
@@ -807,6 +806,8 @@ public final class LargeScaleSimulation {
 
                 if (!errorsNormal) {
                     sample = sample * sample;
+//
+//                    sample = RandomUtil.getInstance().nextGamma(1, 2);
                 }
 
                 shocks[i][j] = sample;

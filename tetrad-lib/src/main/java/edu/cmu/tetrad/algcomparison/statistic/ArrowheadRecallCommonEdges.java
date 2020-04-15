@@ -29,10 +29,10 @@ public class ArrowheadRecallCommonEdges implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int V = estGraph.getNumNodes();
-        int E = estGraph.getNumEdges();
-        double a = 2 * E / (double) V;
-        return 1.0 - a / (double) (V - 1);
+        ArrowConfusion confusion = new ArrowConfusion(trueGraph, estGraph);
+        double arrowsTp = confusion.getArrowsTpc();
+        double arrowsTn = confusion.getArrowsTnc();
+        return arrowsTp / (arrowsTp + arrowsTn);
     }
 
     @Override

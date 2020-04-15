@@ -25,37 +25,53 @@ public class AdjacencyConfusion {
         this.est = est;
         adjTp = 0;
         adjFp = 0;
-        adjFn = 0;
+        adjTn = 0;
 
-        Set<Edge> allUnoriented = new HashSet<>();
-        for (Edge edge : this.truth.getEdges()) {
-            allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-        }
-
-        for (Edge edge : this.est.getEdges()) {
-            allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-        }
-
-        for (Edge edge : allUnoriented) {
-            if (this.est.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
-                    !this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                adjFp++;
+        for (Edge edge : truth.getEdges()) {
+            if (this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
+                    this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                adjTp++;
             }
 
             if (this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
                     !this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                adjTn++;
+            }
+
+            if (!this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
+                    this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                adjFp++;
+            }
+
+            if (!this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
+                    !this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 adjFn++;
             }
+        }
+
+        for (Edge edge : est.getEdges()) {
+            if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) continue;
 
             if (this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
                     this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 adjTp++;
             }
+
+            if (this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
+                    !this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                adjTn++;
+            }
+
+            if (!this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
+                    this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                adjFp++;
+            }
+
+            if (!this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
+                    !this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                adjFn++;
+            }
         }
-
-        int allEdges = this.truth.getNumNodes() * (this.truth.getNumNodes() - 1) / 2;
-
-        adjTn = allEdges - adjFn;
     }
 
     public int getAdjTp() {
