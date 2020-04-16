@@ -704,7 +704,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
     public void setErrCovar(Node x, double value) {
         SemGraph graph = getSemPm().getGraph();
-        graph.setShowErrorTerms(true);
         Node exogenousX = graph.getExogenous(x);
         setParamValue(exogenousX, exogenousX, value);
     }
