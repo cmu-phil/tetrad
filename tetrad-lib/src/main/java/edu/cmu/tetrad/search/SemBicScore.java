@@ -158,7 +158,7 @@ public class SemBicScore implements Score {
             }
 
             return -n * log(s2) - getPenaltyDiscount() * k * log(n)
-                    + signum(getStructurePrior()) * getStructurePrior(parents.length);
+                    + signum(getStructurePrior(parents.length)) * getStructurePrior(parents.length);
         } catch (Exception e) {
             return Double.NaN;
         }

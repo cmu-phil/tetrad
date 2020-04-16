@@ -630,7 +630,7 @@ public class CalibrationQuestion {
 
             if (out == null) throw new NullPointerException("out not initialized");
 
-            out.println("AvgDeg\t#Vars\tDensity\tSparsity\tR2\tAP\tAR\tAHP\tAHPC\tAHR\tAHRC\tA\tU\tE");
+            out.println("AvgDeg\t#Vars\tDensity\tSparsity\tR2\tAP\tAR\tAHP\tAHPC\tAHR\tAHRC\tA2\tU2\tf2\tS2\tE");
 
             for (int _numVars : numVars) {
                 for (int _avgDegree : avgDegree) {
@@ -769,8 +769,28 @@ public class CalibrationQuestion {
                         }
                     }
 
+                    int S2 = 0;
+
+                    for (int i = 0; i < nodes.size() - 1; i++) {
+                        List<Node> adj = R.getAdjacentNodes(nodes.get(i));
+
+                        for (int j = 0; j < adj.size(); j++) {
+                            for (int k = j + 1; k < adj.size(); k++) {
+                                if (!R.isAdjacentTo(adj.get(j), adj.get(k))) {
+                                    if (G2.isAdjacentTo(nodes.get(i), adj.get(j)) && G2.isAdjacentTo(nodes.get(i), adj.get(k))) {
+                                        if (G2.isAdjacentTo(adj.get(j), adj.get(k))) {
+                                            S2++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     UtRStatistic utr = new UtRStatistic();
                     double r2 = utr.getValue(G2, R, data);
+
+                    double f2 = utr.getCount();
 
                     double d = _avgDegree / (double) (_numVars - 1);
 
@@ -786,9 +806,6 @@ public class CalibrationQuestion {
                                     + " A = " + A
                     );
 
-//                    out.println("AvgDeg\t#Vars\tDensity\tSparsity\tR2\tAP\tAR\tAHP\tAHPC\tAHR\tAHRC\tA\tU");
-
-
                     out.println(
                             _avgDegree + "\t" + _numVars
                                     + "\t" + getFormat(nf, density)
@@ -802,6 +819,8 @@ public class CalibrationQuestion {
                                     + "\t" + getFormat(nf, ahrc2)
                                     + "\t" + nf.format(A)
                                     + "\t" + nf.format(Ut)
+                                    + "\t" + nf.format(f2)
+                                    + "\t" + nf.format(S2)
                                     + "\t" + elapsed
                     );
                 }
@@ -871,24 +890,7 @@ public class CalibrationQuestion {
             ChoiceGenerator gen = new ChoiceGenerator(nodes.size(), 3);
             int[] choice;
 
-            Set<Edge> L = new HashSet<>();
-            Set<Edge> M = new HashSet<>();
-
-            while ((choice = gen.next()) != null) {
-                List<Node> v = GraphUtils.asList(choice, nodes);
-
-                Node v1 = v.get(0);
-                Node v2 = v.get(1);
-                Node v3 = v.get(2);
-
-                collectUnshieldedTripleLegsAndShieldsInR(R, L, M, v1, v3, v2);
-                collectUnshieldedTripleLegsAndShieldsInR(R, L, M, v1, v2, v3);
-                collectUnshieldedTripleLegsAndShieldsInR(R, L, M, v2, v1, v3);
-            }
-
-
-            Set<Edge> L1 = new HashSet<>();
-            Set<Edge> S1 = new HashSet<>();
+            int Ut = 0;
 
             for (int i = 0; i < nodes.size() - 1; i++) {
                 List<Node> adj = R.getAdjacentNodes(nodes.get(i));
@@ -896,9 +898,7 @@ public class CalibrationQuestion {
                 for (int j = 0; j < adj.size(); j++) {
                     for (int k = j + 1; k < adj.size(); k++) {
                         if (!R.isAdjacentTo(adj.get(j), adj.get(k))) {
-                            L1.add(Edges.undirectedEdge(nodes.get(i), adj.get(j)));
-                            L1.add(Edges.undirectedEdge(nodes.get(i), adj.get(k)));
-                            S1.add(Edges.undirectedEdge(adj.get(j), adj.get(k)));
+                            Ut++;
                         }
                     }
                 }
@@ -907,22 +907,33 @@ public class CalibrationQuestion {
             int A = 0;
 
             for (Edge e2 : R.getEdges()) {
-                Node n1 = e2.getNode1();
-                Node n2 = e2.getNode2();
-
-                if (e2.getProximalEndpoint(n1) == Endpoint.ARROW) {
+                if (e2.isDirected()) {
                     A++;
                 }
+            }
 
-                if (e2.getProximalEndpoint(n2) == Endpoint.ARROW) {
-                    A++;
+            int S2 = 0;
+
+            for (int i = 0; i < nodes.size() - 1; i++) {
+                List<Node> adj = R.getAdjacentNodes(nodes.get(i));
+
+                for (int j = 0; j < adj.size(); j++) {
+                    for (int k = j + 1; k < adj.size(); k++) {
+                        if (!R.isAdjacentTo(adj.get(j), adj.get(k))) {
+                            if (G2.isAdjacentTo(nodes.get(i), adj.get(j)) && G2.isAdjacentTo(nodes.get(i), adj.get(k))) {
+                                if (G2.isAdjacentTo(adj.get(j), adj.get(k))) {
+                                    S2++;
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
             UtRStatistic utr = new UtRStatistic();
             double r2 = utr.getValue(G2, R, null);
 
-            double r2max = (1 - ahpc2) * (A / (2 * S1.size() * density));
+            double r2max = (1 - ahpc2) * (A / (2 * Ut * density));
             r2max = Math.min(r2max, 1.0);
 
             NumberFormat nf = new DecimalFormat("0.00");
@@ -932,7 +943,6 @@ public class CalibrationQuestion {
                             + " Avg degree = " + avgDegree
                             + " num vars = " + numVars
                             + " R.numedges = " + R.getNumEdges()
-                            + " L1 = " + L1.size()
                             + " A = " + A
             );
 
@@ -941,7 +951,7 @@ public class CalibrationQuestion {
                             + " & " + getFormat(nf, r2)
                             + " & " + getFormat(nf, ahpc2)
                             + " & " + nf.format(A)
-                            + " & " + nf.format(S1.size())
+                            + " & " + nf.format(Ut)
                             + " & " + getFormat(nf, r2max)
                     + " \\\\ "
             );

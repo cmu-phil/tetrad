@@ -16,6 +16,9 @@ import java.util.Set;
 public class UtRStatistic implements Statistic {
     static final long serialVersionUID = 23L;
 
+    private int count = 0;
+    private int total = 0;
+
     @Override
     public String getAbbreviation() {
         return "UtR";
@@ -37,6 +40,9 @@ public class UtRStatistic implements Statistic {
 
         Set<NodePair> l = new HashSet<>();
 
+        count = 0;
+        total = 0;
+
         while ((choice = gen.next()) != null) {
             List<Node> v = GraphUtils.asList(choice, nodes);
 
@@ -49,22 +55,19 @@ public class UtRStatistic implements Statistic {
             collect(gt, ge, l, v2, v1, v3);
         }
 
-        int count = 0;
-        int total = 0;
-
         for (NodePair t : l) {
             Node x = t.getFirst();
             Node y = t.getSecond();
 
             if (gt.isDirectedFromTo(x, y) && ge.isDirectedFromTo(y, x)) {
-                count++;
+                count = getCount() + 1;
             }
 
             if (gt.isDirectedFromTo(y, x) && ge.isDirectedFromTo(x, y)) {
-                count++;
+                count = getCount() + 1;
             }
 
-            total++;
+            total = total + 1;
         }
 
         return count / (double) total;
@@ -82,5 +85,13 @@ public class UtRStatistic implements Statistic {
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public int getTotal() {
+        return total;
     }
 }
