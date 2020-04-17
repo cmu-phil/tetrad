@@ -746,7 +746,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean isDescendentOf(Node node1, Node node2) {
-        return (node1 == node2) || isProperDescendentOf(node1, node2);
+        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
     }
 
     /**
