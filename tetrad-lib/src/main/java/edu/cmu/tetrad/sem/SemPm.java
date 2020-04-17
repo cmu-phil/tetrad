@@ -327,9 +327,6 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     public Parameter getCovarianceParameter(Node nodeA, Node nodeB) {
-        nodeA = getGraph().getExogenous(nodeA);
-        nodeB = getGraph().getExogenous(nodeB);
-
         if (nodeA.getNodeType() == NodeType.ERROR) {
             final List<Node> children = getGraph().getChildren(nodeA);
             if (children == null || children.isEmpty()) return null;
