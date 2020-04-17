@@ -132,7 +132,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "IMaGES for continuous variables (using the SEM BIC score)";
+        return "MultiFASK";
     }
 
     @Override
