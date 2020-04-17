@@ -630,7 +630,7 @@ public class CalibrationQuestion {
 
             if (out == null) throw new NullPointerException("out not initialized");
 
-            out.println("AvgDeg\t#Vars\tDensity\tSparsity\tR2\tAP\tAR\tAHP\tAHPC\tAHR\tAHRC\tA2\tU2\tf2\tS2\tE");
+            out.println("AvgDeg\tVars\tDensity\tSparsity\tR2\tAP\tAR\tAHP\tAHPC\tAHR\tAHRC\tA2\tU2\tf2\tS2\tE");
 
             for (int _numVars : numVars) {
                 for (int _avgDegree : avgDegree) {
