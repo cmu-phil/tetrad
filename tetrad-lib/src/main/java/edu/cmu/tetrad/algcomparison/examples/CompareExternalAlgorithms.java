@@ -26,8 +26,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmBNTPc;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgPc;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
-import edu.cmu.tetrad.algcomparison.score.MVPBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -81,7 +79,7 @@ public class CompareExternalAlgorithms {
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
 
-        comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_1",
+        comparison.compareFromGraphs("/Users/user/comparison-data/condition_1",
                 "/Users/user/causal-comparisons/condition_1",
                 algorithms, statistics, parameters);
     }

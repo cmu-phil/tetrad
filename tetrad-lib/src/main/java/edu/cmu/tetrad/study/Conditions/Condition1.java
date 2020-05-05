@@ -190,7 +190,7 @@ public class Condition1 {
         comparison.setSaveGraphs(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
 
-        comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_1",
+        comparison.compareFromGraphs("/Users/user/comparison-data/condition_1",
                 "/Users/user/causal-comparisons/condition_1",
                 algorithms, statistics, parameters);
 

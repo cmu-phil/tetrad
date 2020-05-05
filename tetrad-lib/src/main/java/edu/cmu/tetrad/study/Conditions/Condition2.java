@@ -212,7 +212,7 @@ public class Condition2 {
         comparison.setSaveGraphs(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_2",
+        comparison.compareFromGraphs("/Users/user/comparison-data/condition_2",
                 "/Users/user/causal-comparisons/condition_2", "Comparison.txt",
                 algorithms, statistics, parameters);
 
@@ -232,7 +232,7 @@ public class Condition2 {
         statistics2.add(new ArrowheadTN());
         statistics2.add(new ElapsedTime());
 //
-        comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_2",
+        comparison.compareFromGraphs("/Users/user/comparison-data/condition_2",
                 "/Users/user/causal-comparisons/condition_2", "Counts.txt",
                 algorithms, statistics2, parameters);
 

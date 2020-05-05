@@ -173,14 +173,105 @@ public class Comparison {
         compareFromSimulations(this.resultsPath, simulations, algorithms, statistics, parameters);
     }
 
-    public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
-                                                     Statistics statistics, Parameters parameters) {
-        generateReportFromExternalAlgorithms(dataPath, resultsPath, "Comparison.txt", algorithms,
+    /**
+     * Compares algorithms.
+     *
+     * @param dataPath        Path to the directory where data has been saved.
+     * @param resultsPath     Path to the file where the results should be stored.
+     * @param comparisonGraph The graph to which all results are to be compared.
+     * @param resultGraphs    A list of result graphs to be compared.
+     * @param descriptions    A corresponding list of descriptions to be printed in the comparison tables for each
+     *                        result graph.
+     * @param elapsedTimes    A list of elapsed times in milliseconds.
+     * @param statistics      The list of statistics on which to compare the algorithm, and their utility weights.
+     * @param parameters      The list of parameters and their values.
+     */
+    public void compareFromGraphs(String dataPath,
+                                  String resultsPath,
+                                  Graph comparisonGraph,
+                                  List<Graph> resultGraphs,
+                                  List<String> descriptions,
+                                  List<Long> elapsedTimes,
+                                  Statistics statistics,
+                                  Parameters parameters) {
+
+
+        Algorithms algorithms = new Algorithms();
+
+        for (int i = 0; i < resultGraphs.size(); i++) {
+            int _i = i;
+            Algorithm external = new ExternalAlgorithm() {
+                static final long serialVersionUID = 23L;
+
+                @Override
+                public long getElapsedTime(DataModel dataSet, Parameters parameters) {
+                    if (elapsedTimes != null) return elapsedTimes.get(_i);
+                    else return 0;
+                }
+
+                @Override
+                public Graph search(DataModel dataSet, Parameters parameters) {
+                    return resultGraphs.get(_i);
+                }
+
+                @Override
+                public Graph getComparisonGraph(Graph graph) {
+                    return comparisonGraph;
+                }
+
+                @Override
+                public String getDescription() {
+                    return descriptions.get(_i);
+                }
+
+                @Override
+                public DataType getDataType() {
+                    return DataType.Mixed;
+                }
+            };
+
+            algorithms.add(external);
+        }
+
+        this.resultsPath = resultsPath;
+
+        Simulations simulations = new Simulations();
+
+        File file = new File(this.dataPath, "save");
+        File[] dirs = file.listFiles();
+
+        if (dirs == null) {
+            throw new NullPointerException("No files in " + file.getAbsolutePath());
+        }
+
+        this.dirs = new ArrayList<String>();
+
+        int count = 0;
+
+        for (File dir : dirs) {
+            if (dir.getName().contains("DS_Store")) {
+                continue;
+            }
+            count++;
+        }
+
+        for (int i = 1; i <= count; i++) {
+            File _dir = new File(dataPath, "save/" + i);
+            simulations.add(new LoadDataAndGraphs(_dir.getAbsolutePath()));
+            this.dirs.add(_dir.getAbsolutePath());
+        }
+
+        compareFromSimulations(this.resultsPath, simulations, algorithms, statistics, parameters);
+    }
+
+    public void compareFromGraphs(String dataPath, String resultsPath, Algorithms algorithms,
+                                  Statistics statistics, Parameters parameters) {
+        compareFromGraphs(dataPath, resultsPath, "Comparison.txt", algorithms,
                 statistics, parameters);
     }
 
-    public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName, Algorithms algorithms,
-                                                     Statistics statistics, Parameters parameters) {
+    public void compareFromGraphs(String dataPath, String resultsPath, String outputFileName, Algorithms algorithms,
+                                  Statistics statistics, Parameters parameters) {
 
         this.saveGraphs = false;
         this.dataPath = dataPath;
