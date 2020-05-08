@@ -111,6 +111,9 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
 
         errorTerms = new JMenuItem();
 
+        getSemGraph().setShowErrorTerms(false);
+        graphicalEditor().resetLabels();
+
         // By default, hide the error terms.
 //        getSemGraph().setShowErrorTerms(false);
         if (getSemGraph().isShowErrorTerms()) {

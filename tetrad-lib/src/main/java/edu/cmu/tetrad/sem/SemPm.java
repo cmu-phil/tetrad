@@ -310,10 +310,6 @@ public final class SemPm implements PM, TetradSerializable {
      * and the variance of the node's error term if not.
      */
     public Parameter getVarianceParameter(Node node) {
-//        if (getGraph().getChildren(node).size() == 0) {
-//            return null;
-//        }
-
         if (node.getNodeType() == NodeType.ERROR) {
             node = getGraph().getChildren(node).get(0);
         }
@@ -331,10 +327,6 @@ public final class SemPm implements PM, TetradSerializable {
     }
 
     public Parameter getCovarianceParameter(Node nodeA, Node nodeB) {
-        getGraph().setShowErrorTerms(true);
-        nodeA = getGraph().getExogenous(nodeA);
-        nodeB = getGraph().getExogenous(nodeB);
-
         if (nodeA.getNodeType() == NodeType.ERROR) {
             final List<Node> children = getGraph().getChildren(nodeA);
             if (children == null || children.isEmpty()) return null;
@@ -348,9 +340,6 @@ public final class SemPm implements PM, TetradSerializable {
         }
 
         for (Parameter parameter : this.parameters) {
-//            Node _nodeA = parameter.getNodeA();
-//            Node _nodeB = parameter.getNodeB();
-
             if (parameter.getNodeA() == nodeA && parameter.getNodeB() == nodeB) {
                 return parameter;
             }
@@ -358,12 +347,6 @@ public final class SemPm implements PM, TetradSerializable {
             if (parameter.getNodeA() == nodeB && parameter.getNodeA() == nodeA) {
                 return parameter;
             }
-
-//            if (nodeA == _nodeA && nodeB == _nodeB && parameter.getType() == ParamType.COVAR) {
-//                return parameter;
-//            } else if (nodeB == _nodeA && nodeA == _nodeB && parameter.getType() == ParamType.COVAR) {
-//                return parameter;
-//            }
         }
 
         return null;
