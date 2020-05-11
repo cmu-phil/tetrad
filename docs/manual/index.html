@@ -4927,7 +4927,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         <tbody>
 
         <tr>
-            <td>A --> B</td>
+            <td width="10%">A --> B</td>
             <td>A is a cause of B. It may be a direct or indirect cause that may include other measured variables. Also,
                 there may be an unmeasured confounder of A and B.
             </td>
@@ -4954,37 +4954,74 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         </tr>
 
         </tbody>
-
-
-        <tr>Table A1 is sufficient to understand the basic meaning of edge types in PAGs. Nonetheless, it can be helpful
-            to know the following additional perspective on the information encoded by PAGs. Each edge has two
-            endpoints, one on the A side, and one on the B side. For example A --> B has a tail at the A end, and an
-            arrowhead at the B end. Altogether, there are three kinds of edge endpoints: a tail "–", an arrowhead ">",
-            and a "o." Note that some kinds of combinations of endpoints never occur; for example, A o– B never occurs.
-            As a mnemonic device, the basic meaning of each kind of edge can be derived from three simple rules that
-            explain what the meaning of each kind of endpoint is. A tail "–" at the A end of an edge between A and B
-            means "A is a cause of B"; an arrowhead ">" at the A end of an edge between A and B means "A is not a cause
-            of B"; and a circle "o" at the A end of an edge between A and B means "can't tell whether or not A is a
-            cause of B". For example A --> B means that A is a cause of B, and that B is not a cause of A in all of the
-            CBNs represented by the PAG.
-        </tr>
-        <tr>The PAG in Figure 2 shows examples of each type of edge, and the CBNs Figure 1. show some examples of what
-            kinds of CBNs can be represented by that PAG.
-        </tr>
-
-        <tr>Figure 1. Two CBNs that FCI (as well as FCI+, GFCI, and RFCI) cannot distinguish.</tr>
-
-        <tr>Figure 2. The PAG that represents the CBN s in both Figures 1a and 1b.</tr>
-
-
     </table>
+
+
+    <p>Table A1 is sufficient to understand the basic meaning of edge types in PAGs. Nonetheless, it can be helpful
+        to know the following additional perspective on the information encoded by PAGs. Each edge has two
+        endpoints, one on the A side, and one on the B side. For example A --> B has a tail at the A end, and an
+        arrowhead at the B end. Altogether, there are three kinds of edge endpoints: a tail "–", an arrowhead ">",
+        and a "o." Note that some kinds of combinations of endpoints never occur; for example, A o– B never occurs.
+        As a mnemonic device, the basic meaning of each kind of edge can be derived from three simple rules that
+        explain what the meaning of each kind of endpoint is. A tail "–" at the A end of an edge between A and B
+        means "A is a cause of B"; an arrowhead ">" at the A end of an edge between A and B means "A is not a cause
+        of B"; and a circle "o" at the A end of an edge between A and B means "can't tell whether or not A is a
+        cause of B". For example A --> B means that A is a cause of B, and that B is not a cause of A in all of the
+        CBNs represented by the PAG.
+    </p>
+    <p>The PAG in Figure 2 shows examples of each type of edge, and the CBNs.  Figure 1. show some examples of what
+        kinds of CBNs can be represented by that PAG.
+    </p>
+
+    <img src="images/appendix_figure_1a.png" alt="" width="360">
+    <img src="images/appendix_figure_1b.png" alt="" width="360">
+    <p>Figure 1. Two CBNs that FCI (as well as FCI+, GFCI, and RFCI) cannot distinguish.</p>
+
+    <img src="images/appendix_figure_2.png" alt="" width="360">
+    <p>Figure 2. The PAG that represents the CBN s in both Figures 1a and 1b.</p>
+
+
+    <h2>Arc Specializations in PAGs</h2>
+
+    <p>This section describes two types of arc specializations that provide additional information about the nature of
+        an arc in a PAG.</p>
+
+    <p>One arc specialization is colored <span style="color:green">green</span> and is called <span
+            style="font-style: italic; ">definitely visible</span>. In a PAG P without selection bias, a
+        green (definitely visible) arc from A to B denotes that A and B do not have a latent confounder. If an arc is
+        not definitely visible (represented as black) then A and B may have a latent confounder.</p>
+
+    <p>Another arc specialization is shown as <span style="font-weight: bold; ">bold</span> and is called <span
+            style="font-style: italic; ">definitely direct</span>. In a PAG P without selection bias, a
+        bold (definitely direct) arc from A to B denotes that A is a direct cause of B, relative to the other measured
+        variables. If an arc is not definitely direct (represented as not bolded) then A may not be a direct cause of B,
+        in which case there may be one or more measured variables on every causal path from A to B.</p>
+
+
+    <p>In the following examples, the DAG representing a causal process is on the left, and the corresponding PAG is on the right. All variables are observed except for latent variable L.</p>
+
+    <p>Example of an edge C <span style="color:green; font-weight: bold;">➔</span> D that is definitely visible (green) and definitely direct (bold):</p>
+
+    <img src="images/arc_specialization_1.png" alt="" width="360">
+
+    <p>Example of an edge (C <span style="color:green; ">➔</span> E) that is definitely visible (green) and not definitely direct (not bold):</p>
+
+    <img src="images/arc_specialization_2.png" alt="" width="360">
+
+    <p>Example of an edge (F ➔ E) that is not definitely visible (black) and not definitely direct (not bold):</p>
+
+    <img src="images/arc_specialization_3.png" alt="" width="360">
+
+    <p>It is conjectured that it is not possible for an edge to be definitely direct (bold) and not definitely visible (black).</p>
+
 
     <h2>Solving Out of Memory Errors</h2>
     <p>By default Java will allocate the smaller of 1/4 system memory or 1GB to the Java virtual machine (JVM). If you
         run out of memory (heap memory space) running your analyses you should increase the memory allocated to the JVM
         with the following switch '-XmxXXG' where XX is the number of gigabytes of ram you allow the JVM to utilize. Do
         run Tetrad with more memory you need to start it from the command line or terminal. For example to allocate 8
-        gigabytes of ram you would add -Xmx8G immediately after the java command e.g., java -Xmx8G -jar tetrad-gui.jar.</p>
+        gigabytes of ram you would add -Xmx8G immediately after the java command e.g., java -Xmx8G -jar
+        tetrad-gui.jar.</p>
 
     <h2>Glossary of Terms</h2>
 
