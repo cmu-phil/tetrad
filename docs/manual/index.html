@@ -383,9 +383,9 @@
         is selected as the reference), and each comparison will be housed in its own tab, located on the left side of
         the window.</p>
 
-    <h2>Tabular Graph Comparisons</h2>
+    <h2>Stats List Graph Comparisons</h2>
 
-    <p>A tabular graph comparison tallies up and presents counts of the differences and similarities between a true
+    <p>A stats list graph comparison tallies up and presents statistics for the differences and similarities between a true
         graph and a reference graph. Consider the example used in the above section; once again, we’ll let graph one be
         the true graph. Just as above, when the graphs are input to the tabular graph compare box, we must specify which
         of the graphs is the reference graph, and whether it contains latent variables. When the comparison is complete,
@@ -393,12 +393,7 @@
 
     <img src="images/compare_box_4.png" alt="" width="650">
 
-
-    <p>The first column lists the “adjacency precision”—the percentage of edges in target graph that are in the true graph. The second column is the “adjacency recall”—the percentage of edges in the true graph that are in the target graph. The third and fourth columns are arrowhead precision and recall. The fifth and sixth columns are two-cycle (a.k.a. direct feedback cycle) precision and recall, for graphs where that is applicable. The final column is the total number of two-cycle false positives in the target graph.</p>
-
-    <p>If one of the parent boxes contains multiple graphs, each graph will be compared separately to the reference
-        graph (or the estimated graph will be compared separately to each reference graph, depending on which parent box
-        is selected as the reference), and the results listed in a separate row of the table.</p>
+    <p>The first columns gives an abbreviation for the statistic; the second columns gives a definition of the statistic. The third columns gives the statistic value. </p>
 
     <h2>Misclassifications</h2>
 
