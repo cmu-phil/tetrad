@@ -41,7 +41,6 @@ import static java.lang.Math.*;
  *
  * @author Joseph Ramsey
  */
-@SuppressWarnings("ALL")
 public final class Fask implements GraphSearch {
     public void setLeftRight(LeftRight leftRight) {
         this.leftRight = leftRight;
