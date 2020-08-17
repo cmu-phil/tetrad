@@ -95,17 +95,6 @@ public final class Fask implements GraphSearch {
         this.test = test;
     }
 
-    public Fask(DataSet dataSet, Graph initialGraph) {
-        if (!dataSet.isContinuous()) {
-            throw new IllegalArgumentException("For FASK, the dataset must be entirely continuous");
-        }
-
-        this.dataSet = dataSet;
-        this.initialGraph = initialGraph;
-        this.test = null;
-
-    }
-
     //======================================== PUBLIC METHODS ====================================//
 
     /**
@@ -167,6 +156,7 @@ public final class Fask implements GraphSearch {
 
         TetradLogger.getInstance().forceLogMessage("");
 
+        assert G0 != null;
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
 
         Graph graph = new EdgeListGraph(G0.getNodes());
