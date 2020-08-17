@@ -182,9 +182,9 @@ public final class Fask implements GraphSearch {
                 double c1 = correxp(x, y, x);
                 double c2 = correxp(x, y, y);
 
-                if ((!isUseFasAdjacencies() || !G0.isAdjacentTo(X, Y)) &&
-                        (initialGraph == null || !initialGraph.isAdjacentTo(X, Y))
-                        && !(abs(c1 - c2) > skewEdgeThreshold)) {
+                if (!(isUseFasAdjacencies() && G0.isAdjacentTo(X, Y))
+                        && (initialGraph == null || !initialGraph.isAdjacentTo(X, Y))
+                        && (abs(c1 - c2) < skewEdgeThreshold)) {
                     continue;
                 }
 
