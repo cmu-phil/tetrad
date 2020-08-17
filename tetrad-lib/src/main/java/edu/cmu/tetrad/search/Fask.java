@@ -30,7 +30,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Arrays;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
@@ -42,16 +41,15 @@ import static java.lang.Math.*;
  * @author Joseph Ramsey
  */
 public final class Fask implements GraphSearch {
-    public void setLeftRight(LeftRight leftRight) {
-        this.leftRight = leftRight;
-    }
 
+    // The left-right rule to use. Options include the FASK left-right rule and three left-right rules
+    // from the Hyvarinen and Smith pairwise orientation paper.
     public enum LeftRight {FASK, SKEW, RSKEW, TANH}
 
     // The score to be used for the FAS adjacency search.
     private final IndependenceTest test;
 
-    // An initial graph to orient, skipping the adjacency step.
+    // An initial graph to constrain the adjacency step.
     private Graph initialGraph = null;
 
     // Elapsed time of the search, in milliseconds.
@@ -61,13 +59,14 @@ public final class Fask implements GraphSearch {
     // number of records.
     private final DataSet dataSet;
 
-    // For the Fast Adjacency Search.
+    // For the Fast Adjacency Search, the maximum number of edges in a conditioning set.
     private int depth = -1;
 
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
-    // A threshold for including extra adjacencies due to skewness. Default is 0 (no skew edges).
+    // A threshold for including extra adjacencies due to skewness. Default is 0.3. For more edges, lower
+    // this threshold.
     private double skewEdgeThreshold = 0;
 
     // A theshold for making 2-cycles. Default is 0 (no 2-cycles.)
@@ -80,7 +79,7 @@ public final class Fask implements GraphSearch {
     // are zero, the FASK theory doesn't apply).
     private double lr;
 
-    // The left right rule to use, default FASK
+    // The left right rule to use, default FASK.
     private LeftRight leftRight = LeftRight.RSKEW;
 
     /**
@@ -243,6 +242,76 @@ public final class Fask implements GraphSearch {
         return graph;
     }
 
+    /**
+     * @return The depth of search for the Fast Adjacency Search (FAS).
+     */
+    public int getDepth() {
+        return depth;
+    }
+
+    /**
+     * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1.
+     *              unlimited. Making this too high may results in statistical errors.
+     */
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    /**
+     * @return The elapsed time in milliseconds.
+     */
+    public long getElapsedTime() {
+        return elapsed;
+    }
+
+    /**
+     * @return the current knowledge.
+     */
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    /**
+     * @param knowledge Knowledge of forbidden and required edges.
+     */
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
+
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
+
+    public void setSkewEdgeThreshold(double skewEdgeThreshold) {
+        this.skewEdgeThreshold = skewEdgeThreshold;
+    }
+
+    public boolean isUseFasAdjacencies() {
+        return useFasAdjacencies;
+    }
+
+    public void setUseFasAdjacencies(boolean useFasAdjacencies) {
+        this.useFasAdjacencies = useFasAdjacencies;
+    }
+
+    public void setTwoCycleThreshold(double twoCycleThreshold) {
+        this.twoCycleThreshold = twoCycleThreshold;
+    }
+
+    public double getLr() {
+        return lr;
+    }
+
+    public void setLeftRight(LeftRight leftRight) {
+        this.leftRight = leftRight;
+    }
+
+    //======================================== PRIVATE METHODS ====================================//
+
     private double leftRight(double[] x, double[] y) {
         if (leftRight == LeftRight.FASK) {
             return faskLeftRight(x, y);
@@ -308,72 +377,6 @@ public final class Fask implements GraphSearch {
         return Math.log(Math.cosh(Math.max(x, 0)));
     }
 
-    /**
-     * @return The depth of search for the Fast Adjacency Search (FAS).
-     */
-    public int getDepth() {
-        return depth;
-    }
-
-    /**
-     * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1.
-     *              unlimited. Making this too high may results in statistical errors.
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    /**
-     * @return The elapsed time in milliseconds.
-     */
-    public long getElapsedTime() {
-        return elapsed;
-    }
-
-    /**
-     * @return the current knowledge.
-     */
-    public IKnowledge getKnowledge() {
-        return knowledge;
-    }
-
-    /**
-     * @param knowledge Knowledge of forbidden and required edges.
-     */
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
-    }
-
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    public void setSkewEdgeThreshold(double skewEdgeThreshold) {
-        this.skewEdgeThreshold = skewEdgeThreshold;
-    }
-
-    public boolean isUseFasAdjacencies() {
-        return useFasAdjacencies;
-    }
-
-    public void setUseFasAdjacencies(boolean useFasAdjacencies) {
-        this.useFasAdjacencies = useFasAdjacencies;
-    }
-
-    public void setTwoCycleThreshold(double twoCycleThreshold) {
-        this.twoCycleThreshold = twoCycleThreshold;
-    }
-
-    public double getLr() {
-        return lr;
-    }
-
-    //======================================== PRIVATE METHODS ====================================//
-
     private boolean knowledgeOrients(Node X, Node Y) {
         return knowledge.isForbidden(Y.getName(), X.getName()) || knowledge.isRequired(X.getName(), Y.getName());
     }
@@ -406,7 +409,6 @@ public final class Fask implements GraphSearch {
     }
 
     private double[] correctSkewness(double[] data, double sk) {
-        data = Arrays.copyOf(data, data.length);
         double[] data2 = new double[data.length];
         for (int i = 0; i < data.length; i++) data2[i] = data[i] * Math.signum(sk);
         return data2;
