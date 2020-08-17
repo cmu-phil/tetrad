@@ -72,9 +72,11 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
             if (lrRule == 1) {
                 search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK);
             } else if (lrRule == 2) {
-                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSkew);
+                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
             } else if (lrRule == 3) {
-                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.Skew);
+                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
+            } else if (lrRule == 4) {
+                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
             } else {
                 throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
             }

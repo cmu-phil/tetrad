@@ -46,7 +46,7 @@ public final class Fask implements GraphSearch {
         this.leftRight = leftRight;
     }
 
-    public enum LeftRight {FASK, Skew, RSkew}
+    public enum LeftRight {FASK, SKEW, RSKEW, TANH}
 
     // The score to be used for the FAS adjacency search.
     private final IndependenceTest test;
@@ -81,7 +81,7 @@ public final class Fask implements GraphSearch {
     private double lr;
 
     // The left right rule to use, default FASK
-    private LeftRight leftRight = LeftRight.RSkew;
+    private LeftRight leftRight = LeftRight.RSKEW;
 
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
@@ -178,8 +178,9 @@ public final class Fask implements GraphSearch {
                 double[] x = colData[i];
                 double[] y = colData[j];
 
-                double c1 = corr(x, y, x);
-                double c2 = corr(x, y, y);
+                double c1 = correxp(x, y, x);
+                double c2 = correxp(x, y, y);
+
                 if ((!isUseFasAdjacencies() || !G0.isAdjacentTo(X, Y)) &&
                         (initialGraph == null || !initialGraph.isAdjacentTo(X, Y))
                         && !(abs(c1 - c2) > skewEdgeThreshold)) {
@@ -241,24 +242,26 @@ public final class Fask implements GraphSearch {
         return graph;
     }
 
-    private static double corr(double[] cov) {
-        return cov[11];
-    }
-
     private double leftRight(double[] x, double[] y) {
         if (leftRight == LeftRight.FASK) {
-            double skx = skewness(x);
-            double sky = skewness(y);
-            double r = correlation(x, y);
-            double lr = corr(cov(x, y, x)) - corr(cov(x, y, y));
-            return signum(skx) * signum(sky) * signum(r) * lr;
-        } else if (leftRight == LeftRight.RSkew) {
+            return faskLeftRight(x, y);
+        } else if (leftRight == LeftRight.RSKEW) {
             return robustSkew(x, y);
-        } else if (leftRight == LeftRight.Skew) {
+        } else if (leftRight == LeftRight.SKEW) {
             return skew(x, y);
+        } else if (leftRight == LeftRight.TANH) {
+            return tanh(x, y);
         }
 
         throw new IllegalStateException("Left right rule not configured: " + leftRight);
+    }
+
+    private double faskLeftRight(double[] x, double[] y) {
+        double skx = skewness(x);
+        double sky = skewness(y);
+        double r = correlation(x, y);
+        double lr = correxp(x, y, x) - correxp(x, y, y);
+        return signum(skx) * signum(sky) * signum(r) * lr;
     }
 
     private double robustSkew(double[] x, double[] y) {
@@ -308,6 +311,33 @@ public final class Fask implements GraphSearch {
             double yi = y[i];
 
             double s1 = xi * xi * yi - xi * yi * yi;
+
+            lr[i] = s1;
+        }
+
+        double explr = mean(lr);
+        double r = correlation(x, y);
+        return r * explr;
+    }
+
+    private double tanh(double[] x, double[] y) {
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
+
+        x = Arrays.copyOf(x, x.length);
+        y = Arrays.copyOf(y, y.length);
+
+        double[] lr = new double[x.length];
+
+        for (int i = 0; i < x.length; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            double xi = x[i];
+            double yi = y[i];
+
+            double s1 = xi * Math.tanh(yi) - Math.tanh(xi) * yi;
 
             lr[i] = s1;
         }
@@ -385,8 +415,6 @@ public final class Fask implements GraphSearch {
         return lr;
     }
 
-    public enum RegressionType {LINEAR, NONLINEAR}
-
     //======================================== PRIVATE METHODS ====================================//
 
     private boolean knowledgeOrients(Node left, Node right) {
@@ -397,8 +425,8 @@ public final class Fask implements GraphSearch {
         return knowledge.isForbidden(right.getName(), left.getName()) && knowledge.isForbidden(left.getName(), right.getName());
     }
 
-    private static double corr(double[] x, double[] y, double[] condition) {
-        return cov(x, y, condition)[1];
+    private static double correxp(double[] x, double[] y, double[] condition) {
+        return cov(x, y, condition)[8];
     }
 
     private static double[] cov(double[] x, double[] y, double[] condition) {
