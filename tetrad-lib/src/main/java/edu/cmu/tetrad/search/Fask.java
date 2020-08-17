@@ -37,7 +37,7 @@ import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.*;
 
 /**
- * Runs the FASK (Fast Adjacency Skewnmess) algorithm.
+ * Runs the FASK (Fast Adjacency Skewness) algorithm.
  *
  * @author Joseph Ramsey
  */
@@ -84,7 +84,8 @@ public final class Fask implements GraphSearch {
     private LeftRight leftRight = LeftRight.RSKEW;
 
     /**
-     * @param dataSet These datasets must all have the same variables, in the same order.
+     * @param dataSet A continuous dataset over variables V.
+     * @param test An independence test over variables V. (Used for FAS.)
      */
     public Fask(DataSet dataSet, IndependenceTest test) {
         if (!dataSet.isContinuous()) {
@@ -268,71 +269,39 @@ public final class Fask implements GraphSearch {
         x = correctSkewness(x, skewness(x));
         y = correctSkewness(y, skewness(y));
 
-        x = Arrays.copyOf(x, x.length);
-        y = Arrays.copyOf(y, y.length);
-
         double[] lr = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
-            double xi = x[i];
-            double yi = y[i];
-
-            double s1 = (g(xi) * yi) - (xi * g(yi));
-
-            lr[i] = s1;
+            lr[i] = g(x[i]) * y[i] - x[i] * g(y[i]);
         }
 
-        double explr = mean(lr);
-
-        double r = correlation(x, y);
-
-        return r * explr;
+        return correlation(x, y) * mean(lr);
     }
 
     private double skew(double[] x, double[] y) {
         x = correctSkewness(x, skewness(x));
         y = correctSkewness(y, skewness(y));
 
-        x = Arrays.copyOf(x, x.length);
-        y = Arrays.copyOf(y, y.length);
-
         double[] lr = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
-            double xi = x[i];
-            double yi = y[i];
-
-            double s1 = xi * xi * yi - xi * yi * yi;
-
-            lr[i] = s1;
+            lr[i] = x[i] * x[i] * y[i] - x[i] * y[i] * y[i];
         }
 
-        double explr = mean(lr);
-        double r = correlation(x, y);
-        return r * explr;
+        return correlation(x, y) * mean(lr);
     }
 
     private double tanh(double[] x, double[] y) {
         x = correctSkewness(x, skewness(x));
         y = correctSkewness(y, skewness(y));
 
-        x = Arrays.copyOf(x, x.length);
-        y = Arrays.copyOf(y, y.length);
-
         double[] lr = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
-            double xi = x[i];
-            double yi = y[i];
-
-            double s1 = xi * Math.tanh(yi) - Math.tanh(xi) * yi;
-
-            lr[i] = s1;
+            lr[i] = x[i] * Math.tanh(y[i]) - Math.tanh(x[i]) * y[i];
         }
 
-        double explr = mean(lr);
-        double r = correlation(x, y);
-        return r * explr;
+        return correlation(x, y) * mean(lr);
     }
 
     private double g(double x) {
