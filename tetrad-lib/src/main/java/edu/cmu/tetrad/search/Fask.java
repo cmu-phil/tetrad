@@ -26,15 +26,11 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.regression.RegressionDataset;
-import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.Arrays;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
@@ -179,23 +175,6 @@ public final class Fask implements GraphSearch {
 
         int V = variables.size();
 
-        double[] ee = new double[2 * (V * (V - 1) / 2)];
-        int count = 0;
-
-        for (int i = 0; i < V; i++) {
-            for (int j = 0; j < V; j++) {
-                if (i == j) continue;
-
-                // Centered
-                double[] x = colData[i];
-                double[] y = colData[j];
-                ee[count++] = corr(cov(x, y, x));
-            }
-        }
-
-        double mean = 0;
-        double sd = sd(ee);
-
         for (int i = 0; i < V; i++) {
             for (int j = 0; j < V; j++) {
                 if (i == j) continue;
@@ -211,12 +190,12 @@ public final class Fask implements GraphSearch {
 
                 double c1 = corr(x, y, x);
                 double c2 = corr(x, y, y);
-
                 if ((!isUseFasAdjacencies() || !G0.isAdjacentTo(X, Y)) &&
                         (initialGraph == null || !initialGraph.isAdjacentTo(X, Y))
                         && !(abs(c1 - c2) > skewEdgeThreshold)) {
                     continue;
-                }//  abs(c - mean) > thresh) {
+                }
+
                 double lrxy = leftRight(x, y);
 
                 this.lr = lrxy;
@@ -266,46 +245,6 @@ public final class Fask implements GraphSearch {
             }
         }
 
-        if (!useFasAdjacencies) {
-            double zStar2 = StatUtils.getZForAlpha(skewEdgeThreshold / (10));
-            double thresh2 = zStar2 * sd / sqrt(count);
-
-            for (int d = 1; d < 10; d++) {
-                List<Edge> toRemove = new ArrayList<>();
-
-                for (Edge edge : graph.getEdges()) {
-                    Node X = edge.getNode1();
-                    Node Y = edge.getNode2();
-
-                    graph.removeEdge(edge);
-
-                    if (graph.isAncestorOf(X, Y)) {
-                        double[] x = colData[variables.indexOf(X)];
-                        double[] y = colData[variables.indexOf(Y)];
-
-                        double c = corr(cov(x, y, x)) / V;
-
-                        Node h = Edges.getDirectedEdgeHead(edge);
-
-                        List<Node> par = graph.getParents(h);
-                        int p = par.size();
-
-                        if (p > 0 && p <= d) {
-                            if (abs(c - mean) < thresh2) {
-                                toRemove.add(edge);
-                            }
-                        }
-                    }
-
-                    graph.addEdge(edge);
-                }
-
-                for (Edge edge : toRemove) {
-                    graph.removeEdge(edge);
-                }
-            }
-        }
-
         long stop = System.currentTimeMillis();
         this.elapsed = stop - start;
 
@@ -339,7 +278,7 @@ public final class Fask implements GraphSearch {
         x = Arrays.copyOf(x, x.length);
         y = Arrays.copyOf(y, y.length);
 
-        double[] LR = new double[x.length];
+        double[] lr = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
             if (Thread.currentThread().isInterrupted()) {
@@ -351,16 +290,14 @@ public final class Fask implements GraphSearch {
 
             double s1 = (g(xi) * yi) - (xi * g(yi));
 
-            LR[i] = s1;
+            lr[i] = s1;
         }
 
-        double lr = mean(LR);
+        double explr = mean(lr);
 
-        double skx = skewness(x);
-        double sky = skewness(y);
         double r = correlation(x, y);
 
-        return skx * sky * r * lr;
+        return r * explr;
     }
 
     private double skew(double[] x, double[] y) {
@@ -370,7 +307,7 @@ public final class Fask implements GraphSearch {
         x = Arrays.copyOf(x, x.length);
         y = Arrays.copyOf(y, y.length);
 
-        double[] LR = new double[x.length];
+        double[] lr = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
             if (Thread.currentThread().isInterrupted()) {
@@ -382,16 +319,12 @@ public final class Fask implements GraphSearch {
 
             double s1 = xi * xi * yi - xi * yi * yi;
 
-            LR[i] = s1;
+            lr[i] = s1;
         }
 
-        double lr = mean(LR);
-
-        double skx = skewness(x);
-        double sky = skewness(y);
+        double explr = mean(lr);
         double r = correlation(x, y);
-
-        return skx * sky * r * lr;
+        return r * explr;
     }
 
     private double g(double x) {
@@ -464,46 +397,6 @@ public final class Fask implements GraphSearch {
 
     public enum RegressionType {LINEAR, NONLINEAR}
 
-    /**
-     * Calculates the residuals of y regressed nonparametrically onto y. Left public
-     * so it can be accessed separately.
-     * <p>
-     * Here we want residuals of x regressed onto y. I'll tailor the method to that.
-     *
-     * @return the nonlinear residuals of y regressed onto x.
-     */
-    public static double[] residuals(final double[] y, final double[] x, RegressionType regressionType) {
-        double[] residuals;
-
-        if (regressionType == RegressionType.LINEAR) {
-            RegressionResult result = RegressionDataset.regress(y, new double[][]{x});
-            residuals = result.getResiduals().toArray();
-        } else {
-            int N = y.length;
-            residuals = new double[N];
-            double[] sum = new double[N];
-            double[] totalWeight = new double[N];
-            double h = h1(x);
-
-            for (int j = 0; j < N; j++) {
-                double yj = y[j];
-
-                for (int i = 0; i < N; i++) {
-                    double d = distance(x, i, j);
-                    double k = kernelGaussian(d, h);
-                    sum[i] += k * yj;
-                    totalWeight[i] += k;
-                }
-            }
-
-            for (int i = 0; i < N; i++) {
-                residuals[i] = y[i] - sum[i] / totalWeight[i];
-            }
-        }
-
-        return residuals;
-    }
-
     //======================================== PRIVATE METHODS ====================================//
 
     private boolean knowledgeOrients(Node left, Node right) {
@@ -512,38 +405,6 @@ public final class Fask implements GraphSearch {
 
     private boolean edgeForbiddenByKnowledge(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName()) && knowledge.isForbidden(left.getName(), right.getName());
-    }
-
-    private static double h1(double[] xCol) {
-        int N = xCol.length;
-        double w;
-
-        if (N < 200) {
-            w = 0.8;
-        } else if (N < 1200) {
-            w = 0.5;
-        } else {
-            w = 0.3;
-        }
-
-        return w;
-    }
-
-    private static double distance(double[] data, int i, int j) {
-        double sum = 0.0;
-
-        double d = (data[i] - data[j]) / 2.0;
-
-        if (!Double.isNaN(d)) {
-            sum += d * d;
-        }
-
-        return sqrt(sum);
-    }
-
-    private static double kernelGaussian(double z, double h) {
-        z /= 1 * h;
-        return exp(-z * z);
     }
 
     private static double corr(double[] x, double[] y, double[] condition) {
