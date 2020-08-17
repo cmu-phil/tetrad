@@ -3476,16 +3476,52 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="errorsNormal_value_type">Boolean</span></li>
         </ul>
 
-        <h3 id="extraEdgeThreshold" class="parameter_description">extraEdgeThreshold</h3>
+        <h3 id="skewEdgeThreshold" class="parameter_description">skewEdgeThreshold</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="extraEdgeThreshold_short_desc">Threshold for including extra edges</span>
+            <li>Short Description: <span id="skewEdgeThreshold_short_desc">Threshold for including edges detectable by skewness</span>
             </li>
-            <li>Long Description: <span id="extraEdgeThreshold_long_desc">For FASK, this includes an adjacency X—Y in the model if |corr(X, Y | X > 0) – corr(X, Y | Y > 0)| > delta, where delta is this number. The default is 0.3. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
+            <li>Long Description: <span id="skewEdgeThreshold_long_desc">For FASK, this includes an adjacency X—Y in the model if |corr(X, Y | X > 0) – corr(X, Y | Y > 0)| > delta, where delta is this number. The default is 0.3. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
             </li>
-            <li>Default Value: <span id="extraEdgeThreshold_default_value">0.3</span></li>
-            <li>Lower Bound: <span id="extraEdgeThreshold_lower_bound">0.0</span></li>
-            <li>Upper Bound: <span id="extraEdgeThreshold_upper_bound">Infinity</span></li>
-            <li>Value Type: <span id="extraEdgeThreshold_value_type">Double</span></li>
+            <li>Default Value: <span id="skewEdgeThreshold_default_value">0.3</span></li>
+            <li>Lower Bound: <span id="skewEdgeThreshold_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="skewEdgeThreshold_upper_bound">Infinity</span></li>
+            <li>Value Type: <span id="skewEdgeThreshold_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="twoCycleThreshold" class="parameter_description">twoCycleThreshold</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="twoCycleThreshold_short_desc">Threshold for identifying 2-cycles.</span>
+            </li>
+            <li>Long Description: <span id="twoCycleThreshold_long_desc">2-cycles are identified when the left-right rule returns a small difference. This is thersholded.</span>
+            </li>
+            <li>Default Value: <span id="twoCycleThreshold_default_value">0.0</span></li>
+            <li>Lower Bound: <span id="twoCycleThreshold_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="twoCycleThreshold_upper_bound">Infinity</span></li>
+            <li>Value Type: <span id="twoCycleThreshold_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="faskLeftRightRule" class="parameter_description">faskLeftRightRule</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskLeftRightRule_short_desc">The left right rule: 1 = FASK, 2 = RSkew, 3 = Skew</span>
+            </li>
+            <li>Long Description: <span id="faskLeftRightRule_long_desc">The FASK left right rule is default, but two other (related) left-right rules are given for relation to the literature: 1 = FASK, 2 = RSkew, 3 = Skew</span>
+            </li>
+            <li>Default Value: <span id="faskLeftRightRule_default_value">1</span></li>
+            <li>Lower Bound: <span id="faskLeftRightRule_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="faskLeftRightRule_upper_bound">3</span></li>
+            <li>Value Type: <span id="faskLeftRightRule_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="faskAssumeLinearity" class="parameter_description">faskAssumeLinearity</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskAssumeLinearity_short_desc">Linearity assumed</span>
+            </li>
+            <li>Long Description: <span id="faskAssumeLinearity_long_desc">True if a linear, non-Gaussian, additive model is assume; false if a nonlinear, non-Gaussian, additive model is assumed.</span>
+            </li>
+            <li>Default Value: <span id="faskAssumeLinearity_default_value">true</span></li>
+            <li>Lower Bound: <span id="faskAssumeLinearity_lower_bound"></span></li>
+            <li>Upper Bound: <span id="faskAssumeLinearity_upper_bound"></span></li>
+            <li>Value Type: <span id="faskAssumeLinearity_value_type">Boolean</span></li>
         </ul>
 
         <h3 id="faithfulnessAssumed" class="parameter_description">faithfulnessAssumed</h3>

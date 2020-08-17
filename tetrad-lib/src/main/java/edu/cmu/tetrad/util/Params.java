@@ -64,7 +64,10 @@ public final class Params {
     public static final String DISCRETIZE = "discretize";
     public static final String DO_COLLIDER_ORIENTATION = "doColliderOrientation";
     public static final String ERRORS_NORMAL = "errorsNormal";
-    public static final String EXTRA_EDGE_THRESHOLD = "extraEdgeThreshold";
+    public static final String SKEW_EDGE_THRESHOLD = "skewEdgeThreshold";
+    public static final String TWO_CYCLE_THRESHOLD = "twoCycleThreshold";
+    public static final String FASK_LEFT_RIGHT_RULE = "faskLeftRightRule";
+    public static final String FASK_LINEARITY_ASSUMED = "faskAssumeLinearity";
     public static final String FAITHFULNESS_ASSUMED = "faithfulnessAssumed";
     public static final String FAS_RULE = "fasRule";
     public static final String FAST_ICA_A = "fastIcaA";
@@ -184,7 +187,7 @@ public final class Params {
             CONFLICT_RULE, CONNECTED, COV_HIGH, COV_LOW, COV_SYMMETRIC,
             CUTOFF_CONSTRAIN_SEARCH, CUTOFF_DATA_SEARCH, CUTOFF_IND_TEST,
             DATA_TYPE, DEPTH, DETERMINISM_THRESHOLD, DIFFERENT_GRAPHS, DISCRETIZE,
-            DO_COLLIDER_ORIENTATION, ERRORS_NORMAL, EXTRA_EDGE_THRESHOLD,
+            DO_COLLIDER_ORIENTATION, ERRORS_NORMAL, SKEW_EDGE_THRESHOLD,
             FAITHFULNESS_ASSUMED, FAS_RULE, FISHER_EPSILON, GENERAL_SEM_ERROR_TEMPLATE,
             GENERAL_SEM_FUNCTION_TEMPLATE_LATENT, GENERAL_SEM_FUNCTION_TEMPLATE_MEASURED,
             GENERAL_SEM_PARAMETER_TEMPLATE, IA, INCLUDE_NEGATIVE_COEFS,

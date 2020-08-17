@@ -21,28 +21,36 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.math3.linear.SingularMatrixException;
 
+import java.awt.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
+import java.util.List;
 
-import static edu.cmu.tetrad.util.StatUtils.correlation;
-import static edu.cmu.tetrad.util.StatUtils.skewness;
+import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.*;
 
 /**
- * Fast adjacency search followed by robust skew orientation. Checks are done for adding
- * two-cycles. The two-cycle checks do not require non-Gaussianity. The robust skew
- * orientation of edges left or right does.
+ * Runs the FASK (Fast Adjacency Skewnmess) algorithm.
  *
  * @author Joseph Ramsey
  */
 public final class Fask implements GraphSearch {
+    public void setLeftRight(LeftRight leftRight) {
+        this.leftRight = leftRight;
+    }
+
+    public enum LeftRight {FASK, Skew, RSkew}
 
     // The score to be used for the FAS adjacency search.
     private final IndependenceTest test;
@@ -55,34 +63,29 @@ public final class Fask implements GraphSearch {
 
     // The data sets being analyzed. They must all have the same variables and the same
     // number of records.
-    private DataSet dataSet = null;
+    private final DataSet dataSet;
 
     // For the Fast Adjacency Search.
     private int depth = -1;
 
-    // For the SEM BIC score, for the Fast Adjacency Search.
-    private double penaltyDiscount = 1;
-
-    // Alpha for orienting 2-cycles. Usually needs to be low.
-    private double alpha = 1e-6;
-
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
-    // Data as a double[][].
-    private final double[][] data;
+    // A threshold for including extra adjacencies due to skewness. Default is 0 (no skew edges).
+    private double skewEdgeThreshold = 0;
 
-    // Cutoff for T tests for 2-cycle tests.
-    private double cutoff;
-
-    // A threshold for including extra adjacencies due to skewness.
-    private double extraEdgeThreshold = 0.3;
+    // A theshold for making 2-cycles. Default is 0 (no 2-cycles.)
+    private double twoCycleThreshold = 0;
 
     // True if FAS adjacencies should be included in the output.
     private boolean useFasAdjacencies = true;
 
-    // True if skew adjacencies should be included in the output.
-    private boolean useSkewAdjacencies = true;
+    // Conditioned correlations are checked to make sure they are different from zero (since if they
+    // are zero, the FASK theory doesn't apply).
+    private double lr;
+
+    // The left right rule to use, default FASK
+    private LeftRight leftRight = LeftRight.RSkew;
 
     /**
      * @param dataSet These datasets must all have the same variables, in the same order.
@@ -94,8 +97,6 @@ public final class Fask implements GraphSearch {
 
         this.dataSet = dataSet;
         this.test = test;
-
-        data = dataSet.getDoubleData().transpose().toArray();
     }
 
     public Fask(DataSet dataSet, Graph initialGraph) {
@@ -107,7 +108,6 @@ public final class Fask implements GraphSearch {
         this.initialGraph = initialGraph;
         this.test = null;
 
-        data = dataSet.getDoubleData().transpose().toArray();
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -123,16 +123,34 @@ public final class Fask implements GraphSearch {
      */
     public Graph search() {
         long start = System.currentTimeMillis();
-
-        setCutoff(alpha);
+        NumberFormat nf = new DecimalFormat("0.000");
 
         DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
         List<Node> variables = dataSet.getVariables();
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
+
+        TetradLogger.getInstance().forceLogMessage("FASK v. 2.0");
+        TetradLogger.getInstance().forceLogMessage("");
+        TetradLogger.getInstance().forceLogMessage("# variables = " + dataSet.getNumColumns());
+        TetradLogger.getInstance().forceLogMessage("N = " + dataSet.getNumRows());
+        TetradLogger.getInstance().forceLogMessage("Skewness edge threshold = " + skewEdgeThreshold);
+        TetradLogger.getInstance().forceLogMessage("2-cycle threshold = " + twoCycleThreshold);
+        TetradLogger.getInstance().forceLogMessage("");
+
         Graph G0;
 
-        if (getInitialGraph() != null) {
+        if (isUseFasAdjacencies()) {
+            TetradLogger.getInstance().forceLogMessage("Running FAS-Stable, alpha = " + test.getAlpha());
+
+            FasStable fas = new FasStable(test);
+            fas.setDepth(getDepth());
+            fas.setVerbose(false);
+            fas.setKnowledge(knowledge);
+            G0 = fas.search();
+        } else if (getInitialGraph() != null) {
+            TetradLogger.getInstance().forceLogMessage("Using initial graph.");
+
             Graph g1 = new EdgeListGraph(getInitialGraph().getNodes());
 
             for (Edge edge : getInitialGraph().getEdges()) {
@@ -146,63 +164,147 @@ public final class Fask implements GraphSearch {
 
             G0 = g1;
         } else {
-            System.out.println("FAS");
-
-            FasStable fas = new FasStable(test);
-            fas.setDepth(getDepth());
-            fas.setVerbose(false);
-            fas.setKnowledge(knowledge);
-            G0 = fas.search();
-
-//            Fges fges = new Fges(new SemBicScore(new CovarianceMatrix(dataSet)));
-//            fges.setFaithfulnessAssumed(false);
-//            fges.setKnowledge(knowledge);
-//            G0 = fges.search();
+            G0 = new EdgeListGraph(dataSet.getVariables());
         }
+
+        G0 = GraphUtils.replaceNodes(G0, dataSet.getVariables());
+
+        TetradLogger.getInstance().forceLogMessage("");
 
         SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
 
-        System.out.println("Orientation");
+        Graph graph = new EdgeListGraph(G0.getNodes());
 
-        Graph graph = new EdgeListGraph(variables);
+        TetradLogger.getInstance().forceLogMessage("X\tY\tMethod\tLR\tEdge");
 
-        for (int i = 0; i < variables.size(); i++) {
-            for (int j = i + 1; j < variables.size(); j++) {
+        int V = variables.size();
+
+        double[] ee = new double[2 * (V * (V - 1) / 2)];
+        int count = 0;
+
+        for (int i = 0; i < V; i++) {
+            for (int j = 0; j < V; j++) {
+                if (i == j) continue;
+
+                // Centered
+                double[] x = colData[i];
+                double[] y = colData[j];
+                ee[count++] = corr(cov(x, y, x));
+            }
+        }
+
+        double mean = 0;
+        double sd = sd(ee);
+
+        for (int i = 0; i < V; i++) {
+            for (int j = 0; j < V; j++) {
+                if (i == j) continue;
+
                 Node X = variables.get(i);
                 Node Y = variables.get(j);
 
+                if (graph.isAdjacentTo(X, Y)) continue;
+
                 // Centered
-                final double[] x = colData[i];
-                final double[] y = colData[j];
+                double[] x = colData[i];
+                double[] y = colData[j];
 
-                double c1 = StatUtils.cov(x, y, x, 0, +1)[1];
-                double c2 = StatUtils.cov(x, y, y, 0, +1)[1];
+                double c1 = corr(x, y, x);
+                double c2 = corr(x, y, y);
 
-                if ((isUseFasAdjacencies() && G0.isAdjacentTo(X, Y)) || (isUseSkewAdjacencies() && Math.abs(c1 - c2) > getExtraEdgeThreshold())) {
-                    if (edgeForbiddenByKnowledge(X, Y)) {
-                        // Don't add an edge.
-                    } else if (knowledgeOrients(X, Y)) {
+                if ((!isUseFasAdjacencies() || !G0.isAdjacentTo(X, Y)) &&
+                        (initialGraph == null || !initialGraph.isAdjacentTo(X, Y))
+                        && !(abs(c1 - c2) > skewEdgeThreshold)) {
+                    continue;
+                }//  abs(c - mean) > thresh) {
+                double lrxy = leftRight(x, y);
+
+                this.lr = lrxy;
+
+                if (edgeForbiddenByKnowledge(X, Y)) {
+                    TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge_forbidden"
+                            + "\t" + nf.format(lrxy)
+                            + "\t" + X + "<->" + Y
+                    );
+                    continue;
+                }
+
+                if (knowledgeOrients(X, Y)) {
+                    TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge"
+                            + "\t" + nf.format(lrxy)
+                            + "\t" + X + "-->" + Y
+                    );
+                    graph.addDirectedEdge(X, Y);
+                } else if (knowledgeOrients(Y, X)) {
+                    TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge"
+                            + "\t" + nf.format(lrxy)
+                            + "\t" + X + "<--" + Y
+                    );
+                    graph.addDirectedEdge(Y, X);
+                } else if (abs(lrxy) < twoCycleThreshold) {
+                    TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle"
+                            + "\t" + nf.format(lrxy)
+                            + "\t" + X + "<=>" + Y
+                    );
+                    graph.addDirectedEdge(X, Y);
+                    graph.addDirectedEdge(Y, X);
+                } else {
+                    if (lrxy > 0) {
+                        TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tleft-right"
+                                + "\t" + nf.format(lrxy)
+                                + "\t" + X + "-->" + Y
+                        );
                         graph.addDirectedEdge(X, Y);
-                    } else if (knowledgeOrients(Y, X)) {
-                        graph.addDirectedEdge(Y, X);
-                    } else if (bidirected(x, y, G0, X, Y)) {
-                        Edge edge1 = Edges.directedEdge(X, Y);
-                        Edge edge2 = Edges.directedEdge(Y, X);
-                        graph.addEdge(edge1);
-                        graph.addEdge(edge2);
                     } else {
-                        if (leftRightMinnesota(x, y)) {
-                            graph.addDirectedEdge(X, Y);
-                        } else {
-                            graph.addDirectedEdge(Y, X);
-                        }
+                        TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tleft-right"
+                                + "\t" + nf.format(lrxy)
+                                + "\t" + X + "<--" + Y
+                        );
+                        graph.addDirectedEdge(Y, X);
                     }
                 }
             }
         }
 
-        System.out.println();
-        System.out.println("Done");
+        if (!useFasAdjacencies) {
+            double zStar2 = StatUtils.getZForAlpha(skewEdgeThreshold / (10));
+            double thresh2 = zStar2 * sd / sqrt(count);
+
+            for (int d = 1; d < 10; d++) {
+                List<Edge> toRemove = new ArrayList<>();
+
+                for (Edge edge : graph.getEdges()) {
+                    Node X = edge.getNode1();
+                    Node Y = edge.getNode2();
+
+                    graph.removeEdge(edge);
+
+                    if (graph.isAncestorOf(X, Y)) {
+                        double[] x = colData[variables.indexOf(X)];
+                        double[] y = colData[variables.indexOf(Y)];
+
+                        double c = corr(cov(x, y, x)) / V;
+
+                        Node h = Edges.getDirectedEdgeHead(edge);
+
+                        List<Node> par = graph.getParents(h);
+                        int p = par.size();
+
+                        if (p > 0 && p <= d) {
+                            if (abs(c - mean) < thresh2) {
+                                toRemove.add(edge);
+                            }
+                        }
+                    }
+
+                    graph.addEdge(edge);
+                }
+
+                for (Edge edge : toRemove) {
+                    graph.removeEdge(edge);
+                }
+            }
+        }
 
         long stop = System.currentTimeMillis();
         this.elapsed = stop - start;
@@ -210,247 +312,95 @@ public final class Fask implements GraphSearch {
         return graph;
     }
 
-//    public Graph search2() {
-//        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
-//        double[][] colData = dataSet.getDoubleData().transpose().toArray();
-//
-//        List<Node> variables = dataSet.getVariables();
-//
-////        Collections.sort(variables, new Comparator<Node>() {
-////            @Override
-////            public int compare(Node o1, Node o2) {
-////                if (o1 == o2) return 0;
-////                int i = variables.indexOf(o1);
-////                int j = variables.indexOf(o2);
-////                final double[] x = colData[i];
-////                final double[] y = colData[j];
-////                return leftRightMinnesota(x, y) ? +1 : -1;
-////            }
-////        });
-//
-//        Graph graph = new EdgeListGraph(variables);
-//
-//        for (int i = 0; i < variables.size(); i++) {
-//            for  (int j = i + 1; j < variables.size(); j++) {
-//                final double[] x = colData[i];
-//                final double[] y = colData[j];
-//
-//                if (leftRightMinnesota(x, y)) {
-//                    graph.addDirectedEdge(variables.get(i), variables.get(j));
-//                } else  {
-//                    graph.addDirectedEdge(variables.get(j), variables.get(i));
-//                }
-//            }
-//        }
-//
-////        Knowledge2 knowledge = new Knowledge2();
-////
-////        for (int i = 0; i < variables.size(); i++) {
-////            knowledge.addToTier(i + 1, variables.get(i).getName());
-////        }
-//
-//        int numOfNodes = variables.size();
-//        for (int i = 0; i < numOfNodes; i++) {
-//            for (int j = i + 1; j < numOfNodes; j++) {
-//                Node n1 = variables.get(i);
-//                Node n2 = variables.get(j);
-//
-//                if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
-//                    continue;
-//                }
-//
-//                Edge edge = graph.getEdge(n1, n2);
-//                if (edge != null && edge.isDirected()) {
-//                    knowledge.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
-//                }
-//            }
-//        }
-//
-//        final SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
-//        score.setPenaltyDiscount(penaltyDiscount);
-//        Fges fges = new Fges(score);
-//        fges.setKnowledge(knowledge);
-//        return fges.search();
-//    }
+    private static double corr(double[] cov) {
+        return cov[11];
+    }
 
-    private boolean bidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
-
-        Set<Node> adjSet = new HashSet<>(G0.getAdjacentNodes(X));
-        adjSet.addAll(G0.getAdjacentNodes(Y));
-        List<Node> adj = new ArrayList<>(adjSet);
-        adj.remove(X);
-        adj.remove(Y);
-
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), Math.min(depth, adj.size()));
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            List<Node> _adj = GraphUtils.asList(choice, adj);
-            double[][] _Z = new double[_adj.size()][];
-
-            for (int f = 0; f < _adj.size(); f++) {
-                Node _z = _adj.get(f);
-                int column = dataSet.getColumn(_z);
-                _Z[f] = data[column];
-            }
-
-            double pc = 0;
-            double pc1 = 0;
-            double pc2 = 0;
-
-            try {
-                pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
-                pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
-                pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
-            } catch (SingularMatrixException e) {
-                System.out.println("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
-                TetradLogger.getInstance().log("info", "Singularity X = " + X + " Y = " + Y + " adj = " + adj);
-                continue;
-            }
-
-            int nc = StatUtils.getRows(x, Double.NEGATIVE_INFINITY, +1).size();
-            int nc1 = StatUtils.getRows(x, 0, +1).size();
-            int nc2 = StatUtils.getRows(y, 0, +1).size();
-
-            double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
-            double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
-            double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
-
-            double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
-            double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
-
-            boolean rejected1 = abs(zv1) > cutoff;
-            boolean rejected2 = abs(zv2) > cutoff;
-
-            boolean possibleTwoCycle = false;
-
-            if (zv1 < 0 && zv2 > 0 && rejected1) {
-                possibleTwoCycle = true;
-            } else if (zv1 > 0 && zv2 < 0 && rejected2) {
-                possibleTwoCycle = true;
-            } else if (rejected1 && rejected2) {
-                possibleTwoCycle = true;
-            }
-
-            if (!possibleTwoCycle) {
-                return false;
-            }
+    private double leftRight(double[] x, double[] y) {
+        if (leftRight == LeftRight.FASK) {
+            double skx = skewness(x);
+            double sky = skewness(y);
+            double r = correlation(x, y);
+            double lr = corr(cov(x, y, x)) - corr(cov(x, y, y));
+            return signum(skx) * signum(sky) * signum(r) * lr;
+        } else if (leftRight == LeftRight.RSkew) {
+            return robustSkew(x, y);
+        } else if (leftRight == LeftRight.Skew) {
+            return skew(x, y);
         }
 
-        return true;
+        throw new IllegalStateException("Left right rule not configured: " + leftRight);
     }
 
-    private boolean leftRightMinnesota(double[] x, double[] y) {
-        x = correctSkewness(x);
-        y = correctSkewness(y);
+    private double robustSkew(double[] x, double[] y) {
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
 
-        final double cxyx = cov(x, y, x);
-        final double cxyy = cov(x, y, y);
-        final double cxxx = cov(x, x, x);
-        final double cyyx = cov(y, y, x);
-        final double cxxy = cov(x, x, y);
-        final double cyyy = cov(y, y, y);
+        x = Arrays.copyOf(x, x.length);
+        y = Arrays.copyOf(y, y.length);
 
-        double a1 = cxyx / cxxx;
-        double a2 = cxyy / cxxy;
-        double b1 = cxyy / cyyy;
-        double b2 = cxyx / cyyx;
+        double[] LR = new double[x.length];
 
-        double Q = (a2 > 0) ? a1 / a2 : a2 / a1;
-        double R = (b2 > 0) ? b1 / b2 : b2 / b1;
-
-        double lr = Q - R;
-
-        final double sk_ey = StatUtils.skewness(residuals(y, new double[][]{x}));
-
-        if (sk_ey < 0) {
-            lr *= -1;
-        }
-
-        final double a = correlation(x, y);
-
-        if (a < 0) {// && sk_ey > 0) {
-            lr *= -1;
-        }
-
-        return lr > 0;
-    }
-
-    private double[] correctSkewness(double[] data) {
-        double skewness = StatUtils.skewness(data);
-        double[] data2 = new double[data.length];
-        for (int i = 0; i < data.length; i++) data2[i] = data[i] * Math.signum(skewness);
-        return data2;
-    }
-
-    private static double cov(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
+        for (int i = 0; i < x.length; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
             }
+
+            double xi = x[i];
+            double yi = y[i];
+
+            double s1 = (g(xi) * yi) - (xi * g(yi));
+
+            LR[i] = s1;
         }
 
-        return exy / n;
+        double lr = mean(LR);
+
+        double skx = skewness(x);
+        double sky = skewness(y);
+        double r = correlation(x, y);
+
+        return skx * sky * r * lr;
     }
 
-    private double[] residuals(double[] _y, double[][] _x) {
-        TetradMatrix y = new TetradMatrix(new double[][]{_y}).transpose();
-        TetradMatrix x = new TetradMatrix(_x).transpose();
+    private double skew(double[] x, double[] y) {
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
 
-        TetradMatrix xT = x.transpose();
-        TetradMatrix xTx = xT.times(x);
-        TetradMatrix xTxInv = xTx.inverse();
-        TetradMatrix xTy = xT.times(y);
-        TetradMatrix b = xTxInv.times(xTy);
+        x = Arrays.copyOf(x, x.length);
+        y = Arrays.copyOf(y, y.length);
 
-        TetradMatrix yHat = x.times(b);
-        if (yHat.columns() == 0) yHat = y.copy();
+        double[] LR = new double[x.length];
 
-        return y.minus(yHat).getColumn(0).toArray();
-    }
-
-    private static double cu(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
+        for (int i = 0; i < x.length; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
             }
+
+            double xi = x[i];
+            double yi = y[i];
+
+            double s1 = xi * xi * yi - xi * yi * yi;
+
+            LR[i] = s1;
         }
 
-        return exy / n;
+        double lr = mean(LR);
+
+        double skx = skewness(x);
+        double sky = skewness(y);
+        double r = correlation(x, y);
+
+        return skx * sky * r * lr;
     }
 
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) throws SingularMatrixException {
-        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
-        TetradMatrix m = new TetradMatrix(cv).transpose();
-        return StatUtils.partialCorrelation(m);
-    }
-
-    /**
-     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
-     */
-    private void setCutoff(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Significance out of range: " + alpha);
-        }
-
-        this.cutoff = StatUtils.getZForAlpha(alpha);
+    private double g(double x) {
+        return Math.log(Math.cosh(Math.max(x, 0)));
     }
 
     /**
      * @return The depth of search for the Fast Adjacency Search (FAS).
      */
-
     public int getDepth() {
         return depth;
     }
@@ -471,30 +421,6 @@ public final class Fask implements GraphSearch {
     }
 
     /**
-     * @return Returns the penalty discount used for the adjacency search. The default is 1,
-     * though a higher value is recommended, say, 2, 3, or 4.
-     */
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    /**
-     * @param penaltyDiscount Sets the penalty discount used for the adjacency search.
-     *                        The default is 1, though a higher value is recommended, say,
-     *                        2, 3, or 4.
-     */
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    /**
-     * @param alpha Alpha for orienting 2-cycles. Needs to be on the low side usually. Default 1e-6.
-     */
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-    /**
      * @return the current knowledge.
      */
     public IKnowledge getKnowledge() {
@@ -508,16 +434,6 @@ public final class Fask implements GraphSearch {
         this.knowledge = knowledge;
     }
 
-    //======================================== PRIVATE METHODS ====================================//
-
-    private boolean knowledgeOrients(Node left, Node right) {
-        return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
-    }
-
-    private boolean edgeForbiddenByKnowledge(Node left, Node right) {
-        return knowledge.isForbidden(right.getName(), left.getName()) && knowledge.isForbidden(left.getName(), right.getName());
-    }
-
     public Graph getInitialGraph() {
         return initialGraph;
     }
@@ -526,12 +442,8 @@ public final class Fask implements GraphSearch {
         this.initialGraph = initialGraph;
     }
 
-    public double getExtraEdgeThreshold() {
-        return extraEdgeThreshold;
-    }
-
-    public void setExtraEdgeThreshold(double extraEdgeThreshold) {
-        this.extraEdgeThreshold = extraEdgeThreshold;
+    public void setSkewEdgeThreshold(double skewEdgeThreshold) {
+        this.skewEdgeThreshold = skewEdgeThreshold;
     }
 
     public boolean isUseFasAdjacencies() {
@@ -542,12 +454,141 @@ public final class Fask implements GraphSearch {
         this.useFasAdjacencies = useFasAdjacencies;
     }
 
-    public boolean isUseSkewAdjacencies() {
-        return useSkewAdjacencies;
+    public void setTwoCycleThreshold(double twoCycleThreshold) {
+        this.twoCycleThreshold = twoCycleThreshold;
     }
 
-    public void setUseSkewAdjacencies(boolean useSkewAdjacencies) {
-        this.useSkewAdjacencies = useSkewAdjacencies;
+    public double getLr() {
+        return lr;
+    }
+
+    public enum RegressionType {LINEAR, NONLINEAR}
+
+    /**
+     * Calculates the residuals of y regressed nonparametrically onto y. Left public
+     * so it can be accessed separately.
+     * <p>
+     * Here we want residuals of x regressed onto y. I'll tailor the method to that.
+     *
+     * @return the nonlinear residuals of y regressed onto x.
+     */
+    public static double[] residuals(final double[] y, final double[] x, RegressionType regressionType) {
+        double[] residuals;
+
+        if (regressionType == RegressionType.LINEAR) {
+            RegressionResult result = RegressionDataset.regress(y, new double[][]{x});
+            residuals = result.getResiduals().toArray();
+        } else {
+            int N = y.length;
+            residuals = new double[N];
+            double[] sum = new double[N];
+            double[] totalWeight = new double[N];
+            double h = h1(x);
+
+            for (int j = 0; j < N; j++) {
+                double yj = y[j];
+
+                for (int i = 0; i < N; i++) {
+                    double d = distance(x, i, j);
+                    double k = kernelGaussian(d, h);
+                    sum[i] += k * yj;
+                    totalWeight[i] += k;
+                }
+            }
+
+            for (int i = 0; i < N; i++) {
+                residuals[i] = y[i] - sum[i] / totalWeight[i];
+            }
+        }
+
+        return residuals;
+    }
+
+    //======================================== PRIVATE METHODS ====================================//
+
+    private boolean knowledgeOrients(Node left, Node right) {
+        return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
+    }
+
+    private boolean edgeForbiddenByKnowledge(Node left, Node right) {
+        return knowledge.isForbidden(right.getName(), left.getName()) && knowledge.isForbidden(left.getName(), right.getName());
+    }
+
+    private static double h1(double[] xCol) {
+        int N = xCol.length;
+        double w;
+
+        if (N < 200) {
+            w = 0.8;
+        } else if (N < 1200) {
+            w = 0.5;
+        } else {
+            w = 0.3;
+        }
+
+        return w;
+    }
+
+    private static double distance(double[] data, int i, int j) {
+        double sum = 0.0;
+
+        double d = (data[i] - data[j]) / 2.0;
+
+        if (!Double.isNaN(d)) {
+            sum += d * d;
+        }
+
+        return sqrt(sum);
+    }
+
+    private static double kernelGaussian(double z, double h) {
+        z /= 1 * h;
+        return exp(-z * z);
+    }
+
+    private static double corr(double[] x, double[] y, double[] condition) {
+        return cov(x, y, condition)[1];
+    }
+
+    private static double[] cov(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+        double exx = 0.0;
+        double eyy = 0.0;
+
+        double ex = 0.0;
+        double ey = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                exx += x[k] * x[k];
+                eyy += y[k] * y[k];
+                ex += x[k];
+                ey += y[k];
+                n++;
+            }
+        }
+
+        exy /= n;
+        exx /= n;
+        eyy /= n;
+        ex /= n;
+        ey /= n;
+
+        double sxy = exy - ex * ey;
+        double sx = exx - ex * ex;
+        double sy = eyy - ey * ey;
+
+        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, ex, ey, sxy / sx, exy / sqrt(exx * eyy), exx, eyy, exy};
+    }
+
+    private double[] correctSkewness(double[] data, double sk) {
+        data = Arrays.copyOf(data, data.length);
+        double[] data2 = new double[data.length];
+        for (int i = 0; i < data.length; i++) data2[i] = data[i] * Math.signum(sk);
+        return data2;
     }
 }
 
