@@ -155,7 +155,8 @@ public final class Fask implements GraphSearch {
         Graph G0;
 
         if (isUseFasAdjacencies()) {
-            TetradLogger.getInstance().forceLogMessage("Running FAS-Stable, alpha = " + test.getAlpha());
+            System.out.println("test variables = " + test.getVariables());
+
 
             FasStable fas = new FasStable(test);
             fas.setDepth(getDepth());
