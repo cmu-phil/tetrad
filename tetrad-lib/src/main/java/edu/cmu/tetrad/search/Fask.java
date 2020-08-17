@@ -227,9 +227,9 @@ public final class Fask implements GraphSearch {
                         );
                         graph.addDirectedEdge(X, Y);
                     } else {
-                        TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tleft-right"
+                        TetradLogger.getInstance().forceLogMessage(Y + "\t" + X + "\tleft-right"
                                 + "\t" + nf.format(lrxy)
-                                + "\t" + X + "<--" + Y
+                                + "\t" + Y + "-->" + X
                         );
                         graph.addDirectedEdge(Y, X);
                     }
