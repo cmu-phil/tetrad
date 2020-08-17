@@ -275,10 +275,6 @@ public final class Fask implements GraphSearch {
         double[] lr = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
             double xi = x[i];
             double yi = y[i];
 
@@ -304,10 +300,6 @@ public final class Fask implements GraphSearch {
         double[] lr = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
             double xi = x[i];
             double yi = y[i];
 
@@ -331,10 +323,6 @@ public final class Fask implements GraphSearch {
         double[] lr = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
             double xi = x[i];
             double yi = y[i];
 
@@ -427,16 +415,9 @@ public final class Fask implements GraphSearch {
     }
 
     private static double correxp(double[] x, double[] y, double[] condition) {
-        return cov(x, y, condition)[8];
-    }
-
-    private static double[] cov(double[] x, double[] y, double[] condition) {
         double exy = 0.0;
         double exx = 0.0;
         double eyy = 0.0;
-
-        double ex = 0.0;
-        double ey = 0.0;
 
         int n = 0;
 
@@ -445,8 +426,6 @@ public final class Fask implements GraphSearch {
                 exy += x[k] * y[k];
                 exx += x[k] * x[k];
                 eyy += y[k] * y[k];
-                ex += x[k];
-                ey += y[k];
                 n++;
             }
         }
@@ -454,14 +433,8 @@ public final class Fask implements GraphSearch {
         exy /= n;
         exx /= n;
         eyy /= n;
-        ex /= n;
-        ey /= n;
 
-        double sxy = exy - ex * ey;
-        double sx = exx - ex * ex;
-        double sy = eyy - ey * ey;
-
-        return new double[]{sxy, sxy / sqrt(sx * sy), sx, sy, (double) n, ex, ey, sxy / sx, exy / sqrt(exx * eyy), exx, eyy, exy};
+        return exy / sqrt(exx * eyy);
     }
 
     private double[] correctSkewness(double[] data, double sk) {
