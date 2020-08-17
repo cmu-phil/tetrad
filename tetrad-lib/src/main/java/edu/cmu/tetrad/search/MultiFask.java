@@ -55,7 +55,6 @@ public class MultiFask {
         long start = System.currentTimeMillis();
 
         IndependenceTest test = new IndTestScore(score);
-        System.out.println("FAS");
 
         FasStable fas = new FasStable(test);
         fas.setDepth(getDepth());

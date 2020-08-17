@@ -155,9 +155,6 @@ public final class Fask implements GraphSearch {
         Graph G0;
 
         if (isUseFasAdjacencies()) {
-            System.out.println("test variables = " + test.getVariables());
-
-
             FasStable fas = new FasStable(test);
             fas.setDepth(getDepth());
             fas.setVerbose(false);
