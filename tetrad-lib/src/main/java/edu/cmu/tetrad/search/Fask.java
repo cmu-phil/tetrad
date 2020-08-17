@@ -41,6 +41,7 @@ import static java.lang.Math.*;
  *
  * @author Joseph Ramsey
  */
+@SuppressWarnings("ALL")
 public final class Fask implements GraphSearch {
     public void setLeftRight(LeftRight leftRight) {
         this.leftRight = leftRight;
@@ -417,12 +418,12 @@ public final class Fask implements GraphSearch {
 
     //======================================== PRIVATE METHODS ====================================//
 
-    private boolean knowledgeOrients(Node left, Node right) {
-        return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
+    private boolean knowledgeOrients(Node X, Node Y) {
+        return knowledge.isForbidden(Y.getName(), X.getName()) || knowledge.isRequired(X.getName(), Y.getName());
     }
 
-    private boolean edgeForbiddenByKnowledge(Node left, Node right) {
-        return knowledge.isForbidden(right.getName(), left.getName()) && knowledge.isForbidden(left.getName(), right.getName());
+    private boolean edgeForbiddenByKnowledge(Node X, Node Y) {
+        return knowledge.isForbidden(Y.getName(), X.getName()) && knowledge.isForbidden(X.getName(), Y.getName());
     }
 
     private static double correxp(double[] x, double[] y, double[] condition) {
