@@ -123,6 +123,9 @@ public final class Fask implements GraphSearch {
     // two cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
     private double twoCycleTestingCutoff;
 
+    // The corresponding alpha.
+    private  double twoCycleTestingAlpha;
+
     // True if FAS adjacencies should be included in the output, by default true.
     private boolean useFasAdjacencies = true;
 
@@ -160,6 +163,7 @@ public final class Fask implements GraphSearch {
         data = dataSet.getDoubleData().transpose().toArray();
         regressionDataset = new RegressionDataset(dataSet);
         this.twoCycleTestingCutoff = StatUtils.getZForAlpha(0.01);
+        this.twoCycleTestingAlpha = 0.01;
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -313,14 +317,16 @@ public final class Fask implements GraphSearch {
             }
         }
 
-        for (int i = 0; i < variables.size(); i++) {
-            for (int j = i + 1; j < variables.size(); j++) {
-                Node X = variables.get(i);
-                Node Y = variables.get(j);
+        if (twoCycleTestingAlpha > 0) {
+            for (int i = 0; i < variables.size(); i++) {
+                for (int j = i + 1; j < variables.size(); j++) {
+                    Node X = variables.get(i);
+                    Node Y = variables.get(j);
 
-                if (graph.isAdjacentTo(X, Y) && graph.getEdges(X, Y).size() ==  2) {
-                    boolean b = twocycle(data[i], data[j], graph, X, Y);
-                    if  (!b) graph.removeEdges(X,  Y);
+                    if (graph.isAdjacentTo(X, Y) && graph.getEdges(X, Y).size() == 2) {
+                        boolean b = twocycle(data[i], data[j], graph, X, Y);
+                        if (!b) graph.removeEdges(X, Y);
+                    }
                 }
             }
         }
@@ -419,9 +425,10 @@ public final class Fask implements GraphSearch {
         this.twoCycleScreeningThreshold = twoCycleScreeningThreshold;
     }
 
-    public void setTwoCycleTestingAlpha(double twoCycleAlpha) {
-        if (twoCycleAlpha < 0 || twoCycleAlpha > 1) throw new IllegalArgumentException("Alpha should be in [0, 1].");
-        this.twoCycleTestingCutoff = StatUtils.getZForAlpha(twoCycleAlpha);
+    public void setTwoCycleTestingAlpha(double twoCycleTestingAlpha) {
+        if (twoCycleTestingAlpha < 0 || twoCycleTestingAlpha > 1) throw new IllegalArgumentException("Alpha should be in [0, 1].");
+        this.twoCycleTestingCutoff = StatUtils.getZForAlpha(twoCycleTestingAlpha);
+        this.twoCycleTestingAlpha =  twoCycleTestingAlpha;
     }
 
     public void setLeftRight(LeftRight leftRight) {
