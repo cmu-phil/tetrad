@@ -22,19 +22,23 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.linear.QRDecomposition;
 
 import java.util.*;
 
+import static edu.cmu.tetrad.util.StatUtils.mean;
+import static edu.cmu.tetrad.util.StatUtils.sd;
 import static java.lang.StrictMath.abs;
 
 /**
  * Implements the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen, and Kerminen, A linear nongaussian acyclic model for
  * causal discovery, JMLR 7 (2006). Largely follows the Matlab code.
- *
+ * <p>
  * We use FGES with knowledge of causal order for the pruning step.
  *
  * @author Joseph Ramsey
@@ -44,6 +48,7 @@ public class Lingam {
     private double fastIcaA = 1.1;
     private int fastIcaMaxIter = 2000;
     private double fastIcaTolerance = 1e-6;
+    private double pruneFactor = 1;
 
     //================================CONSTRUCTORS==========================//
 
@@ -144,7 +149,38 @@ public class Lingam {
 
         final Graph graph = fges.search();
         System.out.println("graph Returning this graph: " + graph);
+
+//        Graph graph2 = new EdgeListGraph(variables);
+//
+//        TetradMatrix bFinal = pruneEdgesByResampling(X, perm2);
+//
+//        for (int i = 0; i < bFinal.rows(); i++) {
+//            for (int j = 0; j < bFinal.columns(); j++) {
+//                if (i == j) continue;
+//                if (bFinal.get(i, j) != 0.0) {
+//                    graph2.addDirectedEdge(variables.get(j), variables.get(i));
+//                }
+//            }
+//        }
+
         return graph;
+    }
+
+    // Inverse permutation, restores original order.
+    private int[] inverse(int[] k) {
+        int[] ki = new int[k.length];
+
+        for (int i = 0; i < ki.length; i++) {
+            ki[k[i]] = i;
+        }
+
+//        int[] kj = new int[k.length];
+//
+//        for (int i = 0; i < k.length; i++) {
+//            kj[i] = ki[k[i]];
+//        }
+
+        return ki;
     }
 
     //================================PUBLIC METHODS========================//
@@ -164,5 +200,100 @@ public class Lingam {
     public void setFastIcaTolerance(double tolerance) {
         this.fastIcaTolerance = tolerance;
     }
+
+    /**
+     * This is the method used in Patrik's code.
+     */
+    private TetradMatrix pruneEdgesByResampling(TetradMatrix X, int[] k) {
+        int npieces = 20;
+        int piecesize = (int) Math.floor(X.columns() / (double) npieces);
+        int[] ki = inverse(k);
+
+        List<TetradMatrix> bpieces = new ArrayList<>();
+
+        for (int p = 0; p < npieces; p++) {
+            TetradMatrix Xp = X.getSelection(k, range((p) * piecesize, (p + 1) * piecesize - 1));
+
+//            System.out.println("Xp = " + Xp);
+
+            Xp = DataUtils.centerData(Xp);
+            TetradMatrix cov = Xp.times(Xp.transpose()).scalarMult(1.0 / Xp.columns());
+
+            TetradMatrix invSqrt;
+
+            try {
+                invSqrt = cov.sqrt().inverse();
+            } catch (Exception e) {
+                continue;
+            }
+
+            QRDecomposition qr = new QRDecomposition(invSqrt.getRealMatrix());
+            TetradMatrix R = new TetradMatrix(qr.getR().transpose());
+
+            for (int s = 0; s < Xp.rows(); s++) {
+                for (int t = 0; t < Xp.rows(); t++) {
+                    R.set(s, t, R.get(s, t) / R.get(s, s));
+                }
+            }
+
+            if (checkNaN(R)) continue;
+
+            TetradMatrix bnewest = TetradMatrix.identity(Xp.rows()).minus(R);
+            bpieces.add(bnewest.getSelection(ki, ki));
+
+            System.out.println("piece = " + bnewest);
+        }
+
+        TetradMatrix means = new TetradMatrix(X.rows(), X.rows());
+        TetradMatrix stds = new TetradMatrix(X.rows(), X.rows());
+
+        TetradMatrix BFinal = new TetradMatrix(X.rows(), X.rows());
+
+        for (int i = 0; i < X.rows(); i++) {
+            for (int j = 0; j < X.rows(); j++) {
+                double[] b = new double[bpieces.size()];
+
+                for (int y = 0; y < bpieces.size(); y++) {
+                    b[y] = abs(bpieces.get(y).get(i, j));
+                }
+
+                means.set(i, j, mean(b));
+
+//                if (means.get(i, j) != 0) {
+                stds.set(i, j, sd(b));
+
+                if (abs(means.get(i, j)) < pruneFactor * stds.get(i, j)) {
+                    BFinal.set(i, j, means.get(i, j));
+                }
+//                }
+            }
+        }
+
+        System.out.println("means = " + means);
+        System.out.println("stds = " + stds);
+
+        System.out.println("BFinal = " + BFinal);
+
+        return BFinal;
+    }
+
+    private boolean checkNaN(TetradMatrix r) {
+        for (int i = 0; i < r.rows(); i++) {
+            for (int j = 0; j < r.rows(); j++) {
+                if (Double.isNaN(r.get(i, j))) return true;
+            }
+        }
+        return false;
+    }
+
+    private int[] range(int i1, int i2) {
+        if (i2 < i1) throw new IllegalArgumentException("i2 must be >=  i2 " + i1 + ", " + i2);
+        int[] series = new int[i2 - i1 + 1];
+        for (int i = 0; i <= i2 - i1; i++) {
+            series[i] = i + i1;
+        }
+        return series;
+    }
+
 }
 
