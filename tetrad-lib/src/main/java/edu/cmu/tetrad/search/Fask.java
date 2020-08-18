@@ -284,7 +284,7 @@ public final class Fask implements GraphSearch {
     /**
      * Returns the coefficient matrix for the search. If the search has not yet run, runs it,
      * then estimates coefficients of each node given its parents using linear regression and forms
-     * the B matrix of coefficients from these estimates. B[i][j] means i->j with that coefficient.
+     * the B matrix of coefficients from these estimates. B[i][j] != 0 means i->j with that coefficient.
      */
     public double[][] getB() {
         if (graph == null) search();
