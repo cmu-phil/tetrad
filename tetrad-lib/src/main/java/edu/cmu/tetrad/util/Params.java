@@ -68,6 +68,7 @@ public final class Params {
     public static final String TWO_CYCLE_THRESHOLD = "twoCycleThreshold";
     public static final String FASK_LEFT_RIGHT_RULE = "faskLeftRightRule";
     public static final String FASK_LINEARITY_ASSUMED = "faskAssumeLinearity";
+    public static final String FASK_ADJACENCY_METHOD = "faskAdjacencyMethod";
     public static final String FAITHFULNESS_ASSUMED = "faithfulnessAssumed";
     public static final String FAS_RULE = "fasRule";
     public static final String FAST_ICA_A = "fastIcaA";

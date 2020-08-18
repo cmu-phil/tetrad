@@ -74,6 +74,9 @@ import static java.lang.Math.*;
  */
 public final class Fask implements GraphSearch {
 
+    // The method to use for finding the adjacencies.
+    public enum AdjacencyMethod {FAS_STABLE, FAS_STABLE_CONCURRENT, FGES, EXTERNAL_GRAPH}
+
     // The left-right rule to use. Options include the FASK left-right rule and three left-right rules
     // from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
     // paper, "empirical" versions were given in which the variables are multiplied through by the
@@ -85,7 +88,7 @@ public final class Fask implements GraphSearch {
     private final IndependenceTest test;
 
     // An initial graph to constrain the adjacency step.
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -110,6 +113,9 @@ public final class Fask implements GraphSearch {
 
     // True if FAS adjacencies should be included in the output, by default true.
     private boolean useFasAdjacencies = true;
+
+    // By default, FAS Stable will be used for adjacencies, though this can be set.
+    private AdjacencyMethod adjacencyMethod = AdjacencyMethod.FAS_STABLE;
 
     // The left right rule to use, default FASK.
     private LeftRight leftRight = LeftRight.RSKEW;
@@ -164,20 +170,36 @@ public final class Fask implements GraphSearch {
         TetradLogger.getInstance().forceLogMessage("2-cycle threshold = " + twoCycleThreshold);
         TetradLogger.getInstance().forceLogMessage("");
 
+        if (twoCycleThreshold > 0 && leftRight != LeftRight.FASK) {
+            throw new IllegalStateException("The two-cycle rule will only work with the FASK left-right rule; otherwise, " +
+                    "set the two cycle threshold to zero.");
+        }
+
         Graph G0;
 
-        if (isUseFasAdjacencies()) {
+        if (adjacencyMethod == AdjacencyMethod.FAS_STABLE) {
             FasStable fas = new FasStable(test);
             fas.setDepth(getDepth());
             fas.setVerbose(false);
             fas.setKnowledge(knowledge);
             G0 = fas.search();
-        } else if (getInitialGraph() != null) {
-            TetradLogger.getInstance().forceLogMessage("Using initial graph.");
+        } else if (adjacencyMethod == AdjacencyMethod.FAS_STABLE_CONCURRENT) {
+            FasConcurrent fas = new FasConcurrent(test);
+            fas.setStable(true);
+            fas.setVerbose(false);
+            fas.setKnowledge(knowledge);
+            G0 = fas.search();
+        } else if (adjacencyMethod == AdjacencyMethod.FGES) {
+            Fges fas = new Fges(new ScoredIndTest(test));
+            fas.setVerbose(false);
+            fas.setKnowledge(knowledge);
+            G0 = fas.search();
+        } else if (adjacencyMethod == AdjacencyMethod.EXTERNAL_GRAPH) {
+            if (getExternalGraph() == null) throw new IllegalStateException("An external graph was not supplied.");
 
-            Graph g1 = new EdgeListGraph(getInitialGraph().getNodes());
+            Graph g1 = new EdgeListGraph(getExternalGraph().getNodes());
 
-            for (Edge edge : getInitialGraph().getEdges()) {
+            for (Edge edge : getExternalGraph().getEdges()) {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
@@ -188,7 +210,7 @@ public final class Fask implements GraphSearch {
 
             G0 = g1;
         } else {
-            G0 = new EdgeListGraph(dataSet.getVariables());
+            throw new IllegalStateException("That method was not configured: " + adjacencyMethod);
         }
 
         G0 = GraphUtils.replaceNodes(G0, dataSet.getVariables());
@@ -220,9 +242,7 @@ public final class Fask implements GraphSearch {
                 double c1 = correxp(x, y, x);
                 double c2 = correxp(x, y, y);
 
-                if (!(isUseFasAdjacencies() && G0.isAdjacentTo(X, Y))
-                        && (initialGraph == null || !initialGraph.isAdjacentTo(X, Y))
-                        && (abs(c1 - c2) < skewEdgeThreshold)) {
+                if (!G0.isAdjacentTo(X, Y) && !(abs(c1 - c2) > skewEdgeThreshold)) {
                     continue;
                 }
 
@@ -248,7 +268,7 @@ public final class Fask implements GraphSearch {
                             + "\t" + X + "<--" + Y
                     );
                     graph.addDirectedEdge(Y, X);
-                } else if (abs(lrxy) < twoCycleThreshold) {
+                } else if (abs(lrxy) < twoCycleThreshold && leftRight == LeftRight.FASK) {
                     TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle"
                             + "\t" + nf.format(lrxy)
                             + "\t" + X + "<=>" + Y
@@ -343,12 +363,12 @@ public final class Fask implements GraphSearch {
         this.knowledge = knowledge;
     }
 
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public void setSkewEdgeThreshold(double skewEdgeThreshold) {
@@ -369,6 +389,10 @@ public final class Fask implements GraphSearch {
 
     public void setLeftRight(LeftRight leftRight) {
         this.leftRight = leftRight;
+    }
+
+    public void setAdjacencyMethod(AdjacencyMethod adjacencyMethod) {
+        this.adjacencyMethod = adjacencyMethod;
     }
 
     //======================================== PRIVATE METHODS ====================================//
