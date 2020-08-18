@@ -292,15 +292,15 @@ public final class Fask implements GraphSearch {
         List<Node> nodes = dataSet.getVariables();
         double[][] B = new double[nodes.size()][nodes.size()];
 
-        for (int i = 0; i < nodes.size(); i++) {
-            Node y = nodes.get(i);
+        for (int j = 0; j < nodes.size(); j++) {
+            Node y = nodes.get(j);
 
             List<Node> pary = graph.getParents(y);
             RegressionResult result = regressionDataset.regress(y, pary);
             double[] coef = result.getCoef();
 
-            for (int j = 0; j < pary.size(); j++) {
-                B[nodes.indexOf(pary.get(j))][i] = coef[j + 1];
+            for (int i = 0; i < pary.size(); i++) {
+                B[nodes.indexOf(pary.get(i))][j] = coef[i + 1];
             }
         }
 
