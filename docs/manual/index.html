@@ -3488,16 +3488,28 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="skewEdgeThreshold_value_type">Double</span></li>
         </ul>
 
-        <h3 id="twoCycleThreshold" class="parameter_description">twoCycleThreshold</h3>
+        <h3 id="twoCycleScreeningThreshold" class="parameter_description">twoCycleScreeningThreshold</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="twoCycleThreshold_short_desc">Threshold for identifying 2-cycles.</span>
+            <li>Short Description: <span id="twoCycleScreeningThreshold_short_desc">Threshold for identifying 2-cycles. (Set to zero to turn  the 2-cycle checks off. Must use FASK LR rule.)</span>
             </li>
-            <li>Long Description: <span id="twoCycleThreshold_long_desc">2-cycles are identified when the left-right rule returns a small difference. This is thersholded.</span>
+            <li>Long Description: <span id="twoCycleScreeningThreshold_long_desc">2-cycles are screened by looking to see if the left-right rule returns a small difference. This is thersholded. To turn off the two-cycle checks, set this to zero. For the two-cycle checks, the FASK left right rule must be used.</span>
             </li>
-            <li>Default Value: <span id="twoCycleThreshold_default_value">0.0</span></li>
-            <li>Lower Bound: <span id="twoCycleThreshold_lower_bound">0</span></li>
-            <li>Upper Bound: <span id="twoCycleThreshold_upper_bound">Infinity</span></li>
-            <li>Value Type: <span id="twoCycleThreshold_value_type">Double</span></li>
+            <li>Default Value: <span id="twoCycleScreeningThreshold_default_value">0.0</span></li>
+            <li>Lower Bound: <span id="twoCycleScreeningThreshold_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="twoCycleScreeningThreshold_upper_bound">Infinity</span></li>
+            <li>Value Type: <span id="twoCycleScreeningThreshold_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="twoCycleTestingAlpha" class="parameter_description">twoCycleTestingAlpha</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="twoCycleTestingAlpha_short_desc">Threshold alpha for testing 2-cycles after the algorithm has otherwise finished.</span>
+            </li>
+            <li>Long Description: <span id="twoCycleTestingAlpha_long_desc">The two cycle testing procedure is given in the published description.</span>
+            </li>
+            <li>Default Value: <span id="twoCycleTestingAlpha_default_value">0.1</span></li>
+            <li>Lower Bound: <span id="twoCycleTestingAlpha_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="twoCycleTestingAlpha_upper_bound">1</span></li>
+            <li>Value Type: <span id="twoCycleTestingAlpha_value_type">Double</span></li>
         </ul>
 
         <h3 id="faskLeftRightRule" class="parameter_description">faskLeftRightRule</h3>

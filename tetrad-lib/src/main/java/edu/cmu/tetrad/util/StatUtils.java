@@ -2115,6 +2115,23 @@ public final class StatUtils {
         return rows;
     }
 
+    public static List<Integer> getRows(double[] x, double[] condition, double threshold, double direction) {
+        List<Integer> rows = new ArrayList<>();
+
+        for (int k = 0; k < x.length; k++) {
+            if (direction > threshold) {
+                if (condition[k] > threshold) {
+                    rows.add(k);
+                }
+            } else if (direction < threshold) {
+                if (condition[k] > threshold) {
+                    rows.add(k);
+                }
+            }
+        }
+        return rows;
+    }
+
     public static double[] E(double[] x, double[] y, double[] condition, double threshold, double direction) {
         double exy = 0.0;
         double exx = 0.0;

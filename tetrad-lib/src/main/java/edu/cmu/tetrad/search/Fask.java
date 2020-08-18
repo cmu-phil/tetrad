@@ -28,11 +28,18 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.*;
@@ -109,7 +116,12 @@ public final class Fask implements GraphSearch {
 
     // A theshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work
     // with the FASK left-right rule. Default is 0; a good value for finding a decent set of 2-cycles is 0.1.
-    private double twoCycleThreshold = 0;
+    private double twoCycleScreeningThreshold = 0;
+
+    // At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then
+    // tested statisstically to see if they are two-cycles, using this cutoff. To adjust this cutoff, set the
+    // two cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
+    private double twoCycleTestingCutoff;
 
     // True if FAS adjacencies should be included in the output, by default true.
     private boolean useFasAdjacencies = true;
@@ -126,11 +138,18 @@ public final class Fask implements GraphSearch {
     // Used for calculating coefficient values.
     private final RegressionDataset regressionDataset;
 
+    // A fast lookup copy of  the data where data[i] is the data for the i'th variables.
+    private final double[][] data;
+
     /**
      * @param dataSet A continuous dataset over variables V.
      * @param test    An independence test over variables V. (Used for FAS.)
      */
     public Fask(DataSet dataSet, IndependenceTest test) {
+        if (dataSet == null) {
+            throw new NullPointerException("Data set not provided.");
+        }
+
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("For FASK, the dataset must be entirely continuous");
         }
@@ -138,8 +157,9 @@ public final class Fask implements GraphSearch {
         this.dataSet = dataSet;
         this.test = test;
 
+        data = dataSet.getDoubleData().transpose().toArray();
         regressionDataset = new RegressionDataset(dataSet);
-
+        this.twoCycleTestingCutoff = StatUtils.getZForAlpha(0.01);
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -167,10 +187,10 @@ public final class Fask implements GraphSearch {
         TetradLogger.getInstance().forceLogMessage("# variables = " + dataSet.getNumColumns());
         TetradLogger.getInstance().forceLogMessage("N = " + dataSet.getNumRows());
         TetradLogger.getInstance().forceLogMessage("Skewness edge threshold = " + skewEdgeThreshold);
-        TetradLogger.getInstance().forceLogMessage("2-cycle threshold = " + twoCycleThreshold);
+        TetradLogger.getInstance().forceLogMessage("2-cycle threshold = " + twoCycleScreeningThreshold);
         TetradLogger.getInstance().forceLogMessage("");
 
-        if (twoCycleThreshold > 0 && leftRight != LeftRight.FASK) {
+        if (twoCycleScreeningThreshold > 0 && leftRight != LeftRight.FASK) {
             throw new IllegalStateException("The two-cycle rule will only work with the FASK left-right rule; otherwise, " +
                     "set the two cycle threshold to zero.");
         }
@@ -268,7 +288,7 @@ public final class Fask implements GraphSearch {
                             + "\t" + X + "<--" + Y
                     );
                     graph.addDirectedEdge(Y, X);
-                } else if (abs(lrxy) < twoCycleThreshold && leftRight == LeftRight.FASK) {
+                } else if (abs(lrxy) < twoCycleScreeningThreshold && leftRight == LeftRight.FASK) {
                     TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle"
                             + "\t" + nf.format(lrxy)
                             + "\t" + X + "<=>" + Y
@@ -289,6 +309,18 @@ public final class Fask implements GraphSearch {
                         );
                         graph.addDirectedEdge(Y, X);
                     }
+                }
+            }
+        }
+
+        for (int i = 0; i < variables.size(); i++) {
+            for (int j = i + 1; j < variables.size(); j++) {
+                Node X = variables.get(i);
+                Node Y = variables.get(j);
+
+                if (graph.isAdjacentTo(X, Y) && graph.getEdges(X, Y).size() ==  2) {
+                    boolean b = twocycle(data[i], data[j], graph, X, Y);
+                    if  (!b) graph.removeEdges(X,  Y);
                 }
             }
         }
@@ -383,8 +415,13 @@ public final class Fask implements GraphSearch {
         this.useFasAdjacencies = useFasAdjacencies;
     }
 
-    public void setTwoCycleThreshold(double twoCycleThreshold) {
-        this.twoCycleThreshold = twoCycleThreshold;
+    public void setTwoCycleScreeningThreshold(double twoCycleScreeningThreshold) {
+        this.twoCycleScreeningThreshold = twoCycleScreeningThreshold;
+    }
+
+    public void setTwoCycleTestingAlpha(double twoCycleAlpha) {
+        if (twoCycleAlpha < 0 || twoCycleAlpha > 1) throw new IllegalArgumentException("Alpha should be in [0, 1].");
+        this.twoCycleTestingCutoff = StatUtils.getZForAlpha(twoCycleAlpha);
     }
 
     public void setLeftRight(LeftRight leftRight) {
@@ -497,6 +534,79 @@ public final class Fask implements GraphSearch {
         double[] data2 = new double[data.length];
         for (int i = 0; i < data.length; i++) data2[i] = data[i] * Math.signum(sk);
         return data2;
+    }
+
+    private boolean twocycle(double[] x, double[] y, Graph G0, Node X, Node Y) {
+
+        Set<Node> adjSet = new HashSet<>(G0.getAdjacentNodes(X));
+        adjSet.addAll(G0.getAdjacentNodes(Y));
+        List<Node> adj = new ArrayList<>(adjSet);
+        adj.remove(X);
+        adj.remove(Y);
+
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), Math.min(depth, adj.size()));
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> _adj = GraphUtils.asList(choice, adj);
+            double[][] _Z = new double[_adj.size()][];
+
+            for (int f = 0; f < _adj.size(); f++) {
+                Node _z = _adj.get(f);
+                int column = dataSet.getColumn(_z);
+                _Z[f] = data[column];
+            }
+
+            double pc = 0;
+            double pc1 = 0;
+            double pc2 = 0;
+
+            try {
+                pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
+                pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
+                pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
+            } catch (SingularMatrixException e) {
+                System.out.println("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
+                TetradLogger.getInstance().log("info", "Singularity X = " + X + " Y = " + Y + " adj = " + adj);
+                continue;
+            }
+
+            int nc = StatUtils.getRows(x, x, 0, Double.NEGATIVE_INFINITY).size();
+            int nc1 = StatUtils.getRows(x, x, 0, +1).size();
+            int nc2 = StatUtils.getRows(y, y, 0, +1).size();
+
+            double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
+            double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
+            double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
+
+            double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
+            double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
+
+            boolean rejected1 = abs(zv1) > twoCycleTestingCutoff;
+            boolean rejected2 = abs(zv2) > twoCycleTestingCutoff;
+
+            boolean possibleTwoCycle = false;
+
+            if (zv1 < 0 && zv2 > 0 && rejected1) {
+                possibleTwoCycle = true;
+            } else if (zv1 > 0 && zv2 < 0 && rejected2) {
+                possibleTwoCycle = true;
+            } else if (rejected1 && rejected2) {
+                possibleTwoCycle = true;
+            }
+
+            if (!possibleTwoCycle) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) throws SingularMatrixException {
+        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
+        TetradMatrix m = new TetradMatrix(cv).transpose();
+        return StatUtils.partialCorrelation(m);
     }
 }
 
