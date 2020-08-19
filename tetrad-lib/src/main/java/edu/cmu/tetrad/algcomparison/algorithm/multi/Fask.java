@@ -103,7 +103,6 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
             }
 
             search.setKnowledge(knowledge);
-//            search.setRemoveResiduals(false);
             return getGraph(search);
         } else {
             Fask fask = new Fask(test);
@@ -182,7 +181,6 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
-
 
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
