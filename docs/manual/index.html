@@ -3490,9 +3490,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="twoCycleScreeningThreshold" class="parameter_description">twoCycleScreeningThreshold</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="twoCycleScreeningThreshold_short_desc">Threshold for identifying 2-cycles. (Set to zero to turn  the 2-cycle checks off. Must use FASK LR rule.)</span>
+            <li>Short Description: <span id="twoCycleScreeningThreshold_short_desc">Threshold for pre-screening 2-cycles. (Set to zero to turn off pre-screening.)</span>
             </li>
-            <li>Long Description: <span id="twoCycleScreeningThreshold_long_desc">2-cycles are screened by looking to see if the left-right rule returns a small difference. This is thersholded. To turn off the two-cycle checks, set this to zero. For the two-cycle checks, the FASK left right rule must be used.</span>
+            <li>Long Description: <span id="twoCycleScreeningThreshold_long_desc">2-cycles are screened by looking to see if the left-right rule returns a small difference. This is thresholded. To turn off the screening, set this to zero.</span>
             </li>
             <li>Default Value: <span id="twoCycleScreeningThreshold_default_value">0.0</span></li>
             <li>Lower Bound: <span id="twoCycleScreeningThreshold_lower_bound">0</span></li>
@@ -3502,7 +3502,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="twoCycleTestingAlpha" class="parameter_description">twoCycleTestingAlpha</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="twoCycleTestingAlpha_short_desc">Threshold alpha for testing 2-cycles after the algorithm has otherwise finished. Set to zero to turn off.</span>
+            <li>Short Description: <span id="twoCycleTestingAlpha_short_desc">Threshold alpha for testing 2-cycles statistically. (Set to zero to turn off testing.)</span>
             </li>
             <li>Long Description: <span id="twoCycleTestingAlpha_long_desc">The two cycle testing procedure is given in the published description.</span>
             </li>
@@ -3514,7 +3514,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="faskLeftRightRule" class="parameter_description">faskLeftRightRule</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="faskLeftRightRule_short_desc">The left right rule: 1 = FASK, 2 = RSkew, 3 = Skew, 4 = TANH</span>
+            <li>Short Description: <span id="faskLeftRightRule_short_desc">The left right rule: 1 = FASK, 2 = RSkew, 3 = Skew, 4 = Tanh</span>
             </li>
             <li>Long Description: <span id="faskLeftRightRule_long_desc">The FASK left right rule is default, but two other (related) left-right rules are given for relation to the literature: 1 = FASK, 2 = RSkew, 3 = Skew, 4 = TANH</span>
             </li>

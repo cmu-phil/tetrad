@@ -170,7 +170,6 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
         parameters.add(TWO_CYCLE_SCREENING_THRESHOLD);
         parameters.add(TWO_CYCLE_TESTING_ALPHA);
         parameters.add(FASK_LEFT_RIGHT_RULE);
-        parameters.add(FASK_ADJACENCY_METHOD);
         parameters.add(VERBOSE);
         return parameters;
     }

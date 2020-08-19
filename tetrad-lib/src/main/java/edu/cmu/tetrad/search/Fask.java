@@ -124,7 +124,7 @@ public final class Fask implements GraphSearch {
     private double twoCycleTestingCutoff;
 
     // The corresponding alpha.
-    private  double twoCycleTestingAlpha;
+    private double twoCycleTestingAlpha;
 
     // True if FAS adjacencies should be included in the output, by default true.
     private boolean useFasAdjacencies = true;
@@ -194,11 +194,6 @@ public final class Fask implements GraphSearch {
         TetradLogger.getInstance().forceLogMessage("2-cycle threshold = " + twoCycleScreeningThreshold);
         TetradLogger.getInstance().forceLogMessage("");
 
-        if (twoCycleScreeningThreshold > 0 && leftRight != LeftRight.FASK) {
-            throw new IllegalStateException("The two-cycle rule will only work with the FASK left-right rule; otherwise, " +
-                    "set the two cycle threshold to zero.");
-        }
-
         Graph G0;
 
         if (adjacencyMethod == AdjacencyMethod.FAS_STABLE) {
@@ -250,6 +245,8 @@ public final class Fask implements GraphSearch {
 
         int V = variables.size();
 
+        List<NodePair> twoCycles = new ArrayList<>();
+
         for (int i = 0; i < V; i++) {
             for (int j = 0; j < V; j++) {
                 if (i == j) continue;
@@ -292,14 +289,17 @@ public final class Fask implements GraphSearch {
                             + "\t" + X + "<--" + Y
                     );
                     graph.addDirectedEdge(Y, X);
-                } else if (abs(lrxy) < twoCycleScreeningThreshold && leftRight == LeftRight.FASK) {
-                    TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle"
-                            + "\t" + nf.format(lrxy)
-                            + "\t" + X + "<=>" + Y
-                    );
-                    graph.addDirectedEdge(X, Y);
-                    graph.addDirectedEdge(Y, X);
                 } else {
+                    if (twoCycleScreeningThreshold > 0 && abs(faskLeftRight(x, y)) < twoCycleScreeningThreshold) {
+                        TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle Prescreen"
+                                + "\t" + nf.format(lrxy)
+                                + "\t" + X + "<=>" + Y
+                        );
+                        graph.addDirectedEdge(X, Y);
+                        graph.addDirectedEdge(Y, X);
+                        twoCycles.add(new NodePair(X, Y));
+                    }
+
                     if (lrxy > 0) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tleft-right"
                                 + "\t" + nf.format(lrxy)
@@ -317,16 +317,41 @@ public final class Fask implements GraphSearch {
             }
         }
 
-        if (twoCycleTestingAlpha > 0) {
-            for (int i = 0; i < variables.size(); i++) {
-                for (int j = i + 1; j < variables.size(); j++) {
-                    Node X = variables.get(i);
-                    Node Y = variables.get(j);
+        if (twoCycleTestingAlpha <= 0 && twoCycleScreeningThreshold > 0) {
+            for (Edge edge : graph.getEdges()) {
+                Node X = edge.getNode1();
+                Node Y = edge.getNode2();
 
-                    if (graph.isAdjacentTo(X, Y) && graph.getEdges(X, Y).size() == 2) {
-                        boolean b = twocycle(data[i], data[j], graph, X, Y);
-                        if (!b) graph.removeEdges(X, Y);
-                    }
+                graph.removeEdges(X, Y);
+                graph.addDirectedEdge(X, Y);
+                graph.addDirectedEdge(Y, X);
+            }
+        } else if (twoCycleTestingAlpha > 0 && twoCycleScreeningThreshold <= 0) {
+            for (Edge edge : graph.getEdges()) {
+                Node X = edge.getNode1();
+                Node Y = edge.getNode2();
+
+                int i = variables.indexOf(X);
+                int j = variables.indexOf(Y);
+
+                if (twoCycleTest(data[i], data[j], graph, X, Y)) {
+                    graph.removeEdges(X, Y);
+                    graph.addDirectedEdge(X, Y);
+                    graph.addDirectedEdge(Y, X);
+                }
+            }
+        } else if (twoCycleTestingAlpha > 0 && twoCycleTestingAlpha > 0) {
+            for (NodePair edge : twoCycles) {
+                Node X = edge.getFirst();
+                Node Y = edge.getSecond();
+
+                int i = variables.indexOf(X);
+                int j = variables.indexOf(Y);
+
+                if (twoCycleTest(data[i], data[j], graph, X, Y)) {
+                    graph.removeEdges(X, Y);
+                    graph.addDirectedEdge(X, Y);
+                    graph.addDirectedEdge(Y, X);
                 }
             }
         }
@@ -426,9 +451,10 @@ public final class Fask implements GraphSearch {
     }
 
     public void setTwoCycleTestingAlpha(double twoCycleTestingAlpha) {
-        if (twoCycleTestingAlpha < 0 || twoCycleTestingAlpha > 1) throw new IllegalArgumentException("Alpha should be in [0, 1].");
+        if (twoCycleTestingAlpha < 0 || twoCycleTestingAlpha > 1)
+            throw new IllegalArgumentException("Alpha should be in [0, 1].");
         this.twoCycleTestingCutoff = StatUtils.getZForAlpha(twoCycleTestingAlpha);
-        this.twoCycleTestingAlpha =  twoCycleTestingAlpha;
+        this.twoCycleTestingAlpha = twoCycleTestingAlpha;
     }
 
     public void setLeftRight(LeftRight leftRight) {
@@ -543,7 +569,7 @@ public final class Fask implements GraphSearch {
         return data2;
     }
 
-    private boolean twocycle(double[] x, double[] y, Graph G0, Node X, Node Y) {
+    private boolean twoCycleTest(double[] x, double[] y, Graph G0, Node X, Node Y) {
 
         Set<Node> adjSet = new HashSet<>(G0.getAdjacentNodes(X));
         adjSet.addAll(G0.getAdjacentNodes(Y));
@@ -564,14 +590,12 @@ public final class Fask implements GraphSearch {
                 _Z[f] = data[column];
             }
 
-            double pc = 0;
-            double pc1 = 0;
-            double pc2 = 0;
+            double pc, pc1, pc2;
 
             try {
-                pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
-                pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
-                pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
+                pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY);
+                pc1 = partialCorrelation(x, y, _Z, x, 0);
+                pc2 = partialCorrelation(x, y, _Z, y, 0);
             } catch (SingularMatrixException e) {
                 System.out.println("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
                 TetradLogger.getInstance().log("info", "Singularity X = " + X + " Y = " + Y + " adj = " + adj);
@@ -610,8 +634,8 @@ public final class Fask implements GraphSearch {
         return true;
     }
 
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) throws SingularMatrixException {
-        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
+    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold) throws SingularMatrixException {
+        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, 1);
         TetradMatrix m = new TetradMatrix(cv).transpose();
         return StatUtils.partialCorrelation(m);
     }
