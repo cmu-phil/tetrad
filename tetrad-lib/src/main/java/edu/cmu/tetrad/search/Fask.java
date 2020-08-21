@@ -94,7 +94,7 @@ public final class Fask implements GraphSearch {
     // paper, "empirical" versions were given in which the variables are multiplied through by the
     // signs of the skewnesses; we follow this advice here (with good results). These others are provided
     // for comparison; in general they are quite good.
-    public enum LeftRight {FASK, RSKEW, SKEW, TANH}
+    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
 
     // The score to be used for the FAS adjacency search.
     private final IndependenceTest test;
@@ -470,9 +470,11 @@ public final class Fask implements GraphSearch {
     //======================================== PRIVATE METHODS ====================================//
 
     private double leftRight(double[] x, double[] y) {
-        if (leftRight == LeftRight.FASK) {
+        if (leftRight == LeftRight.FASK1) {
             return faskLeftRight(x, y);
-        } else if (leftRight == LeftRight.RSKEW) {
+        } else if (leftRight == LeftRight.FASK2) {
+            return faskLeftRight(x, y);
+        }else if (leftRight == LeftRight.RSKEW) {
             return robustSkew(x, y);
         } else if (leftRight == LeftRight.SKEW) {
             return skew(x, y);

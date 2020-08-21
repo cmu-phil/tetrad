@@ -69,7 +69,7 @@ public class MultiFask {
             fask.setUseFasAdjacencies(false);
             fask.setExternalGraph(G0);
             fask.setSkewEdgeThreshold(0.3);
-            fask.setLeftRight(Fask.LeftRight.FASK);
+            fask.setLeftRight(Fask.LeftRight.FASK2);
             graphs.add(fask.search());
         }
 
