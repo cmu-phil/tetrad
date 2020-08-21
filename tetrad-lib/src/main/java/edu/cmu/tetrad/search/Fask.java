@@ -287,7 +287,7 @@ public final class Fask implements GraphSearch {
                         );
                         graph.addDirectedEdge(Y, X);
                     } else {
-                        if (twoCycleScreeningThreshold > 0 && abs(faskLeftRight(x, y)) < twoCycleScreeningThreshold) {
+                        if (twoCycleScreeningThreshold > 0 && abs(faskLeftRightV2(x, y)) < twoCycleScreeningThreshold) {
                             TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle Prescreen"
                                     + "\t" + nf.format(lr)
                                     + "\t" + X + "<=>" + Y
@@ -471,9 +471,9 @@ public final class Fask implements GraphSearch {
 
     private double leftRight(double[] x, double[] y) {
         if (leftRight == LeftRight.FASK1) {
-            return faskLeftRight(x, y);
+            return faskLeftRightV1(x, y);
         } else if (leftRight == LeftRight.FASK2) {
-            return faskLeftRight(x, y);
+            return faskLeftRightV2(x, y);
         }else if (leftRight == LeftRight.RSKEW) {
             return robustSkew(x, y);
         } else if (leftRight == LeftRight.SKEW) {
@@ -485,16 +485,44 @@ public final class Fask implements GraphSearch {
         throw new IllegalStateException("Left right rule not configured: " + leftRight);
     }
 
-    private double faskLeftRight(double[] x, double[] y) {
+    private double faskLeftRightV2(double[] x, double[] y) {
         double sx = skewness(x);
         double sy = skewness(y);
         double r = correlation(x, y);
         double lr = correxp(x, y, x) - correxp(x, y, y);
         lr *= signum(sx) * signum(sy) * signum(r);
-        if (delta != 0) {
-            if (r < delta) lr *= -1;
-        }
         return lr;
+    }
+
+    private double faskLeftRightV1(double[] x, double[] y) {
+        double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
+        double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
+        double lr = left - right;
+
+        double r = StatUtils.correlation(x, y);
+        double sx = StatUtils.skewness(x);
+        double sy = StatUtils.skewness(y);
+
+        r *= signum(sx) * signum(sy);
+        lr *= signum(r);
+        if (r < delta) lr *= -1;
+
+        return lr;
+    }
+
+    private static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
     }
 
     private double robustSkew(double[] x, double[] y) {
