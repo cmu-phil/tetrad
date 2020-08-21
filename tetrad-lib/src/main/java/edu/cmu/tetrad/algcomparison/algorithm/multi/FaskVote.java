@@ -14,6 +14,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -31,18 +32,18 @@ import static edu.cmu.tetrad.util.Params.*;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "MultiFask",
-        command = "multi-fask",
+        name = "FaskVote",
+        command = "fask-vote",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
+public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
 
-    public MultiFask() {
+    public FaskVote() {
     }
 
     @Override
@@ -54,11 +55,12 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
             }
             final SemBicScoreMultiFas score = new SemBicScoreMultiFas(dataSets);
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            edu.cmu.tetrad.search.MultiFask search = new edu.cmu.tetrad.search.MultiFask(_dataSets, score);
+            edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, score);
+            search.setParameters(parameters);
             search.setKnowledge(knowledge);
             return search.search();
         } else {
-            MultiFask imagesSemBic = new MultiFask();
+            FaskVote imagesSemBic = new FaskVote();
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -96,7 +98,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            MultiFask imagesSemBic = new MultiFask();
+            FaskVote imagesSemBic = new FaskVote();
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -147,7 +149,11 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
         // MultiFask uses SemBicScore internally, so we'll need to add the score parameters too - Zhou
         List<String> parameters = new LinkedList<>();
         parameters.addAll((new Fges()).getParameters());
-        parameters.addAll((new Fask()).getParameters());
+        parameters.add(SKEW_EDGE_THRESHOLD);
+        parameters.add(TWO_CYCLE_SCREENING_THRESHOLD);
+        parameters.add(TWO_CYCLE_TESTING_ALPHA);
+        parameters.add(FASK_DELTA);
+        parameters.add(FASK_LEFT_RIGHT_RULE);
         parameters.addAll((new SemBicScore()).getParameters());
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);

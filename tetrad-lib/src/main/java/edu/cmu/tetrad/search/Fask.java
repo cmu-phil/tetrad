@@ -484,11 +484,15 @@ public final class Fask implements GraphSearch {
     }
 
     private double faskLeftRight(double[] x, double[] y) {
-        double skx = skewness(x);
-        double sky = skewness(y);
+        double sx = skewness(x);
+        double sy = skewness(y);
         double r = correlation(x, y);
         double lr = correxp(x, y, x) - correxp(x, y, y);
-        return signum(skx) * signum(sky) * signum(r) * lr;
+        lr *= signum(sx) * signum(sy) * signum(r);
+        if (delta != 0) {
+            if (r < delta) lr *= -1;
+        }
+        return lr;
     }
 
     private double robustSkew(double[] x, double[] y) {
@@ -564,7 +568,7 @@ public final class Fask implements GraphSearch {
 
     private double[] correctSkewness(double[] data, double sk) {
         double[] data2 = new double[data.length];
-        for (int i = 0; i < data.length; i++) data2[i] = data[i] * Math.signum(sk);
+        for (int i = 0; i < data.length; i++) data2[i] = data[i] * signum(sk);
         return data2;
     }
 
