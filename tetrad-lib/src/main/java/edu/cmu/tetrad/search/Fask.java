@@ -131,6 +131,9 @@ public final class Fask implements GraphSearch {
     // The corresponding alpha.
     private double twoCycleTestingAlpha;
 
+    // Bias for orienting with negative coefficients.
+    private double delta;
+
     // True if FAS adjacencies should be included in the output, by default true.
     private boolean useFasAdjacencies = true;
 
@@ -458,6 +461,10 @@ public final class Fask implements GraphSearch {
 
     public void setAdjacencyMethod(AdjacencyMethod adjacencyMethod) {
         this.adjacencyMethod = adjacencyMethod;
+    }
+
+    public void setDelta(double delta) {
+        this.delta = delta;
     }
 
     //======================================== PRIVATE METHODS ====================================//
