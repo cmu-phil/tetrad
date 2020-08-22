@@ -134,6 +134,9 @@ public final class Fask implements GraphSearch {
     // Bias for orienting with negative coefficients.
     private double delta;
 
+    // Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.
+    private boolean empirical = true;
+
     // True if FAS adjacencies should be included in the output, by default true.
     private boolean useFasAdjacencies = true;
 
@@ -485,6 +488,11 @@ public final class Fask implements GraphSearch {
         this.delta = delta;
     }
 
+    public void setEmpirical(boolean empirical) {
+        this.empirical = empirical;
+    }
+
+
     //======================================== PRIVATE METHODS ====================================//
 
     private double leftRight(double[] x, double[] y) {
@@ -508,7 +516,12 @@ public final class Fask implements GraphSearch {
         double sy = skewness(y);
         double r = correlation(x, y);
         double lr = correxp(x, y, x) - correxp(x, y, y);
-        lr *= signum(sx) * signum(sy) * signum(r);
+
+        if (empirical) {
+            lr *= signum(sx) * signum(sy);
+        }
+
+        lr *= signum(r);
         return lr;
     }
 
@@ -521,7 +534,10 @@ public final class Fask implements GraphSearch {
         double sx = StatUtils.skewness(x);
         double sy = StatUtils.skewness(y);
 
-        r *= signum(sx) * signum(sy);
+        if (empirical) {
+            r *= signum(sx) * signum(sy);
+        }
+
         lr *= signum(r);
         if (r < delta) lr *= -1;
 
@@ -544,8 +560,11 @@ public final class Fask implements GraphSearch {
     }
 
     private double robustSkew(double[] x, double[] y) {
-        x = correctSkewness(x, skewness(x));
-        y = correctSkewness(y, skewness(y));
+
+        if (empirical) {
+            x = correctSkewness(x, skewness(x));
+            y = correctSkewness(y, skewness(y));
+        }
 
         double[] lr = new double[x.length];
 
@@ -557,8 +576,11 @@ public final class Fask implements GraphSearch {
     }
 
     private double skew(double[] x, double[] y) {
-        x = correctSkewness(x, skewness(x));
-        y = correctSkewness(y, skewness(y));
+
+        if (empirical) {
+            x = correctSkewness(x, skewness(x));
+            y = correctSkewness(y, skewness(y));
+        }
 
         double[] lr = new double[x.length];
 
@@ -570,8 +592,11 @@ public final class Fask implements GraphSearch {
     }
 
     private double tanh(double[] x, double[] y) {
-        x = correctSkewness(x, skewness(x));
-        y = correctSkewness(y, skewness(y));
+
+        if (empirical) {
+            x = correctSkewness(x, skewness(x));
+            y = correctSkewness(y, skewness(y));
+        }
 
         double[] lr = new double[x.length];
 
