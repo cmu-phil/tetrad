@@ -290,7 +290,7 @@ public final class Fask implements GraphSearch {
                         if (twoCycleScreeningThreshold > 0 && abs(faskLeftRightV2(x, y)) < twoCycleScreeningThreshold) {
                             TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle Prescreen"
                                     + "\t" + nf.format(lr)
-                                    + "\t" + X + "<=>" + Y
+                                    + "\t" + X + "...TC?..." + Y
                             );
                             twoCycles.add(new NodePair(X, Y));
                         }
@@ -321,6 +321,7 @@ public final class Fask implements GraphSearch {
                 graph.removeEdges(X, Y);
                 graph.addDirectedEdge(X, Y);
                 graph.addDirectedEdge(Y, X);
+                logTwoCycle(nf, variables, D, X, Y, "2-cycle Pre-screen");
             }
         } else if (twoCycleScreeningThreshold == 0 && twoCycleTestingAlpha > 0) {
             for (Edge edge : graph.getEdges()) {
@@ -334,6 +335,7 @@ public final class Fask implements GraphSearch {
                     graph.removeEdges(X, Y);
                     graph.addDirectedEdge(X, Y);
                     graph.addDirectedEdge(Y, X);
+                    logTwoCycle(nf, variables, D, X, Y, "2-cycle Tested");
                 }
             }
         } else if (twoCycleScreeningThreshold > 0 && twoCycleTestingAlpha > 0) {
@@ -348,6 +350,7 @@ public final class Fask implements GraphSearch {
                     graph.removeEdges(X, Y);
                     graph.addDirectedEdge(X, Y);
                     graph.addDirectedEdge(Y, X);
+                    logTwoCycle(nf, variables, D, X, Y, "2-cycle Screened then Tested");
                 }
             }
         }
@@ -358,6 +361,21 @@ public final class Fask implements GraphSearch {
         this.graph = graph;
 
         return graph;
+    }
+
+    private void logTwoCycle(NumberFormat nf, List<Node> variables, double[][] d, Node X, Node Y, String type) {
+        int i = variables.indexOf(X);
+        int j = variables.indexOf(Y);
+
+        double[] x = d[i];
+        double[] y = d[j];
+
+        double lr = leftRight(x, y);
+
+        TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t" + type
+                + "\t" + nf.format(lr)
+                + "\t" + X + "<=>" + Y
+        );
     }
 
     /**
