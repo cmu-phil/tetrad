@@ -99,7 +99,7 @@ public class FaskVote {
                     }
                 }
 
-                if (count / (double) graphs.size() > 0.5) {
+                if (count / (double) graphs.size() > parameters.getDouble(ACCEPTANCE_PROPORTION)) {
                     out.addEdge(edge);
                 }
             }

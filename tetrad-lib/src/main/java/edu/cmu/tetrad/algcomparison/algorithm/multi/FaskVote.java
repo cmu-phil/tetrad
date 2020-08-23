@@ -166,6 +166,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
 //        parameters.addAll((new SemBicScore()).getParameters());
         parameters.add(PENALTY_DISCOUNT);
         parameters.add(ALPHA);
+        parameters.add(ACCEPTANCE_PROPORTION);
         parameters.add(Params.VERBOSE);
 
         return parameters;
