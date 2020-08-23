@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
@@ -11,8 +10,6 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SemBicScoreMultiFas;
-import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -59,18 +56,18 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
                 _dataSets.add((DataSet) d);
             }
 
-            if (initialAlg != null && initialGraph == null) {
-                initialGraph = initialAlg.search(dataSets.get(0), parameters);
-            }
-
-            if (initialGraph == null) {
-                ImagesSemBic images = new ImagesSemBic();
-                images.setKnowledge(knowledge);
-                initialGraph = images.search(dataSets, parameters);
-            }
+//            if (initialAlg != null && initialGraph == null) {
+//                initialGraph = initialAlg.search(dataSets.get(0), parameters);
+//            }
+//
+//            if (initialGraph == null) {
+//                ImagesSemBic images = new ImagesSemBic();
+//                images.setKnowledge(knowledge);
+//                initialGraph = images.search(dataSets, parameters);
+//            }
 
             edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets);
-            search.setInitialGraph(initialGraph);
+//            search.setInitialGraph(initialGraph);
 
             search.setParameters(parameters);
             search.setKnowledge(knowledge);
@@ -164,13 +161,12 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
     public List<String> getParameters() {
         // MultiFask uses SemBicScore internally, so we'll need to add the score parameters too - Zhou
         List<String> parameters = new LinkedList<>();
-        parameters.addAll((new ImagesSemBic()).getParameters());
+//        parameters.addAll((new ImagesSemBic()).getParameters());
         parameters.addAll((new Fask()).getParameters());
-        parameters.addAll((new SemBicScore()).getParameters());
+//        parameters.addAll((new SemBicScore()).getParameters());
+        parameters.add(PENALTY_DISCOUNT);
+        parameters.add(ALPHA);
         parameters.add(Params.VERBOSE);
-
-
-        parameters.remove(FASK_ADJACENCY_METHOD);
 
         return parameters;
     }

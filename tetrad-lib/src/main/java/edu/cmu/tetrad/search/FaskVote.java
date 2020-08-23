@@ -1,11 +1,15 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.SemBicDTest;
+import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +17,6 @@ import java.util.List;
 import static edu.cmu.tetrad.util.Params.*;
 
 /**
- * Created by user on 3/29/18.
  */
 public class FaskVote {
 
@@ -54,19 +57,31 @@ public class FaskVote {
         long start = System.currentTimeMillis();
 
         List<Graph> graphs = new ArrayList<>();
+        List<Fask> fasks = new ArrayList<>();
 
         for (DataSet dataSet1 : dataSets) {
+            Fask fask;
 
-            Fask search = new Fask(dataSet1, new IndTestFisherZ(dataSet1, 0.01));
-            search.setExternalGraph(initialGraph);
-            search.setDepth(parameters.getInt(DEPTH));
-            search.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
-            search.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
-            search.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
-            search.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
-            search.setDelta(parameters.getDouble(FASK_DELTA));
-            search.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
-            graphs.add(search.search());
+            if (parameters.getInt(FASK_ADJACENCY_METHOD) != 3) {
+                fask = new Fask(dataSet1, new FisherZ().getTest(dataSet1, parameters));
+            } else if (parameters.getInt(FASK_ADJACENCY_METHOD) == 3) {
+                fask = new Fask(dataSet1, new SemBicTest().getTest(dataSet1, parameters));
+            } else {
+                throw new IllegalStateException("That adacency method for FASK was not configured: "
+                        + parameters.getInt(FASK_ADJACENCY_METHOD));
+            }
+
+            fask.setDepth(parameters.getInt(DEPTH));
+            fask.setAdjacencyMethod(Fask.AdjacencyMethod.FAS_STABLE);
+            fask.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
+            fask.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
+            fask.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
+            fask.setDelta(parameters.getDouble(FASK_DELTA));
+            fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
+            fasks.add(fask);
+            Graph search = fask.search();
+            search = GraphUtils.replaceNodes(search, dataSets.get(0).getVariables());
+            graphs.add(search);
         }
 
         List<Node> nodes = dataSets.get(0).getVariables();
@@ -84,9 +99,7 @@ public class FaskVote {
                     }
                 }
 
-                if (count == 0) continue;
-
-                if (count >= 0.8 * graphs.size()) {
+                if (count / (double) graphs.size() > 0.5) {
                     out.addEdge(edge);
                 }
             }

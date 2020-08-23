@@ -259,14 +259,16 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     List<DataSet> dataSets = getDataModelList().stream()
                             .map(e -> (DataSet) e)
                             .collect(Collectors.toCollection(ArrayList::new));
-                    if (dataSets.size() < parameters.getInt("randomSelectionSize")) {
+                    int randomSelectionSize = parameters.getInt("randomSelectionSize");
+                    if (randomSelectionSize == 0) randomSelectionSize = dataSets.size();
+                    if (dataSets.size() < randomSelectionSize) {
                         throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
                                 + "the number of data sets.");
                     }
                     Collections.shuffle(dataSets);
 
                     List<DataModel> sub = new ArrayList<>();
-                    for (int j = 0; j < parameters.getInt("randomSelectionSize"); j++) {
+                    for (int j = 0; j < randomSelectionSize; j++) {
                         sub.add(dataSets.get(j));
                     }
 
