@@ -1,26 +1,21 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.Params.*;
-import static edu.cmu.tetrad.util.Params.FASK_DELTA;
 
 /**
  * Created by user on 3/29/18.
  */
 public class FaskVote {
-
-    private final SemBicScoreMultiFas score;
 
     // An initial graph to orient, skipping the adjacency step.
     private Graph initialGraph = null;
@@ -49,9 +44,8 @@ public class FaskVote {
     private final List<DataSet> dataSets;
     private Parameters parameters;
 
-    public FaskVote(List<DataSet> dataSets, SemBicScoreMultiFas score) {
+    public FaskVote(List<DataSet> dataSets) {
         this.dataSets = dataSets;
-        this.score = score;
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -62,13 +56,16 @@ public class FaskVote {
         List<Graph> graphs = new ArrayList<>();
 
         for (DataSet dataSet1 : dataSets) {
+
             Fask search = new Fask(dataSet1, new IndTestFisherZ(dataSet1, 0.01));
+            search.setExternalGraph(initialGraph);
             search.setDepth(parameters.getInt(DEPTH));
-            search.setUseFasAdjacencies(parameters.getBoolean(USE_FAS_ADJACENCIES));
+            search.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
             search.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
             search.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
             search.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
             search.setDelta(parameters.getDouble(FASK_DELTA));
+            search.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
             graphs.add(search.search());
         }
 
@@ -76,26 +73,21 @@ public class FaskVote {
         Graph out = new EdgeListGraph(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
+            for (int j = 0; j < nodes.size(); j++) {
+                if (i == j) continue;
+                Edge edge = Edges.directedEdge(nodes.get(i), nodes.get(j));
                 int count = 0;
 
                 for (Graph graph : graphs) {
-                    if (!graph.isAdjacentTo(nodes.get(i), nodes.get(j))) continue;
-                    Edge edge = graph.getEdge(nodes.get(i), nodes.get(j));
-
-                    if (edge.pointsTowards(nodes.get(j))) {
+                    if (graph.containsEdge(edge)) {
                         count++;
                     }
                 }
 
                 if (count == 0) continue;
 
-                if (count >= 0.6 * graphs.size()) {
-                    out.addDirectedEdge(nodes.get(i), nodes.get(j));
-                } else if (count <= 0.4 * graphs.size()) {
-                    out.addDirectedEdge(nodes.get(j), nodes.get(i));
-                } else {
-                    out.addUndirectedEdge(nodes.get(i), nodes.get(j));
+                if (count >= 0.8 * graphs.size()) {
+                    out.addEdge(edge);
                 }
             }
         }

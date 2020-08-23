@@ -66,8 +66,8 @@ public class MultiFask {
 
         for (DataSet dataSet1 : dataSets) {
             Fask fask = new Fask(dataSet1, test);
-            fask.setUseFasAdjacencies(false);
             fask.setExternalGraph(G0);
+            fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
             fask.setSkewEdgeThreshold(0.3);
             fask.setLeftRight(Fask.LeftRight.FASK2);
             graphs.add(fask.search());

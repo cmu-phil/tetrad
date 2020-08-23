@@ -137,9 +137,6 @@ public final class Fask implements GraphSearch {
     // Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.
     private boolean empirical = true;
 
-    // True if FAS adjacencies should be included in the output, by default true.
-    private boolean useFasAdjacencies = true;
-
     // By default, FAS Stable will be used for adjacencies, though this can be set.
     private AdjacencyMethod adjacencyMethod = AdjacencyMethod.FAS_STABLE;
 
@@ -453,14 +450,6 @@ public final class Fask implements GraphSearch {
 
     public void setSkewEdgeThreshold(double skewEdgeThreshold) {
         this.skewEdgeThreshold = skewEdgeThreshold;
-    }
-
-    public boolean isUseFasAdjacencies() {
-        return useFasAdjacencies;
-    }
-
-    public void setUseFasAdjacencies(boolean useFasAdjacencies) {
-        this.useFasAdjacencies = useFasAdjacencies;
     }
 
     public void setTwoCycleScreeningThreshold(double twoCycleScreeningThreshold) {

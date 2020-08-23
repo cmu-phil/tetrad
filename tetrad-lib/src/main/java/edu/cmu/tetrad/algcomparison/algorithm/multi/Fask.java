@@ -63,7 +63,6 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
             search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, test.getTest(dataSet, parameters));
 
             search.setDepth(parameters.getInt(DEPTH));
-            search.setUseFasAdjacencies(parameters.getBoolean(USE_FAS_ADJACENCIES));
             search.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
             search.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
             search.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
@@ -173,7 +172,6 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
         parameters.add(TWO_CYCLE_TESTING_ALPHA);
         parameters.add(FASK_DELTA);
         parameters.add(FASK_LEFT_RIGHT_RULE);
-        parameters.add(FASK_ADJACENCY_METHOD);
         parameters.add(FASK_ADJACENCY_METHOD);
         parameters.add(FASK_NONEMPIRICAL);
         parameters.add(VERBOSE);
