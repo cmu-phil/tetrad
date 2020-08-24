@@ -18,6 +18,7 @@ import java.util.List;
 import static edu.cmu.tetrad.util.Params.*;
 
 /**
+ *
  */
 public class FaskVote {
 
@@ -60,6 +61,12 @@ public class FaskVote {
         List<Graph> graphs = new ArrayList<>();
         List<Fask> fasks = new ArrayList<>();
 
+        ImagesSemBic imagesSemBic = new ImagesSemBic();
+
+        List<DataModel> _dataSets = new ArrayList<>();
+        for (DataSet dataSet : dataSets) _dataSets.add((DataModel) dataSet);
+        Graph external = imagesSemBic.search(_dataSets, parameters);
+
         for (DataSet dataSet1 : dataSets) {
             Fask fask;
 
@@ -71,12 +78,6 @@ public class FaskVote {
                 throw new IllegalStateException("That adacency method for FASK was not configured: "
                         + parameters.getInt(FASK_ADJACENCY_METHOD));
             }
-
-            ImagesSemBic imagesSemBic = new ImagesSemBic();
-
-            List<DataModel> _dataSets = new ArrayList<>();
-            for (DataSet dataSet : dataSets) _dataSets.add((DataModel) dataSet);
-            Graph external = imagesSemBic.search(_dataSets, parameters);
 
             fask.setDepth(parameters.getInt(DEPTH));
             fask.setAdjacencyMethod(Fask.AdjacencyMethod.FAS_STABLE);
