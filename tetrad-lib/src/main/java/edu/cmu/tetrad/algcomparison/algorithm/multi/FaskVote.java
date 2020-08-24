@@ -167,6 +167,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
         parameters.add(PENALTY_DISCOUNT);
         parameters.add(ALPHA);
         parameters.add(ACCEPTANCE_PROPORTION);
+        parameters.add(Params.RANDOM_SELECTION_SIZE);
         parameters.add(Params.VERBOSE);
 
         return parameters;

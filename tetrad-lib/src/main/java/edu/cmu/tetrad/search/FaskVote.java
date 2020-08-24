@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.SemBicDTest;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
@@ -71,6 +72,12 @@ public class FaskVote {
                         + parameters.getInt(FASK_ADJACENCY_METHOD));
             }
 
+            ImagesSemBic imagesSemBic = new ImagesSemBic();
+
+            List<DataModel> _dataSets = new ArrayList<>();
+            for (DataSet dataSet : dataSets) _dataSets.add((DataModel) dataSet);
+            Graph external = imagesSemBic.search(_dataSets, parameters);
+
             fask.setDepth(parameters.getInt(DEPTH));
             fask.setAdjacencyMethod(Fask.AdjacencyMethod.FAS_STABLE);
             fask.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
@@ -78,6 +85,8 @@ public class FaskVote {
             fask.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
             fask.setDelta(parameters.getDouble(FASK_DELTA));
             fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
+//            fask.setExternalGraph(external);
+            fask.setAdjacencyMethod(Fask.AdjacencyMethod.FGES);
             fasks.add(fask);
             Graph search = fask.search();
             search = GraphUtils.replaceNodes(search, dataSets.get(0).getVariables());
@@ -92,14 +101,19 @@ public class FaskVote {
                 if (i == j) continue;
                 Edge edge = Edges.directedEdge(nodes.get(i), nodes.get(j));
                 int count = 0;
+                int total = 0;
 
                 for (Graph graph : graphs) {
                     if (graph.containsEdge(edge)) {
                         count++;
                     }
+
+                    if (graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                        total++;
+                    }
                 }
 
-                if (count / (double) graphs.size() > parameters.getDouble(ACCEPTANCE_PROPORTION)) {
+                if (count / (double) total > parameters.getDouble(ACCEPTANCE_PROPORTION)) {
                     out.addEdge(edge);
                 }
             }

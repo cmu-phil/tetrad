@@ -263,7 +263,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     if (randomSelectionSize == 0) randomSelectionSize = dataSets.size();
                     if (dataSets.size() < randomSelectionSize) {
                         throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
-                                + "the number of data sets.");
+                                + "the number of data sets: " + randomSelectionSize + " > " + dataSets.size());
                     }
                     Collections.shuffle(dataSets);
 
