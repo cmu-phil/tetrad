@@ -229,28 +229,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
 
         Algorithm algo = getAlgorithm();
-//
-        if (getDataModelList().size() == 1) {
-            getIndependenceTest();
-        }
 
         if (getDataModelList().size() == 0 && getSourceGraph() != null) {
-            if (algo instanceof TakesIndependenceWrapper) {
-                // We inject the graph to the test to satisfy the tests like DSeparationTest - Zhou
-                IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
-                if (indTestWrapper instanceof DSeparationTest) {
-                    ((DSeparationTest) indTestWrapper).setGraph(getSourceGraph());
-                }
-
-                if (this.independenceTests == null) {
-                    this.independenceTests = new ArrayList<>();
-                }
-
-                // Grabbing this independence test for the independence tests interface. JR 2020.8.24
-                IndependenceTest test = indTestWrapper.getTest(null, parameters);
-                this.independenceTests.add(test);
-            }
-
             if (algo instanceof UsesScoreWrapper) {
                 // We inject the graph to the score to satisfy the tests like DSeparationScore - Zhou
                 ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWrapper();
@@ -448,18 +428,39 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        if (getDataModelList().size() == 1) {
-            IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) getAlgorithm()).getIndependenceWrapper();
-
-            if (this.independenceTests == null) {
-                this.independenceTests = new ArrayList<>();
-            }
-
-            // Grabbing this independence test for the independence tests interface. JR 2020.8.24
-            IndependenceTest test = indTestWrapper.getTest(getDataModelList().get(0), parameters);
-            this.independenceTests.add(test);
+        if (independenceTests != null && independenceTests.size() == 1) {
+            return independenceTests.get(0);
         }
 
+        Algorithm algo = getAlgorithm();
+
+        if (algo instanceof TakesIndependenceWrapper) {
+            if (getDataModelList().size() == 1) {
+                IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) getAlgorithm()).getIndependenceWrapper();
+
+                if (this.independenceTests == null) {
+                    this.independenceTests = new ArrayList<>();
+                }
+
+                // Grabbing this independence test for the independence tests interface. JR 2020.8.24
+                IndependenceTest test = indTestWrapper.getTest(getDataModelList().get(0), parameters);
+                this.independenceTests.add(test);
+            } else if (getDataModelList().size() == 0 && getSourceGraph() != null) {
+                // We inject the graph to the test to satisfy the tests like DSeparationTest - Zhou
+                IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
+                if (indTestWrapper instanceof DSeparationTest) {
+                    ((DSeparationTest) indTestWrapper).setGraph(getSourceGraph());
+                }
+
+                if (this.independenceTests == null) {
+                    this.independenceTests = new ArrayList<>();
+                }
+
+                // Grabbing this independence test for the independence tests interface. JR 2020.8.24
+                IndependenceTest test = indTestWrapper.getTest(null, parameters);
+                this.independenceTests.add(test);
+            }
+        }
 
         return independenceTests.get(0);
     }
