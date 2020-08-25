@@ -366,13 +366,14 @@ public class IndependenceFactsEditor extends JPanel {
         final JButton showPValues = new JButton("Show P Values");
         showPValues.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 toggleShowPs();
-            }
 
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                toggleShowPs();
+                if (showPs) {
+                    showPValues.setText("Show P Values");
+                } else {
+                    showPValues.setText("Show Independencies");
+                }
             }
         });
 

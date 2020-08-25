@@ -224,17 +224,17 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public void execute() {
         List<Graph> graphList = new ArrayList<>();
 
-        if (getDataModelList().size() == 1) {
-            Algorithm algo = getAlgorithm();
+        if (this.independenceTests != null) {
+            this.independenceTests.clear();
+        }
 
-            if (algo instanceof TakesIndependenceWrapper) {
-                this.independenceTests.add(getIndependenceTest());
-            }
+        Algorithm algo = getAlgorithm();
+//
+        if (getDataModelList().size() == 1) {
+            getIndependenceTest();
         }
 
         if (getDataModelList().size() == 0 && getSourceGraph() != null) {
-            Algorithm algo = getAlgorithm();
-
             if (algo instanceof TakesIndependenceWrapper) {
                 // We inject the graph to the test to satisfy the tests like DSeparationTest - Zhou
                 IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
@@ -242,8 +242,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     ((DSeparationTest) indTestWrapper).setGraph(getSourceGraph());
                 }
 
+                if (this.independenceTests == null) {
+                    this.independenceTests = new ArrayList<>();
+                }
+
                 // Grabbing this independence test for the independence tests interface. JR 2020.8.24
-                this.independenceTests.add(getIndependenceTest());
+                IndependenceTest test = indTestWrapper.getTest(null, parameters);
+                this.independenceTests.add(test);
             }
 
             if (algo instanceof UsesScoreWrapper) {
@@ -252,10 +257,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 if (scoreWrapper instanceof DSeparationScore) {
                     ((DSeparationScore) scoreWrapper).setGraph(getSourceGraph());
                 }
-            }
-
-            if (algo instanceof HasKnowledge) {
-                ((HasKnowledge) algo).setKnowledge(getKnowledge());
             }
 
             graphList.add(algo.search(null, parameters));
@@ -276,7 +277,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         sub.add(dataSets.get(j));
                     }
 
-                    Algorithm algo = getAlgorithm();
                     if (algo instanceof HasKnowledge) {
                         ((HasKnowledge) algo).setKnowledge(getKnowledge());
                     }
@@ -300,7 +300,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     });
                 }
             } else {
-                Algorithm algo = getAlgorithm();
                 if (algo != null) {
                     getDataModelList().forEach(data -> {
                         IKnowledge knowledgeFromData = data.getKnowledge();
@@ -449,14 +448,20 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) getAlgorithm()).getIndependenceWrapper();
+        if (getDataModelList().size() == 1) {
+            IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) getAlgorithm()).getIndependenceWrapper();
 
-        if (this.independenceTests == null) {
-            this.independenceTests = new ArrayList<>();
+            if (this.independenceTests == null) {
+                this.independenceTests = new ArrayList<>();
+            }
+
+            // Grabbing this independence test for the independence tests interface. JR 2020.8.24
+            IndependenceTest test = indTestWrapper.getTest(getDataModelList().get(0), parameters);
+            this.independenceTests.add(test);
         }
 
-        // Grabbing this independence test for the independence tests interface. JR 2020.8.24
-        return indTestWrapper.getTest(getDataModelList().get(0), parameters);
+
+        return independenceTests.get(0);
     }
 
     @Override
