@@ -96,22 +96,23 @@ public class FaskVote {
 
         List<Node> nodes = dataSets.get(0).getVariables();
         Graph out = new EdgeListGraph(nodes);
+        int total = dataSets.size();
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = 0; j < nodes.size(); j++) {
                 if (i == j) continue;
                 Edge edge = Edges.directedEdge(nodes.get(i), nodes.get(j));
                 int count = 0;
-                int total = 0;
+//                int total = 0;
 
                 for (Graph graph : graphs) {
                     if (graph.containsEdge(edge)) {
                         count++;
                     }
 
-                    if (graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                        total++;
-                    }
+//                    if (graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+//                        total++;
+//                    }
                 }
 
                 if (count / (double) total > parameters.getDouble(ACCEPTANCE_PROPORTION)) {
