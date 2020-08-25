@@ -370,9 +370,9 @@ public class IndependenceFactsEditor extends JPanel {
                 toggleShowPs();
 
                 if (showPs) {
-                    showPValues.setText("Show P Values");
-                } else {
                     showPValues.setText("Show Independencies");
+                } else {
+                    showPValues.setText("Show P Values");
                 }
             }
         });
