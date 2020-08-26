@@ -25,6 +25,8 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.special.Gamma;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 
 /**
@@ -267,7 +269,8 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
 
     @Override
     public String toString() {
-        return "BDeu Score";
+        NumberFormat nf = new DecimalFormat("0.00");
+        return "BDeu Score SampP " + nf.format(samplePrior) + " StuctP " + nf.format(structurePrior);
     }
 
     @Override

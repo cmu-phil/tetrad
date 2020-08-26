@@ -343,7 +343,7 @@ public final class IndTestFisherZD implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Fisher Z, alpha = " + new DecimalFormat("0.0E0").format(getAlpha());
+        return "Fisher Z ZD, alpha = " + new DecimalFormat("0.0E0").format(getAlpha());
     }
 
     public void setPValueLogger(PrintStream pValueLogger) {
