@@ -152,6 +152,8 @@ public final class Fask implements GraphSearch {
     // Used for calculating coefficient values.
     private final RegressionDataset regressionDataset;
 
+    double[][] D;
+
     /**
      * @param dataSet A continuous dataset over variables V.
      * @param test    An independence test over variables V. (Used for FAS.)
@@ -191,7 +193,7 @@ public final class Fask implements GraphSearch {
         DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
         List<Node> variables = dataSet.getVariables();
-        double[][] D = dataSet.getDoubleData().transpose().toArray();
+        D = dataSet.getDoubleData().transpose().toArray();
 
         TetradLogger.getInstance().forceLogMessage("FASK v. 2.0");
         TetradLogger.getInstance().forceLogMessage("");
@@ -490,6 +492,28 @@ public final class Fask implements GraphSearch {
 
     public void setEmpirical(boolean empirical) {
         this.empirical = empirical;
+    }
+
+    public double leftRight(Node X, Node Y) {
+        List<Node> variables = dataSet.getVariables();
+
+        int i = -1;
+
+        for (int k = 0; k < variables.size(); k++) {
+            if (X.getName().equals(variables.get(k).getName())) i = k;
+        }
+
+        int j = -1;
+
+        for (int k = 0; k < variables.size(); k++) {
+            if (Y.getName().equals(variables.get(k).getName())) j = k;
+        }
+
+        double[] x = D[i];
+        double[] y = D[j];
+
+        return leftRight(x, y);
+
     }
 
 

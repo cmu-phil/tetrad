@@ -18,7 +18,7 @@ import static edu.cmu.tetrad.util.Params.*;
 /**
  *
  */
-public class FaskVote {
+public class FaskAvg {
 
     // An initial graph to orient, skipping the adjacency step.
     private Graph initialGraph = null;
@@ -47,7 +47,7 @@ public class FaskVote {
     private final List<DataSet> dataSets;
     private Parameters parameters;
 
-    public FaskVote(List<DataSet> dataSets) {
+    public FaskAvg(List<DataSet> dataSets) {
         this.dataSets = dataSets;
     }
 
@@ -56,14 +56,15 @@ public class FaskVote {
     public Graph search(Parameters parameters) {
         long start = System.currentTimeMillis();
 
-        List<Graph> graphs = new ArrayList<>();
+//        List<Graph> graphs = new ArrayList<>();
         List<Fask> fasks = new ArrayList<>();
 
         ImagesSemBic imagesSemBic = new ImagesSemBic();
 
-        List<DataModel> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add((DataModel) dataSet);
+        List<DataModel> _dataSets = new ArrayList<>(dataSets);
         Graph external = imagesSemBic.search(_dataSets, parameters);
+
+//        if (true) return external;
 
         for (DataSet dataSet1 : dataSets) {
             Fask fask;
@@ -78,45 +79,81 @@ public class FaskVote {
             }
 
             fask.setDepth(parameters.getInt(DEPTH));
-            fask.setAdjacencyMethod(Fask.AdjacencyMethod.FAS_STABLE);
+            fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
             fask.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
             fask.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
             fask.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
             fask.setDelta(parameters.getDouble(FASK_DELTA));
             fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
-//            fask.setExternalGraph(external);
-            fask.setAdjacencyMethod(Fask.AdjacencyMethod.FGES);
+            fask.setExternalGraph(external);
             fasks.add(fask);
-            Graph search = fask.search();
-            search = GraphUtils.replaceNodes(search, dataSets.get(0).getVariables());
-            graphs.add(search);
+            Graph graph = fask.search();
+//            graph = GraphUtils.replaceNodes(graph, dataSets.get(0).getVariables());
+//            graphs.add(graph);
         }
 
         List<Node> nodes = dataSets.get(0).getVariables();
         Graph out = new EdgeListGraph(nodes);
         int total = dataSets.size();
 
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = 0; j < nodes.size(); j++) {
-                if (i == j) continue;
-                Edge edge = Edges.directedEdge(nodes.get(i), nodes.get(j));
-                int count = 0;
+        for (Edge edge : external.getEdges()) {
+            Node X = edge.getNode1();
+            Node Y = edge.getNode2();
 
-                for (Graph graph : graphs) {
-                    if (graph.containsEdge(edge)) {
-                        count++;
-                    }
-                }
+            double avg = 0.0;
 
-                if (count / (double) total > parameters.getDouble(ACCEPTANCE_PROPORTION)) {
-                    out.addEdge(edge);
-                }
+            for (Fask fask : fasks) {
+                double avg1 = fask.leftRight(X, Y);
+                System.out.println("avg1 = "  + avg1);
+                avg += avg1;
             }
+
+            avg /= total;
+
+            if (avg > 0) out.addDirectedEdge(X, Y);
+            else if (avg < 0) out.addDirectedEdge(Y, X);
+
         }
+
+
+//        for (int i = 0; i < nodes.size(); i++) {
+//            for (int j = 0; j < nodes.size(); j++) {
+//                if (i == j) continue;
+//                Edge edge = Edges.directedEdge(nodes.get(i), nodes.get(j));
+//                int count = 0;
+//
+//                for (Graph graph : graphs) {
+//                    if (graph.containsEdge(edge)) {
+//                        count++;
+//                    }
+//                }
+//
+//                if (count / (double) total > parameters.getDouble(ACCEPTANCE_PROPORTION)) {
+//                    out.addEdge(edge);
+//                }
+//            }
+//        }
 
         elapsed = System.currentTimeMillis() - start;
 
         return out;
+    }
+
+    /**
+     * @return Returns the penalty discount used for the adjacency search. The default is 1,
+     * though a higher value is recommended, say, 2, 3, or 4.
+     */
+    public double getPenaltyDiscount() {
+        return penaltyDiscount;
+    }
+
+    /**
+     * @param penaltyDiscount Sets the penalty discount used for the adjacency search.
+     *                        The default is 1, though a higher value is recommended, say,
+     *                        2, 3, or 4.
+     */
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
     }
 
     /**

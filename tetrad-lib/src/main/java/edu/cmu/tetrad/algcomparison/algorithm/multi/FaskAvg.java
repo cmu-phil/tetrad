@@ -31,20 +31,20 @@ import static edu.cmu.tetrad.util.Params.*;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FaskVote",
-        command = "fask-vote",
+        name = "FaskAvg",
+        command = "fask-avg",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph {
+public class FaskAvg implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph {
 
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
     private Graph initialGraph = null;
     private Algorithm initialAlg = null;
 
-    public FaskVote() {
+    public FaskAvg() {
     }
 
     @Override
@@ -55,23 +55,12 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
                 _dataSets.add((DataSet) d);
             }
 
-//            if (initialAlg != null && initialGraph == null) {
-//                initialGraph = initialAlg.search(dataSets.get(0), parameters);
-//            }
-//
-//            if (initialGraph == null) {
-//                ImagesSemBic images = new ImagesSemBic();
-//                images.setKnowledge(knowledge);
-//                initialGraph = images.search(dataSets, parameters);
-//            }
-
-            edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets);
-//            search.setInitialGraph(initialGraph);
+            edu.cmu.tetrad.search.FaskAvg search = new edu.cmu.tetrad.search.FaskAvg(_dataSets);
 
             search.setKnowledge(knowledge);
             return search.search(parameters);
         } else {
-            FaskVote imagesSemBic = new FaskVote();
+            FaskAvg imagesSemBic = new FaskAvg();
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -109,7 +98,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            FaskVote imagesSemBic = new FaskVote();
+            FaskAvg imagesSemBic = new FaskAvg();
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -147,7 +136,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
 
     @Override
     public String getDescription() {
-        return "MultiFASK";
+        return "FaskAvg";
     }
 
     @Override
