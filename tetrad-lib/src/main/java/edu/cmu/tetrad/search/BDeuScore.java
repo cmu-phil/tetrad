@@ -266,6 +266,11 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
     }
 
     @Override
+    public String toString() {
+        return "BDeu Score";
+    }
+
+    @Override
     public int getMaxDegree() {
         return (int) Math.ceil(Math.log(sampleSize));
     }

@@ -115,41 +115,39 @@ public class IndependenceFactsEditor extends JPanel {
         aModel1.setSelectedItem("VAR");
         variableBox.setModel(aModel1);
 
-        variableBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) e.getSource();
+        variableBox.addActionListener(e -> {
+            JComboBox box = (JComboBox) e.getSource();
 
-                String var = (String) box.getSelectedItem();
-                LinkedList<String> vars = getVars();
-                int size = vars.size();
+            String var = (String) box.getSelectedItem();
+            LinkedList<String> vars = getVars();
+            int size = vars.size();
 
-                if ("VAR".equals(var)) {
-                    return;
-                }
-
-                if ("?".equals(var)) {
-                    if (size >= 0 && !vars.contains("+")) {
-                        vars.addLast(var);
-                    }
-                } else if ("+".equals(var)) {
-                    if (size >= 2) {
-                        vars.addLast(var);
-                    }
-                } else if ((vars.indexOf("?") < 2) && !(vars.contains("+")) &&
-                        !(vars.contains(var))) {
-                    vars.add(var);
-                }
-
-                resetText();
-
-                // This is a workaround to an introduced bug in the JDK whereby
-                // repeated selections of the same item send out just one
-                // action event.
-                DefaultComboBoxModel aModel = new DefaultComboBoxModel(
-                        varNames.toArray(new String[varNames.size()]));
-                aModel.setSelectedItem("VAR");
-                variableBox.setModel(aModel);
+            if ("VAR".equals(var)) {
+                return;
             }
+
+            if ("?".equals(var)) {
+                if (!vars.contains("+")) {
+                    vars.addLast(var);
+                }
+            } else if ("+".equals(var)) {
+                if (size >= 2) {
+                    vars.addLast(var);
+                }
+            } else if ((vars.indexOf("?") < 2) && !(vars.contains("+")) &&
+                    !(vars.contains(var))) {
+                vars.add(var);
+            }
+
+            resetText();
+
+            // This is a workaround to an introduced bug in the JDK whereby
+            // repeated selections of the same item send out just one
+            // action event.
+            DefaultComboBoxModel aModel = new DefaultComboBoxModel(
+                    varNames.toArray(new String[varNames.size()]));
+            aModel.setSelectedItem("VAR");
+            variableBox.setModel(aModel);
         });
 
         final JButton delete = new JButton("Delete");
@@ -372,7 +370,7 @@ public class IndependenceFactsEditor extends JPanel {
                 if (showPs) {
                     showPValues.setText("Show Independencies");
                 } else {
-                    showPValues.setText("Show P Values");
+                    showPValues.setText("Show P Values or Scores");
                 }
             }
         });

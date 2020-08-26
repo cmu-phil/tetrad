@@ -35,9 +35,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.ImpliedOrientation;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -464,6 +462,37 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 // Grabbing this independence test for the independence tests interface. JR 2020.8.24
                 IndependenceTest test = indTestWrapper.getTest(null, parameters);
                 this.independenceTests.add(test);
+            }
+        }
+
+        if (algo instanceof UsesScoreWrapper) {
+            if (getDataModelList().size() == 1) {
+                ScoreWrapper wrapper = ((UsesScoreWrapper) getAlgorithm()).getScoreWrapper();
+
+                if (this.independenceTests == null) {
+                    this.independenceTests = new ArrayList<>();
+                }
+
+                // Grabbing this independence score for the independence tests interface. JR 2020.8.24
+                Score score = wrapper.getScore(getDataModelList().get(0), parameters);
+                this.independenceTests.add(new IndTestScore(score));
+            } else if (getDataModelList().size() == 0 && getSourceGraph() != null) {
+                // We inject the graph to the test to satisfy the tests like DSeparationTest - Zhou
+                ScoreWrapper wrapper = ((UsesScoreWrapper) getAlgorithm()).getScoreWrapper();
+                if (wrapper instanceof DSeparationScore) {
+                    ((DSeparationScore) wrapper).setGraph(getSourceGraph());
+                }
+
+                if (this.independenceTests == null) {
+                    this.independenceTests = new ArrayList<>();
+                }
+
+                // Grabbing this independence test for the independence tests interface. JR 2020.8.24
+                Score score = wrapper.getScore(null, parameters);
+                this.independenceTests.add(new IndTestScore(score));
+            } else {
+                throw new IllegalArgumentException("Expecting all independence-based, score-based, or dsep-based algorithms; " +
+                        "at least one was not.");
             }
         }
 
