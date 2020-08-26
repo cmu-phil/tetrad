@@ -110,8 +110,8 @@ public class IndependenceFactsEditor extends JPanel {
         varNames.add("?");
         varNames.add("+");
 
-        final JComboBox variableBox = new JComboBox();
-        DefaultComboBoxModel aModel1 = new DefaultComboBoxModel(varNames.toArray(new String[varNames.size()]));
+        final JComboBox<String> variableBox = new JComboBox<>();
+        DefaultComboBoxModel<String> aModel1 = new DefaultComboBoxModel<>(varNames.toArray(new String[0]));
         aModel1.setSelectedItem("VAR");
         variableBox.setModel(aModel1);
 
@@ -144,20 +144,18 @@ public class IndependenceFactsEditor extends JPanel {
             // This is a workaround to an introduced bug in the JDK whereby
             // repeated selections of the same item send out just one
             // action event.
-            DefaultComboBoxModel aModel = new DefaultComboBoxModel(
-                    varNames.toArray(new String[varNames.size()]));
+            DefaultComboBoxModel<String> aModel = new DefaultComboBoxModel<>(
+                    varNames.toArray(new String[0]));
             aModel.setSelectedItem("VAR");
             variableBox.setModel(aModel);
         });
 
         final JButton delete = new JButton("Delete");
 
-        delete.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (!getVars().isEmpty()) {
-                    getVars().removeLast();
-                    resetText();
-                }
+        delete.addActionListener(e -> {
+            if (!getVars().isEmpty()) {
+                getVars().removeLast();
+                resetText();
             }
         });
 
@@ -203,11 +201,7 @@ public class IndependenceFactsEditor extends JPanel {
         JButton list = new JButton("LIST");
         list.setFont(new Font("Dialog", Font.BOLD, 14));
 
-        list.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                generateResults();
-            }
-        });
+        list.addActionListener(e -> generateResults());
 
         Box b1 = Box.createVerticalBox();
 
@@ -331,7 +325,7 @@ public class IndependenceFactsEditor extends JPanel {
                 int col = header.columnAtPoint(point);
                 int sortCol = header.getTable().convertColumnIndexToModel(col);
 
-                sortByColumn(sortCol, true);
+                sortByColumn(sortCol);
             }
         });
 
@@ -389,8 +383,8 @@ public class IndependenceFactsEditor extends JPanel {
 
     //=============================PRIVATE METHODS=======================//
 
-    private void sortByColumn(final int sortCol, boolean allowReverse) {
-        if (allowReverse && sortCol == getLastSortCol()) {
+    private void sortByColumn(final int sortCol) {
+        if (sortCol == getLastSortCol()) {
             setSortDir(-1 * getSortDir());
         } else {
             setSortDir(1);
@@ -398,36 +392,32 @@ public class IndependenceFactsEditor extends JPanel {
 
         setLastSortCol(sortCol);
 
-        Collections.sort(results, new Comparator<List<IndependenceResult>>() {
-            public int compare(List<IndependenceResult> r1, List<IndependenceResult> r2) {
+        results.sort((r1, r2) -> {
+            switch (sortCol) {
+                case 0:
+                case 1:
+                    return getSortDir() * (r1.get(0).getIndex() - r2.get(0).getIndex());
+                default:
+                    int ind1, ind2;
+                    int col = sortCol - 2;
 
-                switch (sortCol) {
-                    case 0:
-                        return getSortDir() * (r1.get(0).getIndex() - r2.get(0).getIndex());
-                    case 1:
-                        return getSortDir() * (r1.get(0).getIndex() - r2.get(0).getIndex());
-                    default:
-                        int ind1, ind2;
-                        int col = sortCol - 2;
+                    if (r1.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
+                        ind1 = 0;
+                    } else if (r1.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
+                        ind1 = 1;
+                    } else {
+                        ind1 = 2;
+                    }
 
-                        if (r1.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
-                            ind1 = 0;
-                        } else if (r1.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
-                            ind1 = 1;
-                        } else {
-                            ind1 = 2;
-                        }
+                    if (r2.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
+                        ind2 = 0;
+                    } else if (r2.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
+                        ind2 = 1;
+                    } else {
+                        ind2 = 2;
+                    }
 
-                        if (r2.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
-                            ind2 = 0;
-                        } else if (r2.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
-                            ind2 = 1;
-                        } else {
-                            ind2 = 2;
-                        }
-
-                        return getSortDir() * (ind1 - ind2);
-                }
+                    return getSortDir() * (ind1 - ind2);
             }
         });
 
@@ -447,7 +437,6 @@ public class IndependenceFactsEditor extends JPanel {
         private final IndependenceFactsEditor editor;
         private JTable table;
         private int row;
-        private int col;
         private boolean selected;
 
         public Renderer(IndependenceFactsEditor editor) {
@@ -472,17 +461,16 @@ public class IndependenceFactsEditor extends JPanel {
                     }
                 }
 
+                setForeground(table.getForeground());
+
                 if (!editor.isShowPs()) {
                     if (!(indep == 0 || indep == numCols - 2)) {
-                        setForeground(table.getForeground());
                         setBackground(Color.YELLOW);
                     } else {
-                        setForeground(table.getForeground());
                         setBackground(table.getBackground());
                     }
                 }
                 else {
-                    setForeground(table.getForeground());
                     setBackground(table.getBackground());
                 }
             }
@@ -494,7 +482,6 @@ public class IndependenceFactsEditor extends JPanel {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             this.table = table;
             this.row = row;
-            this.col = column;
             this.selected = isSelected;
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
@@ -610,7 +597,7 @@ public class IndependenceFactsEditor extends JPanel {
                 int[] choice3;
 
                 while ((choice3 = gen3.next()) != null) {
-                    results.add(new ArrayList<IndependenceResult>());
+                    results.add(new ArrayList<>());
 
                     for (int prod = 0; prod < indTestProducers.size(); prod++) {
                         String[] vars4 = new String[fixedIndices.length + questionMarkFirstTwoIndices.length
