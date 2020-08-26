@@ -345,14 +345,12 @@ public class IndependenceFactsEditor extends JPanel {
 
         IntTextField field = new IntTextField(getListLimit(), 7);
 
-        field.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    setListLimit(value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+        field.setFilter((value, oldValue) -> {
+            try {
+                setListLimit(value);
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 
