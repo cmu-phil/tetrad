@@ -156,7 +156,7 @@ public class ChiSquareTest {
                         continue;
                     }
 
-                    double expected = (sumCol * sumRow) / (double) total;
+                    double expected = (sumRow * sumCol) / (double) total;
                     _xSquare += Math.pow(observed - expected, 2.0) / expected;
                 }
             }
