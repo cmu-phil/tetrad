@@ -146,8 +146,6 @@ public class ChiSquareTest {
                     long sumCol = getCellTable().calcMargin(coords, secondVar);
                     long observed = getCellTable().getValue(coords);
 
-                    if (observed == 0) continue;
-
                     if (sumRow == 0L) {
                         attestedRows[i] = false;
                         continue;
