@@ -431,7 +431,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        if (independenceTests != null && independenceTests.size() == 1) {
+        if (independenceTests == null) {
+            independenceTests = new ArrayList<>();
+        }
+
+        if (independenceTests.size() == 1) {
             return independenceTests.get(0);
         }
 
@@ -490,10 +494,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 // Grabbing this independence test for the independence tests interface. JR 2020.8.24
                 Score score = wrapper.getScore(null, parameters);
                 this.independenceTests.add(new IndTestScore(score));
-            } else {
-                throw new IllegalArgumentException("Expecting all independence-based, score-based, or dsep-based algorithms; " +
-                        "at least one was not.");
             }
+        }
+
+        if (independenceTests.isEmpty()) {
+            throw new IllegalArgumentException("One or more of the parents was a search that didn't use "
+                + "a test or a score.") ;
         }
 
         return independenceTests.get(0);
