@@ -33,7 +33,7 @@ import java.util.Arrays;
  * Calculates marginal chi square test results for a discrete dataset.
  *
  * @author Frank Wimberly original version
- * @author Joseph Ramsey revision 10/01
+ * @author Joseph Ramsey revision 10/01, believe it or now also 2020.
  */
 public class ChiSquareTest {
 
@@ -145,6 +145,8 @@ public class ChiSquareTest {
                     long sumRow = getCellTable().calcMargin(coords, firstVar);
                     long sumCol = getCellTable().calcMargin(coords, secondVar);
                     long observed = getCellTable().getValue(coords);
+
+                    if (observed == 0) continue;
 
                     if (sumRow == 0L) {
                         attestedRows[i] = false;
