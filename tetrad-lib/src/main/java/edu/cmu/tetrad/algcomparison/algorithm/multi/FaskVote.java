@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -68,8 +69,9 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
             edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets);
 //            search.setInitialGraph(initialGraph);
 
+            search.setParameters(parameters);
             search.setKnowledge(knowledge);
-            return search.search(parameters);
+            return search.search();
         } else {
             FaskVote imagesSemBic = new FaskVote();
 
@@ -164,8 +166,6 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
 //        parameters.addAll((new SemBicScore()).getParameters());
         parameters.add(PENALTY_DISCOUNT);
         parameters.add(ALPHA);
-        parameters.add(ACCEPTANCE_PROPORTION);
-        parameters.add(Params.RANDOM_SELECTION_SIZE);
         parameters.add(Params.VERBOSE);
 
         return parameters;
