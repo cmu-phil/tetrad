@@ -32,6 +32,8 @@ import edu.cmu.tetrad.util.TetradVector;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.PrintStream;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Math.*;
@@ -346,6 +348,15 @@ public class SemBicScore implements Score {
         all[parents.length] = extra;
         return all;
     }
+
+    /**
+     * @return a string representation of this score.
+     */
+    public String toString() {
+        NumberFormat nf = new DecimalFormat("0.00");
+        return "SEM BIC Score penalty " + nf.format(penaltyDiscount);
+    }
+
 
 //    // Might not be useful.
 //    private synchronized double getErrorThreshold() {

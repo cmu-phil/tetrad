@@ -298,6 +298,12 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "BIC Score";
+    }
+
+
 }
 
 

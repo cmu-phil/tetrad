@@ -131,6 +131,8 @@ public interface IndependenceTest {
 
     boolean isVerbose();
 
+    String toString();
+
 }
 
 
