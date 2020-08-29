@@ -58,6 +58,7 @@ public class DataStandardizer extends DataWrapper {
             List<Node> list = dataSet.getVariables();
 
             DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
+            dataSet2.setName(dataSet.getName());
             outList.add(dataSet2);
         }
 

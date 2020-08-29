@@ -84,7 +84,7 @@ public class FaskVote {
             fask.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
             fask.setDelta(parameters.getDouble(FASK_DELTA));
             fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
-//            fask.setExternalGraph(external);
+            fask.setExternalGraph(external);
             fask.setAdjacencyMethod(Fask.AdjacencyMethod.FGES);
             fasks.add(fask);
             Graph search = fask.search();
