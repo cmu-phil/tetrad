@@ -2,14 +2,13 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.SemBicDTest;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +16,7 @@ import java.util.List;
 import static edu.cmu.tetrad.util.Params.*;
 
 /**
+ *
  */
 public class FaskVote {
 
@@ -53,11 +53,17 @@ public class FaskVote {
 
     //======================================== PUBLIC METHODS ====================================//
 
-    public Graph search() {
+    public Graph search(Parameters parameters) {
         long start = System.currentTimeMillis();
 
         List<Graph> graphs = new ArrayList<>();
         List<Fask> fasks = new ArrayList<>();
+
+        ImagesSemBic imagesSemBic = new ImagesSemBic();
+
+        List<DataModel> _dataSets = new ArrayList<>();
+        for (DataSet dataSet : dataSets) _dataSets.add((DataModel) dataSet);
+        Graph external = imagesSemBic.search(_dataSets, parameters);
 
         for (DataSet dataSet1 : dataSets) {
             Fask fask;
@@ -78,6 +84,8 @@ public class FaskVote {
             fask.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
             fask.setDelta(parameters.getDouble(FASK_DELTA));
             fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
+//            fask.setExternalGraph(external);
+            fask.setAdjacencyMethod(Fask.AdjacencyMethod.FGES);
             fasks.add(fask);
             Graph search = fask.search();
             search = GraphUtils.replaceNodes(search, dataSets.get(0).getVariables());
@@ -86,6 +94,7 @@ public class FaskVote {
 
         List<Node> nodes = dataSets.get(0).getVariables();
         Graph out = new EdgeListGraph(nodes);
+        int total = dataSets.size();
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = 0; j < nodes.size(); j++) {
@@ -99,7 +108,7 @@ public class FaskVote {
                     }
                 }
 
-                if (count / (double) graphs.size() > 0.5) {
+                if (count / (double) total >= parameters.getDouble(ACCEPTANCE_PROPORTION)) {
                     out.addEdge(edge);
                 }
             }
@@ -108,23 +117,6 @@ public class FaskVote {
         elapsed = System.currentTimeMillis() - start;
 
         return out;
-    }
-
-    /**
-     * @return Returns the penalty discount used for the adjacency search. The default is 1,
-     * though a higher value is recommended, say, 2, 3, or 4.
-     */
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    /**
-     * @param penaltyDiscount Sets the penalty discount used for the adjacency search.
-     *                        The default is 1, though a higher value is recommended, say,
-     *                        2, 3, or 4.
-     */
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
     }
 
     /**
@@ -187,9 +179,5 @@ public class FaskVote {
 
     public void setDelta(double delta) {
         this.delta = delta;
-    }
-
-    public void setParameters(Parameters parameters) {
-        this.parameters = parameters;
     }
 }
