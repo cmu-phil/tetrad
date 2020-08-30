@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.util.List;
 
 /**
- * Converts a continuous data set to a correlation matrix.
+ * Standardizes all columns in a continuous data set.
  *
  * @author Joseph Ramsey
  */

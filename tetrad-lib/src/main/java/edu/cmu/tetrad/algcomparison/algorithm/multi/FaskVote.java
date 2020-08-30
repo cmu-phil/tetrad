@@ -55,18 +55,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
                 _dataSets.add((DataSet) d);
             }
 
-//            if (initialAlg != null && initialGraph == null) {
-//                initialGraph = initialAlg.search(dataSets.get(0), parameters);
-//            }
-//
-//            if (initialGraph == null) {
-//                ImagesSemBic images = new ImagesSemBic();
-//                images.setKnowledge(knowledge);
-//                initialGraph = images.search(dataSets, parameters);
-//            }
-
             edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets);
-//            search.setInitialGraph(initialGraph);
 
             search.setKnowledge(knowledge);
             return search.search(parameters);
