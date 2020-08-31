@@ -3,12 +3,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,8 +14,10 @@ import java.util.List;
 import java.util.Map;
 
 import static edu.cmu.tetrad.util.Params.*;
+import static edu.cmu.tetrad.util.StatUtils.correlation;
 import static edu.cmu.tetrad.util.StatUtils.skewness;
-import static java.lang.Math.abs;
+import static java.lang.Math.*;
+import static java.lang.Math.signum;
 
 /**
  *
@@ -57,6 +57,8 @@ public class FaskVote {
         List<DataModel> _dataSets = new ArrayList<>(dataSets);
         Graph external = imagesSemBic.search(_dataSets, parameters);
 
+//        if (true) return external;
+
         for (DataSet dataSet1 : dataSets) {
             Fask fask;
 
@@ -74,23 +76,26 @@ public class FaskVote {
             switch (parameters.getInt(FASK_ADJACENCY_METHOD)) {
                 case 1:
                     adjacencyMethod = Fask.AdjacencyMethod.FAS_STABLE;
+                    break;
                 case 2:
                     adjacencyMethod = Fask.AdjacencyMethod.FAS_STABLE_CONCURRENT;
+                    break;
                 case 3:
                     adjacencyMethod = Fask.AdjacencyMethod.FGES;
+                    break;
                 case 4:
                     adjacencyMethod = Fask.AdjacencyMethod.EXTERNAL_GRAPH;
+                    break;
             }
 
             fask.setDepth(parameters.getInt(DEPTH));
-            fask.setAdjacencyMethod(Fask.AdjacencyMethod.FAS_STABLE);
+            fask.setAdjacencyMethod(adjacencyMethod);
             fask.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
             fask.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
             fask.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
             fask.setDelta(parameters.getDouble(FASK_DELTA));
             fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
-            fask.setExternalGraph(external);
-            fask.setAdjacencyMethod(adjacencyMethod);
+            fask.setExternalGraph(new EdgeListGraph(external));
             Graph search = fask.search();
             search = GraphUtils.replaceNodes(search, dataSets.get(0).getVariables());
             graphs.add(search);
@@ -102,55 +107,75 @@ public class FaskVote {
         double[][][] D = new double[dataSets.size()][][];
 
         for (int k = 0; k < dataSets.size(); k++) {
-            D[k] =  dataSets.get(k).getDoubleData().transpose().toArray();
+            D[k] =  DataUtils.standardizeData(dataSets.get(k).getDoubleData()).transpose().toArray();
         }
 
-        Map<String, Integer> indices = new HashMap<>();
-
         for (int i = 0; i < nodes.size(); i++) {
-            indices.put(nodes.get(i).getName(), i);
-        }
-
-
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
+            for (int j = 0; j < nodes.size(); j++) {
                 if (i == j) continue;
-                Edge edge1 = Edges.directedEdge(nodes.get(i), nodes.get(j));
-                Edge edge2 = Edges.directedEdge(nodes.get(j), nodes.get(i));
-                double count1 = 0, count2 = 0;
+
+                double sum = 0;
+                int count = 0;
+
+                Node X = nodes.get(i);
+                Node Y = nodes.get(j);
+
+                if (!external.isAdjacentTo(X, Y)) continue;
 
                 for (int k = 0; k < graphs.size(); k++) {
-                    if (graphs.get(k).containsEdge(edge1)) {
-                        count1++;
-//
-//                        double[] d1 = D[k][indices.get(edge1.getNode1().getName())];
-//                        double[] d2 = D[k][indices.get(edge1.getNode2().getName())];
-//                        double s = abs(skewness(d1)) * abs(skewness(d2));
-//
-//                        count += s;
-                    }
+                    double[] x = D[k][i];
+                    double[] y = D[k][j];
 
-                    if (graphs.get(k).containsEdge(edge2)) {
-                        count2++;
-//
-//                        double[] d1 = D[k][indices.get(edge1.getNode1().getName())];
-//                        double[] d2 = D[k][indices.get(edge1.getNode2().getName())];
-//                        double s = abs(skewness(d1)) * abs(skewness(d2));
-//
-//                        count += s;
-                    }
+                    double lr = faskLeftRightV2(x, y, parameters.getBoolean(FASK_NONEMPIRICAL));
+
+                    sum += lr;
+                    count++;
                 }
 
+                double mean = sum / count;
 
-                if (count1 > count2) {// / (double) graphs.size() >= parameters.getDouble(ACCEPTANCE_PROPORTION)) {
-                    out.addEdge(edge1);
-                } else if (count2 > count1) {// / (double) graphs.size() >= parameters.getDouble(ACCEPTANCE_PROPORTION)) {
-                    out.addEdge(edge2);
+                System.out.println(X + " " + Y + " " + mean);
+
+                if (mean < 0) {
+                    out.addDirectedEdge(Y, X);
                 }
             }
         }
 
         return out;
+    }
+
+    private double faskLeftRightV2(double[] x, double[] y, boolean empirical) {
+        double sx = skewness(x);
+        double sy = skewness(y);
+        double r = correlation(x, y);
+        double lr = correxp(x, y, x) - correxp(x, y, y);
+
+        if (empirical) {
+            lr *= signum(sx) * signum(sy);
+        }
+
+        lr *= signum(r);
+        return lr;
+    }
+
+    private static double correxp(double[] x, double[] y, double[] z) {
+        return E(x, y, z) / sqrt(E(x, x, z) * E(y, y, z));
+    }
+
+    // Returns E(XY | Z > 0); Z is typically either X or Y.
+    private static double E(double[] x, double[] y, double[] z) {
+        double exy = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (z[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
     }
 
     /**
