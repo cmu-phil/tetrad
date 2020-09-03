@@ -16,7 +16,6 @@ import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.Params.*;
@@ -42,7 +41,6 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
     private Graph initialGraph = null;
-    private Algorithm initialAlg = null;
 
     public FaskVote() {
     }
@@ -96,7 +94,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+            return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
             FaskVote imagesSemBic = new FaskVote();
 
@@ -130,13 +128,11 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
-//        return SearchGraphUtils.patternForDag(graph);
-//        return new TsDagToPag(new EdgeListGraph(graph)).convert();
     }
 
     @Override
     public String getDescription() {
-        return "MultiFASK";
+        return "FaskVote";
     }
 
     @Override
@@ -146,15 +142,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
 
     @Override
     public List<String> getParameters() {
-        // MultiFask uses SemBicScore internally, so we'll need to add the score parameters too - Zhou
-        List<String> parameters = new LinkedList<>();
-//        parameters.addAll((new ImagesSemBic()).getParameters());
-        parameters.addAll((new Fask()).getParameters());
-//        parameters.addAll((new SemBicScore()).getParameters());
-        parameters.add(PENALTY_DISCOUNT);
-        parameters.add(ALPHA);
-        parameters.add(ACCEPTANCE_PROPORTION);
-        parameters.add(Params.RANDOM_SELECTION_SIZE);
+        List<String> parameters = new ImagesSemBic().getParameters();
         parameters.add(Params.VERBOSE);
 
         return parameters;
@@ -182,6 +170,5 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {
-        this.initialAlg = algorithm;
     }
 }

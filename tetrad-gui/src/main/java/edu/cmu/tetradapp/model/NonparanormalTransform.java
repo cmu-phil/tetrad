@@ -20,12 +20,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
+import java.util.List;
 
 /**
  * Converts a continuous data set to a correlation matrix.
@@ -38,15 +39,41 @@ public class NonparanormalTransform extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
     public NonparanormalTransform(DataWrapper wrapper, Parameters params) {
-        DataModel dataModel = wrapper.getSelectedDataModel();
-        if (dataModel instanceof DataSet && ((DataSet) dataModel).isContinuous()) {
-            setDataModel(DataUtils.getNonparanormalTransformed((DataSet) dataModel));
-            setSourceGraph(wrapper.getSourceGraph());
+//        DataModel dataModel = wrapper.getSelectedDataModel();
+//        if (dataModel instanceof DataSet && ((DataSet) dataModel).isContinuous()) {
+//            setDataModel(DataUtils.getNonparanormalTransformed((DataSet) dataModel));
+//            setSourceGraph(wrapper.getSourceGraph());
+//
+//            LogDataUtils.logDataModelList("Conversion of parent data to correlation matrix form.", getDataModelList());
+//        } else {
+//            throw new IllegalArgumentException("Expecting a continuous data set.");
+//        }
 
-            LogDataUtils.logDataModelList("Conversion of parent data to correlation matrix form.", getDataModelList());
-        } else {
-            throw new IllegalArgumentException("Expecting a continuous data set.");
+        DataModelList inList = wrapper.getDataModelList();
+        DataModelList outList = new DataModelList();
+
+        for (DataModel model : inList) {
+            if (!(model instanceof DataSet)) {
+                throw new IllegalArgumentException("Not a data set: " + model.getName());
+            }
+
+            DataSet dataSet = (DataSet) model;
+
+            if (!(dataSet.isContinuous())) {
+                throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
+            }
+
+            DataSet data2 = DataUtils.getNonparanormalTransformed(dataSet);
+
+            data2.setName(dataSet.getName());
+            outList.add(data2);
         }
+
+        setDataModel(outList);
+        setSourceGraph(wrapper.getSourceGraph());
+
+        LogDataUtils.logDataModelList("Conversion of data to standardized form.", getDataModelList());
+
     }
 
     /**

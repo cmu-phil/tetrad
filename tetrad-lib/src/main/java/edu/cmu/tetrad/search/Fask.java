@@ -545,7 +545,12 @@ public final class Fask implements GraphSearch {
             lr *= signum(sx) * signum(sy);
         }
 
-        lr *= signum(r);
+//        lr *= signum(r);
+
+        if (r < delta) {
+            lr *= -1;
+        }
+
         return lr;
     }
 

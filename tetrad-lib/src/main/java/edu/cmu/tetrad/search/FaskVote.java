@@ -4,23 +4,22 @@ import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static edu.cmu.tetrad.util.Params.*;
-import static edu.cmu.tetrad.util.StatUtils.correlation;
-import static edu.cmu.tetrad.util.StatUtils.skewness;
-import static java.lang.Math.*;
+import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Math.signum;
+import static java.lang.Math.sqrt;
 
 /**
- *
+ * @author Joseph Ramsey
  */
 public class FaskVote {
 
@@ -40,7 +39,7 @@ public class FaskVote {
     private boolean useSkewAdjacencies = true;
 
     // Threshold for reversing casual judgments for negative coefficients.
-    private double delta = -0.2;
+    private double delta = -0.1;
 
     private final List<DataSet> dataSets;
 
@@ -51,63 +50,22 @@ public class FaskVote {
     //======================================== PUBLIC METHODS ====================================//
 
     public Graph search(Parameters parameters) {
-        List<Graph> graphs = new ArrayList<>();
+        List<DataModel> _dataSets = new ArrayList<>();
 
-        ImagesSemBic imagesSemBic = new ImagesSemBic();
-        List<DataModel> _dataSets = new ArrayList<>(dataSets);
-        Graph external = imagesSemBic.search(_dataSets, parameters);
-
-//        if (true) return external;
-
-        for (DataSet dataSet1 : dataSets) {
-            Fask fask;
-
-            if (parameters.getInt(FASK_ADJACENCY_METHOD) != 3) {
-                fask = new Fask(dataSet1, new FisherZ().getTest(dataSet1, parameters));
-            } else if (parameters.getInt(FASK_ADJACENCY_METHOD) == 3) {
-                fask = new Fask(dataSet1, new SemBicTest().getTest(dataSet1, parameters));
-            } else {
-                throw new IllegalStateException("That adacency method for FASK was not configured: "
-                        + parameters.getInt(FASK_ADJACENCY_METHOD));
-            }
-
-            Fask.AdjacencyMethod adjacencyMethod = Fask.AdjacencyMethod.FAS_STABLE;
-
-            switch (parameters.getInt(FASK_ADJACENCY_METHOD)) {
-                case 1:
-                    adjacencyMethod = Fask.AdjacencyMethod.FAS_STABLE;
-                    break;
-                case 2:
-                    adjacencyMethod = Fask.AdjacencyMethod.FAS_STABLE_CONCURRENT;
-                    break;
-                case 3:
-                    adjacencyMethod = Fask.AdjacencyMethod.FGES;
-                    break;
-                case 4:
-                    adjacencyMethod = Fask.AdjacencyMethod.EXTERNAL_GRAPH;
-                    break;
-            }
-
-            fask.setDepth(parameters.getInt(DEPTH));
-            fask.setAdjacencyMethod(adjacencyMethod);
-            fask.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
-            fask.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
-            fask.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
-            fask.setDelta(parameters.getDouble(FASK_DELTA));
-            fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
-            fask.setExternalGraph(new EdgeListGraph(external));
-            Graph search = fask.search();
-            search = GraphUtils.replaceNodes(search, dataSets.get(0).getVariables());
-            graphs.add(search);
+        for (DataSet dataSet : dataSets) {
+            _dataSets.add(DataUtils.standardizeData(dataSet));
         }
 
+        ImagesSemBic imagesSemBic = new ImagesSemBic();
+        Graph GPrime = imagesSemBic.search(_dataSets, parameters);
+
         List<Node> nodes = dataSets.get(0).getVariables();
-        Graph out = new EdgeListGraph(nodes);
+        Graph G = new EdgeListGraph(nodes);
 
         double[][][] D = new double[dataSets.size()][][];
 
-        for (int k = 0; k < dataSets.size(); k++) {
-            D[k] =  DataUtils.standardizeData(dataSets.get(k).getDoubleData()).transpose().toArray();
+        for (int k = 0; k < _dataSets.size(); k++) {
+            D[k] = ((DataSet) _dataSets.get(k)).getDoubleData().transpose().toArray();
         }
 
         for (int i = 0; i < nodes.size(); i++) {
@@ -120,15 +78,18 @@ public class FaskVote {
                 Node X = nodes.get(i);
                 Node Y = nodes.get(j);
 
-                if (!external.isAdjacentTo(X, Y)) continue;
+                for (int k = 0; k < dataSets.size(); k++) {
+                    if (!GPrime.isAdjacentTo(X, Y)) continue;
 
-                for (int k = 0; k < graphs.size(); k++) {
                     double[] x = D[k][i];
                     double[] y = D[k][j];
 
                     double lr = faskLeftRightV2(x, y, parameters.getBoolean(FASK_NONEMPIRICAL));
 
-                    sum += lr;
+                    if (lr < 0) {
+                        sum += 1;
+                    }
+
                     count++;
                 }
 
@@ -136,13 +97,15 @@ public class FaskVote {
 
                 System.out.println(X + " " + Y + " " + mean);
 
-                if (mean < 0) {
-                    out.addDirectedEdge(Y, X);
+                if (mean == 0.5) {
+                    G.addUndirectedEdge(Y, X);
+                } else if (mean > 0.5) {
+                    G.addDirectedEdge(Y, X);
                 }
             }
         }
 
-        return out;
+        return G;
     }
 
     private double faskLeftRightV2(double[] x, double[] y, boolean empirical) {
@@ -155,7 +118,10 @@ public class FaskVote {
             lr *= signum(sx) * signum(sy);
         }
 
-        lr *= signum(r);
+        if (r < delta) {
+            lr *= -1;
+        }
+
         return lr;
     }
 
