@@ -37,13 +37,13 @@ import static edu.cmu.tetrad.util.Params.*;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph {
+public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph {
 
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
     private Graph initialGraph = null;
 
-    public MultiFask() {
+    public MultiFaskV2() {
     }
 
     @Override
@@ -54,7 +54,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge, TakesInit
                 _dataSets.add((DataSet) d);
             }
 
-            edu.cmu.tetrad.search.MultiFask search = new edu.cmu.tetrad.search.MultiFask(_dataSets);
+            edu.cmu.tetrad.search.MultiFaskV2 search = new edu.cmu.tetrad.search.MultiFaskV2(_dataSets);
 
             search.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
             search.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
@@ -62,7 +62,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge, TakesInit
             search.setKnowledge(knowledge);
             return search.search(parameters);
         } else {
-            MultiFask imagesSemBic = new MultiFask();
+            MultiFaskV2 imagesSemBic = new MultiFaskV2();
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -100,7 +100,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge, TakesInit
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            MultiFask imagesSemBic = new MultiFask();
+            MultiFaskV2 imagesSemBic = new MultiFaskV2();
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));

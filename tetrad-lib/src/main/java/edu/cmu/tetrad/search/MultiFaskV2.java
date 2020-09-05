@@ -20,7 +20,7 @@ import static java.lang.Math.abs;
  * @author Madelyn Glymour
  * @author Joseph Ramsey 9/5/2020
  */
-public class MultiFask {
+public class MultiFaskV2 {
 
     // An initial graph to orient, skipping the adjacency step.
     private Graph initialGraph = null;
@@ -51,7 +51,7 @@ public class MultiFask {
     // Depth for combinatorial steps.
     private int depth = -1;
 
-    public MultiFask(List<DataSet> dataSets) {
+    public MultiFaskV2(List<DataSet> dataSets) {
         this.dataSets = dataSets;
     }
 
