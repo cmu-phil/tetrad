@@ -24,6 +24,8 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 
 /**
@@ -350,6 +352,13 @@ public class DirichletScore implements LocalDiscreteScore, Score {
     public boolean determines(List<Node> z, Node y) {
         return false;
     }
+
+    @Override
+    public String toString() {
+        NumberFormat nf = new DecimalFormat("0.00");
+        return "Dirichlet Score StructP " + nf.format(structurePrior) + " SampP " + nf.format(samplePrior);
+    }
+
 }
 
 

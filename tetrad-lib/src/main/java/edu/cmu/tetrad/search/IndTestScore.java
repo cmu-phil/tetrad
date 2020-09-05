@@ -237,6 +237,11 @@ public class IndTestScore implements IndependenceTest {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    @Override
+    public String toString() {
+        return score.toString() + " Interpreted as a Test";
+    }
 }
 
 

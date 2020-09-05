@@ -276,6 +276,12 @@ public class BdeuScoreImages implements IBDeuScore {
     public boolean determines(List<Node> z, Node y) {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "BDeu Score Images";
+    }
+
 }
 
 

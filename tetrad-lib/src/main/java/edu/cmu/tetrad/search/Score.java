@@ -50,5 +50,7 @@ public interface Score {
     int getMaxDegree();
 
     boolean determines(List<Node> z, Node y);
+
+    String toString();
 }
 
