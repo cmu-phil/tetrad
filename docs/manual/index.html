@@ -2869,11 +2869,9 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h4>Description</h4>
 
     <div id="multi-fask">
-        <p>Multi-FASK is a metascript that learns a model from a list of datasets in a method similar to
-            IMaGES (see). For adjacencies, it uses FAS-Stable with the voting-based score from IMaGES used as
-            a test (using all of the datasets, standardized), producing a single undirected graph G. It then
-            orients each edge X--Y in G for each dataset using the FASK (see) left-right rule and orient X->Y if
-            that rule orients X--Y as such in at least half of the datasets. The final graph is returned.
+        <p>Multi-FASK is a metascript that learns a model from a list of datasets. It then orients each
+            edge X->Y in the final graph if the number of datasets for which either the FASK rule or the 2-cycle
+            rule orients X->Y is counted to be more than half. The final graph is returned.
         </p>
 
         <p>For FASK, See Sanchez-Romero R, Ramsey JD, Zhang K, Glymour MR, Huang B, Glymour C. Causal discovery
