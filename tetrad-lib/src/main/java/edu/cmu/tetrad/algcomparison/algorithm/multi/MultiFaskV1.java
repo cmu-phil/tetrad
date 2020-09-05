@@ -1,14 +1,15 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.SemBicScoreMultiFas;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -16,9 +17,8 @@ import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-
-import static edu.cmu.tetrad.util.Params.*;
 
 /**
  * Wraps the MultiFask algorithm for continuous variables.
@@ -29,20 +29,19 @@ import static edu.cmu.tetrad.util.Params.*;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FaskVote",
-        command = "fask-vote",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Continuous
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "MultiFask",
+//        command = "multi-fask",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        dataType = DataType.Continuous
+//)
 @Bootstrapping
-public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph {
+public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
-    private Graph initialGraph = null;
 
-    public FaskVote() {
+    public MultiFaskV1() {
     }
 
     @Override
@@ -52,13 +51,13 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
             for (DataModel d : dataSets) {
                 _dataSets.add((DataSet) d);
             }
-
-            edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets);
-
+            final SemBicScoreMultiFas score = new SemBicScoreMultiFas(dataSets);
+            score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+            edu.cmu.tetrad.search.MultiFaskV1 search = new edu.cmu.tetrad.search.MultiFaskV1(_dataSets, score);
             search.setKnowledge(knowledge);
-            return search.search(parameters);
+            return search.search();
         } else {
-            FaskVote imagesSemBic = new FaskVote();
+            MultiFaskV1 imagesSemBic = new MultiFaskV1();
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -94,9 +93,9 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+            return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            FaskVote imagesSemBic = new FaskVote();
+            MultiFaskV1 imagesSemBic = new MultiFaskV1();
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -128,11 +127,13 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
+//        return SearchGraphUtils.patternForDag(graph);
+//        return new TsDagToPag(new EdgeListGraph(graph)).convert();
     }
 
     @Override
     public String getDescription() {
-        return "FaskVote";
+        return "IMaGES for continuous variables (using the SEM BIC score)";
     }
 
     @Override
@@ -142,7 +143,13 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ImagesSemBic().getParameters();
+        // MultiFask uses SemBicScore internally, so we'll need to add the score parameters too - Zhou
+        List<String> parameters = new LinkedList<>();
+        parameters.addAll((new Fges()).getParameters());
+        parameters.addAll((new SemBicScore()).getParameters());
+        parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.RANDOM_SELECTION_SIZE);
+
         parameters.add(Params.VERBOSE);
 
         return parameters;
@@ -156,19 +163,5 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
     }
 }
