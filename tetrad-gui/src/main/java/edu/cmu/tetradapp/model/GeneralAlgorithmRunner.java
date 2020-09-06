@@ -285,6 +285,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     });
                 }
             } else {
+                if (getDataModelList().size() != 1) {
+                    throw new IllegalArgumentException("Expecting a single dataset here.");
+                }
+
                 if (algo != null) {
                     getDataModelList().forEach(data -> {
                         IKnowledge knowledgeFromData = data.getKnowledge();
