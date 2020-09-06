@@ -22,34 +22,10 @@ import static java.lang.Math.abs;
  */
 public class MultiFaskV2 {
 
-    // An initial graph to orient, skipping the adjacency step.
-    private Graph initialGraph = null;
-
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
-    // A threshold for including extra adjacencies due to skewness.
-    private double extraEdgeThreshold = 0.3;
-
-    // True if FAS adjacencies should be included in the output.
-    private boolean useFasAdjacencies = true;
-
-    // True if skew adjacencies should be included in the output.
-    private boolean useSkewAdjacencies = true;
-
-    // Threshold for reversing casual judgments for negative coefficients.
-    private double delta = -0.1;
-
     private final List<DataSet> dataSets;
-
-    // Alpha for checking 2-cycles.
-    private double twoCycleScreeningThreshold = 0.01;
-
-    // Alpha for checking 2-cycles.
-    private double twoCycleTestingAlpha = 0.01;
-
-    // Depth for combinatorial steps.
-    private int depth = -1;
 
     public MultiFaskV2(List<DataSet> dataSets) {
         this.dataSets = dataSets;
@@ -65,6 +41,7 @@ public class MultiFaskV2 {
         }
 
         ImagesSemBic imagesSemBic = new ImagesSemBic();
+        imagesSemBic.setKnowledge(knowledge);
         Graph G0 = imagesSemBic.search(_dataSets, parameters);
 
         List<Node> V = dataSets.get(0).getVariables();
@@ -85,6 +62,7 @@ public class MultiFaskV2 {
             fask.setDelta(parameters.getDouble(FASK_DELTA));
             fask.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
             fask.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
+            fask.setKnowledge(knowledge);
             Graph g = fask.search();
             g = GraphUtils.replaceNodes(g, nodes);
             fasks.add(g);
@@ -132,74 +110,9 @@ public class MultiFaskV2 {
     }
 
     /**
-     * @return the current knowledge.
-     */
-    public IKnowledge getKnowledge() {
-        return knowledge;
-    }
-
-    /**
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    //======================================== PRIVATE METHODS ===================================//
-
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    public double getExtraEdgeThreshold() {
-        return extraEdgeThreshold;
-    }
-
-    public void setExtraEdgeThreshold(double extraEdgeThreshold) {
-        this.extraEdgeThreshold = extraEdgeThreshold;
-    }
-
-    public boolean isUseFasAdjacencies() {
-        return useFasAdjacencies;
-    }
-
-    public void setUseFasAdjacencies(boolean useFasAdjacencies) {
-        this.useFasAdjacencies = useFasAdjacencies;
-    }
-
-    public boolean isUseSkewAdjacencies() {
-        return useSkewAdjacencies;
-    }
-
-    public void setUseSkewAdjacencies(boolean useSkewAdjacencies) {
-        this.useSkewAdjacencies = useSkewAdjacencies;
-    }
-
-    public double getDelta() {
-        return delta;
-    }
-
-    public void setDelta(double delta) {
-        this.delta = delta;
-    }
-
-    public void setTwoCycleTestingAlpha(double twoCycleTestingAlpha) {
-        this.twoCycleTestingAlpha = twoCycleTestingAlpha;
-    }
-
-    public double getTwoCycleScreeningThreshold() {
-        return twoCycleScreeningThreshold;
-    }
-
-    public void setTwoCycleScreeningThreshold(double twoCycleScreeningThreshold) {
-        this.twoCycleScreeningThreshold = twoCycleScreeningThreshold;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
     }
 }
