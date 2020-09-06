@@ -76,6 +76,8 @@ public class MultiFaskV2 {
             D[k] = ((DataSet) _dataSets.get(k)).getDoubleData().transpose().toArray();
         }
 
+        this.delta = parameters.getDouble(FASK_DELTA);
+
         boolean twoCycles = twoCycleScreeningThreshold > 0 || twoCycleTestingAlpha > 0;
 
         for (Edge edge : G0.getEdges()) {
@@ -93,7 +95,7 @@ public class MultiFaskV2 {
                 double[] y = D[k][j];
 
                 double cutoff = StatUtils.getZForAlpha(twoCycleTestingAlpha);
-                double lr = faskLeftRightV2(x, y, parameters.getBoolean(FASK_NONEMPIRICAL));
+                double lr = faskLeftRightV2(x, y, !parameters.getBoolean(FASK_NONEMPIRICAL));
 
                 if (twoCycles
                         && ((twoCycleScreeningThreshold == 0 || abs(lr) < twoCycleScreeningThreshold)
