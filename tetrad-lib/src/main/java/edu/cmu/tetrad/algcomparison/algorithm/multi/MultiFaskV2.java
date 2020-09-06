@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static edu.cmu.tetrad.util.Params.*;
-
 /**
  * Wraps the MultiFask algorithm for continuous variables.
  * </p>
@@ -56,9 +54,6 @@ public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesIn
 
             edu.cmu.tetrad.search.MultiFaskV2 search = new edu.cmu.tetrad.search.MultiFaskV2(_dataSets);
 
-            search.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
-            search.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
-            search.setDepth(parameters.getInt(DEPTH));
             search.setKnowledge(knowledge);
             return search.search(parameters);
         } else {

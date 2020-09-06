@@ -3,18 +3,12 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.linear.SingularMatrixException;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static edu.cmu.tetrad.util.Params.*;
-import static edu.cmu.tetrad.util.StatUtils.*;
-import static java.lang.Math.*;
-import static java.lang.Math.abs;
 
 /**
  * @author Madelyn Glymour
