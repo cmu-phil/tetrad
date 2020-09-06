@@ -120,6 +120,7 @@ public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesIn
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
+
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
@@ -147,11 +148,12 @@ public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesIn
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ImagesSemBic().getParameters();
-        parameters.add(FASK_NONEMPIRICAL);
-        parameters.add(FASK_DELTA);
-        parameters.add(TWO_CYCLE_SCREENING_THRESHOLD);
-        parameters.add(TWO_CYCLE_TESTING_ALPHA);
-        parameters.add(Params.VERBOSE);
+        parameters.addAll(new Fask().getParameters());
+//        parameters.add(FASK_NONEMPIRICAL);
+//        parameters.add(FASK_DELTA);
+//        parameters.add(TWO_CYCLE_SCREENING_THRESHOLD);
+//        parameters.add(TWO_CYCLE_TESTING_ALPHA);
+//        parameters.add(Params.VERBOSE);
 
         return parameters;
     }

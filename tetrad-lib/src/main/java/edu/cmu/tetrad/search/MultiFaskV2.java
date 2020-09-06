@@ -70,49 +70,48 @@ public class MultiFaskV2 {
         List<Node> V = dataSets.get(0).getVariables();
         Graph G = new EdgeListGraph(V);
 
-        double[][][] D = new double[dataSets.size()][][];
+        List<Graph> fasks = new ArrayList<>();
 
-        for (int k = 0; k < _dataSets.size(); k++) {
-            D[k] = ((DataSet) _dataSets.get(k)).getDoubleData().transpose().toArray();
+        List<Node> nodes = G0.getNodes();
+
+        for (DataSet dataSet : dataSets) {
+            Fask fask = new Fask(dataSet, new IndTestFisherZ(dataSet, 0.001));
+            fask.setExternalGraph(G0);
+            fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
+            fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
+            fask.setLeftRight(Fask.LeftRight.FASK2);
+            fask.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
+            fask.setDepth(parameters.getInt(DEPTH));
+            fask.setDelta(parameters.getDouble(FASK_DELTA));
+            fask.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
+            fask.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
+            Graph g = fask.search();
+            g = GraphUtils.replaceNodes(g, nodes);
+            fasks.add(g);
         }
 
-        this.delta = parameters.getDouble(FASK_DELTA);
-
-        boolean twoCycles = twoCycleScreeningThreshold > 0 || twoCycleTestingAlpha > 0;
-
         for (Edge edge : G0.getEdges()) {
-            double sum1 = 0;
-            double sum2 = 0;
-
             Node X = edge.getNode1();
             Node Y = edge.getNode2();
 
-            int i = V.indexOf(X);
-            int j = V.indexOf(Y);
+            Edge dir1 = Edges.directedEdge(X, Y);
+            Edge dir2 = Edges.directedEdge(Y, X);
 
-            for (int k = 0; k < dataSets.size(); k++) {
-                double[] x = D[k][i];
-                double[] y = D[k][j];
+            int sum1 = 0;
+            int sum2 = 0;
 
-                double cutoff = StatUtils.getZForAlpha(twoCycleTestingAlpha);
-                double lr = faskLeftRightV2(x, y, !parameters.getBoolean(FASK_NONEMPIRICAL));
-
-                if (twoCycles
-                        && ((twoCycleScreeningThreshold == 0 || abs(lr) < twoCycleScreeningThreshold)
-                        && (twoCycleTestingAlpha == 0 || twoCycleTest(i, j, D[k], G0, V, cutoff, depth == -1 ? 1000 : depth)))) {
+            for (Graph g : fasks) {
+                if (g.containsEdge(dir1)) {
                     sum1++;
+                }
+
+                if (g.containsEdge(dir2)) {
                     sum2++;
-                } else {
-                    if (lr > 0) {
-                        sum1++;
-                    } else if (lr < 0) {
-                        sum2++;
-                    }
                 }
             }
 
-            double mean1 = sum1 / dataSets.size();
-            double mean2 = sum2 / dataSets.size()       ;
+            double mean1 = sum1 / (double) dataSets.size();
+            double mean2 = sum2 / (double) dataSets.size()       ;
 
             System.out.println(X + " " + Y + " " + mean1 + " " + mean2);
 
@@ -130,119 +129,6 @@ public class MultiFaskV2 {
         }
 
         return G;
-    }
-
-    private boolean twoCycleTest(int i, int j, double[][] D, Graph G0, List<Node> V,
-                                 double twoCycleTestingCutoff, int depth) {
-        Node X = V.get(i);
-        Node Y = V.get(j);
-
-        double[] x = D[i];
-        double[] y = D[j];
-
-        Set<Node> adjSet = new HashSet<>(G0.getAdjacentNodes(X));
-        adjSet.addAll(G0.getAdjacentNodes(Y));
-        List<Node> adj = new ArrayList<>(adjSet);
-        adj.remove(X);
-        adj.remove(Y);
-
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), Math.min(depth, adj.size()));
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            List<Node> _adj = GraphUtils.asList(choice, adj);
-            double[][] _Z = new double[_adj.size()][];
-
-            for (int f = 0; f < _adj.size(); f++) {
-                Node _z = _adj.get(f);
-                int column = V.indexOf(_z);
-                _Z[f] = D[column];
-            }
-
-            double pc, pc1, pc2;
-
-            try {
-                pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY);
-                pc1 = partialCorrelation(x, y, _Z, x, 0);
-                pc2 = partialCorrelation(x, y, _Z, y, 0);
-            } catch (SingularMatrixException e) {
-                System.out.println("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
-                TetradLogger.getInstance().log("info", "Singularity X = " + X + " Y = " + Y + " adj = " + adj);
-                continue;
-            }
-
-            int nc = StatUtils.getRows(x, x, 0, Double.NEGATIVE_INFINITY).size();
-            int nc1 = StatUtils.getRows(x, x, 0, +1).size();
-            int nc2 = StatUtils.getRows(y, y, 0, +1).size();
-
-            double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
-            double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
-            double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
-
-            double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
-            double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
-
-            boolean rejected1 = abs(zv1) > twoCycleTestingCutoff;
-            boolean rejected2 = abs(zv2) > twoCycleTestingCutoff;
-
-            boolean possibleTwoCycle = false;
-
-            if (zv1 < 0 && zv2 > 0 && rejected1) {
-                possibleTwoCycle = true;
-            } else if (zv1 > 0 && zv2 < 0 && rejected2) {
-                possibleTwoCycle = true;
-            } else if (rejected1 && rejected2) {
-                possibleTwoCycle = true;
-            }
-
-            if (!possibleTwoCycle) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold) throws SingularMatrixException {
-        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, 1);
-        TetradMatrix m = new TetradMatrix(cv).transpose();
-        return StatUtils.partialCorrelation(m);
-    }
-
-    private double faskLeftRightV2(double[] x, double[] y, boolean empirical) {
-        double sx = skewness(x);
-        double sy = skewness(y);
-        double r = correlation(x, y);
-        double lr = correxp(x, y, x) - correxp(x, y, y);
-
-        if (empirical) {
-            lr *= signum(sx) * signum(sy);
-        }
-
-        if (r < delta) {
-            lr *= -1;
-        }
-
-        return lr;
-    }
-
-    private static double correxp(double[] x, double[] y, double[] z) {
-        return E(x, y, z) / sqrt(E(x, x, z) * E(y, y, z));
-    }
-
-    // Returns E(XY | Z > 0); Z is typically either X or Y.
-    private static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
     }
 
     /**
