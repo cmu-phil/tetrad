@@ -144,11 +144,6 @@ public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesIn
     public List<String> getParameters() {
         List<String> parameters = new ImagesSemBic().getParameters();
         parameters.addAll(new Fask().getParameters());
-//        parameters.add(FASK_NONEMPIRICAL);
-//        parameters.add(FASK_DELTA);
-//        parameters.add(TWO_CYCLE_SCREENING_THRESHOLD);
-//        parameters.add(TWO_CYCLE_TESTING_ALPHA);
-//        parameters.add(Params.VERBOSE);
 
         return parameters;
     }
