@@ -2,7 +2,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -35,11 +37,12 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph {
+public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
     private Graph initialGraph = null;
+    private IndependenceWrapper test;
 
     public MultiFaskV2() {
     }
@@ -52,7 +55,7 @@ public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesIn
                 _dataSets.add((DataSet) d);
             }
 
-            edu.cmu.tetrad.search.MultiFaskV2 search = new edu.cmu.tetrad.search.MultiFaskV2(_dataSets);
+            edu.cmu.tetrad.search.MultiFaskV2 search = new edu.cmu.tetrad.search.MultiFaskV2(_dataSets, test);
 
             search.setKnowledge(knowledge);
             return search.search(parameters);
@@ -170,5 +173,15 @@ public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesIn
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
+    }
+
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
     }
 }

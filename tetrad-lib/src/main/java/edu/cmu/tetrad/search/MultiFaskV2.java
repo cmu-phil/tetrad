@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -16,13 +17,15 @@ import static edu.cmu.tetrad.util.Params.*;
  */
 public class MultiFaskV2 {
 
+    private final IndependenceWrapper test;
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
     private final List<DataSet> dataSets;
 
-    public MultiFaskV2(List<DataSet> dataSets) {
+    public MultiFaskV2(List<DataSet> dataSets, IndependenceWrapper test) {
         this.dataSets = dataSets;
+        this.test = test;
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -46,8 +49,8 @@ public class MultiFaskV2 {
         List<Node> nodes = G0.getNodes();
 
         for (DataSet dataSet : dataSets) {
-            Fask fask = new Fask(dataSet, new IndTestFisherZ(dataSet, 0.001));
-            fask.setExternalGraph(G0);
+            Fask fask = new Fask(dataSet, test.getTest(dataSet, parameters));
+            fask.setExternalGraph(GraphUtils.undirectedGraph(G0));
             fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
             fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
             fask.setLeftRight(Fask.LeftRight.FASK2);
