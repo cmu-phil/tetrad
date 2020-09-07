@@ -15,7 +15,7 @@ import static edu.cmu.tetrad.util.Params.*;
  * @author Madelyn Glymour
  * @author Joseph Ramsey 9/5/2020
  */
-public class MultiFaskV2 {
+public class FaskVote {
 
     private final IndependenceWrapper test;
     // Knowledge the the search will obey, of forbidden and required edges.
@@ -23,7 +23,7 @@ public class MultiFaskV2 {
 
     private final List<DataSet> dataSets;
 
-    public MultiFaskV2(List<DataSet> dataSets, IndependenceWrapper test) {
+    public FaskVote(List<DataSet> dataSets, IndependenceWrapper test) {
         this.dataSets = dataSets;
         this.test = test;
     }

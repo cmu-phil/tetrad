@@ -29,12 +29,12 @@ import java.util.List;
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "MultiFask",
-//        command = "multi-fask",
-//        algoType = AlgType.forbid_latent_common_causes,
-//        dataType = DataType.Continuous
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "MultiFask",
+        command = "multi-fask",
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Continuous
+)
 @Bootstrapping
 public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
 

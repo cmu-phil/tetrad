@@ -31,20 +31,20 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "MultiFask",
-        command = "multi-fask",
+        name = "FaskVote",
+        command = "fask-vote",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph, TakesIndependenceWrapper {
+public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
     private Graph initialGraph = null;
     private IndependenceWrapper test;
 
-    public MultiFaskV2() {
+    public FaskVote() {
     }
 
     @Override
@@ -55,12 +55,12 @@ public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesIn
                 _dataSets.add((DataSet) d);
             }
 
-            edu.cmu.tetrad.search.MultiFaskV2 search = new edu.cmu.tetrad.search.MultiFaskV2(_dataSets, test);
+            edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, test);
 
             search.setKnowledge(knowledge);
             return search.search(parameters);
         } else {
-            MultiFaskV2 imagesSemBic = new MultiFaskV2();
+            FaskVote imagesSemBic = new FaskVote();
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -98,7 +98,7 @@ public class MultiFaskV2 implements MultiDataSetAlgorithm, HasKnowledge, TakesIn
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            MultiFaskV2 imagesSemBic = new MultiFaskV2();
+            FaskVote imagesSemBic = new FaskVote();
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
