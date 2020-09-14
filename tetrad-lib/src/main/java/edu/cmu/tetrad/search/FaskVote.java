@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +87,7 @@ public class FaskVote {
             }
 
             double mean1 = sum1 / (double) dataSets.size();
-            double mean2 = sum2 / (double) dataSets.size()       ;
+            double mean2 = sum2 / (double) dataSets.size();
 
             System.out.println(X + " " + Y + " " + mean1 + " " + mean2);
 

@@ -193,7 +193,12 @@ public final class Fask implements GraphSearch {
         DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
         List<Node> variables = dataSet.getVariables();
-        D = dataSet.getDoubleData().transpose().toArray();
+        double[][] lrs = getLrScores(); // Sets D.
+//        D = dataSet.getDoubleData().transpose().toArray();
+
+        for (int i = 0; i < variables.size(); i++) {
+            System.out.println("Skewness of " + variables.get(i) + " = " + skewness(D[i]));
+        }
 
         TetradLogger.getInstance().forceLogMessage("FASK v. 2.0");
         TetradLogger.getInstance().forceLogMessage("");
@@ -269,7 +274,7 @@ public final class Fask implements GraphSearch {
                 double cy = correxp(x, y, y);
 
                 if (G.isAdjacentTo(X, Y) || (abs(cx - cy) > skewEdgeThreshold)) {
-                    double lr = leftRight(x, y);
+                    double lr = lrs[i][j];// leftRight(x, y);
 
                     if (edgeForbiddenByKnowledge(X, Y) && edgeForbiddenByKnowledge(Y, X)) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge_forbidden"
@@ -292,12 +297,14 @@ public final class Fask implements GraphSearch {
                         );
                         graph.addDirectedEdge(Y, X);
                     } else {
-                        if (twoCycleScreeningThreshold > 0 && abs(faskLeftRightV2(x, y)) < twoCycleScreeningThreshold) {
+                        if (/*twoCycleScreeningThreshold > 0 &&*/ zeroDiff(i, j, D)) {// abs(faskLeftRightV2(x, y)) < twoCycleScreeningThreshold) {
                             TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle Prescreen"
                                     + "\t" + nf.format(lr)
                                     + "\t" + X + "...TC?..." + Y
                             );
-                            twoCycles.add(new NodePair(X, Y));
+//                            twoCycles.add(new NodePair(X, Y));
+
+                            System.out.println(X + " " + Y + " lr = " + lr + " zero");
                         }
 
                         if (lr > 0) {
@@ -306,7 +313,7 @@ public final class Fask implements GraphSearch {
                                     + "\t" + X + "-->" + Y
                             );
                             graph.addDirectedEdge(X, Y);
-                        } else {
+                        } else if (lr < 0) {
                             TetradLogger.getInstance().forceLogMessage(Y + "\t" + X + "\tleft-right"
                                     + "\t" + nf.format(lr)
                                     + "\t" + Y + "-->" + X
@@ -407,6 +414,27 @@ public final class Fask implements GraphSearch {
         }
 
         return B;
+    }
+
+    /**
+     * Returns a natrux matrix of left-right scores for the search. If lr = getLrScores(), then
+     * lr[i][j] is the left right scores leftRight(data[i], data[j]);
+     */
+    public double[][] getLrScores() {
+        List<Node> variables = dataSet.getVariables();
+        double[][] D = DataUtils.standardizeData(dataSet).getDoubleData().transpose().toArray();
+
+        double[][] lr = new double[variables.size()][variables.size()];
+
+        for (int i = 0; i < variables.size(); i++) {
+            for (int j = 0; j < variables.size(); j++) {
+                lr[i][j] = leftRight(D[i], D[j]);
+            }
+        }
+
+        this.D = D;
+
+        return lr;
     }
 
     /**
@@ -524,7 +552,7 @@ public final class Fask implements GraphSearch {
             return faskLeftRightV1(x, y);
         } else if (leftRight == LeftRight.FASK2) {
             return faskLeftRightV2(x, y);
-        }else if (leftRight == LeftRight.RSKEW) {
+        } else if (leftRight == LeftRight.RSKEW) {
             return robustSkew(x, y);
         } else if (leftRight == LeftRight.SKEW) {
             return skew(x, y);
@@ -742,6 +770,30 @@ public final class Fask implements GraphSearch {
         }
 
         return true;
+    }
+
+    private boolean zeroDiff(int i, int j, double[][] D) {
+        double[] x = D[i];
+        double[] y = D[j];
+
+        double pc1, pc2;
+
+        try {
+            pc1 = partialCorrelation(x, y, new double[0][], x, 0);
+            pc2 = partialCorrelation(x, y, new double[0][], y, 0);
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException(e);
+        }
+
+        int nc1 = StatUtils.getRows(x, x, 0, +1).size();
+        int nc2 = StatUtils.getRows(y, y, 0, +1).size();
+
+        double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
+        double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
+
+        double zv = (z1 - z2) / sqrt((1.0 / ((double) nc1 - 3) + 1.0 / ((double) nc2 - 3)));
+
+        return !(abs(zv) > twoCycleScreeningThreshold);
     }
 
     private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold) throws SingularMatrixException {

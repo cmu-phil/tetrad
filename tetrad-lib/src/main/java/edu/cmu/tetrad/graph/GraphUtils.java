@@ -4917,12 +4917,7 @@ public final class GraphUtils {
             return true;
         }
 
-//        boolean ancestor = zAncestors(z, graph).contains(b);
         boolean ancestor = isAncestor(b, z, graph);
-
-//        if (ancestor != ancestor2) {
-//            System.out.println("Ancestors of " + z + " are " + zAncestors(z, graph));
-//        }
         return collider && ancestor;
     }
 
