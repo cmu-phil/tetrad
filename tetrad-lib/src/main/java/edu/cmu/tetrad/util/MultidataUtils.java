@@ -18,14 +18,7 @@
  */
 package edu.cmu.tetrad.util;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataBox;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.data.DoubleDataBox;
-import edu.cmu.tetrad.data.MixedDataBox;
-import edu.cmu.tetrad.data.VerticalIntDataBox;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,7 +54,7 @@ public final class MultidataUtils {
         int numOfRows = Arrays.stream(rowCounts).sum();
         int numOfCols = getNumberOfColumns(dataModel);
 
-        if (dataBox instanceof DoubleDataBox) {
+        if (dataBox instanceof DoubleDataBox || dataBox instanceof VerticalDoubleDataBox) {
             double[][] continuousData = new double[numOfRows][numOfCols];
             combineContinuousData(dataModels, continuousData);
 
@@ -236,7 +229,19 @@ public final class MultidataUtils {
 
     public static void combineContinuousData(List<DataModel> dataModels, double[][] combinedData) {
         List<DoubleDataBox> models = dataModels.stream()
-                .map(e -> (DoubleDataBox) ((BoxDataSet) e).getDataBox())
+                .map(e -> {
+                    DataBox dataBox = ((BoxDataSet) e).getDataBox();
+                    DoubleDataBox box2 = new DoubleDataBox(dataBox.numRows(), dataBox.numCols());
+
+                    double[][] m = new double[dataBox.numRows()][dataBox.numCols()];
+                    for (int i = 0; i < dataBox.numRows(); i++) {
+                        for (int j = 0; j < dataBox.numCols(); j++) {
+                            box2.set(i, j, dataBox.get(i, j));
+                        }
+                    }
+
+                    return new DoubleDataBox(box2.getData());
+                })
                 .collect(Collectors.toList());
 
         int row = 0;
@@ -349,7 +354,7 @@ public final class MultidataUtils {
         DataModel dataModel = dataModels.get(0);
         DataBox dataBox = ((BoxDataSet) dataModel).getDataBox();
 
-        if (dataBox instanceof DoubleDataBox) {
+        if (dataBox instanceof DoubleDataBox || dataBox instanceof VerticalDoubleDataBox) {
             combineContinuousVariables(dataModels, variables);
         } else if (dataBox instanceof VerticalIntDataBox) {
             combineDiscreteVariables(dataModels, variables);

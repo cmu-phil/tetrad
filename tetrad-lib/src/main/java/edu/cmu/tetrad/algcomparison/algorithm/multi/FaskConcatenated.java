@@ -62,11 +62,9 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
             Fask search = new Fask(dataSet, test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            search.setExtraEdgeThreshold(parameters.getDouble(Params.EXTRA_EDGE_THRESHOLD));
-            search.setAlpha(parameters.getDouble(Params.TWO_CYCLE_ALPHA));
+            search.setSkewEdgeThreshold(parameters.getDouble(Params.SKEW_EDGE_THRESHOLD));
             search.setKnowledge(knowledge);
-            
+
             return search.search();
         } else {
             FaskConcatenated algorithm = new FaskConcatenated(test);
@@ -78,10 +76,10 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
             }
             GeneralResamplingTest search = new GeneralResamplingTest(datasets, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
-            
+
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -95,7 +93,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -115,7 +113,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -129,7 +127,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -156,11 +154,11 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.TWO_CYCLE_ALPHA);
-        parameters.add(Params.EXTRA_EDGE_THRESHOLD);
+        parameters.add(Params.SKEW_EDGE_THRESHOLD);
 
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
-        
+
         parameters.add(Params.VERBOSE);
 
         return parameters;

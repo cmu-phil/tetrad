@@ -249,14 +249,16 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     List<DataSet> dataSets = getDataModelList().stream()
                             .map(e -> (DataSet) e)
                             .collect(Collectors.toCollection(ArrayList::new));
-                    if (dataSets.size() < parameters.getInt("randomSelectionSize")) {
+                    int randomSelectionSize = parameters.getInt("randomSelectionSize");
+                    if (randomSelectionSize == 0) randomSelectionSize = dataSets.size();
+                    if (dataSets.size() < randomSelectionSize) {
                         throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
-                                + "the number of data sets.");
+                                + "the number of data sets: " + randomSelectionSize + " > " + dataSets.size());
                     }
                     Collections.shuffle(dataSets);
 
                     List<DataModel> sub = new ArrayList<>();
-                    for (int j = 0; j < parameters.getInt("randomSelectionSize"); j++) {
+                    for (int j = 0; j < randomSelectionSize; j++) {
                         sub.add(dataSets.get(j));
                     }
 
@@ -283,6 +285,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     });
                 }
             } else {
+                if (getDataModelList().size() != 1) {
+                    throw new IllegalArgumentException("Expecting a single dataset here.");
+                }
+
                 if (algo != null) {
                     getDataModelList().forEach(data -> {
                         IKnowledge knowledgeFromData = data.getKnowledge();
@@ -431,7 +437,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        if (independenceTests != null && independenceTests.size() == 1) {
+        if (independenceTests == null) {
+            independenceTests = new ArrayList<>();
+        }
+
+        if (independenceTests.size() == 1) {
             return independenceTests.get(0);
         }
 
@@ -490,10 +500,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 // Grabbing this independence test for the independence tests interface. JR 2020.8.24
                 Score score = wrapper.getScore(null, parameters);
                 this.independenceTests.add(new IndTestScore(score));
-            } else {
-                throw new IllegalArgumentException("Expecting all independence-based, score-based, or dsep-based algorithms; " +
-                        "at least one was not.");
             }
+        }
+
+        if (independenceTests.isEmpty()) {
+            throw new IllegalArgumentException("One or more of the parents was a search that didn't use "
+                + "a test or a score.") ;
         }
 
         return independenceTests.get(0);

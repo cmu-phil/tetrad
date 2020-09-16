@@ -351,7 +351,7 @@ public class TestSimulatedFmri {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
-//    @Test
+    //    @Test
     public void testClark() {
 
         double f = .1;
@@ -394,8 +394,6 @@ public class TestSimulatedFmri {
 
 
                 Fask fask = new Fask(data, new IndTestFisherZ(data, 0.001));
-                fask.setPenaltyDiscount(penaltyDiscount);
-                fask.setAlpha(alpha);
                 Graph out = fask.search();
 
                 System.out.println(out);
@@ -434,8 +432,6 @@ public class TestSimulatedFmri {
                 DataSet data = im.simulateData(N, false);
 
                 Fask fask = new Fask(data, new IndTestFisherZ(data, 0.001));
-                fask.setPenaltyDiscount(penaltyDiscount);
-                fask.setAlpha(alpha);
                 Graph out = fask.search();
 
                 System.out.println(out);
@@ -445,7 +441,7 @@ public class TestSimulatedFmri {
     }
 
 
-//    @Test
+    //    @Test
     public void testClark2() {
 
         Node x = new ContinuousVariable("X");
@@ -481,8 +477,6 @@ public class TestSimulatedFmri {
         DataSet data = im.simulateData(1000, false);
 
         Fask fask = new Fask(data, new IndTestFisherZ(data, 0.001));
-        fask.setPenaltyDiscount(1);
-        fask.setAlpha(0.5);
         Graph out = fask.search();
 
         System.out.println(out);
@@ -492,6 +486,7 @@ public class TestSimulatedFmri {
         new TestSimulatedFmri().task(false);
     }
 }
+
 
 
 

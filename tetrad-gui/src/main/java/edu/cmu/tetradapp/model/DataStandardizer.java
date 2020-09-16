@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.util.List;
 
 /**
- * Converts a continuous data set to a correlation matrix.
+ * Standardizes all columns in a continuous data set.
  *
  * @author Joseph Ramsey
  */
@@ -58,6 +58,7 @@ public class DataStandardizer extends DataWrapper {
             List<Node> list = dataSet.getVariables();
 
             DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
+            dataSet2.setName(dataSet.getName());
             outList.add(dataSet2);
         }
 

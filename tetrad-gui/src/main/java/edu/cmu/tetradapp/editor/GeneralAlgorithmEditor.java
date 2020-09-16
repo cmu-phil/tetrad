@@ -547,12 +547,18 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                             showGraphCard();
                         } catch (Exception exception) {
                             exception.printStackTrace(System.err);
+
+                            JOptionPane.showMessageDialog(
+                                    (Window) getTopLevelAncestor(),
+                                    "Stopped with error:\n"
+                                            + exception.getMessage());
                         }
                     } else {
                         try {
                             doRemoteCompute(algorithmRunner, hpcAccount);
                         } catch (Exception exception) {
                             LOGGER.error("Unable to run algorithm.", exception);
+
                         }
                     }
 

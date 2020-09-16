@@ -149,7 +149,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
         parameters.addAll((new Fges()).getParameters());
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.NUM_RUNS);
+//        parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
 
         parameters.add(Params.VERBOSE);
