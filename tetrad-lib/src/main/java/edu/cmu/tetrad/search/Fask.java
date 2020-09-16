@@ -121,15 +121,15 @@ public final class Fask implements GraphSearch {
 
     // A theshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work
     // with the FASK left-right rule. Default is 0; a good value for finding a decent set of 2-cycles is 0.1.
-    private double orientationAlpha = 0;
+    private double twoCycleScreeningCutoff = 0;
 
     // At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then
     // tested statisstically to see if they are two-cycles, using this cutoff. To adjust this cutoff, set the
     // two cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
-    private double twoCycleTestingCutoff;
+    private double orientationCutoff;
 
     // The corresponding alpha.
-    private double twoCycleTestingAlpha;
+    private double orientationAlpha;
 
     // Bias for orienting with negative coefficients.
     private double delta;
@@ -171,8 +171,8 @@ public final class Fask implements GraphSearch {
         this.test = test;
 
         regressionDataset = new RegressionDataset(dataSet);
-        this.twoCycleTestingCutoff = StatUtils.getZForAlpha(0.01);
-        this.twoCycleTestingAlpha = 0.01;
+        this.orientationCutoff = StatUtils.getZForAlpha(0.01);
+        this.orientationAlpha = 0.01;
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -205,7 +205,8 @@ public final class Fask implements GraphSearch {
         TetradLogger.getInstance().forceLogMessage("# variables = " + dataSet.getNumColumns());
         TetradLogger.getInstance().forceLogMessage("N = " + dataSet.getNumRows());
         TetradLogger.getInstance().forceLogMessage("Skewness edge threshold = " + skewEdgeThreshold);
-        TetradLogger.getInstance().forceLogMessage("2-cycle threshold = " + orientationAlpha);
+        TetradLogger.getInstance().forceLogMessage("Orientation Alpha = " + orientationAlpha);
+        TetradLogger.getInstance().forceLogMessage("2-cycle threshold = " + twoCycleScreeningCutoff);
         TetradLogger.getInstance().forceLogMessage("");
 
         Graph G;
@@ -307,7 +308,7 @@ public final class Fask implements GraphSearch {
                             continue;
                         }
 
-                        if (orientationAlpha > 0 && abs(faskLeftRightV2(x, y)) < orientationAlpha) {
+                        if (twoCycleScreeningCutoff > 0 && abs(faskLeftRightV2(x, y)) < twoCycleScreeningCutoff) {
                             TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle Prescreen"
                                     + "\t" + nf.format(lr)
                                     + "\t" + X + "...TC?..." + Y
@@ -335,7 +336,7 @@ public final class Fask implements GraphSearch {
             }
         }
 
-        if (orientationAlpha > 0 && twoCycleTestingAlpha == 0) {
+        if (twoCycleScreeningCutoff > 0 && orientationAlpha == 0) {
             for (NodePair edge : twoCycles) {
                 Node X = edge.getFirst();
                 Node Y = edge.getSecond();
@@ -345,7 +346,7 @@ public final class Fask implements GraphSearch {
                 graph.addDirectedEdge(Y, X);
                 logTwoCycle(nf, variables, D, X, Y, "2-cycle Pre-screen");
             }
-        } else if (orientationAlpha == 0 && twoCycleTestingAlpha > 0) {
+        } else if (twoCycleScreeningCutoff == 0 && orientationAlpha > 0) {
             for (Edge edge : graph.getEdges()) {
                 Node X = edge.getNode1();
                 Node Y = edge.getNode2();
@@ -360,7 +361,7 @@ public final class Fask implements GraphSearch {
                     logTwoCycle(nf, variables, D, X, Y, "2-cycle Tested");
                 }
             }
-        } else if (orientationAlpha > 0 && twoCycleTestingAlpha > 0) {
+        } else if (twoCycleScreeningCutoff > 0 && orientationAlpha > 0) {
             for (NodePair edge : twoCycles) {
                 Node X = edge.getFirst();
                 Node Y = edge.getSecond();
@@ -503,17 +504,17 @@ public final class Fask implements GraphSearch {
         this.useFasAdjacencies = useFasAdjacencies;
     }
 
-    public void setOrientationAlpha(double orientationAlpha) {
-        if (orientationAlpha < 0)
+    public void setTwoCycleScreeningCutoff(double twoCycleScreeningCutoff) {
+        if (twoCycleScreeningCutoff < 0)
             throw new IllegalStateException("Two cycle screening threshold must be >= 0");
-        this.orientationAlpha = orientationAlpha;
+        this.twoCycleScreeningCutoff = twoCycleScreeningCutoff;
     }
 
-    public void setTwoCycleTestingAlpha(double twoCycleTestingAlpha) {
-        if (twoCycleTestingAlpha < 0 || twoCycleTestingAlpha > 1)
+    public void setOrientationAlpha(double orientationAlpha) {
+        if (orientationAlpha < 0 || orientationAlpha > 1)
             throw new IllegalArgumentException("Two cycle testing alpha should be in [0, 1].");
-        this.twoCycleTestingCutoff = StatUtils.getZForAlpha(twoCycleTestingAlpha);
-        this.twoCycleTestingAlpha = twoCycleTestingAlpha;
+        this.orientationCutoff = StatUtils.getZForAlpha(orientationAlpha);
+        this.orientationAlpha = orientationAlpha;
     }
 
     public void setLeftRight(LeftRight leftRight) {
@@ -761,8 +762,8 @@ public final class Fask implements GraphSearch {
             double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
             double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-            boolean rejected1 = abs(zv1) > twoCycleTestingCutoff;
-            boolean rejected2 = abs(zv2) > twoCycleTestingCutoff;
+            boolean rejected1 = abs(zv1) > orientationCutoff;
+            boolean rejected2 = abs(zv2) > orientationCutoff;
 
             boolean possibleTwoCycle = false;
 
@@ -803,7 +804,7 @@ public final class Fask implements GraphSearch {
 
         double zv = (z1 - z2) / sqrt((1.0 / ((double) nc1 - 3) + 1.0 / ((double) nc2 - 3)));
 
-        return !(abs(zv) > orientationAlpha);
+        return !(abs(zv) > twoCycleScreeningCutoff);
     }
 
     private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold) throws SingularMatrixException {

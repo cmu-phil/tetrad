@@ -65,6 +65,7 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
             search.setDepth(parameters.getInt(DEPTH));
             search.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
             search.setOrientationAlpha(parameters.getDouble(ORIENTATION_ALPHA));
+            search.setTwoCycleScreeningCutoff(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
             search.setDelta(parameters.getDouble(FASK_DELTA));
             search.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
 
