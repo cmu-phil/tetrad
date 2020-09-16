@@ -1138,6 +1138,39 @@ public final class GraphUtils {
     }
 
     /**
+     * Check to see if a set of variables Z satisfies the back-door criterion
+     * relative to node x and node y.
+     *
+     * @param graph
+     * @param x
+     * @param y
+     * @param z
+     * @return
+     * @author Kevin V. Bui (March 2020)
+     */
+    public boolean isSatisfyBackDoorCriterion(Graph graph, Node x, Node y, List<Node> z) {
+        Dag dag = new Dag(graph);
+
+        // make sure no nodes in z is a descendant of x
+        if (!z.stream().noneMatch(zNode -> dag.isDescendentOf(zNode, x))) {
+            return false;
+        }
+
+        // make sure zNodes bock every path between node x and node y that contains an arrow into node x
+        List<List<Node>> directedPaths = GraphUtils.allDirectedPathsFromTo(graph, x, y, -1);
+        directedPaths.forEach(nodes -> {
+            // remove all variables that are not on the back-door path
+            nodes.forEach(node -> {
+                if (!(node == x || node == y)) {
+                    dag.removeNode(node);
+                }
+            });
+        });
+
+        return dag.isDSeparatedFrom(x, y, z);
+    }
+
+    /**
      * Calculates the Markov blanket of a target in a DAG. This includes the
      * target, the parents of the target, the children of the target, the
      * parents of the children of the target, edges from parents to target,
