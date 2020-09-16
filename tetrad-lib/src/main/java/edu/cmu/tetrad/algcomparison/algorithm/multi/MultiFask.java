@@ -14,6 +14,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -132,7 +133,7 @@ public class MultiFask implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "MultiFASK";
+        return "IMaGES for continuous variables (using the SEM BIC score)";
     }
 
     @Override

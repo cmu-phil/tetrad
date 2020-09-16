@@ -47,6 +47,7 @@ public class StandardizeWrapper extends DataWrapper {
         DataSet dataSet = (DataSet) data.getDataModelList().get(0);
         TetradMatrix matrix2D = DataUtils.standardizeData(dataSet.getDoubleData());
         DataSet _dataSet = new BoxDataSet(new VerticalDoubleDataBox(matrix2D.transpose().toArray()), data.getVariables());
+        _dataSet.setName(dataSet.getName());
         setDataModel(_dataSet);
         setSourceGraph(data.getSourceGraph());
 

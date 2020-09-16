@@ -64,12 +64,21 @@ public final class Params {
     public static final String DISCRETIZE = "discretize";
     public static final String DO_COLLIDER_ORIENTATION = "doColliderOrientation";
     public static final String ERRORS_NORMAL = "errorsNormal";
-    public static final String EXTRA_EDGE_THRESHOLD = "extraEdgeThreshold";
+    public static final String SKEW_EDGE_THRESHOLD = "skewEdgeThreshold";
+    public static final String TWO_CYCLE_SCREENING_THRESHOLD = "twoCycleScreeningThreshold";
+    public static final String ACCEPTANCE_PROPORTION = "acceptanceProportion";
+    public static final String FASK_DELTA = "faskDelta";
+    public static final String FASK_LEFT_RIGHT_RULE = "faskLeftRightRule";
+    public static final String FASK_LINEARITY_ASSUMED = "faskAssumeLinearity";
+    public static final String FASK_ADJACENCY_METHOD = "faskAdjacencyMethod";
+    public static final String FASK_NONEMPIRICAL = "faskNonempirical";
     public static final String FAITHFULNESS_ASSUMED = "faithfulnessAssumed";
     public static final String FAS_RULE = "fasRule";
     public static final String FAST_ICA_A = "fastIcaA";
     public static final String FAST_ICA_MAX_ITER = "fastIcaMaxIter";
     public static final String FAST_ICA_TOLERANCE = "fastIcaTolerance";
+    public static final String FDR_Q = "fdrQ";
+    public static final String ORIENTATION_ALPHA = "orientationAlpha";
     public static final String FISHER_EPSILON = "fisherEpsilon";
     public static final String GENERAL_SEM_ERROR_TEMPLATE = "generalSemErrorTemplate";
     public static final String GENERAL_SEM_FUNCTION_TEMPLATE_LATENT = "generalSemFunctionTemplateLatent";
@@ -165,8 +174,10 @@ public final class Params {
     public static final String UPPER_BOUND = "upperBound";
     public static final String USE_CORR_DIFF_ADJACENCIES = "useCorrDiffAdjacencies";
     public static final String USE_FAS_ADJACENCIES = "useFasAdjacencies";
+    public static final String USE_FDR_FOR_INDEPENDENCE = "useFdrForIndependence";
     public static final String USE_GAP = "useGap";
     public static final String USE_MAX_P_ORIENTATION_HEURISTIC = "useMaxPOrientationHeuristic";
+    public static final String USE_SELLKE_ADJUSTMENT = "useSellkeAdjustment";
     public static final String USE_SKEW_ADJACENCIES = "useSkewAdjacencies";
     public static final String USE_WISHART = "useWishart";
     public static final String VAR_HIGH = "varHigh";
@@ -184,7 +195,7 @@ public final class Params {
             CONFLICT_RULE, CONNECTED, COV_HIGH, COV_LOW, COV_SYMMETRIC,
             CUTOFF_CONSTRAIN_SEARCH, CUTOFF_DATA_SEARCH, CUTOFF_IND_TEST,
             DATA_TYPE, DEPTH, DETERMINISM_THRESHOLD, DIFFERENT_GRAPHS, DISCRETIZE,
-            DO_COLLIDER_ORIENTATION, ERRORS_NORMAL, EXTRA_EDGE_THRESHOLD,
+            DO_COLLIDER_ORIENTATION, ERRORS_NORMAL, SKEW_EDGE_THRESHOLD,
             FAITHFULNESS_ASSUMED, FAS_RULE, FISHER_EPSILON, GENERAL_SEM_ERROR_TEMPLATE,
             GENERAL_SEM_FUNCTION_TEMPLATE_LATENT, GENERAL_SEM_FUNCTION_TEMPLATE_MEASURED,
             GENERAL_SEM_PARAMETER_TEMPLATE, IA, INCLUDE_NEGATIVE_COEFS,
@@ -234,14 +245,14 @@ public final class Params {
     public static Set<String> getTestParameters(Algorithm algorithm) {
         return (algorithm instanceof TakesIndependenceWrapper)
                 ? ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getParameters()
-                        .stream().collect(Collectors.toSet())
+                .stream().collect(Collectors.toSet())
                 : Collections.emptySet();
     }
 
     public static Set<String> getScoreParameters(Algorithm algorithm) {
         return (algorithm instanceof UsesScoreWrapper)
                 ? ((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters()
-                        .stream().collect(Collectors.toSet())
+                .stream().collect(Collectors.toSet())
                 : Collections.emptySet();
     }
 

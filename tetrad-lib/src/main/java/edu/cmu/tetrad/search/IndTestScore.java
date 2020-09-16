@@ -135,6 +135,10 @@ public class IndTestScore implements IndependenceTest {
         return bump;
     }
 
+    public double getPValue(Node x, Node y, List<Node> z) {
+        return getPValue();
+    }
+
     /**
      * @return the list of variables over which this independence checker is capable of determinining independence
      * relations.
