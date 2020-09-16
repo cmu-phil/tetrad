@@ -2851,6 +2851,16 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             of 0.3. If so, the adjacency  is added to the graph and oriented using the aforementioned rules.
         </p>
 
+        <p>
+            We include pairwise orientation rules RSkew, Skew, and Tanh from Hyvärinen, A., & Smith, S. M.
+            (2013). Pairwise likelihood ratios for estimation of non-Gaussian structural equation models. Journal
+            of Machine Learning Research, 14(Jan), 111-152, so in some configurations FASK can be made to implement
+            an algorithm that has been called in the literature "Pairwise LiNGAM"--this is intentional; we do this
+            for ease of comparison. You'll get this configuration if you choose one of the above pairwise orientation
+            rules, together with FAS, with orientation alpha and two-cycle threshold set to zero and skewness
+            threshold set to 1, for instance.
+        </p>
+
         <p>See Sanchez-Romero R, Ramsey JD, Zhang K, Glymour MR, Huang B, Glymour C. Causal discovery of feedback
             networks with functional magnetic resonance imaging. <em>Network Neuroscience</em> 2018.</p>
     </div>
