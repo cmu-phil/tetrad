@@ -19,7 +19,7 @@
 
     <div class="header">
         <h1>Tetrad Manual</h1>
-        <p>Last updated: June 11th, 2019</p>
+        <p>Last updated: May, 11 2020</p>
     </div>
 
     <!-- Table of Contents, give each section a unique id -->
@@ -383,22 +383,17 @@
         is selected as the reference), and each comparison will be housed in its own tab, located on the left side of
         the window.</p>
 
-    <h2>Tabular Graph Comparisons</h2>
+    <h2>Stats List Graph Comparisons</h2>
 
-    <p>A tabular graph comparison tallies up and presents counts of the differences and similarities between a true
+    <p>A stats list graph comparison tallies up and presents statistics for the differences and similarities between a true
         graph and a reference graph. Consider the example used in the above section; once again, we’ll let graph one be
         the true graph. Just as above, when the graphs are input to the tabular graph compare box, we must specify which
         of the graphs is the reference graph, and whether it contains latent variables. When the comparison is complete,
         the following window results:</p>
 
-    <img src="images/compare_box_11.png" alt="" width="650">
+    <img src="images/compare_box_4.png" alt="" width="650">
 
-
-    <p>The first column lists the “adjacency precision”—the percentage of edges in target graph that are in the true graph. The second column is the “adjacency recall”—the percentage of edges in the true graph that are in the target graph. The third and fourth columns are arrowhead precision and recall. The fifth and sixth columns are two-cycle (a.k.a. direct feedback cycle) precision and recall, for graphs where that is applicable. The final column is the total number of two-cycle false positives in the target graph.</p>
-
-    <p>If one of the parent boxes contains multiple graphs, each graph will be compared separately to the reference
-        graph (or the estimated graph will be compared separately to each reference graph, depending on which parent box
-        is selected as the reference), and the results listed in a separate row of the table.</p>
+    <p>The first columns gives an abbreviation for the statistic; the second columns gives a definition of the statistic. The third columns gives the statistic value. </p>
 
     <h2>Misclassifications</h2>
 
@@ -1437,10 +1432,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         tests and singularities. Annals of Statistics 37(2):979-1012. arXiv:math.ST/0703360. </p>
 
     <p>When the EM algorithm is used with latent variable models, we recommend multiple random restarts. The number of
-        restarts can be set in the lower right hand corner of the Estimator Box. The figure on the left shows the EM
-        results for a SEM model with 1 restart. The figure on the right shows the EM results with 20 restarts. The
-        results are very different. The estimates with 20 restarts are much closer to the true values. 100 restarts
-        gives estimates that are within .1 of the first decimal and .2 of the second decimal.</p>
+        restarts can be set in the lower right hand corner of the Estimator Box.
+
+        <!-- The figure on the left shows the EM
+         results for a SEM model with 1 restart. The figure on the right shows the EM results with 20 restarts. The
+         results are very different. The estimates with 20 restarts are much closer to the true values. 100 restarts
+         gives estimates that are within .1 of the first decimal and .2 of the second decimal.-->
+    </p>
 
     <img src="images/estimator_box_3.png" alt="" width="650">
 
@@ -2871,11 +2869,9 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h4>Description</h4>
 
     <div id="multi-fask">
-        <p>Multi-FASK is a metascript that learns a model from a list of datasets in a method similar to
-            IMaGES (see). For adjacencies, it uses FAS-Stable with the voting-based score from IMaGES used as
-            a test (using all of the datasets, standardized), producing a single undirected graph G. It then
-            orients each edge X--Y in G for each dataset using the FASK (see) left-right rule and orient X->Y if
-            that rule orients X--Y as such in at least half of the datasets. The final graph is returned.
+        <p>Multi-FASK is a metascript that learns a model from a list of datasets. It then orients each
+            edge X->Y in the final graph if the number of datasets for which either the FASK rule or the 2-cycle
+            rule orients X->Y is counted to be more than half. The final graph is returned.
         </p>
 
         <p>For FASK, See Sanchez-Romero R, Ramsey JD, Zhang K, Glymour MR, Huang B, Glymour C. Causal discovery
@@ -2889,6 +2885,19 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h4>Output Format</h4>
 
     <p>Same as FASK.</p>
+
+    <h4>Parameters</h4>
+
+    <p>
+        <a href="#depth">depth</a>
+        <a href="#structurePrior">structurePrior</a>
+        <a href="#twoCycleScreeningThreshold">twoCycleScreeningThreshold</a>
+        <a href="#twoCycleTestingAlpha">twoCycleTestingAlpha</a>
+        <a href="#penaltyDiscount">penaltyDiscount</a>
+        <a href="#randomSelectionSize">randomSelectionSize</a>
+        <a href="#structurePrior">structurePrior</a>
+    </p>
+
 
     <h3>Orientation Algorithms (R3, RSkew, Skew)</h3>
 
@@ -2957,9 +2966,9 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>BDeu Test</h3>
 
     <div id="bdeu-test">
-    <p>
-        This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243, used as a test. This gives a score for any two variables conditioned on any list of others which is more positive for distributions which are more strongly dependent. The test for X _||_ Y | Z compares two different models, X conditional on Y, and X conditional on Y and Z; the scores for the two models are subtracted, in that order. If the difference is negative, independence is inferred.
-    </p>
+        <p>
+            This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243, used as a test. This gives a score for any two variables conditioned on any list of others which is more positive for distributions which are more strongly dependent. The test for X _||_ Y | Z compares two different models, X conditional on Y, and X conditional on Y and Z; the scores for the two models are subtracted, in that order. If the difference is negative, independence is inferred.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -2969,9 +2978,9 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Fisher Z Test</h3>
 
     <div id="fisher-z-test">
-    <p>
-    Fisher Z judges independence if the conditional correlation is zero. Primarily for the linear, Gaussian case.
-    </p>
+        <p>
+            Fisher Z judges independence if the conditional correlation is zero. Primarily for the linear, Gaussian case.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -2981,17 +2990,17 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Conditional Correlation Independence (CCI) Test</h3>
 
     <div id="cci-test">
-    <p>CCI ("Conditional Correlation Independence") is a fairly general independence test—not completely general, but
-        general for additive noise models—that is,
-        model in which each variable is equal to a (possibly nonlinear) function of its parents, plus additive noise,
-        where the noise may be arbitrarily distributed.
-        That is, X = f(parent(X)) + E, where f is any function and E is noise however distributed; the only requirement
-        is that there be the “+” in the formula separating the function from the noise.
-        The noise can’t for instance, be multiplicative, e.g., X = f(parent(X)) x E.
-        The goal of the method is to estimate whether X is independent of Y given variables Z, for some X, Y, and Z.
-        It works by calculating the residual of X given Z and the residual of Y given Z and looking to see whether those
-        two residuals are independent.
-        This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+        <p>CCI ("Conditional Correlation Independence") is a fairly general independence test—not completely general, but
+            general for additive noise models—that is,
+            model in which each variable is equal to a (possibly nonlinear) function of its parents, plus additive noise,
+            where the noise may be arbitrarily distributed.
+            That is, X = f(parent(X)) + E, where f is any function and E is noise however distributed; the only requirement
+            is that there be the “+” in the formula separating the function from the noise.
+            The noise can’t for instance, be multiplicative, e.g., X = f(parent(X)) x E.
+            The goal of the method is to estimate whether X is independent of Y given variables Z, for some X, Y, and Z.
+            It works by calculating the residual of X given Z and the residual of Y given Z and looking to see whether those
+            two residuals are independent.
+            This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
     </div>
 
     <h4>Parameters</h4>
@@ -3001,9 +3010,9 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Chi Square Test</h3>
 
     <div id="chi-square-test">
-    <p>
-    This is the usual Chi-Square test for discrete variables; consult an introductory statistics book for details for the unconditional case, where you're just trying, e.g., to determine if X and Y are independent. For the conditional case, the test proceeds as in Fienberg, S. E. (2007). <i>The analysis of cross-classified categorical data</i>. Springer Science & Business Media, by identifying and removing from consideration zero rows or columns in the conditional tables and judging dependence based on the remaining rows and columns.
-    </p>
+        <p>
+            This is the usual Chi-Square test for discrete variables; consult an introductory statistics book for details for the unconditional case, where you're just trying, e.g., to determine if X and Y are independent. For the conditional case, the test proceeds as in Fienberg, S. E. (2007). <i>The analysis of cross-classified categorical data</i>. Springer Science & Business Media, by identifying and removing from consideration zero rows or columns in the conditional tables and judging dependence based on the remaining rows and columns.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -3013,25 +3022,25 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>D-Separation Test</h3>
 
     <div id="d-sep-test">
-    <p>
-    This is the usual test of d-separation, a property of graphs, not distributions. It's not really a test, but it can be used in place of a test of the true graph is known. This is a way to find out, for constraint-based algorithms, or even for some score-based algorithms like FGES, what answer the algorithm would give if all of the statistical decisions made are correct. Just draw an edge from the true graph to the algorithm--the d-separation option will appear, and you can then just run the search as usual.
-    </p>
+        <p>
+            This is the usual test of d-separation, a property of graphs, not distributions. It's not really a test, but it can be used in place of a test of the true graph is known. This is a way to find out, for constraint-based algorithms, or even for some score-based algorithms like FGES, what answer the algorithm would give if all of the statistical decisions made are correct. Just draw an edge from the true graph to the algorithm--the d-separation option will appear, and you can then just run the search as usual.
+        </p>
     </div>
 
     <h3>Discrete BIC Test</h3>
 
     <div id="disc-bic-test">
-    <p>
-    This is just the BIC score for the discrete case, used as a test. The likelihood is judged by the multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will be penalized.  The test yields a p-value; we simply use alpha - p as the score, where alpha is the cutoff for rejecting the null hypothesis of independence. This is a number that is positive for dependent cases and negative for independent cases.
-    </p>
+        <p>
+            This is just the BIC score for the discrete case, used as a test. The likelihood is judged by the multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will be penalized.  The test yields a p-value; we simply use alpha - p as the score, where alpha is the cutoff for rejecting the null hypothesis of independence. This is a number that is positive for dependent cases and negative for independent cases.
+        </p>
     </div>
 
     <h3>G Square Test</h3>
 
     <div id="g-square-test">
-    <p>
-        This is completely parallel to the Chi-Square statistic, using a slightly different method for estimating the statistic. The alternative statistic is still distributed as chi-square in the limit. In practice, this statistic is more or less indistinguishable in most cases from Chi-Square. For an explanation, see Spirtes, P., Glymour, C. N., Scheines, R., Heckerman, D., Meek, C., Cooper, G., & Richardson, T. (2000). <i>Causation, prediction, and search</i>. MIT press.
-    </p>
+        <p>
+            This is completely parallel to the Chi-Square statistic, using a slightly different method for estimating the statistic. The alternative statistic is still distributed as chi-square in the limit. In practice, this statistic is more or less indistinguishable in most cases from Chi-Square. For an explanation, see Spirtes, P., Glymour, C. N., Scheines, R., Heckerman, D., Meek, C., Cooper, G., & Richardson, T. (2000). <i>Causation, prediction, and search</i>. MIT press.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -3041,16 +3050,16 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Kernel Conditional Independence (KCI) Test</h3>
 
     <div id="kci-test">
-    <p>KCI ("Kernel Conditional Independence") is a general independence test for model in which X = f(parents(X), eY);
-        here, eY does not need to be additive; it can stand in any functional relationships to the other variables. The
-        variables may even be discrete.
-        The goal of the method is to estimate whether X is independent of Y given Z, completely generally.
-        It uses the kernel trick to estimate this.
-        As a result of using the kernel trick, the method is complex in the direction of sample size, meaning that it
-        may be very slow for large samples.
-        Since it’s slow, individual independence results are always printed to the console so the user knows how far a
-        procedure has gotten.
-        This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
+        <p>KCI ("Kernel Conditional Independence") is a general independence test for model in which X = f(parents(X), eY);
+            here, eY does not need to be additive; it can stand in any functional relationships to the other variables. The
+            variables may even be discrete.
+            The goal of the method is to estimate whether X is independent of Y given Z, completely generally.
+            It uses the kernel trick to estimate this.
+            As a result of using the kernel trick, the method is complex in the direction of sample size, meaning that it
+            may be very slow for large samples.
+            Since it’s slow, individual independence results are always printed to the console so the user knows how far a
+            procedure has gotten.
+            This test may be used with any constraint-based algorithm (PC, FCI, etc.)</p>
     </div>
 
     <h4>Parameters</h4>
@@ -3060,12 +3069,12 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Conditional Gaussian Likelihood Ratio Test</h3>
 
     <div id="cg-lr-test">
-    <p>Conditional Gaussian Test is a likelihood ratio test based on the conditional Gaussian likelihood function.
-        This is intended for use with datasets where there is a mixture of continuous and discrete variables.
-        It is assumed that the continuous variables are Gaussian conditional on each combination of values for the
-        discrete variables,
-        though it will work fairly well even if that assumption does not hold strictly. This test may be used with any
-        constraint-based algorithm (PC, FCI, etc.)</p>
+        <p>Conditional Gaussian Test is a likelihood ratio test based on the conditional Gaussian likelihood function.
+            This is intended for use with datasets where there is a mixture of continuous and discrete variables.
+            It is assumed that the continuous variables are Gaussian conditional on each combination of values for the
+            discrete variables,
+            though it will work fairly well even if that assumption does not hold strictly. This test may be used with any
+            constraint-based algorithm (PC, FCI, etc.)</p>
     </div>
 
     <h4>Parameters</h4>
@@ -3086,9 +3095,9 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>BDeu Score</h3>
 
     <div id="bdeu-score">
-    <p>
-    This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243. This gives a score for any two variables conditioned on any list of others which is more positive for distributions which are more strongly dependent.
-    </p>
+        <p>
+            This is the BDeu score given in Heckerman, D., Geiger, D., & Chickering, D. M. (1995). Learning Bayesian networks: The combination of knowledge and statistical data. <i>Machine learning, 20</i>(3), 197-243. This gives a score for any two variables conditioned on any list of others which is more positive for distributions which are more strongly dependent.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -3098,7 +3107,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Conditional Gaussian BIC Score</h3>
 
     <div id="cg-bic-score">
-    <p>Conditional Gaussian BIC Score may be used for the case where there is a mixture of discrete and Gaussian variables. Calculates a BIC score based on likelihood that is calculated using a conditional Gaussian assumption.</p>
+        <p>Conditional Gaussian BIC Score may be used for the case where there is a mixture of discrete and Gaussian variables. Calculates a BIC score based on likelihood that is calculated using a conditional Gaussian assumption.</p>
     </div>
 
     <h4>Parameters</h4>
@@ -3108,7 +3117,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>Conditional Correlation Independence (CCI) Score</h3>
 
     <div id="cci-score">
-    <p>Conditional Correlation Score returns 1 - p-value for the Conditional correlation test. May be used as a score for the nonlinear case, assuming additivity.</p>
+        <p>Conditional Correlation Score returns 1 - p-value for the Conditional correlation test. May be used as a score for the nonlinear case, assuming additivity.</p>
     </div>
 
     <h4>Parameters</h4>
@@ -3118,25 +3127,25 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h3>D-separation Score</h3>
 
     <div id="d-sep-score">
-    <p>
-    This uses d-separation to make something that acts as a score if you know the true graph. A score in Tetrad, for FGES, say, is a function that for X and Y conditional on Z, returns a negative number if X _||_ Y | Z and a positive number otherwise. So to get this behavior in no u certain terms, we simply return -1 for independent cases and +1 for dependent cases. Works like a charm. This can be used for FGES to check what the ideal behavior of the algorithm should be. Simply draw an edge from the true graph to the search box, select FGES, and search as usual.
-    </p>
+        <p>
+            This uses d-separation to make something that acts as a score if you know the true graph. A score in Tetrad, for FGES, say, is a function that for X and Y conditional on Z, returns a negative number if X _||_ Y | Z and a positive number otherwise. So to get this behavior in no u certain terms, we simply return -1 for independent cases and +1 for dependent cases. Works like a charm. This can be used for FGES to check what the ideal behavior of the algorithm should be. Simply draw an edge from the true graph to the search box, select FGES, and search as usual.
+        </p>
     </div>
 
     <h3>Discrete BIC Score</h3>
 
     <div id="disc-bic-score">
-    <p>
-    This is just the BIC score for the discrete case. The likelihood is judged by the multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will be penalized.
-    </p>
+        <p>
+            This is just the BIC score for the discrete case. The likelihood is judged by the multinomial tables directly, and this is penalized as is usual for a BIC score. The only surprising thing perhaps is that we use the formula BIC = 2L - k ln N, where L is the likelihood, k the number of parameters, and N the sample size, instead of the usual L + k / 2 ln N. So higher BIC scores will correspond to greater dependence. In the case of independence, the BIC score will be negative, since the likelihood will be zero, and this will be penalized.
+        </p>
     </div>
 
     <h3>SEM BIC Score</h3>
 
     <div id="sem-bic-score">
-    <p>
-    This is specifically a BIC score for the linear, Gaussian case, where we include an additional penalty term, which is commonly used. We call this the <i>penalty discount</i>. So our formulas has BIC = 2L - ck log N, where L is the likelihood, c the penalty discount (usually greater than or equal to 1), and N the sample size. Since the assumption is that the data are distributed as Gaussian, this reduces to BIC = -n log sigma - ck ln N, where sigma is the standard deviation of the linear residual obtained by regressing a child variable onto all of its parents in the model.
-    </p>
+        <p>
+            This is specifically a BIC score for the linear, Gaussian case, where we include an additional penalty term, which is commonly used. We call this the <i>penalty discount</i>. So our formulas has BIC = 2L - ck log N, where L is the likelihood, c the penalty discount (usually greater than or equal to 1), and N the sample size. Since the assumption is that the data are distributed as Gaussian, this reduces to BIC = -n log sigma - ck ln N, where sigma is the standard deviation of the linear residual obtained by regressing a child variable onto all of its parents in the model.
+        </p>
     </div>
 
     <h4>Parameters</h4>
@@ -3478,16 +3487,112 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="errorsNormal_value_type">Boolean</span></li>
         </ul>
 
-        <h3 id="extraEdgeThreshold" class="parameter_description">extraEdgeThreshold</h3>
+        <h3 id="skewEdgeThreshold" class="parameter_description">skewEdgeThreshold</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="extraEdgeThreshold_short_desc">Threshold for including extra edges</span>
+            <li>Short Description: <span id="skewEdgeThreshold_short_desc">Threshold for including edges detectable by skewness</span>
             </li>
-            <li>Long Description: <span id="extraEdgeThreshold_long_desc">For FASK, this includes an adjacency X—Y in the model if |corr(X, Y | X > 0) – corr(X, Y | Y > 0)| > delta, where delta is this number. The default is 0.3. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
+            <li>Long Description: <span id="skewEdgeThreshold_long_desc">For FASK, this includes an adjacency X—Y in the model if |corr(X, Y | X > 0) – corr(X, Y | Y > 0)| exceeds some threshold. The default for this threshold is 0.3. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
             </li>
-            <li>Default Value: <span id="extraEdgeThreshold_default_value">0.3</span></li>
-            <li>Lower Bound: <span id="extraEdgeThreshold_lower_bound">0.0</span></li>
-            <li>Upper Bound: <span id="extraEdgeThreshold_upper_bound">Infinity</span></li>
-            <li>Value Type: <span id="extraEdgeThreshold_value_type">Double</span></li>
+            <li>Default Value: <span id="skewEdgeThreshold_default_value">0.3</span></li>
+            <li>Lower Bound: <span id="skewEdgeThreshold_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="skewEdgeThreshold_upper_bound">Infinity</span></li>
+            <li>Value Type: <span id="skewEdgeThreshold_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="twoCycleScreeningThreshold" class="parameter_description">twoCycleScreeningThreshold</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="twoCycleScreeningThreshold_short_desc">Upper bound for |left-right| to count as 2-cycle. (Set to zero to turn off pre-screening.)</span>
+            </li>
+            <li>Long Description: <span id="twoCycleScreeningThreshold_long_desc">2-cycles are screened by looking to see if the left-right rule returns a difference smaller than this threshold. To turn off the screening, set this to zero.</span>
+            </li>
+            <li>Default Value: <span id="twoCycleScreeningThreshold_default_value">0.0</span></li>
+            <li>Lower Bound: <span id="twoCycleScreeningThreshold_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="twoCycleScreeningThreshold_upper_bound">Infinity</span></li>
+            <li>Value Type: <span id="twoCycleScreeningThreshold_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="orientationAlpha" class="parameter_description">orientationAlpha</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="orientationAlpha_short_desc">Alpha threshold used for orientation (where necessary). (Set to zero to turn use of alpha.)</span>
+            </li>
+            <li>Long Description: <span id="orientationAlpha_long_desc">Used for orienting 2-cycles and testing for zero edges.</span>
+            </li>
+            <li>Default Value: <span id="orientationAlpha_default_value">0.0</span></li>
+            <li>Lower Bound: <span id="orientationAlpha_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="orientationAlpha_upper_bound">1.0</span></li>
+            <li>Value Type: <span id="orientationAlpha_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="faskDelta" class="parameter_description">faskDelta</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskDelta_short_desc">For FASK v1 and v2, the bias for orienting with negative coefficients (Set to zero for no bias.)</span>
+            </li>
+            <li>Long Description: <span id="faskDelta_long_desc">The bias procedure for v1 is given in the published description.</span>
+            </li>
+            <li>Default Value: <span id="faskDelta_default_value">0.0</span></li>
+            <li>Lower Bound: <span id="faskDelta_lower_bound">-Infinity</span></li>
+            <li>Upper Bound: <span id="faskDelta_upper_bound">Infinity</span></li>
+            <li>Value Type: <span id="faskDelta_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="faskLeftRightRule" class="parameter_description">faskLeftRightRule</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskLeftRightRule_short_desc">The left right rule: 1 = FASK v1, 2 = FASK v2, 3 = RSkew, 4 = Skew, 5 = Tanh</span>
+            </li>
+            <li>Long Description: <span id="faskLeftRightRule_long_desc">The FASK left right rule v2 is default, but two other (related) left-right rules are given for relation to the literature, and the v1 FASK rule is included for backward compatibility.</span>
+            </li>
+            <li>Default Value: <span id="faskLeftRightRule_default_value">2</span></li>
+            <li>Lower Bound: <span id="faskLeftRightRule_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="faskLeftRightRule_upper_bound">5</span></li>
+            <li>Value Type: <span id="faskLeftRightRule_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="faskAssumeLinearity" class="parameter_description">faskAssumeLinearity</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskAssumeLinearity_short_desc">Linearity assumed</span>
+            </li>
+            <li>Long Description: <span id="faskAssumeLinearity_long_desc">True if a linear, non-Gaussian, additive model is assume; false if a nonlinear, non-Gaussian, additive model is assumed.</span>
+            </li>
+            <li>Default Value: <span id="faskAssumeLinearity_default_value">true</span></li>
+            <li>Lower Bound: <span id="faskAssumeLinearity_lower_bound"></span></li>
+            <li>Upper Bound: <span id="faskAssumeLinearity_upper_bound"></span></li>
+            <li>Value Type: <span id="faskAssumeLinearity_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="faskNonempirical" class="parameter_description">faskNonempirical</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskNonempirical_short_desc">Variables should be assumed to have positive skewness</span>
+            </li>
+            <li>Long Description: <span id="faskNonempirical_long_desc">If false (default), each variable is multiplied by the sign of its skewness in the left-right rule.</span>
+            </li>
+            <li>Default Value: <span id="faskNonempirical_default_value">false</span></li>
+            <li>Lower Bound: <span id="faskNonempirical_lower_bound"></span></li>
+            <li>Upper Bound: <span id="faskNonempirical_upper_bound"></span></li>
+            <li>Value Type: <span id="faskNonempirical_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="acceptanceProportion" class="parameter_description">acceptanceProportion</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="acceptanceProportion_short_desc">Acceptance Proportion</span>
+            </li>
+            <li>Long Description: <span id="acceptanceProportion_long_desc">An edge occurring in this proportion of individual FASK graphs will appear in the final graph.</span>
+            </li>
+            <li>Default Value: <span id="acceptanceProportion_default_value">0.5</span></li>,.
+            <li>Lower Bound: <span id="acceptanceProportion_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="acceptanceProportion_upper_bound">1.0</span></li>
+            <li>Value Type: <span id="acceptanceProportion_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="faskAdjacencyMethod" class="parameter_description">faskAdjacencyMethod</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskAdjacencyMethod_short_desc">Adjacency Method: 1 = FAS Stable, 2 = FAS Stable Concurrent, 3 = FGES, 4 = External Graph</span>
+            </li>
+            <li>Long Description: <span id="faskAdjacencyMethod_long_desc">This is  the method FASK will use to find adjacencies. For 4 = External graph, an external graph must be supplied.</span>
+            </li>
+            <li>Default Value: <span id="faskAdjacencyMethod_default_value">1</span></li>
+            <li>Lower Bound: <span id="faskAdjacencyMethod_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="faskAdjacencyMethod_upper_bound">4</span></li>
+            <li>Value Type: <span id="faskAdjacencyMethod_value_type">Integer</span></li>
         </ul>
 
         <h3 id="faithfulnessAssumed" class="parameter_description">faithfulnessAssumed</h3>
@@ -4378,11 +4483,11 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="randomSelectionSize" class="parameter_description">randomSelectionSize</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="randomSelectionSize_short_desc">The number of datasets that should be taken in each random sample</span>
+            <li>Short Description: <span id="randomSelectionSize_short_desc">The number of datasets that should be taken in each random sample (0 = all)</span>
             </li>
             <li>Long Description: <span id="randomSelectionSize_long_desc">This parameter is for algorithms that take multiple datasets as input, such as IMaGES. The idea is that maybe you have 100 dataset but want to take a random sample of 5 such datasets. This parameter, in this example, is ‘5’. It is the number of dataset that should be taken in each random sample of datasets.</span>
             </li>
-            <li>Default Value: <span id="randomSelectionSize_default_value">1</span></li>
+            <li>Default Value: <span id="randomSelectionSize_default_value">0</span></li>
             <li>Lower Bound: <span id="randomSelectionSize_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span id="randomSelectionSize_upper_bound">2147483647</span></li>
             <li>Value Type: <span id="randomSelectionSize_value_type">Integer</span></li>
@@ -4927,7 +5032,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         <tbody>
 
         <tr>
-            <td>A --> B</td>
+            <td width="10%">A --> B</td>
             <td>A is a cause of B. It may be a direct or indirect cause that may include other measured variables. Also,
                 there may be an unmeasured confounder of A and B.
             </td>
@@ -4954,37 +5059,74 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         </tr>
 
         </tbody>
-
-
-        <tr>Table A1 is sufficient to understand the basic meaning of edge types in PAGs. Nonetheless, it can be helpful
-            to know the following additional perspective on the information encoded by PAGs. Each edge has two
-            endpoints, one on the A side, and one on the B side. For example A --> B has a tail at the A end, and an
-            arrowhead at the B end. Altogether, there are three kinds of edge endpoints: a tail "–", an arrowhead ">",
-            and a "o." Note that some kinds of combinations of endpoints never occur; for example, A o– B never occurs.
-            As a mnemonic device, the basic meaning of each kind of edge can be derived from three simple rules that
-            explain what the meaning of each kind of endpoint is. A tail "–" at the A end of an edge between A and B
-            means "A is a cause of B"; an arrowhead ">" at the A end of an edge between A and B means "A is not a cause
-            of B"; and a circle "o" at the A end of an edge between A and B means "can't tell whether or not A is a
-            cause of B". For example A --> B means that A is a cause of B, and that B is not a cause of A in all of the
-            CBNs represented by the PAG.
-        </tr>
-        <tr>The PAG in Figure 2 shows examples of each type of edge, and the CBNs Figure 1. show some examples of what
-            kinds of CBNs can be represented by that PAG.
-        </tr>
-
-        <tr>Figure 1. Two CBNs that FCI (as well as FCI+, GFCI, and RFCI) cannot distinguish.</tr>
-
-        <tr>Figure 2. The PAG that represents the CBN s in both Figures 1a and 1b.</tr>
-
-
     </table>
+
+
+    <p>Table A1 is sufficient to understand the basic meaning of edge types in PAGs. Nonetheless, it can be helpful
+        to know the following additional perspective on the information encoded by PAGs. Each edge has two
+        endpoints, one on the A side, and one on the B side. For example A --> B has a tail at the A end, and an
+        arrowhead at the B end. Altogether, there are three kinds of edge endpoints: a tail "–", an arrowhead ">",
+        and a "o." Note that some kinds of combinations of endpoints never occur; for example, A o– B never occurs.
+        As a mnemonic device, the basic meaning of each kind of edge can be derived from three simple rules that
+        explain what the meaning of each kind of endpoint is. A tail "–" at the A end of an edge between A and B
+        means "A is a cause of B"; an arrowhead ">" at the A end of an edge between A and B means "A is not a cause
+        of B"; and a circle "o" at the A end of an edge between A and B means "can't tell whether or not A is a
+        cause of B". For example A --> B means that A is a cause of B, and that B is not a cause of A in all of the
+        CBNs represented by the PAG.
+    </p>
+    <p>The PAG in Figure 2 shows examples of each type of edge, and the CBNs.  Figure 1. show some examples of what
+        kinds of CBNs can be represented by that PAG.
+    </p>
+
+    <img src="images/appendix_figure_1a.png" alt="" width="360">
+    <img src="images/appendix_figure_1b.png" alt="" width="360">
+    <p>Figure 1. Two CBNs that FCI (as well as FCI+, GFCI, and RFCI) cannot distinguish.</p>
+
+    <img src="images/appendix_figure_2.png" alt="" width="360">
+    <p>Figure 2. The PAG that represents the CBN s in both Figures 1a and 1b.</p>
+
+
+    <h2>Arc Specializations in PAGs</h2>
+
+    <p>This section describes two types of arc specializations that provide additional information about the nature of
+        an arc in a PAG.</p>
+
+    <p>One arc specialization is colored <span style="color:green">green</span> and is called <span
+            style="font-style: italic; ">definitely visible</span>. In a PAG P without selection bias, a
+        green (definitely visible) arc from A to B denotes that A and B do not have a latent confounder. If an arc is
+        not definitely visible (represented as black) then A and B may have a latent confounder.</p>
+
+    <p>Another arc specialization is shown as <span style="font-weight: bold; ">bold</span> and is called <span
+            style="font-style: italic; ">definitely direct</span>. In a PAG P without selection bias, a
+        bold (definitely direct) arc from A to B denotes that A is a direct cause of B, relative to the other measured
+        variables. If an arc is not definitely direct (represented as not bolded) then A may not be a direct cause of B,
+        in which case there may be one or more measured variables on every causal path from A to B.</p>
+
+
+    <p>In the following examples, the DAG representing a causal process is on the left, and the corresponding PAG is on the right. All variables are observed except for latent variable L.</p>
+
+    <p>Example of an edge C <span style="color:green; font-weight: bold;">➔</span> D that is definitely visible (green) and definitely direct (bold):</p>
+
+    <img src="images/arc_specialization_1.png" alt="" width="360">
+
+    <p>Example of an edge (C <span style="color:green; ">➔</span> E) that is definitely visible (green) and not definitely direct (not bold):</p>
+
+    <img src="images/arc_specialization_2.png" alt="" width="360">
+
+    <p>Example of an edge (F ➔ E) that is not definitely visible (black) and not definitely direct (not bold):</p>
+
+    <img src="images/arc_specialization_3.png" alt="" width="360">
+
+    <p>It is conjectured that it is not possible for an edge to be definitely direct (bold) and not definitely visible (black).</p>
+
 
     <h2>Solving Out of Memory Errors</h2>
     <p>By default Java will allocate the smaller of 1/4 system memory or 1GB to the Java virtual machine (JVM). If you
         run out of memory (heap memory space) running your analyses you should increase the memory allocated to the JVM
         with the following switch '-XmxXXG' where XX is the number of gigabytes of ram you allow the JVM to utilize. Do
         run Tetrad with more memory you need to start it from the command line or terminal. For example to allocate 8
-        gigabytes of ram you would add -Xmx8G immediately after the java command e.g., java -Xmx8G -jar tetrad-gui.jar.</p>
+        gigabytes of ram you would add -Xmx8G immediately after the java command e.g., java -Xmx8G -jar
+        tetrad-gui.jar.</p>
 
     <h2>Glossary of Terms</h2>
 

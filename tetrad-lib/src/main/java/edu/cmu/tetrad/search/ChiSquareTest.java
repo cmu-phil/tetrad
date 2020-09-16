@@ -25,35 +25,32 @@ import edu.cmu.tetrad.data.CellTable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.util.CombinationIterator;
-import edu.cmu.tetrad.util.ProbUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Calculates marginal chi square test results for a discrete dataset.
  *
  * @author Frank Wimberly original version
- * @author Joseph Ramsey revision 10/01
+ * @author Joseph Ramsey revision 10/01, believe it or now also 2020.
  */
 public class ChiSquareTest {
 
     /**
      * The data set this test uses.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * The number of values for each variable in the data.
      */
-    private int[] dims;
+    private final int[] dims;
 
     /**
      * Stores the data in the form of a cell table.
      */
-    private CellTable cellTable;
+    private final CellTable cellTable;
 
     /**
      * The significance level of the test.
@@ -118,63 +115,50 @@ public class ChiSquareTest {
         int numRows = this.getCellTable().getNumValues(0);
         int numCols = this.getCellTable().getNumValues(1);
 
-        boolean[] attestedRows = new boolean[numRows];
-        boolean[] attestedCols = new boolean[numCols];
-
         CombinationIterator combinationIterator =
                 new CombinationIterator(condDims);
 
+        // Make a chi square table for each condition combination, strike zero rows and columns and calculate
+        // chi square and degrees of freedom for the remaining rows and columns in the table. See Friedman.
         while (combinationIterator.hasNext()) {
-            int[] combination = (int[]) combinationIterator.next();
+            boolean[] attestedRows = new boolean[numRows];
+            boolean[] attestedCols = new boolean[numCols];
 
-            System.arraycopy(combination, 0, coords, 2, combination.length);
             Arrays.fill(attestedRows, true);
             Arrays.fill(attestedCols, true);
 
-            long total = this.getCellTable().calcMargin(coords, bothVars);
+            int[] combination = combinationIterator.next();
+
+            System.arraycopy(combination, 0, coords, 2, combination.length);
+
+            long total = getCellTable().calcMargin(coords, bothVars);
+
+            if (total == 0) continue;
 
             double _xSquare = 0.0;
-
-            List<Double> e = new ArrayList<>();
-            List<Long> o = new ArrayList<>();
 
             for (int i = 0; i < numRows; i++) {
                 for (int j = 0; j < numCols; j++) {
                     coords[0] = i;
                     coords[1] = j;
 
-                    long sumRow = this.getCellTable().calcMargin(coords, secondVar);
-                    long sumCol = this.getCellTable().calcMargin(coords, firstVar);
-                    long observed = (int) this.getCellTable().getValue(coords);
+                    long sumRow = getCellTable().calcMargin(coords, firstVar);
+                    long sumCol = getCellTable().calcMargin(coords, secondVar);
+                    long observed = getCellTable().getValue(coords);
 
-                    boolean skip = false;
-
-                    if (sumRow == 0) {
+                    if (sumRow == 0L) {
                         attestedRows[i] = false;
-                        skip = true;
-                    }
-
-                    if (sumCol == 0) {
-                        attestedCols[j] = false;
-                        skip = true;
-                    }
-
-                    if (skip) {
                         continue;
                     }
 
-                    e.add((double) sumCol * sumRow);
-                    o.add(observed);
+                    if (sumCol == 0L) {
+                        attestedCols[j] = false;
+                        continue;
+                    }
+
+                    double expected = (sumRow * sumCol) / (double) total;
+                    _xSquare += Math.pow(observed - expected, 2.0) / expected;
                 }
-            }
-
-            for (int i = 0; i < o.size(); i++) {
-                double expected = e.get(i) / (double) total;
-                _xSquare += Math.pow(o.get(i) - expected, 2.0) / expected;
-            }
-
-            if (total == 0) {
-                continue;
             }
 
             int numAttestedRows = 0;
@@ -192,25 +176,20 @@ public class ChiSquareTest {
                 }
             }
 
-            int _df = (numAttestedRows - 1) * (numAttestedCols - 1);
-
-            if (_df > 0) {
-                df += _df;
+            if (numAttestedRows > 0 && numAttestedCols > 0) {
+                df += (numAttestedRows - 1) * (numAttestedCols - 1);
                 xSquare += _xSquare;
             }
         }
 
-        // If df == 0, return indep.
-        // Actually if you don't know one way or the other, you should return dependent. jdramsey 12/22/2015
+        // If df == 0, this is definitely an indepedent table.
         if (df == 0) {
             double pValue = 1.0;
-            boolean indep = true;
-            return new ChiSquareTest.Result(xSquare, pValue, df, indep);
+            return new ChiSquareTest.Result(xSquare, pValue, df, true);
         }
 
-//        double pValue = 1.0 - ProbUtils.chisqCdf(xSquare, df);
         double pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(xSquare);
-        boolean indep = (pValue > this.getAlpha());
+        boolean indep = (pValue > getAlpha());
         return new ChiSquareTest.Result(xSquare, pValue, df, indep);
     }
 
@@ -242,7 +221,7 @@ public class ChiSquareTest {
                 new CombinationIterator(condDims);
 
         while (combinationIterator.hasNext()) {
-            int[] combination = (int[]) combinationIterator.next();
+            int[] combination = combinationIterator.next();
             System.arraycopy(combination, 0, coords, 1, combination.length);
 
             long total = this.getCellTable().calcMargin(coords, firstVar);
@@ -270,85 +249,6 @@ public class ChiSquareTest {
 
         return true;
     }
-
-//    /**
-//     * @param testIndices An array of indices for variables in the dataset supplied in the constructor.
-//     * @param p           The probability that some marginal for some table dominates. A good value is 0.99.
-//     * @return True if the variables at index 0 and 1 are each determined by the variables at the other indices.
-//     */
-//    public boolean isSplitDetermined(int[] testIndices, double p) {
-//
-//        // Reset the cell table for the columns referred to in
-//        // 'testIndices.' Do cell coefs for those columns.
-//        this.getCellTable().addToTable(getDataModel(), testIndices);
-//
-//        // Indicator arrays to tell the cell table which margins
-//        // to calculate. For x _||_ y | z1, z2, ..., we want to
-//        // calculate the margin for x, the margin for y, and the
-//        // margin for x and y. (These will be used later.)
-//        int[] firstVar = new int[]{0};
-//        int[] secondVar = new int[]{1};
-//        int[] bothVars = new int[]{0, 1};
-//
-//        int[] condDims = new int[testIndices.length - 2];
-//        System.arraycopy(selectFromArray(getDims(), testIndices), 2, condDims, 0,
-//                condDims.length);
-//
-//        int[] coords = new int[testIndices.length];
-//        int numRows = this.getCellTable().getNumValues(0);
-//        int numCols = this.getCellTable().getNumValues(1);
-//
-//        boolean[] attestedRows = new boolean[numRows];
-//        boolean[] attestedCols = new boolean[numCols];
-//
-//        CombinationIterator combinationIterator =
-//                new CombinationIterator(condDims);
-//
-//        while (combinationIterator.hasNext()) {
-//            int[] combination = (int[]) combinationIterator.next();
-//
-//            System.arraycopy(combination, 0, coords, 2, combination.length);
-//            Arrays.fill(attestedRows, true);
-//            Arrays.fill(attestedCols, true);
-//
-//            long total = this.getCellTable().calcMargin(coords, bothVars);
-//
-//            if (total == 0) {
-//                continue;
-//            }
-//
-//            // For every table, some marginal has to dominate, either a row
-//            // marginal or a column marginal.
-//            boolean dominates = false;
-//
-//            marginals:
-//            for (int i = 0; i < numRows; i++) {
-//                for (int j = 0; j < numCols; j++) {
-//                    coords[0] = i;
-//                    coords[1] = j;
-//
-//                    long sumRow = this.getCellTable().calcMargin(coords, secondVar);
-//                    long sumCol = this.getCellTable().calcMargin(coords, firstVar);
-//
-//                    if ((double) sumRow / total >= p) {
-//                        dominates = true;
-//                        break marginals;
-//                    }
-//
-//                    if ((double) sumCol / total >= p) {
-//                        dominates = true;
-//                        break marginals;
-//                    }
-//                }
-//            }
-//
-//            if (!dominates) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
 
     /**
      * @return the getModel significance level being used for tests.
@@ -405,22 +305,22 @@ public class ChiSquareTest {
         /**
          * The chi square value.
          */
-        private double chiSquare;
+        private final double chiSquare;
 
         /**
          * The pValue of the result.
          */
-        private double pValue;
+        private final double pValue;
 
         /**
          * The adjusted degrees of freedom.
          */
-        private int df;
+        private final int df;
 
         /**
          * Whether the conditional independence holds or not. (True if it does, false if it doesn't.
          */
-        private boolean isIndep;
+        private final boolean isIndep;
 
         /**
          * Constructs a new g square result using the given parameters.

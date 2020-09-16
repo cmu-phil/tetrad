@@ -27,6 +27,8 @@ import edu.cmu.tetrad.util.TetradMatrix;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -270,6 +272,13 @@ public class DegenerateGaussianScore implements Score {
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
     }
+
+    @Override
+    public String toString() {
+        NumberFormat nf = new DecimalFormat("0.00");
+        return "Degenerate Gaussian Score Penalty " + nf.format(penaltyDiscount);
+    }
+
 
 }
 

@@ -77,6 +77,8 @@ public interface IndependenceTest {
      */
     double getPValue();
 
+//    double getPValue(Node x, Node y, List<Node> z);
+
     /**
      * @return the list of variables over which this independence checker is capable of determinining independence
      * relations.
@@ -130,6 +132,8 @@ public interface IndependenceTest {
     void setVerbose(boolean verbose);
 
     boolean isVerbose();
+
+    String toString();
 
 }
 

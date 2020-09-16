@@ -215,6 +215,12 @@ public class BDeScore implements LocalDiscreteScore {
     public boolean determines(List<Node> z, Node y) {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "BDe Score";
+    }
+
 }
 
 
