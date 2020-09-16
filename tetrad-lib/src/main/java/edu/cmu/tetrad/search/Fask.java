@@ -78,9 +78,9 @@ import static java.lang.Math.*;
  * enforces this.
  * <p>
  * Note that orienting a DAG for a linear, non-Gaussian model using the Hyvarinen and Smith pairwise rules
- * is alternatively known in the literature as PHyvärinen, A., & Smith, S. M. (2013). Pairwise likelihood ratios
- * for estimation of non-Gaussian structural equation models. Journal of Machine Learning Research, 14(Jan), 111-152.
- * We include some of these methods here for comparison.
+ * is alternatively known in the literature as Pairwise LiNGAM--see Hyvärinen, A., & Smith, S. M. (2013). Pairwise
+ * likelihood ratios for estimation of non-Gaussian structural equation models. Journal of Machine Learning Research,
+ * 14(Jan), 111-152. We include some of these methods here for comparison.
  *
  * @author Joseph Ramsey
  */
