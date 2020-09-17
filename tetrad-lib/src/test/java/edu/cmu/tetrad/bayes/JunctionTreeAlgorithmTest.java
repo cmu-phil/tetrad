@@ -48,7 +48,7 @@ import org.junit.Test;
  */
 public class JunctionTreeAlgorithmTest {
 
-    private static int[][] THREE_NODE_VALUES = {
+    private static final int[][] THREE_NODE_VALUES = {
         {0, 0, 0},
         {0, 0, 1},
         {0, 1, 0},
