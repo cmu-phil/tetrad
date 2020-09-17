@@ -424,6 +424,42 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     }
 
     /**
+     * Get the joint probability of the nodes given their parents. Example:
+     * given x <-- z --> y, we can find P(x,y|z). Another example: given x
+     * <-- z --> y <-- w, we can find P(x,y|z,w)
+     *
+     * @param nodes
+     * @param values
+     * @param parents
+     * @param parentValues
+     * @return
+     */
+    public double getConditionalProbabilities(int[] nodes, int[] values, int[] parents, int[] parentValues) {
+        validate(nodes, values);
+        validate(parents, parentValues);
+
+        for (int i = 0; i < parents.length; i++) {
+            setEvidence(parents[i], parentValues[i]);
+        }
+
+        double prob = 1;
+        for (int i = 0; i < nodes.length; i++) {
+            double[] marg = margins[nodes[i]];
+
+            double[] condProbs = new double[marg.length];
+            System.arraycopy(marg, 0, condProbs, 0, marg.length);
+            normalize(condProbs);
+
+            prob *= condProbs[values[i]];
+        }
+
+        // reset
+        initialize();
+
+        return prob;
+    }
+
+    /**
      * Get the conditional probability of a node for all of its values.
      *
      * @param iNode

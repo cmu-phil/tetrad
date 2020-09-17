@@ -19,6 +19,10 @@
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -48,7 +52,7 @@ import org.junit.Test;
  */
 public class JunctionTreeAlgorithmTest {
 
-    private static int[][] THREE_NODE_VALUES = {
+    private static final int[][] THREE_NODE_VALUES = {
         {0, 0, 0},
         {0, 0, 1},
         {0, 1, 0},
@@ -58,6 +62,33 @@ public class JunctionTreeAlgorithmTest {
         {1, 1, 0},
         {1, 1, 1}
     };
+
+    @Ignore
+    @Test
+    public void testJointProbGivenParents() throws IOException {
+        String graphFile = this.getClass().getResource("/jta/graph2.txt").getFile();
+        String dataFile = this.getClass().getResource("/jta/data2.txt").getFile();
+
+        Graph graph = readInGraph(Paths.get(graphFile));
+        DataModel dataModel = readInDiscreteData(Paths.get(dataFile));
+
+        BayesPm bayesPm = createBayesPm(dataModel, graph);
+        BayesIm bayesIm = createEmBayesEstimator(dataModel, bayesPm);
+
+        int x = bayesIm.getNodeIndex(bayesIm.getNode("x"));
+        int y = bayesIm.getNodeIndex(bayesIm.getNode("y"));
+        int z = bayesIm.getNodeIndex(bayesIm.getNode("z"));
+        int w = bayesIm.getNodeIndex(bayesIm.getNode("w"));
+
+        int[] nodes = {x, y};
+        int[] values = {0, 0};
+        int[] parents = {z, w};
+        int[] parentValues = {0, 0};
+
+        JunctionTreeAlgorithm jta = new JunctionTreeAlgorithm(bayesIm);
+
+        double probXYGivenZW = jta.getConditionalProbabilities(nodes, values, parents, parentValues);  // 0.24614443432733896
+    }
 
     @Ignore
     @Test
@@ -76,6 +107,7 @@ public class JunctionTreeAlgorithmTest {
         }
     }
 
+    @Ignore
     @Test
     public void testJunctionTree() {
         String graphFile = this.getClass().getResource("/jta/graph.txt").getFile();
@@ -179,6 +211,24 @@ public class JunctionTreeAlgorithmTest {
         }
 
         return sb.toString().trim();
+    }
+
+    private BayesPm createBayesPm(DataModel dataModel, Graph graph) {
+        Dag dag = new Dag(dataModel.getVariables());
+        (new Dag(graph)).getEdges().forEach(edge -> {
+            Node node1 = dag.getNode(edge.getNode1().getName());
+            Node node2 = dag.getNode(edge.getNode2().getName());
+            Endpoint endpoint1 = edge.getEndpoint1();
+            Endpoint endpoint2 = edge.getEndpoint2();
+
+            dag.addEdge(new Edge(node1, node2, endpoint1, endpoint2));
+        });
+
+        return new BayesPm(dag);
+    }
+
+    private BayesIm createEmBayesEstimator(DataModel dataModel, BayesPm bayesPm) {
+        return (new EmBayesEstimator(bayesPm, (DataSet) dataModel)).getEstimatedIm();
     }
 
     private DataModel readInDiscreteData(Path file) throws IOException {
