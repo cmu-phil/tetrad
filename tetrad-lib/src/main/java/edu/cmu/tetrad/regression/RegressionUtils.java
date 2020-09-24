@@ -26,8 +26,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -41,7 +41,7 @@ public class RegressionUtils {
 
     public static DataSet residuals(DataSet dataSet, Graph graph) {
         Regression regression = new RegressionDataset(dataSet);
-        TetradMatrix residuals = new TetradMatrix(dataSet.getNumRows(), dataSet.getNumColumns());
+        Matrix residuals = new Matrix(dataSet.getNumRows(), dataSet.getNumColumns());
 
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             Node target = dataSet.getVariable(i);
@@ -62,7 +62,7 @@ public class RegressionUtils {
             }
 
             RegressionResult result = regression.regress(target, regressors);
-            TetradVector residualsColumn = result.getResiduals();
+            Vector residualsColumn = result.getResiduals();
 //            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }

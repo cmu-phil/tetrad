@@ -22,16 +22,11 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
-import edu.cmu.tetradapp.model.SemImWrapper;
-
-import java.util.List;
 
 /**
  * Splits continuous data sets by collinear columns.
@@ -55,15 +50,15 @@ public class InverseMatrixWrapper extends DataWrapper {
                throw new IllegalArgumentException("The data must be continuous");
             }
 
-            TetradMatrix _data = dataSet.getDoubleData();
-            TetradMatrix _data2 = _data.inverse();
+            Matrix _data = dataSet.getDoubleData();
+            Matrix _data2 = _data.inverse();
             DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), dataSet.getVariables());
             setDataModel(inverse);
             setSourceGraph(wrapper.getSourceGraph());
         } else if (model instanceof ICovarianceMatrix) {
             ICovarianceMatrix cov = (ICovarianceMatrix) model;
-            TetradMatrix _data = cov.getMatrix();
-            TetradMatrix _data2 = _data.inverse();
+            Matrix _data = cov.getMatrix();
+            Matrix _data2 = _data.inverse();
             DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), cov.getVariables());
             setDataModel(inverse);
             setSourceGraph(wrapper.getSourceGraph());

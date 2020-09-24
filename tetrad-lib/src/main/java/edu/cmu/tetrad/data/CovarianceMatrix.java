@@ -23,7 +23,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradAlgebra;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -84,7 +84,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     /**
      * The wrapped covariance matrix data.
      */
-    private final TetradMatrix _covariancesMatrix;
+    private final Matrix _covariancesMatrix;
 
     //=============================CONSTRUCTORS=========================//
 
@@ -105,7 +105,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         CovariancesDoubleForkJoin covariances = new CovariancesDoubleForkJoin(dataSet.getDoubleData().toArray(), biasCorrected);
         this.variables = Collections.unmodifiableList(dataSet.getVariables());
         this.sampleSize = dataSet.getNumRows();
-        this._covariancesMatrix = new TetradMatrix(covariances.getMatrix());
+        this._covariancesMatrix = new Matrix(covariances.getMatrix());
     }
 
     /**
@@ -122,7 +122,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      *                                  a tolerance of 1.e-5) and positive definite, if the number of variables
      *                                  does not equal the dimension of m, or if the sample size is not positive.
      */
-    public CovarianceMatrix(List<Node> variables, TetradMatrix matrix, int sampleSize) {
+    public CovarianceMatrix(List<Node> variables, Matrix matrix, int sampleSize) {
         this(variables, matrix.toArray(), sampleSize);
     }
 
@@ -133,7 +133,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         }
 
         // This is not calculating covariances, just storing them.
-        this._covariancesMatrix = new TetradMatrix(matrix);
+        this._covariancesMatrix = new Matrix(matrix);
         this.variables = variables;
         this.sampleSize = sampleSize;
     }
@@ -144,7 +144,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     public CovarianceMatrix(CovarianceMatrix covMatrix) {
 
         // This is not calculating covariances, just storing them.
-        this._covariancesMatrix = new TetradMatrix(covMatrix.getMatrix());
+        this._covariancesMatrix = new Matrix(covMatrix.getMatrix());
         this.variables = covMatrix.getVariables();
         this.sampleSize = covMatrix.getSampleSize();
         this.name = covMatrix.getName();
@@ -163,7 +163,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         List<Node> variables = new ArrayList<>();
         Node x = new ContinuousVariable("X");
         variables.add(x);
-        TetradMatrix matrix = TetradAlgebra.identity(1);
+        Matrix matrix = TetradAlgebra.identity(1);
         return new CovarianceMatrix(variables, matrix, 100);
     }
 
@@ -261,7 +261,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             submatrixVars.add(variables.get(indice));
         }
 
-        TetradMatrix cov = new TetradMatrix(_covariancesMatrix.getSelection(indices, indices));
+        Matrix cov = new Matrix(_covariancesMatrix.getSelection(indices, indices));
         return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
@@ -304,7 +304,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             indices[i] = getVariables().indexOf(submatrixVars.get(i));
         }
 
-        TetradMatrix cov = getMatrix().getSelection(indices, indices);
+        Matrix cov = getMatrix().getSelection(indices, indices);
         return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
@@ -315,7 +315,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return _covariancesMatrix.get(i, j);
     }
 
-    public void setMatrix(TetradMatrix matrix) {
+    public void setMatrix(Matrix matrix) {
         throw new IllegalStateException();
     }
 
@@ -337,7 +337,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     /**
      * @return a the covariance matrix (not a copy).
      */
-    public final TetradMatrix getMatrix() {
+    public final Matrix getMatrix() {
         return _covariancesMatrix;
     }
 
@@ -428,7 +428,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     @Override
-    public TetradMatrix getSelection(int[] rows, int[] cols) {
+    public Matrix getSelection(int[] rows, int[] cols) {
         return getMatrix().getSelection(rows, cols);
     }
 

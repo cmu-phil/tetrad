@@ -26,7 +26,7 @@ import edu.cmu.tetrad.gene.tetrad.gene.history.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.gene.tetrad.gene.graph.DisplayNameHandler;
 
@@ -339,7 +339,7 @@ public class BooleanGlassGeneIm implements SessionModel {
             varNames.add(factors.get(i));
         }
 
-        return new TimeSeriesData(new TetradMatrix(square), varNames);
+        return new TimeSeriesData(new Matrix(square), varNames);
     }
 
     /**

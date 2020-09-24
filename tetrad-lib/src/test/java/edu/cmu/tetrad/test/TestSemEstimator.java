@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -108,7 +108,7 @@ public class TestSemEstimator {
                 {1.17516, 1.36337, 1.99039, 4.04533, 3.14922}};
 
         double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
-        TetradMatrix m2 = new TetradMatrix(m);
+        Matrix m2 = new Matrix(m);
         return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), m2, 1000);
     }
 
@@ -196,7 +196,7 @@ public class TestSemEstimator {
 
         double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
 //        TetradMatrix m2 = TetradMatrix.instance(m);
-        return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), new TetradMatrix(m),
+        return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), new Matrix(m),
                 1000);
     }
 }

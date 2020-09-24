@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -66,7 +66,7 @@ public class DeltaSextadTest {
 
         this.cov = new CovarianceMatrix(dataSet);
 
-        TetradMatrix centered = DataUtils.centerData(dataSet.getDoubleData());
+        Matrix centered = DataUtils.centerData(dataSet.getDoubleData());
         this.data = centered.transpose().toArray();
         this.N = dataSet.getNumRows();
         this.variables = dataSet.getVariables();
@@ -138,7 +138,7 @@ public class DeltaSextadTest {
         List<Sigma> boldSigma = new ArrayList<>(boldSigmaSet);
 
         // Need a matrix of variances and covariances of sample covariances.
-        TetradMatrix sigma_ss = new TetradMatrix(boldSigma.size(), boldSigma.size());
+        Matrix sigma_ss = new Matrix(boldSigma.size(), boldSigma.size());
 
         for (int i = 0; i < boldSigma.size(); i++) {
             for (int j = i; j < boldSigma.size(); j++) {
@@ -185,7 +185,7 @@ public class DeltaSextadTest {
 
         // Need a matrix of of population estimates of partial derivatives of tetrads
         // with respect to covariances in boldSigma.
-        TetradMatrix del = new TetradMatrix(boldSigma.size(), sextads.length);
+        Matrix del = new Matrix(boldSigma.size(), sextads.length);
 
         for (int j = 0; j < sextads.length; j++) {
             IntSextad sextad = sextads[j];
@@ -198,12 +198,12 @@ public class DeltaSextadTest {
         }
 
         // Need a vector of population estimates of the sextads.
-        TetradMatrix t = new TetradMatrix(sextads.length, 1);
+        Matrix t = new Matrix(sextads.length, 1);
 
         for (int i = 0; i < sextads.length; i++) {
             IntSextad sextad = sextads[i];
             List<Integer> nodes = sextad.getNodes();
-            TetradMatrix m = new TetradMatrix(3, 3);
+            Matrix m = new Matrix(3, 3);
 
             for (int k1 = 0; k1 < 3; k1++) {
                 for (int k2 = 0; k2 < 3; k2++) {
@@ -215,7 +215,7 @@ public class DeltaSextadTest {
             t.set(i, 0, det);
         }
 
-        TetradMatrix sigma_tt = del.transpose().times(sigma_ss).times(del);
+        Matrix sigma_tt = del.transpose().times(sigma_ss).times(del);
         double chisq;
         try {
             chisq = N * t.transpose().times(sigma_tt.inverse()).times(t).get(0, 0);

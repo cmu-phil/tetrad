@@ -35,13 +35,13 @@ import java.io.ObjectInputStream;
  *
  * @author Joseph Ramsey
  */
-public class TetradMatrix implements TetradSerializable {
+public class Matrix implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     private final RealMatrix apacheData;
     private int m, n;
 
-    public TetradMatrix(double[][] data) {
+    public Matrix(double[][] data) {
         if (data.length == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
@@ -52,7 +52,7 @@ public class TetradMatrix implements TetradSerializable {
         this.n = m == 0 ? 0 : data[0].length;
     }
 
-    public TetradMatrix(int m, int n) {
+    public Matrix(int m, int n) {
         if (m == 0 || n == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
@@ -63,11 +63,11 @@ public class TetradMatrix implements TetradSerializable {
         this.n = n;
     }
 
-    public TetradMatrix(TetradMatrix m) {
+    public Matrix(Matrix m) {
         this(m.apacheData.copy().getData());
     }
 
-    public void assign(TetradMatrix matrix) {
+    public void assign(Matrix matrix) {
         if (apacheData.getRowDimension() != matrix.rows() || apacheData.getColumnDimension() != matrix.columns()) {
             throw new IllegalArgumentException("Mismatched matrix size.");
         }
@@ -83,47 +83,47 @@ public class TetradMatrix implements TetradSerializable {
         return n;
     }
 
-    public TetradVector diag() {
+    public Vector diag() {
         double[] diag = new double[apacheData.getRowDimension()];
 
         for (int i = 0; i < apacheData.getRowDimension(); i++) {
             diag[i] = apacheData.getEntry(i, i);
         }
 
-        return new TetradVector(diag);
+        return new Vector(diag);
     }
 
-    public TetradMatrix getSelection(int[] rows, int[] cols) {
+    public Matrix getSelection(int[] rows, int[] cols) {
         if (rows.length == 0 || cols.length == 0) {
-            return new TetradMatrix(rows.length, cols.length);
+            return new Matrix(rows.length, cols.length);
         }
 
         RealMatrix subMatrix = apacheData.getSubMatrix(rows, cols);
-        return new TetradMatrix(subMatrix.getData());
+        return new Matrix(subMatrix.getData());
     }
 
-    public TetradMatrix copy() {
-        if (zeroDimension()) return new TetradMatrix(rows(), columns());
-        return new TetradMatrix(apacheData.copy().getData());
+    public Matrix copy() {
+        if (zeroDimension()) return new Matrix(rows(), columns());
+        return new Matrix(apacheData.copy().getData());
     }
 
-    public TetradVector getColumn(int j) {
+    public Vector getColumn(int j) {
         if (zeroDimension()) {
-            return new TetradVector(rows());
+            return new Vector(rows());
         }
 
-        return new TetradVector(apacheData.getColumn(j));
+        return new Vector(apacheData.getColumn(j));
     }
 
-    public TetradMatrix times(TetradMatrix m) {
+    public Matrix times(Matrix m) {
         if (this.zeroDimension() || m.zeroDimension())
-            return new TetradMatrix(this.rows(), m.columns());
+            return new Matrix(this.rows(), m.columns());
         else {
-            return new TetradMatrix(apacheData.multiply(m.apacheData).getData());
+            return new Matrix(apacheData.multiply(m.apacheData).getData());
         }
     }
 
-    public TetradVector times(TetradVector v) {
+    public Vector times(Vector v) {
         if (v.size() != apacheData.getColumnDimension()) {
             throw new IllegalArgumentException("Mismatched dimensions.");
         }
@@ -140,7 +140,7 @@ public class TetradMatrix implements TetradSerializable {
             y[i] = sum;
         }
 
-        return new TetradVector(y);
+        return new Vector(y);
     }
 
     public double[][] toArray() {
@@ -151,65 +151,65 @@ public class TetradMatrix implements TetradSerializable {
         return apacheData.getEntry(i, j);
     }
 
-    public TetradMatrix like() {
-        return new TetradMatrix(apacheData.getRowDimension(), apacheData.getColumnDimension());
+    public Matrix like() {
+        return new Matrix(apacheData.getRowDimension(), apacheData.getColumnDimension());
     }
 
     public void set(int i, int j, double v) {
         apacheData.setEntry(i, j, v);
     }
 
-    public TetradVector getRow(int i) {
+    public Vector getRow(int i) {
         if (zeroDimension()) {
-            return new TetradVector(columns());
+            return new Vector(columns());
         }
 
-        return new TetradVector(apacheData.getRow(i));
+        return new Vector(apacheData.getRow(i));
     }
 
-    public TetradMatrix getPart(int i, int j, int k, int l) {
-        return new TetradMatrix(apacheData.getSubMatrix(i, j, k, l).getData());
+    public Matrix getPart(int i, int j, int k, int l) {
+        return new Matrix(apacheData.getSubMatrix(i, j, k, l).getData());
     }
 
-    public TetradMatrix inverse() throws SingularMatrixException {
+    public Matrix inverse() throws SingularMatrixException {
         if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
 
         if (rows() == 0) {
-            return new TetradMatrix(0, 0);
+            return new Matrix(0, 0);
         }
 
-        return new TetradMatrix(new LUDecomposition(apacheData, 1e-9).getSolver().getInverse().getData());
+        return new Matrix(new LUDecomposition(apacheData, 1e-9).getSolver().getInverse().getData());
 
     }
 
-    public TetradMatrix symmetricInverse() {
+    public Matrix symmetricInverse() {
         if (!isSquare()) throw new IllegalArgumentException();
-        if (rows() == 0) return new TetradMatrix(0, 0);
+        if (rows() == 0) return new Matrix(0, 0);
 
-        return new TetradMatrix(new CholeskyDecomposition(apacheData).getSolver().getInverse().getData());
+        return new Matrix(new CholeskyDecomposition(apacheData).getSolver().getInverse().getData());
     }
 
-    public TetradMatrix ginverse() {
+    public Matrix ginverse() {
         final double[][] data = apacheData.getData();
 
         if (data.length == 0 || data[0].length == 0) {
-            return new TetradMatrix(data);
+            return new Matrix(data);
         }
 
-        return new TetradMatrix(MatrixUtils.pseudoInverse(data));
+        return new Matrix(MatrixUtils.pseudoInverse(data));
     }
 
-    public static TetradMatrix identity(int rows) {
-        TetradMatrix m = new TetradMatrix(rows, rows);
+    public static Matrix identity(int rows) {
+        Matrix m = new Matrix(rows, rows);
         for (int i = 0; i < rows; i++) m.set(i, i, 1);
         return m;
     }
 
-    public void assignRow(int row, TetradVector doubles) {
+    public void assignRow(int row, Vector doubles) {
         apacheData.setRow(row, doubles.toArray());
     }
 
-    public void assignColumn(int col, TetradVector doubles) {
+    public void assignColumn(int col, Vector doubles) {
         apacheData.setColumn(col, doubles.toArray());
     }
 
@@ -221,13 +221,13 @@ public class TetradMatrix implements TetradSerializable {
         return new LUDecomposition(apacheData).getDeterminant();
     }
 
-    public TetradMatrix transpose() {
-        if (zeroDimension()) return new TetradMatrix(columns(), rows());
-        return new TetradMatrix(apacheData.transpose().getData());
+    public Matrix transpose() {
+        if (zeroDimension()) return new Matrix(columns(), rows());
+        return new Matrix(apacheData.transpose().getData());
     }
 
 
-    public boolean equals(TetradMatrix m, double tolerance) {
+    public boolean equals(Matrix m, double tolerance) {
         for (int i = 0; i < apacheData.getRowDimension(); i++) {
             for (int j = 0; j < apacheData.getColumnDimension(); j++) {
                 if (Math.abs(apacheData.getEntry(i, j) - m.apacheData.getEntry(i, j)) > tolerance) {
@@ -248,18 +248,18 @@ public class TetradMatrix implements TetradSerializable {
     }
 
 
-    public TetradMatrix minus(TetradMatrix mb) {
+    public Matrix minus(Matrix mb) {
         if (mb.rows() == 0 || mb.columns() == 0) return this;
-        return new TetradMatrix(apacheData.subtract(mb.apacheData).getData());
+        return new Matrix(apacheData.subtract(mb.apacheData).getData());
     }
 
     public double norm1() {
         return apacheData.getNorm();
     }
 
-    public TetradMatrix plus(TetradMatrix mb) {
+    public Matrix plus(Matrix mb) {
         if (mb.rows() == 0 || mb.columns() == 0) return this;
-        return new TetradMatrix(apacheData.add(mb.apacheData).getData());
+        return new Matrix(apacheData.add(mb.apacheData).getData());
     }
 
     public int rank() {
@@ -271,8 +271,8 @@ public class TetradMatrix implements TetradSerializable {
         return m;
     }
 
-    public TetradMatrix scalarMult(double scalar) {
-        TetradMatrix newMatrix = copy();
+    public Matrix scalarMult(double scalar) {
+        Matrix newMatrix = copy();
         for (int i = 0; i < rows(); i++) {
             for (int j = 0; j < columns(); j++) {
                 newMatrix.set(i, j, get(i, j) * scalar);
@@ -282,7 +282,7 @@ public class TetradMatrix implements TetradSerializable {
         return newMatrix;
     }
 
-    public TetradMatrix sqrt() {
+    public Matrix sqrt() {
         SingularValueDecomposition svd = new SingularValueDecomposition(apacheData);
         RealMatrix U = svd.getU();
         RealMatrix V = svd.getV();
@@ -291,17 +291,17 @@ public class TetradMatrix implements TetradSerializable {
         RealMatrix S = new BlockRealMatrix(s.length, s.length);
         for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
         RealMatrix sqrt = U.multiply(S).multiply(V);
-        return new TetradMatrix(sqrt.getData());
+        return new Matrix(sqrt.getData());
     }
 
 
-    public static TetradMatrix sparseMatrix(int m, int n) {
-        return new TetradMatrix(new OpenMapRealMatrix(m, n).getData());
+    public static Matrix sparseMatrix(int m, int n) {
+        return new Matrix(new OpenMapRealMatrix(m, n).getData());
     }
 
-    public TetradVector sum(int direction) {
+    public Vector sum(int direction) {
         if (direction == 1) {
-            TetradVector sums = new TetradVector(columns());
+            Vector sums = new Vector(columns());
 
             for (int j = 0; j < columns(); j++) {
                 double sum = 0.0;
@@ -315,7 +315,7 @@ public class TetradMatrix implements TetradSerializable {
 
             return sums;
         } else if (direction == 2) {
-            TetradVector sums = new TetradVector(rows());
+            Vector sums = new Vector(rows());
 
             for (int i = 0; i < rows(); i++) {
                 double sum = 0.0;
@@ -370,8 +370,8 @@ public class TetradMatrix implements TetradSerializable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
-    public static TetradMatrix serializableInstance() {
-        return new TetradMatrix(0, 0);
+    public static Matrix serializableInstance() {
+        return new Matrix(0, 0);
     }
 
 

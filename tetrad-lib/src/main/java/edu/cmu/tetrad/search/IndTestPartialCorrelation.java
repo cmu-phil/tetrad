@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -100,9 +100,9 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
     }
 
     private boolean indepCollection(Node x, Node y, double alpha) {
-        TetradMatrix submatrix = cov.getMatrix();
+        Matrix submatrix = cov.getMatrix();
 
-        TetradMatrix inverse;
+        Matrix inverse;
 
         try {
             inverse = submatrix.inverse();
@@ -139,9 +139,9 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
     /**
      * @return the submatrix of m with variables in the order of the x variables.
      */
-    public static TetradMatrix subMatrix(ICovarianceMatrix m, List<Node> x, List<Node> y, List<Node> z) {
+    public static Matrix subMatrix(ICovarianceMatrix m, List<Node> x, List<Node> y, List<Node> z) {
         List<Node> variables = m.getVariables();
-        TetradMatrix _covMatrix = m.getMatrix();
+        Matrix _covMatrix = m.getMatrix();
 
         // Create index array for the given variables.
         int[] indices = new int[x.size() + y.size() + z.size()];
@@ -161,7 +161,7 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
 //        System.out.println(Arrays.toString(indices));
 
         // Extract submatrix of correlation matrix using this index array.
-        TetradMatrix submatrix = _covMatrix.getSelection(indices, indices);
+        Matrix submatrix = _covMatrix.getSelection(indices, indices);
 
         return submatrix;
     }
@@ -302,7 +302,7 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

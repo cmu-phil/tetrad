@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeListener;
@@ -50,7 +50,7 @@ class CovMatrixTable extends AbstractTableModel {
      * definite, this must be kept separately while editing and only set when
      * the user clicks the accept button.
      */
-    private TetradMatrix editingMatrix;
+    private Matrix editingMatrix;
 
     /**
      * True iff the editing table is positive definite.

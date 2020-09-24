@@ -26,6 +26,7 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import java.io.IOException;
@@ -126,7 +127,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private TetradMatrix edgeCoef;
+    private Matrix edgeCoef;
 
     /**
      * Matrix of error covariances. errCovar[i][j] is the covariance of the
@@ -137,7 +138,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private TetradMatrix errCovar;
+    private Matrix errCovar;
 
     /**
      * Means of variables. These will not be counted for purposes of calculating
@@ -161,7 +162,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      *
      * @serial
      */
-    private TetradMatrix sampleCovarC;
+    private Matrix sampleCovarC;
 
     /**
      * The variable of the sample covariance.
@@ -181,7 +182,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      *
      * @serial
      */
-    private TetradMatrix implCovar;
+    private Matrix implCovar;
 
     /**
      * The list of freeMappings. This is an unmodifiable list. It is fixed (up
@@ -265,7 +266,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     private boolean simulatedPositiveDataOnly = false;
 
     private Map<Node, Integer> variablesHash;
-    private TetradMatrix sampleCovInv;
+    private Matrix sampleCovInv;
     private static Collection<? extends String> parameterNames;
 
     public static List<String> getParameterNames() {
@@ -328,8 +329,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
         int numVars = this.variableNodes.size();
 
-        this.edgeCoef = new TetradMatrix(numVars, numVars);
-        this.errCovar = new TetradMatrix(numVars, numVars);
+        this.edgeCoef = new Matrix(numVars, numVars);
+        this.errCovar = new Matrix(numVars, numVars);
         this.variableMeans = new double[numVars];
         this.variableMeansStdDev = new double[numVars];
 
@@ -376,8 +377,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     /**
      * Special hidden constructor to generate updated models.
      */
-    private SemIm(SemIm semIm, TetradMatrix covariances,
-            TetradVector means) {
+    private SemIm(SemIm semIm, Matrix covariances,
+            Vector means) {
         this(semIm);
 
         if (covariances.rows() != covariances.columns()) {
@@ -414,7 +415,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @return a variant of the getModel model with the given covariance matrix
      * and means. Used for updating.
      */
-    public SemIm updatedIm(TetradMatrix covariances, TetradVector means) {
+    public SemIm updatedIm(Matrix covariances, Vector means) {
         return new SemIm(this, covariances, means);
     }
 
@@ -839,7 +840,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     /**
      * @return the value of the variance associated with the given node.
      */
-    public double getVariance(Node node, TetradMatrix implCovar) {
+    public double getVariance(Node node, Matrix implCovar) {
         if (getSemPm().getGraph().isExogenous(node)) {
 //            if (node.getNodeType() == NodeType.ERROR) {
             Parameter parameter = getSemPm().getVarianceParameter(node);
@@ -862,7 +863,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @return the value of the standard deviation associated with the given
      * node.
      */
-    public double getStdDev(Node node, TetradMatrix implCovar) {
+    public double getStdDev(Node node, Matrix implCovar) {
         return sqrt(getVariance(node, implCovar));
     }
 
@@ -1013,7 +1014,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * edge is not in the graph. The values of these may be changed, but the
      * array itself may not.
      */
-    public TetradMatrix getEdgeCoef() {
+    public Matrix getEdgeCoef() {
         return edgeCoef.copy();
     }
 
@@ -1024,14 +1025,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * (duh!) that errCovar[i][i] is the variance of getExoNodes.get(i). The
      * values of these may be changed, but the array itself may not.
      */
-    public TetradMatrix getErrCovar() {
+    public Matrix getErrCovar() {
         return errCovar().copy();
     }
 
     /**
      * @return a copy of the implied covariance matrix over all the variables.
      */
-    public TetradMatrix getImplCovar(boolean recalculate) {
+    public Matrix getImplCovar(boolean recalculate) {
         if (!recalculate && implCovar != null) {
             return this.implCovar;
         } else {
@@ -1043,7 +1044,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @return a copy of the implied covariance matrix over the measured
      * variables only.
      */
-    public TetradMatrix getImplCovarMeas() {
+    public Matrix getImplCovarMeas() {
         return implCovarMeas().copy();
     }
 
@@ -1051,7 +1052,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @return a copy of the sample covariance matrix, or null if no sample
      * covar has been set.
      */
-    public TetradMatrix getSampleCovar() {
+    public Matrix getSampleCovar() {
         return this.sampleCovarC;
     }
 
@@ -1110,7 +1111,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //        return h1 - h0;
 //    }
     private double getFml2() {
-        TetradMatrix sigma;
+        Matrix sigma;
 
         try {
             sigma = implCovarMeas();
@@ -1118,7 +1119,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             return Double.NaN;
         }
 
-        TetradMatrix s = this.sampleCovarC;
+        Matrix s = this.sampleCovarC;
 
         double fml;
 
@@ -1132,7 +1133,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     private double getFgls() {
-        TetradMatrix implCovarMeas;
+        Matrix implCovarMeas;
 
         try {
             implCovarMeas = implCovarMeas();
@@ -1141,12 +1142,12 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         }
 
         if (this.sampleCovInv == null) {
-            TetradMatrix sampleCovar = this.sampleCovarC;
+            Matrix sampleCovar = this.sampleCovarC;
             this.sampleCovInv = sampleCovar.inverse();
         }
 
-        TetradMatrix I = TetradMatrix.identity(implCovarMeas.rows());
-        TetradMatrix diff = I.minus((implCovarMeas.times(sampleCovInv)));
+        Matrix I = Matrix.identity(implCovarMeas.rows());
+        Matrix diff = I.minus((implCovarMeas.times(sampleCovInv)));
 
         return 0.5 * (diff.times(diff)).trace();
     }
@@ -1180,11 +1181,11 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     public double getTruncLL() {
         // Formula Bollen p. 263.
 
-        TetradMatrix Sigma = implCovarMeas();
+        Matrix Sigma = implCovarMeas();
 
         // Using (n - 1) / n * s as in Bollen p. 134 causes sinkholes to open
         // up immediately. Not sure why.
-        TetradMatrix S = this.sampleCovarC;
+        Matrix S = this.sampleCovarC;
         int n = getSampleSize();
         return -(n - 1) / 2. * (logDet(Sigma) + traceAInvB(Sigma, S));
 //        return -(n / 2.0) * (logDet(Sigma) + traceABInv(S, Sigma));
@@ -1429,10 +1430,10 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             newVariables.add(continuousVariable);
         }
 
-        TetradMatrix impliedCovar = implCovar();
+        Matrix impliedCovar = implCovar();
 
         DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, newVariables.size()), newVariables);
-        TetradMatrix cholesky = MatrixUtils.cholesky(impliedCovar);
+        Matrix cholesky = MatrixUtils.cholesky(impliedCovar);
 
         // Simulate the data by repeatedly calling the Cholesky.exogenousData
         // method. Store only the data for the measured variables.
@@ -1547,7 +1548,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             }
         }
 
-        TetradMatrix cholesky = MatrixUtils.cholesky(errCovar());
+        Matrix cholesky = MatrixUtils.cholesky(errCovar());
 
         // Do the simulation.
         ROW:
@@ -1573,7 +1574,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 point[i] = sum;
             }
 
-            TetradVector e = new TetradVector(point);
+            Vector e = new Vector(point);
 
             for (int tier = 0; tier < tierOrdering.size(); tier++) {
                 Node node = tierOrdering.get(tier);
@@ -1663,24 +1664,24 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         int numVars = getVariableNodes().size();
 
         // Calculate inv(I - edgeCoefC)
-        TetradMatrix B = edgeCoef().transpose();
-        TetradMatrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix B = edgeCoef().transpose();
+        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
 
         // Pick error values e, for each calculate inv * e.
-        TetradMatrix sim = new TetradMatrix(sampleSize, numVars);
+        Matrix sim = new Matrix(sampleSize, numVars);
 
         ROW:
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            TetradVector e = new TetradVector(edgeCoef.columns());
+            Vector e = new Vector(edgeCoef.columns());
 
             for (int i = 0; i < e.size(); i++) {
                 e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar.get(i, i))));
             }
 
             // Step 3. Calculate the new rows in the data.
-            TetradVector sample = iMinusBInv.times(e);
+            Vector sample = iMinusBInv.times(e);
             sim.assignRow(row, sample);
 
             for (int col = 0; col < sample.size(); col++) {
@@ -1713,15 +1714,15 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     // For testing.
-    public TetradVector simulateOneRecord(TetradVector e) {
+    public Vector simulateOneRecord(Vector e) {
         // Calculate inv(I - edgeCoefC)
-        TetradMatrix edgeCoef = edgeCoef().copy().transpose();
+        Matrix edgeCoef = edgeCoef().copy().transpose();
 
 //        TetradMatrix iMinusB = TetradAlgebra.identity(edgeCoefC.rows()); //TetradMatrix.identity(edgeCoefC.rows());
 //        iMinusB.assign(edgeCoefC, Functions.minus);
-        TetradMatrix iMinusB = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
+        Matrix iMinusB = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
 
-        TetradMatrix inv = iMinusB.inverse();
+        Matrix inv = iMinusB.inverse();
 
         return inv.times(e);
     }
@@ -1743,7 +1744,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     public double getStandardError(Parameter parameter, int maxFreeParams) {
-        TetradMatrix sampleCovar = getSampleCovar();
+        Matrix sampleCovar = getSampleCovar();
 
         if (sampleCovar == null) {
             return Double.NaN;
@@ -2052,16 +2053,16 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         return unmeasuredLatents;
     }
 
-    private TetradMatrix errCovar() {
+    private Matrix errCovar() {
         return this.errCovar;
     }
 
-    private TetradMatrix implCovar() {
+    private Matrix implCovar() {
         computeImpliedCovar();
         return this.implCovar;
     }
 
-    private TetradMatrix implCovarMeas() {
+    private Matrix implCovarMeas() {
         computeImpliedCovar();
         // Submatrix of implied covar for measured vars only.
         int size = getMeasuredNodes().size();
@@ -2072,7 +2073,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
       each time the F_ML function is recalculated.
 
          */
-        TetradMatrix implCovarMeas = new TetradMatrix(size, size);
+        Matrix implCovarMeas = new Matrix(size, size);
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
@@ -2233,7 +2234,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * only.
      */
     private void computeImpliedCovar() {
-        TetradMatrix edgeCoefT = edgeCoef().transpose();// getAlgebra().transpose(edgeCoefC());
+        Matrix edgeCoefT = edgeCoef().transpose();// getAlgebra().transpose(edgeCoefC());
 
         // Note. Since the sizes of the temp matrices in this calculation
         // never change, we ought to be able to reuse them.
@@ -2241,18 +2242,18 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
     }
 
-    private double logDet(TetradMatrix matrix2D) {
+    private double logDet(Matrix matrix2D) {
         double det = matrix2D.det();
         return Math.log(Math.abs(det));
 //        return det > 0 ? Math.log(det) : 0;
     }
 
-    private double traceAInvB(TetradMatrix A, TetradMatrix B) {
+    private double traceAInvB(Matrix A, Matrix B) {
 
         // Note that at this point the sem and the sample covar MUST have the
         // same variables in the same order.
-        TetradMatrix inverse = A.inverse();
-        TetradMatrix product = inverse.times(B);
+        Matrix inverse = A.inverse();
+        Matrix product = inverse.times(B);
 
         double trace = product.trace();
 
@@ -2286,7 +2287,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //
 //        return trace;
 //    }
-    private TetradMatrix edgeCoef() {
+    private Matrix edgeCoef() {
         return this.edgeCoef;
     }
 
@@ -2433,11 +2434,11 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         this.simulatedPositiveDataOnly = simulatedPositiveDataOnly;
     }
 
-    public TetradMatrix getImplCovar(List<Node> nodes) {
+    public Matrix getImplCovar(List<Node> nodes) {
         computeImpliedCovar();
         // Submatrix of implied covar for listed nodes only
         int size = nodes.size();
-        TetradMatrix implCovarMeas = new TetradMatrix(size, size);
+        Matrix implCovarMeas = new Matrix(size, size);
 
         Map<Node, Integer> variablesHash = new HashMap<>();
 

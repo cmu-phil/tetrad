@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -91,8 +91,8 @@ public class Peter1Score implements Score {
             double s2 = getCovariances().getValue(i, i);
             int p = parents.length;
 
-            TetradMatrix covxx = getSelection(getCovariances(), parents, parents);
-            TetradVector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+            Matrix covxx = getSelection(getCovariances(), parents, parents);
+            Vector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
 
             if (s2 <= 0) {
@@ -246,7 +246,7 @@ public class Peter1Score implements Score {
         return variables;
     }
 
-    private TetradMatrix getSelection(ICovarianceMatrix cov, int[] rows, int[] cols) {
+    private Matrix getSelection(ICovarianceMatrix cov, int[] rows, int[] cols) {
         return cov.getSelection(rows, cols);
     }
 
@@ -266,7 +266,7 @@ public class Peter1Score implements Score {
                 _sel.add(variables.get(sel[m]));
             }
 
-            TetradMatrix m = cov.getSelection(sel, sel);
+            Matrix m = cov.getSelection(sel, sel);
 
             try {
                 m.inverse();

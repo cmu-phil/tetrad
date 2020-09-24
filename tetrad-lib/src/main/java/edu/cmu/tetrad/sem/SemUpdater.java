@@ -26,12 +26,11 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializable;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Vector;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -102,7 +101,7 @@ public class SemUpdater implements TetradSerializable {
         SemIm manipulatedSemIm = getManipulatedSemIm();
 
         // Get out the means and implied covariances.
-        TetradVector means = new TetradVector(manipulatedSemIm.getVariableNodes().size());
+        Vector means = new Vector(manipulatedSemIm.getVariableNodes().size());
 
         for (int i = 0; i < means.size(); i++) {
             means.set(i, manipulatedSemIm.getMean(manipulatedSemIm.getVariableNodes().get(i)));
@@ -111,7 +110,7 @@ public class SemUpdater implements TetradSerializable {
 //        System.out.println("vars = " + semIm.getVariableNodes());
 //        System.out.println("means = " + means);
 
-        TetradMatrix implcov = manipulatedSemIm.getImplCovar(true);
+        Matrix implcov = manipulatedSemIm.getImplCovar(true);
 
         // Updating on x2 = X.
         SemEvidence evidence = getEvidence();
@@ -134,14 +133,14 @@ public class SemUpdater implements TetradSerializable {
             yIndices[i] = manipulatedSemIm.getVariableNodes().indexOf(YVars.get(i));
         }
 
-        TetradMatrix covyx = implcov.getSelection(yIndices, xIndices);
-        TetradMatrix varx = implcov.getSelection(xIndices, xIndices);
+        Matrix covyx = implcov.getSelection(yIndices, xIndices);
+        Matrix varx = implcov.getSelection(xIndices, xIndices);
 
-        TetradVector EX = means.viewSelection(xIndices);
-        TetradVector EY = means.viewSelection(yIndices);
+        Vector EX = means.viewSelection(xIndices);
+        Vector EY = means.viewSelection(yIndices);
 
         int[] x2 = new int[nodesInEvidence.size()];
-        TetradVector X = new TetradVector(nodesInEvidence.size());
+        Vector X = new Vector(nodesInEvidence.size());
 
         for (int i = 0; i < nodesInEvidence.size(); i++) {
             Node _node = nodesInEvidence.get(i);
@@ -158,21 +157,21 @@ public class SemUpdater implements TetradSerializable {
 //        System.out.println("X = " + X);
 //        System.out.println("EX = " + EX);
 //        System.out.println("EY = " + EY);
-        TetradVector xminusex = X.minus(EX);
+        Vector xminusex = X.minus(EX);
 
-        TetradVector mu = new TetradVector(manipulatedSemIm.getVariableNodes().size());
+        Vector mu = new Vector(manipulatedSemIm.getVariableNodes().size());
         DoubleMatrix2D sigma2 = new DenseDoubleMatrix2D(manipulatedSemIm.getErrCovar().toArray());
 
         if (xminusex.size() == 0) {
-            mu = new TetradVector(means.toArray());
+            mu = new Vector(means.toArray());
         } else {
 
 //            System.out.println("xminusex = " + xminusex);
 
-            TetradVector times = (covyx.times(varx.inverse())).times(xminusex);
+            Vector times = (covyx.times(varx.inverse())).times(xminusex);
 //            System.out.println("times = " + times);
 
-            TetradVector YHatX = EY.plus(times);
+            Vector YHatX = EY.plus(times);
 
 //            System.out.println("YHatX = " + YHatX);
 
@@ -185,7 +184,7 @@ public class SemUpdater implements TetradSerializable {
             }
         }
 
-        return manipulatedSemIm.updatedIm(new TetradMatrix(sigma2.toArray()), mu);
+        return manipulatedSemIm.updatedIm(new Matrix(sigma2.toArray()), mu);
     }
 
     public Graph getManipulatedGraph() {

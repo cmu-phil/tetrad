@@ -23,7 +23,7 @@
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
@@ -293,10 +293,10 @@ public class DiscreteMixedLikelihood {
 
                     // Determinant will be zero if data are linearly dependent.
                     if (a > continuousCols.length + 5) {
-                        TetradMatrix cov = cov(getSubsample(continuousCols, cell));
+                        Matrix cov = cov(getSubsample(continuousCols, cell));
                         c2 += a * gaussianLikelihood(k, cov);
                     } else {
-                        TetradMatrix cov = cov(getSubsample(continuousCols, all));
+                        Matrix cov = cov(getSubsample(continuousCols, all));
                         c2 += a * gaussianLikelihood(k, cov);
                     }
                 } catch (Exception e) {
@@ -315,11 +315,11 @@ public class DiscreteMixedLikelihood {
     }
 
     // One record.
-    private double gaussianLikelihood(int k, TetradMatrix sigma) {
+    private double gaussianLikelihood(int k, Matrix sigma) {
         return -0.5 * logdet(sigma) - 0.5 * k * (1 + LOG2PI);
     }
 
-    private double logdet(TetradMatrix m) {
+    private double logdet(Matrix m) {
         RealMatrix M = new BlockRealMatrix(m.toArray());
         final double tol = 1e-9;
         RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
@@ -333,13 +333,13 @@ public class DiscreteMixedLikelihood {
         return 2.0 * sum;
     }
 
-    private TetradMatrix cov(TetradMatrix x) {
-        return new TetradMatrix(new Covariance(x.toArray(), true).getCovarianceMatrix().getData());
+    private Matrix cov(Matrix x) {
+        return new Matrix(new Covariance(x.toArray(), true).getCovarianceMatrix().getData());
     }
 
     // Subsample of the continuous mixedVariables conditioning on the given cell.
-    private TetradMatrix getSubsample(int[] continuousCols, List<Integer> cell) {
-        TetradMatrix subset = new TetradMatrix(cell.size(), continuousCols.length);
+    private Matrix getSubsample(int[] continuousCols, List<Integer> cell) {
+        Matrix subset = new Matrix(cell.size(), continuousCols.length);
 
         for (int i = 0; i < cell.size(); i++) {
             for (int j = 0; j < continuousCols.length; j++) {

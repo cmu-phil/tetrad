@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.performance;
 
-import cern.colt.list.adapter.DoubleListAdapter;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
@@ -12,7 +11,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.ScoreType;
 import edu.cmu.tetrad.util.DataConvertUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
@@ -312,11 +311,11 @@ public class Comparison2 {
 //                        System.out.println("Variable Nodes : " + sim.getVariableNodes());
 //                        System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
 
-                        TetradMatrix coefMat = new TetradMatrix(sim.getCoefficientMatrix());
-                        TetradMatrix B = coefMat.getSelection(sub, sub);
-                        TetradMatrix Gamma1 = coefMat.getSelection(sub2, sub);
-                        TetradMatrix Gamma0 = TetradMatrix.identity(tierSize).minus(B);
-                        TetradMatrix A1 = Gamma0.inverse().times(Gamma1);
+                        Matrix coefMat = new Matrix(sim.getCoefficientMatrix());
+                        Matrix B = coefMat.getSelection(sub, sub);
+                        Matrix Gamma1 = coefMat.getSelection(sub2, sub);
+                        Matrix Gamma0 = Matrix.identity(tierSize).minus(B);
+                        Matrix A1 = Gamma0.inverse().times(Gamma1);
 
 //                        TetradMatrix B2 = coefMat.getSelection(sub2, sub2);
 //                        System.out.println("B matrix : " + B);

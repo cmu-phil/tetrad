@@ -27,8 +27,8 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.PrintStream;
@@ -140,11 +140,11 @@ public class SemBicScore implements Score {
             double n = getSampleSize();
 
             int[] ii = {i};
-            TetradMatrix X = getCovariances().getSelection(parents, parents);
-            TetradMatrix Y = getCovariances().getSelection(parents, ii);
+            Matrix X = getCovariances().getSelection(parents, parents);
+            Matrix Y = getCovariances().getSelection(parents, ii);
             double s2 = getCovariances().getValue(i, i);
 
-            TetradVector coefs = getCoefs(X, Y).getColumn(0);
+            Vector coefs = getCoefs(X, Y).getColumn(0);
 
             for (int q = 0; q < X.rows(); q++) {
                 for (int r = 0; r < X.columns(); r++) {
@@ -166,7 +166,7 @@ public class SemBicScore implements Score {
         }
     }
 
-    private TetradMatrix getCoefs(TetradMatrix x, TetradMatrix y) {
+    private Matrix getCoefs(Matrix x, Matrix y) {
         return (x.inverse()).times(y);
     }
 
@@ -297,7 +297,7 @@ public class SemBicScore implements Score {
         indices[0] = indexMap.get(x.getName());
         indices[1] = indexMap.get(y.getName());
         for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i).getName());
-        TetradMatrix submatrix = covariances.getSubmatrix(indices).getMatrix();
+        Matrix submatrix = covariances.getSubmatrix(indices).getMatrix();
         return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
     }
 
@@ -327,7 +327,7 @@ public class SemBicScore implements Score {
                 _sel.add(variables.get(sel[m]));
             }
 
-            TetradMatrix m = cov.getSelection(sel, sel);
+            Matrix m = cov.getSelection(sel, sel);
 
             try {
                 m.inverse();

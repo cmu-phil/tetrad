@@ -30,7 +30,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.junit.Test;
 
@@ -81,7 +81,7 @@ public class TestStatUtils {
         double sd1 = StatUtils.sd(x);
 
         ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
-        TetradMatrix _cov = cov.getMatrix();
+        Matrix _cov = cov.getMatrix();
 
         double r2 = StatUtils.partialCorrelation(_cov, 0, 1);
         double s2 = StatUtils.partialCovariance(_cov, 0, 1);

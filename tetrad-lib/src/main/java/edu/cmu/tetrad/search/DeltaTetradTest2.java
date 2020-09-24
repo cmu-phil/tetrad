@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.*;
@@ -147,7 +147,7 @@ public class DeltaTetradTest2 {
         }
 
         // Need a matrix of variances and covariances of sample covariances.
-        TetradMatrix sigma_ss = new TetradMatrix(boldSigma.size(), boldSigma.size());
+        Matrix sigma_ss = new Matrix(boldSigma.size(), boldSigma.size());
 
         for (int i = 0; i < boldSigma.size(); i++) {
             for (int j = 0; j < boldSigma.size(); j++) {
@@ -184,7 +184,7 @@ public class DeltaTetradTest2 {
 
         // Need a matrix of of population estimates of partial derivatives of tetrads
         // with respect to covariances in boldSigma.w
-        TetradMatrix del = new TetradMatrix(boldSigma.size(), tetrads.length);
+        Matrix del = new Matrix(boldSigma.size(), tetrads.length);
 
         for (int i = 0; i < boldSigma.size(); i++) {
             for (int j = 0; j < tetrads.length; j++) {
@@ -202,7 +202,7 @@ public class DeltaTetradTest2 {
         }
 
         // Need a vector of population estimates of the tetrads.
-        TetradMatrix t = new TetradMatrix(tetrads.length, 1);
+        Matrix t = new Matrix(tetrads.length, 1);
 
         for (int i = 0; i < tetrads.length; i++) {
             Tetrad tetrad = tetrads[i];
@@ -222,13 +222,13 @@ public class DeltaTetradTest2 {
         }
 
         // Now multiply to get Sigma_tt
-        TetradMatrix w1 = del.transpose().times(sigma_ss);
-        TetradMatrix sigma_tt = w1.times(del);
+        Matrix w1 = del.transpose().times(sigma_ss);
+        Matrix sigma_tt = w1.times(del);
 
         // And now invert and multiply to get T.
-        TetradMatrix v0 = sigma_tt.inverse();
-        TetradMatrix v1 = t.transpose().times(v0);
-        TetradMatrix v2 = v1.times(t);
+        Matrix v0 = sigma_tt.inverse();
+        Matrix v1 = t.transpose().times(v0);
+        Matrix v2 = v1.times(t);
         double chisq = N * v2.get(0, 0);
 
         this.chisq = chisq;

@@ -26,11 +26,8 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.LogisticRegression;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -116,17 +113,17 @@ public class MNLRLikelihood {
 
     }
 
-    private double multipleRegression(TetradVector Y, TetradMatrix X) {
+    private double multipleRegression(Vector Y, Matrix X) {
 
         int n = X.rows();
-        TetradVector r;
+        Vector r;
 
         try {
-            TetradMatrix Xt = X.transpose();
-            TetradMatrix XtX = Xt.times(X);
+            Matrix Xt = X.transpose();
+            Matrix XtX = Xt.times(X);
             r = X.times(XtX.inverse().times(Xt.times(Y))).minus(Y);
         } catch (Exception e) {
-            TetradVector ones = new TetradVector(n);
+            Vector ones = new Vector(n);
             for (int i = 0; i < n; i++) ones.set(i,1);
             r = ones.scalarMult(ones.dotProduct(Y)/(double)n).minus(Y);
         }
@@ -134,7 +131,7 @@ public class MNLRLikelihood {
         double sigma2 = r.dotProduct(r) / n;
 
         if(sigma2 <= 0) {
-            TetradVector ones = new TetradVector(n);
+            Vector ones = new Vector(n);
             for (int i = 0; i < n; i++) ones.set(i,1);
             r = ones.scalarMult(ones.dotProduct(Y)/(double)Math.max(n,2)).minus(Y);
             sigma2 = r.dotProduct(r) / n;
@@ -195,7 +192,7 @@ public class MNLRLikelihood {
 
                 int degree = fDegree;
                 if (fDegree < 1) { degree = (int) Math.floor(Math.log(r)); }
-                TetradMatrix subset = new TetradMatrix(r, p * degree + 1);
+                Matrix subset = new Matrix(r, p * degree + 1);
                 for (int i = 0; i < r; i++) {
                     subset.set(i, p * degree, 1);
                     for (int j = 0; j < p; j++) {
@@ -206,14 +203,14 @@ public class MNLRLikelihood {
                 }
 
                 if (c instanceof ContinuousVariable) {
-                    TetradVector target = new TetradVector(r);
+                    Vector target = new Vector(r);
                     for (int i = 0; i < r; i++) {
                         target.set(i, continuousData[child_index][cell.get(i)]);
                     }
                     lik += multipleRegression(target, subset);
                 } else {
                     ArrayList<Integer> temp = new ArrayList<>();
-                    TetradMatrix target = new TetradMatrix(r, ((DiscreteVariable) c).getNumCategories());
+                    Matrix target = new Matrix(r, ((DiscreteVariable) c).getNumCategories());
                     for (int i = 0; i < r; i++) {
                         for (int j = 0; j < ((DiscreteVariable) c).getNumCategories(); j++) {
                             target.set(i, j, -1);
@@ -288,7 +285,7 @@ public class MNLRLikelihood {
 
     }
 
-    private double MultinomialLogisticRegression(TetradMatrix targets, TetradMatrix subset) {
+    private double MultinomialLogisticRegression(Matrix targets, Matrix subset) {
 
         Problem problem = new Problem();
         problem.l = targets.rows(); // number of training examples

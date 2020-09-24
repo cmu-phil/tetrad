@@ -23,9 +23,8 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializable;
-import edu.pitt.dbmi.data.reader.MixedData;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -819,7 +818,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Double.NaN, although all of the on-diagonal elements are 1.0. If that's
      * not the desired behavior, missing values can be removed or imputed first.
      */
-    public final TetradMatrix getCorrelationMatrix() {
+    public final Matrix getCorrelationMatrix() {
         if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
@@ -835,7 +834,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * that's not the desired behavior, missing values can be removed or imputed
      * first.
      */
-    public final TetradMatrix getCovarianceMatrix() {
+    public final Matrix getCovarianceMatrix() {
         if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
@@ -1006,8 +1005,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @throws IllegalStateException if this is not a continuous data set.
      * @see #getVariables
      */
-    public final TetradMatrix getDoubleData() {
-        TetradMatrix copy = new TetradMatrix(dataBox.numRows(), dataBox.numCols());
+    public final Matrix getDoubleData() {
+        Matrix copy = new Matrix(dataBox.numRows(), dataBox.numCols());
 
         for (int i = 0; i < dataBox.numRows(); i++) {
             for (int j = 0; j < dataBox.numCols(); j++) {

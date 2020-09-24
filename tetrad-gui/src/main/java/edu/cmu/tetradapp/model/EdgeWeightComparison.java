@@ -25,7 +25,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.text.NumberFormat;
@@ -59,8 +59,8 @@ public class EdgeWeightComparison implements SessionModel {
         String displayString = "";
 
         SemIm ref = reference;
-        TetradMatrix referenceMatrix = ref.getEdgeCoef();
-        TetradMatrix targetMatrix = target.getEdgeCoef();
+        Matrix referenceMatrix = ref.getEdgeCoef();
+        Matrix targetMatrix = target.getEdgeCoef();
 
         if (targetMatrix.columns() != referenceMatrix.columns() || targetMatrix.rows() != referenceMatrix.rows())
             return "The SEM IM's you selected don't have the same number of variables!  No comparison is possible here.";

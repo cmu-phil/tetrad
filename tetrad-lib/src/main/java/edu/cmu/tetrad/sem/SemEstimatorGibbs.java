@@ -24,7 +24,7 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -69,7 +69,7 @@ public final class SemEstimatorGibbs {
      */
     private SemIm startIm;
 
-    private TetradMatrix priorCov;
+    private Matrix priorCov;
 
     /**
      * The most recently estimated model, or null if no model has been estimated
@@ -81,7 +81,7 @@ public final class SemEstimatorGibbs {
 
     private boolean flatPrior;
 
-    private TetradMatrix dataSet;
+    private Matrix dataSet;
 
     //=============================CONSTRUCTORS============================//
 
@@ -114,7 +114,7 @@ public final class SemEstimatorGibbs {
         this.numIterations = numIterations;
         this.tolerance = 0.0001;
         this.priorVariance = 16;
-        this.priorCov = new TetradMatrix(sampleCovars);
+        this.priorCov = new Matrix(sampleCovars);
     }
 
     //==============================PUBLIC METHODS=========================//
@@ -138,7 +138,7 @@ public final class SemEstimatorGibbs {
         this.parameterMeans = new double[numParameters];
         this.paramConstraints = new ParamConstraint[numParameters];
 
-        TetradMatrix data = new TetradMatrix(parameters.size(), numIterations / 50);
+        Matrix data = new Matrix(parameters.size(), numIterations / 50);
 
         //PRIORINIT
         if (flatPrior) {
@@ -164,7 +164,7 @@ public final class SemEstimatorGibbs {
                 }
             }
 
-            this.priorCov = new TetradMatrix(parameterCovariances);
+            this.priorCov = new Matrix(parameterCovariances);
 
         } else {
             System.out.println("Informative Prior. Exiting.");
@@ -446,7 +446,7 @@ public final class SemEstimatorGibbs {
                     : this.startIm.getParamValue(p) - parameterMeans[i];
         }
 
-        TetradMatrix invPrior = priorCov.inverse();
+        Matrix invPrior = priorCov.inverse();
 
         for (int i = 0; i < n; i++) temp[i] = 0.0;
         for (int col = 0; col < n; col++) {
@@ -556,7 +556,7 @@ public final class SemEstimatorGibbs {
         return semPm;
     }
 
-    public TetradMatrix getDataSet() {
+    public Matrix getDataSet() {
         return dataSet;
     }
 

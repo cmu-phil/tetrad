@@ -82,8 +82,8 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      */
 //    private Map<Node, Double> errorVariances;
 
-    private TetradMatrix implCovar;
-    private TetradMatrix implCovarMeas;
+    private Matrix implCovar;
+    private Matrix implCovarMeas;
     private Edge editingEdge;
     private ParameterRange range;
 
@@ -129,7 +129,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             edgeParameters = new HashMap<>();
 
             List<Node> nodes = im.getVariableNodes();
-            TetradMatrix impliedCovar = im.getImplCovar(true);
+            Matrix impliedCovar = im.getImplCovar(true);
 
             for (Parameter parameter : im.getSemPm().getParameters()) {
                 if (parameter.getType() == ParamType.COEF) {
@@ -157,7 +157,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
 
             // This code estimates the new coefficients from simulated data from the old model.
             DataSet dataSet = im.simulateData(1000, false);
-            TetradMatrix _dataSet = dataSet.getDoubleData();
+            Matrix _dataSet = dataSet.getDoubleData();
             _dataSet = DataUtils.standardizeData(_dataSet);
             DataSet dataSetStandardized = new BoxDataSet(new VerticalDoubleDataBox(_dataSet.toArray()), dataSet.getVariables());
 
@@ -510,10 +510,10 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * transposed, since [a][b] is the edge coefficient for a-->b, not b-->a. Sorry. History. THESE ARE
      * PARAMETERS OF THE MODEL--THE ONLY PARAMETERS.
      */
-    private TetradMatrix edgeCoef() {
+    private Matrix edgeCoef() {
         List<Node> variableNodes = getVariableNodes();
 
-        TetradMatrix edgeCoef = new TetradMatrix(variableNodes.size(), variableNodes.size());
+        Matrix edgeCoef = new Matrix(variableNodes.size(), variableNodes.size());
 
         for (Edge edge : edgeParameters.keySet()) {
             if (Edges.isBidirectedEdge(edge)) {
@@ -587,27 +587,27 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         int numVars = getVariableNodes().size();
 
         // Calculate inv(I - edgeCoef)
-        TetradMatrix edgeCoef = edgeCoef().copy().transpose();
+        Matrix edgeCoef = edgeCoef().copy().transpose();
 
 //        TetradMatrix iMinusB = TetradAlgebra.identity(edgeCoef.rows());
 //        iMinusB.assign(edgeCoef, Functions.minus);
 
-        TetradMatrix iMinusB = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
+        Matrix iMinusB = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
 
-        TetradMatrix inv = iMinusB.inverse();
+        Matrix inv = iMinusB.inverse();
 
         // Pick error values e, for each calculate inv * e.
-        TetradMatrix sim = new TetradMatrix(sampleSize, numVars);
+        Matrix sim = new Matrix(sampleSize, numVars);
 
         // Generate error data with the right variances and covariances, then override this
         // with error data for varaibles that have special distributions defined. Not ideal,
         // but not sure what else to do at the moment. It's better than not taking covariances
         // into account!
-        TetradMatrix cholesky = MatrixUtils.cholesky(errCovar(errorVariances()));
+        Matrix cholesky = MatrixUtils.cholesky(errCovar(errorVariances()));
 
         for (int i = 0; i < sampleSize; i++) {
-            TetradVector e = new TetradVector(exogenousData(cholesky, RandomUtil.getInstance()));
-            TetradVector ePrime = inv.times(e);
+            Vector e = new Vector(exogenousData(cholesky, RandomUtil.getInstance()));
+            Vector ePrime = inv.times(e);
             sim.assignRow(i, ePrime); // sim.viewRow(i).assign(ePrime);
         }
 
@@ -623,7 +623,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
     /**
      * @return a copy of the implied covariance matrix over all the variables.
      */
-    public TetradMatrix getImplCovar() {
+    public Matrix getImplCovar() {
         return implCovar().copy();
     }
 
@@ -631,7 +631,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @return a copy of the implied covariance matrix over the measured
      * variables only.
      */
-    public TetradMatrix getImplCovarMeas() {
+    public Matrix getImplCovarMeas() {
         return implCovarMeas().copy();
     }
 
@@ -643,7 +643,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
      * elements cannot be calculated.
      */
-    private TetradMatrix errCovar(Map<Node, Double> errorVariances) {
+    private Matrix errCovar(Map<Node, Double> errorVariances) {
         List<Node> variableNodes = getVariableNodes();
         List<Node> errorNodes = new ArrayList<>();
 
@@ -651,7 +651,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             errorNodes.add(semGraph.getExogenous(node));
         }
 
-        TetradMatrix errorCovar = new TetradMatrix(errorVariances.size(), errorVariances.size());
+        Matrix errorCovar = new Matrix(errorVariances.size(), errorVariances.size());
 
         for (int index = 0; index < errorNodes.size(); index++) {
             Node error = errorNodes.get(index);
@@ -675,12 +675,12 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         return errorCovar;
     }
 
-    private TetradMatrix implCovar() {
+    private Matrix implCovar() {
         computeImpliedCovar();
         return this.implCovar;
     }
 
-    private TetradMatrix implCovarMeas() {
+    private Matrix implCovarMeas() {
         computeImpliedCovar();
         return this.implCovarMeas;
     }
@@ -692,7 +692,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * only.
      */
     private void computeImpliedCovar() {
-        TetradMatrix edgeCoefT = edgeCoef().transpose();
+        Matrix edgeCoefT = edgeCoef().transpose();
 
         // Note. Since the sizes of the temp matrices in this calculation
         // never change, we ought to be able to reuse them.
@@ -700,7 +700,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
 
         // Submatrix of implied covar for measured vars only.
         int size = getMeasuredNodes().size();
-        this.implCovarMeas = new TetradMatrix(size, size);
+        this.implCovarMeas = new Matrix(size, size);
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
@@ -736,7 +736,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * have the same width and length) containing a randomly generate
      * data set.
      */
-    private double[] exogenousData(TetradMatrix cholesky, RandomUtil
+    private double[] exogenousData(Matrix cholesky, RandomUtil
             randomUtil) {
 
         // Step 1. Generate normal samples.

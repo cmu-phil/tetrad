@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -1617,8 +1618,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         double residualVariance = cov.getValue(i, i);
         int n = sampleSize();
         int p = parents.length;
-        TetradMatrix covxx = getSelection1(cov, parents);
-        TetradMatrix covxxInv;
+        Matrix covxx = getSelection1(cov, parents);
+        Matrix covxxInv;
         try {
             covxxInv = covxx.inverse();
         } catch (Exception e) {
@@ -1626,8 +1627,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             out.println("Using generalized inverse.");
             covxxInv = covxx.ginverse();
         }
-        TetradVector covxy = getSelection2(cov, parents, i);
-        TetradVector b = covxxInv.times(covxy);
+        Vector covxy = getSelection2(cov, parents, i);
+        Vector b = covxxInv.times(covxy);
         residualVariance -= covxy.dotProduct(b);
 
         if (residualVariance <= 0 && verbose) {
@@ -1689,13 +1690,13 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
     // Just some fields to help avoid duplication in the effect edges search.
     int[] lastSquareIndices = new int[0];
-    TetradMatrix lastSquareCovs = new TetradMatrix(0, 0);
+    Matrix lastSquareCovs = new Matrix(0, 0);
     int[] lastColumnIndices = new int[0];
-    TetradVector lastColumnCov = new TetradVector(0);
+    Vector lastColumnCov = new Vector(0);
     int lastK = -1;
 
-    private TetradMatrix getSelection1(ICovarianceMatrix cov, int[] rows) {
-        TetradMatrix m = new TetradMatrix(rows.length, rows.length);
+    private Matrix getSelection1(ICovarianceMatrix cov, int[] rows) {
+        Matrix m = new Matrix(rows.length, rows.length);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = i; j < rows.length; j++) {
@@ -1711,8 +1712,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         return m;
     }
 
-    private TetradVector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
-        TetradVector m = new TetradVector(rows.length);
+    private Vector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
+        Vector m = new Vector(rows.length);
 
         for (int i = 0; i < rows.length; i++) {
             final double value = cov.getValue(rows[i], k);
@@ -1743,7 +1744,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 _sel.add(variables.get(sel[m]));
             }
 
-            TetradMatrix m = cov.getSelection(sel, sel);
+            Matrix m = cov.getSelection(sel, sel);
 
             try {
                 m.inverse();

@@ -27,8 +27,8 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.analysis.MultivariateFunction;
-import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.PointValuePair;
@@ -62,7 +62,7 @@ public class Lofs2 {
 
     private Graph pattern;
     private List<DataSet> dataSets;
-    private List<TetradMatrix> matrices;
+    private List<Matrix> matrices;
     private double alpha = 1.1;
     private List<Regression> regressions;
     private List<Node> variables;
@@ -853,7 +853,7 @@ public class Lofs2 {
                 break;
             }
 
-            TetradMatrix data = dataSets.get(i).getDoubleData();
+            Matrix data = dataSets.get(i).getDoubleData();
             List<List<Double>> parameters = new ArrayList<>();
 
             // Note that the 1's along the diagonal of W are hard coded into the code for calculating scores.
@@ -1012,7 +1012,7 @@ public class Lofs2 {
         return sum / count;
     }
 
-    private void optimizeAllRows(TetradMatrix data, final double range,
+    private void optimizeAllRows(Matrix data, final double range,
                                  List<List<Integer>> rows, List<List<Double>> parameters) {
 
         for (int i = 0; i < rows.size(); i++) {
@@ -1026,7 +1026,7 @@ public class Lofs2 {
         }
     }
 
-    private void optimizeRow(final int rowIndex, final TetradMatrix data,
+    private void optimizeRow(final int rowIndex, final Matrix data,
                              final double range, final List<List<Integer>> rows,
                              final List<List<Double>> parameters) {
         System.out.println("A");
@@ -1202,7 +1202,7 @@ public class Lofs2 {
     private double[] col;
 
     // rowIndex is for the W matrix, not for the data.
-    public double scoreRow(int rowIndex, TetradMatrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
+    public double scoreRow(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
         if (col == null) {
             col = new double[data.rows()];
         }
@@ -1236,7 +1236,7 @@ public class Lofs2 {
         return score(col);
     }
 
-    public double rowPValue(int rowIndex, TetradMatrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
+    public double rowPValue(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
         if (col == null) {
             col = new double[data.rows()];
         }
@@ -1744,7 +1744,7 @@ public class Lofs2 {
         v.add(new GraphNode("x"));
         v.add(new GraphNode("y"));
 
-        TetradMatrix bothData = new TetradMatrix(xValues.length, 2);
+        Matrix bothData = new Matrix(xValues.length, 2);
 
         for (int i = 0; i < xValues.length; i++) {
             bothData.set(i, 0, xValues[i]);
@@ -1827,7 +1827,7 @@ public class Lofs2 {
         if (dataSets.size() > 1) throw new IllegalArgumentException("Expecting exactly one data set for IGCI.");
 
         DataSet dataSet = dataSets.get(0);
-        TetradMatrix matrix = dataSet.getDoubleData();
+        Matrix matrix = dataSet.getDoubleData();
 
         Graph _graph = new EdgeListGraph(graph.getNodes());
 
@@ -2365,7 +2365,7 @@ public class Lofs2 {
             }
 
             RegressionResult result = getRegressions().get(m).regress(target, regressors);
-            TetradVector residualsSingleDataset = result.getResiduals();
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -2373,7 +2373,7 @@ public class Lofs2 {
                 }
             }
 
-            TetradVector _residualsSingleDataset = new TetradVector(residualsSingleDataset.toArray());
+            Vector _residualsSingleDataset = new Vector(residualsSingleDataset.toArray());
 
             for (int k = 0; k < _residualsSingleDataset.size(); k++) {
                 _residuals.add(_residualsSingleDataset.get(k));
@@ -2423,7 +2423,7 @@ public class Lofs2 {
         return graph;
     }
 
-    TetradMatrix _data = null;
+    Matrix _data = null;
 
     private void resolveEdgeConditional(Graph graph, Node x, Node y) {
         if (_data == null) {

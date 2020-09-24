@@ -24,8 +24,8 @@ package edu.cmu.tetrad.regression;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -46,7 +46,7 @@ public class RegressionDatasetGeneralized implements Regression {
     /**
      * The data set.
      */
-    private TetradMatrix data;
+    private Matrix data;
 
     /**
      * The variables.
@@ -78,7 +78,7 @@ public class RegressionDatasetGeneralized implements Regression {
         this.variables = data.getVariables();
     }
 
-    public RegressionDatasetGeneralized(TetradMatrix data, List<Node> variables) {
+    public RegressionDatasetGeneralized(Matrix data, List<Node> variables) {
         this.data = data;
         this.variables = variables;
     }
@@ -124,13 +124,13 @@ public class RegressionDatasetGeneralized implements Regression {
         for (int i = 0; i < rows.length; i++) rows[i] = i;
 
 //        TetradMatrix y = data.viewSelection(rows, new int[]{_target}).copy();
-        TetradMatrix xSub = data.getSelection(rows, _regressors);
+        Matrix xSub = data.getSelection(rows, _regressors);
 
 
 //        TetradMatrix y = data.subsetColumns(Arrays.asList(target)).getDoubleData();
 //        RectangularDataSet rectangularDataSet = data.subsetColumns(regressors);
 //        TetradMatrix xSub = rectangularDataSet.getDoubleData();
-        TetradMatrix X = new TetradMatrix(xSub.rows(), xSub.columns() + 1);
+        Matrix X = new Matrix(xSub.rows(), xSub.columns() + 1);
 
         for (int i = 0; i < X.rows(); i++) {
             for (int j = 0; j < X.columns(); j++) {
@@ -151,19 +151,19 @@ public class RegressionDatasetGeneralized implements Regression {
 //            zRows[i] = i;
 //        }
 
-        TetradVector y = data.getColumn(_target);
-        TetradMatrix Xt = X.transpose();
-        TetradMatrix XtX = Xt.times(X);
-        TetradMatrix G = XtX.inverse();
+        Vector y = data.getColumn(_target);
+        Matrix Xt = X.transpose();
+        Matrix XtX = Xt.times(X);
+        Matrix G = XtX.inverse();
 
-        TetradMatrix GXt = G.times(Xt);
+        Matrix GXt = G.times(Xt);
 
-        TetradVector b = GXt.times(y);
+        Vector b = GXt.times(y);
 
-        TetradVector yPred = X.times(b);
+        Vector yPred = X.times(b);
 
 //        TetradVector xRes = yPred.copy().assign(y, Functions.minus);
-        TetradVector xRes = yPred.minus(y);
+        Vector xRes = yPred.minus(y);
 
         double rss = rss(X, y, b);
         double se = Math.sqrt(rss / (n - k));
@@ -210,8 +210,8 @@ public class RegressionDatasetGeneralized implements Regression {
 
     //=======================PRIVATE METHODS================================//
 
-    private Graph createOutputGraph(String target, TetradMatrix x,
-                                    List<Node> regressors, TetradVector p) {
+    private Graph createOutputGraph(String target, Matrix x,
+                                    List<Node> regressors, Vector p) {
         // Create output graph.
         Node targetNode = new GraphNode(target);
 
@@ -235,9 +235,9 @@ public class RegressionDatasetGeneralized implements Regression {
     }
 
     private String createResultString(int n, int k, double rss, double r2,
-                                      TetradMatrix x, List<Node> regressors,
-                                      TetradMatrix b, TetradVector se,
-                                      TetradVector t, TetradVector p) {
+                                      Matrix x, List<Node> regressors,
+                                      Matrix b, Vector se,
+                                      Vector t, Vector p) {
         // Create result string.
         String rssString = nf.format(rss);
         String r2String = nf.format(r2);
@@ -272,7 +272,7 @@ public class RegressionDatasetGeneralized implements Regression {
      * @param b the regression coefficients.
      * @return the residual sum of squares.
      */
-    private double rss(TetradMatrix x, TetradVector y, TetradVector b) {
+    private double rss(Matrix x, Vector y, Vector b) {
         double rss = 0.0;
 
         for (int i = 0; i < x.rows(); i++) {
@@ -290,7 +290,7 @@ public class RegressionDatasetGeneralized implements Regression {
         return rss;
     }
 
-    private double tss(TetradVector y) {
+    private double tss(Vector y) {
         // first calculate the mean
         double mean = 0.0;
 

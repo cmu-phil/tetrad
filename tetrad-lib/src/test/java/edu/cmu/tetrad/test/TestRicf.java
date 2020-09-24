@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.Ricf;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -107,7 +107,7 @@ public class TestRicf {
 
         double[] values = {2.93, -1.7, 0.76, -0.06, -1.7, 1.64, -0.78, 0.1,
                 0.76, -0.78, 1.66, -0.78, -0.06, 0.1, -0.78, 0.81};
-        TetradMatrix m = matrix(values, numVars, numVars);
+        Matrix m = matrix(values, numVars, numVars);
 
         ICovarianceMatrix s = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), m, 30);
 
@@ -157,15 +157,15 @@ public class TestRicf {
 
     private double normdiff(Ricf.RicfResult ricfResult, double[] shatValues,
                             int rows, int cols) {
-        TetradMatrix shat = matrix(shatValues, rows, cols);
-        TetradMatrix diff = shat.copy();
+        Matrix shat = matrix(shatValues, rows, cols);
+        Matrix diff = shat.copy();
 //        diff.assign(ricfResult.getShat(), PlusMult.plusMult(-1));
-        diff = diff.minus(new TetradMatrix(ricfResult.getShat().toArray()));
+        diff = diff.minus(new Matrix(ricfResult.getShat().toArray()));
         return diff.norm1();
     }
 
-    private TetradMatrix matrix(double[] values, int rows, int cols) {
-        TetradMatrix m = new TetradMatrix(rows, cols);
+    private Matrix matrix(double[] values, int rows, int cols) {
+        Matrix m = new Matrix(rows, cols);
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {

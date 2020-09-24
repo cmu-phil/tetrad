@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.TDistribution;
 
 import java.io.PrintStream;
@@ -331,14 +331,14 @@ public final class IndTestTrekSep implements IndependenceTest {
 
         int i = covMatrix.getVariables().indexOf(x);
 
-        TetradMatrix matrix2D = covMatrix.getMatrix();
+        Matrix matrix2D = covMatrix.getMatrix();
         double variance = matrix2D.get(i, i);
 
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            TetradMatrix Czz = matrix2D.getSelection(parents, parents);
-            TetradMatrix inverse;
+            Matrix Czz = matrix2D.getSelection(parents, parents);
+            Matrix inverse;
 
             try {
                 inverse = Czz.inverse();
@@ -346,9 +346,9 @@ public final class IndTestTrekSep implements IndependenceTest {
                 return true;
             }
 
-            TetradVector Cyz = matrix2D.getColumn(i);
+            Vector Cyz = matrix2D.getColumn(i);
             Cyz = Cyz.viewSelection(parents);
-            TetradVector b = inverse.times(Cyz);
+            Vector b = inverse.times(Cyz);
 
             variance -= Cyz.dotProduct(b);
         }
@@ -442,7 +442,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

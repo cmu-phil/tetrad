@@ -208,7 +208,7 @@ public final class IndTestCramerT implements IndependenceTest {
         }
 
         // Extract submatrix of correlation matrix using this index array.
-        TetradMatrix submatrix =
+        Matrix submatrix =
                 covMatrix().getMatrix().getSelection(indices, indices);
 
         // Check for missing values.
@@ -332,15 +332,15 @@ public final class IndTestCramerT implements IndependenceTest {
 
         int i = covMatrix.getVariables().indexOf(x);
 
-        TetradMatrix matrix2D = covMatrix.getMatrix();
+        Matrix matrix2D = covMatrix.getMatrix();
         double variance = matrix2D.get(i, i);
 
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            TetradMatrix Czz =
+            Matrix Czz =
                     matrix2D.getSelection(parents, parents);
-            TetradMatrix inverse;
+            Matrix inverse;
             try {
                 inverse = Czz.inverse();
 //                inverse = MatrixUtils.ginverse(Czz);
@@ -348,9 +348,9 @@ public final class IndTestCramerT implements IndependenceTest {
                 return true;
             }
 
-            TetradVector Cyz = matrix2D.getColumn(i);
+            Vector Cyz = matrix2D.getColumn(i);
             Cyz = Cyz.viewSelection(parents);
-            TetradVector b = inverse.times(Cyz);
+            Vector b = inverse.times(Cyz);
 
             variance -= Cyz.dotProduct(b);
         }
@@ -378,7 +378,7 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

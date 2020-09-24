@@ -32,7 +32,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,7 +100,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
             glasso.setRhoAllEqual(1.0);
 
             Glasso.Result result = glasso.search();
-            TetradMatrix wwi = new TetradMatrix(result.getWwi().toArray());
+            Matrix wwi = new Matrix(result.getWwi().toArray());
 
             List<Node> variables = dataSet.getVariables();
             Graph resultGraph = new EdgeListGraph(variables);

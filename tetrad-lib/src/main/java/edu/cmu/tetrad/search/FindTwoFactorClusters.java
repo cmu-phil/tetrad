@@ -126,7 +126,7 @@ public class FindTwoFactorClusters {
     // Inputs: correlation matrix, upper and lower bound for unacceptable correlations
     // Output: and dynamic array of removed variables
     // renjiey
-    private ArrayList<Integer> removeVariables(TetradMatrix correlationMatrix, double lowerBound, double upperBound,
+    private ArrayList<Integer> removeVariables(Matrix correlationMatrix, double lowerBound, double upperBound,
                                                double percentBound) {
         Integer outlier[] = new Integer[correlationMatrix.rows() * (correlationMatrix.rows() - 1)];
         int count = 0;

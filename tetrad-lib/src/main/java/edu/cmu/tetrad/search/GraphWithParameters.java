@@ -31,7 +31,7 @@ import edu.cmu.tetrad.search.GwpResult.OrientationEvaluationResult;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.HashMap;
 import java.util.List;
@@ -108,7 +108,7 @@ public class GraphWithParameters {
 
     public GraphWithParameters(DataSet dataSet) {
 
-        TetradMatrix Bmatrix = dataSet.getDoubleData();
+        Matrix Bmatrix = dataSet.getDoubleData();
 
 //    	List<Node> variables = Bmatrix.getVariable();
 
@@ -463,7 +463,7 @@ public class GraphWithParameters {
     //    	List<Node> variables = ltDataSet.getVariable();
     public DataSet getGraphMatrix() {
         int n = this.getGraph().getNumNodes();
-        TetradMatrix matrix = new TetradMatrix(n, n);
+        Matrix matrix = new Matrix(n, n);
         for (Edge edge : this.getGraph().getEdges()) {
             Node node1 = edge.getNode1();
             Node node2 = edge.getNode2();

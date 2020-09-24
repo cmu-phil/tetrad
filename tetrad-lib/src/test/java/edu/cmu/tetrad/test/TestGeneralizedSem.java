@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Vector;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -413,14 +413,14 @@ public class TestGeneralizedSem {
         GeneralizedSemPm pm = new GeneralizedSemPm(semPm);
         GeneralizedSemIm im = new GeneralizedSemIm(pm, semIm);
 
-        TetradVector e = new TetradVector(5);
+        Vector e = new Vector(5);
 
         for (int i = 0; i < e.size(); i++) {
             e.set(i, RandomUtil.getInstance().nextNormal(0, 1));
         }
 
-        TetradVector record1 = semIm.simulateOneRecord(e);
-        TetradVector record2 = im.simulateOneRecord(e);
+        Vector record1 = semIm.simulateOneRecord(e);
+        Vector record2 = im.simulateOneRecord(e);
 
         print("XXX1" + e);
         print("XXX2" + record1);

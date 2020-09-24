@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -158,8 +158,8 @@ public class ShiftSearch {
         List<DataSet> truncatedData = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
-            TetradMatrix mat = dataSet.getDoubleData();
-            TetradMatrix mat2 = mat.getPart(topMargin, mat.rows() - topMargin - bottomMargin - 1, 0, mat.columns() - 1);
+            Matrix mat = dataSet.getDoubleData();
+            Matrix mat2 = mat.getPart(topMargin, mat.rows() - topMargin - bottomMargin - 1, 0, mat.columns() - 1);
             truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
         }
 
@@ -171,8 +171,8 @@ public class ShiftSearch {
 
         for (DataModel _dataSet : dataSets) {
             DataSet dataSet = (DataSet) _dataSet;
-            TetradMatrix mat = dataSet.getDoubleData();
-            TetradMatrix mat2 = mat.getPart(0, numRows - 1, 0, mat.columns() - 1);
+            Matrix mat = dataSet.getDoubleData();
+            Matrix mat2 = mat.getPart(0, numRows - 1, 0, mat.columns() - 1);
             truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
         }
 

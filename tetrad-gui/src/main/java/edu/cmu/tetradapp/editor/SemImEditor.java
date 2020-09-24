@@ -36,7 +36,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetradapp.model.SemEstimatorWrapper;
 import edu.cmu.tetradapp.model.SemImWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -1044,7 +1044,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         public void resetLabels() {
-            TetradMatrix implCovar = semIm().getImplCovar(false);
+            Matrix implCovar = semIm().getImplCovar(false);
 
             for (Object o : graph().getEdges()) {
                 resetEdgeLabel((Edge) (o), implCovar);
@@ -1059,7 +1059,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             workbench().repaint();
         }
 
-        private void resetEdgeLabel(Edge edge, TetradMatrix implCovar) {
+        private void resetEdgeLabel(Edge edge, Matrix implCovar) {
             Parameter parameter = getEdgeParameter(edge);
 
             if (parameter != null) {
@@ -1128,7 +1128,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             }
         }
 
-        private void resetNodeLabel(Node node, TetradMatrix implCovar) {
+        private void resetNodeLabel(Node node, Matrix implCovar) {
             if (!semIm().getSemPm().getGraph().isParameterizable(node)) {
                 return;
             }
@@ -1250,7 +1250,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     Node nodeA = edge.getNode1();
                     Node nodeB = edge.getNode2();
 
-                    TetradMatrix implCovar = semIm().getImplCovar(false);
+                    Matrix implCovar = semIm().getImplCovar(false);
 
                     double varA = semIm().getVariance(nodeA, implCovar);
                     double varB = semIm().getVariance(nodeB, implCovar);
@@ -2015,10 +2015,10 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             } else if (measured() && !covariances()) {
                 matrix = corr(getSemIm().getImplCovarMeas().toArray());
             } else if (!measured() && covariances()) {
-                TetradMatrix implCovarC = getSemIm().getImplCovar(false);
+                Matrix implCovarC = getSemIm().getImplCovar(false);
                 matrix = implCovarC.toArray();
             } else if (!measured() && !covariances()) {
-                TetradMatrix implCovarC = getSemIm().getImplCovar(false);
+                Matrix implCovarC = getSemIm().getImplCovar(false);
                 matrix = corr(implCovarC.toArray());
             }
         }

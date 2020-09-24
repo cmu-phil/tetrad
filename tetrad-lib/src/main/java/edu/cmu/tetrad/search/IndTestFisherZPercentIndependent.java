@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.*;
 
@@ -46,8 +46,8 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     private double alpha;
     private double pValue = Double.NaN;
     private int[] rows;
-    private List<TetradMatrix> data;
-    private List<TetradMatrix> ncov;
+    private List<Matrix> data;
+    private List<Matrix> ncov;
     private Map<Node, Integer> variablesMap;
     private double percent = .75;
     private boolean fdr = true;
@@ -68,12 +68,12 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
         for (DataSet dataSet : dataSets) {
             dataSet = DataUtils.center(dataSet);
-            TetradMatrix _data = dataSet.getDoubleData();
+            Matrix _data = dataSet.getDoubleData();
             data.add(_data);
         }
 
         ncov = new ArrayList<>();
-        for (TetradMatrix d : this.data) ncov.add(d.transpose().times(d).scalarMult(1.0 / d.rows()));
+        for (Matrix d : this.data) ncov.add(d.transpose().times(d).scalarMult(1.0 / d.rows()));
 
         setAlpha(alpha);
         rows = new int[dataSets.get(0).getNumRows()];
@@ -85,7 +85,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         }
 
         this.recursivePartialCorrelation = new ArrayList<>();
-        for (TetradMatrix covMatrix : ncov) {
+        for (Matrix covMatrix : ncov) {
             recursivePartialCorrelation.add(new RecursivePartialCorrelation(getVariables(), covMatrix, dataSets.get(0).getNumRows()));
         }
     }
@@ -108,8 +108,8 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         List<Double> pValues = new ArrayList<>();
 
         for (int m = 0; m < ncov.size(); m++) {
-            TetradMatrix _ncov = ncov.get(m).getSelection(all, all);
-            TetradMatrix inv = _ncov.inverse();
+            Matrix _ncov = ncov.get(m).getSelection(all, all);
+            Matrix inv = _ncov.inverse();
             double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
 
             double fisherZ = sqrt(sampleSize - z.size() - 3.0) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
@@ -263,7 +263,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return ncov;
     }
 

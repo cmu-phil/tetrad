@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
@@ -138,7 +138,7 @@ public class Mimbuild2 {
             }
         }
 
-        TetradMatrix cov = getCov(measuresCov, latents, indicators);
+        Matrix cov = getCov(measuresCov, latents, indicators);
         CovarianceMatrix latentscov = new CovarianceMatrix(latents, cov, measuresCov.getSampleSize());
         this.latentsCov = latentscov;
         Graph graph;
@@ -268,13 +268,13 @@ public class Mimbuild2 {
         }
     }
 
-    private TetradMatrix getCov(ICovarianceMatrix _measurescov, List<Node> latents, Node[][] indicators) {
+    private Matrix getCov(ICovarianceMatrix _measurescov, List<Node> latents, Node[][] indicators) {
         if (latents.size() != indicators.length) {
             throw new IllegalArgumentException();
         }
 
-        TetradMatrix measurescov = _measurescov.getMatrix();
-        TetradMatrix latentscov = new TetradMatrix(latents.size(), latents.size());
+        Matrix measurescov = _measurescov.getMatrix();
+        Matrix latentscov = new Matrix(latents.size(), latents.size());
 
         for (int i = 0; i < latentscov.rows(); i++) {
             for (int j = i; j < latentscov.columns(); j++) {
@@ -375,7 +375,7 @@ public class Mimbuild2 {
         return sqrt(sum);
     }
 
-    private void optimizeNonMeasureVariancesQuick(Node[][] indicators, TetradMatrix measurescov, TetradMatrix latentscov,
+    private void optimizeNonMeasureVariancesQuick(Node[][] indicators, Matrix measurescov, Matrix latentscov,
                                                   double[][] loadings, int[][] indicatorIndices) {
         int count = 0;
 
@@ -418,8 +418,8 @@ public class Mimbuild2 {
         minimum = pair.getValue();
     }
 
-    private void optimizeNonMeasureVariancesConditionally(Node[][] indicators, TetradMatrix measurescov,
-                                                          TetradMatrix latentscov, double[][] loadings,
+    private void optimizeNonMeasureVariancesConditionally(Node[][] indicators, Matrix measurescov,
+                                                          Matrix latentscov, double[][] loadings,
                                                           int[][] indicatorIndices, double[] delta) {
         int count = 0;
 
@@ -464,7 +464,7 @@ public class Mimbuild2 {
         minimum = pair.getValue();
     }
 
-    private void optimizeMeasureVariancesConditionally(TetradMatrix measurescov, TetradMatrix latentscov, double[][] loadings,
+    private void optimizeMeasureVariancesConditionally(Matrix measurescov, Matrix latentscov, double[][] loadings,
                                                        int[][] indicatorIndices, double[] delta) {
         double[] values2 = new double[delta.length];
         int count = 0;
@@ -489,8 +489,8 @@ public class Mimbuild2 {
         return numParams;
     }
 
-    private void optimizeAllParamsSimultaneously(Node[][] indicators, TetradMatrix measurescov,
-                                                 TetradMatrix latentscov, double[][] loadings,
+    private void optimizeAllParamsSimultaneously(Node[][] indicators, Matrix measurescov,
+                                                 Matrix latentscov, double[][] loadings,
                                                  int[][] indicatorIndices, double[] delta) {
         double[] values = getAllParams(indicators, latentscov, loadings, delta);
 
@@ -506,7 +506,7 @@ public class Mimbuild2 {
         minimum = pair.getValue();
     }
 
-    private double[] getAllParams(Node[][] indicators, TetradMatrix latentscov, double[][] loadings, double[] delta) {
+    private double[] getAllParams(Node[][] indicators, Matrix latentscov, double[][] loadings, double[] delta) {
         int count = 0;
 
         for (int i = 0; i < indicators.length; i++) {
@@ -566,13 +566,13 @@ public class Mimbuild2 {
 
     private class Function1 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
-        private final TetradMatrix measurescov;
+        private final Matrix measurescov;
         private final double[][] loadings;
-        private final TetradMatrix latentscov;
+        private final Matrix latentscov;
         private final int numParams;
 
-        public Function1(int[][] indicatorIndices, TetradMatrix measurescov, double[][] loadings,
-                         TetradMatrix latentscov, int numParams) {
+        public Function1(int[][] indicatorIndices, Matrix measurescov, double[][] loadings,
+                         Matrix latentscov, int numParams) {
             this.indicatorIndices = indicatorIndices;
             this.measurescov = measurescov;
             this.loadings = loadings;
@@ -617,15 +617,15 @@ public class Mimbuild2 {
 
     private class Function2 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
-        private final TetradMatrix measurescov;
-        private TetradMatrix measuresCovInverse;
+        private final Matrix measurescov;
+        private Matrix measuresCovInverse;
         private final double[][] loadings;
-        private final TetradMatrix latentscov;
+        private final Matrix latentscov;
         private final int numParams;
         private final double[] delta;
         private final List<Integer> aboveZero = new ArrayList<>();
 
-        public Function2(int[][] indicatorIndices, TetradMatrix measurescov, double[][] loadings, TetradMatrix latentscov,
+        public Function2(int[][] indicatorIndices, Matrix measurescov, double[][] loadings, Matrix latentscov,
                          double[] delta, int numNonMeasureVarianceParams) {
             this.indicatorIndices = indicatorIndices;
             this.measurescov = measurescov;
@@ -670,10 +670,10 @@ public class Mimbuild2 {
                 }
             }
 
-            TetradMatrix implied = impliedCovariance(indicatorIndices, loadings, measurescov, latentscov, delta);
+            Matrix implied = impliedCovariance(indicatorIndices, loadings, measurescov, latentscov, delta);
 
-            TetradMatrix I = TetradMatrix.identity(implied.rows());
-            TetradMatrix diff = I.minus((implied.times(measuresCovInverse)));
+            Matrix I = Matrix.identity(implied.rows());
+            Matrix diff = I.minus((implied.times(measuresCovInverse)));
 
             return 0.5 * (diff.times(diff)).trace();
         }
@@ -681,15 +681,15 @@ public class Mimbuild2 {
 
     private class Function3 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
-        private final TetradMatrix measurescov;
-        private TetradMatrix measuresCovInverse;
+        private final Matrix measurescov;
+        private Matrix measuresCovInverse;
         private final double[][] loadings;
-        private final TetradMatrix latentscov;
+        private final Matrix latentscov;
         private final int numParams;
         private final double[] delta;
         private final List<Integer> aboveZero = new ArrayList<>();
 
-        public Function3(int[][] indicatorIndices, TetradMatrix measurescov, double[][] loadings, TetradMatrix latentscov,
+        public Function3(int[][] indicatorIndices, Matrix measurescov, double[][] loadings, Matrix latentscov,
                          double[] delta, int numParams) {
             this.indicatorIndices = indicatorIndices;
             this.measurescov = measurescov;
@@ -715,10 +715,10 @@ public class Mimbuild2 {
                 count++;
             }
 
-            TetradMatrix implied = impliedCovariance(indicatorIndices, loadings, measurescov, latentscov, delta);
+            Matrix implied = impliedCovariance(indicatorIndices, loadings, measurescov, latentscov, delta);
 
-            TetradMatrix I = TetradMatrix.identity(implied.rows());
-            TetradMatrix diff = I.minus((implied.times(measuresCovInverse)));
+            Matrix I = Matrix.identity(implied.rows());
+            Matrix diff = I.minus((implied.times(measuresCovInverse)));
 
             return 0.5 * (diff.times(diff)).trace();
         }
@@ -726,15 +726,15 @@ public class Mimbuild2 {
 
     private class Function4 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
-        private final TetradMatrix measurescov;
-        private TetradMatrix measuresCovInverse;
+        private final Matrix measurescov;
+        private Matrix measuresCovInverse;
         private final double[][] loadings;
-        private final TetradMatrix latentscov;
+        private final Matrix latentscov;
         private final int numParams;
         private final double[] delta;
         private final List<Integer> aboveZero = new ArrayList<>();
 
-        public Function4(int[][] indicatorIndices, TetradMatrix measurescov, double[][] loadings, TetradMatrix latentscov,
+        public Function4(int[][] indicatorIndices, Matrix measurescov, double[][] loadings, Matrix latentscov,
                          double[] delta) {
             this.indicatorIndices = indicatorIndices;
             this.measurescov = measurescov;
@@ -790,19 +790,19 @@ public class Mimbuild2 {
                 count++;
             }
 
-            TetradMatrix implied = impliedCovariance(indicatorIndices, loadings, measurescov, latentscov, delta);
+            Matrix implied = impliedCovariance(indicatorIndices, loadings, measurescov, latentscov, delta);
 
-            TetradMatrix I = TetradMatrix.identity(implied.rows());
-            TetradMatrix diff = I.minus((implied.times(measuresCovInverse)));  // time hog. times().
+            Matrix I = Matrix.identity(implied.rows());
+            Matrix diff = I.minus((implied.times(measuresCovInverse)));  // time hog. times().
 
             return 0.5 * (diff.times(diff)).trace();
         }
     }
 
 
-    private TetradMatrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, TetradMatrix cov, TetradMatrix loadingscov,
-                                           double[] delta) {
-        TetradMatrix implied = new TetradMatrix(cov.rows(), cov.columns());
+    private Matrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, Matrix cov, Matrix loadingscov,
+                                     double[] delta) {
+        Matrix implied = new Matrix(cov.rows(), cov.columns());
 
         for (int i = 0; i < loadings.length; i++) {
             for (int j = 0; j < loadings.length; j++) {
@@ -822,7 +822,7 @@ public class Mimbuild2 {
         return implied;
     }
 
-    private double sumOfDifferences(int[][] indicatorIndices, TetradMatrix cov, double[][] loadings, TetradMatrix loadingscov) {
+    private double sumOfDifferences(int[][] indicatorIndices, Matrix cov, double[][] loadings, Matrix loadingscov) {
         double sum = 0;
 
         for (int i = 0; i < loadings.length; i++) {

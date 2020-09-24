@@ -23,7 +23,7 @@ package edu.cmu.tetrad.sem;
 
 //import cern.colt.matrix.DoubleMatrix2D;
 
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
@@ -58,7 +58,7 @@ public class Mapping implements TetradSerializable {
      *
      * @serial Can't be null.
      */
-    private TetradMatrix a;
+    private Matrix a;
 
     /**
      * The left-hand coordinate of a[i][j].
@@ -83,7 +83,7 @@ public class Mapping implements TetradSerializable {
      * @param i         Left coordinates of matrix[i][j].
      * @param j         Right coordinate of matrix[i][j].
      */
-    public Mapping(ISemIm semIm, Parameter parameter, TetradMatrix matrix,
+    public Mapping(ISemIm semIm, Parameter parameter, Matrix matrix,
                    int i, int j) {
         if (semIm == null) {
             throw new NullPointerException("SemIm must not be null.");
@@ -113,7 +113,7 @@ public class Mapping implements TetradSerializable {
      */
     public static Mapping serializableInstance() {
         return new Mapping(SemIm.serializableInstance(),
-                Parameter.serializableInstance(), new TetradMatrix(0, 0),
+                Parameter.serializableInstance(), new Matrix(0, 0),
                 1, 1);
     }
 

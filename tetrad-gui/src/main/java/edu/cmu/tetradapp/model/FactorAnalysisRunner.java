@@ -40,7 +40,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
 
     private String output;
 
-    private TetradMatrix rotatedSolution;
+    private Matrix rotatedSolution;
 
     private double threshold;
 
@@ -77,7 +77,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
 
         threshold = .2;
 
-        TetradMatrix unrotatedSolution = analysis.successiveResidual();
+        Matrix unrotatedSolution = analysis.successiveResidual();
         rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -120,7 +120,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
         setResultGraph(graph);
     }
 
-    private String tableString(TetradMatrix matrix, NumberFormat nf, double threshold) {
+    private String tableString(Matrix matrix, NumberFormat nf, double threshold) {
         TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
 
         for (int i = 0; i < matrix.rows() + 1; i++) {
@@ -174,7 +174,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
         return output;
     }
 
-    private TetradMatrix getRotatedSolution() {
+    private Matrix getRotatedSolution() {
         return rotatedSolution;
     }
 

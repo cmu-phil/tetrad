@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.text.NumberFormat;
@@ -95,14 +95,14 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      *
      * @throws IllegalStateException if this is not a continuous data set.
      */
-    TetradMatrix getCorrelationMatrix();
+    Matrix getCorrelationMatrix();
 
     /**
      * If this is a continuous data set, returns the covariance matrix.
      *
      * @throws IllegalStateException if this is not a continuous data set.
      */
-    TetradMatrix getCovarianceMatrix();
+    Matrix getCovarianceMatrix();
 
     /**
      * @return the value at the given row and column as a double. For
@@ -114,7 +114,7 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      * @return the underlying data matrix as a TetradMatrix.
      * @throws IllegalStateException if this is not a continuous data set.
      */
-    TetradMatrix getDoubleData();
+    Matrix getDoubleData();
 
     /**
      * @return the value at the given row and column as an int, rounding if

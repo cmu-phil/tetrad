@@ -22,12 +22,10 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
-import edu.cmu.tetradapp.model.SemEstimatorWrapper;
-import edu.cmu.tetradapp.model.SemImWrapper;
 
 /**
  * Splits continuous data sets by collinear columns.
@@ -55,10 +53,10 @@ public class CovMatrixSumWrapper extends DataWrapper {
             throw new IllegalArgumentException("Expecting corrariance matrices.");
         }
 
-        TetradMatrix corr1 = ((ICovarianceMatrix) model1).getMatrix();
-        TetradMatrix corr2 = ((ICovarianceMatrix) model2).getMatrix();
+        Matrix corr1 = ((ICovarianceMatrix) model1).getMatrix();
+        Matrix corr2 = ((ICovarianceMatrix) model2).getMatrix();
 
-        TetradMatrix corr3 = calcSum(corr1, corr2);
+        Matrix corr3 = calcSum(corr1, corr2);
 
         ICovarianceMatrix covWrapper = new CovarianceMatrix(model1.getVariables(), corr3,
                 ((ICovarianceMatrix) model1).getSampleSize());
@@ -124,12 +122,12 @@ public class CovMatrixSumWrapper extends DataWrapper {
 //
 //    }
 
-    private TetradMatrix calcSum(TetradMatrix corr1, TetradMatrix corr2) {
+    private Matrix calcSum(Matrix corr1, Matrix corr2) {
         if (corr1.rows() != corr2.rows()) {
             throw new IllegalArgumentException("Covariance matrices must be the same size.");
         }
 
-        TetradMatrix corr3 = new TetradMatrix(corr2.rows(), corr2.rows());
+        Matrix corr3 = new Matrix(corr2.rows(), corr2.rows());
 
         for (int i = 0; i < corr3.rows(); i++) {
             for (int j = 0; j < corr3.rows(); j++) {

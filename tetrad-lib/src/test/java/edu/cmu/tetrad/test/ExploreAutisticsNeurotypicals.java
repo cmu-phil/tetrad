@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -481,9 +481,9 @@ public final class ExploreAutisticsNeurotypicals {
             }
         }
 
-        TetradMatrix m = dataSet.getDoubleData();
+        Matrix m = dataSet.getDoubleData();
 
-        TetradMatrix mt = m.transpose();
+        Matrix mt = m.transpose();
 
         List<Node> tvars = new ArrayList<>();
 

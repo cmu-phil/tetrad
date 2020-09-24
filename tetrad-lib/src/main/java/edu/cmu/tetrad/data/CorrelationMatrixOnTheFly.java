@@ -77,7 +77,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      *
      * @serial Cannot be null. Must be symmetric and positive definite.
      */
-    private TetradMatrix matrix;
+    private Matrix matrix;
 
     /**
      * @serial Do not remove this field; it is needed for serialization.
@@ -124,7 +124,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         List<Node> variables = new ArrayList<>();
         Node x = new ContinuousVariable("X");
         variables.add(x);
-        TetradMatrix matrix = TetradAlgebra.identity(1);
+        Matrix matrix = TetradAlgebra.identity(1);
         return new CovarianceMatrix(variables, matrix, 100); //
     }
 
@@ -206,7 +206,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
             submatrixVars.add(cov.getVariables().get(indice));
         }
 
-        TetradMatrix cov = new TetradMatrix(indices.length, indices.length);
+        Matrix cov = new Matrix(indices.length, indices.length);
 
         for (int i = 0; i < indices.length; i++) {
             for (int j = i; j < indices.length; j++) {
@@ -226,7 +226,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
             submatrixVars.add(variables.get(indice));
         }
 
-        TetradMatrix cov = new TetradMatrix(indices.length, indices.length);
+        Matrix cov = new Matrix(indices.length, indices.length);
 
         for (int i = 0; i < indices.length; i++) {
             for (int j = i; j < indices.length; j++) {
@@ -260,7 +260,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return v;
     }
 
-    public void setMatrix(TetradMatrix matrix) {
+    public void setMatrix(Matrix matrix) {
         cov.setMatrix(matrix);
     }
 
@@ -278,8 +278,8 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * @return a copy of the covariance matrix.
      */
-    public final TetradMatrix getMatrix() {
-        TetradMatrix matrix = new TetradMatrix(getDimension(), getDimension());
+    public final Matrix getMatrix() {
+        Matrix matrix = new Matrix(getDimension(), getDimension());
 
         for (int i = 0; i < getDimension(); i++) {
             for (int j = 0; j < getDimension(); j++) {
@@ -290,8 +290,8 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return matrix;
     }
 
-    public final TetradMatrix getMatrix(int[] rows) {
-        TetradMatrix matrix = new TetradMatrix(getDimension(), getDimension());
+    public final Matrix getMatrix(int[] rows) {
+        Matrix matrix = new Matrix(getDimension(), getDimension());
 
         for (int i = 0; i < getDimension(); i++) {
             for (int j = 0; j < getDimension(); j++) {
@@ -394,8 +394,8 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     @Override
-    public TetradMatrix getSelection(int[] rows, int[] cols) {
-        TetradMatrix m = new TetradMatrix(rows.length, cols.length);
+    public Matrix getSelection(int[] rows, int[] cols) {
+        Matrix m = new Matrix(rows.length, cols.length);
 
         if (Arrays.equals(rows, cols)) {
             for (int i = 0; i < rows.length; i++) {
@@ -417,8 +417,8 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return m;
     }
 
-    public TetradMatrix getSelection(int[] rows, int[] cols, int[] dataRows) {
-        TetradMatrix m = new TetradMatrix(rows.length, cols.length);
+    public Matrix getSelection(int[] rows, int[] cols, int[] dataRows) {
+        Matrix m = new Matrix(rows.length, cols.length);
 
         if (Arrays.equals(rows, cols)) {
             for (int i = 0; i < rows.length; i++) {
@@ -487,7 +487,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         }
 
         if (matrixC != null) {
-            matrix = new TetradMatrix(matrixC.toArray());
+            matrix = new Matrix(matrixC.toArray());
             matrixC = null;
         }
 

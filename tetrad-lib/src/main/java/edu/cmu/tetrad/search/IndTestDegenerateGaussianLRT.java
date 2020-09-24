@@ -23,8 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
-import org.apache.commons.collections4.map.HashedMap;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -33,8 +32,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static edu.cmu.tetrad.util.MathUtils.logChoose;
-import static java.lang.Math.exp;
 import static java.lang.Math.log;
 
 /*
@@ -73,7 +70,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     private Map<Integer, List<Integer>> embedding;
 
     // The covariance matrix.
-    private TetradMatrix cov;
+    private Matrix cov;
 
     /**
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom
@@ -382,7 +379,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

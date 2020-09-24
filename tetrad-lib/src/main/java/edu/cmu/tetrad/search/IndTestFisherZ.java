@@ -107,7 +107,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
-    public IndTestFisherZ(TetradMatrix data, List<Node> variables, double alpha) {
+    public IndTestFisherZ(Matrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
         this.cor = new CorrelationMatrix(dataSet);
         this.variables = Collections.unmodifiableList(variables);
@@ -225,7 +225,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         if (z.isEmpty()) return cor.getValue(indices[0], indices[1]);
 
         for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
-        TetradMatrix submatrix = cor.getSubmatrix(indices).getMatrix();
+        Matrix submatrix = cor.getSubmatrix(indices).getMatrix();
         return StatUtils.partialCorrelation(submatrix);
     }
 
@@ -304,7 +304,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            TetradMatrix Czz = cor.getSelection(parents, parents);
+            Matrix Czz = cor.getSelection(parents, parents);
 
             try {
                 Czz.inverse();
@@ -384,7 +384,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

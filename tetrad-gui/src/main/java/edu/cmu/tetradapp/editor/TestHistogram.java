@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -50,7 +50,7 @@ public class TestHistogram extends TestCase {
         nodes.add(x1);
         nodes.add(x2);
 
-        TetradMatrix dataMatrix = new TetradMatrix(10, 2);
+        Matrix dataMatrix = new Matrix(10, 2);
 
         dataMatrix.set(0, 0, 0);
         dataMatrix.set(1, 0, 0);

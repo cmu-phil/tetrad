@@ -28,8 +28,8 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public class TestStandardizedSem {
         SemIm im = new SemIm(pm);
 
         DataSet dataSet = im.simulateData(1000, false);
-        TetradMatrix _dataSet = dataSet.getDoubleData();
+        Matrix _dataSet = dataSet.getDoubleData();
         _dataSet = DataUtils.standardizeData(_dataSet);
         DataSet dataSetStandardized = new BoxDataSet(new VerticalDoubleDataBox(_dataSet.transpose().toArray()),
                 dataSet.getVariables());
@@ -74,7 +74,7 @@ public class TestStandardizedSem {
 
         imStandardized.getEdgeCoef();
         imStandardized.getErrCovar();
-        new TetradVector(imStandardized.getMeans());
+        new Vector(imStandardized.getMeans());
 
         imStandardized.getEdgeCoef();
         imStandardized.getErrCovar();
@@ -225,7 +225,7 @@ public class TestStandardizedSem {
         SemIm im = new SemIm(pm);
 
         DataSet dataSet = im.simulateDataRecursive(1000, false);
-        TetradMatrix _dataSet = dataSet.getDoubleData();
+        Matrix _dataSet = dataSet.getDoubleData();
         _dataSet = DataUtils.standardizeData(_dataSet);
         DataSet dataSetStandardized = new BoxDataSet(new VerticalDoubleDataBox(_dataSet.transpose().toArray()), dataSet.getVariables());
 
@@ -275,7 +275,7 @@ public class TestStandardizedSem {
 
         DataSet dataSet = im.simulateDataRecursive(1000, false);
 
-        TetradMatrix _dataSet = dataSet.getDoubleData();
+        Matrix _dataSet = dataSet.getDoubleData();
         _dataSet = DataUtils.standardizeData(_dataSet);
         DataSet dataSetStandardized = new BoxDataSet(new DoubleDataBox(_dataSet.toArray()), dataSet.getVariables());
 
@@ -431,10 +431,10 @@ public class TestStandardizedSem {
     private boolean isStandardized(StandardizedSemIm sem) {
         DataSet dataSet = sem.simulateData(5000, false);
 
-        TetradMatrix _dataSet = dataSet.getDoubleData();
+        Matrix _dataSet = dataSet.getDoubleData();
 
-        TetradMatrix cov = DataUtils.cov(_dataSet);
-        TetradVector means = DataUtils.mean(_dataSet);
+        Matrix cov = DataUtils.cov(_dataSet);
+        Vector means = DataUtils.mean(_dataSet);
 
         for (int i = 0; i < cov.rows(); i++) {
             if (!(Math.abs(cov.get(i, i) - 1) < .1)) {

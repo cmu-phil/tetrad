@@ -23,6 +23,7 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
@@ -214,19 +215,19 @@ public final class LargeScaleSimulation {
 
         NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);
 
-        TetradMatrix B = new TetradMatrix(getCoefficientMatrix());
-        TetradMatrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix B = new Matrix(getCoefficientMatrix());
+        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
 
         double[][] all = new double[variableNodes.size()][sampleSize];
 
         for (int row = 0; row < sampleSize; row++) {
-            TetradVector e = new TetradVector(B.rows());
+            Vector e = new Vector(B.rows());
 
             for (int j = 0; j < e.size(); j++) {
                 e.set(j, normal.sample() * sqrt(errorVars[j]));
             }
 
-            TetradVector x = iMinusBInv.times(e);
+            Vector x = iMinusBInv.times(e);
 
             for (int j = 0; j < x.size(); j++) {
                 all[j][row] = x.get(j);

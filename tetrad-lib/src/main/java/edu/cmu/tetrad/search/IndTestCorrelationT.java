@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -33,7 +34,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.sqrt;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
@@ -52,7 +52,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
     /**
      * The matrix out of the cov matrix.
      */
-    private final TetradMatrix _covMatrix;
+    private final Matrix _covMatrix;
 
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
@@ -120,7 +120,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
-    public IndTestCorrelationT(TetradMatrix data, List<Node> variables, double alpha) {
+    public IndTestCorrelationT(Matrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new DoubleDataBox(data.toArray()), variables);
         this.dataSet = DataUtils.center(dataSet);
         this.covMatrix = new CovarianceMatrix(dataSet);
@@ -186,7 +186,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
         double r;
         int n = sampleSize();
 
-        TetradMatrix submatrix = DataUtils.subMatrix(_covMatrix, indexMap, x, y, z);
+        Matrix submatrix = DataUtils.subMatrix(_covMatrix, indexMap, x, y, z);
         r = StatUtils.partialCorrelation(submatrix);
 
         double t = Math.sqrt(n - 2) * (r / Math.sqrt(1. - r * r));
@@ -290,14 +290,14 @@ public final class IndTestCorrelationT implements IndependenceTest {
 
         int i = covMatrix.getVariables().indexOf(x);
 
-        TetradMatrix matrix2D = covMatrix.getMatrix();
+        Matrix matrix2D = covMatrix.getMatrix();
         double variance = matrix2D.get(i, i);
 
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            TetradMatrix Czz = matrix2D.getSelection(parents, parents);
-            TetradMatrix inverse;
+            Matrix Czz = matrix2D.getSelection(parents, parents);
+            Matrix inverse;
 
             try {
                 inverse = Czz.inverse();
@@ -306,9 +306,9 @@ public final class IndTestCorrelationT implements IndependenceTest {
                 return true;
             }
 
-            TetradVector Cyz = matrix2D.getColumn(i);
+            Vector Cyz = matrix2D.getColumn(i);
             Cyz = Cyz.viewSelection(parents);
-            TetradVector b = inverse.times(Cyz);
+            Vector b = inverse.times(Cyz);
 
             variance -= Cyz.dotProduct(b);
         }
@@ -396,7 +396,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

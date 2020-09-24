@@ -57,8 +57,8 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
             analysis.setNumFactors(parameters.getInt("numFactors"));
 //            analysis.setNumFactors(((DataSet) dataSet).getNumColumns());
 
-            TetradMatrix unrotated = analysis.successiveResidual();
-            TetradMatrix rotated = analysis.successiveFactorVarimax(unrotated);
+            Matrix unrotated = analysis.successiveResidual();
+            Matrix rotated = analysis.successiveFactorVarimax(unrotated);
 
             if (parameters.getBoolean(Params.VERBOSE)) {
                 NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -76,7 +76,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
                 TetradLogger.getInstance().forceLogMessage(output);
             }
 
-            TetradMatrix L;
+            Matrix L;
 
             if (parameters.getBoolean("useVarimax")) {
                 L = rotated;
@@ -85,7 +85,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
             }
 
 
-            TetradMatrix residual = analysis.getResidual();
+            Matrix residual = analysis.getResidual();
 
             ICovarianceMatrix covFa = new CovarianceMatrix(covarianceMatrix.getVariables(), L.times(L.transpose()),
                     covarianceMatrix.getSampleSize());
@@ -258,7 +258,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
         this.compareToTrue = compareToTrue;
     }
 
-    private String tableString(TetradMatrix matrix, NumberFormat nf, double threshold) {
+    private String tableString(Matrix matrix, NumberFormat nf, double threshold) {
         TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
 
         for (int i = 0; i < matrix.rows() + 1; i++) {

@@ -27,8 +27,8 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.util.List;
 
@@ -48,9 +48,9 @@ public class SemOptimizerEm implements SemOptimizer {
     private SemIm semIm;
     private SemGraph graph;
 
-    private TetradMatrix yCov;   // Sample cov.
-    private TetradMatrix yCovModel, yzCovModel, zCovModel; // Partitions of the modeled cov.
-    private TetradMatrix expectedCov;
+    private Matrix yCov;   // Sample cov.
+    private Matrix yCovModel, yzCovModel, zCovModel; // Partitions of the modeled cov.
+    private Matrix expectedCov;
 
     private int numObserved, numLatent;
     private int idxLatent[], idxObserved[];
@@ -67,7 +67,7 @@ public class SemOptimizerEm implements SemOptimizer {
     public void optimize(SemIm semIm) {
         if (numRestarts < 1) numRestarts = 1;
 
-        TetradMatrix sampleCovar = semIm.getSampleCovar();
+        Matrix sampleCovar = semIm.getSampleCovar();
 
         if (sampleCovar == null) {
             throw new NullPointerException("Sample covar has not been set.");
@@ -159,8 +159,8 @@ public class SemOptimizerEm implements SemOptimizer {
         return numRestarts;
     }
 
-    public TetradMatrix getExpectedCovarianceMatrix() {
-        return new TetradMatrix(expectedCov);
+    public Matrix getExpectedCovarianceMatrix() {
+        return new Matrix(expectedCov);
     }
 
     /**
@@ -211,7 +211,7 @@ public class SemOptimizerEm implements SemOptimizer {
             }
         }
 
-        expectedCov = new TetradMatrix(numObserved + numLatent, numObserved + numLatent);
+        expectedCov = new Matrix(numObserved + numLatent, numObserved + numLatent);
 
         for (int i = 0; i < numObserved; i++) {
             for (int j = i; j < numObserved; j++) {
@@ -220,9 +220,9 @@ public class SemOptimizerEm implements SemOptimizer {
             }
         }
 
-        yCovModel = new TetradMatrix(numObserved, numObserved);
-        yzCovModel = new TetradMatrix(numObserved, numLatent);
-        zCovModel = new TetradMatrix(numLatent, numLatent);
+        yCovModel = new Matrix(numObserved, numObserved);
+        yzCovModel = new Matrix(numObserved, numLatent);
+        zCovModel = new Matrix(numLatent, numLatent);
 
         parents = new int[numLatent + numObserved][];
         errorParent = new Node[numLatent + numObserved];
@@ -260,12 +260,12 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
     private void expectation() {
-        TetradMatrix bYZModel = yCovModel.inverse().times(yzCovModel);
-        TetradMatrix yzCovPred = yCov.times(bYZModel);
-        TetradMatrix zCovModel = yzCovModel.transpose().times(bYZModel);
-        TetradMatrix zCovDiff = this.zCovModel.minus(zCovModel);
-        TetradMatrix CzPred = yzCovPred.transpose().times(bYZModel);
-        TetradMatrix newCz = CzPred.plus(zCovDiff);
+        Matrix bYZModel = yCovModel.inverse().times(yzCovModel);
+        Matrix yzCovPred = yCov.times(bYZModel);
+        Matrix zCovModel = yzCovModel.transpose().times(bYZModel);
+        Matrix zCovDiff = this.zCovModel.minus(zCovModel);
+        Matrix CzPred = yzCovPred.transpose().times(bYZModel);
+        Matrix newCz = CzPred.plus(zCovDiff);
 
         for (int i = 0; i < numLatent; i++) {
             for (int j = i; j < numLatent; j++) {
@@ -305,7 +305,7 @@ public class SemOptimizerEm implements SemOptimizer {
                     }
                 }
 
-                TetradVector coefs = new TetradMatrix(parentsCov[idx]).inverse().times(new TetradVector(nodeParentsCov[idx]));
+                Vector coefs = new Matrix(parentsCov[idx]).inverse().times(new Vector(nodeParentsCov[idx]));
 
                 for (int i = 0; i < coefs.size(); i++) {
 
@@ -314,7 +314,7 @@ public class SemOptimizerEm implements SemOptimizer {
                     }
                 }
 
-                variance -= new TetradVector(nodeParentsCov[idx]).dotProduct(coefs);
+                variance -= new Vector(nodeParentsCov[idx]).dotProduct(coefs);
             }
 
             if (!semIm.getSemPm().getParameter(errorParent[idx], errorParent[idx]).isFixed()) {
@@ -324,7 +324,7 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
     private void updateMatrices() {
-        TetradMatrix impliedCovar = semIm.getImplCovar(true);
+        Matrix impliedCovar = semIm.getImplCovar(true);
         for (int i = 0; i < numObserved; i++) {
             for (int j = i; j < numObserved; j++) {
                 yCovModel.set(i, j, impliedCovar.get(idxObserved[i], idxObserved[j]));

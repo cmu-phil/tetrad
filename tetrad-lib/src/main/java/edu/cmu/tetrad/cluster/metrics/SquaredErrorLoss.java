@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.cluster.metrics;
 
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Vector;
 
 /**
  * Euclidean dissimilarity metric--i.e., the sum of the differences in
@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradVector;
  * @author Joseph Ramsey
  */
 public class SquaredErrorLoss implements Dissimilarity {
-    public double dissimilarity(TetradVector v1, TetradVector v2) {
+    public double dissimilarity(Vector v1, Vector v2) {
         if (v1.size() != v2.size()) {
             throw new IllegalArgumentException("Vectors not the same length.");
         }

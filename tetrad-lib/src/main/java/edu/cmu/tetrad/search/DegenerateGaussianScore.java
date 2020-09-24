@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -66,7 +66,7 @@ public class DegenerateGaussianScore implements Score {
     private Map<Integer, List<Integer>> embedding;
 
     // The covariance matrix.
-    private TetradMatrix cov;
+    private Matrix cov;
 
     // A constant.
     private static double L2PE = log(2.0*Math.PI*Math.E);

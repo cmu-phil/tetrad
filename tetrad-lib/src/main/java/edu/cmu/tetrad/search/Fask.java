@@ -31,7 +31,7 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.text.DecimalFormat;
@@ -809,7 +809,7 @@ public final class Fask implements GraphSearch {
 
     private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold) throws SingularMatrixException {
         double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, 1);
-        TetradMatrix m = new TetradMatrix(cv).transpose();
+        Matrix m = new Matrix(cv).transpose();
         return StatUtils.partialCorrelation(m);
     }
 }

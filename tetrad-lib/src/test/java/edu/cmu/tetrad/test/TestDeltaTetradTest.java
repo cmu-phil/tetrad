@@ -31,9 +31,8 @@ import edu.cmu.tetrad.search.DeltaTetradTest;
 import edu.cmu.tetrad.search.Tetrad;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -368,7 +367,7 @@ public class TestDeltaTetradTest {
         nodes.add(v5);
         nodes.add(v6);
 
-        TetradMatrix matrix = new TetradMatrix(6, 6);
+        Matrix matrix = new Matrix(6, 6);
 
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j <= i; j++) {
@@ -405,7 +404,7 @@ public class TestDeltaTetradTest {
         nodes.add(x1);
         nodes.add(x2);
 
-        TetradMatrix matrix = new TetradMatrix(5, 5);
+        Matrix matrix = new Matrix(5, 5);
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j <= i; j++) {
@@ -440,7 +439,7 @@ public class TestDeltaTetradTest {
         nodes.add(y4);
         nodes.add(y5);
 
-        TetradMatrix matrix = new TetradMatrix(5, 5);
+        Matrix matrix = new Matrix(5, 5);
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j <= i; j++) {

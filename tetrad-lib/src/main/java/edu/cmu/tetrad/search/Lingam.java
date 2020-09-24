@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.PermutationGenerator;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.Arrays;
 import java.util.List;
@@ -56,7 +56,7 @@ public class Lingam {
     }
 
     public Graph search(DataSet data) {
-        TetradMatrix X = data.getDoubleData();
+        Matrix X = data.getDoubleData();
         X = DataUtils.centerData(X).transpose();
         FastIca fastIca = new FastIca(X, X.rows());
         fastIca.setVerbose(false);
@@ -67,7 +67,7 @@ public class Lingam {
         fastIca.setRowNorm(false);
         fastIca.setAlpha(fastIcaA);
         FastIca.IcaResult result11 = fastIca.findComponents();
-        TetradMatrix W = result11.getW();
+        Matrix W = result11.getW();
 
         PermutationGenerator gen1 = new PermutationGenerator(W.columns());
         int[] perm1 = new int[0];
@@ -91,9 +91,9 @@ public class Lingam {
         int[] cols = new int[W.columns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
-        TetradMatrix WTilde = W.getSelection(perm1, cols);
+        Matrix WTilde = W.getSelection(perm1, cols);
 
-        TetradMatrix WPrime = WTilde.copy();
+        Matrix WPrime = WTilde.copy();
 
         for (int i = 0; i < WPrime.rows(); i++) {
             for (int j = 0; j < WPrime.columns(); j++) {
@@ -104,7 +104,7 @@ public class Lingam {
 //        System.out.println("WPrime = " + WPrime);
 
         final int m = data.getNumColumns();
-        TetradMatrix BHat = TetradMatrix.identity(m).minus(WPrime);
+        Matrix BHat = Matrix.identity(m).minus(WPrime);
 
         PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
         int[] perm2 = new int[0];

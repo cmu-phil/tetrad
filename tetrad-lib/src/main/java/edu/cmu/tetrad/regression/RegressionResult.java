@@ -23,7 +23,7 @@ package edu.cmu.tetrad.regression;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.text.NumberFormat;
@@ -111,12 +111,12 @@ public class RegressionResult implements TetradSerializable {
     /**
      * Teh predicted values.
      */
-    private TetradVector yHat;
+    private Vector yHat;
 
     /**
      * The residuals.
      */
-    private TetradVector res;
+    private Vector res;
 
     /**
      * A result for a variety of regression algorithm.
@@ -151,7 +151,7 @@ public class RegressionResult implements TetradSerializable {
     public RegressionResult(boolean zeroInterceptAssumed, String[] regressorNames,
                             int n, double[] b, double[] t,
                             double[] p, double[] se, double r2,
-                            double rss, double alpha, TetradVector yHat, TetradVector res) {
+                            double rss, double alpha, Vector yHat, Vector res) {
 //        if (regressorNames == null) {
 //            throw new NullPointerException();
 //        }
@@ -336,11 +336,11 @@ public class RegressionResult implements TetradSerializable {
         return preamble;
     }
 
-    public TetradVector getYHat() {
+    public Vector getYHat() {
         return yHat;
     }
 
-    public TetradVector getResiduals() {
+    public Vector getResiduals() {
         return res;
     }
 }

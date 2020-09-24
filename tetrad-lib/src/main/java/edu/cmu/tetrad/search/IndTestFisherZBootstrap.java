@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,11 +70,11 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
         setAlpha(alpha);
 
         this.numBootstrapSamples = numBootstrapSamples;
-        TetradMatrix[] bootstrapSamples = new TetradMatrix[numBootstrapSamples];
+        Matrix[] bootstrapSamples = new Matrix[numBootstrapSamples];
         this.tests = new IndependenceTest[numBootstrapSamples];
 
         for (int i = 0; i < numBootstrapSamples; i++) {
-            TetradMatrix fullData = dataSet.getDoubleData();
+            Matrix fullData = dataSet.getDoubleData();
             bootstrapSamples[i] = DataUtils.getBootstrapSample(fullData, bootstrapSampleSize);
             tests[i] = new IndTestFisherZ(bootstrapSamples[i], dataSet.getVariables(), alpha);
 
@@ -200,7 +200,7 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

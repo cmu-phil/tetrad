@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search.kernel;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.List;
 
@@ -42,9 +42,9 @@ public class KernelUtils {
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
      */
-    public static TetradMatrix constructGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
+    public static Matrix constructGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
         int m = dataset.getNumRows();
-        TetradMatrix gram = new TetradMatrix(m, m);
+        Matrix gram = new Matrix(m, m);
         for (int k = 0; k < nodes.size(); k++) {
             Node node = nodes.get(k);
             int col = dataset.getColumn(node);
@@ -72,12 +72,12 @@ public class KernelUtils {
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
      */
-    public static TetradMatrix constructCentralizedGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
+    public static Matrix constructCentralizedGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
         int m = dataset.getNumRows();
-        TetradMatrix gram = constructGramMatrix(kernels, dataset, nodes);
-        TetradMatrix H = constructH(m);
-        TetradMatrix KH = gram.times(H);
-        TetradMatrix HKH = H.times(KH);
+        Matrix gram = constructGramMatrix(kernels, dataset, nodes);
+        Matrix H = constructH(m);
+        Matrix KH = gram.times(H);
+        Matrix HKH = H.times(KH);
         return HKH;
     }
 
@@ -86,8 +86,8 @@ public class KernelUtils {
      *
      * @param m the sample size
      */
-    public static TetradMatrix constructH(int m) {
-        TetradMatrix H = new TetradMatrix(m, m);
+    public static Matrix constructH(int m) {
+        Matrix H = new Matrix(m, m);
         double od = -1.0 / (double) m;
         double d = od + 1;
         for (int i = 0; i < m; i++) {
@@ -109,13 +109,13 @@ public class KernelUtils {
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
      */
-    public static TetradMatrix incompleteCholeskyGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes, double precision) {
+    public static Matrix incompleteCholeskyGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes, double precision) {
         if (precision <= 0) {
             throw new IllegalArgumentException("Precision must be > 0");
         }
 
         int m = dataset.getNumRows();
-        TetradMatrix G = new TetradMatrix(m, m);
+        Matrix G = new Matrix(m, m);
 
         // get diagonal of Gram matrix and initialize permutation vector
         double[] Dadv = new double[m];
@@ -177,7 +177,7 @@ public class KernelUtils {
         }
 
         // trim columns
-        TetradMatrix Gm = new TetradMatrix(m, cols);
+        Matrix Gm = new Matrix(m, cols);
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < cols; j++) {
                 Gm.set(i, j, G.get(i, j));

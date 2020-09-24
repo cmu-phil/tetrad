@@ -29,8 +29,8 @@ import edu.cmu.tetrad.graph.GraphGroup;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.LingUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.GaussianPower;
 import org.apache.commons.math3.analysis.MultivariateFunction;
@@ -51,7 +51,6 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Vector;
 
 import static java.lang.Math.*;
 
@@ -136,7 +135,7 @@ public class Ling {
      * The search method is used to process LiNG. Call search when you want to run the algorithm.
      */
     public StoredGraphs search() {
-        TetradMatrix W;
+        Matrix W;
         StoredGraphs graphs = new StoredGraphs();
 
         try {
@@ -156,7 +155,7 @@ public class Ling {
 
                 final List<Mapping> allMappings = createMappings(null, null, dataSet.getNumColumns());
 
-                W = estimateW(new TetradMatrix(dataSet.getDoubleData().transpose()),
+                W = estimateW(new Matrix(dataSet.getDoubleData().transpose()),
                         dataSet.getNumColumns(), -zeta, zeta, allMappings);
 
                 System.out.println("W = " + W);
@@ -174,14 +173,14 @@ public class Ling {
     }
 
 
-    private TetradMatrix estimateW(TetradMatrix matrix, int numNodes, double min, double max, List<Mapping> allMappings) {
-        TetradMatrix W = initializeW(numNodes);
+    private Matrix estimateW(Matrix matrix, int numNodes, double min, double max, List<Mapping> allMappings) {
+        Matrix W = initializeW(numNodes);
         maxMappings(matrix, min, max, W, allMappings);
         return W;
     }
 
-    private void maxMappings(final TetradMatrix matrix, final double min,
-                             final double max, final TetradMatrix W, final List<Mapping> allMappings) {
+    private void maxMappings(final Matrix matrix, final double min,
+                             final double max, final Matrix W, final List<Mapping> allMappings) {
 
         final int numNodes = W.rows();
 
@@ -217,8 +216,8 @@ public class Ling {
         }
     }
 
-    private void optimizeNonGaussianity(final int rowIndex, final TetradMatrix dataSetTetradMatrix,
-                                        final TetradMatrix W, List<Mapping> allMappings) {
+    private void optimizeNonGaussianity(final int rowIndex, final Matrix dataSetTetradMatrix,
+                                        final Matrix W, List<Mapping> allMappings) {
         final List<Mapping> mappings = mappingsForRow(rowIndex, allMappings);
 
         MultivariateFunction function = new MultivariateFunction() {
@@ -262,7 +261,7 @@ public class Ling {
 
     }
 
-    public double ngFullData(int rowIndex, TetradMatrix data, TetradMatrix W) {
+    public double ngFullData(int rowIndex, Matrix data, Matrix W) {
         double[] col = new double[data.rows()];
 
         for (int i = 0; i < data.rows(); i++) {
@@ -321,10 +320,10 @@ public class Ling {
         return mappings;
     }
 
-    private TetradMatrix initializeW(int numNodes) {
+    private Matrix initializeW(int numNodes) {
 
         // Initialize W to I.
-        TetradMatrix W = new TetradMatrix(numNodes, numNodes);
+        Matrix W = new Matrix(numNodes, numNodes);
 
         for (int i = 0; i < numNodes; i++) {
             for (int j = 0; j < numNodes; j++) {
@@ -371,9 +370,9 @@ public class Ling {
         }
     }
 
-    private TetradMatrix getWFastIca() {
-        TetradMatrix W;// Using this Fast ICA to get the logging.
-        TetradMatrix data = new TetradMatrix(dataSet.getDoubleData().toArray()).transpose();
+    private Matrix getWFastIca() {
+        Matrix W;// Using this Fast ICA to get the logging.
+        Matrix data = new Matrix(dataSet.getDoubleData().toArray()).transpose();
         FastIca fastIca = new FastIca(data, 30);
         fastIca.setVerbose(false);
         fastIca.setAlgorithmType(FastIca.DEFLATION);
@@ -382,7 +381,7 @@ public class Ling {
         fastIca.setMaxIterations(1000);
         fastIca.setAlpha(1.0);
         FastIca.IcaResult result = fastIca.findComponents();
-        W = new TetradMatrix(result.getW());
+        W = new Matrix(result.getW());
         return W.transpose();
     }
 
@@ -407,17 +406,17 @@ public class Ling {
     /**
      * This is the method used in Patrik's code.
      */
-    public TetradMatrix pruneEdgesByResampling(TetradMatrix data) {
-        TetradMatrix X = new TetradMatrix(data.transpose().toArray());
+    public Matrix pruneEdgesByResampling(Matrix data) {
+        Matrix X = new Matrix(data.transpose().toArray());
 
         int npieces = 10;
         int cols = X.columns();
         int rows = X.rows();
         int piecesize = (int) Math.floor(cols / npieces);
 
-        List<TetradMatrix> bpieces = new ArrayList<>();
-        List<TetradVector> diststdpieces = new ArrayList<>();
-        List<TetradVector> cpieces = new ArrayList<>();
+        List<Matrix> bpieces = new ArrayList<>();
+        List<Vector> diststdpieces = new ArrayList<>();
+        List<Vector> cpieces = new ArrayList<>();
 
         for (int p = 0; p < npieces; p++) {
 
@@ -429,7 +428,7 @@ public class Ling {
             int[] range = range(p0, p1);
 
 
-            TetradMatrix Xp = X;
+            Matrix Xp = X;
 
 //          % Remember to subract out the mean
 //          Xpm = mean(Xp,2);
@@ -438,7 +437,7 @@ public class Ling {
 //          % Calculate covariance matrix
 //          cov = (Xp*Xp')/size(Xp,2);
 
-            TetradVector Xpm = new TetradVector(rows);
+            Vector Xpm = new Vector(rows);
 
             for (int i = 0; i < rows; i++) {
                 double sum = 0.0;
@@ -457,9 +456,9 @@ public class Ling {
             }
 
 
-            TetradMatrix Xpt = Xp.transpose();
+            Matrix Xpt = Xp.transpose();
 
-            TetradMatrix cov = Xp.times(Xpt);
+            Matrix cov = Xp.times(Xpt);
 
             for (int i = 0; i < cov.rows(); i++) {
                 for (int j = 0; j < cov.columns(); j++) {
@@ -477,12 +476,12 @@ public class Ling {
                 System.out.println("Covariance matrix is not positive definite.");
             }
 
-            TetradMatrix sqrt = cov.sqrt();
+            Matrix sqrt = cov.sqrt();
             ;
 
-            TetradMatrix I = TetradMatrix.identity(rows);
-            TetradMatrix AI = I.copy();
-            TetradMatrix invSqrt = sqrt.inverse();
+            Matrix I = Matrix.identity(rows);
+            Matrix AI = I.copy();
+            Matrix invSqrt = sqrt.inverse();
 
             QRDecomposition qr = new QRDecomposition(new BlockRealMatrix(invSqrt.toArray()));
             RealMatrix r = qr.getR();
@@ -490,7 +489,7 @@ public class Ling {
 //          % The estimated disturbance-stds are one over the abs of the diag of L
 //          newestdisturbancestd = 1./diag(abs(L));
 
-            TetradVector newestdisturbancestd = new TetradVector(rows);
+            Vector newestdisturbancestd = new Vector(rows);
 
             for (int t = 0; t < rows; t++) {
                 newestdisturbancestd.set(t, 1.0 / Math.abs(r.getEntry(t, t)));
@@ -508,10 +507,10 @@ public class Ling {
 //          % Calculate corresponding B
 //          bnewest = eye(dims)-L;
 
-            TetradMatrix bnewest = TetradMatrix.identity(rows);
-            bnewest = bnewest.minus(new TetradMatrix(r.getData()));
+            Matrix bnewest = Matrix.identity(rows);
+            bnewest = bnewest.minus(new Matrix(r.getData()));
 
-            TetradVector cnewest = new TetradMatrix(r.getData()).times(Xpm);
+            Vector cnewest = new Matrix(r.getData()).times(Xpm);
 
             bpieces.add(bnewest);
             diststdpieces.add(newestdisturbancestd);
@@ -534,10 +533,10 @@ public class Ling {
 //          end
 //        end
 
-        TetradMatrix means = new TetradMatrix(rows, rows);
-        TetradMatrix stds = new TetradMatrix(rows, rows);
+        Matrix means = new Matrix(rows, rows);
+        Matrix stds = new Matrix(rows, rows);
 
-        TetradMatrix BFinal = new TetradMatrix(rows, rows);
+        Matrix BFinal = new Matrix(rows, rows);
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < rows; j++) {
@@ -577,10 +576,10 @@ public class Ling {
         Distribution gp2 = new GaussianPower(2);
 
         //the coefficients of the error terms  (here, all 1s)
-        TetradVector errorCoefficients = getErrorCoeffsIdentity(graphWP.getGraph().getNumNodes());
+        Vector errorCoefficients = getErrorCoeffsIdentity(graphWP.getGraph().getNumNodes());
 
         //generate data from the SEM
-        TetradMatrix inVectors = simulateCyclic(graphWP, errorCoefficients, numSamples, gp2);
+        Matrix inVectors = simulateCyclic(graphWP, errorCoefficients, numSamples, gp2);
 
         //reformat it
         dataSet = new BoxDataSet(new DoubleDataBox(inVectors.transpose().toArray()), graphWP.getGraph().getNodes());
@@ -599,8 +598,8 @@ public class Ling {
      * @param n The number of variables.
      * @return StoredGraphs
      */
-    private static TetradVector getErrorCoeffsIdentity(int n) {
-        TetradVector errorCoefficients = new TetradVector(n);
+    private static Vector getErrorCoeffsIdentity(int n) {
+        Vector errorCoefficients = new Vector(n);
         for (int i = 0; i < n; i++) {
             errorCoefficients.set(i, 1);
         }
@@ -609,12 +608,12 @@ public class Ling {
 
     // used to produce dataset if one is not provided as the input to the constructor
 
-    private static TetradMatrix simulateCyclic(GraphWithParameters dwp, TetradVector errorCoefficients, int n, Distribution distribution) {
-        TetradMatrix reducedForm = reducedForm(dwp);
+    private static Matrix simulateCyclic(GraphWithParameters dwp, Vector errorCoefficients, int n, Distribution distribution) {
+        Matrix reducedForm = reducedForm(dwp);
 
-        TetradMatrix vectors = new TetradMatrix(dwp.getGraph().getNumNodes(), n);
+        Matrix vectors = new Matrix(dwp.getGraph().getNumNodes(), n);
         for (int j = 0; j < n; j++) {
-            TetradVector vector = simulateReducedForm(reducedForm, errorCoefficients, distribution);
+            Vector vector = simulateReducedForm(reducedForm, errorCoefficients, distribution);
             vectors.assignColumn(j, vector);
         }
         return vectors;
@@ -623,20 +622,20 @@ public class Ling {
     // graph matrix is B
     // mixing matrix (reduced form) is A
 
-    private static TetradMatrix reducedForm(GraphWithParameters graph) {
-        TetradMatrix graphMatrix = new TetradMatrix(graph.getGraphMatrix().getDoubleData().toArray());
+    private static Matrix reducedForm(GraphWithParameters graph) {
+        Matrix graphMatrix = new Matrix(graph.getGraphMatrix().getDoubleData().toArray());
         int n = graphMatrix.rows();
 //        TetradMatrix identityMinusGraphTetradMatrix = TetradMatrixUtils.linearCombination(TetradMatrixUtils.identityTetradMatrix(n), 1, graphTetradMatrix, -1);
-        TetradMatrix identityMinusGraphTetradMatrix = TetradMatrix.identity(n).minus(graphMatrix);
+        Matrix identityMinusGraphTetradMatrix = Matrix.identity(n).minus(graphMatrix);
         return identityMinusGraphTetradMatrix.inverse();
     }
 
     //check against model in which: A =  ..... / (1 - xyzw)
 
-    private static TetradVector simulateReducedForm(TetradMatrix reducedForm, TetradVector errorCoefficients, Distribution distr) {
+    private static Vector simulateReducedForm(Matrix reducedForm, Vector errorCoefficients, Distribution distr) {
         int n = reducedForm.rows();
-        TetradVector vector = new TetradVector(n);
-        TetradVector samples = new TetradVector(n);
+        Vector vector = new Vector(n);
+        Vector samples = new Vector(n);
 
         for (int j = 0; j < n; j++) { //sample from each noise term
             double sample = distr.nextRandom();
@@ -658,9 +657,9 @@ public class Ling {
 
     //given the W matrix, outputs the list of SEMs consistent with the observed distribution.
 
-    private StoredGraphs findCandidateModels(List<Node> variables, TetradMatrix matrixW, boolean approximateZeros) {
+    private StoredGraphs findCandidateModels(List<Node> variables, Matrix matrixW, boolean approximateZeros) {
 
-        TetradMatrix normalizedZldW;
+        Matrix normalizedZldW;
         List<PermutationMatrixPair> zldPerms;
 
         StoredGraphs gs = new StoredGraphs();
@@ -680,8 +679,8 @@ public class Ling {
             normalizedZldW = LingUtils.normalizeDiagonal(zldPerm.getMatrixW());
             // Note: add method to deal with this data
             zldPerm.setMatrixBhat(computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
-            TetradMatrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
-            boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(doubleData.toArray()));
+            Matrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
+            boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
             GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
 
             gs.addGraph(graph.getGraph());
@@ -723,9 +722,9 @@ public class Ling {
         return gs;
     }
 
-    private StoredGraphs findCandidateModel(List<Node> variables, TetradMatrix matrixW, boolean approximateZeros) {
+    private StoredGraphs findCandidateModel(List<Node> variables, Matrix matrixW, boolean approximateZeros) {
 
-        TetradMatrix normalizedZldW;
+        Matrix normalizedZldW;
         List<PermutationMatrixPair> zldPerms;
 
         StoredGraphs gs = new StoredGraphs();
@@ -748,8 +747,8 @@ public class Ling {
             normalizedZldW = LingUtils.normalizeDiagonal(zldPerm.getMatrixW());
             // Note: add method to deal with this data
             zldPerm.setMatrixBhat(computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
-            TetradMatrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
-            boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new TetradMatrix(doubleData.toArray()));
+            Matrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
+            boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
             GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
 
             gs.addGraph(graph.getGraph());
@@ -792,10 +791,10 @@ public class Ling {
     }
 
 
-    private List<PermutationMatrixPair> zerolessDiagonalPermutations(TetradMatrix ica_W, boolean approximateZeros,
+    private List<PermutationMatrixPair> zerolessDiagonalPermutations(Matrix ica_W, boolean approximateZeros,
                                                                      List<Node> vars, DataSet dataSet) {
 
-        List<PermutationMatrixPair> permutations = new Vector<>();
+        List<PermutationMatrixPair> permutations = new java.util.Vector();
 
         if (approximateZeros) {
 //            setInsignificantEntriesToZero(ica_W);
@@ -804,14 +803,14 @@ public class Ling {
         }
 
         //find assignments
-        TetradMatrix mat = ica_W.transpose();
+        Matrix mat = ica_W.transpose();
         //returns all zeroless-diagonal column-permutations
 
         List<List<Integer>> nRookAssignments = nRookColumnAssignments(mat, makeAllRows(mat.rows()));
 
         //for each assignment, add the corresponding permutation to 'permutations'
         for (List<Integer> permutation : nRookAssignments) {
-            TetradMatrix matrixW = permuteRows(ica_W, permutation).transpose();
+            Matrix matrixW = permuteRows(ica_W, permutation).transpose();
             PermutationMatrixPair permTetradMatrixPair = new PermutationMatrixPair(permutation, matrixW);
             permutations.add(permTetradMatrixPair);
         }
@@ -819,10 +818,10 @@ public class Ling {
         return permutations;
     }
 
-    private List<PermutationMatrixPair> zerolessDiagonalPermutation(TetradMatrix ica_W, boolean approximateZeros,
+    private List<PermutationMatrixPair> zerolessDiagonalPermutation(Matrix ica_W, boolean approximateZeros,
                                                                     List<Node> vars, DataSet dataSet) {
 
-        List<PermutationMatrixPair> permutations = new Vector<>();
+        List<PermutationMatrixPair> permutations = new java.util.Vector();
 
         if (approximateZeros) {
 //            setInsignificantEntriesToZero(ica_W);
@@ -836,7 +835,7 @@ public class Ling {
 
         for (int i = 0; i < vars.size(); i++) perm.add(i);
 
-        TetradMatrix matrixW = ica_W.transpose();
+        Matrix matrixW = ica_W.transpose();
 
         PermutationMatrixPair pair = new PermutationMatrixPair(perm, matrixW);
 
@@ -859,15 +858,15 @@ public class Ling {
         return permutations;
     }
 
-    private TetradMatrix removeZeroRowsAndCols(TetradMatrix w, List<Node> variables) {
+    private Matrix removeZeroRowsAndCols(Matrix w, List<Node> variables) {
 
-        TetradMatrix _W = w.copy();
+        Matrix _W = w.copy();
         List<Node> _variables = new ArrayList<>(variables);
         List<Integer> remove = new ArrayList<>();
 
         ROW:
         for (int i = 0; i < _W.rows(); i++) {
-            TetradVector row = _W.getRow(i);
+            Vector row = _W.getRow(i);
 
             for (int j = 0; j < row.size(); j++) {
                 if (row.get(j) != 0) continue ROW;
@@ -879,7 +878,7 @@ public class Ling {
 
         COLUMN:
         for (int i = 0; i < _W.rows(); i++) {
-            TetradVector col = _W.getColumn(i);
+            Vector col = _W.getColumn(i);
 
             for (int j = 0; j < col.size(); j++) {
                 if (col.get(j) != 0) continue COLUMN;
@@ -908,7 +907,7 @@ public class Ling {
 
     // uses the thresholding criterion
 
-    private void setInsignificantEntriesToZero(TetradMatrix mat) {
+    private void setInsignificantEntriesToZero(Matrix mat) {
         int n = mat.rows();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -929,7 +928,7 @@ public class Ling {
         return l;
     }
 
-    private static List<List<Integer>> nRookColumnAssignments(TetradMatrix mat, List<Integer> availableRows) {
+    private static List<List<Integer>> nRookColumnAssignments(Matrix mat, List<Integer> availableRows) {
         List<List<Integer>> concats = new ArrayList<>();
 
         System.out.println("mat = " + mat);
@@ -941,9 +940,9 @@ public class Ling {
 
             if (mat.get(currentRowIndex, 0) != 0) {
                 if (mat.columns() > 1) {
-                    Vector<Integer> newAvailableRows = (new Vector<>(availableRows));
+                    java.util.Vector newAvailableRows = (new java.util.Vector(availableRows));
                     newAvailableRows.removeElement(currentRowIndex);
-                    TetradMatrix subMat = mat.getPart(0, mat.rows() - 1, 1, mat.columns() - 2);
+                    Matrix subMat = mat.getPart(0, mat.rows() - 1, 1, mat.columns() - 2);
                     List<List<Integer>> allLater = nRookColumnAssignments(subMat, newAvailableRows);
 
                     for (List<Integer> laterPerm : allLater) {
@@ -961,11 +960,11 @@ public class Ling {
         return concats;
     }
 
-    private static TetradMatrix permuteRows(TetradMatrix mat, List<Integer> permutation) {
-        TetradMatrix permutedMat = mat.like();
+    private static Matrix permuteRows(Matrix mat, List<Integer> permutation) {
+        Matrix permutedMat = mat.like();
 
         for (int j = 0; j < mat.rows(); j++) {
-            TetradVector row = mat.getRow(j);
+            Vector row = mat.getRow(j);
             permutedMat.assignRow(permutation.get(j), row);
         }
 
@@ -974,13 +973,13 @@ public class Ling {
 
     //	B^ = I - W~'
 
-    private static DataSet computeBhatTetradMatrix(TetradMatrix normalizedZldW, List<Node> nodes) {//, List<Integer> perm) {
+    private static DataSet computeBhatTetradMatrix(Matrix normalizedZldW, List<Node> nodes) {//, List<Integer> perm) {
         int size = normalizedZldW.rows();
-        TetradMatrix mat = TetradMatrix.identity(size).minus(normalizedZldW);
+        Matrix mat = Matrix.identity(size).minus(normalizedZldW);
         return new BoxDataSet(new DoubleDataBox(mat.toArray()), nodes);
     }
 
-    private static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {
+    private static boolean allEigenvaluesAreSmallerThanOneInModulus(Matrix mat) {
 
         EigenDecomposition dec = new EigenDecomposition(new BlockRealMatrix(mat.toArray()));
         double[] realEigenvalues = dec.getRealEigenvalues();

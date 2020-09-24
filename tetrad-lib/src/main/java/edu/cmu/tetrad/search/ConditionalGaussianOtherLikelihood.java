@@ -23,8 +23,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
@@ -283,10 +283,10 @@ public class ConditionalGaussianOtherLikelihood {
 
                     // Determinant will be zero if data are linearly dependent.
                     if (a > continuousCols.length + 10) {
-                        TetradMatrix cov = cov(getSubsample(continuousCols, cell));
+                        Matrix cov = cov(getSubsample(continuousCols, cell));
                         c2 += a * gaussianLikelihood(k, cov);
                     } else {
-                        TetradMatrix cov = cov(getSubsample(continuousCols, all));
+                        Matrix cov = cov(getSubsample(continuousCols, all));
                         c2 += a * gaussianLikelihood(k, cov);
                     }
                 } catch (Exception e) {
@@ -308,11 +308,11 @@ public class ConditionalGaussianOtherLikelihood {
     }
 
     // One record.
-    private double gaussianLikelihood(int k, TetradMatrix sigma) {
+    private double gaussianLikelihood(int k, Matrix sigma) {
         return -0.5 * logdet(sigma) - 0.5 * k - 0.5 * k * LOGMATH2PI;
     }
 
-    private double logdet(TetradMatrix m) {
+    private double logdet(Matrix m) {
         RealMatrix M = new BlockRealMatrix(m.toArray());
         final double tol = 1e-9;
         RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
@@ -340,24 +340,24 @@ public class ConditionalGaussianOtherLikelihood {
 
         List<List<List<Integer>>> cells = adTree.getCellLeaves(A, B);
 
-        TetradMatrix defaultCov = null;
+        Matrix defaultCov = null;
 
         for (List<List<Integer>> mycells : cells) {
-            List<TetradMatrix> x = new ArrayList<>();
-            List<TetradMatrix> sigmas = new ArrayList<>();
-            List<TetradMatrix> inv = new ArrayList<>();
-            List<TetradVector> mu = new ArrayList<>();
+            List<Matrix> x = new ArrayList<>();
+            List<Matrix> sigmas = new ArrayList<>();
+            List<Matrix> inv = new ArrayList<>();
+            List<Vector> mu = new ArrayList<>();
 
             for (List<Integer> cell : mycells) {
-                TetradMatrix subsample = getSubsample(continuousCols, cell);
+                Matrix subsample = getSubsample(continuousCols, cell);
 
                 try {
 
                     // Determinant will be zero if data are linearly dependent.
                     if (mycells.size() <= continuousCols.length) throw new IllegalArgumentException();
 
-                    TetradMatrix cov = cov(subsample);
-                    TetradMatrix covinv = cov.inverse();
+                    Matrix cov = cov(subsample);
+                    Matrix covinv = cov.inverse();
 
                     if (defaultCov == null) {
                         defaultCov = cov;
@@ -383,7 +383,7 @@ public class ConditionalGaussianOtherLikelihood {
             for (int u = 0; u < x.size(); u++) {
                 for (int i = 0; i < x.get(u).rows(); i++) {
                     for (int v = 0; v < x.size(); v++) {
-                        final TetradVector xm = x.get(u).getRow(i).minus(mu.get(v));
+                        final Vector xm = x.get(u).getRow(i).minus(mu.get(v));
                         a[v] = prob(factors[v], inv.get(v), xm);
                     }
 
@@ -432,26 +432,26 @@ public class ConditionalGaussianOtherLikelihood {
         return new Ret(lnL, dof);
     }
 
-    private double p(List<TetradMatrix> x, int u, double N) {
+    private double p(List<Matrix> x, int u, double N) {
         return x.get(u).rows() / N;
     }
 
-    private TetradMatrix cov(TetradMatrix x) {
-        return new TetradMatrix(new Covariance(x.toArray(), true).getCovarianceMatrix().getData());
+    private Matrix cov(Matrix x) {
+        return new Matrix(new Covariance(x.toArray(), true).getCovarianceMatrix().getData());
     }
 
-    private double prob(Double factor, TetradMatrix inv, TetradVector x) {
+    private double prob(Double factor, Matrix inv, Vector x) {
         return factor * Math.exp(-0.5 * inv.times(x).dotProduct(x));
     }
 
     // Calculates the means of the columns of x.
-    private TetradVector means(TetradMatrix x) {
+    private Vector means(Matrix x) {
         return x.sum(1).scalarMult(1.0 / x.rows());
     }
 
     // Subsample of the continuous mixedVariables conditioning on the given cell.
-    private TetradMatrix getSubsample(int[] continuousCols, List<Integer> cell) {
-        TetradMatrix subset = new TetradMatrix(cell.size(), continuousCols.length);
+    private Matrix getSubsample(int[] continuousCols, List<Integer> cell) {
+        Matrix subset = new Matrix(cell.size(), continuousCols.length);
 
         for (int i = 0; i < cell.size(); i++) {
             for (int j = 0; j < continuousCols.length; j++) {

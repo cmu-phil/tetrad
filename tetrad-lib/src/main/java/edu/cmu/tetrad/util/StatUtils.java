@@ -23,7 +23,6 @@ package edu.cmu.tetrad.util;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
-import edu.cmu.tetrad.data.DataUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
@@ -109,7 +108,7 @@ public final class StatUtils {
      * @param N    the number of values of array which should be considered.
      * @return the mean of the first N values in this array.
      */
-    public static double mean(TetradVector data, int N) {
+    public static double mean(Vector data, int N) {
         double sum = 0.0;
         int count = 0;
 
@@ -706,7 +705,7 @@ public final class StatUtils {
      * products of the sample means for the first N values in array1 and
      * array2..
      */
-    public static double sxy(TetradVector data1, TetradVector data2, int N) {
+    public static double sxy(Vector data1, Vector data2, int N) {
         double sum = 0.0;
         double meanX = mean(data1, N);
         double meanY = mean(data2, N);
@@ -883,7 +882,7 @@ public final class StatUtils {
         return correlation(array1, array2, N1);
     }
 
-    public static double correlation(TetradVector data1, TetradVector data2) {
+    public static double correlation(Vector data1, Vector data2) {
         int N = data1.size();
         double covXY = sxy(data1, data2, N);
         double covXX = sxy(data1, data1, N);
@@ -891,7 +890,7 @@ public final class StatUtils {
         return (covXY / (Math.sqrt(covXX) * Math.sqrt(covYY)));
     }
 
-    public static short compressedCorrelation(TetradVector data1, TetradVector data2) {
+    public static short compressedCorrelation(Vector data1, Vector data2) {
         return (short) (correlation(data1, data2) * 10000);
     }
 
@@ -1685,7 +1684,7 @@ public final class StatUtils {
      *
      * @return the given partial covariance.
      */
-    public static double partialCovariance(TetradMatrix submatrix) {
+    public static double partialCovariance(Matrix submatrix) {
 
         // Using the method in Whittacker.
         // cov(X, Y | Z) = cov(X, Y) - cov(X, Z) inverse(cov(Z, Z)) cov(Z, Y)
@@ -1694,14 +1693,14 @@ public final class StatUtils {
         int[] _z = new int[submatrix.rows() - 2];
         for (int i = 0; i < submatrix.rows() - 2; i++) _z[i] = i + 2;
 
-        TetradMatrix covXz = submatrix.getSelection(new int[]{0}, _z);
-        TetradMatrix covZy = submatrix.getSelection(_z, new int[]{1});
-        TetradMatrix covZ = submatrix.getSelection(_z, _z);
+        Matrix covXz = submatrix.getSelection(new int[]{0}, _z);
+        Matrix covZy = submatrix.getSelection(_z, new int[]{1});
+        Matrix covZ = submatrix.getSelection(_z, _z);
 
-        TetradMatrix _zInverse = covZ.inverse();
+        Matrix _zInverse = covZ.inverse();
 
-        TetradMatrix temp1 = covXz.times(_zInverse);
-        TetradMatrix temp2 = temp1.times(covZy);
+        Matrix temp1 = covXz.times(_zInverse);
+        Matrix temp2 = temp1.times(covZy);
 
         return covXy - temp2.get(0, 0);
 
@@ -1711,7 +1710,7 @@ public final class StatUtils {
      * @return the partial covariance(x, y | z) where these represent the column/row indices
      * of the desired variables in <code>covariance</code>
      */
-    public static double partialCovariance(TetradMatrix covariance, int x, int y, int... z) {
+    public static double partialCovariance(Matrix covariance, int x, int y, int... z) {
 //        submatrix = TetradAlgebra.in                                                                                                                                 verse(submatrix);
 //        return -1.0 * submatrix.get(0, 1);
 
@@ -1728,11 +1727,11 @@ public final class StatUtils {
         return partialCovariance(covariance.getSelection(selection, selection));
     }
 
-    public static double partialVariance(TetradMatrix covariance, int x, int... z) {
+    public static double partialVariance(Matrix covariance, int x, int... z) {
         return partialCovariance(covariance, x, x, z);
     }
 
-    public static double partialStandardDeviation(TetradMatrix covariance, int x, int... z) {
+    public static double partialStandardDeviation(Matrix covariance, int x, int... z) {
         double var = partialVariance(covariance, x, z);
         return Math.sqrt(var);
     }
@@ -1745,16 +1744,16 @@ public final class StatUtils {
      *
      * @return the given partial correlation.
      */
-    public static synchronized double partialCorrelation(TetradMatrix submatrix) {
+    public static synchronized double partialCorrelation(Matrix submatrix) {
         return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
     }
 
-    public static synchronized double partialCorrelationPrecisionMatrix(TetradMatrix submatrix) {
-        TetradMatrix inverse = submatrix.inverse();
+    public static synchronized double partialCorrelationPrecisionMatrix(Matrix submatrix) {
+        Matrix inverse = submatrix.inverse();
         return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
     }
 
-    public static synchronized double partialCorrelationWhittaker(TetradMatrix submatrix) {
+    public static synchronized double partialCorrelationWhittaker(Matrix submatrix) {
         double cov = partialCovariance(submatrix);
 
         int[] selection1 = new int[submatrix.rows()];
@@ -1764,14 +1763,14 @@ public final class StatUtils {
         selection1[1] = 0;
         for (int i = 2; i < selection1.length; i++) selection1[i] = i;
 
-        TetradMatrix var1Matrix = submatrix.getSelection(selection1, selection1);
+        Matrix var1Matrix = submatrix.getSelection(selection1, selection1);
         double var1 = partialCovariance(var1Matrix);
 
         selection2[0] = 1;
         selection2[1] = 1;
         for (int i = 2; i < selection2.length; i++) selection2[i] = i;
 
-        TetradMatrix var2Matrix = submatrix.getSelection(selection2, selection2);
+        Matrix var2Matrix = submatrix.getSelection(selection2, selection2);
         double var2 = partialCovariance(var2Matrix);
 
         return cov / Math.sqrt(var1 * var2);
@@ -1781,7 +1780,7 @@ public final class StatUtils {
      * @return the partial correlation(x, y | z) where these represent the column/row indices
      * of the desired variables in <code>covariance</code>
      */
-    public static double partialCorrelation(TetradMatrix covariance, int x, int y, int... z) {
+    public static double partialCorrelation(Matrix covariance, int x, int y, int... z) {
         if (x > covariance.rows()) throw new IllegalArgumentException();
         if (y > covariance.rows()) throw new IllegalArgumentException();
         for (int aZ : z) if (aZ > covariance.rows()) throw new IllegalArgumentException();

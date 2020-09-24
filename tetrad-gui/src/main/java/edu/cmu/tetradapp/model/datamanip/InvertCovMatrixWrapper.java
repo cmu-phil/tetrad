@@ -22,8 +22,7 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
@@ -46,8 +45,8 @@ public class InvertCovMatrixWrapper extends DataWrapper {
         DataModel model = wrapper.getSelectedDataModel();
         if (model instanceof ICovarianceMatrix) {
             ICovarianceMatrix dataSet = (ICovarianceMatrix) model;
-            TetradMatrix data = dataSet.getMatrix();
-            TetradMatrix inverse = data.inverse();
+            Matrix data = dataSet.getMatrix();
+            Matrix inverse = data.inverse();
             String[] varNames = dataSet.getVariableNames().toArray(new String[0]);
             ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), inverse,
                     ((ICovarianceMatrix) model).getSampleSize());

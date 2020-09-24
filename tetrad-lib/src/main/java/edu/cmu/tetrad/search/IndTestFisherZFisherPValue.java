@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.*;
 
@@ -102,8 +102,8 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         List<Double> pValues = new ArrayList<>();
 
         for (int m = 0; m < ncov.size(); m++) {
-            TetradMatrix _ncov = ncov.get(m).getSelection(all, all);
-            TetradMatrix inv = _ncov.inverse();
+            Matrix _ncov = ncov.get(m).getSelection(all, all);
+            Matrix inv = _ncov.inverse();
             double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
 //            r *= 0.6;
             double _z = sqrt(sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
@@ -289,7 +289,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

@@ -23,7 +23,7 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.data.Simulator;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
@@ -96,15 +96,15 @@ public interface ISemIm extends Simulator, TetradSerializable {
 
     double getPValue();
 
-    double getVariance(Node nodeA, TetradMatrix implCovar);
+    double getVariance(Node nodeA, Matrix implCovar);
 
-    double getStdDev(Node node, TetradMatrix implCovar);
+    double getStdDev(Node node, Matrix implCovar);
 
     List getMeasuredNodes();
 
-    TetradMatrix getImplCovarMeas();
+    Matrix getImplCovarMeas();
 
-    TetradMatrix getImplCovar(boolean recalculate);
+    Matrix getImplCovar(boolean recalculate);
 
     double getBicScore();
 

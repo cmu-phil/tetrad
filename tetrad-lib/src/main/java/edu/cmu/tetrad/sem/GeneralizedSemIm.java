@@ -28,6 +28,7 @@ import edu.cmu.tetrad.calculator.parser.Token;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
@@ -985,7 +986,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
     }
 
 
-    public TetradVector simulateOneRecord(TetradVector e) {
+    public Vector simulateOneRecord(Vector e) {
         final Map<String, Double> variableValues = new HashMap<>();
 
         final List<Node> variableNodes = pm.getVariableNodes();
@@ -1061,7 +1062,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        TetradVector _case = new TetradVector(e.size());
+        Vector _case = new Vector(e.size());
 
         for (int i = 0; i < variableNodes.size(); i++) {
             double value = variableValues.get(variableNodes.get(i).getName());

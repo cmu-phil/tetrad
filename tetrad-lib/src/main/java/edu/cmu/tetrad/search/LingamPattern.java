@@ -32,8 +32,8 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -106,7 +106,7 @@ public class LingamPattern {
             return null;
         }
 
-        TetradMatrix data = getDataSet().getDoubleData();
+        Matrix data = getDataSet().getDoubleData();
         List<Node> variables = getDataSet().getVariables();
 
         if (dags.size() == 0) {
@@ -196,7 +196,7 @@ public class LingamPattern {
 
     //=============================PRIVATE METHODS=========================//
 
-    private Score getScore(Graph dag, TetradMatrix data, List<Node> variables) {
+    private Score getScore(Graph dag, Matrix data, List<Node> variables) {
 //        System.out.println("Scoring DAG: " + dag);
 
         Regression regression = new RegressionDataset(data, variables);
@@ -204,7 +204,7 @@ public class LingamPattern {
         List<Node> nodes = dag.getNodes();
         double score = 0.0;
         double[] pValues = new double[nodes.size()];
-        TetradMatrix residuals = new TetradMatrix(data.rows(), data.columns());
+        Matrix residuals = new Matrix(data.rows(), data.columns());
 
         for (int i = 0; i < nodes.size(); i++) {
             Node _target = nodes.get(i);
@@ -218,7 +218,7 @@ public class LingamPattern {
             }
 
             RegressionResult result = regression.regress(target, regressors);
-            TetradVector residualsColumn = result.getResiduals();
+            Vector residualsColumn = result.getResiduals();
 //            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
             DoubleArrayList residualsArray = new DoubleArrayList(residualsColumn.toArray());

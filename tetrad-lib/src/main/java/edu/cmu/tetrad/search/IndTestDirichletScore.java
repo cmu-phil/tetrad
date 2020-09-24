@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.io.PrintStream;
 import java.text.NumberFormat;
@@ -216,8 +216,8 @@ public final class IndTestDirichletScore implements IndependenceTest {
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            TetradMatrix Czz = covMatrix.getSelection(parents, parents);
-            TetradMatrix inverse;
+            Matrix Czz = covMatrix.getSelection(parents, parents);
+            Matrix inverse;
 
             try {
                 inverse = Czz.inverse();
@@ -225,8 +225,8 @@ public final class IndTestDirichletScore implements IndependenceTest {
                 return true;
             }
 
-            TetradVector Cyz = covMatrix.getSelection(parents, new int[]{i}).getColumn(0);
-            TetradVector b = inverse.times(Cyz);
+            Vector Cyz = covMatrix.getSelection(parents, new int[]{i}).getColumn(0);
+            Vector b = inverse.times(Cyz);
 
             variance -= Cyz.dotProduct(b);
         }
@@ -286,7 +286,7 @@ public final class IndTestDirichletScore implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

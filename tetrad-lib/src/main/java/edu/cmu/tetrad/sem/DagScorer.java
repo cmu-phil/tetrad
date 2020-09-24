@@ -52,12 +52,12 @@ public final class DagScorer implements TetradSerializable, Scorer {
 
     private ICovarianceMatrix covMatrix;
     private DataSet dataSet = null;
-    private TetradMatrix edgeCoef;
-    private TetradMatrix errorCovar;
+    private Matrix edgeCoef;
+    private Matrix errorCovar;
     private Graph dag = null;
     private List<Node> variables;
-    private TetradMatrix implCovarMeasC;
-    private TetradMatrix sampleCovar;
+    private Matrix implCovarMeasC;
+    private Matrix sampleCovar;
     private double logDetSample;
     private double fml = Double.NaN;
 
@@ -92,8 +92,8 @@ public final class DagScorer implements TetradSerializable, Scorer {
         this.covMatrix = covMatrix;
 
         int m = this.getVariables().size();
-        this.edgeCoef = new TetradMatrix(m, m);
-        this.errorCovar = new TetradMatrix(m, m);
+        this.edgeCoef = new Matrix(m, m);
+        this.errorCovar = new Matrix(m, m);
         this.sampleCovar = covMatrix.getMatrix();
     }
 
@@ -138,8 +138,8 @@ public final class DagScorer implements TetradSerializable, Scorer {
             double variance = getSampleCovar().get(idx, idx);
 
             if (parents.size() > 0) {
-                TetradVector nodeParentsCov = new TetradVector(parents.size());
-                TetradMatrix parentsCov = new TetradMatrix(parents.size(), parents.size());
+                Vector nodeParentsCov = new Vector(parents.size());
+                Matrix parentsCov = new Matrix(parents.size(), parents.size());
 
                 for (int i = 0; i < parents.size(); i++) {
                     int idx2 = indexOf(parents.get(i));
@@ -152,7 +152,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
                     }
                 }
 
-                TetradVector edges = parentsCov.inverse().times(nodeParentsCov);
+                Vector edges = parentsCov.inverse().times(nodeParentsCov);
 
                 for (int i = 0; i < edges.size(); i++) {
                     int idx2 = indexOf(parents.get(i));
@@ -227,7 +227,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
             return this.fml;
         }
 
-        TetradMatrix implCovarMeas; // Do this once.
+        Matrix implCovarMeas; // Do this once.
 
         try {
             implCovarMeas = implCovarMeas();
@@ -236,7 +236,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
             return Double.NaN;
         }
 
-        TetradMatrix sampleCovar = sampleCovar();
+        Matrix sampleCovar = sampleCovar();
 
         double logDetSigma = logDet(implCovarMeas);
         double traceSSigmaInv = traceABInv(sampleCovar, implCovarMeas);
@@ -254,7 +254,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     public double getLogLikelihood() {
-        TetradMatrix SigmaTheta; // Do this once.
+        Matrix SigmaTheta; // Do this once.
 
         try {
             SigmaTheta = implCovarMeas();
@@ -262,7 +262,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
             return Double.NaN;
         }
 
-        TetradMatrix sStar = sampleCovar();
+        Matrix sStar = sampleCovar();
 
         double logDetSigmaTheta = logDet(SigmaTheta);
         double traceSStarSigmaInv = traceABInv(sStar, SigmaTheta);
@@ -281,20 +281,20 @@ public final class DagScorer implements TetradSerializable, Scorer {
      */
     public double getTruncLL() {
         // Formula Bollen p. 263.
-        TetradMatrix Sigma = implCovarMeas();
+        Matrix Sigma = implCovarMeas();
 
         // Using (n - 1) / n * s as in Bollen p. 134 causes sinkholes to open
         // up immediately. Not sure why.
-        TetradMatrix S = sampleCovar();
+        Matrix S = sampleCovar();
         int n = getSampleSize();
         return -(n - 1) / 2. * (logDet(Sigma) + traceAInvB(Sigma, S));
     }
 
-    private TetradMatrix sampleCovar() {
+    private Matrix sampleCovar() {
         return getSampleCovar();
     }
 
-    private TetradMatrix implCovarMeas() {
+    private Matrix implCovarMeas() {
         computeImpliedCovar();
         return this.implCovarMeasC;
     }
@@ -370,11 +370,11 @@ public final class DagScorer implements TetradSerializable, Scorer {
 
         // Note. Since the sizes of the temp matrices in this calculation
         // never change, we ought to be able to reuse them.
-        TetradMatrix implCovarC = MatrixUtils.impliedCovar(edgeCoef().transpose(), errCovar());
+        Matrix implCovarC = MatrixUtils.impliedCovar(edgeCoef().transpose(), errCovar());
 
         // Submatrix of implied covar for measured vars only.
         int size = getMeasuredNodes().size();
-        this.implCovarMeasC = new TetradMatrix(size, size);
+        this.implCovarMeasC = new Matrix(size, size);
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
@@ -383,24 +383,24 @@ public final class DagScorer implements TetradSerializable, Scorer {
         }
     }
 
-    private TetradMatrix errCovar() {
+    private Matrix errCovar() {
         return getErrorCovar();
     }
 
-    private TetradMatrix edgeCoef() {
+    private Matrix edgeCoef() {
         return getEdgeCoef();
     }
 
-    private double logDet(TetradMatrix matrix2D) {
+    private double logDet(Matrix matrix2D) {
         return Math.log(matrix2D.det());
     }
 
-    private double traceAInvB(TetradMatrix A, TetradMatrix B) {
+    private double traceAInvB(Matrix A, Matrix B) {
 
         // Note that at this point the sem and the sample covar MUST have the
         // same variables in the same order.
-        TetradMatrix inverse = A.inverse();
-        TetradMatrix product = inverse.times(B);
+        Matrix inverse = A.inverse();
+        Matrix product = inverse.times(B);
 
         double trace = product.trace();
 
@@ -413,13 +413,13 @@ public final class DagScorer implements TetradSerializable, Scorer {
         return trace;
     }
 
-    private double traceABInv(TetradMatrix A, TetradMatrix B) {
+    private double traceABInv(Matrix A, Matrix B) {
 
         // Note that at this point the sem and the sample covar MUST have the
         // same variables in the same order.
         try {
 
-            TetradMatrix product = A.times(B.inverse());
+            Matrix product = A.times(B.inverse());
 
             double trace = product.trace();
 
@@ -506,15 +506,15 @@ public final class DagScorer implements TetradSerializable, Scorer {
         return this.getVariables();
     }
 
-    public TetradMatrix getSampleCovar() {
+    public Matrix getSampleCovar() {
         return sampleCovar;
     }
 
-    public TetradMatrix getEdgeCoef() {
+    public Matrix getEdgeCoef() {
         return edgeCoef;
     }
 
-    public TetradMatrix getErrorCovar() {
+    public Matrix getErrorCovar() {
         return errorCovar;
     }
 

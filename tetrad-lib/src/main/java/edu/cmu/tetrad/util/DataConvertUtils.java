@@ -83,7 +83,7 @@ public class DataConvertUtils {
 
     public static DataModel toCovarianceMatrix(CovarianceData dataset) {
         List<Node> variables = toNodes(dataset.getVariables());
-        TetradMatrix matrix = new TetradMatrix(dataset.getData());
+        Matrix matrix = new Matrix(dataset.getData());
         int sampleSize = dataset.getNumberOfCases();
 
         return new CovarianceMatrix(variables, matrix, sampleSize);

@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -157,14 +157,14 @@ public class TestMatrixUtils {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        TetradMatrix err = im.getErrCovar();
-        TetradMatrix coef = im.getEdgeCoef();
+        Matrix err = im.getErrCovar();
+        Matrix coef = im.getEdgeCoef();
 
-        TetradMatrix implied = MatrixUtils.impliedCovar(coef, err);
+        Matrix implied = MatrixUtils.impliedCovar(coef, err);
 
         assertTrue(MatrixUtils.isPositiveDefinite(implied));
 
-        TetradMatrix corr = MatrixUtils.convertCovToCorr(new TetradMatrix(implied));
+        Matrix corr = MatrixUtils.convertCovToCorr(new Matrix(implied));
 
         assertTrue(MatrixUtils.isPositiveDefinite(corr));
     }

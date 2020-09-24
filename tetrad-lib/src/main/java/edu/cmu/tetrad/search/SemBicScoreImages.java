@@ -27,8 +27,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -247,11 +247,11 @@ public class SemBicScoreImages implements ISemBicScore, Score {
 //        return -n * Math.log(residualVariance) - c * (2 * p + 1) * Math.log(n);
 //    }
 //
-    private TetradMatrix getSelection1(ICovarianceMatrix cov, int[] rows) {
+    private Matrix getSelection1(ICovarianceMatrix cov, int[] rows) {
         return cov.getSelection(rows, rows);
     }
 
-    private TetradVector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
+    private Vector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
         return cov.getSelection(rows, new int[]{k}).getColumn(0);
     }
 
@@ -271,7 +271,7 @@ public class SemBicScoreImages implements ISemBicScore, Score {
                 _sel.add(variables.get(sel[m]));
             }
 
-            TetradMatrix m = cov.getSelection(sel, sel);
+            Matrix m = cov.getSelection(sel, sel);
 
             try {
                 m.inverse();

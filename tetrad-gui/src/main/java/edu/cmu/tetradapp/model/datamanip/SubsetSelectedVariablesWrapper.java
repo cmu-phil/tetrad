@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model.datamanip;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
@@ -104,9 +104,9 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
             }
         }
 
-        TetradMatrix matrix = data.getMatrix();
+        Matrix matrix = data.getMatrix();
 
-        TetradMatrix newMatrix = matrix.getSelection(
+        Matrix newMatrix = matrix.getSelection(
                 selectedIndices, selectedIndices).copy();
 
 

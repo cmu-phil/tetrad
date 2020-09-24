@@ -27,89 +27,31 @@ import org.apache.commons.math3.linear.RealVector;
 /**
  * Vector wrapping matrix library.
  */
-public class TetradVector implements TetradSerializable {
+public class Vector implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     private final RealVector data;
 
-    public TetradVector(double[] data) {
+    public Vector(double[] data) {
         this.data = new ArrayRealVector(data);
     }
 
-    public TetradVector(int size) {
+    public Vector(int size) {
         this.data = new ArrayRealVector(size);
     }
 
-    public TetradVector(RealVector data) {
-        this.data = data;
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static TetradVector serializableInstance() {
-        return new TetradVector(0);
-    }
-
-    public double[] toArray() {
-        return data.toArray();
-    }
-
-    public int size() {
-        return data.getDimension();
-    }
-
-    public void set(int j, double v) {
-        data.setEntry(j, v);
-    }
-
-    public double dotProduct(TetradVector v2) {
-        return data.dotProduct(v2.data);
-    }
-
-    public TetradVector like() {
-        return new TetradVector(size());
-    }
-
-    public double get(int i) {
-        return data.getEntry(i);
-    }
-
-    public TetradVector copy() {
-        return new TetradVector(data.copy());
-    }
-
-    public TetradVector viewSelection(int[] selection) {
-        double[] _selection = new double[selection.length];
-
-        for (int i = 0; i < selection.length; i++) {
-            _selection[i] = data.getEntry(selection[i]);
+    public void assign(double value) {
+        for (int i = 0; i < data.getDimension(); i++) {
+            data.setEntry(i, value);
         }
-
-        return new TetradVector(_selection);
     }
 
-    public TetradVector minus(TetradVector mb) {
-        return new TetradVector(data.subtract(mb.data));
+    public Vector copy() {
+        return new Vector(data.copy().toArray());
     }
 
-    public TetradVector plus(TetradVector mb) {
-        return new TetradVector(data.add(mb.data));
-    }
-
-    public TetradVector scalarMult(double scalar) {
-        TetradVector newMatrix = copy();
-        for (int i = 0; i < size(); i++) {
-                newMatrix.set(i, get(i) * scalar);
-        }
-
-        return newMatrix;
-
-//        return new TetradVector(data.mapMultiplyToSelf(scalar));
-    }
-
-    public TetradMatrix diag() {
-        TetradMatrix m = new TetradMatrix(data.getDimension(), data.getDimension());
+    public Matrix diag() {
+        Matrix m = new Matrix(data.getDimension(), data.getDimension());
 
         for (int i = 0; i < data.getDimension(); i++) {
             m.set(i, i, data.getEntry(i));
@@ -118,25 +60,78 @@ public class TetradVector implements TetradSerializable {
         return m;
     }
 
+    public double dotProduct(Vector v2) {
+        return data.dotProduct(v2.data);
+    }
+
+    public double get(int i) {
+        return data.getEntry(i);
+    }
+
+    public Vector like() {
+        return new Vector(size());
+    }
+
+    public Vector minus(Vector mb) {
+        return new Vector(data.subtract(mb.data).toArray());
+    }
+
+    public Vector plus(Vector mb) {
+        return new Vector(data.add(mb.data).toArray());
+    }
+
+    public Vector scalarMult(double scalar) {
+        Vector newMatrix = copy();
+        for (int i = 0; i < size(); i++) {
+            newMatrix.set(i, get(i) * scalar);
+        }
+
+        return newMatrix;
+    }
+
+    public void set(int j, double v) {
+        data.setEntry(j, v);
+    }
+
+    public int size() {
+        return data.getDimension();
+    }
+
+    public double[] toArray() {
+        return data.toArray();
+    }
+
     public String toString() {
         return MatrixUtils.toString(data.toArray());
+    }
+
+    public Vector viewSelection(int[] selection) {
+        double[] _selection = new double[selection.length];
+
+        for (int i = 0; i < selection.length; i++) {
+            _selection[i] = data.getEntry(selection[i]);
+        }
+
+        return new Vector(_selection);
     }
 
     public boolean equals(Object o) {
         if (o == this) return true;
 
-        if (!(o instanceof TetradVector)) return false;
+        if (!(o instanceof Vector)) return false;
 
-        TetradVector v = (TetradVector) o;
+        Vector v = (Vector) o;
 
         return MatrixUtils.equals(v.toArray(), this.toArray());
     }
 
-    public void assign(double value) {
-        for (int i = 0; i < data.getDimension(); i++) {
-            data.setEntry(i, value);
-        }
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static Vector serializableInstance() {
+        return new Vector(0);
     }
+
 }
 
 

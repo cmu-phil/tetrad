@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.List;
 
@@ -61,7 +61,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
      * from Numerical Recipes by adjusting the freeParameters of the Sem.
      */
     public void optimize(SemIm semIm) {
-        TetradMatrix sampleCovar = semIm.getSampleCovar();
+        Matrix sampleCovar = semIm.getSampleCovar();
 
         if (sampleCovar == null) {
             throw new NullPointerException("Sample covar has not been set.");

@@ -122,7 +122,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
-    public IndTestFisherZRecursive(TetradMatrix data, List<Node> variables, double alpha) {
+    public IndTestFisherZRecursive(Matrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
         this.covMatrix = new CovarianceMatrix(dataSet);
         this.variables = Collections.unmodifiableList(variables);
@@ -300,7 +300,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            TetradMatrix Czz = covMatrix.getSelection(parents, parents);
+            Matrix Czz = covMatrix.getSelection(parents, parents);
 
             try {
                 Czz.inverse();
@@ -380,7 +380,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

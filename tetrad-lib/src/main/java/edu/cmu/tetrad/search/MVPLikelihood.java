@@ -23,15 +23,13 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
-import edu.cmu.tetrad.util.dist.Discrete;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static edu.cmu.tetrad.data.Discretizer.discretize;
 import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
@@ -138,21 +136,21 @@ public class MVPLikelihood {
 
     }
 
-    private double multipleRegression(TetradVector Y, TetradMatrix X) {
+    private double multipleRegression(Vector Y, Matrix X) {
 
         int n = X.rows();
-        TetradVector r;
+        Vector r;
         if (X.columns() >= n) {
-            TetradVector ones = new TetradVector(n);
+            Vector ones = new Vector(n);
             for (int i = 0; i < n; i++) ones.set(i, 1);
             r = ones.scalarMult(ones.dotProduct(Y) / (double) n).minus(Y);
         } else {
             try {
-                TetradMatrix Xt = X.transpose();
-                TetradMatrix XtX = Xt.times(X);
+                Matrix Xt = X.transpose();
+                Matrix XtX = Xt.times(X);
                 r = X.times(XtX.inverse().times(Xt.times(Y))).minus(Y);
             } catch (Exception e) {
-                TetradVector ones = new TetradVector(n);
+                Vector ones = new Vector(n);
                 for (int i = 0; i < n; i++) ones.set(i, 1);
                 r = ones.scalarMult(ones.dotProduct(Y) / (double) n).minus(Y);
             }
@@ -162,7 +160,7 @@ public class MVPLikelihood {
         double lik;
 
         if(sigma2 < 0) {
-            TetradVector ones = new TetradVector(n);
+            Vector ones = new Vector(n);
             for (int i = 0; i < n; i++) ones.set(i,1);
             r = ones.scalarMult(ones.dotProduct(Y)/(double)Math.max(n,2)).minus(Y);
             sigma2 = r.dotProduct(r) / n;
@@ -181,25 +179,25 @@ public class MVPLikelihood {
         return lik;
     }
 
-    private double approxMultinomialRegression(TetradMatrix Y, TetradMatrix X) {
+    private double approxMultinomialRegression(Matrix Y, Matrix X) {
 
         int n = X.rows();
         int d = Y.columns();
         double lik = 0.0;
-        TetradMatrix P;
+        Matrix P;
 
 
         if(d >= n || X.columns() >= n) {
-            TetradMatrix ones = new TetradMatrix(n, 1);
+            Matrix ones = new Matrix(n, 1);
             for (int i = 0; i < n; i++) ones.set(i, 0, 1);
             P = ones.times(ones.transpose().times(Y).scalarMult(1 / (double) n));
         } else {
             try {
-                TetradMatrix Xt = X.transpose();
-                TetradMatrix XtX = Xt.times(X);
+                Matrix Xt = X.transpose();
+                Matrix XtX = Xt.times(X);
                 P = X.times(XtX.inverse().times(Xt.times(Y)));
             } catch (Exception e) {
-                TetradMatrix ones = new TetradMatrix(n, 1);
+                Matrix ones = new Matrix(n, 1);
                 for (int i = 0; i < n; i++) ones.set(i, 0, 1);
                 P = ones.times(ones.transpose().times(Y).scalarMult(1 / (double) n));
             }
@@ -287,7 +285,7 @@ public class MVPLikelihood {
 
                 int degree = fDegree;
                 if (fDegree < 1) { degree = (int) Math.floor(Math.log(r)); }
-                TetradMatrix subset = new TetradMatrix(r, p * degree + 1);
+                Matrix subset = new Matrix(r, p * degree + 1);
                 for (int i = 0; i < r; i++) {
                     subset.set(i, p * degree, 1);
                     for (int j = 0; j < p; j++) {
@@ -298,14 +296,14 @@ public class MVPLikelihood {
                 }
 
                 if (c instanceof ContinuousVariable) {
-                    TetradVector target = new TetradVector(r);
+                    Vector target = new Vector(r);
                     for (int i = 0; i < r; i++) {
                         target.set(i, continuousData[child_index][cell.get(i)]);
 //                        target.set(i, continuousData[child_index][cell[i]]);
                     }
                     lik += multipleRegression(target, subset);
                 } else {
-                    TetradMatrix target = new TetradMatrix(r, ((DiscreteVariable) c).getNumCategories());
+                    Matrix target = new Matrix(r, ((DiscreteVariable) c).getNumCategories());
                     for (int i = 0; i < r; i++) {
                         target.set(i, discreteData[child_index][cell.get(i)], 1);
                     }

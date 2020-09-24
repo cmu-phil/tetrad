@@ -32,8 +32,8 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -68,7 +68,7 @@ public class LingamPattern2 {
      */
     private TetradLogger logger = TetradLogger.getInstance();
     private List<Node> variables;
-    private ArrayList<TetradMatrix> data;
+    private ArrayList<Matrix> data;
 
     //===============================CONSTRUCTOR============================//
 
@@ -91,13 +91,13 @@ public class LingamPattern2 {
         data = new ArrayList<>();
 
         for (DataSet dataSet : getDataSets()) {
-            TetradMatrix _data = dataSet.getDoubleData();
+            Matrix _data = dataSet.getDoubleData();
             data.add(_data);
         }
 
         regressions = new ArrayList<>();
 
-        for (TetradMatrix _data : data) {
+        for (Matrix _data : data) {
             regressions.add(new RegressionDataset(_data, variables));
         }
 
@@ -230,18 +230,18 @@ public class LingamPattern2 {
 
     //=============================PRIVATE METHODS=========================//
 
-    private Score getScore1(Graph dag, List<TetradMatrix> data, List<Node> variables) {
+    private Score getScore1(Graph dag, List<Matrix> data, List<Node> variables) {
 //        System.out.println("Scoring DAG: " + dag);
 
         List<Regression> regressions = new ArrayList<>();
 
-        for (TetradMatrix _data : data) {
+        for (Matrix _data : data) {
             regressions.add(new RegressionDataset(_data, variables));
         }
 
         int totalSampleSize = 0;
 
-        for (TetradMatrix _data : data) {
+        for (Matrix _data : data) {
             totalSampleSize += _data.rows();
         }
 
@@ -250,7 +250,7 @@ public class LingamPattern2 {
         List<Node> nodes = dag.getNodes();
         double score = 0.0;
         double[] pValues = new double[nodes.size()];
-        TetradMatrix absoluteStandardizedResiduals = new TetradMatrix(totalSampleSize, numCols);
+        Matrix absoluteStandardizedResiduals = new Matrix(totalSampleSize, numCols);
 
         for (int i = 0; i < nodes.size(); i++) {
             List<Double> _absoluteStandardizedResiduals = new ArrayList<>();
@@ -267,7 +267,7 @@ public class LingamPattern2 {
                 }
 
                 RegressionResult result = regressions.get(j).regress(target, regressors);
-                TetradVector residualsColumn = result.getResiduals();
+                Vector residualsColumn = result.getResiduals();
 
                 DoubleArrayList _absoluteStandardizedResidualsColumn = new DoubleArrayList(residualsColumn.toArray());
 
@@ -305,18 +305,18 @@ public class LingamPattern2 {
         return new Score(score, pValues);
     }
 
-    private Score getScore2(Graph dag, List<TetradMatrix> data, List<Node> variables) {
+    private Score getScore2(Graph dag, List<Matrix> data, List<Node> variables) {
 //        System.out.println("Scoring DAG: " + dag);
 
         List<Regression> regressions = new ArrayList<>();
 
-        for (TetradMatrix _data : data) {
+        for (Matrix _data : data) {
             regressions.add(new RegressionDataset(_data, variables));
         }
 
         int totalSampleSize = 0;
 
-        for (TetradMatrix _data : data) {
+        for (Matrix _data : data) {
             totalSampleSize += _data.rows();
         }
 
@@ -325,7 +325,7 @@ public class LingamPattern2 {
         List<Node> nodes = dag.getNodes();
         double score = 0.0;
         double[] pValues = new double[nodes.size()];
-        TetradMatrix residuals = new TetradMatrix(totalSampleSize, numCols);
+        Matrix residuals = new Matrix(totalSampleSize, numCols);
 
         for (int j = 0; j < nodes.size(); j++) {
             List<Double> _residuals = new ArrayList<>();
@@ -342,7 +342,7 @@ public class LingamPattern2 {
 
             for (int m = 0; m < data.size(); m++) {
                 RegressionResult result = regressions.get(m).regress(target, regressors);
-                TetradVector residualsSingleDataset = result.getResiduals();
+                Vector residualsSingleDataset = result.getResiduals();
 
                 DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
@@ -387,12 +387,12 @@ public class LingamPattern2 {
 
     // Return the average score.
 
-    private Score getScore(Graph dag, List<TetradMatrix> data, List<Node> variables) {
+    private Score getScore(Graph dag, List<Matrix> data, List<Node> variables) {
 //        System.out.println("Scoring DAG: " + dag);
 
         int totalSampleSize = 0;
 
-        for (TetradMatrix _data : data) {
+        for (Matrix _data : data) {
             totalSampleSize += _data.rows();
         }
 
@@ -401,7 +401,7 @@ public class LingamPattern2 {
         List<Node> nodes = dag.getNodes();
         double score = 0.0;
         double[] pValues = new double[nodes.size()];
-        TetradMatrix residuals = new TetradMatrix(totalSampleSize, numCols);
+        Matrix residuals = new Matrix(totalSampleSize, numCols);
 
         for (int j = 0; j < nodes.size(); j++) {
             List<Double> _residuals = new ArrayList<>();
@@ -418,7 +418,7 @@ public class LingamPattern2 {
 
             for (int m = 0; m < data.size(); m++) {
                 RegressionResult result = regressions.get(m).regress(target, regressors);
-                TetradVector residualsSingleDataset = result.getResiduals();
+                Vector residualsSingleDataset = result.getResiduals();
 
                 DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
@@ -477,7 +477,7 @@ public class LingamPattern2 {
         DATASET:
         for (int m = 0; m < dataSets.size(); m++) {
             RegressionResult result = regressions.get(m).regress(target, regressors);
-            TetradVector residualsSingleDataset = result.getResiduals();
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
