@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.util;
 
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import org.apache.commons.math3.analysis.function.Sin;
 import org.apache.commons.math3.linear.*;
 
 import java.io.IOException;
@@ -39,20 +38,13 @@ import java.io.ObjectInputStream;
 public class TetradMatrix implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private RealMatrix apacheData;
+    private final RealMatrix apacheData;
     private int m, n;
 
     public TetradMatrix(double[][] data) {
         if (data.length == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
-//            this.apacheData = new OpenMapRealMatrix(data.length, data[0].length);
-//
-//            for (int i = 0; i < data.length; i++) {
-//                for (int j = 0; j < data[0].length; j++) {
-//                    apacheData.setEntry(i, j, data[i][j]);
-//                }
-//            }
             this.apacheData = new BlockRealMatrix(data);
         }
 
@@ -64,7 +56,6 @@ public class TetradMatrix implements TetradSerializable {
         if (m == 0 || n == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
-//            this.apacheData = new OpenMapRealMatrix(m, n);
             this.apacheData = new BlockRealMatrix(m, n);
         }
 
@@ -76,33 +67,18 @@ public class TetradMatrix implements TetradSerializable {
         this(m.apacheData.getData());
     }
 
-    public TetradMatrix(RealMatrix matrix) {
+    public TetradMatrix(double[][] matrix, int rows, int columns) {
         if (matrix == null) {
             throw new IllegalArgumentException("Null matrix.");
         }
 
-        this.apacheData = matrix;
-        this.m = matrix.getRowDimension();
-        this.n = matrix.getColumnDimension();
-    }
-
-    public TetradMatrix(RealMatrix matrix, int rows, int columns) {
-        if (matrix == null) {
-            throw new IllegalArgumentException("Null matrix.");
-        }
-
-        this.apacheData = matrix;
+        this.apacheData = new BlockRealMatrix(matrix);
         this.m = rows;
         this.n = columns;
-
-        int _rows = matrix.getRowDimension();
-        int _cols = matrix.getColumnDimension();
-        if (_rows != 0 && _rows != rows) throw new IllegalArgumentException();
-        if (_cols != 0 && _cols != columns) throw new IllegalArgumentException();
     }
 
     public static TetradMatrix sparseMatrix(int m, int n) {
-        return new TetradMatrix(new OpenMapRealMatrix(m, n));
+        return new TetradMatrix(new OpenMapRealMatrix(m, n).getData());
     }
 
     /**
@@ -113,7 +89,7 @@ public class TetradMatrix implements TetradSerializable {
     }
 
     public TetradMatrix sqrt() {
-        SingularValueDecomposition svd = new SingularValueDecomposition(getRealMatrix());
+        SingularValueDecomposition svd = new SingularValueDecomposition(apacheData);
         RealMatrix U = svd.getU();
         RealMatrix V = svd.getV();
         double[] s = svd.getSingularValues();
@@ -121,7 +97,7 @@ public class TetradMatrix implements TetradSerializable {
         RealMatrix S = new BlockRealMatrix(s.length, s.length);
         for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
         RealMatrix sqrt = U.multiply(S).multiply(V);
-        return new TetradMatrix(sqrt);
+        return new TetradMatrix(sqrt.getData());
     }
 
     public int rows() {
@@ -138,12 +114,12 @@ public class TetradMatrix implements TetradSerializable {
         }
 
         RealMatrix subMatrix = apacheData.getSubMatrix(rows, cols);
-        return new TetradMatrix(subMatrix, rows.length, cols.length);
+        return new TetradMatrix(subMatrix.getData(), rows.length, cols.length);
     }
 
     public TetradMatrix copy() {
         if (zeroDimension()) return new TetradMatrix(rows(), columns());
-        return new TetradMatrix(apacheData.copy(), rows(), columns());
+        return new TetradMatrix(apacheData.copy().getData(), rows(), columns());
     }
 
     public TetradVector getColumn(int j) {
@@ -158,7 +134,7 @@ public class TetradMatrix implements TetradSerializable {
         if (this.zeroDimension() || m.zeroDimension())
             return new TetradMatrix(this.rows(), m.columns());
         else {
-            return new TetradMatrix(apacheData.multiply(m.apacheData), this.rows(), m.columns());
+            return new TetradMatrix(apacheData.multiply(m.apacheData).getData(), this.rows(), m.columns());
         }
     }
 
@@ -207,167 +183,17 @@ public class TetradMatrix implements TetradSerializable {
     }
 
     public TetradMatrix getPart(int i, int j, int k, int l) {
-        return new TetradMatrix(apacheData.getSubMatrix(i, j, k, l));
+        return new TetradMatrix(apacheData.getSubMatrix(i, j, k, l).getData());
     }
 
     public TetradMatrix inverse() throws SingularMatrixException {
         if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
 
-        // Trying for a speedup by not having to construct the matrix factorization.
         if (rows() == 0) {
             return new TetradMatrix(0, 0);
         }
-        else if (rows() == 1) {
-            TetradMatrix m = new TetradMatrix(1, 1);
-            m.set(0, 0, 1.0 / apacheData.getEntry(0, 0));
-            return m;
-        } else if (rows() == 2) {
-            double a = apacheData.getEntry(0, 0);
-            double b = apacheData.getEntry(0, 1);
-            double c = apacheData.getEntry(1, 0);
-            double d = apacheData.getEntry(1, 1);
 
-            double delta = a * d - b * c;
-
-            if (delta == 0) throw new SingularMatrixException();
-
-            TetradMatrix inverse = new TetradMatrix(2, 2);
-            inverse.set(0, 0, d);
-            inverse.set(0, 1, -b);
-            inverse.set(1, 0, -c);
-            inverse.set(1, 1, a);
-
-            return inverse.scalarMult(1.0 / delta);
-
-        } else if (rows() == 3) {
-            RealMatrix m = apacheData;
-
-            double a11 = m.getEntry(0, 0);
-            double a12 = m.getEntry(0, 1);
-            double a13 = m.getEntry(0, 2);
-
-            double a21 = m.getEntry(1, 0);
-            double a22 = m.getEntry(1, 1);
-            double a23 = m.getEntry(1, 2);
-
-            double a31 = m.getEntry(2, 0);
-            double a32 = m.getEntry(2, 1);
-            double a33 = m.getEntry(2, 2);
-
-            final double denom = -a12 * a21 * a33 + a11 * a22 * a33 - a13 * a22 * a31 +
-                    a12 * a23 * a31 + a13 * a21 * a32 - a11 * a23 * a32;
-
-            if (denom == 0) throw new SingularMatrixException();
-
-            double[][] inverse = new double[][]
-                    {
-                            {(a22 * a33 - a23 * a32) / denom,
-                                    (-a12 * a33 + a13 * a32) / denom,
-                                    (-a13 * a22 + a12 * a23) / denom},
-
-                            {(-a21 * a33 + a23 * a31) / denom,
-                                    (a11 * a33 - a13 * a31) / denom,
-                                    (a13 * a21 - a11 * a23) / denom},
-
-                            {(-a22 * a31 + a21 * a32) / denom,
-                                    (a12 * a31 - a11 * a32) / denom,
-                                    (-a12 * a21 + a11 * a22) / denom}
-                    };
-
-            return new TetradMatrix(inverse);
-        } else if (rows() == 4) {
-            RealMatrix m = apacheData;
-
-            double a11 = m.getEntry(0, 0);
-            double a12 = m.getEntry(0, 1);
-            double a13 = m.getEntry(0, 2);
-            double a14 = m.getEntry(0, 3);
-
-            double a21 = m.getEntry(1, 0);
-            double a22 = m.getEntry(1, 1);
-            double a23 = m.getEntry(1, 2);
-            double a24 = m.getEntry(1, 3);
-
-            double a31 = m.getEntry(2, 0);
-            double a32 = m.getEntry(2, 1);
-            double a33 = m.getEntry(2, 2);
-            double a34 = m.getEntry(2, 3);
-
-            double a41 = m.getEntry(3, 0);
-            double a42 = m.getEntry(3, 1);
-            double a43 = m.getEntry(3, 2);
-            double a44 = m.getEntry(3, 3);
-
-            final double denom = a14 * a23 * a32 * a41 - a13 * a24 * a32 * a41 -
-                    a14 * a22 * a33 * a41 + a12 * a24 * a33 * a41 + a13 * a22 * a34 * a41 -
-                    a12 * a23 * a34 * a41 - a14 * a23 * a31 * a42 + a13 * a24 * a31 * a42 +
-                    a14 * a21 * a33 * a42 - a11 * a24 * a33 * a42 - a13 * a21 * a34 * a42 +
-                    a11 * a23 * a34 * a42 + a14 * a22 * a31 * a43 - a12 * a24 * a31 * a43 -
-                    a14 * a21 * a32 * a43 + a11 * a24 * a32 * a43 + a12 * a21 * a34 * a43 -
-                    a11 * a22 * a34 * a43 - a13 * a22 * a31 * a44 + a12 * a23 * a31 * a44 +
-                    a13 * a21 * a32 * a44 - a11 * a23 * a32 * a44 - a12 * a21 * a33 * a44 +
-                    a11 * a22 * a33 * a44;
-
-            if (denom == 0) throw new SingularMatrixException();
-
-            double[][] inverse = new double[][]
-
-                    {{(-a24 * a33 * a42 + a23 * a34 * a42 + a24 * a32 * a43 - a22 * a34 * a43 -
-                            a23 * a32 * a44 + a22 * a33 * a44) / denom,
-                            (a14 * a33 * a42 - a13 * a34 * a42 - a14 * a32 * a43 +
-                                    a12 * a34 * a43 + a13 * a32 * a44 - a12 * a33 * a44) / denom,
-                            (-a14 * a23 * a42 + a13 * a24 * a42 +
-                                    a14 * a22 * a43 - a12 * a24 * a43 - a13 * a22 * a44 +
-                                    a12 * a23 * a44) / denom,
-                            (a14 * a23 * a32 - a13 * a24 * a32 - a14 * a22 * a33 +
-                                    a12 * a24 * a33 + a13 * a22 * a34 - a12 * a23 * a34) / denom},
-                            {(a24 * a33 * a41 - a23 * a34 * a41 - a24 * a31 * a43 + a21 * a34 * a43 + a23 * a31 * a44 -
-                                    a21 * a33 * a44) / denom,
-                                    (-a14 * a33 * a41 + a13 * a34 * a41 + a14 * a31 * a43 -
-                                            a11 * a34 * a43 - a13 * a31 * a44 + a11 * a33 * a44) / denom,
-                                    (a14 * a23 * a41 - a13 * a24 * a41 -
-                                            a14 * a21 * a43 + a11 * a24 * a43 + a13 * a21 * a44 -
-                                            a11 * a23 * a44) / denom,
-                                    (-a14 * a23 * a31 + a13 * a24 * a31 + a14 * a21 * a33 -
-                                            a11 * a24 * a33 - a13 * a21 * a34 + a11 * a23 * a34) / denom},
-                            {(-a24 * a32 * a41 +
-                                    a22 * a34 * a41 + a24 * a31 * a42 - a21 * a34 * a42 - a22 * a31 * a44 +
-                                    a21 * a32 * a44) / denom,
-                                    (a14 * a32 * a41 - a12 * a34 * a41 - a14 * a31 * a42 +
-                                            a11 * a34 * a42 + a12 * a31 * a44 - a11 * a32 * a44) / denom,
-                                    (-a14 * a22 * a41 + a12 * a24 * a41 +
-                                            a14 * a21 * a42 - a11 * a24 * a42 - a12 * a21 * a44 +
-                                            a11 * a22 * a44) / denom,
-                                    (a14 * a22 * a31 - a12 * a24 * a31 - a14 * a21 * a32 +
-                                            a11 * a24 * a32 + a12 * a21 * a34 - a11 * a22 * a34) / denom},
-                            {(a23 * a32 * a41 -
-                                    a22 * a33 * a41 - a23 * a31 * a42 + a21 * a33 * a42 + a22 * a31 * a43 -
-                                    a21 * a32 * a43) / denom,
-                                    (-a13 * a32 * a41 + a12 * a33 * a41 + a13 * a31 * a42 -
-                                            a11 * a33 * a42 - a12 * a31 * a43 + a11 * a32 * a43) / denom,
-                                    (a13 * a22 * a41 - a12 * a23 * a41 -
-                                            a13 * a21 * a42 + a11 * a23 * a42 + a12 * a21 * a43 -
-                                            a11 * a22 * a43) / denom,
-                                    (-a13 * a22 * a31 + a12 * a23 * a31 + a13 * a21 * a32 -
-                                            a11 * a23 * a32 - a12 * a21 * a33 + a11 * a22 * a33) / denom}};
-
-            return new TetradMatrix(inverse);
-        }
-        else {
-
-            // Using LUDecomposition.
-            // other options: QRDecomposition, CholeskyDecomposition, EigenDecomposition, QRDecomposition,
-            // RRQRDDecomposition, SingularValueDecomposition. Very cool. Also MatrixUtils.blockInverse,
-            // though that can't handle matrices of size 1. Many ways to invert.
-
-            // Note CholeskyDecomposition only takes inverses of symmetric matrices.
-//        return new TetradMatrix(new CholeskyDecomposition(apacheData).getSolver().getInverse());
-//        return new TetradMatrix(new EigenDecomposition(apacheData).getSolver().getInverse());
-//        return new TetradMatrix(new QRDecomposition(apacheData).getSolver().getInverse());
-//
-//            return new TetradMatrix(new SingularValueDecomposition(apacheData).getSolver().getInverse());
-            return new TetradMatrix(new LUDecomposition(apacheData, 1e-9).getSolver().getInverse());
-        }
+        return new TetradMatrix(new LUDecomposition(apacheData, 1e-9).getSolver().getInverse().getData());
 
     }
 
@@ -375,18 +201,7 @@ public class TetradMatrix implements TetradSerializable {
         if (!isSquare()) throw new IllegalArgumentException();
         if (rows() == 0) return new TetradMatrix(0, 0);
 
-        // Using LUDecomposition.
-        // other options: QRDecomposition, CholeskyDecomposition, EigenDecomposition, QRDecomposition,
-        // RRQRDDecomposition, SingularValueDecomposition. Very cool. Also MatrixUtils.blockInverse,
-        // though that can't handle matrices of size 1. Many ways to invert.
-
-        // Note CholeskyDecomposition only takes inverses of symmetric matrices.
-        return new TetradMatrix(new CholeskyDecomposition(apacheData).getSolver().getInverse());
-//        return new TetradMatrix(new EigenDecomposition(apacheData).getSolver().getInverse());
-//        return new TetradMatrix(new QRDecomposition(apacheData).getSolver().getInverse());
-
-//        return new TetradMatrix(new SingularValueDecomposition(apacheData).getSolver().getInverse());
-//        return new TetradMatrix(new LUDecomposition(apacheData).getSolver().getInverse());
+        return new TetradMatrix(new CholeskyDecomposition(apacheData).getSolver().getInverse().getData());
     }
 
     public TetradMatrix ginverse() {
@@ -423,12 +238,7 @@ public class TetradMatrix implements TetradSerializable {
 
     public TetradMatrix transpose() {
         if (zeroDimension()) return new TetradMatrix(columns(), rows());
-        return new TetradMatrix(apacheData.transpose(), columns(), rows());
-    }
-
-    public TetradMatrix transposeWithoutCopy() {
-        RealMatrix transpose = MatrixUtils.transposeWithoutCopy(apacheData);
-        return new TetradMatrix(transpose);
+        return new TetradMatrix(apacheData.transpose().getData(), columns(), rows());
     }
 
     private boolean zeroDimension() {
@@ -436,11 +246,9 @@ public class TetradMatrix implements TetradSerializable {
     }
 
     public boolean equals(TetradMatrix m, double tolerance) {
-        RealMatrix n = m.apacheData;
-
         for (int i = 0; i < apacheData.getRowDimension(); i++) {
             for (int j = 0; j < apacheData.getColumnDimension(); j++) {
-                if (Math.abs(apacheData.getEntry(i, j) - n.getEntry(i, j)) > tolerance) {
+                if (Math.abs(apacheData.getEntry(i, j) - m.apacheData.getEntry(i, j)) > tolerance) {
                     return false;
                 }
             }
@@ -457,19 +265,18 @@ public class TetradMatrix implements TetradSerializable {
         return edu.cmu.tetrad.util.MatrixUtils.isSymmetric(apacheData.getData(), tolerance);
     }
 
-
     public double zSum() {
         return new DenseDoubleMatrix2D(apacheData.getData()).zSum();
     }
 
     public TetradMatrix minus(TetradMatrix mb) {
         if (mb.rows() == 0 || mb.columns() == 0) return this;
-        return new TetradMatrix(apacheData.subtract(mb.apacheData), rows(), columns());
+        return new TetradMatrix(apacheData.subtract(mb.apacheData).getData(), rows(), columns());
     }
 
     public TetradMatrix plus(TetradMatrix mb) {
         if (mb.rows() == 0 || mb.columns() == 0) return this;
-        return new TetradMatrix(apacheData.add(mb.apacheData), rows(), columns());
+        return new TetradMatrix(apacheData.add(mb.apacheData).getData(), rows(), columns());
     }
 
     public TetradMatrix scalarMult(double scalar) {
@@ -481,12 +288,9 @@ public class TetradMatrix implements TetradSerializable {
         }
 
         return newMatrix;
-
-//        return new TetradMatrix(apacheData.copy().scalarMultiply(scalar), rows(), columns());
     }
 
     public int rank() {
-//        return new RRQRDecomposition(apacheData).getRank(10);
         SingularValueDecomposition singularValueDecomposition = new SingularValueDecomposition(apacheData);
         return singularValueDecomposition.getRank();
     }
@@ -522,9 +326,6 @@ public class TetradMatrix implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -532,10 +333,6 @@ public class TetradMatrix implements TetradSerializable {
 
         if (m == 0) m = apacheData.getRowDimension();
         if (n == 0) n = apacheData.getColumnDimension();
-    }
-
-    public RealMatrix getRealMatrix() {
-        return apacheData;
     }
 
     public void assign(TetradMatrix matrix) {

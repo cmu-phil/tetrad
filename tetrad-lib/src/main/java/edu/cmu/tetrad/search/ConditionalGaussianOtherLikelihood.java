@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.util.FastMath;
@@ -312,7 +313,7 @@ public class ConditionalGaussianOtherLikelihood {
     }
 
     private double logdet(TetradMatrix m) {
-        RealMatrix M = m.getRealMatrix();
+        RealMatrix M = new BlockRealMatrix(m.toArray());
         final double tol = 1e-9;
         RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
 
@@ -436,7 +437,7 @@ public class ConditionalGaussianOtherLikelihood {
     }
 
     private TetradMatrix cov(TetradMatrix x) {
-        return new TetradMatrix(new Covariance(x.getRealMatrix(), true).getCovarianceMatrix());
+        return new TetradMatrix(new Covariance(x.toArray(), true).getCovarianceMatrix().getData());
     }
 
     private double prob(Double factor, TetradMatrix inv, TetradVector x) {

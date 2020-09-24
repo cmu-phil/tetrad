@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.math3.exception.MaxCountExceededException;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 
 /**
@@ -823,7 +824,7 @@ public class TimeSeriesUtils {
         double[] realEigenvalues = new double[0];
         double[] imagEigenvalues = new double[0];
         try {
-            EigenDecomposition dec = new EigenDecomposition(mat.getRealMatrix());
+            EigenDecomposition dec = new EigenDecomposition(new BlockRealMatrix(mat.toArray()));
             realEigenvalues = dec.getRealEigenvalues();
             imagEigenvalues = dec.getImagEigenvalues();
         } catch (MaxCountExceededException e) {

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 import static java.lang.Math.exp;
@@ -430,9 +431,9 @@ public class FastIca {
         // Whiten.
         TetradMatrix cov = X.times(X.transpose()).scalarMult(1.0 / n);
 
-        SingularValueDecomposition s = new SingularValueDecomposition(cov.getRealMatrix());
-        TetradMatrix D = new TetradMatrix(s.getS());
-        TetradMatrix U = new TetradMatrix(s.getU());
+        SingularValueDecomposition s = new SingularValueDecomposition(new BlockRealMatrix(cov.toArray()));
+        TetradMatrix D = new TetradMatrix(s.getS().getData());
+        TetradMatrix U = new TetradMatrix(s.getU().getData());
 
         for (int i = 0; i < D.rows(); i++) {
             D.set(i, i, 1.0 / Math.sqrt(D.get(i, i)));
@@ -622,12 +623,12 @@ public class FastIca {
         int p = X.columns();
         TetradMatrix W = wInit;
 
-        SingularValueDecomposition sW = new SingularValueDecomposition(W.getRealMatrix());
-        TetradMatrix D = new TetradMatrix(sW.getS());
+        SingularValueDecomposition sW = new SingularValueDecomposition(new BlockRealMatrix(W.toArray()));
+        TetradMatrix D = new TetradMatrix(sW.getS().getData());
         for (int i = 0; i < D.rows(); i++) D.set(i, i, 1.0 / D.get(i, i));
 
-        TetradMatrix WTemp = new TetradMatrix(sW.getU()).times(D);
-        WTemp = WTemp.times(new TetradMatrix(sW.getU()).transpose());
+        TetradMatrix WTemp = new TetradMatrix(sW.getU().getData()).times(D);
+        WTemp = WTemp.times(new TetradMatrix(sW.getU().getData()).transpose());
         WTemp = WTemp.times(W);
         W = WTemp;
 
@@ -670,9 +671,9 @@ public class FastIca {
             v2 = v2.times(W);
             W1 = v1.minus(v2);
 
-            SingularValueDecomposition sW1 = new SingularValueDecomposition(W1.getRealMatrix());
-            TetradMatrix U = new TetradMatrix(sW1.getU());
-            TetradMatrix sD = new TetradMatrix(sW1.getS());
+            SingularValueDecomposition sW1 = new SingularValueDecomposition(new BlockRealMatrix(W1.toArray()));
+            TetradMatrix U = new TetradMatrix(sW1.getU().getData());
+            TetradMatrix sD = new TetradMatrix(sW1.getS().getData());
             for (int i = 0; i < sD.rows(); i++)
                 sD.set(i, i, 1.0 / sD.get(i, i));
 

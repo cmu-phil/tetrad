@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.TetradVector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.GaussianPower;
 import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -483,7 +484,7 @@ public class Ling {
             TetradMatrix AI = I.copy();
             TetradMatrix invSqrt = sqrt.inverse();
 
-            QRDecomposition qr = new QRDecomposition(invSqrt.getRealMatrix());
+            QRDecomposition qr = new QRDecomposition(new BlockRealMatrix(invSqrt.toArray()));
             RealMatrix r = qr.getR();
 
 //          % The estimated disturbance-stds are one over the abs of the diag of L
@@ -508,9 +509,9 @@ public class Ling {
 //          bnewest = eye(dims)-L;
 
             TetradMatrix bnewest = TetradMatrix.identity(rows);
-            bnewest = bnewest.minus(new TetradMatrix(r));
+            bnewest = bnewest.minus(new TetradMatrix(r.getData()));
 
-            TetradVector cnewest = new TetradMatrix(r).times(Xpm);
+            TetradVector cnewest = new TetradMatrix(r.getData()).times(Xpm);
 
             bpieces.add(bnewest);
             diststdpieces.add(newestdisturbancestd);
@@ -981,7 +982,7 @@ public class Ling {
 
     private static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {
 
-        EigenDecomposition dec = new EigenDecomposition(mat.getRealMatrix());
+        EigenDecomposition dec = new EigenDecomposition(new BlockRealMatrix(mat.toArray()));
         double[] realEigenvalues = dec.getRealEigenvalues();
         double[] imagEigenvalues = dec.getImagEigenvalues();
 

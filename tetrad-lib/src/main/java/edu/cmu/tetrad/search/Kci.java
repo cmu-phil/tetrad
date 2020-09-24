@@ -13,6 +13,7 @@ import edu.cmu.tetrad.util.TetradVector;
 import edu.pitt.csb.mgm.EigenDecomposition;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
@@ -782,7 +783,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
         public Eigendecomposition invoke() {
             if (true) {
-                EigenDecomposition ed = new EigenDecomposition(k.getRealMatrix());
+                EigenDecomposition ed = new EigenDecomposition(new BlockRealMatrix(k.toArray()));
 
                 List<Double> evxAll = asList(ed.getRealEigenvalues());
                 List<Integer> indx = series(evxAll.size()); // 1 2 3...
@@ -807,7 +808,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
                     V.assignColumn(i, new TetradVector(t));
                 }
             } else {
-                SingularValueDecomposition svd = new SingularValueDecomposition(k.getRealMatrix());
+                SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(k.toArray()));
 
                 List<Double> evxAll = asList(svd.getSingularValues());
 

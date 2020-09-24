@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
 
@@ -149,7 +150,7 @@ public class SemLikelihood2 {
 
     private double logdet(TetradMatrix m) {
         if (m.rows() == 0) return 0;
-        RealMatrix M = m.getRealMatrix();
+        RealMatrix M = new BlockRealMatrix(m.toArray());
         final double tol = 1e-9;
         RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
 

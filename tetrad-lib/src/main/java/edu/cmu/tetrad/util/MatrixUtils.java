@@ -655,7 +655,7 @@ public final class MatrixUtils {
 //        return new CholeskyDecomposition(_matrix).isSymmetricPositiveDefinite();
 
         try {
-            new RectangularCholeskyDecomposition(matrix.getRealMatrix());
+            new RectangularCholeskyDecomposition(new BlockRealMatrix(matrix.toArray()));
         } catch (NonPositiveDefiniteMatrixException e) {
             return false;
         }
@@ -664,8 +664,8 @@ public final class MatrixUtils {
     }
 
     public static TetradMatrix cholesky(TetradMatrix covar) {
-        RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(covar.getRealMatrix()).getL();
-        return new TetradMatrix(L);
+        RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(new BlockRealMatrix(covar.toArray())).getL();
+        return new TetradMatrix(L.getData());
 
 //        DoubleMatrix2D _covar = new DenseDoubleMatrix2D(covar.toArray());
 //        DoubleMatrix2D l = new CholeskyDecomposition(_covar).getL();

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradVector;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
@@ -217,8 +218,8 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
 
     private TetradMatrix cov(DataSet x) {
         TetradMatrix M = x.getDoubleData();
-        RealMatrix covarianceMatrix = new Covariance(M.getRealMatrix(), true).getCovarianceMatrix();
-        return new TetradMatrix(covarianceMatrix, covarianceMatrix.getRowDimension(), covarianceMatrix.getColumnDimension());
+        RealMatrix covarianceMatrix = new Covariance(new BlockRealMatrix(M.toArray()), true).getCovarianceMatrix();
+        return new TetradMatrix(covarianceMatrix.getData(), covarianceMatrix.getRowDimension(), covarianceMatrix.getColumnDimension());
     }
 
     private int h(int p) {
@@ -237,7 +238,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
     }
 
     private double logdet(TetradMatrix m) {
-        RealMatrix M = m.getRealMatrix();
+        RealMatrix M = new BlockRealMatrix(m.toArray());
         final double tol = 1e-9;
         RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
 
@@ -253,7 +254,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
     private double logdet2(TetradMatrix m) {
         if (m.rows() == 0) return 0.0;
 
-        RealMatrix M = m.getRealMatrix();
+        RealMatrix M = new BlockRealMatrix(m.toArray());
         final LUDecomposition luDecomposition = new LUDecomposition(M);
         RealMatrix L = luDecomposition.getL();
         RealMatrix U = luDecomposition.getU();
