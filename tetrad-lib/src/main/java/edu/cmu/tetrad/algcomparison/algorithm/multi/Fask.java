@@ -59,7 +59,6 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.Fask search;
-
             search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, test.getTest(dataSet, parameters));
 
             search.setDepth(parameters.getInt(DEPTH));

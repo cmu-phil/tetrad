@@ -72,7 +72,7 @@ public class NonparanormalTransform extends DataWrapper {
         setDataModel(outList);
         setSourceGraph(wrapper.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Conversion of data to nonparanormal form.", getDataModelList());
+        LogDataUtils.logDataModelList("Conversion of data to standardized form.", getDataModelList());
 
     }
 

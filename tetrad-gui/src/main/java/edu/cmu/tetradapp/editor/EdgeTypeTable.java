@@ -65,12 +65,12 @@ public class EdgeTypeTable extends JPanel {
         "Node 2",
         "Ensemble",
         "No edge",
-        "-->",
-        "<--",
-        "-->", // -G> pd nl
-        "<--", // <G- pd nl
-        "-->", // =G> dd nl
-        "<--", // <G= dd nl
+        "\u2192",
+        "\u2190",
+        "\u2192", // -G> pd nl
+        "\u2190", // <G- pd nl
+        "\u2192", // =G> dd nl
+        "\u2190", // <G= dd nl
         "o->",
         "<-o",
         "o-o",

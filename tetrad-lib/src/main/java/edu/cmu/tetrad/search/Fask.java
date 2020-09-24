@@ -804,7 +804,7 @@ public final class Fask implements GraphSearch {
 
         double zv = (z1 - z2) / sqrt((1.0 / ((double) nc1 - 3) + 1.0 / ((double) nc2 - 3)));
 
-        return !(abs(zv) > twoCycleScreeningCutoff);
+        return abs(zv) <= twoCycleScreeningCutoff;
     }
 
     private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold) throws SingularMatrixException {

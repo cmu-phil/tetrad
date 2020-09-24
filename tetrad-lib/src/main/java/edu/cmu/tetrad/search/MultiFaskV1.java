@@ -20,7 +20,7 @@ import static java.lang.Math.*;
 /**
  * Created by user on 3/29/18.
  */
-public class MultiFask {
+public class MultiFaskV1 {
 
     private final SemBicScoreMultiFas score;
 
@@ -62,7 +62,7 @@ public class MultiFask {
 
     private final double[][][] data;
 
-    public MultiFask(List<DataSet> dataSets, SemBicScoreMultiFas score) {
+    public MultiFaskV1(List<DataSet> dataSets, SemBicScoreMultiFas score) {
 
         this.dataSets = dataSets;
         this.score = score;

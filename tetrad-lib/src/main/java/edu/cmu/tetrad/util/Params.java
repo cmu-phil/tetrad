@@ -66,6 +66,7 @@ public final class Params {
     public static final String ERRORS_NORMAL = "errorsNormal";
     public static final String SKEW_EDGE_THRESHOLD = "skewEdgeThreshold";
     public static final String TWO_CYCLE_SCREENING_THRESHOLD = "twoCycleScreeningThreshold";
+    public static final String TWO_CYCLE_TESTING_ALPHA = "twoCycleTestingAlpha";
     public static final String ACCEPTANCE_PROPORTION = "acceptanceProportion";
     public static final String FASK_DELTA = "faskDelta";
     public static final String FASK_LEFT_RIGHT_RULE = "faskLeftRightRule";
@@ -245,14 +246,14 @@ public final class Params {
     public static Set<String> getTestParameters(Algorithm algorithm) {
         return (algorithm instanceof TakesIndependenceWrapper)
                 ? ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getParameters()
-                .stream().collect(Collectors.toSet())
+                        .stream().collect(Collectors.toSet())
                 : Collections.emptySet();
     }
 
     public static Set<String> getScoreParameters(Algorithm algorithm) {
         return (algorithm instanceof UsesScoreWrapper)
                 ? ((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters()
-                .stream().collect(Collectors.toSet())
+                        .stream().collect(Collectors.toSet())
                 : Collections.emptySet();
     }
 

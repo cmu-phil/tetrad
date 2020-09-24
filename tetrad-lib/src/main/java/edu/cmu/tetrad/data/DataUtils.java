@@ -1650,7 +1650,11 @@ public final class DataUtils {
         List<DataSet> ret = new ArrayList<>();
 
         for (DataSet m : dataSets) {
-            DataSet data = m.subsetColumns(vars);
+            List<Node> myVars = new ArrayList<>();
+            for (Node n1 : variables) {
+                myVars.add(m.getVariable(n1.getName()));
+            }
+            DataSet data = m.subsetColumns(myVars);
             data.setName(m.getName() + ".reordered");
             ret.add(data);
         }
