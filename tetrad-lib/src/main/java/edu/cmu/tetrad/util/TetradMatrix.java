@@ -67,16 +67,6 @@ public class TetradMatrix implements TetradSerializable {
         this(m.apacheData.copy().getData());
     }
 
-    public TetradMatrix(double[][] matrix, int rows, int columns) {
-        if (matrix == null) {
-            throw new IllegalArgumentException("Null matrix.");
-        }
-
-        this.apacheData = new BlockRealMatrix(matrix);
-        this.m = rows;
-        this.n = columns;
-    }
-
     public void assign(TetradMatrix matrix) {
         if (apacheData.getRowDimension() != matrix.rows() || apacheData.getColumnDimension() != matrix.columns()) {
             throw new IllegalArgumentException("Mismatched matrix size.");
@@ -109,12 +99,12 @@ public class TetradMatrix implements TetradSerializable {
         }
 
         RealMatrix subMatrix = apacheData.getSubMatrix(rows, cols);
-        return new TetradMatrix(subMatrix.getData(), rows.length, cols.length);
+        return new TetradMatrix(subMatrix.getData());
     }
 
     public TetradMatrix copy() {
         if (zeroDimension()) return new TetradMatrix(rows(), columns());
-        return new TetradMatrix(apacheData.copy().getData(), rows(), columns());
+        return new TetradMatrix(apacheData.copy().getData());
     }
 
     public TetradVector getColumn(int j) {
@@ -129,7 +119,7 @@ public class TetradMatrix implements TetradSerializable {
         if (this.zeroDimension() || m.zeroDimension())
             return new TetradMatrix(this.rows(), m.columns());
         else {
-            return new TetradMatrix(apacheData.multiply(m.apacheData).getData(), this.rows(), m.columns());
+            return new TetradMatrix(apacheData.multiply(m.apacheData).getData());
         }
     }
 
@@ -233,7 +223,7 @@ public class TetradMatrix implements TetradSerializable {
 
     public TetradMatrix transpose() {
         if (zeroDimension()) return new TetradMatrix(columns(), rows());
-        return new TetradMatrix(apacheData.transpose().getData(), columns(), rows());
+        return new TetradMatrix(apacheData.transpose().getData());
     }
 
 
@@ -260,7 +250,7 @@ public class TetradMatrix implements TetradSerializable {
 
     public TetradMatrix minus(TetradMatrix mb) {
         if (mb.rows() == 0 || mb.columns() == 0) return this;
-        return new TetradMatrix(apacheData.subtract(mb.apacheData).getData(), rows(), columns());
+        return new TetradMatrix(apacheData.subtract(mb.apacheData).getData());
     }
 
     public double norm1() {
@@ -269,7 +259,7 @@ public class TetradMatrix implements TetradSerializable {
 
     public TetradMatrix plus(TetradMatrix mb) {
         if (mb.rows() == 0 || mb.columns() == 0) return this;
-        return new TetradMatrix(apacheData.add(mb.apacheData).getData(), rows(), columns());
+        return new TetradMatrix(apacheData.add(mb.apacheData).getData());
     }
 
     public int rank() {

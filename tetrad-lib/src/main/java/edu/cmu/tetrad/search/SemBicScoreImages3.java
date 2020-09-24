@@ -219,7 +219,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
     private TetradMatrix cov(DataSet x) {
         TetradMatrix M = x.getDoubleData();
         RealMatrix covarianceMatrix = new Covariance(new BlockRealMatrix(M.toArray()), true).getCovarianceMatrix();
-        return new TetradMatrix(covarianceMatrix.getData(), covarianceMatrix.getRowDimension(), covarianceMatrix.getColumnDimension());
+        return new TetradMatrix(covarianceMatrix.getData());
     }
 
     private int h(int p) {

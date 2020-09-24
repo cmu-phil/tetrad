@@ -1053,7 +1053,7 @@ public final class DataUtils {
 
     public static TetradMatrix cov2(TetradMatrix data) {
         RealMatrix covarianceMatrix = new Covariance(new BlockRealMatrix(data.toArray())).getCovarianceMatrix();
-        return new TetradMatrix(covarianceMatrix.getData(), covarianceMatrix.getRowDimension(), covarianceMatrix.getColumnDimension());
+        return new TetradMatrix(covarianceMatrix.getData());
     }
 
     public static TetradVector means(TetradMatrix data) {
@@ -1175,7 +1175,7 @@ public final class DataUtils {
 
         RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
         RealMatrix q2 = times(q1, q);
-        TetradMatrix prod = new TetradMatrix(q2.getData(), q.getColumnDimension(), q.getColumnDimension());
+        TetradMatrix prod = new TetradMatrix(q2.getData());
 
         double factor = 1.0 / (data.rows() - 1);
 
@@ -1203,7 +1203,7 @@ public final class DataUtils {
 
         System.out.println(MatrixUtils.transposeWithoutCopy(m).multiply(m));
 
-        TetradMatrix n = new TetradMatrix(m.getData(), m.getRowDimension(), m.getColumnDimension());
+        TetradMatrix n = new TetradMatrix(m.getData());
 
         System.out.println(n);
 
@@ -1211,7 +1211,7 @@ public final class DataUtils {
 
         RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
         RealMatrix q2 = times(q1, q);
-        System.out.println(new TetradMatrix(q2.getData(), q.getColumnDimension(), q.getColumnDimension()));
+        System.out.println(new TetradMatrix(q2.getData()));
     }
 
     private static RealMatrix times(final RealMatrix m, final RealMatrix n) {
