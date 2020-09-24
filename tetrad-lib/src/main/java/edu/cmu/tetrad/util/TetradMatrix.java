@@ -64,7 +64,7 @@ public class TetradMatrix implements TetradSerializable {
     }
 
     public TetradMatrix(TetradMatrix m) {
-        this(m.apacheData.getData());
+        this(m.apacheData.copy().getData());
     }
 
     public TetradMatrix(double[][] matrix, int rows, int columns) {
@@ -77,35 +77,30 @@ public class TetradMatrix implements TetradSerializable {
         this.n = columns;
     }
 
-    public static TetradMatrix sparseMatrix(int m, int n) {
-        return new TetradMatrix(new OpenMapRealMatrix(m, n).getData());
-    }
+    public void assign(TetradMatrix matrix) {
+        if (apacheData.getRowDimension() != matrix.rows() || apacheData.getColumnDimension() != matrix.columns()) {
+            throw new IllegalArgumentException("Mismatched matrix size.");
+        }
 
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static TetradMatrix serializableInstance() {
-        return new TetradMatrix(0, 0);
-    }
-
-    public TetradMatrix sqrt() {
-        SingularValueDecomposition svd = new SingularValueDecomposition(apacheData);
-        RealMatrix U = svd.getU();
-        RealMatrix V = svd.getV();
-        double[] s = svd.getSingularValues();
-        for (int i = 0; i < s.length; i++) s[i] = 1.0 / s[i];
-        RealMatrix S = new BlockRealMatrix(s.length, s.length);
-        for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
-        RealMatrix sqrt = U.multiply(S).multiply(V);
-        return new TetradMatrix(sqrt.getData());
-    }
-
-    public int rows() {
-        return m;
+        for (int i = 0; i < apacheData.getRowDimension(); i++) {
+            for (int j = 0; j < apacheData.getColumnDimension(); j++) {
+                apacheData.setEntry(i, j, matrix.get(i, j));
+            }
+        }
     }
 
     public int columns() {
         return n;
+    }
+
+    public TetradVector diag() {
+        double[] diag = new double[apacheData.getRowDimension()];
+
+        for (int i = 0; i < apacheData.getRowDimension(); i++) {
+            diag[i] = apacheData.getEntry(i, i);
+        }
+
+        return new TetradVector(diag);
     }
 
     public TetradMatrix getSelection(int[] rows, int[] cols) {
@@ -241,9 +236,6 @@ public class TetradMatrix implements TetradSerializable {
         return new TetradMatrix(apacheData.transpose().getData(), columns(), rows());
     }
 
-    private boolean zeroDimension() {
-        return rows() == 0 || columns() == 0;
-    }
 
     public boolean equals(TetradMatrix m, double tolerance) {
         for (int i = 0; i < apacheData.getRowDimension(); i++) {
@@ -265,18 +257,28 @@ public class TetradMatrix implements TetradSerializable {
         return edu.cmu.tetrad.util.MatrixUtils.isSymmetric(apacheData.getData(), tolerance);
     }
 
-    public double zSum() {
-        return new DenseDoubleMatrix2D(apacheData.getData()).zSum();
-    }
 
     public TetradMatrix minus(TetradMatrix mb) {
         if (mb.rows() == 0 || mb.columns() == 0) return this;
         return new TetradMatrix(apacheData.subtract(mb.apacheData).getData(), rows(), columns());
     }
 
+    public double norm1() {
+        return apacheData.getNorm();
+    }
+
     public TetradMatrix plus(TetradMatrix mb) {
         if (mb.rows() == 0 || mb.columns() == 0) return this;
         return new TetradMatrix(apacheData.add(mb.apacheData).getData(), rows(), columns());
+    }
+
+    public int rank() {
+        SingularValueDecomposition singularValueDecomposition = new SingularValueDecomposition(apacheData);
+        return singularValueDecomposition.getRank();
+    }
+
+    public int rows() {
+        return m;
     }
 
     public TetradMatrix scalarMult(double scalar) {
@@ -290,61 +292,21 @@ public class TetradMatrix implements TetradSerializable {
         return newMatrix;
     }
 
-    public int rank() {
-        SingularValueDecomposition singularValueDecomposition = new SingularValueDecomposition(apacheData);
-        return singularValueDecomposition.getRank();
+    public TetradMatrix sqrt() {
+        SingularValueDecomposition svd = new SingularValueDecomposition(apacheData);
+        RealMatrix U = svd.getU();
+        RealMatrix V = svd.getV();
+        double[] s = svd.getSingularValues();
+        for (int i = 0; i < s.length; i++) s[i] = 1.0 / s[i];
+        RealMatrix S = new BlockRealMatrix(s.length, s.length);
+        for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
+        RealMatrix sqrt = U.multiply(S).multiply(V);
+        return new TetradMatrix(sqrt.getData());
     }
 
-    public double norm1() {
-        return apacheData.getNorm();
-    }
 
-    public TetradVector diag() {
-        double[] diag = new double[apacheData.getRowDimension()];
-
-        for (int i = 0; i < apacheData.getRowDimension(); i++) {
-            diag[i] = apacheData.getEntry(i, i);
-        }
-
-        return new TetradVector(diag);
-    }
-
-    public String toString() {
-        if (rows() == 0) {
-            return "Empty";
-        } else {
-            return MatrixUtils.toString(toArray());
-        }
-    }
-
-    /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-
-        if (m == 0) m = apacheData.getRowDimension();
-        if (n == 0) n = apacheData.getColumnDimension();
-    }
-
-    public void assign(TetradMatrix matrix) {
-        if (apacheData.getRowDimension() != matrix.rows() || apacheData.getColumnDimension() != matrix.columns()) {
-            throw new IllegalArgumentException("Mismatched matrix size.");
-        }
-
-        for (int i = 0; i < apacheData.getRowDimension(); i++) {
-            for (int j = 0; j < apacheData.getColumnDimension(); j++) {
-                apacheData.setEntry(i, j, matrix.get(i, j));
-            }
-        }
+    public static TetradMatrix sparseMatrix(int m, int n) {
+        return new TetradMatrix(new OpenMapRealMatrix(m, n).getData());
     }
 
     public TetradVector sum(int direction) {
@@ -380,6 +342,49 @@ public class TetradMatrix implements TetradSerializable {
             throw new IllegalArgumentException("Expecting 1 (sum columns) or 2 (sum rows).");
         }
     }
+
+    public double zSum() {
+        return new DenseDoubleMatrix2D(apacheData.getData()).zSum();
+    }
+
+    private boolean zeroDimension() {
+        return rows() == 0 || columns() == 0;
+    }
+
+    public String toString() {
+        if (rows() == 0) {
+            return "Empty";
+        } else {
+            return MatrixUtils.toString(toArray());
+        }
+    }
+
+    /**
+     * Adds semantic checks to the default deserialization method. This method
+     * must have the standard signature for a readObject method, and the body of
+     * the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from
+     * version to version. A readObject method of this form may be added to any
+     * class, even if Tetrad sessions were previously saved out using a version
+     * of the class that didn't include it. (That's what the
+     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     */
+    private void readObject(ObjectInputStream s)
+            throws IOException, ClassNotFoundException {
+        s.defaultReadObject();
+
+        if (m == 0) m = apacheData.getRowDimension();
+        if (n == 0) n = apacheData.getColumnDimension();
+    }
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static TetradMatrix serializableInstance() {
+        return new TetradMatrix(0, 0);
+    }
+
+
 }
 
 
