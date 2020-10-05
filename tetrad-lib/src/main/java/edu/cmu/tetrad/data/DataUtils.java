@@ -129,11 +129,7 @@ public final class DataUtils {
             DataSet inData, double[] probs) {
         DataSet outData;
 
-        try {
-            outData = new MarshalledObject<>(inData).get();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        outData = inData.copy();
 
         if (probs.length != outData.getNumColumns()) {
             throw new IllegalArgumentException(
@@ -147,14 +143,19 @@ public final class DataUtils {
         }
 
         for (int j = 0; j < outData.getNumColumns(); j++) {
-            Node variable = outData.getVariable(j);
+            Node node = outData.getVariable(j);
 
-            for (int i = 0; i < outData.getNumRows(); i++) {
-                double test = RandomUtil.getInstance().nextDouble();
-
-                if (test < probs[j]) {
-                    outData.setObject(i, j,
-                            ((Variable) variable).getMissingValueMarker());
+            if (node instanceof ContinuousVariable) {
+                for (int i = 0; i < outData.getNumRows(); i++) {
+                    if (RandomUtil.getInstance().nextDouble() < probs[j]) {
+                        outData.setDouble(i, j, Double.NaN);
+                    }
+                }
+            } else if (node instanceof DiscreteVariable) {
+                for (int i = 0; i < outData.getNumRows(); i++) {
+                    if (RandomUtil.getInstance().nextDouble() < probs[j]) {
+                        outData.setInt(i, j, -99);
+                    }
                 }
             }
         }
@@ -218,7 +219,7 @@ public final class DataUtils {
     public static DataSet continuousSerializableInstance() {
         List<Node> variables = new LinkedList<>();
         variables.add(new ContinuousVariable("X"));
-        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox( 10, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(10, variables.size()), variables);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
@@ -282,7 +283,6 @@ public final class DataUtils {
     }
 
     /**
-     *
      * Log or unlog data
      *
      * @param data
@@ -300,9 +300,9 @@ public final class DataUtils {
                     if (base == 0) {
                         copy.set(i, j, Math.exp(copy.get(i, j)) - a);
                     } else {
-                        copy.set(i, j, Math.pow(base,(copy.get(i, j))) - a);
+                        copy.set(i, j, Math.pow(base, (copy.get(i, j))) - a);
                     }
-                }  else {
+                } else {
                     if (base == 0) {
                         copy.set(i, j, Math.log(a + copy.get(i, j)));
                     } else {
@@ -1430,27 +1430,27 @@ public final class DataUtils {
      * given dataset.
      */
     public static DataSet getResamplingDataset(DataSet data, int sampleSize) {
-    	int actualSampleSize = data.getNumRows();
-    	int _size = sampleSize;
-    	if(actualSampleSize < _size) {
-    		_size = actualSampleSize;
-    	}
-    	
-    	List<Integer> availRows = new ArrayList<>();
-    	for (int i = 0; i < actualSampleSize; i++) {
-    		availRows.add(i);
-    	}
-    	
-    	Collections.shuffle(availRows);
-    	
-    	List<Integer> addedRows = new ArrayList<>();
+        int actualSampleSize = data.getNumRows();
+        int _size = sampleSize;
+        if (actualSampleSize < _size) {
+            _size = actualSampleSize;
+        }
+
+        List<Integer> availRows = new ArrayList<>();
+        for (int i = 0; i < actualSampleSize; i++) {
+            availRows.add(i);
+        }
+
+        Collections.shuffle(availRows);
+
+        List<Integer> addedRows = new ArrayList<>();
         int[] rows = new int[_size];
-    	for (int i = 0; i < _size; i++) {
+        for (int i = 0; i < _size; i++) {
             int row = -1;
             int index = -1;
-            while(row == -1 || addedRows.contains(row)) {
-            	index = RandomUtil.getInstance().nextInt(availRows.size());
-            	row = availRows.get(index);
+            while (row == -1 || addedRows.contains(row)) {
+                index = RandomUtil.getInstance().nextInt(availRows.size());
+                row = availRows.get(index);
             }
             rows[i] = row;
             addedRows.add(row);

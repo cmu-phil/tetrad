@@ -19,20 +19,20 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-        package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search;
 
-        import edu.cmu.tetrad.data.*;
-        import edu.cmu.tetrad.graph.Node;
-        import edu.cmu.tetrad.util.Matrix;
-        import org.apache.commons.math3.linear.BlockRealMatrix;
-        import org.apache.commons.math3.linear.RealMatrix;
-        import org.apache.commons.math3.stat.correlation.Covariance;
-        import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Matrix;
+import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.stat.correlation.Covariance;
+import org.apache.commons.math3.util.FastMath;
 
-        import java.util.*;
+import java.util.*;
 
-        import static edu.cmu.tetrad.data.Discretizer.*;
-        import static java.lang.Math.log;
+import static edu.cmu.tetrad.data.Discretizer.*;
+import static java.lang.Math.log;
 
 /**
  * Implements a conditional Gaussian likelihood. Please note that this this likelihood will be maximal only if the
@@ -267,7 +267,10 @@ public class ConditionalGaussianLikelihood {
 
         double c1 = 0, c2 = 0;
 
-        List<List<Integer>> cells = adTree.getCellLeaves(A);
+//        List<List<Integer>> cells = adTree.getCellLeaves(A);
+
+//        List<List<Integer>> cells = adTree.getCellLeaves(A);
+        List<List<Integer>> cells = partition(A);
 
         for (List<Integer> cell : cells) {
             int a = cell.size();
@@ -356,5 +359,27 @@ public class ConditionalGaussianLikelihood {
     private int h(List<ContinuousVariable> X) {
         int p = X.size();
         return p * (p + 1) / 2;
+    }
+
+    private List<List<Integer>> partition(List<DiscreteVariable> discrete_parents) {
+        List<List<Integer>> cells = new ArrayList<>();
+        HashMap<List<Integer>, Integer> keys = new HashMap<>();
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            List<Integer> key = new ArrayList<>();
+
+            for (DiscreteVariable discrete_parent : discrete_parents) {
+                key.add((dataSet.getInt(i, dataSet.getColumn(discrete_parent))));
+            }
+
+            if (!keys.containsKey(key)) {
+                keys.put(key, cells.size());
+                cells.add(keys.get(key), new ArrayList<>());
+            }
+
+            cells.get(keys.get(key)).add(i);
+        }
+
+        return cells;
     }
 }

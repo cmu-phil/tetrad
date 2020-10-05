@@ -1026,7 +1026,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @return a new data set in which the the column at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (Moved over from Purify.)
      */
-    public final DataSet subsetColumns(int indices[]) {
+    public final DataSet subsetColumns(int[] indices) {
         List<Node> variables = getVariables();
         List<Node> _variables = new LinkedList<>();
 
@@ -1054,8 +1054,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         return _dataSet;
     }
 
-    public final DataSet subsetRows(int rows[]) {
-        int cols[] = new int[this.dataBox.numCols()];
+    public final DataSet subsetRows(int[] rows) {
+        int[] cols = new int[this.dataBox.numCols()];
 
         for (int i = 0; i < cols.length; i++) {
             cols[i] = i;

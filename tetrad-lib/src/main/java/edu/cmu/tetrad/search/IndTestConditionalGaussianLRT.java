@@ -21,7 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
@@ -45,6 +47,7 @@ import static java.lang.Math.log;
  * @author Joseph Ramsey
  */
 public class IndTestConditionalGaussianLRT implements IndependenceTest {
+    private final boolean discretize;
     private DataSet data;
     private Map<Node, Integer> nodesHash;
     private double alpha = 0.001;
@@ -62,6 +65,8 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         this.likelihood = new ConditionalGaussianLikelihood(data);
         this.likelihood.setDiscretize(discretize);
         nodesHash = new HashedMap<>();
+
+        this.discretize = discretize;
 
         List<Node> variables = data.getVariables();
 
@@ -85,6 +90,47 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
+        List<Node> allVars = new ArrayList<>(z);
+        allVars.add(x);
+        allVars.add(y);
+
+        int[] cols = new int[z.size() + 2];
+        for (int i = 0; i < allVars.size(); i++) {
+            cols[i] = nodesHash.get(allVars.get(i));
+        }
+
+        List<Integer> rows = new ArrayList<>();
+
+        K:
+        for (int k = 0; k < data.getNumRows(); k++) {
+            for (Node node : allVars) {
+                if (node instanceof ContinuousVariable) {
+                    if (Double.isNaN(data.getDouble(k, nodesHash.get(node)))) continue K;
+                }
+                else if (node instanceof DiscreteVariable) {
+                    if (data.getInt(k, nodesHash.get(node)) == -99) continue K;
+                }
+            }
+
+            rows.add(k);
+        }
+
+        int[] _rows = new int[rows.size()];
+        for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
+
+        DataSet data2 = data.subsetColumns(cols);
+        data2 = data2.subsetRows(_rows);
+
+        List<Node> variables = data2.getVariables();
+        Map<Node, Integer> nodesHash = new HashMap<>();
+
+        for (int i = 0; i < variables.size(); i++) {
+            nodesHash.put(variables.get(i), i);
+        }
+
+        ConditionalGaussianLikelihood likelihood = new ConditionalGaussianLikelihood(data2);
+        likelihood.setDiscretize(discretize);
+
         likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
 
         int _x = nodesHash.get(x);
