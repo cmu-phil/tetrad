@@ -130,6 +130,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
         ConditionalGaussianLikelihood likelihood = new ConditionalGaussianLikelihood(data2);
         likelihood.setDiscretize(discretize);
+        likelihood.setRows(rows);
 
         likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
 
