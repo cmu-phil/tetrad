@@ -34,6 +34,7 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
                         parameters.getDouble("structurePrior"),
                         parameters.getBoolean("discretize"));
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
+        conditionalGaussianScore.setTestwiseDeletion(parameters.getBoolean("testwiseDeletion"));
         return conditionalGaussianScore;
     }
 
@@ -54,6 +55,7 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
         parameters.add("penaltyDiscount");
         parameters.add("structurePrior");
         parameters.add("discretize");
+        parameters.add("testwiseDeletion");
         return parameters;
     }
 

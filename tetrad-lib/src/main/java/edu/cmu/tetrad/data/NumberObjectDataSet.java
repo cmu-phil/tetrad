@@ -1099,6 +1099,13 @@ public final class NumberObjectDataSet
         return _data;
     }
 
+    @Override
+    public DataSet subsetRowsColumns(int[] rows, int[] columns) {
+        DataSet dataSet = subsetRows(rows);
+        dataSet = dataSet.subsetColumns(columns);
+        return dataSet;
+    }
+
     /**
      * Shifts the given column
      */

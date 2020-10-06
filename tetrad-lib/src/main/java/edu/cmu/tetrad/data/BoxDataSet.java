@@ -1069,6 +1069,30 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         return _data;
     }
 
+    @Override
+    public final DataSet subsetRowsColumns(int[] rows, int[] columns) {
+        List<Node> variables = getVariables();
+        List<Node> _variables = new LinkedList<>();
+
+        for (int index : columns) {
+            _variables.add(variables.get(index));
+        }
+
+
+        DataBox _data = viewSelection(rows, columns);
+        BoxDataSet _dataSet = new BoxDataSet(_data, _variables);
+
+//        _dataSet.name = name + "_copy";
+        _dataSet.name = name;
+        _dataSet.variables = _variables;
+        _dataSet.selection = new HashSet<>();
+        _dataSet.multipliers = new HashMap<>(multipliers);
+
+        // Might have to delete some knowledge.
+        _dataSet.knowledge = knowledge.copy();
+        return _dataSet;
+    }
+
     /**
      * Shifts the given column
      */

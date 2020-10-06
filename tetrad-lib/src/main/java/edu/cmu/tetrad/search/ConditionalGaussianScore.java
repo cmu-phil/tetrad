@@ -46,6 +46,7 @@ public class ConditionalGaussianScore implements Score {
     private double penaltyDiscount = 1;
     private int numCategoriesToDiscretize = 3;
     private double sp;
+    private boolean testwiseDeletion = true;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -68,6 +69,53 @@ public class ConditionalGaussianScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
+        List<Node> variables = dataSet.getVariables();
+        Map<Node, Integer> nodesHash = new HashMap<>();
+
+        for (int j = 0; j < variables.size(); j++) {
+            nodesHash.put(variables.get(j), j);
+        }
+
+        if (testwiseDeletion) {
+            List<Integer> rows = new ArrayList<>();
+
+            K:
+            for (int k = 0; k < dataSet.getNumRows(); k++) {
+                for (Node node : dataSet.getVariables()) {
+                    if (node instanceof ContinuousVariable) {
+                        if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
+                    } else if (node instanceof DiscreteVariable) {
+                        if (dataSet.getInt(k, nodesHash.get(node)) == -99) continue K;
+                    }
+                }
+
+                rows.add(k);
+            }
+
+            int[] _rows = new int[rows.size()];
+            for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
+
+            int[] cols = new int[parents.length + 1];
+            System.arraycopy(parents, 0, cols, 1, parents.length);
+            cols[0] = i;
+
+            DataSet data2 = dataSet.subsetRowsColumns(_rows, cols);
+
+            List<Node> _variables = data2.getVariables();
+            nodesHash = new HashMap<>();
+
+            for (int j = 0; j < data2.getVariables().size(); j++) {
+                nodesHash.put(data2.getVariables().get(j), j);
+            }
+
+            i = 0;
+            for (int j = 0; j < parents.length; j++) {
+                parents[j] = j + 1;
+            }
+
+            likelihood = new ConditionalGaussianLikelihood(data2);
+        }
+
         likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
         likelihood.setPenaltyDiscount(penaltyDiscount);
 
@@ -173,6 +221,9 @@ public class ConditionalGaussianScore implements Score {
         return "Conditional Gaussian Score Penalty " + nf.format(penaltyDiscount);
     }
 
+    public void setTestwiseDeletion(boolean testwiseDeletion) {
+        this.testwiseDeletion = testwiseDeletion;
+    }
 }
 
 

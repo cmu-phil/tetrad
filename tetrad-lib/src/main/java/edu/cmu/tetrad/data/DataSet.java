@@ -274,6 +274,8 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      */
     void setSelected(Node variable, boolean selected);
 
+    DataSet subsetRowsColumns(int[] rows, int[] columns);
+
     /**
      * Shifts the given column down one.
      */
