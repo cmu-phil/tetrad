@@ -48,18 +48,17 @@ import static java.lang.Math.log;
  */
 public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private final boolean discretize;
-    private DataSet data;
-    private Map<Node, Integer> nodesHash;
-    private double alpha = 0.001;
+    private final DataSet data;
+    private final Map<Node, Integer> nodesHash;
+    private double alpha;
 
     // Likelihood function
-    private ConditionalGaussianLikelihood likelihood;
+    private final ConditionalGaussianLikelihood likelihood;
     private double pValue = Double.NaN;
     private int numCategoriesToDiscretize = 3;
 
     private boolean verbose = false;
     private boolean fastFDR = false;
-    private boolean testwiseDeletion = true;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha, boolean discretize) {
         this.data = data;
@@ -98,25 +97,25 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         ConditionalGaussianLikelihood likelihood = this.likelihood;
         Map<Node, Integer> nodesHash = this.nodesHash;
 
-        if (testwiseDeletion) {
+        List<Integer> rows = new ArrayList<>();
+
+        K:
+        for (int k = 0; k < data.getNumRows(); k++) {
+            for (Node node : allVars) {
+                if (node instanceof ContinuousVariable) {
+                    if (Double.isNaN(data.getDouble(k, nodesHash.get(node)))) continue K;
+                } else if (node instanceof DiscreteVariable) {
+                    if (data.getInt(k, nodesHash.get(node)) == -99) continue K;
+                }
+            }
+
+            rows.add(k);
+        }
+
+        if (rows.size() < data.getNumRows()) {
             int[] cols = new int[z.size() + 2];
             for (int i = 0; i < allVars.size(); i++) {
                 cols[i] = nodesHash.get(allVars.get(i));
-            }
-
-            List<Integer> rows = new ArrayList<>();
-
-            K:
-            for (int k = 0; k < data.getNumRows(); k++) {
-                for (Node node : allVars) {
-                    if (node instanceof ContinuousVariable) {
-                        if (Double.isNaN(data.getDouble(k, nodesHash.get(node)))) continue K;
-                    } else if (node instanceof DiscreteVariable) {
-                        if (data.getInt(k, nodesHash.get(node)) == -99) continue K;
-                    }
-                }
-
-                rows.add(k);
             }
 
             int[] _rows = new int[rows.size()];
@@ -336,9 +335,5 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     public void setFastFDR(boolean fastFDR) {
         this.fastFDR = fastFDR;
-    }
-
-    public void setTestwiseDeletion(boolean testwiseDeletion) {
-        this.testwiseDeletion = testwiseDeletion;
     }
 }

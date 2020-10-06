@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,6 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
                         parameters.getDouble("structurePrior"),
                         parameters.getBoolean("discretize"));
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
-        conditionalGaussianScore.setTestwiseDeletion(parameters.getBoolean("testwiseDeletion"));
         return conditionalGaussianScore;
     }
 
@@ -55,7 +55,6 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
         parameters.add("penaltyDiscount");
         parameters.add("structurePrior");
         parameters.add("discretize");
-        parameters.add("testwiseDeletion");
         return parameters;
     }
 

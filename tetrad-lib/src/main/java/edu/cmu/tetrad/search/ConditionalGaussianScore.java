@@ -35,18 +35,17 @@ import java.util.*;
  */
 public class ConditionalGaussianScore implements Score {
 
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // The variables of the continuousData set.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // Likelihood function
     private ConditionalGaussianLikelihood likelihood;
 
-    private double penaltyDiscount = 1;
+    private double penaltyDiscount;
     private int numCategoriesToDiscretize = 3;
-    private double sp;
-    private boolean testwiseDeletion = true;
+    private final double sp;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -76,22 +75,22 @@ public class ConditionalGaussianScore implements Score {
             nodesHash.put(variables.get(j), j);
         }
 
-        if (testwiseDeletion) {
-            List<Integer> rows = new ArrayList<>();
+        List<Integer> rows = new ArrayList<>();
 
-            K:
-            for (int k = 0; k < dataSet.getNumRows(); k++) {
-                for (Node node : dataSet.getVariables()) {
-                    if (node instanceof ContinuousVariable) {
-                        if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
-                    } else if (node instanceof DiscreteVariable) {
-                        if (dataSet.getInt(k, nodesHash.get(node)) == -99) continue K;
-                    }
+        K:
+        for (int k = 0; k < dataSet.getNumRows(); k++) {
+            for (Node node : dataSet.getVariables()) {
+                if (node instanceof ContinuousVariable) {
+                    if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
+                } else if (node instanceof DiscreteVariable) {
+                    if (dataSet.getInt(k, nodesHash.get(node)) == -99) continue K;
                 }
-
-                rows.add(k);
             }
 
+            rows.add(k);
+        }
+
+        if (rows.size() < dataSet.getNumRows()) {
             int[] _rows = new int[rows.size()];
             for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
 
@@ -101,7 +100,6 @@ public class ConditionalGaussianScore implements Score {
 
             DataSet data2 = dataSet.subsetRowsColumns(_rows, cols);
 
-            List<Node> _variables = data2.getVariables();
             nodesHash = new HashMap<>();
 
             for (int j = 0; j < data2.getVariables().size(); j++) {
@@ -219,10 +217,6 @@ public class ConditionalGaussianScore implements Score {
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
         return "Conditional Gaussian Score Penalty " + nf.format(penaltyDiscount);
-    }
-
-    public void setTestwiseDeletion(boolean testwiseDeletion) {
-        this.testwiseDeletion = testwiseDeletion;
     }
 }
 
