@@ -5,10 +5,6 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
-<<<<<<< HEAD
-=======
-import edu.cmu.tetrad.util.TetradMatrix;
->>>>>>> 3c7888a4fd3bc493d89966cc2daac6008a85730e
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,20 +57,9 @@ public class FaskVote {
             fask.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
             fask.setDepth(parameters.getInt(DEPTH));
             fask.setDelta(parameters.getDouble(FASK_DELTA));
-<<<<<<< HEAD
             fask.setTwoCycleScreeningCutoff(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
             fask.setOrientationAlpha(parameters.getDouble(ORIENTATION_ALPHA));
             fask.setKnowledge(knowledge);
-
-
-//            Lingam lingam = new Lingam();
-//            Graph g = lingam.search(dataSet);
-//
-=======
-            fask.setTwoCycleScreeningThreshold(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
-            fask.setTwoCycleTestingAlpha(parameters.getDouble(TWO_CYCLE_TESTING_ALPHA));
-            fask.setKnowledge(knowledge);
->>>>>>> 3c7888a4fd3bc493d89966cc2daac6008a85730e
             Graph g = fask.search();
             g = GraphUtils.replaceNodes(g, nodes);
             fasks.add(g);
@@ -89,10 +74,7 @@ public class FaskVote {
 
             int sum1 = 0;
             int sum2 = 0;
-<<<<<<< HEAD
             int count = 0;
-=======
->>>>>>> 3c7888a4fd3bc493d89966cc2daac6008a85730e
 
             for (Graph g : fasks) {
                 if (g.containsEdge(dir1)) {
@@ -102,7 +84,6 @@ public class FaskVote {
                 if (g.containsEdge(dir2)) {
                     sum2++;
                 }
-<<<<<<< HEAD
 
                 if (g.containsEdge(dir1) || g.containsEdge(dir2)) {
                     count++;
@@ -111,12 +92,6 @@ public class FaskVote {
 
             double mean1 = sum1 / (double) count;
             double mean2 = sum2 / (double) count;
-=======
-            }
-
-            double mean1 = sum1 / (double) dataSets.size();
-            double mean2 = sum2 / (double) dataSets.size();
->>>>>>> 3c7888a4fd3bc493d89966cc2daac6008a85730e
 
             System.out.println(X + " " + Y + " " + mean1 + " " + mean2);
 
