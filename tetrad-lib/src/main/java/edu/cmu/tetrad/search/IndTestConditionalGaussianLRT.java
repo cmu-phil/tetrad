@@ -53,7 +53,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private double alpha;
 
     // Likelihood function
-//    private final ConditionalGaussianLikelihood likelihood;
+    private final ConditionalGaussianLikelihood likelihood;
     private double pValue = Double.NaN;
     private int numCategoriesToDiscretize = 3;
 
@@ -62,8 +62,8 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha, boolean discretize) {
         this.data = data;
-//        this.likelihood = new ConditionalGaussianLikelihood(data);
-//        this.likelihood.setDiscretize(discretize);
+        this.likelihood = new ConditionalGaussianLikelihood(data);
+        this.likelihood.setDiscretize(discretize);
         nodesHash = new HashedMap<>();
 
         this.discretize = discretize;
@@ -94,45 +94,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         allVars.add(x);
         allVars.add(y);
 
-        ConditionalGaussianLikelihood likelihood;// = this.likelihood;
-        Map<Node, Integer> nodesHash = this.nodesHash;
-
-        List<Integer> rows = new ArrayList<>();
-
-        K:
-        for (int k = 0; k < data.getNumRows(); k++) {
-            for (Node node : allVars) {
-                if (node instanceof ContinuousVariable) {
-                    if (Double.isNaN(data.getDouble(k, nodesHash.get(node)))) continue K;
-                } else if (node instanceof DiscreteVariable) {
-                    if (data.getInt(k, nodesHash.get(node)) == -99) continue K;
-                }
-            }
-
-            rows.add(k);
-        }
-
-//        if (rows.size() < data.getNumRows()) {
-        int[] cols = new int[z.size() + 2];
-        for (int i = 0; i < allVars.size(); i++) {
-            cols[i] = nodesHash.get(allVars.get(i));
-        }
-
-        int[] _rows = new int[rows.size()];
-        for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
-
-        DataSet data2 = data.subsetRowsColumns(_rows, cols);
-
-        List<Node> variables = data2.getVariables();
-        nodesHash = new HashMap<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            nodesHash.put(variables.get(i), i);
-        }
-
-        likelihood = new ConditionalGaussianLikelihood(data2);
-        likelihood.setDiscretize(discretize);
-        likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
+        likelihood.setRows(getRows(allVars, nodesHash));
 
         int _x = nodesHash.get(x);
         int _y = nodesHash.get(y);
@@ -194,6 +156,24 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         } else {
             return this.pValue > alpha;
         }
+    }
+
+    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+        List<Integer> rows = new ArrayList<>();
+
+        K:
+        for (int k = 0; k < data.getNumRows(); k++) {
+            for (Node node : allVars) {
+                if (node instanceof ContinuousVariable) {
+                    if (Double.isNaN(data.getDouble(k, nodesHash.get(node)))) continue K;
+                } else if (node instanceof DiscreteVariable) {
+                    if (data.getInt(k, nodesHash.get(node)) == -99) continue K;
+                }
+            }
+
+            rows.add(k);
+        }
+        return rows;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {

@@ -40,6 +40,7 @@ public class ConditionalGaussianScore implements Score {
     // The variables of the continuousData set.
     private final List<Node> variables;
     private final boolean discretize;
+    private final Map<Node, Integer> nodesHash;
 
     // Likelihood function
     private ConditionalGaussianLikelihood likelihood;
@@ -61,23 +62,39 @@ public class ConditionalGaussianScore implements Score {
         this.penaltyDiscount = penaltyDiscount;
         this.sp = sp;
 
-//        this.likelihood = new ConditionalGaussianLikelihood(dataSet);
-//        this.likelihood.setDiscretize(discretize);
-
         this.discretize = discretize;
-    }
 
-    /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
-     */
-    public double localScore(int i, int... parents) {
-        List<Node> variables = dataSet.getVariables();
         Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int j = 0; j < variables.size(); j++) {
             nodesHash.put(variables.get(j), j);
         }
 
+        this.nodesHash = nodesHash;
+
+        likelihood = new ConditionalGaussianLikelihood(dataSet);
+
+        likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
+        likelihood.setPenaltyDiscount(penaltyDiscount);
+        likelihood.setDiscretize(discretize);
+    }
+
+    /**
+     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     */
+    public double localScore(int i, int... parents) {
+        likelihood.setRows(getRows(nodesHash));
+
+        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
+
+        int N = dataSet.getNumRows();
+        double lik = ret.getLik();
+        int k = ret.getDof();
+
+        return 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(N);
+    }
+
+    private List<Integer> getRows(Map<Node, Integer> nodesHash) {
         List<Integer> rows = new ArrayList<>();
 
         K:
@@ -92,47 +109,13 @@ public class ConditionalGaussianScore implements Score {
 
             rows.add(k);
         }
-
-//        if (rows.size() < dataSet.getNumRows()) {
-            int[] _rows = new int[rows.size()];
-            for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
-
-            int[] cols = new int[parents.length + 1];
-            System.arraycopy(parents, 0, cols, 1, parents.length);
-            cols[0] = i;
-
-            DataSet data2 = dataSet.subsetRowsColumns(_rows, cols);
-
-            nodesHash = new HashMap<>();
-
-            for (int j = 0; j < data2.getVariables().size(); j++) {
-                nodesHash.put(data2.getVariables().get(j), j);
-            }
-
-            i = 0;
-            for (int j = 0; j < parents.length; j++) {
-                parents[j] = j + 1;
-            }
-
-            likelihood = new ConditionalGaussianLikelihood(data2);
-//        }
-
-        likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
-        likelihood.setPenaltyDiscount(penaltyDiscount);
-        likelihood.setDiscretize(discretize);
-
-        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
-
-        int N = dataSet.getNumRows();
-        double lik = ret.getLik();
-        int k = ret.getDof();
-
-        return 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(N);
+        return rows;
     }
 
     private double getStructurePrior(int[] parents) {
-        if (sp <= 0) { return 0; }
-        else {
+        if (sp <= 0) {
+            return 0;
+        } else {
             int k = parents.length;
             double n = dataSet.getNumColumns() - 1;
             double p = sp / n;

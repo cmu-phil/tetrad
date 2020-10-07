@@ -60,6 +60,11 @@ public class FaskVote {
             fask.setTwoCycleScreeningCutoff(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
             fask.setOrientationAlpha(parameters.getDouble(ORIENTATION_ALPHA));
             fask.setKnowledge(knowledge);
+
+
+//            Lingam lingam = new Lingam();
+//            Graph g = lingam.search(dataSet);
+//
             Graph g = fask.search();
             g = GraphUtils.replaceNodes(g, nodes);
             fasks.add(g);
