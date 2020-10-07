@@ -23,9 +23,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.linear.BlockRealMatrix;
+import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.TetradVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 import static java.lang.Math.exp;
@@ -171,7 +170,7 @@ public class FastIca {
      * A data matrix with n rows representing observations and p columns
      * representing variables.
      */
-    private Matrix X;
+    private TetradMatrix X;
 
     /**
      * The number of independent components to be extracted.
@@ -223,7 +222,7 @@ public class FastIca {
      * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default)
      * then a matrix of normal r.v.'s is used.
      */
-    private Matrix wInit = null;
+    private TetradMatrix wInit = null;
 
     //============================CONSTRUCTOR===========================//
 
@@ -236,7 +235,7 @@ public class FastIca {
      *          variables. It is assumed that there are no missing
      *          values.
      */
-    public FastIca(Matrix X, int numComponents) {
+    public FastIca(TetradMatrix X, int numComponents) {
         this.X = X;
         this.numComponents = numComponents;
     }
@@ -375,7 +374,7 @@ public class FastIca {
      * Initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
      * then a matrix of normal r.v.'s is used.
      */
-    public Matrix getWInit() {
+    public TetradMatrix getWInit() {
         return wInit;
     }
 
@@ -383,7 +382,7 @@ public class FastIca {
      * Initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
      * then a matrix of normal r.v.'s is used.
      */
-    public void setWInit(Matrix wInit) {
+    public void setWInit(TetradMatrix wInit) {
         this.wInit = wInit;
     }
 
@@ -404,7 +403,7 @@ public class FastIca {
         }
 
         if (wInit == null) {
-            wInit = new Matrix(numComponents, numComponents);
+            wInit = new TetradMatrix(numComponents, numComponents);
             for (int i = 0; i < wInit.rows(); i++) {
                 for (int j = 0; j < wInit.columns(); j++) {
                     wInit.set(i, j, RandomUtil.getInstance().nextNormal(0, 1));
@@ -429,22 +428,22 @@ public class FastIca {
         }
 
         // Whiten.
-        Matrix cov = X.times(X.transpose()).scalarMult(1.0 / n);
+        TetradMatrix cov = X.times(X.transpose()).scalarMult(1.0 / n);
 
-        SingularValueDecomposition s = new SingularValueDecomposition(new BlockRealMatrix(cov.toArray()));
-        Matrix D = new Matrix(s.getS().getData());
-        Matrix U = new Matrix(s.getU().getData());
+        SingularValueDecomposition s = new SingularValueDecomposition(cov.getRealMatrix());
+        TetradMatrix D = new TetradMatrix(s.getS());
+        TetradMatrix U = new TetradMatrix(s.getU());
 
         for (int i = 0; i < D.rows(); i++) {
             D.set(i, i, 1.0 / Math.sqrt(D.get(i, i)));
         }
 
-        Matrix K = D.times(U.transpose());
+        TetradMatrix K = D.times(U.transpose());
 //        K = K.scalarMult(-1); // This SVD gives -U from R's SVD.
         K = K.getPart(0, numComponents - 1, 0, p - 1);
 
-        Matrix X1 = K.times(X);
-        Matrix b;
+        TetradMatrix X1 = K.times(X);
+        TetradMatrix b;
 
         if (algorithmType == DEFLATION) {
             b = icaDeflation(X1, tolerance, function, alpha,
@@ -456,17 +455,18 @@ public class FastIca {
             throw new IllegalStateException();
         }
 
-        Matrix w = b.times(K);
-        Matrix S = w.times(X);
-        return new IcaResult(X, K, w, S);
+        TetradMatrix w = b.times(K);
+        TetradMatrix S = w.times(X);
+        TetradMatrix A = w.inverse();
+        return new IcaResult(X, K, w, A, S);
 
     }
 
     //==============================PRIVATE METHODS==========================//
 
-    private Matrix icaDeflation(Matrix X,
-                                double tolerance, int function, double alpha,
-                                int maxIterations, boolean verbose, Matrix wInit) {
+    private TetradMatrix icaDeflation(TetradMatrix X,
+                                      double tolerance, int function, double alpha,
+                                      int maxIterations, boolean verbose, TetradMatrix wInit) {
         if (verbose && function == LOGCOSH) {
             TetradLogger.getInstance().log("info", "Deflation FastIca using lgcosh approx. to neg-entropy function");
         }
@@ -475,14 +475,14 @@ public class FastIca {
             TetradLogger.getInstance().log("info", "Deflation FastIca using exponential approx. to neg-entropy function");
         }
 
-        Matrix W = new Matrix(X.rows(), X.rows());
+        TetradMatrix W = new TetradMatrix(X.rows(), X.rows());
 
         for (int i = 0; i < X.rows(); i++) {
             if (verbose) {
                 TetradLogger.getInstance().log("fastIcaDetails", "Component " + (i + 1));
             }
 
-            Vector w = wInit.getRow(i);
+            TetradVector w = wInit.getRow(i);
 
             if (i > 0) {
                 for (int u = 0; u < i; u++) {
@@ -497,22 +497,22 @@ public class FastIca {
             double _tolerance = Double.POSITIVE_INFINITY;
 
             while (_tolerance > tolerance && ++it <= maxIterations) {
-                Vector wx = X.transpose().times(w);
+                TetradVector wx = X.transpose().times(w);
 
-                Vector gwx0 = new Vector(X.columns());
+                TetradVector gwx0 = new TetradVector(X.columns());
 
                 for (int j = 0; j < X.columns(); j++) {
                     gwx0.set(j, g(alpha, wx.get(j)));
                 }
 
-                Matrix gwx = new Matrix(X.rows(), X.columns());
+                TetradMatrix gwx = new TetradMatrix(X.rows(), X.columns());
 
                 for (int _i = 0; _i < X.rows(); _i++) {
                     gwx.assignRow(i, gwx0);
                 }
 
                 // A weighting of X by gwx0.
-                Matrix xgwx = new Matrix(X.rows(), X.columns());
+                TetradMatrix xgwx = new TetradMatrix(X.rows(), X.columns());
 
                 for (int _i = 0; _i < X.rows(); _i++) {
                     for (int j = 0; j < X.columns(); j++) {
@@ -520,27 +520,27 @@ public class FastIca {
                     }
                 }
 
-                Vector v1 = new Vector(X.rows());
+                TetradVector v1 = new TetradVector(X.rows());
 
                 for (int k = 0; k < X.rows(); k++) {
                     v1.set(k, mean(xgwx.getRow(k)));
                 }
 
-                Vector g_wx = new Vector(X.columns());
+                TetradVector g_wx = new TetradVector(X.columns());
 
                 for (int k = 0; k < X.columns(); k++) {
                     double t = g(alpha, wx.get(k));
                     g_wx.set(k, (1.0 - t * t));
                 }
 
-                Vector v2 = w.copy();
+                TetradVector v2 = w.copy();
                 double meanGwx = mean(g_wx);
                 v2 = v2.scalarMult(meanGwx);
 
-                Vector w1 = v1.minus(v2);
+                TetradVector w1 = v1.minus(v2);
 
                 if (i > 0) {
-                    Vector t = w1.like();
+                    TetradVector t = w1.like();
 
                     for (int u = 0; u < i; u++) {
                         double k = 0.0;
@@ -592,7 +592,7 @@ public class FastIca {
         }
     }
 
-    private double mean(Vector v) {
+    private double mean(TetradVector v) {
         double sum = 0.0;
 
         for (int i = 0; i < v.size(); i++) {
@@ -602,7 +602,7 @@ public class FastIca {
         return sum / v.size();
     }
 
-    private double sumOfSquares(Vector v) {
+    private double sumOfSquares(TetradVector v) {
         double sum = 0.0;
 
         for (int i = 0; i < v.size(); i++) {
@@ -612,27 +612,27 @@ public class FastIca {
         return sum;
     }
 
-    private double rms(Vector w) {
+    private double rms(TetradVector w) {
         double ssq = sumOfSquares(w);
         return Math.sqrt(ssq);
     }
 
-    private Matrix icaParallel(Matrix X, int numComponents,
-                               double tolerance, int function, final double alpha,
-                               int maxIterations, boolean verbose, Matrix wInit) {
+    private TetradMatrix icaParallel(TetradMatrix X, int numComponents,
+                                     double tolerance, int function, final double alpha,
+                                     int maxIterations, boolean verbose, TetradMatrix wInit) {
         int p = X.columns();
-        Matrix W = wInit;
+        TetradMatrix W = wInit;
 
-        SingularValueDecomposition sW = new SingularValueDecomposition(new BlockRealMatrix(W.toArray()));
-        Matrix D = new Matrix(sW.getS().getData());
+        SingularValueDecomposition sW = new SingularValueDecomposition(W.getRealMatrix());
+        TetradMatrix D = new TetradMatrix(sW.getS());
         for (int i = 0; i < D.rows(); i++) D.set(i, i, 1.0 / D.get(i, i));
 
-        Matrix WTemp = new Matrix(sW.getU().getData()).times(D);
-        WTemp = WTemp.times(new Matrix(sW.getU().getData()).transpose());
+        TetradMatrix WTemp = new TetradMatrix(sW.getU()).times(D);
+        WTemp = WTemp.times(new TetradMatrix(sW.getU()).transpose());
         WTemp = WTemp.times(W);
         W = WTemp;
 
-        Matrix W1;
+        TetradMatrix W1;
         double _tolerance = Double.POSITIVE_INFINITY;
         int it = 0;
 
@@ -641,8 +641,8 @@ public class FastIca {
         }
 
         while (_tolerance > tolerance && it < maxIterations) {
-            Matrix wx = W.times(X);
-            Matrix gwx = new Matrix(numComponents, p);
+            TetradMatrix wx = W.times(X);
+            TetradMatrix gwx = new TetradMatrix(numComponents, p);
 
             for (int i = 0; i < numComponents; i++) {
                 for (int j = 0; j < p; j++) {
@@ -650,8 +650,8 @@ public class FastIca {
                 }
             }
 
-            Matrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
-            Matrix g_wx = gwx.like();
+            TetradMatrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
+            TetradMatrix g_wx = gwx.like();
 
             for (int i = 0; i < g_wx.rows(); i++) {
                 for (int j = 0; j < g_wx.columns(); j++) {
@@ -661,29 +661,29 @@ public class FastIca {
                 }
             }
 
-            Vector V20 = new Vector(numComponents);
+            TetradVector V20 = new TetradVector(numComponents);
 
             for (int k = 0; k < numComponents; k++) {
                 V20.set(k, mean(g_wx.getRow(k)));
             }
 
-            Matrix v2 = V20.diag();
+            TetradMatrix v2 = V20.diag();
             v2 = v2.times(W);
             W1 = v1.minus(v2);
 
-            SingularValueDecomposition sW1 = new SingularValueDecomposition(new BlockRealMatrix(W1.toArray()));
-            Matrix U = new Matrix(sW1.getU().getData());
-            Matrix sD = new Matrix(sW1.getS().getData());
+            SingularValueDecomposition sW1 = new SingularValueDecomposition(W1.getRealMatrix());
+            TetradMatrix U = new TetradMatrix(sW1.getU());
+            TetradMatrix sD = new TetradMatrix(sW1.getS());
             for (int i = 0; i < sD.rows(); i++)
                 sD.set(i, i, 1.0 / sD.get(i, i));
 
-            Matrix W1Temp = U.times(sD);
+            TetradMatrix W1Temp = U.times(sD);
             W1Temp = W1Temp.times(U.transpose());
             W1Temp = W1Temp.times(W1);
             W1 = W1Temp;
 
-            Matrix d1 = W1.times(W.transpose());
-            Vector d = d1.diag();
+            TetradMatrix d1 = W1.times(W.transpose());
+            TetradVector d = d1.diag();
             _tolerance = Double.NEGATIVE_INFINITY;
 
             for (int i = 0; i < d.size(); i++) {
@@ -703,18 +703,18 @@ public class FastIca {
         return W;
     }
 
-    private Matrix scale(Matrix x) {
+    private TetradMatrix scale(TetradMatrix x) {
         for (int i = 0; i < x.rows(); i++) {
-            Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
+            TetradVector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
             x.assignRow(i, u);
         }
 
         return x;
     }
 
-    private Matrix center(Matrix x) {
+    private TetradMatrix center(TetradMatrix x) {
         for (int i = 0; i < x.rows(); i++) {
-            Vector u = x.getRow(i);
+            TetradVector u = x.getRow(i);
             double mean = mean(u);
 
             for (int j = 0; j < x.columns(); j++) {
@@ -743,33 +743,39 @@ public class FastIca {
      * S: estimated source matrix
      */
     public static class IcaResult {
-        private final Matrix X;
-        private final Matrix K;
-        private final Matrix W;
-        private final Matrix S;
+        private final TetradMatrix X;
+        private final TetradMatrix K;
+        private final TetradMatrix W;
+        private final TetradMatrix S;
+        private final TetradMatrix A;
 
-        public IcaResult(Matrix X, Matrix K, Matrix W,
-                         Matrix S) {
+        public IcaResult(TetradMatrix X, TetradMatrix K, TetradMatrix W,
+                         TetradMatrix A, TetradMatrix S) {
             this.X = X;
             this.K = K;
             this.W = W;
+            this.A = A;
             this.S = S;
         }
 
-        public Matrix getX() {
+        public TetradMatrix getX() {
             return X;
         }
 
-        public Matrix getK() {
+        public TetradMatrix getK() {
             return K;
         }
 
-        public Matrix getW() {
+        public TetradMatrix getW() {
             return W;
         }
 
-        public Matrix getS() {
+        public TetradMatrix getS() {
             return S;
+        }
+
+        public TetradMatrix getA() {
+            return A;
         }
 
         public String toString() {
@@ -783,6 +789,9 @@ public class FastIca {
 
             buf.append("\n\nW:\n");
             buf.append(W);
+
+            buf.append("\n\nA:\n");
+            buf.append(A);
 
             buf.append("\n\nS:\n");
             buf.append(S);
