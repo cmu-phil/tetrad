@@ -39,6 +39,7 @@ public class ConditionalGaussianScore implements Score {
 
     // The variables of the continuousData set.
     private final List<Node> variables;
+    private final boolean discretize;
 
     // Likelihood function
     private ConditionalGaussianLikelihood likelihood;
@@ -60,8 +61,10 @@ public class ConditionalGaussianScore implements Score {
         this.penaltyDiscount = penaltyDiscount;
         this.sp = sp;
 
-        this.likelihood = new ConditionalGaussianLikelihood(dataSet);
-        this.likelihood.setDiscretize(discretize);
+//        this.likelihood = new ConditionalGaussianLikelihood(dataSet);
+//        this.likelihood.setDiscretize(discretize);
+
+        this.discretize = discretize;
     }
 
     /**
@@ -90,7 +93,7 @@ public class ConditionalGaussianScore implements Score {
             rows.add(k);
         }
 
-        if (rows.size() < dataSet.getNumRows()) {
+//        if (rows.size() < dataSet.getNumRows()) {
             int[] _rows = new int[rows.size()];
             for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
 
@@ -112,10 +115,11 @@ public class ConditionalGaussianScore implements Score {
             }
 
             likelihood = new ConditionalGaussianLikelihood(data2);
-        }
+//        }
 
         likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
         likelihood.setPenaltyDiscount(penaltyDiscount);
+        likelihood.setDiscretize(discretize);
 
         ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
 
