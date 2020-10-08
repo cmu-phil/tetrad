@@ -218,12 +218,11 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
             ldetA = log(this.cov.getSelection(A_, A_).det());
             ldetB = log(this.cov.getSelection(B_, B_).det());
         } else {
-            if (rows.isEmpty()) return null;
             ldetA = log(getCov(rows, A_).det());
             ldetB = log(getCov(rows, B_).det());
         }
 
-        double lik = this.N *(ldetB - ldetA + L2PE*(B_.length - A_.length));
+        double lik = rows.size() *(ldetB - ldetA + L2PE*(B_.length - A_.length));
 
         return new Ret(lik, dof);
     }
@@ -271,12 +270,12 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         Ret ret3 = getlldof(rows, _x, list1);
         Ret ret4 = getlldof(rows, _x, list2);
 
-        if (ret1 == null || ret2 == null || ret3 == null || ret4 == null) throw new IllegalStateException("Couldn't calculate independence");
-
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
         double lik1 = ret3.getLik() - ret4.getLik();
         double dof1 = ret3.getDof() - ret4.getDof();
+
+        if (Double.isInfinite(lik0) || Double.isInfinite(lik1)) return true;
 
         if (dof0 <= 0) {
             dof0 = 1;
@@ -468,21 +467,22 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         for (int k = 0; k < dataSet.getNumRows(); k++) {
             for (Node node : allVars) {
                 if (node instanceof ContinuousVariable) {
-                    if (Double.isNaN(_data.getDouble(k, nodesHash.get(node)))) continue K;
+                    if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
                 } else if (node instanceof DiscreteVariable) {
-                    if (_data.getInt(k, nodesHash.get(node)) == -99) continue K;
+                    if (dataSet.getInt(k, nodesHash.get(node)) == -99) continue K;
                 }
             }
 
             rows.add(k);
         }
+
         return rows;
     }
 
     // Subsample of the continuous mixedVariables conditioning on the given cols.
     private Matrix getCov(List<Integer> rows, int[] cols) {
+        if (rows.isEmpty()) return new Matrix(0, 0);
         Matrix cov = new Matrix(cols.length, cols.length);
-        if (rows.isEmpty()) return cov;
 
         for (int i = 0; i < cols.length; i++) {
             for (int j = 0; j < cols.length; j++) {

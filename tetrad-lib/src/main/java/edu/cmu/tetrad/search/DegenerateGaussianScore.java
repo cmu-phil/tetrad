@@ -307,6 +307,7 @@ public class DegenerateGaussianScore implements Score {
 
     // Subsample of the continuous mixedVariables conditioning on the given cols.
     private Matrix getCov(List<Integer> rows, int[] cols) {
+        if (rows.isEmpty()) return new Matrix(0, 0);
         Matrix cov = new Matrix(cols.length, cols.length);
 
         for (int i = 0; i < cols.length; i++) {
