@@ -33,7 +33,6 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
                         parameters.getDouble(Params.ALPHA),
                         parameters.getBoolean(Params.DISCRETIZE));
         test.setNumCategoriesToDiscretize(parameters.getInt(Params.NUM_CATEGORIES_TO_DISCRETIZE));
-        test.setFastFDR(parameters.getBoolean(Params.CONNECTED));
         return test;
     }
 
@@ -52,7 +51,7 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.DISCRETIZE);
-        parameters.add(Params.CONNECTED);
+        parameters.add(Params.NUM_CATEGORIES_TO_DISCRETIZE);
         return parameters;
     }
 

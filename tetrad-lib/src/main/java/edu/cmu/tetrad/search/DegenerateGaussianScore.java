@@ -195,6 +195,7 @@ public class DegenerateGaussianScore implements Score {
             ldetA = log(this.cov.getSelection(A_, A_).det());
             ldetB = log(this.cov.getSelection(B_, B_).det());
         } else {
+            if (rows.isEmpty()) return Double.NEGATIVE_INFINITY;
             ldetA = log(getCov(rows, A_).det());
             ldetB = log(getCov(rows, B_).det());
         }
@@ -304,19 +305,8 @@ public class DegenerateGaussianScore implements Score {
         return "Degenerate Gaussian Score Penalty " + nf.format(penaltyDiscount);
     }
 
-//    // Subsample of the continuous mixedVariables conditioning on the given cols.
-//    private Matrix getCov(List<Integer> rows, int[] cols) {
-//        int[] _rows = new int[rows.size()];
-//        for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
-//
-//        return _data.subsetRowsColumns(_rows, cols).getCovarianceMatrix();
-//    }
-
     // Subsample of the continuous mixedVariables conditioning on the given cols.
     private Matrix getCov(List<Integer> rows, int[] cols) {
-//        int[] _rows = new int[rows.size()];
-//        for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
-
         Matrix cov = new Matrix(cols.length, cols.length);
 
         for (int i = 0; i < cols.length; i++) {
@@ -333,8 +323,6 @@ public class DegenerateGaussianScore implements Score {
         }
 
         return cov;
-
-//        return _data.subsetRowsColumns(_rows, cols).getCovarianceMatrix();
     }
 
     private List<Integer> getRows(int i, int[] parents) {

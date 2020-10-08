@@ -218,6 +218,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
             ldetA = log(this.cov.getSelection(A_, A_).det());
             ldetB = log(this.cov.getSelection(B_, B_).det());
         } else {
+            if (rows.isEmpty()) return null;
             ldetA = log(getCov(rows, A_).det());
             ldetB = log(getCov(rows, B_).det());
         }
@@ -269,6 +270,8 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         Ret ret2 = getlldof(rows, _y, list2);
         Ret ret3 = getlldof(rows, _x, list1);
         Ret ret4 = getlldof(rows, _x, list2);
+
+        if (ret1 == null || ret2 == null || ret3 == null || ret4 == null) throw new IllegalStateException("Couldn't calculate independence");
 
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
@@ -479,6 +482,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     // Subsample of the continuous mixedVariables conditioning on the given cols.
     private Matrix getCov(List<Integer> rows, int[] cols) {
         Matrix cov = new Matrix(cols.length, cols.length);
+        if (rows.isEmpty()) return cov;
 
         for (int i = 0; i < cols.length; i++) {
             for (int j = 0; j < cols.length; j++) {

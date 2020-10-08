@@ -482,7 +482,7 @@ public class Fasts implements IFas {
                             if (verbose) {
                                 TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) +
                                         " score = " + nf.format(test.getScore()));
-                                out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getScore()));
+                                out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
                             }
 
                             continue EDGE;
