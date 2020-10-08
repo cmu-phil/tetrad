@@ -39,11 +39,10 @@ public class ConditionalGaussianScore implements Score {
 
     // The variables of the continuousData set.
     private final List<Node> variables;
-    private final boolean discretize;
     private final Map<Node, Integer> nodesHash;
 
     // Likelihood function
-    private ConditionalGaussianLikelihood likelihood;
+    private final ConditionalGaussianLikelihood likelihood;
 
     private double penaltyDiscount;
     private int numCategoriesToDiscretize = 3;
@@ -61,8 +60,6 @@ public class ConditionalGaussianScore implements Score {
         this.variables = dataSet.getVariables();
         this.penaltyDiscount = penaltyDiscount;
         this.sp = sp;
-
-        this.discretize = discretize;
 
         Map<Node, Integer> nodesHash = new HashMap<>();
 

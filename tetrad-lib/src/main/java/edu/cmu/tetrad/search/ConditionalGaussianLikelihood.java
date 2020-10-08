@@ -44,22 +44,22 @@ import static java.lang.Math.log;
 public class ConditionalGaussianLikelihood {
 
     // The data set. May contain continuous and/or discrete mixedVariables.
-    private DataSet mixedDataSet;
+    private final DataSet mixedDataSet;
 
     // The data set with all continuous mixedVariables discretized.
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // Number of categories to use to discretize continuous mixedVariables.
     private int numCategoriesToDiscretize = 3;
 
     // The mixedVariables of the mixed data set.
-    private List<Node> mixedVariables;
+    private final List<Node> mixedVariables;
 
     // Indices of mixedVariables.
-    private Map<Node, Integer> nodesHash;
+    private final Map<Node, Integer> nodesHash;
 
     // Continuous data only.
-    private double[][] continuousData;
+    private final double[][] continuousData;
 
     // Multiplier on degrees of freedom for the continuous portion of those degrees.
     private double penaltyDiscount = 1;
@@ -71,7 +71,7 @@ public class ConditionalGaussianLikelihood {
     private boolean discretize = false;
 
     // A constant.
-    private static double LOG2PI = log(2.0 * Math.PI);
+    private static final double LOG2PI = log(2.0 * Math.PI);
 
     public void setRows(List<Integer> rows) {
         this.rows = rows;
@@ -81,9 +81,9 @@ public class ConditionalGaussianLikelihood {
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom
      * for it.
      */
-    public class Ret {
-        private double lik;
-        private int dof;
+    public static class Ret {
+        private final double lik;
+        private final int dof;
 
         private Ret(double lik, int dof) {
             this.lik = lik;
@@ -262,7 +262,6 @@ public class ConditionalGaussianLikelihood {
 
         int[] continuousCols = new int[k];
         for (int j = 0; j < k; j++) continuousCols[j] = nodesHash.get(X.get(j));
-        int N = rows.size();// mixedDataSet.getNumRows();
 
         double c1 = 0, c2 = 0;
 
@@ -280,13 +279,14 @@ public class ConditionalGaussianLikelihood {
                 try {
 
                     // Determinant will be zero if data are linearly dependent.
+                    Matrix cov;
+
                     if (a > continuousCols.length + 5) {
-                        Matrix cov = cov(getSubsample(continuousCols, cell));
-                        c2 += a * gaussianLikelihood(k, cov);
+                        cov = cov(getSubsample(continuousCols, cell));
                     } else {
-                        Matrix cov = cov(getSubsample(continuousCols, rows));
-                        c2 += a * gaussianLikelihood(k, cov);
+                        cov = cov(getSubsample(continuousCols, rows));
                     }
+                    c2 += a * gaussianLikelihood(k, cov);
                 } catch (Exception e) {
                     // No contribution.
                 }

@@ -47,7 +47,6 @@ import static java.lang.Math.log;
  * @author Joseph Ramsey
  */
 public class IndTestConditionalGaussianLRT implements IndependenceTest {
-    private final boolean discretize;
     private final DataSet data;
     private final Map<Node, Integer> nodesHash;
     private double alpha;
@@ -55,18 +54,16 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     // Likelihood function
     private final ConditionalGaussianLikelihood likelihood;
     private double pValue = Double.NaN;
-    private int numCategoriesToDiscretize = 3;
 
     private boolean verbose = false;
     private boolean fastFDR = false;
+    private int numCategoriesToDiscretize = 3;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha, boolean discretize) {
         this.data = data;
         this.likelihood = new ConditionalGaussianLikelihood(data);
         this.likelihood.setDiscretize(discretize);
         nodesHash = new HashedMap<>();
-
-        this.discretize = discretize;
 
         List<Node> variables = data.getVariables();
 
@@ -90,6 +87,8 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
+        this.likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
+
         List<Node> allVars = new ArrayList<>(z);
         allVars.add(x);
         allVars.add(y);
@@ -294,10 +293,6 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
     }
 
-    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
-        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
-    }
-
     @Override
     public boolean isVerbose() {
         return verbose;
@@ -310,5 +305,9 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     public void setFastFDR(boolean fastFDR) {
         this.fastFDR = fastFDR;
+    }
+
+    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
+        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 }

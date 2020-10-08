@@ -839,6 +839,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             throw new IllegalStateException("Not a continuous data set.");
         }
 
+        if (getNumColumns() == 0) return new Matrix(0, 0);
+
         return new CovarianceMatrix(this).getMatrix();
 
 //        TetradMatrix cov = new TetradMatrix(dataBox.numCols(), dataBox.numCols());
