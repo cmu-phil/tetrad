@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.lang.Math.log;
+
 /**
  * Performs conditional independence tests of discrete data using the G Square method. Degrees of freedom are calculated
  * as in Fienberg, The Analysis of Cross-Classified Categorical Data, 2nd Edition, 142.
@@ -161,7 +163,7 @@ public final class GSquareTest extends ChiSquareTest {
 
             for (int i = 0; i < o.size(); i++) {
                 double expected = e.get(i) / (double) total;
-                _gSquare += Math.pow(o.get(i) - expected, 2.0) / expected;
+                _gSquare += 2.0 * o.get(i) * log(o.get(i) / expected);
             }
 
             if (total == 0) {
