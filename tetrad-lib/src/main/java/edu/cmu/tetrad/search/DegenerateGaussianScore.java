@@ -29,21 +29,22 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.log;
 
 /**
  * Implements a degenerate Gaussian BIC score for FGES.
- * <p>
+ *
  * http://proceedings.mlr.press/v104/andrews19a/andrews19a.pdf
  *
  * @author Bryan Andrews
  */
 public class DegenerateGaussianScore implements Score {
 
-    private final BoxDataSet _data;
-    private final Map<Node, Integer> nodesHash;
     private DataSet dataSet;
 
     // The mixed variables of the original dataset.
@@ -68,9 +69,7 @@ public class DegenerateGaussianScore implements Score {
     private Matrix cov;
 
     // A constant.
-    private static double L2PE = log(2.0 * Math.PI * Math.E);
-
-    private List<Integer> rows;
+    private static double L2PE = log(2.0*Math.PI*Math.E);
 
     /**
      * Constructs the score using a covariance matrix.
@@ -84,17 +83,6 @@ public class DegenerateGaussianScore implements Score {
         this.variables = dataSet.getVariables();
         this.N = dataSet.getNumRows();
         this.embedding = new HashMap<>();
-
-        this.rows = new ArrayList<>();
-        for (int w = 0; w < dataSet.getNumRows(); w++) rows.add(w);
-
-        Map<Node, Integer> nodesHash = new HashMap<>();
-
-        for (int j = 0; j < variables.size(); j++) {
-            nodesHash.put(variables.get(j), j);
-        }
-
-        this.nodesHash = nodesHash;
 
         List<Node> A = new ArrayList<>();
         List<double[]> B = new ArrayList<>();
@@ -137,7 +125,7 @@ public class DegenerateGaussianScore implements Score {
                 A.add(v);
                 double[] b = new double[this.N];
                 for (int j = 0; j < this.N; j++) {
-                    b[j] = this.dataSet.getDouble(j, i_);
+                    b[j] = this.dataSet.getDouble(j,i_);
                 }
 
                 B.add(b);
@@ -159,8 +147,7 @@ public class DegenerateGaussianScore implements Score {
 
         this.continuousVariables = A;
         RealMatrix D = new BlockRealMatrix(B_);
-        _data = new BoxDataSet(new DoubleDataBox(D.getData()), A);
-        this.cov = _data.getCovarianceMatrix();
+        this.cov = new BoxDataSet(new DoubleDataBox(D.getData()), A).getCovarianceMatrix();
 
     }
 
@@ -168,7 +155,6 @@ public class DegenerateGaussianScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        List<Integer> rows = getRows(i, parents);
 
         List<Integer> A = new ArrayList();
         List<Integer> B = new ArrayList();
@@ -187,24 +173,12 @@ public class DegenerateGaussianScore implements Score {
             B_[i_] = B.get(i_);
         }
 
-        double dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2.0;
+        double dof = (A_.length*(A_.length + 1) - B_.length*(B_.length + 1)) / 2.0;
+        double ldetA = log(this.cov.getSelection(A_, A_).det());
+        double ldetB = log(this.cov.getSelection(B_, B_).det());
+        double lik = this.N *(ldetB - ldetA + L2PE*(B_.length - A_.length));
 
-        double ldetA, ldetB;
-
-        if (rows.size() == _data.getNumRows()) {
-            ldetA = log(this.cov.getSelection(A_, A_).det());
-            ldetB = log(this.cov.getSelection(B_, B_).det());
-        } else {
-            if (rows.isEmpty()) return Double.NEGATIVE_INFINITY;
-            ldetA = log(getCov(rows, A_).det());
-            ldetB = log(getCov(rows, B_).det());
-        }
-
-        double lik = this.N * (ldetB - ldetA + L2PE * (B_.length - A_.length));
-
-        double v = lik + 2 * calculateStructurePrior(parents.length) - dof * getPenaltyDiscount() * log(this.N);
-
-        return v;
+        return lik + 2*calculateStructurePrior(parents.length) - dof*getPenaltyDiscount()*log(this.N);
     }
 
     private double calculateStructurePrior(int k) {
@@ -213,7 +187,7 @@ public class DegenerateGaussianScore implements Score {
         } else {
             double n = variables.size() - 1;
             double p = structurePrior / n;
-            return k * log(p) + (n - k) * log(1.0 - p);
+            return k*log(p) + (n - k)*log(1.0 - p);
         }
     }
 
@@ -305,59 +279,6 @@ public class DegenerateGaussianScore implements Score {
         return "Degenerate Gaussian Score Penalty " + nf.format(penaltyDiscount);
     }
 
-    // Subsample of the continuous mixedVariables conditioning on the given cols.
-    private Matrix getCov(List<Integer> rows, int[] cols) {
-        if (rows.isEmpty()) return new Matrix(0, 0);
-        Matrix cov = new Matrix(cols.length, cols.length);
-
-        for (int i = 0; i < cols.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
-                double sum = 0.0;
-
-                for (int k : rows) {
-                    sum += _data.getDouble(k, cols[i]) * _data.getDouble(k, cols[j]);
-                }
-
-                double mean = sum / rows.size();
-                cov.set(i, j, mean);
-            }
-        }
-
-        return cov;
-    }
-
-    private List<Integer> getRows(int i, int[] parents) {
-        List<Integer> rows = new ArrayList<>();
-
-        for (int k = 0; k < dataSet.getNumRows(); k++) {
-            Node ii = variables.get(i);
-
-            if (ii instanceof ContinuousVariable) {
-                if (Double.isNaN(dataSet.getDouble(k, i))) break;
-            } else if (ii instanceof DiscreteVariable) {
-                if (dataSet.getInt(k, i) == -99) break;
-            }
-
-            rows.add(k);
-        }
-
-        K:
-        for (int k = 0; k < dataSet.getNumRows(); k++) {
-            for (int p : parents) {
-                Node pp = variables.get(p);
-
-                if (pp instanceof ContinuousVariable) {
-                    if (Double.isNaN(dataSet.getDouble(k, p))) continue K;
-                } else if (pp instanceof DiscreteVariable) {
-                    if (dataSet.getInt(k, p) == -99) continue K;
-                }
-            }
-
-            rows.add(k);
-        }
-
-        return rows;
-    }
 
 }
 

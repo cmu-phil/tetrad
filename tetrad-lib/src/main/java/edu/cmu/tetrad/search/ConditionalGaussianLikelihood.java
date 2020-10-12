@@ -269,7 +269,6 @@ public class ConditionalGaussianLikelihood {
 
         for (List<Integer> cell : cells) {
             int a = cell.size();
-            if (a == 0) continue;
 
             if (A.size() > 0) {
                 c1 += a * multinomialLikelihood(a, rows.size());
@@ -293,7 +292,10 @@ public class ConditionalGaussianLikelihood {
             }
         }
 
-        final double lnL = c1 + c2;
+        double lnL = c1 + c2;
+
+        if (Double.isNaN(lnL)) lnL = Double.MIN_VALUE;
+
         final int dof = f(A) * h(X) + f(A);
         return new Ret(lnL, dof);
     }

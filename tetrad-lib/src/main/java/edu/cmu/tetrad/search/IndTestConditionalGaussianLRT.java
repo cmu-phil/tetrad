@@ -123,9 +123,12 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         double dof1 = ret3.getDof() - ret4.getDof();
 
         if (dof0 <= 0) {
+            lik0 = Double.POSITIVE_INFINITY;
             dof0 = 1;
         }
+
         if (dof1 <= 0) {
+            lik1 = Double.POSITIVE_INFINITY;
             dof1 = 1;
         }
 
