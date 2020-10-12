@@ -24,10 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
-import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -278,14 +275,11 @@ public class ConditionalGaussianLikelihood {
                 try {
 
                     // Determinant will be zero if data are linearly dependent.
-                    Matrix cov;
+                    double gl = gaussianLikelihood(k, cov(getSubsample(continuousCols, cell)));
 
-                    if (a > continuousCols.length + 5) {
-                        cov = cov(getSubsample(continuousCols, cell));
-                    } else {
-                        cov = cov(getSubsample(continuousCols, rows));
+                    if (!Double.isNaN(gl)) {
+                        c2 += a * gl;
                     }
-                    c2 += a * gaussianLikelihood(k, cov);
                 } catch (Exception e) {
                     // No contribution.
                 }
@@ -293,8 +287,6 @@ public class ConditionalGaussianLikelihood {
         }
 
         double lnL = c1 + c2;
-
-        if (Double.isNaN(lnL)) lnL = Double.MIN_VALUE;
 
         final int dof = f(A) * h(X) + f(A);
         return new Ret(lnL, dof);
@@ -306,21 +298,7 @@ public class ConditionalGaussianLikelihood {
 
     // One record.
     private double gaussianLikelihood(int k, Matrix sigma) {
-        return -0.5 * logdet(sigma) - 0.5 * k * (1 + LOG2PI);
-    }
-
-    private double logdet(Matrix m) {
-        RealMatrix M = new BlockRealMatrix(m.toArray());
-        final double tol = 1e-9;
-        RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
-
-        double sum = 0.0;
-
-        for (int i = 0; i < LT.getRowDimension(); i++) {
-            sum += FastMath.log(LT.getEntry(i, i));
-        }
-
-        return 2.0 * sum;
+        return -0.5 * log(sigma.det()) - 0.5 * k * (1 + LOG2PI);
     }
 
     private Matrix cov(Matrix x) {
@@ -363,14 +341,14 @@ public class ConditionalGaussianLikelihood {
         List<List<Integer>> cells = new ArrayList<>();
         HashMap<List<Integer>, Integer> keys = new HashMap<>();
 
-        for(int i : rows) {
+        for (int i : rows) {
             List<Integer> key = new ArrayList<>();
 
             for (DiscreteVariable discrete_parent : discrete_parents) {
                 key.add((dataSet.getInt(i, dataSet.getColumn(discrete_parent))));
             }
 
-            if(!keys.containsKey(key)) {
+            if (!keys.containsKey(key)) {
                 keys.put(key, cells.size());
                 cells.add(keys.get(key), new ArrayList<>());
             }

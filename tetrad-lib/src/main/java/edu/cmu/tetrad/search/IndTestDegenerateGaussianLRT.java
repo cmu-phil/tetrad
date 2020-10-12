@@ -99,7 +99,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     }
 
     // A constant.
-    private static double L2PE = log(2.0*Math.PI*Math.E);
+    private static double L2PE = log(2.0 * Math.PI * Math.E);
 
     private boolean verbose = false;
 
@@ -157,7 +157,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
                 A.add(v);
                 double[] b = new double[this.N];
                 for (int j = 0; j < this.N; j++) {
-                    b[j] = this.dataSet.getDouble(j,i_);
+                    b[j] = this.dataSet.getDouble(j, i_);
                 }
 
                 B.add(b);
@@ -205,10 +205,10 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
             B_[i_] = B.get(i_);
         }
 
-        int dof = (A_.length*(A_.length + 1) - B_.length*(B_.length + 1)) / 2;
+        int dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2;
         double ldetA = log(this.cov.getSelection(A_, A_).det());
         double ldetB = log(this.cov.getSelection(B_, B_).det());
-        double lik = this.N *(ldetB - ldetA + L2PE*(B_.length - A_.length));
+        double lik = this.N * (ldetB - ldetA + L2PE * (B_.length - A_.length));
 
         return new Ret(lik, dof);
     }
@@ -256,25 +256,22 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
 
         if (dof0 <= 0) {
             dof0 = 1;
-//            throw new IllegalArgumentException("DOF must be >= 1");
         }
         if (dof1 <= 0) {
             dof1 = 1;
-//            throw new IllegalArgumentException("DOF must be >= 1");
         }
 
-        double p0 = 0;
-        double p1 = 0;
-        try {
-            p0 = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            p1 = 1.0 - new ChiSquaredDistribution(dof1).cumulativeProbability(2.0 * lik1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        if (lik0 <= 0) return false;
+        if (lik1 <= 0) return false;
+        if (alpha == 0) return true;
+        if (alpha == 1) return false;
+        if (lik0 == Double.POSITIVE_INFINITY) return true;
+        if (lik1 == Double.POSITIVE_INFINITY) return true;
+
+        double p0 = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
+        double p1 = 1.0 - new ChiSquaredDistribution(dof1).cumulativeProbability(2.0 * lik1);
+
+        this.pValue = Math.min(p0, p1);
 
         this.pValue = Math.min(p0, p1);
         return this.pValue > alpha;

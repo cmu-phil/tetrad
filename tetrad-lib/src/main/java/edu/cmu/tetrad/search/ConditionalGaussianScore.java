@@ -80,7 +80,8 @@ public class ConditionalGaussianScore implements Score {
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        likelihood.setRows(getRows(nodesHash));
+        List<Integer> rows = getRows(nodesHash);
+        likelihood.setRows(rows);
 
         ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
 
@@ -88,7 +89,7 @@ public class ConditionalGaussianScore implements Score {
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        return 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(N);
+        return 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(rows.size());
     }
 
     private List<Integer> getRows(Map<Node, Integer> nodesHash) {

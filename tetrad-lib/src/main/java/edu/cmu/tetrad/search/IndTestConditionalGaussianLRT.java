@@ -132,19 +132,17 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
             dof1 = 1;
         }
 
-        double p0 = 0;
-        double p1 = 0;
+        if (lik0 <= 0) return false;
+        if (lik1 <= 0) return false;
+        if (alpha == 0) return true;
+        if (alpha == 1) return false;
+        if (lik0 == Double.POSITIVE_INFINITY) return true;
+        if (lik1 == Double.POSITIVE_INFINITY) return true;
 
-        try {
-            p0 = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            p1 = 1.0 - new ChiSquaredDistribution(dof1).cumulativeProbability(2.0 * lik1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        System.out.println("dof0 = " + dof0 + " dof1 = " + dof1 + " lik0 = " + lik0 + " lik1 = " + lik1);
+
+        double p0 = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
+        double p1 = 1.0 - new ChiSquaredDistribution(dof1).cumulativeProbability(2.0 * lik1);
 
         this.pValue = Math.min(p0, p1);
 
@@ -158,6 +156,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         } else {
             return this.pValue > alpha;
         }
+
     }
 
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
