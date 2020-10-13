@@ -122,29 +122,17 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         double lik1 = ret3.getLik() - ret4.getLik();
         double dof1 = ret3.getDof() - ret4.getDof();
 
-        if (dof0 <= 0) {
-            lik0 = Double.POSITIVE_INFINITY;
-            dof0 = 1;
-        }
-
-        if (dof1 <= 0) {
-            lik1 = Double.POSITIVE_INFINITY;
-            dof1 = 1;
-        }
-
         if (lik0 <= 0) return false;
         if (lik1 <= 0) return false;
         if (alpha == 0) return true;
         if (alpha == 1) return false;
-        if (lik0 == Double.POSITIVE_INFINITY) return true;
-        if (lik1 == Double.POSITIVE_INFINITY) return true;
-
-        System.out.println("dof0 = " + dof0 + " dof1 = " + dof1 + " lik0 = " + lik0 + " lik1 = " + lik1);
+        if (lik0 == Double.POSITIVE_INFINITY) return false;
+        if (lik1 == Double.POSITIVE_INFINITY) return false;
 
         double p0 = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         double p1 = 1.0 - new ChiSquaredDistribution(dof1).cumulativeProbability(2.0 * lik1);
 
-        this.pValue = Math.min(p0, p1);
+        this.pValue = Math.max(p0, p1);
 
         if (fastFDR) {
             final int d1 = 0; // reference

@@ -163,7 +163,10 @@ public final class GSquareTest extends ChiSquareTest {
 
             for (int i = 0; i < o.size(); i++) {
                 double expected = e.get(i) / (double) total;
-                _gSquare += 2.0 * o.get(i) * log(o.get(i) / expected);
+
+                if (o.get(i) != 0) {
+                    _gSquare += 2.0 * o.get(i) * log(o.get(i) / expected);
+                }
             }
 
             if (total == 0) {
