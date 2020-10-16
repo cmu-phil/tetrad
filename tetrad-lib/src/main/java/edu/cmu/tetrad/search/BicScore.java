@@ -39,6 +39,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
     private double penaltyDiscount = 1;
 
     private int[] numCategories;
+    private double structurePrior = 1;
 
     public BicScore(DataSet dataSet) {
         if (dataSet == null) {
@@ -123,8 +124,8 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         }
 
         // Conditional cell coefs of data for node given parents(node).
-        int n_jk[][] = new int[r][c];
-        int n_j[] = new int[r];
+        int[][] n_jk = new int[r][c];
+        int[] n_j = new int[r];
 
         int[] parentValues = new int[parents.length];
 
@@ -145,9 +146,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
             int childValue = myChild[i];
 
             if (childValue == -99) {
-                continue ROW;
-//                throw new IllegalStateException("Please remove or impute missing " +
-//                        "values (record " + i + " column " + i + ")");
+                continue;
             }
 
             int rowIndex = getRowIndex(dims, parentValues);
@@ -172,7 +171,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         int params = r * (c - 1);
         int n = getSampleSize();
 
-        return 2 * lik - penaltyDiscount * params * Math.log(n);
+        return 2 * lik - penaltyDiscount * params * Math.log(n) + 2 * getStructurePrior();
     }
 
     private double getPriorForStructure(int numParents) {
@@ -240,7 +239,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
     @Override
     public double getStructurePrior() {
-        throw new UnsupportedOperationException();
+        return structurePrior;
     }
 
     @Override
@@ -250,7 +249,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
     @Override
     public void setStructurePrior(double structurePrior) {
-        throw new UnsupportedOperationException();
+        this.structurePrior = structurePrior;
     }
 
     @Override

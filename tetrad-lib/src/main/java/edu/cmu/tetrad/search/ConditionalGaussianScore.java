@@ -46,12 +46,12 @@ public class ConditionalGaussianScore implements Score {
 
     private double penaltyDiscount;
     private int numCategoriesToDiscretize = 3;
-    private final double sp;
+    private final double structurePrior;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, double sp, boolean discretize) {
+    public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, double structurePrior, boolean discretize) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -59,7 +59,7 @@ public class ConditionalGaussianScore implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.penaltyDiscount = penaltyDiscount;
-        this.sp = sp;
+        this.structurePrior = structurePrior;
 
         Map<Node, Integer> nodesHash = new HashMap<>();
 
@@ -111,12 +111,12 @@ public class ConditionalGaussianScore implements Score {
     }
 
     private double getStructurePrior(int[] parents) {
-        if (sp <= 0) {
+        if (structurePrior <= 0) {
             return 0;
         } else {
             int k = parents.length;
             double n = dataSet.getNumColumns() - 1;
-            double p = sp / n;
+            double p = structurePrior / n;
             return k * Math.log(p) + (n - k) * Math.log(1.0 - p);
         }
     }

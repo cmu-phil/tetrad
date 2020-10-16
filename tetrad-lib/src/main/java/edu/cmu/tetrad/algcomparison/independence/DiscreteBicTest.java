@@ -25,9 +25,9 @@ public class DiscreteBicTest implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        Score score = new BicScore(DataUtils.getDiscreteDataSet(dataSet));
+        BicScore score = new BicScore(DataUtils.getDiscreteDataSet(dataSet));
 //        score.setSamplePrior(parameters.getDouble("samplePrior"));
-//        score.setStructurePrior(parameters.getDouble("structurePrior"));
+        score.setStructurePrior(parameters.getDouble("structurePrior"));
         return new IndTestScore(score);
     }
 
@@ -45,7 +45,7 @@ public class DiscreteBicTest implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 //        parameters.add("samplePrior");
-//        parameters.add("structurePrior");
+        parameters.add("structurePrior");
         return parameters;
     }
 }

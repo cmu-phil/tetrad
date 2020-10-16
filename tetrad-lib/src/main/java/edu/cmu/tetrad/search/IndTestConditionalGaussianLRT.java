@@ -99,40 +99,28 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         int _y = nodesHash.get(y);
 
         int[] list0 = new int[z.size() + 1];
-        int[] list1 = new int[z.size() + 1];
         int[] list2 = new int[z.size()];
 
         list0[0] = _x;
-        list1[0] = _y;
 
         for (int i = 0; i < z.size(); i++) {
             int _z = nodesHash.get(z.get(i));
             list0[i + 1] = _z;
-            list1[i + 1] = _z;
             list2[i] = _z;
         }
 
         ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_y, list0);
         ConditionalGaussianLikelihood.Ret ret2 = likelihood.getLikelihood(_y, list2);
-        ConditionalGaussianLikelihood.Ret ret3 = likelihood.getLikelihood(_x, list1);
-        ConditionalGaussianLikelihood.Ret ret4 = likelihood.getLikelihood(_x, list2);
 
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
-        double lik1 = ret3.getLik() - ret4.getLik();
-        double dof1 = ret3.getDof() - ret4.getDof();
 
         if (lik0 <= 0) return false;
-        if (lik1 <= 0) return false;
         if (alpha == 0) return true;
         if (alpha == 1) return false;
         if (lik0 == Double.POSITIVE_INFINITY) return false;
-        if (lik1 == Double.POSITIVE_INFINITY) return false;
 
-        double p0 = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
-        double p1 = 1.0 - new ChiSquaredDistribution(dof1).cumulativeProbability(2.0 * lik1);
-
-        this.pValue = Math.max(p0, p1);
+        this.pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
 
         if (fastFDR) {
             final int d1 = 0; // reference

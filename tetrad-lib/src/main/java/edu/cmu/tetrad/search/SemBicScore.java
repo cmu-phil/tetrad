@@ -55,7 +55,7 @@ public class SemBicScore implements Score {
     private List<Node> variables;
 
     // The sample size of the covariance matrix.
-    private int sampleSize;
+    private final int sampleSize;
 
     // The printstream output should be sent to.
     private PrintStream out = System.out;
@@ -63,11 +63,8 @@ public class SemBicScore implements Score {
     // True if verbose output should be sent to out.
     private boolean verbose = false;
 
-    // Variables that caused computational problems and so are to be avoided.
-    private Set<Integer> forbidden = new HashSet<>();
-
     // A  map from variable names to their indices.
-    private Map<String, Integer> indexMap;
+    private final Map<String, Integer> indexMap;
 
     // The penalty penaltyDiscount, 1 for standard BIC.
     private double penaltyDiscount = 1.0;
@@ -113,18 +110,18 @@ public class SemBicScore implements Score {
         double sp1 = getStructurePrior(z.length + 1);
         double sp2 = getStructurePrior(z.length);
 
-        if (false) {
-            int n = covariances.getSampleSize();
-            Node _x = variables.get(x);
-            Node _y = variables.get(y);
-            List<Node> _z = getVariableList(z);
-            double r = partialCorrelation(_x, _y, _z);
-
-            return -n * Math.log(1.0 - r * r) - log(n)// - getErrorThreshold()
-                    +  signum(getStructurePrior()) * (sp1 - sp2);
-        } else {
-            return (localScore(y, append(z, x)) - localScore(y, z));// - getErrorThreshold();
-        }
+//        if (false) {
+        int n = covariances.getSampleSize();
+        Node _x = variables.get(x);
+        Node _y = variables.get(y);
+        List<Node> _z = getVariableList(z);
+        double r = partialCorrelation(_x, _y, _z);
+//
+//            return -n * Math.log(1.0 - r * r) - log(n)// - getErrorThreshold()
+//                    +  2 * signum(getStructurePrior()) * (sp1 - sp2);
+//        } else {
+        return (localScore(y, append(z, x)) - localScore(y, z));// - getErrorThreshold();
+//        }
     }
 
     @Override
@@ -133,16 +130,17 @@ public class SemBicScore implements Score {
     }
 
     public double localScore(int i, int... parents) {
+        List<Integer> rows = getRows(i, parents);
 
         try {
             final int p = parents.length;
             int k = p + 1;
-            double n = getSampleSize();
+            double n = sampleSize;
 
             int[] ii = {i};
-            Matrix X = getCovariances().getSelection(parents, parents);
-            Matrix Y = getCovariances().getSelection(parents, ii);
-            double s2 = getCovariances().getValue(i, i);
+            Matrix X = getCov(rows, parents, parents);// getCovariances().getSelection(parents, parents);
+            Matrix Y = getCov(rows, parents, ii);// getCovariances().getSelection(parents, ii);
+            double s2 = getCov(rows, ii, ii).get(0, 0);//  getCovariances().getValue(i, i);
 
             Vector coefs = getCoefs(X, Y).getColumn(0);
 
@@ -152,6 +150,8 @@ public class SemBicScore implements Score {
                 }
             }
 
+            System.out.println(s2);
+
             if (s2 <= 0) {
                 if (isVerbose()) {
                     out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
@@ -160,10 +160,26 @@ public class SemBicScore implements Score {
             }
 
             return -n * log(s2) - getPenaltyDiscount() * k * log(n)
-                    + signum(getStructurePrior()) * getStructurePrior(parents.length);
+                    + 2 * getStructurePrior(parents.length);
         } catch (Exception e) {
+            e.printStackTrace();
             return Double.NaN;
         }
+    }
+
+    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+        List<Integer> rows = new ArrayList<>();
+
+        K:
+        for (int k = 0; k < dataSet.getNumRows(); k++) {
+            for (Node node : allVars) {
+                if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
+            }
+
+            rows.add(k);
+        }
+
+        return rows;
     }
 
     private Matrix getCoefs(Matrix x, Matrix y) {
@@ -332,7 +348,6 @@ public class SemBicScore implements Score {
             try {
                 m.inverse();
             } catch (Exception e2) {
-                forbidden.add(sel[0]);
                 out.println("### Linear dependence among variables: " + _sel);
                 out.println("### Removing " + _sel.get(0));
                 return true;
@@ -373,7 +388,66 @@ public class SemBicScore implements Score {
 //
 //        return errorThreshold;
 //    }
-}
 
+    private Matrix getCov(List<Integer> rows, int[] _rows, int[] cols) {
+        if (dataSet == null) {
+            return covariances.getSelection(_rows, cols);
+        }
+
+        Matrix cov = new Matrix(_rows.length, cols.length);
+
+        for (int i = 0; i < _rows.length; i++) {
+            for (int j = 0; j < cols.length; j++) {
+                double mui = 0.0;
+                double muj = 0.0;
+
+                for (int k : rows) {
+                    mui += dataSet.getDouble(k, _rows[i]);
+                    muj += dataSet.getDouble(k, cols[j]);
+                }
+
+                mui /= rows.size() - 1;
+                muj /= rows.size() - 1;
+
+                double _cov = 0.0;
+
+                for (int k : rows) {
+                    _cov += (dataSet.getDouble(k, _rows[i]) - mui) * (dataSet.getDouble(k, cols[j]) - muj);
+                }
+
+                double mean = _cov / (rows.size());
+                cov.set(i, j, mean);
+            }
+        }
+
+        return cov;
+    }
+
+    private List<Integer> getRows(int i, int[] parents) {
+        if (dataSet == null) {
+            List<Integer> rows = new ArrayList<>();
+            for (int k = 0; k < getSampleSize(); k++) {
+                rows.add(k);
+            }
+
+            return rows;
+        }
+
+        List<Integer> rows = new ArrayList<>();
+
+        K:
+        for (int k = 0; k < dataSet.getNumRows(); k++) {
+            if (Double.isNaN(dataSet.getDouble(k, i))) continue;
+
+            for (int p : parents) {
+                if (Double.isNaN(dataSet.getDouble(k, p))) continue K;
+            }
+
+            rows.add(k);
+        }
+
+        return rows;
+    }
+}
 
 

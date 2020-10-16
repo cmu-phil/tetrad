@@ -217,24 +217,13 @@ public final class IndTestChiSquare implements IndependenceTest {
         this.pValue = result.getPValue();
 
         if (result.isIndep()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("INDEPENDENCE ACCEPTED: ");
-            sb.append(SearchLogUtils.independenceFact(x, y, z));
-            sb.append("\tp = ").append(nf.format(result.getPValue())).append(
-                    "\tx^2 = ").append(nf.format(result.getXSquare())).append(
-                    "\tdf = ").append(result.getDf());
-
-            TetradLogger.getInstance().log("independencies", sb.toString());
+            String sb = "INDEPENDENCE ACCEPTED: " +
+                    SearchLogUtils.independenceFact(x, y, z) +
+                    "\tp = " + nf.format(result.getPValue()) +
+                    "\tx^2 = " + nf.format(result.getXSquare()) +
+                    "\tdf = " + result.getDf();
+            TetradLogger.getInstance().log("independencies", sb);
         }
-//        else {
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("Not independent: ");
-//            sb.append(SearchLogUtils.independenceFact(x, y, z));
-//            sb.append("\tp = ").append(nf.format(result.getLikelihoodRatioP())).append(
-//                    "\tx^2 = ").append(nf.format(result.getXSquare())).append(
-//                    "\tdf = ").append(result.getDof());
-//            TetradLogger.getInstance().independenceDetails(sb.toString());
-//        }
 
         if (facts != null) {
             this.facts.add(new IndependenceFact(x, y, z));

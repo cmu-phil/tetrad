@@ -4,6 +4,8 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+
 import java.util.*;
 
 /**
@@ -22,15 +24,15 @@ public class SemBicTest implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        SemBicScore score = null;
+        SemBicScore score;
 
         if (dataSet instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dataSet);
         } else {
-            score = new SemBicScore(new CovarianceMatrix((DataSet) dataSet));
+            score = new SemBicScore((DataSet) dataSet);
         }
-        score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        score.setStructurePrior(0);
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
 
         return new IndTestScore(score, dataSet);
     }
@@ -48,7 +50,8 @@ public class SemBicTest implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add("penaltyDiscount");
+        params.add(Params.PENALTY_DISCOUNT);
+        params.add(Params.STRUCTURE_PRIOR);
         return params;
     }
 }

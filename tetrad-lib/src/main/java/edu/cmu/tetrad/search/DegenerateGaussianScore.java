@@ -84,6 +84,8 @@ public class DegenerateGaussianScore implements Score {
         List<Node> A = new ArrayList<>();
         List<double[]> B = new ArrayList<>();
 
+        int index = 0;
+
         int i = 0;
         int i_ = 0;
         while (i_ < this.variables.size()) {
@@ -91,13 +93,16 @@ public class DegenerateGaussianScore implements Score {
             Node v = this.variables.get(i_);
 
             if (v instanceof DiscreteVariable) {
-                Map<String, Integer> keys = new HashMap<>();
+
+                Map<List<Integer>, Integer> keys = new HashMap<>();
+                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
                 for (int j = 0; j < n; j++) {
-                    String key = v.getName().concat("_");
-                    key = key.concat(Integer.toString(this.dataSet.getInt(j, i_)));
+                    List<Integer> key = new ArrayList<>();
+                    key.add(this.dataSet.getInt(j, i_));
                     if (!keys.containsKey(key)) {
                         keys.put(key, i);
-                        Node v_ = new ContinuousVariable(key);
+                        keysReverse.put(i, key);
+                        Node v_ = new ContinuousVariable("V__" + ++index);
                         A.add(v_);
                         B.add(new double[n]);
                         i++;
@@ -109,11 +114,12 @@ public class DegenerateGaussianScore implements Score {
                  * Remove a degenerate dimension.
                  */
                 i--;
-                keys.remove(A.get(i).getName());
+                keys.remove(keysReverse.get(i));
                 A.remove(i);
                 B.remove(i);
 
                 this.embedding.put(i_, new ArrayList<>(keys.values()));
+                i_++;
 
             } else {
 
@@ -124,15 +130,14 @@ public class DegenerateGaussianScore implements Score {
                 }
 
                 B.add(b);
-                List<Integer> index = new ArrayList<>();
-                index.add(i);
-                this.embedding.put(i_, index);
+                List<Integer> index2 = new ArrayList<>();
+                index2.add(i);
+                this.embedding.put(i_, index2);
                 i++;
+                i_++;
 
             }
-            i_++;
         }
-
         double[][] B_ = new double[n][B.size()];
         for (int j = 0; j < B.size(); j++) {
             for (int k = 0; k < n; k++) {
@@ -159,6 +164,7 @@ public class DegenerateGaussianScore implements Score {
     public double localScore(int i, int... parents) {
 
         List<Integer> rows = getRows(i, parents);
+        int N = rows.size();
 
         List<Integer> B = new ArrayList<>();
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
@@ -180,8 +186,8 @@ public class DegenerateGaussianScore implements Score {
         double ldetA = log(getCov(rows, A_).det());
         double ldetB = log(getCov(rows, B_).det());
 
-        double lik = rows.size() * (ldetB - ldetA + L2PE * (B_.length - A_.length));
-        return lik + 2 * calculateStructurePrior(parents.length) - dof * getPenaltyDiscount() * log(rows.size());
+        double lik = N * (ldetB - ldetA + L2PE * (B_.length - A_.length));
+        return 2 * lik + 2 * calculateStructurePrior(parents.length) - dof * getPenaltyDiscount() * log(N);
     }
 
     private double calculateStructurePrior(int k) {
@@ -333,7 +339,7 @@ public class DegenerateGaussianScore implements Score {
                 List<Integer> AA = new ArrayList<>(this.embedding.get(nodesHash.get(pp)));
 
                 for (int j : AA) {
-                    if (Double.isNaN(ddata.getDouble(p, j))) continue K;
+                    if (Double.isNaN(ddata.getDouble(k, j))) continue K;
                 }
             }
 

@@ -34,13 +34,13 @@ import java.util.List;
  */
 public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
     private List<Node> variables;
-    private int[][] data;
-    private int sampleSize;
+    private final int[][] data;
+    private final int sampleSize;
 
     private double samplePrior = 1;
     private double structurePrior = 1;
 
-    private int[] numCategories;
+    private final int[] numCategories;
 
     public BDeuScore(DataSet dataSet) {
         if (dataSet == null) {
@@ -107,8 +107,8 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
         }
 
         // Conditional cell coefs of data for node given parents(node).
-        int n_jk[][] = new int[r][c];
-        int n_j[] = new int[r];
+        int[][] n_jk = new int[r][c];
+        int[] n_j = new int[r];
 
         int[] parentValues = new int[parents.length];
 
@@ -130,9 +130,7 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
             int childValue = myChild[i];
 
             if (childValue == -99) {
-                continue ROW;
-//                throw new IllegalStateException("Please remove or impute missing " +
-//                        "values (record " + i + " column " + i + ")");
+                continue;
             }
 
             int rowIndex = getRowIndex(dims, parentValues);

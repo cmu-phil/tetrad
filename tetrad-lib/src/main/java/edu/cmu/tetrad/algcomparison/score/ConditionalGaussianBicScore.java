@@ -33,7 +33,7 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
         final ConditionalGaussianScore conditionalGaussianScore =
                 new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet),
                         parameters.getDouble("penaltyDiscount"),
-                        0,//parameters.getDouble("structurePrior"),
+                        parameters.getDouble("structurePrior"),
                         parameters.getBoolean("discretize"));
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return conditionalGaussianScore;
@@ -54,7 +54,7 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.PENALTY_DISCOUNT);
-//        parameters.add(Params.STRUCTURE_PRIOR);
+        parameters.add(Params.STRUCTURE_PRIOR);
         parameters.add(Params.DISCRETIZE);
         parameters.add(Params.NUM_CATEGORIES_TO_DISCRETIZE);
         return parameters;
