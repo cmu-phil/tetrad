@@ -10,6 +10,7 @@ import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,10 +43,7 @@ public class CciScore implements ScoreWrapper {
         }
         cci.setNumFunctions(parameters.getInt(Params.NUM_BASIS_FUNCTIONS));
         cci.setKernelMultiplier(parameters.getDouble(Params.KERNEL_MULTIPLIER));
-//        cci.setFastFDR(parameters.getBoolean("fastFDR"));
         cci.setKernelRegressionSampleSize(parameters.getInt(Params.KERNEL_REGRESSION_SAMPLE_SIZE));
-        cci.setNumDependenceSpotChecks(parameters.getInt("numDependenceSpotChecks"));
-        cci.setEarlyReturn(false);
 
         if (parameters.getInt(Params.BASIS_TYPE) == 1) {
             cci.setBasis(ConditionalCorrelationIndependence.Basis.Polynomial);
@@ -76,9 +74,9 @@ public class CciScore implements ScoreWrapper {
         parameters.add(Params.KERNEL_TYPE);
         parameters.add(Params.KERNEL_MULTIPLIER);
         parameters.add(Params.BASIS_TYPE);
-        parameters.add("fastFDR");
+//        parameters.add("fastFDR");
         parameters.add(Params.KERNEL_REGRESSION_SAMPLE_SIZE);
-        parameters.add("numDependenceSpotChecks");
+//        parameters.add("numDependenceSpotChecks");
         return parameters;
     }
 
