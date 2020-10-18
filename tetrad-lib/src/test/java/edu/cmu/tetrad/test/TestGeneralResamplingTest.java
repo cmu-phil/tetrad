@@ -155,7 +155,7 @@ public class TestGeneralResamplingTest {
 
 		Parameters parameters = new Parameters();
 		parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
-		parameters.set(Params.SAMPLE_PRIOR, samplePrior);
+		parameters.set(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE, samplePrior);
 		parameters.set(Params.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
 		parameters.set(Params.MAX_DEGREE, maxDegree);
 		parameters.set("numPatternsToStore", 0);
@@ -278,7 +278,7 @@ public class TestGeneralResamplingTest {
 
 		Parameters parameters = new Parameters();
 		parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
-		parameters.set(Params.SAMPLE_PRIOR, samplePrior);
+		parameters.set(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE, samplePrior);
 		parameters.set(Params.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
 		parameters.set(Params.MAX_DEGREE, maxDegree);
 		parameters.set("numPatternsToStore", 0);
@@ -403,7 +403,7 @@ public class TestGeneralResamplingTest {
 
 		Parameters parameters = new Parameters();
 		parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
-		parameters.set(Params.SAMPLE_PRIOR, samplePrior);
+		parameters.set(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE, samplePrior);
 		parameters.set(Params.DEPTH, depth);
 		parameters.set(Params.MAX_PATH_LENGTH, maxPathLength);
 		parameters.set("numPatternsToStore", 0);

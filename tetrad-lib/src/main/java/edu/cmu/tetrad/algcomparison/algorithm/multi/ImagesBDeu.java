@@ -53,7 +53,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             BdeuScoreImages score = new BdeuScoreImages(dataSets);
-            score.setSamplePrior(parameters.getDouble(Params.SAMPLE_PRIOR));
+            score.setSamplePrior(parameters.getDouble(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE));
             score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
             edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
             search.setFaithfulnessAssumed(true);

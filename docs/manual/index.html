@@ -4436,15 +4436,15 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="resamplingWithReplacement_value_type">Boolean</span></li>
         </ul>
 
-        <h3 id="samplePrior" class="parameter_description">samplePrior</h3>
+        <h3 id="priorEquivalentSampleSize" class="parameter_description">priorEquivalentSampleSize</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="samplePrior_short_desc">Sample prior (min = 1.0)</span></li>
-            <li>Long Description: <span id="samplePrior_long_desc">For the BDeu score, this sets the prior equivalent sample size. This number is added to the sample size for each conditional probability table in the model and is divided equally among the cells in the table. A prior of 15 (default) does well as optimizing the estimate of the output pattern; a prior of 5 will optimize the structural Hamming distance.</span>
+            <li>Short Description: <span id="priorEquivalentSampleSize_short_desc">Prior equivalent sample size (min = 1.0)</span></li>
+            <li>Long Description: <span id="priorEquivalentSampleSize_long_desc">This sets the prior equivalent sample size. This number is added to the sample size for each conditional probability table in the model and is divided equally among the cells in the table. A prior of 15 (default) does well as optimizing the estimate of the output pattern; a prior of 5 will optimize the structural Hamming distance.</span>
             </li>
-            <li>Default Value: <span id="samplePrior_default_value">15.0</span></li>
-            <li>Lower Bound: <span id="samplePrior_lower_bound">1.0</span></li>
-            <li>Upper Bound: <span id="samplePrior_upper_bound">1.7976931348623157E308</span></li>
-            <li>Value Type: <span id="samplePrior_value_type">Double</span></li>
+            <li>Default Value: <span id="priorEquivalentSampleSize_default_value">10.0</span></li>
+            <li>Lower Bound: <span id="priorEquivalentSampleSize_lower_bound">1.0</span></li>
+            <li>Upper Bound: <span id="priorEquivalentSampleSize_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="priorEquivalentSampleSize_value_type">Double</span></li>
         </ul>
 
         <h3 id="sampleSize" class="parameter_description">sampleSize</h3>
@@ -4456,7 +4456,6 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Lower Bound: <span id="sampleSize_lower_bound">1</span></li>
             <li>Upper Bound: <span id="sampleSize_upper_bound">2147483647</span></li>
             <li>Value Type: <span id="sampleSize_value_type">Integer</span></li>
-            </td>
         </ul>
 
         <h3 id="saveLatentVars" class="parameter_description">saveLatentVars</h3>

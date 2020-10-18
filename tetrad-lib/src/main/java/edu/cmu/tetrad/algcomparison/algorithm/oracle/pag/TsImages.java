@@ -158,7 +158,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
             IndependenceTest test = new IndTestScore(gesScore);
             search = new TsGFci(test, gesScore);
         } else if (score instanceof BdeuScore) {
-            double samplePrior = parameters.getDouble(Params.SAMPLE_PRIOR, 1);
+            double samplePrior = parameters.getDouble(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE, 1);
             double structurePrior = parameters.getDouble(Params.STRUCTURE_PRIOR, 1);
             BdeuScoreImages score = new BdeuScoreImages(dataModels);
             score.setSamplePrior(samplePrior);
