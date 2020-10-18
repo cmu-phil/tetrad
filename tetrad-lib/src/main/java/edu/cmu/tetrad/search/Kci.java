@@ -53,9 +53,6 @@ public class Kci implements IndependenceTest, ScoreForFact {
     // P value used to judge independence. This is the last p value calculated.
     private double p;
 
-    // Centering matrix.
-    private Matrix H;
-
     // A normal distribution with 1 degree of freedom.
     private final NormalDistribution normal = new NormalDistribution(new SynchronizedRandomGenerator(
             new Well44497b(193924L)), 0, 1);
@@ -95,13 +92,10 @@ public class Kci implements IndependenceTest, ScoreForFact {
     public Kci(DataSet data, double alpha) {
         this.data = data;//DataUtils.standardizeData(data);
         this.variables = data.getVariables();
-        // Sample size.
         int n = this.data.getNumRows();
 
         Matrix Ones = new Matrix(n, 1);
         for (int j = 0; j < n; j++) Ones.set(j, 0, 1);
-
-        this.H = Matrix.identity(n).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / n));
 
         this.alpha = alpha;
         this.p = -1;
@@ -155,7 +149,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
         Matrix I = Matrix.identity(N);
 
-        this.H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
+        Matrix H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
 
         double[] h = new double[data.getNumColumns()];
         int count = 0;
