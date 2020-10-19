@@ -51,10 +51,6 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
             dataBox = new VerticalIntDataBox(dataBox);
 
-//            if (!(((BoxDataSet) dataSet).getDataBox() instanceof VerticalIntDataBox)) {
-//                throw new IllegalArgumentException();
-//            }
-
             VerticalIntDataBox box = (VerticalIntDataBox) dataBox;
 
             data = box.getVariableVectors();

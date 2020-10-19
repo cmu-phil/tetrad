@@ -18,7 +18,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Sem BIC Score",
-        command = "sem-bic",
+        command = "sem-bic-score",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 public class SemBicScore implements ScoreWrapper {

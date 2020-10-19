@@ -18,7 +18,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Degenerate Gaussian BIC Score",
-        command = "degen-gauss-bic",
+        command = "dg-bic-score",
         dataType = DataType.Mixed
 )
 public class DegenerateGaussianBicScore implements ScoreWrapper {

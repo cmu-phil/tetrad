@@ -28,8 +28,7 @@ public class MNLRLRT implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        final IndTestMNLRLRT test = new IndTestMNLRLRT(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("alpha"));
-        return test;
+        return new IndTestMNLRLRT(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("alpha"));
     }
 
     @Override

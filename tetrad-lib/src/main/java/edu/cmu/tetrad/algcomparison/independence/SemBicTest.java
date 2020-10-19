@@ -15,7 +15,7 @@ import java.util.*;
  */
 @TestOfIndependence(
         name = "SEM BIC Test",
-        command = "sem-bic",
+        command = "sem-bic-test",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 public class SemBicTest implements IndependenceWrapper {

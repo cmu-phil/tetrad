@@ -31,7 +31,10 @@ import edu.cmu.tetrad.util.Vector;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -43,32 +46,32 @@ import java.util.*;
 
 public class MNLRLikelihood {
 
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // The variables of the continuousData set.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // Indices of variables.
-    private Map<Node, Integer> nodesHash;
+    private final Map<Node, Integer> nodesHash;
 
     // Continuous data only.
-    private double[][] continuousData;
+    private final double[][] continuousData;
 
     // Discrete data only.
-    private int[][] discreteData;
+    private final int[][] discreteData;
 
     // Partitions
-    private AdLeafTree adTree;
+    private final AdLeafTree adTree;
 
     // Fix degree
-    private int fDegree;
+    private final int fDegree;
 
     // Structure Prior
-    private double structurePrior;
+    private final double structurePrior;
 
-    private PrintStream original = System.out;
+    private final PrintStream original = System.out;
 
-    private PrintStream nullout = new PrintStream(new OutputStream() { public void write(int b) {
+    private final PrintStream nullout = new PrintStream(new OutputStream() { public void write(int b) {
         //DO NOTHING
     }
     });
@@ -137,7 +140,7 @@ public class MNLRLikelihood {
             sigma2 = r.dotProduct(r) / n;
         }
 
-        double lik = -(n / 2) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
+        double lik = -(n / 2.) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
 
         if(Double.isInfinite(lik) || Double.isNaN(lik)) {
             System.out.println(lik);
@@ -176,9 +179,9 @@ public class MNLRLikelihood {
                 double[] mean = new double[p];
                 double[] var = new double[p];
                 for (int i = 0; i < p; i++) {
-                    for (int j = 0; j < r; j++) {
-                        mean[i] += continuousData[continuousCols[i]][cell.get(j)];
-                        var[i] += Math.pow(continuousData[continuousCols[i]][cell.get(j)], 2);
+                    for (Integer integer : cell) {
+                        mean[i] += continuousData[continuousCols[i]][integer];
+                        var[i] += Math.pow(continuousData[continuousCols[i]][integer], 2);
                     }
                     mean[i] /= r;
                     var[i] /= r;
@@ -209,7 +212,6 @@ public class MNLRLikelihood {
                     }
                     lik += multipleRegression(target, subset);
                 } else {
-                    ArrayList<Integer> temp = new ArrayList<>();
                     Matrix target = new Matrix(r, ((DiscreteVariable) c).getNumCategories());
                     for (int i = 0; i < r; i++) {
                         for (int j = 0; j < ((DiscreteVariable) c).getNumCategories(); j++) {
@@ -240,13 +242,13 @@ public class MNLRLikelihood {
             }
         }
 
-        int p = continuous_parents.size();
+//        int p = continuous_parents.size();
 
         List<List<Integer>> cells = adTree.getCellLeaves(discrete_parents);
         //List<List<Integer>> cells = partition(discrete_parents, 0).cells;
 
-        int[] continuousCols = new int[p];
-        for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
+//        int[] continuousCols = new int[p];
+//        for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
 
         for (List<Integer> cell : cells) {
             int r = cell.size();
