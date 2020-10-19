@@ -26,19 +26,17 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
 
-import static edu.cmu.tetrad.search.XdslXmlConstants.ROW;
-
 /**
  * Calculates the discrete BIC score.
  */
 public class BicScore implements LocalDiscreteScore, IBDeuScore {
     private List<Node> variables;
-    private int[][] data;
-    private int sampleSize;
+    private final int[][] data;
+    private final int sampleSize;
 
     private double penaltyDiscount = 1;
 
-    private int[] numCategories;
+    private final int[] numCategories;
     private double structurePrior = 1;
 
     public BicScore(DataSet dataSet) {
@@ -51,14 +49,15 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
             this.variables = dataSet.getVariables();
 
-            if (!(((BoxDataSet) dataSet).getDataBox() instanceof VerticalIntDataBox)) {
-                throw new IllegalArgumentException();
-            }
+            dataBox = new VerticalIntDataBox(dataBox);
+
+//            if (!(((BoxDataSet) dataSet).getDataBox() instanceof VerticalIntDataBox)) {
+//                throw new IllegalArgumentException();
+//            }
 
             VerticalIntDataBox box = (VerticalIntDataBox) dataBox;
 
             data = box.getVariableVectors();
-            this.sampleSize = dataSet.getNumRows();
         } else {
             data = new int[dataSet.getNumColumns()][];
             this.variables = dataSet.getVariables();
@@ -71,8 +70,8 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
                 }
             }
 
-            this.sampleSize = dataSet.getNumRows();
         }
+        this.sampleSize = dataSet.getNumRows();
 
         final List<Node> variables = dataSet.getVariables();
         numCategories = new int[variables.size()];
@@ -94,7 +93,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
     }
 
     @Override
-    public double localScore(int node, int parents[]) {
+    public double localScore(int node, int[] parents) {
 
         if (!(variables.get(node) instanceof  DiscreteVariable)) {
             throw new IllegalArgumentException("Not discrete: " + variables.get(node));
@@ -171,7 +170,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         int params = r * (c - 1);
         int n = getSampleSize();
 
-        return 2 * lik - penaltyDiscount * params * Math.log(n) + 2 * getStructurePrior();
+        return 2 * lik - penaltyDiscount * params * Math.log(n) + 2 * getPriorForStructure(parents.length);
     }
 
     private double getPriorForStructure(int numParents) {
