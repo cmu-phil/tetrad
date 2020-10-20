@@ -66,6 +66,18 @@ public class SemBicScoreImages implements ISemBicScore, Score {
      * Constructs the score using a covariance matrix.
      */
     public SemBicScoreImages(List<DataModel> dataModels) {
+        for (DataModel dataSet : dataModels) {
+            DataSet _data = (DataSet) dataSet;
+
+            for (int j = 0; j < _data.getNumColumns(); j++) {
+                for (int i = 0; i < _data.getNumRows(); i++) {
+                    if (Double.isNaN(_data.getDouble(i, j))) {
+                        throw new IllegalArgumentException("Please remove or impute missing values.");
+                    }
+                }
+            }
+        }
+
         if (dataModels == null) {
             throw new NullPointerException();
         }

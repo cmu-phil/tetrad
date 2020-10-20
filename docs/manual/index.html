@@ -2867,22 +2867,32 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <div id="fask">
         <p>FASK learns a linear model in which all of the variables are skewed. </p>
 
-        <p>The idea is as follows. First, FAS-stable is run on the data, producing an
+        <p>The idea is as follows. First, FAS-stable  is run on the data, producing an
             undirected graph. We use the BIC score as a conditional independence test with a specified penalty
-            discount c. This yields undirected graph G0 . The reason FAS-stable works for sparse cyclic models
-            where the linear coefficients are all less than 1 is that correlations induced by long cyclic
-            paths are statistically judged as zero, since they are products of multiple coefficients less than
-            1. Then, each of the X − Y adjacencies in G0 is oriented as a 2-cycle X += Y , or X → Y ,
-            or X ← Y . Taking up each adjacency in turn, one tests to see whether the adjacency is a
-            2-cycle by testing if the difference between corr(X, Y ) and corr(X, Y |X > 0), and corr(X, Y )
-            and corr(X, Y |Y > 0), are both significantly not zero. If so, the edges X → Y and X ← Y are added
-            to the output graph G1 . If not, the Left-Right orientation is rule is applied: Orient X → Y in
-            G1, if (E(X Y |X > 0)/ E(X 2|X > 0)E(Y 2 |X > 0) − E(X Y |Y > 0)/ E(X 2 |Y > 0)E(Y 2|Y > 0)) > 0;
-            otherwise orient X ← Y . G1 will be a fully oriented graph. For some models, where the true
-            coefficients of a 2-cycle between X and Y are more or less equal in magnitude but opposite in sign,
-            FAS-stable may fail to detect an edge between X and Y when in fact a 2-cycle exists. In this case,
-            we check explicitly whether corr(X, Y |X > 0) and corr(X, Y |Y > 0) differ by more than a set amount
-            of 0.3. If so, the adjacency is added to the graph and oriented using the aforementioned rules.
+            discount c. This yields undirected graph G0 . The reason FAS-stable  works for sparse cyclic  models
+            where the linear  coefficients  are all less than  1 is that correlations induced by long cyclic
+            paths are statistically judged as zero, since they are products of multiple coefficients less  than
+            1.  Then, each  of the X − Y  adjacencies  in G0   is  oriented  as a 2-cycle  X +=  Y , or X → Y ,
+            or X ← Y .   Taking up each  adjacency  in turn, one tests  to see  whether  the adjacency  is a
+            2-cycle by testing if the difference between  corr(X, Y ) and corr(X, Y |X  > 0), and corr(X, Y )
+            and corr(X, Y |Y  > 0), are both significantly not zero. If so, the edges X → Y and X ← Y  are added
+            to the output  graph G1 .  If not, the Left-Right  orientation is rule is applied: Orient X → Y in
+            G1, if (E(X Y |X > 0)/    E(X 2|X > 0)E(Y 2 |X > 0) − E(X Y |Y  > 0)/  E(X 2 |Y  > 0)E(Y 2|Y  > 0)) >  0;
+            otherwise orient X ← Y .  G1  will be a fully oriented graph. For some models, where the true
+            coefficients of a 2-cycle between X and Y  are more or less equal in magnitude but opposite in sign,
+            FAS-stable  may fail to detect an edge between X and Y  when in fact a 2-cycle exists. In this case,
+            we check explicitly whether corr(X, Y |X > 0) and corr(X, Y |Y  > 0) differ  by more than a set amount
+            of 0.3. If so, the adjacency  is added to the graph and oriented using the aforementioned rules.
+        </p>
+
+        <p>
+            We include pairwise orientation rule RSkew, Skew, and Tanh from Hyvärinen, A., & Smith, S. M.
+            (2013). Pairwise likelihood ratios for estimation of non-Gaussian structural equation models. Journal
+            of Machine Learning Research, 14(Jan), 111-152, so in some configurations FASK can be made to implement
+            an algorithm that has been called in the literature "Pairwise LiNGAM"--this is intentional; we do this
+            for ease of comparison. You'll get this configuration if you choose one of these pairwise orientation
+            rules, together with the FAS with orientation alpha and two-cycle threshold set to zero and skewness
+            threshold set to 1, for instance.
         </p>
 
         <p>See Sanchez-Romero R, Ramsey JD, Zhang K, Glymour MR, Huang B, Glymour C. Causal discovery of feedback
@@ -3648,16 +3658,112 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="errorsNormal_value_type">Boolean</span></li>
         </ul>
 
-        <h3 id="extraEdgeThreshold" class="parameter_description">extraEdgeThreshold</h3>
+        <h3 id="skewEdgeThreshold" class="parameter_description">skewEdgeThreshold</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="extraEdgeThreshold_short_desc">Threshold for including extra edges</span>
+            <li>Short Description: <span id="skewEdgeThreshold_short_desc">Threshold for including edges detectable by skewness</span>
             </li>
-            <li>Long Description: <span id="extraEdgeThreshold_long_desc">For FASK, this includes an adjacency X—Y in the model if |corr(X, Y | X > 0) – corr(X, Y | Y > 0)| > delta, where delta is this number. The default is 0.3. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
+            <li>Long Description: <span id="skewEdgeThreshold_long_desc">For FASK, this includes an adjacency X—Y in the model if |corr(X, Y | X > 0) – corr(X, Y | Y > 0)| exceeds some threshold. The default for this threshold is 0.3. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
             </li>
-            <li>Default Value: <span id="extraEdgeThreshold_default_value">0.3</span></li>
-            <li>Lower Bound: <span id="extraEdgeThreshold_lower_bound">0.0</span></li>
-            <li>Upper Bound: <span id="extraEdgeThreshold_upper_bound">Infinity</span></li>
-            <li>Value Type: <span id="extraEdgeThreshold_value_type">Double</span></li>
+            <li>Default Value: <span id="skewEdgeThreshold_default_value">0.3</span></li>
+            <li>Lower Bound: <span id="skewEdgeThreshold_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="skewEdgeThreshold_upper_bound">Infinity</span></li>
+            <li>Value Type: <span id="skewEdgeThreshold_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="twoCycleScreeningThreshold" class="parameter_description">twoCycleScreeningThreshold</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="twoCycleScreeningThreshold_short_desc">Upper bound for |left-right| to count as 2-cycle. (Set to zero to turn off pre-screening.)</span>
+            </li>
+            <li>Long Description: <span id="twoCycleScreeningThreshold_long_desc">2-cycles are screened by looking to see if the left-right rule returns a difference smaller than this threshold. To turn off the screening, set this to zero.</span>
+            </li>
+            <li>Default Value: <span id="twoCycleScreeningThreshold_default_value">0.0</span></li>
+            <li>Lower Bound: <span id="twoCycleScreeningThreshold_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="twoCycleScreeningThreshold_upper_bound">Infinity</span></li>
+            <li>Value Type: <span id="twoCycleScreeningThreshold_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="orientationAlpha" class="parameter_description">orientationAlpha</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="orientationAlpha_short_desc">Alpha threshold used for orientation (where necessary). (Set to zero to turn use of alpha.)</span>
+            </li>
+            <li>Long Description: <span id="orientationAlpha_long_desc">Used for orienting 2-cycles and testing for zero edges.</span>
+            </li>
+            <li>Default Value: <span id="orientationAlpha_default_value">0.0</span></li>
+            <li>Lower Bound: <span id="orientationAlpha_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="orientationAlpha_upper_bound">1.0</span></li>
+            <li>Value Type: <span id="orientationAlpha_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="faskDelta" class="parameter_description">faskDelta</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskDelta_short_desc">For FASK v1 and v2, the bias for orienting with negative coefficients (Set to zero for no bias.)</span>
+            </li>
+            <li>Long Description: <span id="faskDelta_long_desc">The bias procedure for v1 is given in the published description.</span>
+            </li>
+            <li>Default Value: <span id="faskDelta_default_value">0.0</span></li>
+            <li>Lower Bound: <span id="faskDelta_lower_bound">-Infinity</span></li>
+            <li>Upper Bound: <span id="faskDelta_upper_bound">Infinity</span></li>
+            <li>Value Type: <span id="faskDelta_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="faskLeftRightRule" class="parameter_description">faskLeftRightRule</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskLeftRightRule_short_desc">The left right rule: 1 = FASK v1, 2 = FASK v2, 3 = RSkew, 4 = Skew, 5 = Tanh</span>
+            </li>
+            <li>Long Description: <span id="faskLeftRightRule_long_desc">The FASK left right rule v2 is default, but two other (related) left-right rules are given for relation to the literature, and the v1 FASK rule is included for backward compatibility.</span>
+            </li>
+            <li>Default Value: <span id="faskLeftRightRule_default_value">2</span></li>
+            <li>Lower Bound: <span id="faskLeftRightRule_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="faskLeftRightRule_upper_bound">5</span></li>
+            <li>Value Type: <span id="faskLeftRightRule_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="faskAssumeLinearity" class="parameter_description">faskAssumeLinearity</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskAssumeLinearity_short_desc">Linearity assumed</span>
+            </li>
+            <li>Long Description: <span id="faskAssumeLinearity_long_desc">True if a linear, non-Gaussian, additive model is assume; false if a nonlinear, non-Gaussian, additive model is assumed.</span>
+            </li>
+            <li>Default Value: <span id="faskAssumeLinearity_default_value">true</span></li>
+            <li>Lower Bound: <span id="faskAssumeLinearity_lower_bound"></span></li>
+            <li>Upper Bound: <span id="faskAssumeLinearity_upper_bound"></span></li>
+            <li>Value Type: <span id="faskAssumeLinearity_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="faskNonempirical" class="parameter_description">faskNonempirical</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskNonempirical_short_desc">Variables should be assumed to have positive skewness</span>
+            </li>
+            <li>Long Description: <span id="faskNonempirical_long_desc">If false (default), each variable is multiplied by the sign of its skewness in the left-right rule.</span>
+            </li>
+            <li>Default Value: <span id="faskNonempirical_default_value">false</span></li>
+            <li>Lower Bound: <span id="faskNonempirical_lower_bound"></span></li>
+            <li>Upper Bound: <span id="faskNonempirical_upper_bound"></span></li>
+            <li>Value Type: <span id="faskNonempirical_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="acceptanceProportion" class="parameter_description">acceptanceProportion</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="acceptanceProportion_short_desc">Acceptance Proportion</span>
+            </li>
+            <li>Long Description: <span id="acceptanceProportion_long_desc">An edge occurring in this proportion of individual FASK graphs will appear in the final graph.</span>
+            </li>
+            <li>Default Value: <span id="acceptanceProportion_default_value">0.5</span></li>,.
+            <li>Lower Bound: <span id="acceptanceProportion_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="acceptanceProportion_upper_bound">1.0</span></li>
+            <li>Value Type: <span id="acceptanceProportion_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="faskAdjacencyMethod" class="parameter_description">faskAdjacencyMethod</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="faskAdjacencyMethod_short_desc">Adjacency Method: 1 = FAS Stable, 2 = FAS Stable Concurrent, 3 = FGES, 4 = External Graph</span>
+            </li>
+            <li>Long Description: <span id="faskAdjacencyMethod_long_desc">This is  the method FASK will use to find adjacencies. For 4 = External graph, an external graph must be supplied.</span>
+            </li>
+            <li>Default Value: <span id="faskAdjacencyMethod_default_value">1</span></li>
+            <li>Lower Bound: <span id="faskAdjacencyMethod_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="faskAdjacencyMethod_upper_bound">4</span></li>
+            <li>Value Type: <span id="faskAdjacencyMethod_value_type">Integer</span></li>
         </ul>
 
         <h3 id="faithfulnessAssumed" class="parameter_description">faithfulnessAssumed</h3>
@@ -3698,8 +3804,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="fastIcaMaxIter" class="parameter_description">fastIcaMaxIter</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span
-                    id="fastIcaMaxIter_short_desc">The maximum number of optimization iterations. </span>
+            <li>Short Description: <span id="fastIcaMaxIter_short_desc">The maximum number of optimization iterations. </span>
             </li>
             <li>Long Description: <span id="fastIcaMaxIter_long_desc">This is the maximum number if iterations of the optimization procedure of ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It's an integer greater than 0; we use a default of 2000.</span>
             </li>

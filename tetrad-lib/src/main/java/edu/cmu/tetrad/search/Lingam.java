@@ -56,6 +56,15 @@ public class Lingam {
     }
 
     public Graph search(DataSet data) {
+        for (int j = 0; j < data.getNumColumns(); j++) {
+            for (int i = 0; i < data.getNumRows(); i++) {
+                if (Double.isNaN(data.getDouble(i, j))) {
+                    throw new IllegalArgumentException("Please remove or impute missing values.");
+                }
+            }
+        }
+
+
         Matrix X = data.getDoubleData();
         X = DataUtils.centerData(X).transpose();
         FastIca fastIca = new FastIca(X, X.rows());
