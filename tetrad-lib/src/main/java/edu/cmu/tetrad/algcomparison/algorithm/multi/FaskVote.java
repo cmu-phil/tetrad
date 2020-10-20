@@ -30,12 +30,12 @@ import java.util.List;
  * @author mglymour
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FaskVote",
-        command = "fask-vote",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Continuous
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "FaskVote",
+//        command = "fask-vote",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        dataType = DataType.Continuous
+//)
 @Bootstrapping
 public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph, TakesIndependenceWrapper {
 
