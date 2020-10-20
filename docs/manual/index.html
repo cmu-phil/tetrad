@@ -2867,22 +2867,22 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <div id="fask">
         <p>FASK learns a linear model in which all of the variables are skewed. </p>
 
-        <p>The idea is as follows. First, FAS-stable  is run on the data, producing an
+        <p>The idea is as follows. First, FAS-stable is run on the data, producing an
             undirected graph. We use the BIC score as a conditional independence test with a specified penalty
-            discount c. This yields undirected graph G0 . The reason FAS-stable  works for sparse cyclic  models
-            where the linear  coefficients  are all less than  1 is that correlations induced by long cyclic
-            paths are statistically judged as zero, since they are products of multiple coefficients less  than
-            1.  Then, each  of the X − Y  adjacencies  in G0   is  oriented  as a 2-cycle  X +=  Y , or X → Y ,
-            or X ← Y .   Taking up each  adjacency  in turn, one tests  to see  whether  the adjacency  is a
-            2-cycle by testing if the difference between  corr(X, Y ) and corr(X, Y |X  > 0), and corr(X, Y )
-            and corr(X, Y |Y  > 0), are both significantly not zero. If so, the edges X → Y and X ← Y  are added
-            to the output  graph G1 .  If not, the Left-Right  orientation is rule is applied: Orient X → Y in
-            G1, if (E(X Y |X > 0)/    E(X 2|X > 0)E(Y 2 |X > 0) − E(X Y |Y  > 0)/  E(X 2 |Y  > 0)E(Y 2|Y  > 0)) >  0;
-            otherwise orient X ← Y .  G1  will be a fully oriented graph. For some models, where the true
-            coefficients of a 2-cycle between X and Y  are more or less equal in magnitude but opposite in sign,
-            FAS-stable  may fail to detect an edge between X and Y  when in fact a 2-cycle exists. In this case,
-            we check explicitly whether corr(X, Y |X > 0) and corr(X, Y |Y  > 0) differ  by more than a set amount
-            of 0.3. If so, the adjacency  is added to the graph and oriented using the aforementioned rules.
+            discount c. This yields undirected graph G0 . The reason FAS-stable works for sparse cyclic models
+            where the linear coefficients are all less than 1 is that correlations induced by long cyclic
+            paths are statistically judged as zero, since they are products of multiple coefficients less than
+            1. Then, each of the X − Y adjacencies in G0 is oriented as a 2-cycle X += Y , or X → Y ,
+            or X ← Y . Taking up each adjacency in turn, one tests to see whether the adjacency is a
+            2-cycle by testing if the difference between corr(X, Y ) and corr(X, Y |X > 0), and corr(X, Y )
+            and corr(X, Y |Y > 0), are both significantly not zero. If so, the edges X → Y and X ← Y are added
+            to the output graph G1 . If not, the Left-Right orientation is rule is applied: Orient X → Y in
+            G1, if (E(X Y |X > 0)/ E(X 2|X > 0)E(Y 2 |X > 0) − E(X Y |Y > 0)/ E(X 2 |Y > 0)E(Y 2|Y > 0)) > 0;
+            otherwise orient X ← Y . G1 will be a fully oriented graph. For some models, where the true
+            coefficients of a 2-cycle between X and Y are more or less equal in magnitude but opposite in sign,
+            FAS-stable may fail to detect an edge between X and Y when in fact a 2-cycle exists. In this case,
+            we check explicitly whether corr(X, Y |X > 0) and corr(X, Y |Y > 0) differ by more than a set amount
+            of 0.3. If so, the adjacency is added to the graph and oriented using the aforementioned rules.
         </p>
 
         <p>
@@ -3051,6 +3051,27 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
     <h4>Parameters</h4>
 
     <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
+
+    <h3>Probabilistic Test</h3>
+
+    <div id="prob-test">
+        <p>
+            The Probabilistic Test applies a Bayesian method to derive the posterior probability of an independence
+            constraint R = (X⊥Y|Z) given a dataset D. This is intended for use with datasets with discrete variables. It
+            can be used with constraint-based algorithms (e.g., PC and FCI). Since this test provides a probability for
+            each independence constraint, it can be used stochastically by sampling based on the probabilities of the
+            queried independence constraints to obtain several output graphs. It can also be used deterministically by
+            using a fixed decision threshold on the probabilities of the queried independence constraints to generate a
+            single output graph.
+        </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#noRandomlyDeterminedIndependence">noRandomlyDeterminedIndependence</a></p>
+    <p><a href="#cutoffIndTest">cutoffIndTest</a></p>
+    <p><a href="#priorEquivalentSampleSize">priorEquivalentSampleSize</a></p>
+
 
     <h3>Conditional Correlation Independence (CCI) Test</h3>
 
@@ -3748,7 +3769,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             </li>
             <li>Long Description: <span id="acceptanceProportion_long_desc">An edge occurring in this proportion of individual FASK graphs will appear in the final graph.</span>
             </li>
-            <li>Default Value: <span id="acceptanceProportion_default_value">0.5</span></li>,.
+            <li>Default Value: <span id="acceptanceProportion_default_value">0.5</span></li>
+            ,.
             <li>Lower Bound: <span id="acceptanceProportion_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="acceptanceProportion_upper_bound">1.0</span></li>
             <li>Value Type: <span id="acceptanceProportion_value_type">Double</span></li>
@@ -3804,7 +3826,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="fastIcaMaxIter" class="parameter_description">fastIcaMaxIter</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="fastIcaMaxIter_short_desc">The maximum number of optimization iterations. </span>
+            <li>Short Description: <span
+                    id="fastIcaMaxIter_short_desc">The maximum number of optimization iterations. </span>
             </li>
             <li>Long Description: <span id="fastIcaMaxIter_long_desc">This is the maximum number if iterations of the optimization procedure of ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It's an integer greater than 0; we use a default of 2000.</span>
             </li>
@@ -4807,7 +4830,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Long Description: <span id="structurePrior_long_desc">For Tetrad, we use as a structure prior the default number of parents for any conditional probability table. Higher weight is accorded to tables with about that number of parents. The prior structure weights are distributed according to a binomial distribution.</span>
             </li>
             <li>Default Value: <span id="structurePrior_default_value">1.0</span></li>
-            <li>Lower Bound: <span id="structurePrior_lower_bound">0.00000000000000001</span></li>
+            <li>Lower Bound: <span id="structurePrior_lower_bound">0</span></li>
             <li>Upper Bound: <span id="structurePrior_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="structurePrior_value_type">Double</span></li>
         </ul>
@@ -5322,6 +5345,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
 
 
 

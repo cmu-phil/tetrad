@@ -103,7 +103,7 @@ public class StatsListEditor extends JPanel {
         statistics.add(new TwoCycleTruePositive());
 
         TextTable table = new TextTable(statistics.size(), 3);
-        NumberFormat nf = new DecimalFormat("0.0000");
+        NumberFormat nf = new DecimalFormat("0.###");
 
         for (int i = 0; i < statistics.size(); i++) {
             table.setToken(i, 0, statistics.get(i).getAbbreviation());

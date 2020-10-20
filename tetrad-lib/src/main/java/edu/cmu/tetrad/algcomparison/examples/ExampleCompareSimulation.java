@@ -43,10 +43,10 @@ public class ExampleCompareSimulation {
         Parameters parameters = new Parameters();
         https://arxiv.org/abs/1607.08110
         parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 100);
-        parameters.set("avgDegree", 4, 6);
+        parameters.set("numMeasures", 10);
+        parameters.set("avgDegree", 2);
         parameters.set("sampleSize", 500);
-        parameters.set("alpha", 1e-4, 1e-3, 1e-2);
+        parameters.set("alpha", 1e-2);
 
         Statistics statistics = new Statistics();
 
@@ -67,9 +67,9 @@ public class ExampleCompareSimulation {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ(), new Fges(new SemBicScore(), false)));
-        algorithms.add(new PcStable(new FisherZ()));
-        algorithms.add(new CpcStable(new FisherZ()));
+//        algorithms.add(new Cpc(new FisherZ(), new Fges(new SemBicScore(), false)));
+//        algorithms.add(new PcStable(new FisherZ()));
+//        algorithms.add(new CpcStable(new FisherZ()));
 
         Simulations simulations = new Simulations();
 
@@ -81,6 +81,7 @@ public class ExampleCompareSimulation {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
+        comparison.setSaveGraphs(true);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }

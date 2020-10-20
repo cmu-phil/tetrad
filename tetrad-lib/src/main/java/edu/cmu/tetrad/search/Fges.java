@@ -30,6 +30,8 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
+import static java.lang.Double.NaN;
+
 /**
  * GesSearch is an implementation of the GES algorithm, as specified in
  * Chickering (2002) "Optimal structure identification with greedy search"
@@ -2036,7 +2038,13 @@ public final class Fges implements GraphSearch, GraphScorer {
             parentIndices[count++] = hashIndices.get(parent);
         }
 
-        return score.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
+        double diff = score.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
+
+//        double width = 1;
+//
+//        if (diff > -width && diff < width) return -width;
+
+        return diff;
     }
 
     private List<Node> getVariables() {

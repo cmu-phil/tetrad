@@ -25,16 +25,18 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.*;
 
@@ -64,7 +66,7 @@ public class SemBicScore implements Score {
     private boolean verbose = false;
 
     // A  map from variable names to their indices.
-    private final Map<String, Integer> indexMap;
+    private final Map<Node, Integer> indexMap;
 
     // The penalty penaltyDiscount, 1 for standard BIC.
     private double penaltyDiscount = 1.0;
@@ -84,6 +86,7 @@ public class SemBicScore implements Score {
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
         this.indexMap = indexMap(this.variables);
+
     }
 
     /**
@@ -116,11 +119,11 @@ public class SemBicScore implements Score {
         Node _y = variables.get(y);
         List<Node> _z = getVariableList(z);
         double r = partialCorrelation(_x, _y, _z);
-//
-//            return -n * Math.log(1.0 - r * r) - log(n)// - getErrorThreshold()
-//                    +  2 * signum(getStructurePrior()) * (sp1 - sp2);
+
+        return -0.5 * n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n)// - getErrorThreshold()
+                + 2 * signum(getStructurePrior()) * (sp1 - sp2);
 //        } else {
-        return (localScore(y, append(z, x)) - localScore(y, z));// - getErrorThreshold();
+//        return (localScore(y, append(z, x)) - localScore(y, z));// - getErrorThreshold();
 //        }
     }
 
@@ -149,8 +152,6 @@ public class SemBicScore implements Score {
                     s2 -= coefs.get(q) * coefs.get(r) * X.get(r, q);
                 }
             }
-
-            System.out.println(s2);
 
             if (s2 <= 0) {
                 if (isVerbose()) {
@@ -309,60 +310,66 @@ public class SemBicScore implements Score {
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
+        List<Node> allVars = new ArrayList<>(z);
+        allVars.add(x);
+        allVars.add(y);
+
+        List<Integer> rows = getRows(allVars, indexMap);
+
         int[] indices = new int[z.size() + 2];
-        indices[0] = indexMap.get(x.getName());
-        indices[1] = indexMap.get(y.getName());
-        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i).getName());
-        Matrix submatrix = covariances.getSubmatrix(indices).getMatrix();
+        indices[0] = indexMap.get(x);
+        indices[1] = indexMap.get(y);
+        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
+        Matrix submatrix = getCov(rows, indices, indices);// covariances.getSubmatrix(indices).getMatrix();
         return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
     }
 
-    private Map<String, Integer> indexMap(List<Node> variables) {
-        Map<String, Integer> indexMap = new HashMap<>();
+    private Map<Node, Integer> indexMap(List<Node> variables) {
+        Map<Node, Integer> indexMap = new HashMap<>();
 
         for (int i = 0; variables.size() > i; i++) {
-            indexMap.put(variables.get(i).getName(), i);
+            indexMap.put(variables.get(i), i);
         }
 
         return indexMap;
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
-    private boolean printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
-        List<Node> _parents = new ArrayList<>();
-        for (int p : parents) _parents.add(variables.get(p));
+//    private boolean printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
+//        List<Node> _parents = new ArrayList<>();
+//        for (int p : parents) _parents.add(variables.get(p));
+//
+//        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+//        int[] choice;
+//
+//        while ((choice = gen.next()) != null) {
+//            int[] sel = new int[choice.length];
+//            List<Node> _sel = new ArrayList<>();
+//            for (int m = 0; m < choice.length; m++) {
+//                sel[m] = parents[m];
+//                _sel.add(variables.get(sel[m]));
+//            }
+//
+//            Matrix m = cov.getSelection(sel, sel);
+//
+//            try {
+//                m.inverse();
+//            } catch (Exception e2) {
+//                out.println("### Linear dependence among variables: " + _sel);
+//                out.println("### Removing " + _sel.get(0));
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            int[] sel = new int[choice.length];
-            List<Node> _sel = new ArrayList<>();
-            for (int m = 0; m < choice.length; m++) {
-                sel[m] = parents[m];
-                _sel.add(variables.get(sel[m]));
-            }
-
-            Matrix m = cov.getSelection(sel, sel);
-
-            try {
-                m.inverse();
-            } catch (Exception e2) {
-                out.println("### Linear dependence among variables: " + _sel);
-                out.println("### Removing " + _sel.get(0));
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
+//    private int[] append(int[] parents, int extra) {
+//        int[] all = new int[parents.length + 1];
+//        System.arraycopy(parents, 0, all, 0, parents.length);
+//        all[parents.length] = extra;
+//        return all;
+//    }
 
     /**
      * @return a string representation of this score.

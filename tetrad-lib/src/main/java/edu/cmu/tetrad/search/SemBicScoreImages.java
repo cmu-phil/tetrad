@@ -66,6 +66,10 @@ public class SemBicScoreImages implements ISemBicScore, Score {
      * Constructs the score using a covariance matrix.
      */
     public SemBicScoreImages(List<DataModel> dataModels) {
+        if (dataModels == null) {
+            throw new NullPointerException();
+        }
+
         for (DataModel dataSet : dataModels) {
             DataSet _data = (DataSet) dataSet;
 
@@ -76,10 +80,6 @@ public class SemBicScoreImages implements ISemBicScore, Score {
                     }
                 }
             }
-        }
-
-        if (dataModels == null) {
-            throw new NullPointerException();
         }
 
         List<SemBicScore> semBicScores = new ArrayList<>();
