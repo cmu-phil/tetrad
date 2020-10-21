@@ -34,6 +34,8 @@ public class BooleanGlassSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
+        if (!dataSets.isEmpty()) return;
+
         this.graph = randomGraph.createGraph(parameters);
 
         LagGraphParams params = new LagGraphParams(parameters);

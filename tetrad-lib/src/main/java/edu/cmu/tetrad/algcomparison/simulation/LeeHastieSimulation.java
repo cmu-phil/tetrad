@@ -37,6 +37,8 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
     @Override
     public void createData(Parameters parameters) {
+        if (!dataSets.isEmpty()) return;
+
         double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
         boolean discrete = parameters.getString(Params.DATA_TYPE).equals("discrete");

@@ -52,6 +52,8 @@ public class SemSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
+        if (!dataSets.isEmpty()) return;
+
         Graph graph = randomGraph.createGraph(parameters);
 
         dataSets = new ArrayList<>();

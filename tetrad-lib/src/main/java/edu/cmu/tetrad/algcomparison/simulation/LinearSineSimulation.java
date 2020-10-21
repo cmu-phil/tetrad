@@ -43,6 +43,8 @@ public class LinearSineSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
+        if (!dataSets.isEmpty()) return;
+
         setInterceptLow(parameters.getDouble("interceptLow"));
         setInterceptHigh(parameters.getDouble("interceptHigh"));
         setLinearLow(parameters.getDouble("linearLow"));

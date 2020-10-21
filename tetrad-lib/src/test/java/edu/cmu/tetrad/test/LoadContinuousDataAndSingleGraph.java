@@ -35,6 +35,8 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
 
     @Override
     public void createData(Parameters parameters) {
+        if (!dataSets.isEmpty()) return;
+
         this.dataSets = new ArrayList<>();
 
         File dir = new File(path + "/" + subdir);
