@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 
 /**
  * Wraps a data model so that a random sample will automatically be drawn on
@@ -57,9 +58,7 @@ public class MissingDataInjectorWrapper extends DataWrapper {
         double prob = params.getDouble("prob", 0.02);
         double[] probs = new double[numVars];
 
-        for (int i = 0; i < probs.length; i++) {
-            probs[i] = prob;
-        }
+        Arrays.fill(probs, prob);
 
         outputDataSet = DataUtils.addMissingData(dataSet, probs);
         setDataModel(outputDataSet);

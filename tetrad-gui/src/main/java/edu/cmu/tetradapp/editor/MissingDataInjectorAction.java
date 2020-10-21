@@ -32,6 +32,7 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
 
 /**
  * Splits continuous data sets by collinear columns.
@@ -92,12 +93,9 @@ final class MissingDataInjectorAction extends AbstractAction {
             double prob = getProb();
             double[] probs = new double[numVars];
 
-            for (int i = 0; i < probs.length; i++) {
-                probs[i] = prob;
-            }
+            Arrays.fill(probs, prob);
 
-            DataSet newDataSet =
-                    DataUtils.addMissingData(dataSet, probs);
+            DataSet newDataSet = DataUtils.addMissingData(dataSet, probs);
 
             DataModelList list = new DataModelList();
             list.add(newDataSet);

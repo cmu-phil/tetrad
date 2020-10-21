@@ -1296,7 +1296,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     //===============================PRIVATE METHODS=====================//
     private void setIntPrivate(int row, int col, int value) {
         if (value == -99) {
-            dataBox.set(row, col, null);
+            dataBox.set(row, col, -99);
         } else {
             dataBox.set(row, col, value);
         }

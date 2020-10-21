@@ -47,15 +47,9 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
             throw new NullPointerException("Data was not provided.");
         }
 
-        if (dataSet instanceof BoxDataSet) {
+        if (dataSet instanceof BoxDataSet && ((BoxDataSet) dataSet).getDataBox() instanceof  VerticalIntDataBox) {
             DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
-
             this.variables = dataSet.getVariables();
-
-            if (!(dataBox instanceof VerticalIntDataBox)) {
-                dataBox = new VerticalIntDataBox(dataBox);
-            }
-
             VerticalIntDataBox box = (VerticalIntDataBox) dataBox;
 
             data = box.getVariableVectors();
@@ -119,6 +113,7 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
 
         int[] myChild = data[node];
 
+        int N = 0;
 
         ROW:
         for (int i = 0; i < sampleSize; i++) {
@@ -137,12 +132,13 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;
+            N++;
         }
 
         //Finally, compute the score
         double score = 0.0;
 
-        score += getPriorForStructure(parents.length);
+        score += getPriorForStructure(parents.length, N);
 
         final double cellPrior = getSamplePrior() / (c * r);
         final double rowPrior = getSamplePrior() / r;
@@ -161,9 +157,9 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
         return score;
     }
 
-    private double getPriorForStructure(int numParents) {
+    private double getPriorForStructure(int numParents, int N) {
         double e = getStructurePrior();
-        int vm = data.length - 1;
+        int vm = N - 1;
         return numParents * Math.log(e / (vm)) + (vm - numParents) * Math.log(1.0 - (e / (vm)));
     }
 
