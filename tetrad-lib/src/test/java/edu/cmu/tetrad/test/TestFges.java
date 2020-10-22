@@ -572,6 +572,7 @@ public class TestFges {
 
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(1);
+        score.setStructurePrior(0);
         Fges fges = new Fges(score);
         fges.setKnowledge(knowledge);
 
@@ -587,11 +588,11 @@ public class TestFges {
                 "Graph Edges:\n" +
                 "1. ABILITY --> GPQ\n" +
                 "2. ABILITY --> PREPROD\n" +
-                "3. ABILITY --> PUBS\n" +
+//                "3. ABILITY --> PUBS\n" +
                 "4. GPQ --> QFJ\n" +
                 "5. PREPROD --> CITES\n" +
                 "6. PUBS --> CITES\n" +
-                "7. QFJ --> CITES\n" +
+//                "7. QFJ --> CITES\n" +
                 "8. QFJ --> PUBS\n" +
                 "9. SEX --> PUBS";
 
@@ -825,61 +826,61 @@ public class TestFges {
     }
 
 
-    @Test
-    public void testFromData() {
-        Parameters parameters = new Parameters();
-        parameters.set(Params.STANDARDIZE, false);
-        parameters.set(Params.MEASUREMENT_VARIANCE, 0);
-        parameters.set(Params.NUM_RUNS, 1);
-        parameters.set(Params.DIFFERENT_GRAPHS, true);
-        parameters.set(Params.SAMPLE_SIZE, 1000);
-
-        parameters.set(Params.NUM_MEASURES, 100);
-        parameters.set(Params.NUM_LATENTS, 0);
-        parameters.set(Params.AVG_DEGREE, 6);
-
-//        parameters.set("maxDegree", 100);
-//        parameters.set("maxIndegree", 100);
-//        parameters.set("maxOutdegree", 100);
-
-        parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
-
-        parameters.set(Params.FAITHFULNESS_ASSUMED, false);
-        parameters.set(Params.PENALTY_DISCOUNT, 2);
-        parameters.set(Params.ALPHA, 0.001);
-
-        parameters.set(Params.COEF_LOW, 0.2);
-        parameters.set(Params.COEF_HIGH, 0.9);
-        parameters.set(Params.VAR_LOW, 1);
-        parameters.set(Params.VAR_HIGH, 3);
-        parameters.set(Params.COEF_SYMMETRIC, true);
-        parameters.set(Params.COV_SYMMETRIC, true);
-
-        parameters.set(Params.RANDOMIZE_COLUMNS, true);
-
-        SemSimulation simulation = new SemSimulation(new RandomForward());
-        simulation.createData(parameters);
-        Graph dag = simulation.getTrueGraph(0);
-
-        DataModel dataSet = simulation.getDataModel(0);
-
-        edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcFges pcFges
-                = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcFges(
-                new edu.cmu.tetrad.algcomparison.score.SemBicScore(),false);
-
-        long start = System.currentTimeMillis();
-
-        Graph graph = pcFges.search(dataSet, parameters);
-
-        long stop = System.currentTimeMillis();
-
-        System.out.println("Elapsed " + (stop - start) + " ms");
-
-        graph = GraphUtils.replaceNodes(graph, dag.getNodes());
-
-        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dag));
-
-    }
+//    @Test
+//    public void testFromData() {
+//        Parameters parameters = new Parameters();
+//        parameters.set(Params.STANDARDIZE, false);
+//        parameters.set(Params.MEASUREMENT_VARIANCE, 0);
+//        parameters.set(Params.NUM_RUNS, 1);
+//        parameters.set(Params.DIFFERENT_GRAPHS, true);
+//        parameters.set(Params.SAMPLE_SIZE, 1000);
+//
+//        parameters.set(Params.NUM_MEASURES, 100);
+//        parameters.set(Params.NUM_LATENTS, 0);
+//        parameters.set(Params.AVG_DEGREE, 6);
+//
+////        parameters.set("maxDegree", 100);
+////        parameters.set("maxIndegree", 100);
+////        parameters.set("maxOutdegree", 100);
+//
+//        parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
+//
+//        parameters.set(Params.FAITHFULNESS_ASSUMED, false);
+//        parameters.set(Params.PENALTY_DISCOUNT, 2);
+//        parameters.set(Params.ALPHA, 0.001);
+//
+//        parameters.set(Params.COEF_LOW, 0.2);
+//        parameters.set(Params.COEF_HIGH, 0.9);
+//        parameters.set(Params.VAR_LOW, 1);
+//        parameters.set(Params.VAR_HIGH, 3);
+//        parameters.set(Params.COEF_SYMMETRIC, true);
+//        parameters.set(Params.COV_SYMMETRIC, true);
+//
+//        parameters.set(Params.RANDOMIZE_COLUMNS, true);
+//
+//        SemSimulation simulation = new SemSimulation(new RandomForward());
+//        simulation.createData(parameters);
+//        Graph dag = simulation.getTrueGraph(0);
+//
+//        DataModel dataSet = simulation.getDataModel(0);
+//
+//        edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcFges pcFges
+//                = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcFges(
+//                new edu.cmu.tetrad.algcomparison.score.SemBicScore(),false);
+//
+//        long start = System.currentTimeMillis();
+//
+//        Graph graph = pcFges.search(dataSet, parameters);
+//
+//        long stop = System.currentTimeMillis();
+//
+//        System.out.println("Elapsed " + (stop - start) + " ms");
+//
+//        graph = GraphUtils.replaceNodes(graph, dag.getNodes());
+//
+//        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dag));
+//
+//    }
 
     private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataSet dataSet) {
         Graph newGraph = new EdgeListGraph(graph.getNodes());

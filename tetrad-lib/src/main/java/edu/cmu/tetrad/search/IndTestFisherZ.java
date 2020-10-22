@@ -84,6 +84,8 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @param alpha   The alpha level of the test.
      */
     public IndTestFisherZ(DataSet dataSet, double alpha) {
+        this.dataSet = dataSet;
+
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -107,7 +109,6 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         this.nodesHash = nodesHash;
 
-        this.dataSet = dataSet;
     }
 
     /**
@@ -229,10 +230,18 @@ public final class IndTestFisherZ implements IndependenceTest {
         allVars.add(x);
         allVars.add(y);
 
-        List<Integer> rows = getRows(allVars, nodesHash);
+        double r;
+        int n;
 
-        int n = rows.size();
-        double r = getR(x, y, z, rows);
+        if (covMatrix() != null) {
+            r = partialCorrelation(x, y, z, null);
+            n = sampleSize();
+        } else {
+            List<Integer> rows = getRows(allVars, nodesHash);
+            r = getR(x, y, z, rows);
+            n = rows.size();
+        }
+
         this.r = r;
         double q = 0.5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
         double fisherZ = sqrt(n - 3 - z.size()) * q;
@@ -265,7 +274,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     private Matrix getCov(List<Integer> rows, int[] cols) {
         if (getCov() != null) {
-            return getCov().getMatrix();
+            return getCov().getMatrix().getSelection(cols, cols);
         }
 
         Matrix cov = new Matrix(cols.length, cols.length);
@@ -482,7 +491,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         List<Integer> rows = new ArrayList<>();
 
         K:
-        for (int k = 0; k < dataSet.getNumRows(); k++) {
+        for (int k = 0; k <  dataSet.getNumRows(); k++) {
             for (Node node : allVars) {
                 if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
             }
