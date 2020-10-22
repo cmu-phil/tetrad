@@ -126,7 +126,7 @@ public class SemBicScore implements Score {
             rows.retainAll(getRows(y, z));
 
 //        if (false) {
-            n = sampleSize;
+            n = rows.size();
             r = partialCorrelation(_x, _y, _z, rows);
         } else {
             n = covariances.getSampleSize();
