@@ -20,6 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.bayes.BayesIm;
+import edu.cmu.tetrad.bayes.BayesXmlRenderer;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
@@ -28,15 +30,12 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
-import edu.cmu.tetrad.sem.ISemIm;
-import edu.cmu.tetrad.sem.ParamType;
-import edu.cmu.tetrad.sem.Parameter;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.SemEstimatorWrapper;
 import edu.cmu.tetradapp.model.SemImWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
@@ -45,11 +44,11 @@ import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphNodeMeasured;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Font;
-import java.awt.Toolkit;
+import nu.xom.Document;
+import nu.xom.Element;
+import nu.xom.Serializer;
+
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -58,28 +57,15 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.ToolTipManager;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -334,6 +320,28 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             file.add(new SaveComponentImage(semImGraphicalEditor.getWorkbench(),
                     "Save Graph Image..."));
             file.add(this.getCopyMatrixMenuItem());
+            JMenuItem saveSemAsXml = new JMenuItem("Save SEM as XML");
+            file.add(saveSemAsXml);
+
+            saveSemAsXml.addActionListener(e -> {
+                try {
+                    File outfile = EditorUtils.getSaveFile("semIm", "xml", getComp(),
+                    false, "Save SEM IM as XML...");
+
+                    SemIm bayesIm = (SemIm) oneEditorPanel.getSemIm();
+                    FileOutputStream out = new FileOutputStream(outfile);
+
+                    Element element = SemXmlRenderer.getElement(bayesIm);
+                    Document document = new Document(element);
+                    Serializer serializer = new Serializer(out);
+                    serializer.setLineSeparator("\n");
+                    serializer.setIndent(2);
+                    serializer.write(document);
+                    out.close();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            });
 
             JCheckBoxMenuItem covariances
                     = new JCheckBoxMenuItem("Show standard deviations");
@@ -2246,6 +2254,19 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
         private ISemIm semIm() {
             return wrapper.getSemIm();
+        }
+    }
+
+    private Component getComp() {
+        EditorWindow editorWindow =
+                (EditorWindow) SwingUtilities.getAncestorOfClass(
+                        EditorWindow.class, this);
+
+        if (editorWindow != null) {
+            return editorWindow.getRootPane().getContentPane();
+        }
+        else {
+            return editorWindow;
         }
     }
 

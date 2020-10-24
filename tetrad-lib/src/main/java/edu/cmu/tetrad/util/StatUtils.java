@@ -25,9 +25,11 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 
+import static java.lang.Double.NaN;
 import static java.lang.Math.*;
 
 
@@ -1653,7 +1655,7 @@ public final class StatUtils {
     public static double fdrQ(List<Double> pValues, int k) {
         double high = 1.0;
         double low = 0.0;
-        double q = Double.NaN;
+        double q = NaN;
         int lastK = -1;
 
         while (high - low > 0) {
@@ -1749,32 +1751,37 @@ public final class StatUtils {
     }
 
     public static synchronized double partialCorrelationPrecisionMatrix(Matrix submatrix) {
-        Matrix inverse = submatrix.inverse();
-        return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+        try {
+            Matrix inverse = submatrix.inverse();
+            return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
+        } catch (SingularMatrixException e) {
+            e.printStackTrace();
+            return NaN;
+        }
     }
 
-    public static synchronized double partialCorrelationWhittaker(Matrix submatrix) {
-        double cov = partialCovariance(submatrix);
-
-        int[] selection1 = new int[submatrix.rows()];
-        int[] selection2 = new int[submatrix.rows()];
-
-        selection1[0] = 0;
-        selection1[1] = 0;
-        for (int i = 2; i < selection1.length; i++) selection1[i] = i;
-
-        Matrix var1Matrix = submatrix.getSelection(selection1, selection1);
-        double var1 = partialCovariance(var1Matrix);
-
-        selection2[0] = 1;
-        selection2[1] = 1;
-        for (int i = 2; i < selection2.length; i++) selection2[i] = i;
-
-        Matrix var2Matrix = submatrix.getSelection(selection2, selection2);
-        double var2 = partialCovariance(var2Matrix);
-
-        return cov / Math.sqrt(var1 * var2);
-    }
+//    public static synchronized double partialCorrelationWhittaker(Matrix submatrix) {
+//        double cov = partialCovariance(submatrix);
+//
+//        int[] selection1 = new int[submatrix.rows()];
+//        int[] selection2 = new int[submatrix.rows()];
+//
+//        selection1[0] = 0;
+//        selection1[1] = 0;
+//        for (int i = 2; i < selection1.length; i++) selection1[i] = i;
+//
+//        Matrix var1Matrix = submatrix.getSelection(selection1, selection1);
+//        double var1 = partialCovariance(var1Matrix);
+//
+//        selection2[0] = 1;
+//        selection2[1] = 1;
+//        for (int i = 2; i < selection2.length; i++) selection2[i] = i;
+//
+//        Matrix var2Matrix = submatrix.getSelection(selection2, selection2);
+//        double var2 = partialCovariance(var2Matrix);
+//
+//        return cov / Math.sqrt(var1 * var2);
+//    }
 
     /**
      * @return the partial correlation(x, y | z) where these represent the column/row indices

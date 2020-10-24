@@ -311,7 +311,7 @@ public final class ConditionalCorrelationIndependence {
     }
 
     public double getPValue(double score) {
-        return 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(score));
+        return 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(score)));
     }
 
     /**
@@ -319,7 +319,7 @@ public final class ConditionalCorrelationIndependence {
      * recent independence check.
      */
     public double getScore() {
-        return score - cutoff;
+        return abs(score) - cutoff;//  alpha - getPValue();
     }
 
     public void setAlpha(double alpha) {

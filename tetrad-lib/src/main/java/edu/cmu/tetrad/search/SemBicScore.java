@@ -125,7 +125,6 @@ public class SemBicScore implements Score {
             List<Integer> rows = getRows(x, z);
             rows.retainAll(getRows(y, z));
 
-//        if (false) {
             n = rows.size();
             r = partialCorrelation(_x, _y, _z, rows);
         } else {
@@ -133,11 +132,11 @@ public class SemBicScore implements Score {
             r = partialCorrelation(_x, _y, _z, null);
         }
 
-        return -0.5 * n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n)// - getErrorThreshold()
+        // r could be NaN if the matrix is not invertible; this NaN will be returned.
+
+        return -0.5 * n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n)
                 + 2 * signum(getStructurePrior()) * (sp1 - sp2);
-//        } else {
-//        return (localScore(y, append(z, x)) - localScore(y, z));// - getErrorThreshold();
-//        }
+//        return (localScore(y, append(z, x)) - localScore(y, z));
     }
 
     @Override
@@ -481,13 +480,13 @@ public class SemBicScore implements Score {
         Matrix cov = getCov(rows, indices);
         Matrix cor = MatrixUtils.convertCovToCorr(cov);
 
-        if (z.isEmpty()) return cor.get(0, 1);
+        if (z.isEmpty()) return cov.get(0, 1);
 
         return StatUtils.partialCorrelation(cor);
     }
 
     private Matrix getCov(List<Integer> rows, int[] cols) {
-        if (getCovariances() != null) {
+        if (dataSet == null) {
             return getCovariances().getMatrix().getSelection(cols, cols);
         }
 
@@ -520,15 +519,15 @@ public class SemBicScore implements Score {
         return cov;
     }
 
-    private double getR(Node x, Node y, List<Node> z, List<Integer> rows) {
-        try {
-            return partialCorrelation(x, y, z, rows);
-        } catch (SingularMatrixException e) {
-            e.printStackTrace();
-            System.out.println(SearchLogUtils.determinismDetected(z, x));
-            return Double.NaN;
-        }
-    }
+//    private double getR(Node x, Node y, List<Node> z, List<Integer> rows) {
+//        try {
+//            return partialCorrelation(x, y, z, rows);
+//        } catch (SingularMatrixException e) {
+//            e.printStackTrace();
+//            System.out.println(SearchLogUtils.determinismDetected(z, x));
+//            return Double.NaN;
+//        }
+//    }
 }
 
 

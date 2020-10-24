@@ -43,10 +43,11 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -93,9 +94,9 @@ public class TestGeneralResamplingTest {
 			causalOrdering[i] = i;
 		}
 
-		LargeScaleSimulation simulator = new LargeScaleSimulation(dag, dag.getNodes(), causalOrdering);
-
-		DataSet data = simulator.simulateDataFisher(numCases);
+		BayesPm pm = new BayesPm(dag);
+		BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+		DataSet data = im.simulateData(1000, false);
 
 		Parameters parameters = new Parameters();
 		parameters.set(Params.PENALTY_DISCOUNT, penaltyDiscount);
@@ -104,18 +105,18 @@ public class TestGeneralResamplingTest {
 		parameters.set("numPatternsToStore", 0);
 		parameters.set(Params.VERBOSE, verbose);
 
-		ScoreWrapper score = new SemBicScore();
+		ScoreWrapper score = new BdeuScore();
 		Algorithm algorithm = new Fges(score);
 
 		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
-		bootstrapTest.setResamplingWithReplacement(true);
-		bootstrapTest.setPercentResampleSize(100.00);
+		bootstrapTest.setResamplingWithReplacement(false);
+		bootstrapTest.setPercentResampleSize(80.00);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
 		Graph resultGraph = bootstrapTest.search();
-		//System.out.println("Estimated Graph:");
-		//System.out.println(resultGraph.toString());
+//		System.out.println("Estimated Graph:");
+//		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
 		int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(dag, resultGraph);
@@ -163,26 +164,28 @@ public class TestGeneralResamplingTest {
 		
 		ScoreWrapper score = new BdeuScore();
 		Algorithm algorithm = new Fges(score);
+
+		algorithm.search(data, parameters);
 		
-		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
-		bootstrapTest.setResamplingWithReplacement(true);
-		bootstrapTest.setPercentResampleSize(100.00);
-		bootstrapTest.setVerbose(verbose);
-		bootstrapTest.setParameters(parameters);
-		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
-		Graph resultGraph = bootstrapTest.search();
-		//System.out.println("Estimated Graph:");
-		//System.out.println(resultGraph.toString());
-
-		// Adjacency Confusion Matrix
-		int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(dag, resultGraph);
-
-		printAdjConfusionMatrix(adjAr);
-
-		// Edge Type Confusion Matrix
-		int[][] edgeAr = GeneralResamplingTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
-
-		printEdgeTypeConfusionMatrix(edgeAr);
+//		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
+//		bootstrapTest.setResamplingWithReplacement(true);
+//		bootstrapTest.setPercentResampleSize(100.00);
+//		bootstrapTest.setVerbose(verbose);
+//		bootstrapTest.setParameters(parameters);
+//		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
+//		Graph resultGraph = bootstrapTest.search();
+//		//System.out.println("Estimated Graph:");
+//		//System.out.println(resultGraph.toString());
+//
+//		// Adjacency Confusion Matrix
+//		int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(dag, resultGraph);
+//
+//		printAdjConfusionMatrix(adjAr);
+//
+//		// Edge Type Confusion Matrix
+//		int[][] edgeAr = GeneralResamplingTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
+//
+//		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 	
 	@Test
@@ -223,7 +226,7 @@ public class TestGeneralResamplingTest {
 		parameters.set("numPatternsToStore", 0);
 		parameters.set(Params.VERBOSE, verbose);
 		
-		ScoreWrapper score = new SemBicScore();
+		ScoreWrapper score = new BdeuScore();
 		IndependenceWrapper test =  new FisherZ();
 		Algorithm algorithm = new Gfci(test, score);
 		

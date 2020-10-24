@@ -118,56 +118,56 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
 
     public boolean isIndependent(Node x, Node y, List<Node> z) {
 
-        if(fastFDR) {
-            final int d1 = 0; // reference
-            final int d2 = z.size();
-            final int v = variables.size() - 2;
+//        if(fastFDR) {
+//            final int d1 = 0; // reference
+//            final int d2 = z.size();
+//            final int v = variables.size() - 2;
+//
+//            double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
+//
+//            cci.setAlpha(alpha2);
+//            double p = cci.isIndependent(x, y, z);
+//            this.score = alpha2 - p;// cci.getScore();
+//
+//            if (verbose) {
+//                IndependenceFact fact = new IndependenceFact(x, y, z);
+//
+//                final String s;
+//
+//                if (p > alpha2) {
+//                    s = fact + " INDEPENDENT p = " + p;
+//
+//                } else {
+//                    s = fact + " dependent p = " + p;
+//                }
+//
+//                System.out.println(s);
+//                TetradLogger.getInstance().log("info", s);
+//            }
+//
+//            return p > alpha2;
+//        } else {
+        cci.setAlpha(alpha);
+        double p = cci.isIndependent(x, y, z);
+        this.score = cci.getScore();
 
-            double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
+        if (verbose) {
+            IndependenceFact fact = new IndependenceFact(x, y, z);
 
-            cci.setAlpha(alpha2);
-            double p = cci.isIndependent(x, y, z);
-            this.score = alpha2 - p;// cci.getScore();
+            final String s;
 
-            if (verbose) {
-                IndependenceFact fact = new IndependenceFact(x, y, z);
-
-                final String s;
-
-                if (p > alpha2) {
-                    s = fact + " INDEPENDENT p = " + p;
-
-                } else {
-                    s = fact + " dependent p = " + p;
-                }
-
-                System.out.println(s);
-                TetradLogger.getInstance().log("info", s);
+            if (p > alpha) {
+                s = fact + " INDEPENDENT p = " + p;
+            } else {
+                s = fact + " dependent p = " + p;
             }
 
-            return p > alpha2;
-        } else {
-            cci.setAlpha(alpha);
-            double p = cci.isIndependent(x, y, z);
-            this.score = alpha - p;// cci.getScore();
-
-            if (verbose) {
-                IndependenceFact fact = new IndependenceFact(x, y, z);
-
-                final String s;
-
-                if (p > alpha) {
-                    s = fact + " INDEPENDENT p = " + p;
-
-                } else {
-                    s = fact + " dependent p = " + p;
-                }
-                System.out.println(s);
-                TetradLogger.getInstance().log("info", s);
-            }
-
-            return p > alpha;
+            System.out.println(s);
+            TetradLogger.getInstance().log("info", s);
         }
+
+        return p > alpha;
+//        }
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
