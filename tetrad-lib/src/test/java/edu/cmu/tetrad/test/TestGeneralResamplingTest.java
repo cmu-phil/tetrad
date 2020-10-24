@@ -166,27 +166,25 @@ public class TestGeneralResamplingTest {
 		ScoreWrapper score = new BdeuScore();
 		Algorithm algorithm = new Fges(score);
 
-		algorithm.search(data, parameters);
-		
-//		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
-//		bootstrapTest.setResamplingWithReplacement(true);
-//		bootstrapTest.setPercentResampleSize(100.00);
-//		bootstrapTest.setVerbose(verbose);
-//		bootstrapTest.setParameters(parameters);
-//		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
-//		Graph resultGraph = bootstrapTest.search();
-//		//System.out.println("Estimated Graph:");
-//		//System.out.println(resultGraph.toString());
-//
-//		// Adjacency Confusion Matrix
-//		int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(dag, resultGraph);
-//
-//		printAdjConfusionMatrix(adjAr);
-//
-//		// Edge Type Confusion Matrix
-//		int[][] edgeAr = GeneralResamplingTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
-//
-//		printEdgeTypeConfusionMatrix(edgeAr);
+		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
+		bootstrapTest.setResamplingWithReplacement(true);
+		bootstrapTest.setPercentResampleSize(100.00);
+		bootstrapTest.setVerbose(verbose);
+		bootstrapTest.setParameters(parameters);
+		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
+		Graph resultGraph = bootstrapTest.search();
+		//System.out.println("Estimated Graph:");
+		//System.out.println(resultGraph.toString());
+
+		// Adjacency Confusion Matrix
+		int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(dag, resultGraph);
+
+		printAdjConfusionMatrix(adjAr);
+
+		// Edge Type Confusion Matrix
+		int[][] edgeAr = GeneralResamplingTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
+
+		printEdgeTypeConfusionMatrix(edgeAr);
 	}
 	
 	@Test
@@ -204,6 +202,9 @@ public class TestGeneralResamplingTest {
 
 		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
+		BayesPm pm = new BayesPm(dag, 2, 3);
+		BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+
 		DagToPag2 dagToPag = new DagToPag2(dag);
 		Graph truePag = dagToPag.convert();
 
@@ -216,9 +217,7 @@ public class TestGeneralResamplingTest {
 			causalOrdering[i] = i;
 		}
 
-		LargeScaleSimulation simulator = new LargeScaleSimulation(dag, dag.getNodes(), causalOrdering);
-
-		DataSet data = simulator.simulateDataFisher(numCases);
+		DataSet data = im.simulateData(numCases, false);
 
 		Parameters parameters = new Parameters();
 		parameters.set(Params.PENALTY_DISCOUNT, penaltyDiscount);

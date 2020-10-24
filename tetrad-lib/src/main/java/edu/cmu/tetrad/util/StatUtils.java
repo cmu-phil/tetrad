@@ -1746,11 +1746,11 @@ public final class StatUtils {
      *
      * @return the given partial correlation.
      */
-    public static synchronized double partialCorrelation(Matrix submatrix) {
+    public static double partialCorrelation(Matrix submatrix) {
         return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
     }
 
-    public static synchronized double partialCorrelationPrecisionMatrix(Matrix submatrix) {
+    public static double partialCorrelationPrecisionMatrix(Matrix submatrix) {
         try {
             Matrix inverse = submatrix.inverse();
             return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
