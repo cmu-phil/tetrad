@@ -480,7 +480,7 @@ public class SemBicScore implements Score {
         Matrix cov = getCov(rows, indices);
         Matrix cor = MatrixUtils.convertCovToCorr(cov);
 
-        if (z.isEmpty()) return cov.get(0, 1);
+        if (z.isEmpty()) return cor.get(0, 1);
 
         return StatUtils.partialCorrelation(cor);
     }
