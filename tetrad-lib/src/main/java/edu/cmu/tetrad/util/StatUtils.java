@@ -1751,13 +1751,8 @@ public final class StatUtils {
     }
 
     public static double partialCorrelationPrecisionMatrix(Matrix submatrix) {
-        try {
-            Matrix inverse = submatrix.inverse();
-            return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
-        } catch (org.apache.commons.math3.linear.SingularMatrixException e) {
-//            e.printStackTrace();
-            throw e;
-        }
+        Matrix inverse = submatrix.inverse();
+        return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
     }
 
 //    public static synchronized double partialCorrelationWhittaker(Matrix submatrix) {
@@ -2018,7 +2013,7 @@ public final class StatUtils {
         return sum;
     }
 
-    public static double[]  cov(double[] x, double[] y, double[] condition, double threshold, double direction) {
+    public static double[] cov(double[] x, double[] y, double[] condition, double threshold, double direction) {
         double exy = 0.0;
         double exx = 0.0;
         double eyy = 0.0;
