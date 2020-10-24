@@ -1754,7 +1754,7 @@ public final class StatUtils {
         try {
             Matrix inverse = submatrix.inverse();
             return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
-        } catch (SingularMatrixException e) {
+        } catch (org.apache.commons.math3.linear.SingularMatrixException e) {
 //            e.printStackTrace();
             return NaN;
         }

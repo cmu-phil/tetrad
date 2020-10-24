@@ -22,6 +22,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.independence.BDeuTest;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -227,7 +228,7 @@ public class TestGeneralResamplingTest {
 		parameters.set(Params.VERBOSE, verbose);
 		
 		ScoreWrapper score = new BdeuScore();
-		IndependenceWrapper test =  new FisherZ();
+		IndependenceWrapper test =  new BDeuTest();
 		Algorithm algorithm = new Gfci(test, score);
 		
 		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);

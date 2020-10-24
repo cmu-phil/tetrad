@@ -392,7 +392,7 @@ public class TestDM {
     }
 
     //Four latent case.
-    @Test
+//    @Test
     public void test6() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
