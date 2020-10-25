@@ -1746,8 +1746,12 @@ public final class StatUtils {
      *
      * @return the given partial correlation.
      */
-    public static double partialCorrelation(Matrix submatrix) {
-        return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
+    public static synchronized double partialCorrelation(Matrix submatrix) {
+        try {
+            return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
+        } catch (Exception e) {
+            return NaN;
+        }
     }
 
     public static double partialCorrelationPrecisionMatrix(Matrix submatrix) {

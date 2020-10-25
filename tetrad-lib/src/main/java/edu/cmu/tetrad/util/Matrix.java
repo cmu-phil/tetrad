@@ -179,7 +179,6 @@ public class Matrix implements TetradSerializable {
         }
 
         return new Matrix(new LUDecomposition(apacheData, 1e-9).getSolver().getInverse().getData());
-
     }
 
     public Matrix symmetricInverse() {

@@ -276,7 +276,7 @@ public final class LargeScaleSimulation {
      *                              for the i'th time step, for the j'th variables.
      * @param intervalBetweenShocks External shock is applied every this many
      *                              steps. Must be positive integer.
-     * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
+     * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.fff
      */
     public DataSet simulateDataFisher(double[][] shocks, int intervalBetweenShocks, double epsilon) {
         if (intervalBetweenShocks < 1) {
@@ -332,7 +332,7 @@ public final class LargeScaleSimulation {
             }
 
             for (int j = 0; j < t1.length; j++) {
-                all[j][row] = t1[j];
+                all[j][row] = t2[j];
             }
         }
 
