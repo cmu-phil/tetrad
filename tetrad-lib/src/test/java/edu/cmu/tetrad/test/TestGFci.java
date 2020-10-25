@@ -204,10 +204,9 @@ public class TestGFci {
 
         DataSet data = semSimulator.simulateDataFisher(sampleSize);
 
-
-//        data = DataUtils.restrictToMeasured(data);
-
-        System.out.println(data);
+        data = DataUtils.restrictToMeasured(data);
+//
+//        System.out.println(data);
 
         IndependenceTest test = new IndTestFisherZ(new CovarianceMatrix(data), 0.001);
         SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
