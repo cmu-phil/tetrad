@@ -290,7 +290,7 @@ public class ConditionalGaussianLikelihood {
             }
         }
 
-        double lnL = rows.isEmpty() ? NaN : c1 + c2;
+        double lnL = c1 + c2;
 
         final int dof = f(A) * h(X) + f(A);
 
