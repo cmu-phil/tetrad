@@ -120,7 +120,11 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         if (alpha == 1) return false;
         if (lik0 == Double.POSITIVE_INFINITY) return false;
 
-        this.pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
+        if (Double.isNaN(lik0)) {
+            this.pValue = 1.0;
+        } else {
+            this.pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
+        }
 
         if (fastFDR) {
             final int d1 = 0; // reference

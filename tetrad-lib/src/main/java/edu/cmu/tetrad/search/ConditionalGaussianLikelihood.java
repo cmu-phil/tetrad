@@ -29,6 +29,7 @@ import org.apache.commons.math3.stat.correlation.Covariance;
 import java.util.*;
 
 import static edu.cmu.tetrad.data.Discretizer.*;
+import static java.lang.Double.NaN;
 import static java.lang.Math.log;
 
 /**
@@ -239,6 +240,7 @@ public class ConditionalGaussianLikelihood {
     // The likelihood of the joint over all of these mixedVariables, assuming conditional Gaussian,
     // continuous and discrete.
     private Ret likelihoodJoint(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target, List<Integer> rows) {
+
         A = new ArrayList<>(A);
         X = new ArrayList<>(X);
 
@@ -288,9 +290,10 @@ public class ConditionalGaussianLikelihood {
             }
         }
 
-        double lnL = c1 + c2;
+        double lnL = rows.isEmpty() ? NaN : c1 + c2;
 
         final int dof = f(A) * h(X) + f(A);
+
         return new Ret(lnL, dof);
     }
 

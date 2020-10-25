@@ -29,7 +29,6 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -39,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Double.NaN;
 import static java.lang.Math.*;
 
 /**
@@ -87,7 +87,6 @@ public class SemBicScore implements Score {
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
         this.indexMap = indexMap(this.variables);
-
     }
 
     /**
@@ -100,13 +99,9 @@ public class SemBicScore implements Score {
 
         this.dataSet = dataSet;
 
-//        ICovarianceMatrix cov = new CovarianceMatrix(dataSet, true);
-//        setCovariances(cov);
-
         this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
         this.indexMap = indexMap(this.variables);
-
     }
 
     @Override
@@ -133,7 +128,6 @@ public class SemBicScore implements Score {
         }
 
         // r could be NaN if the matrix is not invertible; this NaN will be returned.
-
         return -0.5 * n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n)
                 + 2 * signum(getStructurePrior()) * (sp1 - sp2);
 //        return (localScore(y, append(z, x)) - localScore(y, z));
@@ -144,7 +138,7 @@ public class SemBicScore implements Score {
         return localScoreDiff(x, y, new int[0]);
     }
 
-    public double  localScore(int i, int... parents) {
+    public double localScore(int i, int... parents) {
         List<Integer> rows = getRows(i, parents);
 
         try {
@@ -153,9 +147,9 @@ public class SemBicScore implements Score {
             double n = sampleSize;
 
             int[] ii = {i};
-            Matrix X = getCov(rows, parents, parents);// getCovariances().getSelection(parents, parents);
-            Matrix Y = getCov(rows, parents, ii);// getCovariances().getSelection(parents, ii);
-            double s2 = getCov(rows, ii, ii).get(0, 0 );//  getCovariances().getValue(i, i);
+            Matrix X = getCov(rows, parents, parents);
+            Matrix Y = getCov(rows, parents, ii);
+            double s2 = getCov(rows, ii, ii).get(0, 0);
 
             Vector coefs = getCoefs(X, Y).getColumn(0);
 
@@ -169,30 +163,15 @@ public class SemBicScore implements Score {
                 if (isVerbose()) {
                     out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
                 }
-                return Double.NaN;
+                return NaN;
             }
 
             return -n * log(s2) - getPenaltyDiscount() * k * log(n)
                     + 2 * getStructurePrior(parents.length);
         } catch (Exception e) {
             e.printStackTrace();
-            return Double.NaN;
+            return NaN;
         }
-    }
-
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
-        List<Integer> rows = new ArrayList<>();
-
-        K:
-        for (int k = 0; k < dataSet.getNumRows(); k++) {
-            for (Node node : allVars) {
-                if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
-            }
-
-            rows.add(k);
-        }
-
-        return rows;
     }
 
     private Matrix getCoefs(Matrix x, Matrix y) {
@@ -324,21 +303,6 @@ public class SemBicScore implements Score {
         return variables;
     }
 
-    private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
-        List<Node> allVars = new ArrayList<>(z);
-        allVars.add(x);
-        allVars.add(y);
-
-        List<Integer> rows = getRows(allVars, indexMap);
-
-        int[] indices = new int[z.size() + 2];
-        indices[0] = indexMap.get(x);
-        indices[1] = indexMap.get(y);
-        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
-        Matrix submatrix = getCov(rows, indices, indices);// covariances.getSubmatrix(indices).getMatrix();
-        return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
-    }
-
     private Map<Node, Integer> indexMap(List<Node> variables) {
         Map<Node, Integer> indexMap = new HashMap<>();
 
@@ -393,23 +357,6 @@ public class SemBicScore implements Score {
         NumberFormat nf = new DecimalFormat("0.00");
         return "SEM BIC Score penalty " + nf.format(penaltyDiscount);
     }
-
-
-//    // Might not be useful.
-//    private synchronized double getErrorThreshold() {
-//        if (Double.isNaN(errorThreshold)) {
-//            if (thresholdAlpha == .5) {
-//                this.errorThreshold = 0.0;
-//            } else {
-//                FDistribution f = new FDistribution(getSampleSize() - 1,
-//                        getSampleSize() - 1);
-//                this.errorThreshold = -getSampleSize() * log(f.inverseCumulativeProbability(thresholdAlpha));
-//                System.out.println("Error threshold = " + errorThreshold);
-//            }
-//        }
-//
-//        return errorThreshold;
-//    }
 
     private Matrix getCov(List<Integer> rows, int[] _rows, int[] cols) {
         if (getCovariances() != null) {
@@ -471,18 +418,21 @@ public class SemBicScore implements Score {
         return rows;
     }
 
-    private double partialCorrelation(Node x, Node y, List<Node> z, List<Integer> rows) throws SingularMatrixException {
+    private double partialCorrelation(Node x, Node y, List<Node> z, List<Integer> rows)  {
+        try {
+            return StatUtils.partialCorrelation(MatrixUtils.convertCovToCorr(getCov(rows, indices(x, y, z))));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return NaN;
+        }
+    }
+
+    private int[] indices(Node x, Node y, List<Node> z) {
         int[] indices = new int[z.size() + 2];
         indices[0] = indexMap.get(x);
         indices[1] = indexMap.get(y);
         for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
-
-        Matrix cov = getCov(rows, indices);
-        Matrix cor = MatrixUtils.convertCovToCorr(cov);
-
-        if (z.isEmpty()) return cor.get(0, 1);
-
-        return StatUtils.partialCorrelation(cor);
+        return indices;
     }
 
     private Matrix getCov(List<Integer> rows, int[] cols) {
@@ -493,7 +443,7 @@ public class SemBicScore implements Score {
         Matrix cov = new Matrix(cols.length, cols.length);
 
         for (int i = 0; i < cols.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
+            for (int j = i + 1; j < cols.length; j++) {
                 double mui = 0.0;
                 double muj = 0.0;
 
@@ -513,21 +463,31 @@ public class SemBicScore implements Score {
 
                 double mean = _cov / (rows.size());
                 cov.set(i, j, mean);
+                cov.set(j, i, mean);
             }
+        }
+
+        for (int i = 0; i < cols.length; i++) {
+            double mui = 0.0;
+
+            for (int k : rows) {
+                mui += dataSet.getDouble(k, cols[i]);
+            }
+
+            mui /= rows.size();
+
+            double _cov = 0.0;
+
+            for (int k : rows) {
+                _cov += (dataSet.getDouble(k, cols[i]) - mui) * (dataSet.getDouble(k, cols[i]) - mui);
+            }
+
+            double mean = _cov / (rows.size());
+            cov.set(i, i, mean);
         }
 
         return cov;
     }
-
-//    private double getR(Node x, Node y, List<Node> z, List<Integer> rows) {
-//        try {
-//            return partialCorrelation(x, y, z, rows);
-//        } catch (SingularMatrixException e) {
-//            e.printStackTrace();
-//            System.out.println(SearchLogUtils.determinismDetected(z, x));
-//            return Double.NaN;
-//        }
-//    }
 }
 
 
