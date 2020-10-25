@@ -63,18 +63,6 @@ public class BdeuScoreImages implements IBDeuScore {
      * Constructs the score using a covariance matrix.
      */
     public BdeuScoreImages(List<DataModel> dataModels) {
-        for (DataModel dataSet : dataModels) {
-            DataSet _data = (DataSet) dataSet;
-
-            for (int j = 0; j < _data.getNumColumns(); j++) {
-                for (int i = 0; i < _data.getNumRows(); i++) {
-                    if (_data.getInt(i, j) == -99) {
-                        throw new IllegalArgumentException("Please remove or impute missing values.");
-                    }
-                }
-            }
-        }
-
         if (dataModels == null) {
             throw new NullPointerException();
         }

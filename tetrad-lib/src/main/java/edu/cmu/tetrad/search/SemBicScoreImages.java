@@ -21,16 +21,11 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.Vector;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,22 +37,15 @@ import java.util.List;
 public class SemBicScoreImages implements ISemBicScore, Score {
 
     // The covariance matrix.
-    private List<SemBicScore> semBicScores;
+    private final List<SemBicScore> semBicScores;
 
     // The variables of the covariance matrix.
-    private List<Node> variables;
+    private final List<Node> variables;
 
-    private int sampleSize;
+    private final int sampleSize;
 
     // The penalty penaltyDiscount.
     private double penaltyDiscount = 2.0;
-
-    // True if linear dependencies should return NaN for the score, and hence be
-    // ignored by FGES
-    private boolean ignoreLinearDependent = false;
-
-    // The printstream output should be sent to.
-    private PrintStream out = System.out;
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;
@@ -70,18 +58,6 @@ public class SemBicScoreImages implements ISemBicScore, Score {
             throw new NullPointerException();
         }
 
-        for (DataModel dataSet : dataModels) {
-            DataSet _data = (DataSet) dataSet;
-
-            for (int j = 0; j < _data.getNumColumns(); j++) {
-                for (int i = 0; i < _data.getNumRows(); i++) {
-                    if (Double.isNaN(_data.getDouble(i, j))) {
-                        throw new IllegalArgumentException("Please remove or impute missing values.");
-                    }
-                }
-            }
-        }
-
         List<SemBicScore> semBicScores = new ArrayList<>();
 
         for (DataModel model : dataModels) {
@@ -92,7 +68,7 @@ public class SemBicScoreImages implements ISemBicScore, Score {
                     throw new IllegalArgumentException("Datasets must be continuous.");
                 }
 
-                SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(dataSet));
+                SemBicScore semBicScore = new SemBicScore(dataSet);
                 semBicScore.setPenaltyDiscount(penaltyDiscount);
                 semBicScores.add(semBicScore);
             } else if (model instanceof ICovarianceMatrix) {
@@ -159,14 +135,6 @@ public class SemBicScoreImages implements ISemBicScore, Score {
         return semBicScores.get(index).localScore(i, parents);
     }
 
-
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
-
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
@@ -205,10 +173,6 @@ public class SemBicScoreImages implements ISemBicScore, Score {
         return sum / count;
     }
 
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
     public double getPenaltyDiscount() {
         return penaltyDiscount;
     }
@@ -242,56 +206,36 @@ public class SemBicScoreImages implements ISemBicScore, Score {
         return variables;
     }
 
-    public boolean getAlternativePenalty() {
-        return false;
-    }
-
-    public void setAlternativePenalty(double value) {
-    }
-
     @Override
     public int getSampleSize() {
         return sampleSize;
     }
 
-    // Calculates the BIC score.
-//    private double score(double residualVariance, int n, int p, double c) {
-//        return -n * Math.log(residualVariance) - c * (2 * p + 1) * Math.log(n);
-//    }
-//
-    private Matrix getSelection1(ICovarianceMatrix cov, int[] rows) {
-        return cov.getSelection(rows, rows);
-    }
-
-    private Vector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
-        return cov.getSelection(rows, new int[]{k}).getColumn(0);
-    }
-
     // Prints a smallest subset of parents that causes a singular matrix exception.
-    private void printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
-        List<Node> _parents = new ArrayList<>();
-        for (int p : parents) _parents.add(variables.get(p));
-
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            int[] sel = new int[choice.length];
-            List<Node> _sel = new ArrayList<>();
-            for (int m = 0; m < choice.length; m++) {
-                sel[m] = parents[m];
-                _sel.add(variables.get(sel[m]));
-            }
-
-            Matrix m = cov.getSelection(sel, sel);
-
-            try {
-                m.inverse();
-            } catch (Exception e2) {
-                out.println("### Linear dependence among variables: " + _sel);
-            }
-        }
-    }
+//    private void printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
+//        List<Node> _parents = new ArrayList<>();
+//        for (int p : parents) _parents.add(variables.get(p));
+//
+//        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+//        int[] choice;
+//
+//        while ((choice = gen.next()) != null) {
+//            int[] sel = new int[choice.length];
+//            List<Node> _sel = new ArrayList<>();
+//            for (int m = 0; m < choice.length; m++) {
+//                sel[m] = parents[m];
+//                _sel.add(variables.get(sel[m]));
+//            }
+//
+//            Matrix m = cov.getSelection(sel, sel);
+//
+//            try {
+//                m.inverse();
+//            } catch (Exception e2) {
+//                out.println("### Linear dependence among variables: " + _sel);
+//            }
+//        }
+//    }
 
     @Override
     public Node getVariable(String targetName) {
