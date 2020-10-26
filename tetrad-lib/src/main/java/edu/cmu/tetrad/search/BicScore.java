@@ -41,19 +41,16 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
     public BicScore(DataSet dataSet) {
         if (dataSet == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Data was not provided.");
         }
 
-        if (dataSet instanceof BoxDataSet) {
+        if (dataSet instanceof BoxDataSet && ((BoxDataSet) dataSet).getDataBox() instanceof  VerticalIntDataBox) {
             DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
-
             this.variables = dataSet.getVariables();
-
-            dataBox = new VerticalIntDataBox(dataBox);
-
             VerticalIntDataBox box = (VerticalIntDataBox) dataBox;
 
             data = box.getVariableVectors();
+            this.sampleSize = box.numRows();
         } else {
             data = new int[dataSet.getNumColumns()][];
             this.variables = dataSet.getVariables();
@@ -66,37 +63,29 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
                 }
             }
 
+            this.sampleSize = dataSet.getNumRows();
         }
-        this.sampleSize = dataSet.getNumRows();
 
         final List<Node> variables = dataSet.getVariables();
         numCategories = new int[variables.size()];
         for (int i = 0; i < variables.size(); i++) {
-            DiscreteVariable variable = getVariable(i);
-
-            if (variable != null) {
-                numCategories[i] = variable.getNumCategories();
-            }
+            numCategories[i] = getVariable(i).getNumCategories();
         }
     }
 
     private DiscreteVariable getVariable(int i) {
-        if (variables.get(i) instanceof DiscreteVariable) {
-            return (DiscreteVariable) variables.get(i);
-        } else {
-            return null;
-        }
+        return (DiscreteVariable) variables.get(i);
     }
 
     @Override
     public double localScore(int node, int[] parents) {
 
-        if (!(variables.get(node) instanceof  DiscreteVariable)) {
+        if (!(variables.get(node) instanceof DiscreteVariable)) {
             throw new IllegalArgumentException("Not discrete: " + variables.get(node));
         }
 
         for (int t : parents) {
-            if (!(variables.get(t) instanceof  DiscreteVariable)) {
+            if (!(variables.get(t) instanceof DiscreteVariable)) {
                 throw new IllegalArgumentException("Not discrete: " + variables.get(t));
             }
         }
@@ -131,6 +120,8 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
         int[] myChild = data[node];
 
+        int N = 0;
+
         ROW:
         for (int i = 0; i < sampleSize; i++) {
             for (int p = 0; p < parents.length; p++) {
@@ -148,6 +139,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;
+            N++;
         }
 
         //Finally, compute the score
@@ -164,9 +156,8 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         }
 
         int params = r * (c - 1);
-        int n = getSampleSize();
 
-        return 2 * lik - penaltyDiscount * params * Math.log(n) + 2 * getPriorForStructure(parents.length);
+        return 2 * lik - penaltyDiscount * params * Math.log(N) + 2 * getPriorForStructure(parents.length);
     }
 
     private double getPriorForStructure(int numParents) {
