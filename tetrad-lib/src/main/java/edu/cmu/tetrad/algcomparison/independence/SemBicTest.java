@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.*;
@@ -18,6 +19,7 @@ import java.util.*;
         command = "sem-bic-test",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
+@Experimental
 public class SemBicTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
