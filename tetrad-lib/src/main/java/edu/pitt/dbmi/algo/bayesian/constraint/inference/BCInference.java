@@ -32,33 +32,45 @@ import static java.lang.Math.log;
  */
 public class BCInference {
 
-    public enum OP {independent, dependent}
 
+
+    public enum OP {
+
+        independent, dependent
+
+    }
     private static final int MININUM_EXPONENT = -1022;
 
-    private double priorEqivalentSampleSize = 1;
+    private double priorEquivalentSampleSize = 1;
 
     private int[] countsTree;
 
     private int[] counts;
 
-    private final double[] logfact;
+    private double[] logfact;
 
     private int[][] parents;
 
     /**
      * Maximum cases (samples) to read from a text file.
      */
-    private final int maxCases;
+    private int maxCases;
 
     /**
      * Maximum number of measured nodes.
      */
-    private final int maxNodes;
+    private int maxNodes;
 
     private int maxParents;
 
+    /**
+     * Max value per node.
+     */
+    private int maxValues;
+
     private int maxCells;
+
+    private int maxLogFact;
 
     private int countsTreePtr;
 
@@ -66,15 +78,15 @@ public class BCInference {
 
     private int numberOfNodes;
 
-    private final int numberOfCases;
+    private int numberOfCases;
 
-    private final int[][] cases;
+    private int[][] cases;
 
-    private final int[] nodeDimension;
+    private int[] nodeDimension;
 
-    private final int scoreFn;
+    private int scoreFn;
 
-    private final double[][] scores;
+    private double[][] scores;
 
     private int numberOfScores;
 
@@ -101,22 +113,28 @@ public class BCInference {
         this.numberOfCases = cases.length - 1;
 
         this.maxCases = numberOfCases;
+//        this.maxCases = max(numberOfCases, 1);
         this.maxNodes = numberOfNodes;
-        // Max value per node.
-        int maxValues = findMaxValue(nodeDimension);
-        int maxLogFact = (2 * maxCases) + maxValues;
+        this.maxValues = findMaxValue(nodeDimension);
+        this.maxLogFact = (2 * maxCases) + maxValues;
 
         this.scoreFn = 1;
 
         this.logfact = new double[maxLogFact + 1];
+
+        int[] _nodeDimension = Arrays.copyOf(nodeDimension, nodeDimension.length);
+        Arrays.sort(_nodeDimension);
+        int g1 = _nodeDimension[_nodeDimension.length - 1];
+        int g2 = _nodeDimension[_nodeDimension.length - 2];
+
+
+//            maxCells = maxParents * maxValues * maxCases ;
+        maxCells = maxParents * g1*g2 * maxCases ;
+
         this.parents = new int[maxNodes + 2][maxParents + 1];
         this.countsTree = new int[maxCells + 1];
         this.counts = new int[maxCells + 1];
         this.scores = new double[maxCases + 1][4];
-    }
-
-    public void setPriorEqivalentSampleSize(double priorEqivalentSampleSize) {
-        this.priorEqivalentSampleSize = priorEqivalentSampleSize;
     }
 
     /**
@@ -146,7 +164,9 @@ public class BCInference {
      * data&rpar;
      */
     public synchronized double probConstraint(OP constraint, int x, int y, int[] z) {
-        double p;
+//        if (true) return 0.5;
+
+        double p = 0;
 
         logfact[0] = 0;
         for (int i = 1; i < logfact.length; i++) {
@@ -155,13 +175,16 @@ public class BCInference {
         logfact[0] = 0;
 
         if (z.length > maxParents) {
-            maxParents = z.length;
+            int maxConditioningNodes = z.length;  // max size of set Z in ind(X, Y, | Z)
+            maxParents = maxConditioningNodes;
 
             int[] _nodeDimension = Arrays.copyOf(nodeDimension, nodeDimension.length);
             Arrays.sort(_nodeDimension);
             int g1 = _nodeDimension[_nodeDimension.length - 1];
             int g2 = _nodeDimension[_nodeDimension.length - 2];
 
+
+//            maxCells = maxParents * maxValues * maxCases ;
             maxCells = maxParents * g1*g2 * maxCases ;
 
             parents = new int[maxNodes + 2][maxParents + 1];
@@ -171,10 +194,14 @@ public class BCInference {
 
         int n = z[0];
         parents[x][0] = n;
-        if (n >= 0) System.arraycopy(z, 1, parents[x], 1, n);
+        for (int i = 1; i <= n; i++) {
+            parents[x][i] = z[i];
+        }
         double lnMarginalLikelihood_X = scoreNode(x, 1);  // the 1 indicates the scoring of X
         parents[y][0] = n;
-        if (n >= 0) System.arraycopy(z, 1, parents[y], 1, n);
+        for (int i = 1; i <= n; i++) {
+            parents[y][i] = z[i];
+        }
         double lnMarginalLikelihood_Y = scoreNode(y, 2);  // the 2 indicates the scoring of Y
         double lnMarginalLikelihood_X_Y = lnMarginalLikelihood_X + lnMarginalLikelihood_Y;  // lnMarginalLikelihood_X_Y is the ln of the marginal likelihood, assuming X and Y are conditionally independence given Z.
         p = priorIndependent(x, y, z); // p should be in (0, 1), and thus, not 0 or 1.
@@ -182,15 +209,16 @@ public class BCInference {
         double score_X_Y = lnMarginalLikelihood_X_Y + lnPrior_X_Y;
 
         numberOfNodes++;
-
-        // this is a constructed variable that represents the Cartesian product of X and Y.
-        int xy = numberOfNodes;
-
+        int xy = numberOfNodes;  // this is a constructed variable that represents the Cartesian product of X and Y.
         for (int casei = 1; casei <= numberOfCases; casei++) {  // derive and store values for the new variable XY.
             int xValue = cases[casei][x];
             int yValue = cases[casei][y];
+//            cases[casei][xy] = (xValue - 1) * nodeDimension[x] + yValue;  // a value in the Cartesian product of X and Y
             if(y >= nodeDimension.length) {
                 System.out.println("y:" + y + " nodeDimension:" + nodeDimension.length);
+            }
+            if(casei >= cases.length) {
+                System.out.println("casei:" + casei + " cases:" + cases.length);
             }
             if(xy >= cases[casei].length) {
                 System.out.println("xy:" + xy + " cases[casei]:" + cases[casei].length);
@@ -199,8 +227,10 @@ public class BCInference {
         }
         nodeDimension[xy] = nodeDimension[x] * nodeDimension[y];
         parents[xy][0] = n;
-        if (n >= 0) System.arraycopy(z, 1, parents[xy], 1, n);
-        scoreNode(xy, 3);  // the 3 indicates the scoring of XY, which assumes X and Y are dependent given Z;
+        for (int i = 1; i <= n; i++) {
+            parents[xy][i] = z[i];
+        }
+        double lnMarginalLikelihood_XY = scoreNode(xy, 3);  // the 3 indicates the scoring of XY, which assumes X and Y are dependent given Z;
         //Note: lnMarginalLikelihood_XY is not used, but the above call to ScoreNode creates scores^[*, 3], which is used below
         numberOfNodes--;
         double lnTermPrior_X_Y = Math.log(p) / numberOfScores;  // this is equal to ln(p^(1/numberOfScores))
@@ -288,7 +318,7 @@ public class BCInference {
         while (instancePtr < countsPtr) {
             double score;
             if (scoreFn == 1) {
-                score = scoringFn1(node, instancePtr, q, priorEqivalentSampleSize);
+                score = scoringFn1(node, instancePtr, q, priorEquivalentSampleSize);
             } else {
                 score = scoringFn2(node, instancePtr);
             }
@@ -301,6 +331,37 @@ public class BCInference {
         return totalScore;
     }
 
+    private double scoreNode(int node) {
+        double score = 0;
+
+        if (parents[node][0] > 0) {
+            int firstParentSize = nodeDimension[parents[node][1]];
+            for (int i = 1; i <= firstParentSize; i++) {
+                countsTree[i] = 0;
+            }
+            countsTreePtr = firstParentSize + 1;
+            countsPtr = 1;
+        } else {
+            countsTreePtr = 1;
+            countsPtr = nodeDimension[node] + 1;
+            for (int i = 1; i <= nodeDimension[node]; i++) {
+                counts[i] = 0;
+            }
+        }
+        for (int casei = 1; casei <= numberOfCases; casei++) {
+            fileCase(node, casei);
+        }
+        int instancePtr = 1;
+        score = 0;
+
+        while (instancePtr < countsPtr) {
+            score += scoringFn2(node, instancePtr);
+            instancePtr += nodeDimension[node];
+        }
+
+        return score;
+    }
+
     /**
      * @param q is the number of possible joint instantiation of the parents of
      * the parents of the node.
@@ -310,7 +371,8 @@ public class BCInference {
         int Nij = 0;
         double scoreOfSum = 0;
         int r = nodeDimension[node];
-        double pessDivQR = pess / (q * (double) r);
+        double rr = r;
+        double pessDivQR = pess / (q * rr);
         double pessDivQ = pess / q;
         double lngammPessDivQR = gammln(pessDivQR);
         for (int k = 0; k <= (r - 1); k++) {
@@ -379,18 +441,20 @@ public class BCInference {
     }
 
     private void fileCase(int node, int casei) {
-        int parent;
-        int parentValue;
-        int cPtr;
+        int parent = 0;
+        int parentValue = 0;
+        int cPtr = 0;
         int parenti = 0;
 
         int nodeValue = cases[casei][node];
         if (nodeValue == 0) {
+//            System.exit(1);
             throw new IllegalArgumentException();
         }
         int numberOfParents = parents[node][0];
 
         // Throws an exception if a missing value exists among the parents of node.
+        boolean missingValue = false;
         for (int i = 1; i <= numberOfParents; i++) {
             parent = parents[node][i];
             parentValue = cases[casei][parent];
@@ -487,6 +551,10 @@ public class BCInference {
         }
 
         return maxValue;
+    }
+
+    public void setPriorEqivalentSampleSize(double priorEquivalentSampleSize) {
+        this.priorEquivalentSampleSize = priorEquivalentSampleSize;
     }
 }
 
