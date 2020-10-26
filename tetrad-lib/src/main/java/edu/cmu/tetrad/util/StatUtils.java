@@ -1749,7 +1749,7 @@ public final class StatUtils {
     public static synchronized double partialCorrelation(Matrix submatrix) {
         try {
             return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
-        } catch (Exception e) {
+        } catch (SingularMatrixException e) {
             return NaN;
         }
     }

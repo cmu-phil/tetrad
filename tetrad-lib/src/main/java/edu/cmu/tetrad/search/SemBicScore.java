@@ -422,7 +422,7 @@ public class SemBicScore implements Score {
         try {
             return StatUtils.partialCorrelation(MatrixUtils.convertCovToCorr(getCov(rows, indices(x, y, z))));
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return NaN;
         }
     }

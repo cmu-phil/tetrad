@@ -201,16 +201,17 @@ public class TestGFci {
         Graph g = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
 
         LargeScaleSimulation semSimulator = new LargeScaleSimulation(g);
+        semSimulator.setErrorsNormal(true);
 
         DataSet data = semSimulator.simulateDataFisher(sampleSize);
 
         data = DataUtils.restrictToMeasured(data);
-//
-//        System.out.println(data);
 
-        IndependenceTest test = new IndTestFisherZ(new CovarianceMatrix(data), 0.001);
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-        score.setPenaltyDiscount(4);
+//        System.out.println(data.getCorrelationMatrix());
+
+        IndependenceTest test = new IndTestFisherZ(data, 0.001);
+        SemBicScore score = new SemBicScore(data);
+        score.setPenaltyDiscount(2);
         GFci gFci = new GFci(test, score);
         gFci.setFaithfulnessAssumed(true);
 
