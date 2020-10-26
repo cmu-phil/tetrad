@@ -129,8 +129,8 @@ public class SemXmlParser {
             Element var = vars.get(i);
             Node node = im.getSemPm().getGraph().getNode(var.getAttributeValue(SemXmlConstants.NAME));
 
-            if (var.getAttributeValue(SemXmlConstants.MEAN) != null) {
-                im.setMean(node, Double.parseDouble(var.getAttributeValue(SemXmlConstants.MEAN)));
+            if (var.getAttributeValue(SemXmlConstants.INTERCEPT) != null) {
+                im.setMean(node, Double.parseDouble(var.getAttributeValue(SemXmlConstants.INTERCEPT)));
             } else {
                 return;
             }

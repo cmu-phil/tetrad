@@ -60,7 +60,7 @@ public class SemXmlRenderer {
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, measuredNode.getName()));
             variable.addAttribute(new Attribute(SemXmlConstants.IS_LATENT, "no"));
-            variable.addAttribute(new Attribute(SemXmlConstants.MEAN, Double.toString(semIm.getMean(measuredNode))));
+            variable.addAttribute(new Attribute(SemXmlConstants.INTERCEPT, Double.toString(semIm.getMean(measuredNode))));
             variable.addAttribute(new Attribute(SemXmlConstants.X, Integer.toString(measuredNode.getCenterX())));
             variable.addAttribute(new Attribute(SemXmlConstants.Y, Integer.toString(measuredNode.getCenterY())));
             variablesElement.appendChild(variable);
@@ -70,7 +70,7 @@ public class SemXmlRenderer {
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, latentNode.getName()));
             variable.addAttribute(new Attribute(SemXmlConstants.IS_LATENT, "yes"));
-            variable.addAttribute(new Attribute(SemXmlConstants.MEAN, Double.toString(semIm.getMean(latentNode))));
+            variable.addAttribute(new Attribute(SemXmlConstants.INTERCEPT, Double.toString(semIm.getMean(latentNode))));
             variable.addAttribute(new Attribute(SemXmlConstants.X, Integer.toString(latentNode.getCenterX())));
             variable.addAttribute(new Attribute(SemXmlConstants.Y, Integer.toString(latentNode.getCenterY())));
             variablesElement.appendChild(variable);
@@ -108,7 +108,7 @@ public class SemXmlRenderer {
         for (Node node : getExogenousNodes(semGraph)) {
             normal = new Element(SemXmlConstants.NORMAL);
             normal.addAttribute(new Attribute(SemXmlConstants.VARIABLE, node.getName()));
-            normal.addAttribute(new Attribute(SemXmlConstants.MEAN, "0.0"));
+            normal.addAttribute(new Attribute(SemXmlConstants.INTERCEPT, Double.toString(semIm.getIntercept(node))));
             normal.addAttribute(new Attribute(SemXmlConstants.VARIANCE, Double.toString(semIm.getParamValue(node, node))));
             marginalErrorElement.appendChild(normal);
         }
