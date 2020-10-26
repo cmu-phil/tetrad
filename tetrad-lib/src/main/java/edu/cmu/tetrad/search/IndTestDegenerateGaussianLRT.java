@@ -260,24 +260,18 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
 
-        if (lik0 <= 0) return false;
+        if (dof0 <= 0) return true;
         if (alpha == 0) return true;
         if (alpha == 1) return false;
         if (lik0 == Double.POSITIVE_INFINITY) return false;
 
-        this.pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
-
-        AtomicBoolean fastFDR = new AtomicBoolean(false);
-        if (fastFDR.get()) {
-            final int d1 = 0; // reference
-            final int d2 = z.size();
-            final int v = dataSet.getNumColumns() - 2;
-
-            double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
-            return this.pValue > alpha2;
+        if (Double.isNaN(lik0)) {
+            this.pValue = 1.0;
         } else {
-            return this.pValue > alpha;
+            this.pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         }
+
+        return this.pValue > alpha;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
