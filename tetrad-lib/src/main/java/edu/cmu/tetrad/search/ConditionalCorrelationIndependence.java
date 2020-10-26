@@ -188,6 +188,10 @@ public final class ConditionalCorrelationIndependence {
 
         double[][] _data = _dataSet.getDoubleData().transpose().toArray();
 
+        if (_data.length == 0) {
+            return new double[0];
+        }
+
         if (z.isEmpty()) {
             return _data[0];
         }
