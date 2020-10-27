@@ -783,6 +783,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @throws UnsupportedOperationException if called on a cyclic SEM.
      */
     public double getIntercept(Node node) {
+        node = semPm.getGraph().getNode(node.getName());
+
         if (isCyclic()) {
             return Double.NaN;
 //            throw new UnsupportedOperationException("Setting and getting of " +
@@ -792,8 +794,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //                    "worked out for the cyclic case.");
         }
 
-        SemGraph semGrapb = getSemPm().getGraph();
-        List<Node> parents = semGrapb.getParents(node);
+        SemGraph semGraph = getSemPm().getGraph();
+        List<Node> parents = semGraph.getParents(node);
 
         double weightedSumOfParentMeans = 0.0;
 
@@ -817,6 +819,13 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      */
     public double getMean(Node node) {
         int index = variableNodes.indexOf(node);
+
+        if (index == -1) {
+            System.out.println("Expecting this node: " + node);
+            System.out.println("Node list = " + variableNodes);
+        }
+
+
         return variableMeans[index];
     }
 

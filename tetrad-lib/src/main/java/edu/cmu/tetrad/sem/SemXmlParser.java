@@ -108,7 +108,7 @@ public class SemXmlParser {
             edge = edges.get(i);
             causeNode = semGraph.getNode(edge.getAttributeValue(SemXmlConstants.CAUSE_NODE));
             effectNode = semGraph.getNode(edge.getAttributeValue(SemXmlConstants.EFFECT_NODE));
-            semIm.setParamValue(causeNode, effectNode, new Double(edge.getAttributeValue(SemXmlConstants.VALUE)));
+            semIm.setParamValue(causeNode, effectNode, new Double(edge.getAttributeValue(SemXmlConstants.COEF)));
             //semIm.getSemPm().getParameter(causeNode, effectNode).setFixed(new Boolean(edge.getAttributeValue(SemXmlConstants.FIXED)).booleanValue());
 
             Parameter covarianceParameter = semIm.getSemPm().getCovarianceParameter(causeNode, effectNode);

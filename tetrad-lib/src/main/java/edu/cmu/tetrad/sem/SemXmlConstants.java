@@ -42,7 +42,7 @@ class SemXmlConstants {
     public static final String EDGE = "edge";
     public static final String CAUSE_NODE = "causeNode";
     public static final String EFFECT_NODE = "effectNode";
-    public static final String VALUE = "value";
+    public static final String COEF = "coef";
     public static final String FIXED = "fixed";
 
     public static final String MARGINAL_ERROR_DISTRIBUTION = "marginalErrorDistribution";

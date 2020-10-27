@@ -395,11 +395,15 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             meansItem.setSelected(true);
 
             meansItem.addActionListener((e) -> {
-                setEditIntercepts(false);
+                if (meansItem.isSelected()) {
+                    setEditIntercepts(false);
+                }
             });
 
             interceptsItem.addActionListener((e) -> {
-                setEditIntercepts(true);
+                if (interceptsItem.isSelected()) {
+                    setEditIntercepts(true);
+                }
             });
 
             JMenu params = new JMenu("Parameters");
