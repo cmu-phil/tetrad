@@ -17,7 +17,7 @@ import java.util.List;
  * @author bandrews
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Degenerate Gaussian BIC Score",
+        name = "DG-BIC (Degenerate Gaussian BIC Score)",
         command = "dg-bic-score",
         dataType = DataType.Mixed
 )

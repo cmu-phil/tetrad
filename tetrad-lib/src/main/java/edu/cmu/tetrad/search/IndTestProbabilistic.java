@@ -326,7 +326,7 @@ public class IndTestProbabilistic implements IndependenceTest {
         K:
         for (int k = 0; k <  dataSet.getNumRows(); k++) {
             for (Node node : allVars) {
-                if (dataSet.getDouble(k, nodesHash.get(node)) == -99) continue K;
+                if (dataSet.getInt(k, nodesHash.get(node)) == -99) continue K;
             }
 
             rows.add(k);

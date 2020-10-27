@@ -16,7 +16,7 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Kernel Conditional Independence (KCI) Test",
+        name = "KCI-Test (Kernel Conditional Independence Test)",
         command = "kci-test",
         dataType = DataType.Continuous
 )

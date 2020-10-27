@@ -20,7 +20,7 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Conditional Correlation Independence (CCI) Score",
+        name = "CCI-Score (Conditional Correlation Independence Score",
         command = "cci-score",
         dataType = {DataType.Continuous}
 )

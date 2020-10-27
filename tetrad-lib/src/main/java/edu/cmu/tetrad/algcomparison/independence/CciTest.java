@@ -21,7 +21,7 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Conditional Correlation Independence (CCI) Test",
+        name = "CCI-Test (Conditional Correlation Independence Test)",
         command = "cci-test",
         dataType = DataType.Continuous
 )

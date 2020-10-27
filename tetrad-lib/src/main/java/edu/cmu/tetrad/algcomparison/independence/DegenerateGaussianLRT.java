@@ -19,7 +19,7 @@ import java.util.List;
  * @author bandrews
  */
 @TestOfIndependence(
-        name = "Degenerate Gaussian (DG) Likelihood Ratio Test",
+        name = "DG-LRT (Degenerate Gaussian Likelihood Ratio Test)",
         command = "dg-lr-test",
         dataType = DataType.Mixed
 )
