@@ -151,6 +151,8 @@ public final class ConditionalCorrelationIndependence {
 
             List<Integer> rows = getRows(dataSet, allNodes, nodesHash);
 
+            if (rows.isEmpty()) return 0;
+
             double[] rx = residuals(x, z, rows);
             double[] ry = residuals(y, z, rows);
 
@@ -158,7 +160,7 @@ public final class ConditionalCorrelationIndependence {
             double score = independent(rx, ry);
             this.score = score;
 
-            return getPValue(score);
+            return score;
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
