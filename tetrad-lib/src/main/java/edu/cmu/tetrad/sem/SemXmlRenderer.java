@@ -60,7 +60,7 @@ public class SemXmlRenderer {
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, measuredNode.getName()));
             variable.addAttribute(new Attribute(SemXmlConstants.IS_LATENT, "no"));
-            variable.addAttribute(new Attribute(SemXmlConstants.INTERCEPT, Double.toString(semIm.getMean(measuredNode))));
+            variable.addAttribute(new Attribute(SemXmlConstants.INTERCEPT, Double.toString(semIm.getIntercept(measuredNode))));
             variable.addAttribute(new Attribute(SemXmlConstants.X, Integer.toString(measuredNode.getCenterX())));
             variable.addAttribute(new Attribute(SemXmlConstants.Y, Integer.toString(measuredNode.getCenterY())));
             variablesElement.appendChild(variable);
@@ -70,7 +70,7 @@ public class SemXmlRenderer {
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, latentNode.getName()));
             variable.addAttribute(new Attribute(SemXmlConstants.IS_LATENT, "yes"));
-            variable.addAttribute(new Attribute(SemXmlConstants.INTERCEPT, Double.toString(semIm.getMean(latentNode))));
+            variable.addAttribute(new Attribute(SemXmlConstants.INTERCEPT, Double.toString(semIm.getIntercept(latentNode))));
             variable.addAttribute(new Attribute(SemXmlConstants.X, Integer.toString(latentNode.getCenterX())));
             variable.addAttribute(new Attribute(SemXmlConstants.Y, Integer.toString(latentNode.getCenterY())));
             variablesElement.appendChild(variable);

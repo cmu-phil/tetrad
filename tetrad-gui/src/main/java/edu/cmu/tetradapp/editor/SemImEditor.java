@@ -1769,9 +1769,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                             Node x = parameter.getNodeA();
                             Node y = parameter.getNodeB();
 
-                            double intercept = semIm().getIntercept(y);
-
                             semIm().setEdgeCoef(x, y, value);
+
+                            double intercept = semIm().getIntercept(y);
 
                             if (editor.isEditIntercepts()) {
                                 semIm().setIntercept(y, intercept);

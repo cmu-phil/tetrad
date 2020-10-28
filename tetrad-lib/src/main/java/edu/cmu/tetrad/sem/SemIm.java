@@ -811,7 +811,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
         double mean = getMean(node);
         double intercept = mean - weightedSumOfParentMeans;
-        return round(intercept, 10);
+        return intercept;
     }
 
     /**
@@ -824,7 +824,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             System.out.println("Expecting this node: " + node);
             System.out.println("Node list = " + variableNodes);
         }
-
 
         return variableMeans[index];
     }
