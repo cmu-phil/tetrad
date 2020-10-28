@@ -103,8 +103,8 @@ public class TestRfciBsc {
 		int depth = 5;
 		// BSC
 		int numModels = 10;
-		int numBootstrapSamples = 100;
-		int sampleSize = 1000;
+		int numBootstrapSamples = 10;
+		int sampleSize = 500;
 		double lower = 0.3;
 		double upper = 0.7;
 		
