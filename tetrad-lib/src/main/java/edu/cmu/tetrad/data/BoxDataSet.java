@@ -609,6 +609,23 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         }
     }
 
+    @Override
+    public boolean existsMissingValue() {
+        for (int i = 0; i < getNumRows(); i++) {
+            for (int j = 0; j < getNumColumns(); j++) {
+                if (variables.get(i) instanceof ContinuousVariable) {
+                    if (Double.isNaN(getDouble(i, j))) return true;
+                }
+
+                if (variables.get(i) instanceof DiscreteVariable) {
+                    if (getInt(i, j) == -99) return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
     /**
      * @return true iff the given column has been marked as selected.
      */

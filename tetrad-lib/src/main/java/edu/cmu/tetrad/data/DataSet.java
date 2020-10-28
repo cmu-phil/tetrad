@@ -75,6 +75,12 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
     void ensureColumns(int columns, List<String> excludedVariableNames);
 
     /**
+     * Returns true if and only if this data set contains at least one
+     * missing value.
+     */
+    boolean existsMissingValue();
+
+    /**
      * Ensures that the dataset has at least <code>rows</code> rows.
      * Used for pasting data into the dataset.
      */
