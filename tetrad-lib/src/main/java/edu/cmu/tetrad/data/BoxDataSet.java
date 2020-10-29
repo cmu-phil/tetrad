@@ -622,7 +622,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
                 }
             }
         }
-        
+
         return false;
     }
 
