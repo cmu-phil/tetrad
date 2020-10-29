@@ -32,6 +32,7 @@ import edu.cmu.tetrad.annotation.Linear;
 import edu.cmu.tetrad.annotation.Nonexecutable;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -46,6 +47,7 @@ import edu.cmu.tetradapp.ui.model.ScoreModel;
 import edu.cmu.tetradapp.ui.model.ScoreModels;
 import edu.cmu.tetradapp.util.DesktopController;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.lang.reflect.InvocationTargetException;
@@ -127,10 +129,12 @@ public class AlgorithmCard extends JPanel {
     private final DataType dataType;
     private final TetradDesktop desktop;
     private final boolean multiDataAlgo;
+    private final boolean hasMissingValues;
 
     public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.dataType = getDataType(algorithmRunner);
+        this.hasMissingValues = hasMissingValues(algorithmRunner);
         this.desktop = (TetradDesktop) DesktopController.getInstance();
         this.multiDataAlgo = (algorithmRunner.getSourceGraph() == null)
                 ? algorithmRunner.getDataModelList().size() > 1
@@ -263,6 +267,17 @@ public class AlgorithmCard extends JPanel {
             } else {
                 return null;
             }
+        }
+    }
+
+    private boolean hasMissingValues(final GeneralAlgorithmRunner algorithmRunner) {
+        DataModelList dataModelList = algorithmRunner.getDataModelList();
+        if (dataModelList.containsEmptyData()) {
+            return false;
+        } else {
+            DataSet dataSet = (DataSet) dataModelList.get(0);
+
+            return dataSet.existsMissingValue();
         }
     }
 
@@ -943,53 +958,113 @@ public class AlgorithmCard extends JPanel {
             testLabel.setText("Test:");
             scoreLabel.setText("Score:");
 
-            GroupLayout layout = new GroupLayout(this);
-            this.setLayout(layout);
-            layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createSequentialGroup()
-                                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                            .addComponent(assumptionsLabel)
-                                                            .addGroup(layout.createSequentialGroup()
-                                                                    .addGap(12, 12, 12)
-                                                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                                            .addComponent(gaussianVarChkBox)
-                                                                            .addComponent(linearVarChkBox))))
-                                                    .addGap(0, 0, Short.MAX_VALUE))
-                                            .addGroup(layout.createSequentialGroup()
-                                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                            .addComponent(testLabel)
-                                                            .addComponent(scoreLabel))
-                                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                            .addComponent(scoreComboBox, 0, 239, Short.MAX_VALUE)
-                                                            .addComponent(indTestComboBox, 0, 239, Short.MAX_VALUE))))
-                                    .addContainerGap())
-            );
-            layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(assumptionsLabel)
-                                    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(linearVarChkBox)
-                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(gaussianVarChkBox)
-                                    .addGap(22, 22, 22)
-                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                            .addComponent(testLabel)
-                                            .addComponent(indTestComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                            .addComponent(scoreComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(scoreLabel))
-                                    .addContainerGap())
-            );
-        }
+            if (hasMissingValues) {
+                JLabel missingValueAlert = new JLabel();
+                JLabel testwiseDeletionAlert = new JLabel();
 
+                Color red = new Color(255, 0, 0);
+                missingValueAlert.setForeground(red);
+                missingValueAlert.setText("Dataset contains missing values;");
+
+                testwiseDeletionAlert.setForeground(red);
+                testwiseDeletionAlert.setText("testwise deletion will be used.");
+
+                GroupLayout layout = new GroupLayout(this);
+                this.setLayout(layout);
+                layout.setHorizontalGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(assumptionsLabel)
+                                                .addGroup(layout.createSequentialGroup()
+                                                        .addGap(12, 12, 12)
+                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                                .addComponent(gaussianVarChkBox)
+                                                                .addComponent(linearVarChkBox)))
+                                                .addGroup(layout.createSequentialGroup()
+                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                                .addComponent(testLabel)
+                                                                .addComponent(scoreLabel))
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                                .addComponent(indTestComboBox, GroupLayout.PREFERRED_SIZE, 239, GroupLayout.PREFERRED_SIZE)
+                                                                .addComponent(scoreComboBox, GroupLayout.PREFERRED_SIZE, 239, GroupLayout.PREFERRED_SIZE)))
+                                                .addComponent(missingValueAlert)
+                                                .addComponent(testwiseDeletionAlert))
+                                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                );
+                layout.setVerticalGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addGap(12, 12, 12)
+                                        .addComponent(assumptionsLabel)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(linearVarChkBox)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(gaussianVarChkBox)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(missingValueAlert)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(testwiseDeletionAlert, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                .addComponent(indTestComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(testLabel))
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                .addComponent(scoreComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(scoreLabel))
+                                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                );
+            } else {
+                GroupLayout layout = new GroupLayout(this);
+                this.setLayout(layout);
+                layout.setHorizontalGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addGroup(layout.createSequentialGroup()
+                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                                .addComponent(assumptionsLabel)
+                                                                .addGroup(layout.createSequentialGroup()
+                                                                        .addGap(12, 12, 12)
+                                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                                                .addComponent(gaussianVarChkBox)
+                                                                                .addComponent(linearVarChkBox))))
+                                                        .addGap(0, 0, Short.MAX_VALUE))
+                                                .addGroup(layout.createSequentialGroup()
+                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                                .addComponent(testLabel)
+                                                                .addComponent(scoreLabel))
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                                .addComponent(scoreComboBox, 0, 239, Short.MAX_VALUE)
+                                                                .addComponent(indTestComboBox, 0, 239, Short.MAX_VALUE))))
+                                        .addContainerGap())
+                );
+                layout.setVerticalGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .addComponent(assumptionsLabel)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(linearVarChkBox)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(gaussianVarChkBox)
+                                        .addGap(22, 22, 22)
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                .addComponent(testLabel)
+                                                .addComponent(indTestComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                .addComponent(scoreComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(scoreLabel))
+                                        .addContainerGap())
+                );
+            }
+        }
     }
 
 }
