@@ -95,7 +95,7 @@ public class TestRfciBsc {
 		System.out.println("RB-D: \n" + rfciBsc.getGraphRBD());
 	}
 	
-	@Test
+//	@Test
 	public void testDiscreteRealData() {
 		// Dataset
 		String modelName = "Alarm.xdsl";
