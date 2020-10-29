@@ -634,11 +634,11 @@ public final class NumberObjectDataSet
     public boolean existsMissingValue() {
         for (int i = 0; i < getNumRows(); i++) {
             for (int j = 0; j < getNumColumns(); j++) {
-                if (variables.get(i) instanceof ContinuousVariable) {
+                if (variables.get(j) instanceof ContinuousVariable) {
                     if (Double.isNaN(getDouble(i, j))) return true;
                 }
 
-                if (variables.get(i) instanceof DiscreteVariable) {
+                if (variables.get(j) instanceof DiscreteVariable) {
                     if (getInt(i, j) == -99) return true;
                 }
             }
