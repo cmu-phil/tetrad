@@ -1557,13 +1557,13 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         graph.addDirectedEdge(x, y);
 
-        if (verbose) {
-            String label = trueGraph != null && trueEdge != null ? "*" : "";
-            TetradLogger.getInstance().forceLogMessage("graph.getNumEdges()" + ". INSERT " + graph.getEdge(x, y)
-                    + " " + T + " " + bump + " " + label);
-            out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y)
-                    + " " + T + " " + bump + " " + label);
-        }
+//        if (verbose) {
+//            String label = trueGraph != null && trueEdge != null ? "*" : "";
+//            TetradLogger.getInstance().forceLogMessage(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y)
+//                    + " " + T + " " + bump + " " + label);
+////            out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y)
+////                    + " " + T + " " + bump + " " + label);
+//        }
 
         int numEdges = graph.getNumEdges();
 
@@ -1578,10 +1578,12 @@ public final class Fges implements GraphSearch, GraphScorer {
                     + " degree = " + GraphUtils.getDegree(graph)
                     + " indegree = " + GraphUtils.getIndegree(graph);
             TetradLogger.getInstance().forceLogMessage(message);
-            out.println(message);
+//            out.println(message);
         }
 
         for (Node _t : T) {
+            if (graph.isAdjacentTo(x, _t)) continue;
+
             graph.removeEdge(_t, y);
             if (boundGraph != null && !boundGraph.isAdjacentTo(_t, y)) {
                 continue;
@@ -1592,7 +1594,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             if (verbose) {
                 String message = "--- Directing " + graph.getEdge(_t, y);
                 TetradLogger.getInstance().forceLogMessage(message);
-                out.println(message);
+//                out.println(message);
             }
         }
 
@@ -1626,7 +1628,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             String message = (graph.getNumEdges()) + ". DELETE " + x + "-->" + y
                     + " H = " + H + " NaYX = " + naYX + " diff = " + diff + " (" + bump + ") " + label;
             TetradLogger.getInstance().forceLogMessage(message);
-            out.println(message);
+//            out.println(message);
         }
 
         for (Node h : H) {
@@ -1656,7 +1658,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                 if (verbose) {
                     TetradLogger.getInstance().forceLogMessage("--- Directing " + oldxh + " to "
                             + graph.getEdge(x, h));
-                    out.println("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
+//                    out.println("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
                 }
             }
         }
@@ -1752,7 +1754,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                         if (verbose) {
                             TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
-                            out.println("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+//                            out.println("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -1764,7 +1766,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                         if (verbose) {
                             TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
-                            out.println("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+//                            out.println("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -1782,7 +1784,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                         if (verbose) {
                             TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
-                            out.println("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+//                            out.println("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -1793,7 +1795,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                         if (verbose) {
                             TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
-                            out.println("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+//                            out.println("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }

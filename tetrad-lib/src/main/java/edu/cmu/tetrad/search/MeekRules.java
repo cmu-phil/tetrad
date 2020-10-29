@@ -214,7 +214,7 @@ public class MeekRules implements ImpliedOrientation {
             if (isArrowpointAllowed(b, c, knowledge)) {
                 direct(b, c, graph);
                 String message = SearchLogUtils.edgeOrientedMsg(
-                        "Meek R1 triangle (" + b + "-->" + a + "---" + c + ")", graph.getEdge(a, c));
+                        "Meek R1 triangle (" + a + "-->" + b + "---" + c + ")", graph.getEdge(b, c));
                 log(message);
             }
         }
@@ -251,7 +251,7 @@ public class MeekRules implements ImpliedOrientation {
                 graph.isUndirectedFromTo(a, c)) {
             if (isArrowpointAllowed(a, c, knowledge)) {
                 direct(a, c, graph);
-                log(SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(b, c)));
+                log(SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(a, c)));
             }
         }
     }
@@ -461,8 +461,8 @@ public class MeekRules implements ImpliedOrientation {
 
     private void log(String message) {
         if (verbose) {
-            System.out.println(message);
-            TetradLogger.getInstance().log("impliedOrientations", message);
+//            System.out.println(message);
+            TetradLogger.getInstance().forceLogMessage(message);
         }
     }
 }

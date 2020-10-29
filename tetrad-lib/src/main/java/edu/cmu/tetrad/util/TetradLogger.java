@@ -325,6 +325,8 @@ public class TetradLogger {
      */
     public void forceLogMessage(String message) {
         if (this.logging) {
+            System.out.println(message);
+
             if (this.config == null) {
                 this.fireActived(new EmptyConfig(true));
             }
