@@ -963,11 +963,11 @@ public class AlgorithmCard extends JPanel {
                 JLabel testwiseDeletionAlert = new JLabel();
 
                 Color red = new Color(255, 0, 0);
-                testwiseDeletionAlert.setForeground(red);
-                testwiseDeletionAlert.setText("Test-wise deletion will be used");
-
                 missingValueAlert.setForeground(red);
-                missingValueAlert.setText("Dataset contains missing values.");
+                missingValueAlert.setText("Dataset contains missing values;");
+
+                testwiseDeletionAlert.setForeground(red);
+                testwiseDeletionAlert.setText("testwise deletion will be used.");
 
                 GroupLayout layout = new GroupLayout(this);
                 this.setLayout(layout);
