@@ -278,7 +278,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     @Override
     public double getAlpha() {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("The Probabiistic Test doesn't use an alpha parameter");
     }
 
     @Override
