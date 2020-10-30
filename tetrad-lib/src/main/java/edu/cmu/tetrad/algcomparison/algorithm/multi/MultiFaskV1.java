@@ -42,10 +42,23 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
     private IKnowledge knowledge = new Knowledge2();
 
     public MultiFaskV1() {
+
     }
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
+        for (DataModel d : dataSets) {
+            DataSet _data = (DataSet) d;
+
+            for (int j = 0; j < _data.getNumColumns(); j++) {
+                for (int i = 0; i < _data.getNumRows(); i++) {
+                    if (Double.isNaN(_data.getDouble(i, j))) {
+                        throw new IllegalArgumentException("Please remove or impute missing values.");
+                    }
+                }
+            }
+        }
+
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             List<DataSet> _dataSets = new ArrayList<>();
             for (DataModel d : dataSets) {
