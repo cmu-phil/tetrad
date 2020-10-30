@@ -30,12 +30,12 @@ import java.util.List;
  * @author mglymour
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "FaskVote",
-//        command = "fask-vote",
-//        algoType = AlgType.forbid_latent_common_causes,
-//        dataType = DataType.Continuous
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "MultiFask",
+        command = "multi-fask",
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Continuous
+)
 @Bootstrapping
 public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph, TakesIndependenceWrapper {
 
@@ -49,6 +49,12 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
+        for (DataModel d : dataSets) {
+            if (((DataSet) d).existsMissingValue()) {
+                throw new IllegalArgumentException("Please remove or impute missing values.");
+            }
+        }
+
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             List<DataSet> _dataSets = new ArrayList<>();
             for (DataModel d : dataSets) {
@@ -135,7 +141,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
 
     @Override
     public String getDescription() {
-        return "FaskVote";
+        return "MultiFask";
     }
 
     @Override
