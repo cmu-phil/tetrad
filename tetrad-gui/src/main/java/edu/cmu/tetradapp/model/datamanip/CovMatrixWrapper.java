@@ -22,16 +22,10 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradMatrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
-import edu.cmu.tetradapp.model.SemImWrapper;
-
-import java.util.List;
 
 /**
  * Splits continuous data sets by collinear columns.

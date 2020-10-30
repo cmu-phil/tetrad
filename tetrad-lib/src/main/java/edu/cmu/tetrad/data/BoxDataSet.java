@@ -23,9 +23,8 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializable;
-import edu.pitt.dbmi.data.reader.MixedData;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -610,6 +609,23 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         }
     }
 
+    @Override
+    public boolean existsMissingValue() {
+        for (int i = 0; i < getNumRows(); i++) {
+            for (int j = 0; j < getNumColumns(); j++) {
+                if (variables.get(j) instanceof ContinuousVariable) {
+                    if (Double.isNaN(getDouble(i, j))) return true;
+                }
+
+                if (variables.get(j) instanceof DiscreteVariable) {
+                    if (getInt(i, j) == -99) return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * @return true iff the given column has been marked as selected.
      */
@@ -819,7 +835,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Double.NaN, although all of the on-diagonal elements are 1.0. If that's
      * not the desired behavior, missing values can be removed or imputed first.
      */
-    public final TetradMatrix getCorrelationMatrix() {
+    public final Matrix getCorrelationMatrix() {
         if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
@@ -835,10 +851,12 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * that's not the desired behavior, missing values can be removed or imputed
      * first.
      */
-    public final TetradMatrix getCovarianceMatrix() {
+    public final Matrix getCovarianceMatrix() {
         if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
+
+        if (getNumColumns() == 0) return new Matrix(0, 0);
 
         return new CovarianceMatrix(this).getMatrix();
 
@@ -1006,8 +1024,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @throws IllegalStateException if this is not a continuous data set.
      * @see #getVariables
      */
-    public final TetradMatrix getDoubleData() {
-        TetradMatrix copy = new TetradMatrix(dataBox.numRows(), dataBox.numCols());
+    public final Matrix getDoubleData() {
+        Matrix copy = new Matrix(dataBox.numRows(), dataBox.numCols());
 
         for (int i = 0; i < dataBox.numRows(); i++) {
             for (int j = 0; j < dataBox.numCols(); j++) {
@@ -1027,7 +1045,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @return a new data set in which the the column at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (Moved over from Purify.)
      */
-    public final DataSet subsetColumns(int indices[]) {
+    public final DataSet subsetColumns(int[] indices) {
         List<Node> variables = getVariables();
         List<Node> _variables = new LinkedList<>();
 
@@ -1055,8 +1073,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         return _dataSet;
     }
 
-    public final DataSet subsetRows(int rows[]) {
-        int cols[] = new int[this.dataBox.numCols()];
+    public final DataSet subsetRows(int[] rows) {
+        int[] cols = new int[this.dataBox.numCols()];
 
         for (int i = 0; i < cols.length; i++) {
             cols[i] = i;
@@ -1068,6 +1086,30 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         _data.dataBox = newBox;
 
         return _data;
+    }
+
+    @Override
+    public final DataSet subsetRowsColumns(int[] rows, int[] columns) {
+        List<Node> variables = getVariables();
+        List<Node> _variables = new LinkedList<>();
+
+        for (int index : columns) {
+            _variables.add(variables.get(index));
+        }
+
+
+        DataBox _data = viewSelection(rows, columns);
+        BoxDataSet _dataSet = new BoxDataSet(_data, _variables);
+
+//        _dataSet.name = name + "_copy";
+        _dataSet.name = name;
+        _dataSet.variables = _variables;
+        _dataSet.selection = new HashSet<>();
+        _dataSet.multipliers = new HashMap<>(multipliers);
+
+        // Might have to delete some knowledge.
+        _dataSet.knowledge = knowledge.copy();
+        return _dataSet;
     }
 
     /**
@@ -1271,7 +1313,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     //===============================PRIVATE METHODS=====================//
     private void setIntPrivate(int row, int col, int value) {
         if (value == -99) {
-            dataBox.set(row, col, null);
+            dataBox.set(row, col, -99);
         } else {
             dataBox.set(row, col, value);
         }

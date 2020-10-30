@@ -4,7 +4,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.DegenerateGaussianScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
@@ -18,8 +17,8 @@ import java.util.List;
  * @author bandrews
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Degenerate Gaussian BIC Score",
-        command = "degen-gauss-bic",
+        name = "DG-BIC (Degenerate Gaussian BIC Score)",
+        command = "dg-bic-score",
         dataType = DataType.Mixed
 )
 public class DegenerateGaussianBicScore implements ScoreWrapper {

@@ -26,15 +26,15 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.LogisticRegression;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -46,32 +46,32 @@ import java.util.*;
 
 public class MNLRLikelihood {
 
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // The variables of the continuousData set.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // Indices of variables.
-    private Map<Node, Integer> nodesHash;
+    private final Map<Node, Integer> nodesHash;
 
     // Continuous data only.
-    private double[][] continuousData;
+    private final double[][] continuousData;
 
     // Discrete data only.
-    private int[][] discreteData;
+    private final int[][] discreteData;
 
     // Partitions
-    private AdLeafTree adTree;
+    private final AdLeafTree adTree;
 
     // Fix degree
-    private int fDegree;
+    private final int fDegree;
 
     // Structure Prior
-    private double structurePrior;
+    private final double structurePrior;
 
-    private PrintStream original = System.out;
+    private final PrintStream original = System.out;
 
-    private PrintStream nullout = new PrintStream(new OutputStream() { public void write(int b) {
+    private final PrintStream nullout = new PrintStream(new OutputStream() { public void write(int b) {
         //DO NOTHING
     }
     });
@@ -116,17 +116,17 @@ public class MNLRLikelihood {
 
     }
 
-    private double multipleRegression(TetradVector Y, TetradMatrix X) {
+    private double multipleRegression(Vector Y, Matrix X) {
 
         int n = X.rows();
-        TetradVector r;
+        Vector r;
 
         try {
-            TetradMatrix Xt = X.transpose();
-            TetradMatrix XtX = Xt.times(X);
+            Matrix Xt = X.transpose();
+            Matrix XtX = Xt.times(X);
             r = X.times(XtX.inverse().times(Xt.times(Y))).minus(Y);
         } catch (Exception e) {
-            TetradVector ones = new TetradVector(n);
+            Vector ones = new Vector(n);
             for (int i = 0; i < n; i++) ones.set(i,1);
             r = ones.scalarMult(ones.dotProduct(Y)/(double)n).minus(Y);
         }
@@ -134,13 +134,13 @@ public class MNLRLikelihood {
         double sigma2 = r.dotProduct(r) / n;
 
         if(sigma2 <= 0) {
-            TetradVector ones = new TetradVector(n);
+            Vector ones = new Vector(n);
             for (int i = 0; i < n; i++) ones.set(i,1);
             r = ones.scalarMult(ones.dotProduct(Y)/(double)Math.max(n,2)).minus(Y);
             sigma2 = r.dotProduct(r) / n;
         }
 
-        double lik = -(n / 2) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
+        double lik = -(n / 2.) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
 
         if(Double.isInfinite(lik) || Double.isNaN(lik)) {
             System.out.println(lik);
@@ -179,9 +179,9 @@ public class MNLRLikelihood {
                 double[] mean = new double[p];
                 double[] var = new double[p];
                 for (int i = 0; i < p; i++) {
-                    for (int j = 0; j < r; j++) {
-                        mean[i] += continuousData[continuousCols[i]][cell.get(j)];
-                        var[i] += Math.pow(continuousData[continuousCols[i]][cell.get(j)], 2);
+                    for (Integer integer : cell) {
+                        mean[i] += continuousData[continuousCols[i]][integer];
+                        var[i] += Math.pow(continuousData[continuousCols[i]][integer], 2);
                     }
                     mean[i] /= r;
                     var[i] /= r;
@@ -195,7 +195,7 @@ public class MNLRLikelihood {
 
                 int degree = fDegree;
                 if (fDegree < 1) { degree = (int) Math.floor(Math.log(r)); }
-                TetradMatrix subset = new TetradMatrix(r, p * degree + 1);
+                Matrix subset = new Matrix(r, p * degree + 1);
                 for (int i = 0; i < r; i++) {
                     subset.set(i, p * degree, 1);
                     for (int j = 0; j < p; j++) {
@@ -206,14 +206,13 @@ public class MNLRLikelihood {
                 }
 
                 if (c instanceof ContinuousVariable) {
-                    TetradVector target = new TetradVector(r);
+                    Vector target = new Vector(r);
                     for (int i = 0; i < r; i++) {
                         target.set(i, continuousData[child_index][cell.get(i)]);
                     }
                     lik += multipleRegression(target, subset);
                 } else {
-                    ArrayList<Integer> temp = new ArrayList<>();
-                    TetradMatrix target = new TetradMatrix(r, ((DiscreteVariable) c).getNumCategories());
+                    Matrix target = new Matrix(r, ((DiscreteVariable) c).getNumCategories());
                     for (int i = 0; i < r; i++) {
                         for (int j = 0; j < ((DiscreteVariable) c).getNumCategories(); j++) {
                             target.set(i, j, -1);
@@ -243,13 +242,13 @@ public class MNLRLikelihood {
             }
         }
 
-        int p = continuous_parents.size();
+//        int p = continuous_parents.size();
 
         List<List<Integer>> cells = adTree.getCellLeaves(discrete_parents);
         //List<List<Integer>> cells = partition(discrete_parents, 0).cells;
 
-        int[] continuousCols = new int[p];
-        for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
+//        int[] continuousCols = new int[p];
+//        for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
 
         for (List<Integer> cell : cells) {
             int r = cell.size();
@@ -288,7 +287,7 @@ public class MNLRLikelihood {
 
     }
 
-    private double MultinomialLogisticRegression(TetradMatrix targets, TetradMatrix subset) {
+    private double MultinomialLogisticRegression(Matrix targets, Matrix subset) {
 
         Problem problem = new Problem();
         problem.l = targets.rows(); // number of training examples

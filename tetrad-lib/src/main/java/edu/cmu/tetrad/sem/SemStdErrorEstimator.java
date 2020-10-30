@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.List;
 
@@ -103,7 +103,7 @@ public class SemStdErrorEstimator {
 
         //The Hessian matrix of second order partial derivatives is called the
         //information matrix.
-        TetradMatrix hess = new TetradMatrix(n, n);
+        Matrix hess = new Matrix(n, n);
 
         List<Parameter> freeParameters = estSem.getFreeParameters();
         boolean containsCovararianceParameter = false;
@@ -170,7 +170,7 @@ public class SemStdErrorEstimator {
         try {
 
 //            TetradMatrix hessInv = hess.inverse();
-            TetradMatrix hessInv = hess.ginverse();
+            Matrix hessInv = hess.ginverse();
 
 //            System.out.println("Inverse: " + hessInv);
 

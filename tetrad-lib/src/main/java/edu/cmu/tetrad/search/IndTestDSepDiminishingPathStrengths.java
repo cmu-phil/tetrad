@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.*;
 
@@ -412,7 +412,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

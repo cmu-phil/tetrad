@@ -50,7 +50,7 @@ import static java.lang.Math.sqrt;
  */
 public class FasFdr implements IFas {
 
-    private final TetradMatrix cov;
+    private final Matrix cov;
 
     private final double alpha;
     /**
@@ -389,7 +389,7 @@ public class FasFdr implements IFas {
             n[i] = variables.indexOf(nodes.get(i));
         }
 
-        TetradMatrix inv = cov.getSelection(n, n).inverse();
+        Matrix inv = cov.getSelection(n, n).inverse();
         int sampleSize = test.getCov().getSampleSize();
 
         for (int i = 0; i < nodes.size(); i++) {

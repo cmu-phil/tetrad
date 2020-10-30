@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import javax.swing.table.AbstractTableModel;
 import java.text.NumberFormat;
@@ -81,10 +81,10 @@ final class StandardSemImImpliedCovTable extends AbstractTableModel {
         } else if (measured() && !covariances()) {
             matrix = corr(getSemIm().getImplCovarMeas().toArray());
         } else if (!measured() && covariances()) {
-            TetradMatrix implCovarC = getSemIm().getImplCovar();
+            Matrix implCovarC = getSemIm().getImplCovar();
             matrix = implCovarC.toArray();
         } else if (!measured() && !covariances()) {
-            TetradMatrix implCovarC = getSemIm().getImplCovar();
+            Matrix implCovarC = getSemIm().getImplCovar();
             matrix = corr(implCovarC.toArray());
         }
     }

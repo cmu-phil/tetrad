@@ -1873,7 +1873,7 @@
         <display-component>edu.cmu.tetradapp.app.NoteDisplayComp
         </display-component>
         <model-chooser title="Types of Notes"/>
-        <node-specific-message></node-specific-message>
+        <node-specific-message/>
     </session-node>
     <session-node id="Knowledge">
         <models>

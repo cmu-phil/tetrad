@@ -28,7 +28,7 @@ import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.List;
@@ -54,7 +54,7 @@ public class ImpliedCovarianceDataWrapper extends DataWrapper implements Session
 
         if (semIm1 != null) {
 
-            TetradMatrix matrix2D = semIm1.getImplCovarMeas();
+            Matrix matrix2D = semIm1.getImplCovarMeas();
             int sampleSize = semIm1.getSampleSize();
             List<Node> variables = wrapper.getSemEstimator().getEstimatedSem().getSemPm().getMeasuredNodes();
             CovarianceMatrix cov = new CovarianceMatrix(variables, matrix2D, sampleSize);

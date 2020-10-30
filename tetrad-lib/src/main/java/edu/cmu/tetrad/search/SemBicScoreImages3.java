@@ -23,8 +23,9 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
@@ -59,7 +60,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
     private boolean verbose = false;
 
     // Covariances for each of the input data sets.
-    private List<TetradMatrix> covs = new ArrayList<>();
+    private List<Matrix> covs = new ArrayList<>();
 
     /**
      * Constructs the score using a covariance matrix.
@@ -183,7 +184,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         int dof = 0;
 
         for (int k = 0; k < covs.size(); k++) {
-            TetradMatrix cov = covs.get(k);
+            Matrix cov = covs.get(k);
             int[] parentsPlus = append(parents, i);
             final int a = sampleSizes[k];
             final double lik1 = gaussianLikelihood(cov.getSelection(parentsPlus, parentsPlus), a);
@@ -200,12 +201,12 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
 
         for (int k = 0; k < covs.size(); k++) {
             final int a = sampleSizes[k];
-            TetradMatrix cov = covs.get(k);
+            Matrix cov = covs.get(k);
             double residualVariance = cov.get(i, i);
-            TetradMatrix covxx = cov.getSelection(parents, parents);
-            TetradMatrix covxxInv = covxx.inverse();
-            TetradVector covxy = cov.getSelection(parents, new int[]{i}).getColumn(0);
-            TetradVector b = covxxInv.times(covxy);
+            Matrix covxx = cov.getSelection(parents, parents);
+            Matrix covxxInv = covxx.inverse();
+            Vector covxy = cov.getSelection(parents, new int[]{i}).getColumn(0);
+            Vector b = covxxInv.times(covxy);
             residualVariance -= covxy.dotProduct(b);
             lik += - (a / 2.0) * log(residualVariance) - (a / 2.0) - (a / 2.0) * log(2 * PI);
         }
@@ -215,10 +216,10 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         return 2.0 * lik - getPenaltyDiscount() * (parents.length + 1) * log(N);
     }
 
-    private TetradMatrix cov(DataSet x) {
-        TetradMatrix M = x.getDoubleData();
-        RealMatrix covarianceMatrix = new Covariance(M.getRealMatrix(), true).getCovarianceMatrix();
-        return new TetradMatrix(covarianceMatrix, covarianceMatrix.getRowDimension(), covarianceMatrix.getColumnDimension());
+    private Matrix cov(DataSet x) {
+        Matrix M = x.getDoubleData();
+        RealMatrix covarianceMatrix = new Covariance(new BlockRealMatrix(M.toArray()), true).getCovarianceMatrix();
+        return new Matrix(covarianceMatrix.getData());
     }
 
     private int h(int p) {
@@ -230,14 +231,14 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         return numParents * log(e / (vm)) + (vm - numParents) * log(1.0 - (e / (vm)));
     }
 
-    private double gaussianLikelihood(TetradMatrix sigma, int n) {
+    private double gaussianLikelihood(Matrix sigma, int n) {
         if (sigma.columns() == 0 || n == 0) return 0;
         int k = sigma.columns();
         return -0.5 * n * log(sigma.det()) - 0.5 * n * k - 0.5 * n * k * log(2.0 * PI);
     }
 
-    private double logdet(TetradMatrix m) {
-        RealMatrix M = m.getRealMatrix();
+    private double logdet(Matrix m) {
+        RealMatrix M = new BlockRealMatrix(m.toArray());
         final double tol = 1e-9;
         RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
 
@@ -250,10 +251,10 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         return 2.0 * sum;
     }
 
-    private double logdet2(TetradMatrix m) {
+    private double logdet2(Matrix m) {
         if (m.rows() == 0) return 0.0;
 
-        RealMatrix M = m.getRealMatrix();
+        RealMatrix M = new BlockRealMatrix(m.toArray());
         final LUDecomposition luDecomposition = new LUDecomposition(M);
         RealMatrix L = luDecomposition.getL();
         RealMatrix U = luDecomposition.getU();

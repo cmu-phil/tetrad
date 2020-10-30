@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 /**
  * Optimizes a SEM using RICF (see that class).
@@ -64,7 +64,7 @@ public class SemOptimizerRicf implements SemOptimizer {
             throw new IllegalArgumentException("Number of restarts must be 1 for this method.");
         }
 
-        TetradMatrix sampleCovar = semIm.getSampleCovar();
+        Matrix sampleCovar = semIm.getSampleCovar();
 
         if (sampleCovar == null) {
             throw new NullPointerException("Sample covar has not been set.");
@@ -133,9 +133,9 @@ public class SemOptimizerRicf implements SemOptimizer {
 //            }
 //        }
 
-        TetradMatrix bHat = new TetradMatrix(result.getBhat().toArray());
-        TetradMatrix lHat = new TetradMatrix(result.getLhat().toArray());
-        TetradMatrix oHat = new TetradMatrix(result.getOhat().toArray());
+        Matrix bHat = new Matrix(result.getBhat().toArray());
+        Matrix lHat = new Matrix(result.getLhat().toArray());
+        Matrix oHat = new Matrix(result.getOhat().toArray());
 
         for (Parameter param : semIm.getFreeParameters()) {
             if (param.getType() == ParamType.COEF) {

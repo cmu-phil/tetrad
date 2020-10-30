@@ -23,7 +23,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NamingProtocol;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.io.CharArrayReader;
 import java.io.File;
@@ -704,7 +704,7 @@ public final class DataReader implements IDataReader {
         }
 
         // Read br covariances.
-        TetradMatrix c = new TetradMatrix(vars.size(), vars.size());
+        Matrix c = new Matrix(vars.size(), vars.size());
 
         for (int i = 0; i < vars.size(); i++) {
             st = new RegexTokenizer(lineizer.nextLine(), delimiterType.getPattern(), quoteChar);

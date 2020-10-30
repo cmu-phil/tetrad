@@ -22,16 +22,12 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.util.FastMath;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -230,7 +226,7 @@ public class IndTestMVPLRT implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

@@ -30,7 +30,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.junit.Test;
 
 import java.util.List;
@@ -155,7 +155,7 @@ public class TestSem {
                 {1.17516, 1.36337, 1.99039, 4.04533, 3.14922}};
 
         double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
-        TetradMatrix m2 = new TetradMatrix(m);
+        Matrix m2 = new Matrix(m);
         return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), m2, 1000);
     }
 
@@ -205,7 +205,7 @@ public class TestSem {
                 {.043, -.038, -.037, -.062, .028, .166, -.149, 1.0}};
 
         double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
-        TetradMatrix m2 = new TetradMatrix(m);
+        Matrix m2 = new Matrix(m);
 
         return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), m2, sampleSize);
     }

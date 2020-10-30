@@ -201,12 +201,12 @@ public class MultiDimIntTable {
                         "Table must have at " + "least one dimension.");
             }
 
-            for (int i = 0; i < dims.length; i++) {
-                if (dims[i] < 1) {
-                    throw new IllegalArgumentException("Dimension " + i +
-                            " has fewer than " + "one values: " + dims[i]);
-                }
-            }
+//            for (int i = 0; i < dims.length; i++) {
+//                if (dims[i] < 1) {
+//                    throw new IllegalArgumentException("Dimension " + i +
+//                            " has fewer than " + "one values: " + dims[i]);
+//                }
+//            }
 
             // Calculate length of cells[] array.
             this.numCells = 1;

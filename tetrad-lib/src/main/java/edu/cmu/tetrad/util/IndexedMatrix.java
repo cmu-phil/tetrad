@@ -48,7 +48,7 @@ public final class IndexedMatrix {
      */
     public IndexedMatrix(double[][] matrix) {
         assert MatrixUtils.isSquare(matrix);
-        this.matrix = new TetradMatrix(matrix).toArray();
+        this.matrix = new Matrix(matrix).toArray();
         setIndices(new int[0]);
     }
 

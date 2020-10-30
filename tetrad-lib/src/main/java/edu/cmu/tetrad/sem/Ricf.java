@@ -35,7 +35,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
 
 import java.text.DecimalFormat;
 import java.util.*;

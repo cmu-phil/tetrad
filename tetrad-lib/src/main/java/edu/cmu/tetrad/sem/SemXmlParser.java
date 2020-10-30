@@ -108,7 +108,7 @@ public class SemXmlParser {
             edge = edges.get(i);
             causeNode = semGraph.getNode(edge.getAttributeValue(SemXmlConstants.CAUSE_NODE));
             effectNode = semGraph.getNode(edge.getAttributeValue(SemXmlConstants.EFFECT_NODE));
-            semIm.setParamValue(causeNode, effectNode, new Double(edge.getAttributeValue(SemXmlConstants.VALUE)));
+            semIm.setParamValue(causeNode, effectNode, new Double(edge.getAttributeValue(SemXmlConstants.COEF)));
             //semIm.getSemPm().getParameter(causeNode, effectNode).setFixed(new Boolean(edge.getAttributeValue(SemXmlConstants.FIXED)).booleanValue());
 
             Parameter covarianceParameter = semIm.getSemPm().getCovarianceParameter(causeNode, effectNode);
@@ -129,8 +129,8 @@ public class SemXmlParser {
             Element var = vars.get(i);
             Node node = im.getSemPm().getGraph().getNode(var.getAttributeValue(SemXmlConstants.NAME));
 
-            if (var.getAttributeValue(SemXmlConstants.MEAN) != null) {
-                im.setMean(node, Double.parseDouble(var.getAttributeValue(SemXmlConstants.MEAN)));
+            if (var.getAttributeValue(SemXmlConstants.INTERCEPT) != null) {
+                im.setMean(node, Double.parseDouble(var.getAttributeValue(SemXmlConstants.INTERCEPT)));
             } else {
                 return;
             }

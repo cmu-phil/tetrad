@@ -26,13 +26,14 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.math3.exception.MaxCountExceededException;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 
 /**
@@ -61,12 +62,12 @@ public class TimeSeriesUtils {
         Regression regression = new RegressionDataset(timeLags);
 //        Regression regression = new RegressionDatasetGeneralized(timeLags);
 
-        TetradMatrix residuals = new TetradMatrix(timeLags.getNumRows(), timeSeries.getNumColumns());
+        Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
 
         for (int i = 0; i < timeSeries.getNumColumns(); i++) {
             Node target = timeLags.getVariable(i);
             RegressionResult result = regression.regress(target, regressors);
-            TetradVector residualsColumn = result.getResiduals();
+            Vector residualsColumn = result.getResiduals();
 //            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
@@ -97,7 +98,7 @@ public class TimeSeriesUtils {
 
         Regression regression = new RegressionDataset(timeLags);
 
-        TetradMatrix residuals = new TetradMatrix(timeLags.getNumRows(), timeSeries.getNumColumns());
+        Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
 
         for (int i = 0; i < timeSeries.getNumColumns(); i++) {
             Node target = timeLags.getVariable(i);
@@ -125,7 +126,7 @@ public class TimeSeriesUtils {
             }
 
             RegressionResult result = regression.regress(target, regressors);
-            TetradVector residualsColumn = result.getResiduals();
+            Vector residualsColumn = result.getResiduals();
             residuals.assignColumn(i, residualsColumn);
         }
 
@@ -194,7 +195,7 @@ public class TimeSeriesUtils {
             }
         }
 
-        TetradMatrix residuals = new TetradMatrix(timeLags.getNumRows(), timeSeries.getNumColumns());
+        Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
         Regression regression = new RegressionDataset(timeLags);
 
         for (int i = 0; i < timeSeries.getNumColumns(); i++) {
@@ -210,7 +211,7 @@ public class TimeSeriesUtils {
             }
 
             RegressionResult result = regression.regress(target, regressors);
-            TetradVector residualsColumn = result.getResiduals();
+            Vector residualsColumn = result.getResiduals();
 //            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
@@ -220,7 +221,7 @@ public class TimeSeriesUtils {
     }
 
     public static DataSet createShiftedData(DataSet data, int[] shifts) {
-        TetradMatrix data2 = data.getDoubleData();
+        Matrix data2 = data.getDoubleData();
 
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
@@ -247,7 +248,7 @@ public class TimeSeriesUtils {
         }
 
         int shiftedDataLength = data2.rows() - shiftRange;
-        TetradMatrix shiftedData = new TetradMatrix(shiftedDataLength, data2.columns());
+        Matrix shiftedData = new Matrix(shiftedDataLength, data2.columns());
 
         for (int j = 0; j < shiftedData.columns(); j++) {
             for (int i = 0; i < shiftedDataLength; i++) {
@@ -304,7 +305,7 @@ public class TimeSeriesUtils {
         }
 
         Regression regression = new RegressionDataset(timeLags);
-        TetradMatrix residuals = new TetradMatrix(timeLags.getNumRows(), timeSeries.getNumColumns());
+        Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
 
         double sum = 0.0;
         int n = 0;
@@ -320,7 +321,7 @@ public class TimeSeriesUtils {
                 n++;
             }
 
-            TetradVector residualsColumn = result.getResiduals();
+            Vector residualsColumn = result.getResiduals();
 //            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
@@ -343,10 +344,10 @@ public class TimeSeriesUtils {
             return data;
         }
 
-        TetradMatrix _data = data.getDoubleData();
+        Matrix _data = data.getDoubleData();
 
         for (int k = 1; k <= d; k++) {
-            TetradMatrix _data2 = new TetradMatrix(_data.rows() - 1, _data.columns());
+            Matrix _data2 = new Matrix(_data.rows() - 1, _data.columns());
 
             for (int i = 1; i < _data.rows(); i++) {
                 for (int j = 0; j < _data.columns(); j++) {
@@ -818,12 +819,12 @@ public class TimeSeriesUtils {
         return knowledge;
     }
 
-    public static boolean allEigenvaluesAreSmallerThanOneInModulus(TetradMatrix mat) {
+    public static boolean allEigenvaluesAreSmallerThanOneInModulus(Matrix mat) {
 
         double[] realEigenvalues = new double[0];
         double[] imagEigenvalues = new double[0];
         try {
-            EigenDecomposition dec = new EigenDecomposition(mat.getRealMatrix());
+            EigenDecomposition dec = new EigenDecomposition(new BlockRealMatrix(mat.toArray()));
             realEigenvalues = dec.getRealEigenvalues();
             imagEigenvalues = dec.getImagEigenvalues();
         } catch (MaxCountExceededException e) {

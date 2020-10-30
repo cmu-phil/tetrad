@@ -24,11 +24,10 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Vector;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -260,10 +259,10 @@ public final class TestBoxDataSet {
 
         I:
         for (int i = 0; i < dataSet.getNumRows(); i++) {
-            TetradVector v = _dataSet.getDoubleData().getRow(i);
+            Vector v = _dataSet.getDoubleData().getRow(i);
 
             for (int j = 0; j < dataSet.getNumRows(); j++) {
-                TetradVector w = dataSet.getDoubleData().getRow(j);
+                Vector w = dataSet.getDoubleData().getRow(j);
 
                 if (v.equals(w)) {
                     continue I;

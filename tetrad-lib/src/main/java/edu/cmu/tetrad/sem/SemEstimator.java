@@ -27,10 +27,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -236,6 +233,8 @@ public final class SemEstimator implements TetradSerializable {
         TetradLogger.getInstance().log("stats", "Model P Value = " + nf.format(semIm.getPValue()));
         TetradLogger.getInstance().log("stats", "Model BIC = " + nf.format(semIm.getBicScore()));
 
+        System.out.println(estimatedSem);
+
         return this.estimatedSem;
     }
 
@@ -394,17 +393,13 @@ public final class SemEstimator implements TetradSerializable {
 
             for (int j = 0; j < numColumns; j++) {
                 double[] column = dataSet.getDoubleData().getColumn(j).toArray();
-                DoubleArrayList list = new DoubleArrayList(column);
-                double mean = Descriptive.mean(list);
+                double mean = StatUtils.mean(column);
 
                 Node node = dataSet.getVariable(j);
                 Node variableNode = semIm.getVariableNode(node.getName());
                 semIm.setMean(variableNode, mean);
 
-                double standardDeviation = Descriptive.standardDeviation(
-                        Descriptive.variance(list.size(),
-                                Descriptive.sum(list),
-                                Descriptive.sumOfSquares(list)));
+                double standardDeviation = StatUtils.sd(column);
 
                 semIm.setMeanStandardDeviation(variableNode, standardDeviation);
             }

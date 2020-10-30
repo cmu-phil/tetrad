@@ -330,8 +330,10 @@ public class Discretizer {
 
         for (int i = 0; i < cutoffs.length - 1; i++) {
             if (!(cutoffs[i] <= cutoffs[i + 1])) {
-                throw new NullPointerException(
-                        "Cutoffs must be in nondecreasing order.");
+                System.out.println(
+                        "Cutoffs should be in nondecreasing order: "
+                        + Arrays.toString(cutoffs)
+                );
             }
         }
 

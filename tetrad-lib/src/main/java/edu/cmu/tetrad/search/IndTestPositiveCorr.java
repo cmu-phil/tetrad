@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -284,7 +284,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            TetradMatrix Czz = covMatrix.getSelection(parents, parents);
+            Matrix Czz = covMatrix.getSelection(parents, parents);
 //            TetradMatrix inverse;
 
             try {
@@ -387,7 +387,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 
@@ -410,7 +410,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
     private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) throws SingularMatrixException {
         double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
-        TetradMatrix m = new TetradMatrix(cv).transpose();
+        Matrix m = new Matrix(cv).transpose();
         return StatUtils.partialCorrelation(m);
     }
 }

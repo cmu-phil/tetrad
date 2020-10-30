@@ -170,7 +170,6 @@ public class Comparison {
             this.dirs.add(_dir.getAbsolutePath());
         }
 
-        compareFromSimulations(this.resultsPath, simulations, algorithms, statistics, parameters);
     }
 
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,

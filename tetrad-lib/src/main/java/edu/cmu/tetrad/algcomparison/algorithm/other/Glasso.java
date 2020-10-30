@@ -12,7 +12,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.ArrayList;
@@ -33,6 +33,16 @@ public class Glasso implements Algorithm {
     static final long serialVersionUID = 23L;
 
     public Graph search(DataModel ds, Parameters parameters) {
+        DataSet _data = (DataSet) ds;
+
+        for (int j = 0; j < _data.getNumColumns(); j++) {
+            for (int i = 0; i < _data.getNumRows(); i++) {
+                if (Double.isNaN(_data.getDouble(i, j))) {
+                    throw new IllegalArgumentException("Please remove or impute missing values.");
+                }
+            }
+        }
+
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DoubleMatrix2D cov = new DenseDoubleMatrix2D(DataUtils.getContinuousDataSet(ds)
                     .getCovarianceMatrix().toArray());
@@ -47,7 +57,7 @@ public class Glasso implements Algorithm {
             glasso.setRhoAllEqual(1.0);
 
             edu.cmu.tetrad.search.Glasso.Result result = glasso.search();
-            TetradMatrix wwi = new TetradMatrix(result.getWwi().toArray());
+            Matrix wwi = new Matrix(result.getWwi().toArray());
 
             List<Node> variables = ds.getVariables();
             Graph resultGraph = new EdgeListGraph(variables);

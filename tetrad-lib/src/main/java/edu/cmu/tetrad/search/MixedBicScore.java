@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression2;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -181,11 +181,11 @@ public class MixedBicScore implements Score {
         this.penaltyDiscount = alpha;
     }
 
-    private TetradMatrix getSelection1(ICovarianceMatrix cov, int[] rows) {
+    private Matrix getSelection1(ICovarianceMatrix cov, int[] rows) {
         return cov.getSelection(rows, rows);
     }
 
-    private TetradVector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
+    private Vector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
         return cov.getSelection(rows, new int[]{k}).getColumn(0);
     }
 
@@ -236,13 +236,13 @@ public class MixedBicScore implements Score {
         double residualVariance = getCovariances().getValue(i, i);
         int n = getSampleSize();
         int p = parents.length;
-        TetradMatrix covxx = getSelection1(getCovariances(), parents);
+        Matrix covxx = getSelection1(getCovariances(), parents);
 
         try {
-            TetradMatrix covxxInv = covxx.inverse();
+            Matrix covxxInv = covxx.inverse();
 
-            TetradVector covxy = getSelection2(getCovariances(), parents, i);
-            TetradVector b = covxxInv.times(covxy);
+            Vector covxy = getSelection2(getCovariances(), parents, i);
+            Vector b = covxxInv.times(covxy);
             residualVariance -= covxy.dotProduct(b);
 
             if (residualVariance <= 0) {
@@ -353,8 +353,8 @@ public class MixedBicScore implements Score {
             }
         }
 
-        TetradMatrix mTranspose = new TetradMatrix(continuousData);
-        TetradMatrix m = mTranspose.transpose();
+        Matrix mTranspose = new Matrix(continuousData);
+        Matrix m = mTranspose.transpose();
         DataSet dataSet1 = new BoxDataSet(new DoubleDataBox(m.toArray()), variables);
         this.covariances = new CovarianceMatrix(dataSet1);
     }
@@ -375,7 +375,7 @@ public class MixedBicScore implements Score {
                 _sel.add(variables.get(sel[m]));
             }
 
-            TetradMatrix m = cov.getSelection(sel, sel);
+            Matrix m = cov.getSelection(sel, sel);
 
             try {
                 m.inverse();

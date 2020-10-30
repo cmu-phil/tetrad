@@ -73,13 +73,7 @@ public class AdLeafTree {
      * and so on, to the last variable.
      */
     public List<List<Integer>> getCellLeaves(List<DiscreteVariable> A) {
-        Collections.sort(A, new Comparator<DiscreteVariable>() {
-
-            @Override
-            public int compare(DiscreteVariable o1, DiscreteVariable o2) {
-                return Integer.compare(nodesHash.get(o1), nodesHash.get(o2));
-            }
-        });
+        A.sort(Comparator.comparingInt(o -> nodesHash.get(o)));
 
         if (baseCase == null) {
             Vary vary = new Vary();

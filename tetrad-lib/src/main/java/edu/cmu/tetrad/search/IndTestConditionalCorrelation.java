@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -62,17 +62,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     /**
      * Formats as 0.0000.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Stores a reference to the data set passed in through the constructor.
      */
     private final DataSet dataSet;
-
-    /**
-     * Map from nodes to the indices.
-     */
-    private final Map<Node, Integer> indices;
 
     /**
      * True iff the fast FDR adjustment should be made.
@@ -109,13 +104,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
 
         this.cci = new ConditionalCorrelationIndependence(dataSet, alpha);
         this.alpha = alpha;
-
-        indices = new HashMap<>();
-
-        for (int i = 0; i < nodes.size(); i++) {
-            indices.put(nodes.get(i), i);
-        }
-
         this.dataSet = dataSet;
     }
 
@@ -129,60 +117,27 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     }
 
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        String _x = x.getName();
-        String _y = y.getName();
-        List<String> _z = new ArrayList<>();
-        for (Node node : z) _z.add(node.getName());
 
-        if(fastFDR) {
-            final int d1 = 0; // reference
-            final int d2 = z.size();
-            final int v = variables.size() - 2;
+        double score = cci.isIndependent(x, y, z);
+        this.score = score;
+        double p = cci.getPValue(score);
 
-            double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
+        if (verbose) {
+            IndependenceFact fact = new IndependenceFact(x, y, z);
 
-            cci.setAlpha(alpha2);
-            double p = cci.isIndependent(_x, _y, _z);
-            this.score = alpha2 - p;// cci.getScore();
+            final String s;
 
-            if (verbose) {
-                IndependenceFact fact = new IndependenceFact(x, y, z);
-
-                if (p > alpha2) {
-                    final String s = fact + " INDEPENDENT p = " + p;
-                    System.out.println(s);
-                    TetradLogger.getInstance().log("info", s);
-
-                } else {
-                    final String s = fact + " dependent p = " + p;
-                    System.out.println(s);
-                    TetradLogger.getInstance().log("info", s);
-                }
+            if (p > alpha) {
+                s = fact + " INDEPENDENT p = " + p;
+            } else {
+                s = fact + " dependent p = " + p;
             }
 
-            return p > alpha2;
-        } else {
-            cci.setAlpha(alpha);
-            double p = cci.isIndependent(_x, _y, _z);
-            this.score = alpha - p;// cci.getScore();
-
-            if (verbose) {
-                IndependenceFact fact = new IndependenceFact(x, y, z);
-
-                if (p > alpha) {
-                    final String s = fact + " INDEPENDENT p = " + p;
-                    System.out.println(s);
-                    TetradLogger.getInstance().log("info", s);
-
-                } else {
-                    final String s = fact + " dependent p = " + p;
-                    System.out.println(s);
-                    TetradLogger.getInstance().log("info", s);
-                }
-            }
-
-            return p > alpha;
+            System.out.println(s);
+            TetradLogger.getInstance().log("info", s);
         }
+
+        return p > alpha;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -190,22 +145,8 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     }
 
     public boolean isDependent(Node x, Node y, List<Node> z) {
-        String _x = x.getName();
-        String _y = y.getName();
-        List<String> _z = new ArrayList<>();
-        for (Node node : z) _z.add(node.getName());
-        double p = cci.isIndependent(_x, _y, _z);
-
-//        if (verbose) {
-//            if (independent) {
-//                TetradLogger.getInstance().log("independencies",
-//                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-//            } else {
-//                TetradLogger.getInstance().log("dependencies",
-//                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
-//            }
-//        }
-
+        double score = cci.isIndependent(x, y, z);
+        double p = cci.getPValue(score);
         return p < alpha;
     }
 
@@ -300,7 +241,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 
@@ -311,12 +252,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
 
     @Override
     public double getScoreForFact(IndependenceFact fact) {
-        List<String> zNames = new ArrayList<>();
-        for (Node node : fact.getZ()) zNames.add(node.getName());
-        double p = cci.isIndependent(fact.getX().getName(), fact.getY().getName(), zNames);
-        double score = alpha - p;// cci.getScore();
-        this.score = score;
-        return score;
+        return cci.isIndependent(fact.getX(), fact.getY(), fact.getZ());
     }
 
     /**
@@ -367,14 +303,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
 
     public void setKernelRegressionSampleSize(int i) {
         cci.setKernelRegressionSampleSize(i);
-    }
-
-    public void setEarlyReturn(boolean b) {
-        cci.setEarlyReturn(b);
-    }
-
-    public void setNumDependenceSpotChecks(int numDependenceSpotChecks) {
-        cci.setNumDependenceSpotChecks(numDependenceSpotChecks);
     }
 }
 

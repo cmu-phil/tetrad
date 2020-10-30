@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Sem BIC Score",
-        command = "sem-bic",
+        command = "sem-bic-score",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 public class SemBicScore implements ScoreWrapper {
@@ -40,8 +41,8 @@ public class SemBicScore implements ScoreWrapper {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
 
-        semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-        semBicScore.setStructurePrior(parameters.getDouble("structurePrior"));
+        semBicScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        semBicScore.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         return semBicScore;
     }
 
@@ -58,8 +59,8 @@ public class SemBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-        parameters.add("structurePrior");
+        parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.STRUCTURE_PRIOR);
         return parameters;
     }
 

@@ -21,12 +21,11 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CorrelationMatrixOnTheFly;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.*;
 
@@ -40,7 +39,7 @@ public class RecursivePartialCorrelation {
     private ICovarianceMatrix corr;
     private final Map<Node, Integer> nodesMap = new HashMap<>();
 
-    public RecursivePartialCorrelation(List<Node> nodes, TetradMatrix cov, int sampleSize) {
+    public RecursivePartialCorrelation(List<Node> nodes, Matrix cov, int sampleSize) {
         this.corr = new CorrelationMatrixOnTheFly(new CovarianceMatrix(nodes, cov, sampleSize));
         for (int i = 0; i < nodes.size(); i++) nodesMap.put(nodes.get(i), i);
     }

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.Vector;
 
@@ -52,8 +52,8 @@ class FactorAnalysisJoe {
 
 // method-specific fields that get used
 private Vector<Double> dValues;
-    private Vector<TetradMatrix> factorLoadingVectors;
-    private Vector<TetradMatrix> residualMatrices;
+    private Vector<Matrix> factorLoadingVectors;
+    private Vector<Matrix> residualMatrices;
 
 
     public FactorAnalysisJoe(ICovarianceMatrix covarianceMatrix)
@@ -86,7 +86,7 @@ private Vector<Double> dValues;
      */
     public void unity(CorrelationMatrix r)
     {
-        TetradMatrix residual = r.getMatrix();
+        Matrix residual = r.getMatrix();
         //System.out.println("About to compute unity estimate:");
         //System.out.println(residual.toString());
         for(int i = 0; i < residual.columns(); i++)
@@ -106,7 +106,7 @@ private Vector<Double> dValues;
      */
     public void largestNonDiagonalMagnitude(CorrelationMatrix r)
     {
-        TetradMatrix residual = r.getMatrix();
+        Matrix residual = r.getMatrix();
         //System.out.println("About to compute magnitude estimate:");
         //System.out.println(residual.toString());
         for(int i = 0; i < residual.columns(); i++)
@@ -127,7 +127,7 @@ private Vector<Double> dValues;
 
     private void loadTestMatrix()
     {
-        TetradMatrix testMatrix = new TetradMatrix(9, 9);
+        Matrix testMatrix = new Matrix(9, 9);
         //set diagonals to test
         for(int i = 0; i < 9; i++)
             testMatrix.set(i, i, 1);
@@ -230,7 +230,7 @@ private Vector<Double> dValues;
      * Successive method with residual matrix
      */
 
-    public TetradMatrix successiveResidual()
+    public Matrix successiveResidual()
     {
         loadTestMatrix();
 
@@ -240,7 +240,7 @@ private Vector<Double> dValues;
 
         this.residualMatrices.add(correlationMatrix.getMatrix());
 
-        TetradMatrix unitVector = new TetradMatrix(9, 1);
+        Matrix unitVector = new Matrix(9, 1);
         for(int i = 0; i < 9; i++)
         {
             unitVector.set(i, 0, 1);
@@ -256,11 +256,11 @@ private Vector<Double> dValues;
         {
             System.out.println("****************  " + this.dValues.lastElement() / trace(correlationMatrix.getMatrix()));
             //calculate new residual matrix
-            TetradMatrix prod = matrixMult(factorLoadingVectors.lastElement(),
+            Matrix prod = matrixMult(factorLoadingVectors.lastElement(),
                     transpose(factorLoadingVectors.lastElement()));
 //            System.out.println("Prod = " + prod);
 
-            TetradMatrix residual = matrixSubtract(residualMatrices.lastElement(), prod);
+            Matrix residual = matrixSubtract(residualMatrices.lastElement(), prod);
             residualMatrices.add(residual);
             successiveResidualHelper(residualMatrices.lastElement(), unitVector);
 
@@ -277,12 +277,12 @@ private Vector<Double> dValues;
      * the factor loading vector and the "d value" which is used to determine
      * the amount of total variance accounted for so far.
      */
-    private void successiveResidualHelper(TetradMatrix residual, TetradMatrix approximationVector)
+    private void successiveResidualHelper(Matrix residual, Matrix approximationVector)
     {
-        TetradMatrix uVector = matrixMult(residual, approximationVector);
-        TetradMatrix lVector = matrixMult(transpose(approximationVector), uVector);
+        Matrix uVector = matrixMult(residual, approximationVector);
+        Matrix lVector = matrixMult(transpose(approximationVector), uVector);
         double dScalar = Math.sqrt(lVector.get(0, 0));
-        TetradMatrix aVector = matrixDiv(dScalar, uVector);
+        Matrix aVector = matrixDiv(dScalar, uVector);
 
         Vector aVectors = new Vector();
         Vector uVectors = new Vector();
@@ -296,7 +296,7 @@ private Vector<Double> dValues;
 
         for(int i = 0; i < 100; i++)
         {
-            approximationVector = (TetradMatrix) aVectors.lastElement();
+            approximationVector = (Matrix) aVectors.lastElement();
             uVector = matrixMult(residual, approximationVector);
             lVector = matrixMult(transpose(approximationVector), uVector);
             dScalar = Math.sqrt(lVector.get(0, 0));
@@ -334,7 +334,7 @@ private Vector<Double> dValues;
         System.out.println(aVectors.lastElement());
 
         this.dValues.add((Double)dScalars.lastElement());
-        this.factorLoadingVectors.add((TetradMatrix) aVectors.lastElement());
+        this.factorLoadingVectors.add((Matrix) aVectors.lastElement());
     }
 
     /*
@@ -406,10 +406,10 @@ private Vector<Double> dValues;
      * If the matrix is not a square matrix, then it compiles what WOULD be the
      * diagonal if it were, starting from the upper-left corner.
      */
-    private static TetradMatrix diag(TetradMatrix matrix)
+    private static Matrix diag(Matrix matrix)
     {
         //System.out.println(matrix);
-        TetradMatrix diagonal = new TetradMatrix(matrix.columns(), matrix.columns());
+        Matrix diagonal = new Matrix(matrix.columns(), matrix.columns());
         for(int i = 0; i < matrix.columns(); i++)
         {
             for(int j = 0; j < matrix.columns(); j++)
@@ -422,17 +422,17 @@ private Vector<Double> dValues;
         return diagonal;
     }
 
-    public static TetradMatrix diag(DataSet dataSet)
+    public static Matrix diag(DataSet dataSet)
     {
         return diag(dataSet.getDoubleData());
     }
 
-    public static TetradMatrix diag(ICovarianceMatrix covMatrix)
+    public static Matrix diag(ICovarianceMatrix covMatrix)
     {
         return diag(covMatrix.getMatrix());
     }
 
-    public static TetradMatrix diag(CorrelationMatrix corMatrix)
+    public static Matrix diag(CorrelationMatrix corMatrix)
     {
         return diag(corMatrix.getMatrix());
     }
@@ -440,13 +440,13 @@ private Vector<Double> dValues;
     /*
      * Subtracts b from a.
      */
-    private static TetradMatrix matrixSubtract(TetradMatrix a, TetradMatrix b)
+    private static Matrix matrixSubtract(Matrix a, Matrix b)
     {
         if(!(a.columns() == b.columns() && a.rows() == b.rows())) {
             throw new IllegalArgumentException();
         }
 
-        TetradMatrix result = new TetradMatrix(a.rows(), a.columns());
+        Matrix result = new Matrix(a.rows(), a.columns());
         for(int i = 0; i < result.rows(); i++)
         {
             for(int j = 0; j < result.columns(); j++)
@@ -461,13 +461,13 @@ private Vector<Double> dValues;
     /*
      * Calculates (a * b)
      */
-    private static TetradMatrix matrixMult(TetradMatrix a, TetradMatrix b)
+    private static Matrix matrixMult(Matrix a, Matrix b)
     {
         if(a.columns() != b.rows()) {
             throw new IllegalArgumentException();
         }
 
-        TetradMatrix result = new TetradMatrix(a.rows(), b.columns());
+        Matrix result = new Matrix(a.rows(), b.columns());
 
         for(int i = 0; i < a.rows(); i++)
         {
@@ -486,9 +486,9 @@ private Vector<Double> dValues;
         return result;
     }
 
-    public static TetradMatrix matrixMult(double scalar, TetradMatrix a)
+    public static Matrix matrixMult(double scalar, Matrix a)
     {
-        TetradMatrix result = new TetradMatrix(a.rows(), a.columns());
+        Matrix result = new Matrix(a.rows(), a.columns());
 
         for(int i = 0; i < a.rows(); i++)
         {
@@ -502,13 +502,13 @@ private Vector<Double> dValues;
         return result;
     }
 
-    public static TetradMatrix matrixAdd(TetradMatrix a, TetradMatrix b)
+    public static Matrix matrixAdd(Matrix a, Matrix b)
     {
         if(!(a.rows() == b.rows() && a.columns() == b.columns())) {
             throw new IllegalArgumentException();
         }
 
-        TetradMatrix result = new TetradMatrix(a.rows(), a.columns());
+        Matrix result = new Matrix(a.rows(), a.columns());
 
         for(int i = 0; i < a.rows(); i++)
         {
@@ -522,9 +522,9 @@ private Vector<Double> dValues;
         return result;
     }
 
-    private static TetradMatrix matrixDiv(double scalar, TetradMatrix a)
+    private static Matrix matrixDiv(double scalar, Matrix a)
     {
-        TetradMatrix result = new TetradMatrix(a.rows(), a.columns());
+        Matrix result = new Matrix(a.rows(), a.columns());
         //System.out.println("About to divide " + a + " by " + scalar);
 
         for(int i = 0; i < a.rows(); i++)
@@ -540,12 +540,12 @@ private Vector<Double> dValues;
         return result;
     }
 
-    private static TetradMatrix transpose(TetradMatrix a)
+    private static Matrix transpose(Matrix a)
     {
         //System.out.println("About to transpose:");
         //System.out.println(a);
 
-        TetradMatrix result = new TetradMatrix(a.columns(), a.rows());
+        Matrix result = new Matrix(a.columns(), a.rows());
 
         for(int i = 0; i < a.columns(); i++)
         {
@@ -560,7 +560,7 @@ private Vector<Double> dValues;
         return result;
     }
 
-    private static double trace(TetradMatrix a)
+    private static double trace(Matrix a)
     {
         double result = 0;
         for(int i = 0; i < a.columns(); i++)

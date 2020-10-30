@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -41,7 +41,7 @@ public final class TimeSeriesData implements DataModel {
     /**
      * @serial
      */
-    private TetradMatrix data2;
+    private Matrix data2;
 
     /**
      * @serial
@@ -66,7 +66,7 @@ public final class TimeSeriesData implements DataModel {
      * contains a measured for each variable (in order) for a particular time.
      * The series of times is in increasing order.
      */
-    public TimeSeriesData(TetradMatrix matrix, List<String> varNames) {
+    public TimeSeriesData(Matrix matrix, List<String> varNames) {
         if (matrix == null) {
             throw new NullPointerException("Data must not be null.");
         }
@@ -97,7 +97,7 @@ public final class TimeSeriesData implements DataModel {
         List<String> varNames = new ArrayList<>();
         varNames.add("X");
         varNames.add("Y");
-        return new TimeSeriesData(new TetradMatrix(2, 2), varNames);
+        return new TimeSeriesData(new Matrix(2, 2), varNames);
     }
 
     //=================================PUBLIC METHODS======================//
@@ -171,7 +171,7 @@ public final class TimeSeriesData implements DataModel {
         return this.varNames;
     }
 
-    public final TetradMatrix getData() {
+    public final Matrix getData() {
         return data2.copy();
     }
 

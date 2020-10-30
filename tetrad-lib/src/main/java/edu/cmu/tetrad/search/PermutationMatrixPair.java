@@ -22,22 +22,22 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.List;
 
 public class PermutationMatrixPair {
 
-    private TetradMatrix matrixW;
+    private Matrix matrixW;
     private DataSet matrixBhat;
     private List<Integer> permutation;
 
-    public PermutationMatrixPair(List<Integer> permutation, TetradMatrix matrixW) {
+    public PermutationMatrixPair(List<Integer> permutation, Matrix matrixW) {
         this.permutation = permutation;
         this.matrixW = matrixW;
     }
 
-    public TetradMatrix getMatrixW() {
+    public Matrix getMatrixW() {
         return matrixW;
     }
 

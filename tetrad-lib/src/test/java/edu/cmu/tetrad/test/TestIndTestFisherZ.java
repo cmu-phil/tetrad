@@ -30,7 +30,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.junit.Test;
 
 import java.util.List;
@@ -164,7 +164,7 @@ public class TestIndTestFisherZ {
             final int N = 1000;
             DataSet data = im.simulateData(N, false);
             ICovarianceMatrix _cov = new CovarianceMatrix(data);
-            TetradMatrix cov = _cov.getMatrix();
+            Matrix cov = _cov.getMatrix();
 
             List<Node> nodes = _cov.getVariables();
 

@@ -24,7 +24,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradAlgebra;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import javax.swing.*;
 import java.text.NumberFormat;
@@ -285,8 +285,8 @@ public final class KamadaKawaiLayout {
         double initialMaxDelta = -1.;
         double maxDelta;
         int jump = 100;
-        TetradMatrix a = new TetradMatrix(2, 2);
-        TetradMatrix b = new TetradMatrix(2, 1);
+        Matrix a = new Matrix(2, 2);
+        Matrix b = new Matrix(2, 1);
         int oldM = -1;
 
         do {
@@ -359,7 +359,7 @@ public final class KamadaKawaiLayout {
                 b.set(0, 0, -partialX);
                 b.set(1, 0, -partialY);
 
-                TetradMatrix c;
+                Matrix c;
 
                 try {
                     c = TetradAlgebra.solve(a, b);

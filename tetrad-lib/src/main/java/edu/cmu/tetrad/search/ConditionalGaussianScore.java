@@ -35,22 +35,23 @@ import java.util.*;
  */
 public class ConditionalGaussianScore implements Score {
 
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // The variables of the continuousData set.
-    private List<Node> variables;
+    private final List<Node> variables;
+    private final Map<Node, Integer> nodesHash;
 
     // Likelihood function
-    private ConditionalGaussianLikelihood likelihood;
+    private final ConditionalGaussianLikelihood likelihood;
 
-    private double penaltyDiscount = 1;
+    private double penaltyDiscount;
     private int numCategoriesToDiscretize = 3;
-    private double sp;
+    private final double structurePrior;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, double sp, boolean discretize) {
+    public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, double structurePrior, boolean discretize) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -58,18 +59,29 @@ public class ConditionalGaussianScore implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.penaltyDiscount = penaltyDiscount;
-        this.sp = sp;
+        this.structurePrior = structurePrior;
 
-        this.likelihood = new ConditionalGaussianLikelihood(dataSet);
-        this.likelihood.setDiscretize(discretize);
+        Map<Node, Integer> nodesHash = new HashMap<>();
+
+        for (int j = 0; j < variables.size(); j++) {
+            nodesHash.put(variables.get(j), j);
+        }
+
+        this.nodesHash = nodesHash;
+
+        likelihood = new ConditionalGaussianLikelihood(dataSet);
+
+        likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
+        likelihood.setPenaltyDiscount(penaltyDiscount);
+        likelihood.setDiscretize(discretize);
     }
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
     public double localScore(int i, int... parents) {
-        likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
-        likelihood.setPenaltyDiscount(penaltyDiscount);
+        List<Integer> rows = getRows(i, parents);
+        likelihood.setRows(rows);
 
         ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
 
@@ -77,15 +89,41 @@ public class ConditionalGaussianScore implements Score {
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        return 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(N);
+        return 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(rows.size());
+    }
+
+    private List<Integer> getRows(int i, int[] parents) {
+        List<Integer> rows = new ArrayList<>();
+
+        K:
+        for (int k = 0; k < dataSet.getNumRows(); k++) {
+            if (variables.get(i) instanceof DiscreteVariable) {
+                if (dataSet.getInt(k, i) == -99) continue;
+            } else if (variables.get(i) instanceof ContinuousVariable) {
+                if (Double.isNaN(dataSet.getInt(k, i))) continue;
+            }
+
+            for (int p : parents) {
+                if (variables.get(i) instanceof DiscreteVariable) {
+                    if (dataSet.getInt(k, p) == -99) continue K;
+                } else if (variables.get(i) instanceof ContinuousVariable) {
+                    if (Double.isNaN(dataSet.getInt(k, p))) continue K;
+                }
+            }
+
+            rows.add(k);
+        }
+
+        return rows;
     }
 
     private double getStructurePrior(int[] parents) {
-        if (sp <= 0) { return 0; }
-        else {
+        if (structurePrior <= 0) {
+            return 0;
+        } else {
             int k = parents.length;
             double n = dataSet.getNumColumns() - 1;
-            double p = sp / n;
+            double p = structurePrior / n;
             return k * Math.log(p) + (n - k) * Math.log(1.0 - p);
         }
     }
@@ -172,7 +210,6 @@ public class ConditionalGaussianScore implements Score {
         NumberFormat nf = new DecimalFormat("0.00");
         return "Conditional Gaussian Score Penalty " + nf.format(penaltyDiscount);
     }
-
 }
 
 

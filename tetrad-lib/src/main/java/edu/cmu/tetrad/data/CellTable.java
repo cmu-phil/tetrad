@@ -56,7 +56,6 @@ public final class CellTable {
         this.table = new MultiDimIntTable(dims);
     }
 
-    @SuppressWarnings({"ConstantConditions"})
     public synchronized final void addToTable(DataSet dataSet, int[] indices) {
         int[] dims = new int[indices.length];
 

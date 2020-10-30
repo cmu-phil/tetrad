@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndTestConditionalGaussianLRT;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Conditional Gaussian (CG) Likelihood Ratio Test",
+        name = "CG-LRT (Conditional Gaussian Likelihood Ratio Test)",
         command = "cg-lr-test",
         dataType = DataType.Mixed
 )
@@ -50,6 +51,7 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.DISCRETIZE);
+        parameters.add(Params.NUM_CATEGORIES_TO_DISCRETIZE);
         return parameters;
     }
 

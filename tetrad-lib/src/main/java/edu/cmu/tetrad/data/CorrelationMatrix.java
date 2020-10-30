@@ -23,7 +23,7 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.Collections;
@@ -69,7 +69,7 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * Constructs a correlation matrix data set using the given information. The
      * matrix matrix is internally converted to a correlation matrix.
      */
-    private CorrelationMatrix(List<Node> variables, TetradMatrix matrix,
+    private CorrelationMatrix(List<Node> variables, Matrix matrix,
                               int sampleSize) {
         super(variables, MatrixUtils.convertCovToCorr(matrix).copy(), sampleSize);
     }
@@ -79,12 +79,12 @@ public final class CorrelationMatrix extends CovarianceMatrix
      */
     public static CorrelationMatrix serializableInstance() {
         return new CorrelationMatrix(new LinkedList<Node>(),
-                new TetradMatrix(0, 0), 1);
+                new Matrix(0, 0), 1);
     }
 
     //=================================PUBLIC METHODS======================//
 
-    public final void setMatrix(TetradMatrix matrix) {
+    public final void setMatrix(Matrix matrix) {
         if (!matrix.isSquare()) {
             throw new IllegalArgumentException("Matrix must be square.");
         }
@@ -101,7 +101,7 @@ public final class CorrelationMatrix extends CovarianceMatrix
     }
 
     @Override
-    public TetradMatrix getSelection(int[] rows, int[] cols) {
+    public Matrix getSelection(int[] rows, int[] cols) {
         return getMatrix().getSelection(rows, cols);
     }
 

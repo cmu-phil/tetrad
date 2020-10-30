@@ -23,6 +23,7 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
@@ -214,19 +215,19 @@ public final class LargeScaleSimulation {
 
         NormalDistribution normal = new NormalDistribution(new Well1024a(++seed), 0, 1);
 
-        TetradMatrix B = new TetradMatrix(getCoefficientMatrix());
-        TetradMatrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix B = new Matrix(getCoefficientMatrix());
+        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
 
         double[][] all = new double[variableNodes.size()][sampleSize];
 
         for (int row = 0; row < sampleSize; row++) {
-            TetradVector e = new TetradVector(B.rows());
+            Vector e = new Vector(B.rows());
 
             for (int j = 0; j < e.size(); j++) {
                 e.set(j, normal.sample() * sqrt(errorVars[j]));
             }
 
-            TetradVector x = iMinusBInv.times(e);
+            Vector x = iMinusBInv.times(e);
 
             for (int j = 0; j < x.size(); j++) {
                 all[j][row] = x.get(j);
@@ -275,7 +276,7 @@ public final class LargeScaleSimulation {
      *                              for the i'th time step, for the j'th variables.
      * @param intervalBetweenShocks External shock is applied every this many
      *                              steps. Must be positive integer.
-     * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
+     * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.fff
      */
     public DataSet simulateDataFisher(double[][] shocks, int intervalBetweenShocks, double epsilon) {
         if (intervalBetweenShocks < 1) {
@@ -331,7 +332,7 @@ public final class LargeScaleSimulation {
             }
 
             for (int j = 0; j < t1.length; j++) {
-                all[j][row] = t1[j];
+                all[j][row] = t2[j];
             }
         }
 

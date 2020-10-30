@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -55,7 +55,7 @@ public class ConvertToPositiveSkew extends DataWrapper {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
             }
 
-            TetradMatrix matrix2D = dataSet.getDoubleData();
+            Matrix matrix2D = dataSet.getDoubleData();
 
             for (int j = 0; j < matrix2D.columns(); j++) {
                 double[] c = matrix2D.getColumn(j).toArray();

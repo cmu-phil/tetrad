@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
@@ -53,7 +53,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
     }
 
     private void calcAverage(List<DataWrapper> wrappers) {
-        List<TetradMatrix> cov = new ArrayList<>();
+        List<Matrix> cov = new ArrayList<>();
 
         for (int i = 0; i < wrappers.size(); i++) {
             DataModel selectedDataModel = wrappers.get(i).getSelectedDataModel();
@@ -65,7 +65,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
             cov.add(((ICovarianceMatrix) selectedDataModel).getMatrix());
         }
 
-        TetradMatrix cov3 = new TetradMatrix(cov.get(0).rows(), cov.get(0).rows());
+        Matrix cov3 = new Matrix(cov.get(0).rows(), cov.get(0).rows());
 
         for (int i = 0; i < cov.get(0).rows(); i++) {
             for (int j = 0; j < cov.get(0).rows(); j++) {

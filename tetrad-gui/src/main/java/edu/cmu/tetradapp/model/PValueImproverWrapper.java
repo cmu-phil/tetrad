@@ -333,7 +333,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     }
 
 
-    public DataSet simulateDataCholesky(int sampleSize, TetradMatrix covar, List<Node> variableNodes) {
+    public DataSet simulateDataCholesky(int sampleSize, Matrix covar, List<Node> variableNodes) {
         List<Node> variables = new LinkedList<>();
 
         for (Node node : variableNodes) {
@@ -348,10 +348,10 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             newVariables.add(continuousVariable);
         }
 
-        TetradMatrix impliedCovar = covar;
+        Matrix impliedCovar = covar;
 
         DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, newVariables.size()), newVariables);
-        TetradMatrix cholesky = MatrixUtils.cholesky(impliedCovar);
+        Matrix cholesky = MatrixUtils.cholesky(impliedCovar);
 
         // Simulate the data by repeatedly calling the Cholesky.exogenousData
         // method. Store only the data for the measured variables.

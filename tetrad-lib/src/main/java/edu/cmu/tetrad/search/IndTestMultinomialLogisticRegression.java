@@ -30,7 +30,7 @@ import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.text.DecimalFormat;
@@ -426,7 +426,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

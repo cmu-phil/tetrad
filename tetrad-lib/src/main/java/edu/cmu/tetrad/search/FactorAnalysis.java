@@ -21,15 +21,13 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.util.LinkedList;
-import java.util.Vector;
 
 import static java.lang.Math.abs;
 
@@ -44,14 +42,14 @@ import static java.lang.Math.abs;
  * @author Mike Freenor
  */
 public class FactorAnalysis {
-    private CovarianceMatrix covariance;
+    private final CovarianceMatrix covariance;
 
     // method-specific fields that get used
     private LinkedList<Double> dValues;
-    private LinkedList<TetradMatrix> factorLoadingVectors;
+    private LinkedList<Matrix> factorLoadingVectors;
     private double threshold = 0.001;
     private int numFactors = 2;
-    private TetradMatrix residual;
+    private Matrix residual;
 
     public FactorAnalysis(ICovarianceMatrix covarianceMatrix) {
         this.covariance = new CovarianceMatrix( covarianceMatrix);
@@ -100,12 +98,12 @@ public class FactorAnalysis {
      * <p>
      * At the end of the method, the list of column vectors is actually assembled into a TetradMatrix.
      */
-    public TetradMatrix successiveResidual() {
+    public Matrix successiveResidual() {
         this.factorLoadingVectors = new LinkedList<>();
         this.dValues = new LinkedList<>();
 
-        TetradMatrix residual = covariance.getMatrix().copy();
-        TetradMatrix unitVector = new TetradMatrix(residual.rows(), 1);
+        Matrix residual = covariance.getMatrix().copy();
+        Matrix unitVector = new Matrix(residual.rows(), 1);
 
         for (int i = 0; i < unitVector.rows(); i++) {
             unitVector.set(i, 0, 1);
@@ -116,13 +114,13 @@ public class FactorAnalysis {
 
             if (!found) break;
 
-            TetradMatrix f = factorLoadingVectors.getLast();
+            Matrix f = factorLoadingVectors.getLast();
             residual = residual.minus(f.times(f.transpose()));
         }
 
         factorLoadingVectors.removeFirst();
 
-        TetradMatrix result = new TetradMatrix(residual.rows(), factorLoadingVectors.size());
+        Matrix result = new Matrix(residual.rows(), factorLoadingVectors.size());
 
         for (int i = 0; i < result.rows(); i++) {
             for (int j = 0; j < result.columns(); j++) {
@@ -135,27 +133,27 @@ public class FactorAnalysis {
         return result;
     }
 
-    public TetradMatrix successiveFactorVarimax(TetradMatrix factorLoadingMatrix) {
+    public Matrix successiveFactorVarimax(Matrix factorLoadingMatrix) {
         if (factorLoadingMatrix.columns() == 1)
             return factorLoadingMatrix;
 
-        Vector<TetradMatrix> residuals = new Vector<>();
-        Vector<TetradMatrix> rotatedFactorVectors = new Vector<>();
+        LinkedList<Matrix> residuals = new LinkedList<>();
+        LinkedList<Matrix> rotatedFactorVectors = new LinkedList<>();
 
-        TetradMatrix normalizedFactorLoadings = normalizeRows(factorLoadingMatrix);
+        Matrix normalizedFactorLoadings = normalizeRows(factorLoadingMatrix);
         residuals.add(normalizedFactorLoadings);
 
-        TetradMatrix unitColumn = new TetradMatrix(factorLoadingMatrix.rows(), 1);
+        Matrix unitColumn = new Matrix(factorLoadingMatrix.rows(), 1);
 
         for (int i = 0; i < factorLoadingMatrix.rows(); i++) {
             unitColumn.set(i, 0, 1);
         }
 
-        TetradMatrix r = residuals.lastElement();
+        Matrix r = residuals.getLast();
 
-        TetradMatrix sumCols = r.transpose().times(unitColumn);
-        TetradMatrix wVector = sumCols.scalarMult(1.0 / Math.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
-        TetradMatrix vVector = r.times(wVector);
+        Matrix sumCols = r.transpose().times(unitColumn);
+        Matrix wVector = sumCols.scalarMult(1.0 / Math.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
+        Matrix vVector = r.times(wVector);
 
         for (int k = 0; k < normalizedFactorLoadings.columns(); k++) {
 
@@ -170,26 +168,26 @@ public class FactorAnalysis {
                 }
             }
 
-            Vector<TetradMatrix> hVectors = new Vector<>();
-            Vector<TetradMatrix> bVectors = new Vector<>();
+            LinkedList<Matrix> hVectors = new LinkedList<>();
+            LinkedList<Matrix> bVectors = new LinkedList<>();
             double alpha1 = Double.NaN;
 
-            r = residuals.lastElement();
+            r = residuals.getLast();
 
-            hVectors.add(new TetradMatrix(r.columns(), 1));
-            TetradVector rowFromFactorLoading = r.getRow(lIndex);
+            hVectors.add(new Matrix(r.columns(), 1));
+            Vector rowFromFactorLoading = r.getRow(lIndex);
 
-            for (int j = 0; j < hVectors.lastElement().rows(); j++) {
-                hVectors.lastElement().set(j, 0, rowFromFactorLoading.get(j));
+            for (int j = 0; j < hVectors.getLast().rows(); j++) {
+                hVectors.getLast().set(j, 0, rowFromFactorLoading.get(j));
             }
 
             for (int i = 0; i < 200; i++) {
-                TetradMatrix bVector = r.times(hVectors.get(i));
+                Matrix bVector = r.times(hVectors.get(i));
                 double averageSumSquaresBVector = unitColumn.transpose().times(matrixExp(bVector, 2))
                         .scalarMult(1.0 / (double) bVector.rows()).get(0, 0);
 
-                TetradMatrix betaVector = matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
-                TetradMatrix uVector = r.transpose().times(betaVector);
+                Matrix betaVector = matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
+                Matrix uVector = r.transpose().times(betaVector);
 
                 double alpha2 = (Math.sqrt(uVector.transpose().times(uVector).get(0, 0)));
                 bVectors.add(bVector);
@@ -203,13 +201,13 @@ public class FactorAnalysis {
                 alpha1 = alpha2;
             }
 
-            TetradMatrix b = bVectors.lastElement();
+            Matrix b = bVectors.getLast();
 
             rotatedFactorVectors.add(b);
-            residuals.add(r.minus(b.times(hVectors.lastElement().transpose())));
+            residuals.add(r.minus(b.times(hVectors.getLast().transpose())));
         }
 
-        TetradMatrix result = factorLoadingMatrix.like();
+        Matrix result = factorLoadingMatrix.like();
 
         if (!rotatedFactorVectors.isEmpty()) {
             for (int i = 0; i < rotatedFactorVectors.get(0).rows(); i++) {
@@ -263,19 +261,19 @@ public class FactorAnalysis {
      * <p>
      * Return the final i'th factor loading as our best approximation.
      */
-    private boolean successiveResidualHelper(TetradMatrix residual, TetradMatrix approximationVector) {
-        TetradMatrix l0 = approximationVector.transpose().times(residual).times(approximationVector);
+    private boolean successiveResidualHelper(Matrix residual, Matrix approximationVector) {
+        Matrix l0 = approximationVector.transpose().times(residual).times(approximationVector);
 
         if (l0.get(0, 0) < 0) {
             return false;
         }
 
         double d = Math.sqrt(l0.get(0, 0));
-        TetradMatrix f = residual.times(approximationVector).scalarMult(1.0 / d);
+        Matrix f = residual.times(approximationVector).scalarMult(1.0 / d);
 
         for (int i = 0; i < 100; i++) {
-            TetradMatrix ui = residual.times(f);
-            TetradMatrix li = f.transpose().times(ui);
+            Matrix ui = residual.times(f);
+            Matrix li = f.transpose().times(ui);
             double di = Math.sqrt(li.get(0, 0));
 
             if (abs((d - di)) <= getThreshold()) {
@@ -294,20 +292,20 @@ public class FactorAnalysis {
 
     //designed for normalizing a vector.
     //as usual, vectors are treated as matrices to simplify operations elsewhere
-    private static TetradMatrix normalizeRows(TetradMatrix matrix) {
-        Vector<TetradMatrix> normalizedRows = new Vector<>();
+    private static Matrix normalizeRows(Matrix matrix) {
+        LinkedList<Matrix> normalizedRows = new LinkedList<>();
         for (int i = 0; i < matrix.rows(); i++) {
-            TetradVector vector = matrix.getRow(i);
-            TetradMatrix colVector = new TetradMatrix(matrix.columns(), 1);
+            Vector vector = matrix.getRow(i);
+            Matrix colVector = new Matrix(matrix.columns(), 1);
             for (int j = 0; j < matrix.columns(); j++)
                 colVector.set(j, 0, vector.get(j));
 
             normalizedRows.add(normalizeVector(colVector));
         }
 
-        TetradMatrix result = new TetradMatrix(matrix.rows(), matrix.columns());
+        Matrix result = new Matrix(matrix.rows(), matrix.columns());
         for (int i = 0; i < matrix.rows(); i++) {
-            TetradMatrix normalizedRow = normalizedRows.get(i);
+            Matrix normalizedRow = normalizedRows.get(i);
             for (int j = 0; j < matrix.columns(); j++) {
                 result.set(i, j, normalizedRow.get(j, 0));
             }
@@ -316,13 +314,13 @@ public class FactorAnalysis {
         return result;
     }
 
-    private static TetradMatrix normalizeVector(TetradMatrix vector) {
+    private static Matrix normalizeVector(Matrix vector) {
         double scalar = Math.sqrt(vector.transpose().times(vector).get(0, 0));
         return vector.scalarMult(1.0 / scalar);
     }
 
-    private static TetradMatrix matrixExp(TetradMatrix matrix, double exponent) {
-        TetradMatrix result = new TetradMatrix(matrix.rows(), matrix.columns());
+    private static Matrix matrixExp(Matrix matrix, double exponent) {
+        Matrix result = new Matrix(matrix.rows(), matrix.columns());
         for (int i = 0; i < matrix.rows(); i++) {
             for (int j = 0; j < matrix.columns(); j++) {
                 result.set(i, j, Math.pow(matrix.get(i, j), exponent));
@@ -343,7 +341,7 @@ public class FactorAnalysis {
         this.numFactors = numFactors;
     }
 
-    public TetradMatrix getResidual() {
+    public Matrix getResidual() {
         return residual;
     }
 

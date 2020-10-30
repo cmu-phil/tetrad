@@ -25,8 +25,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.util.List;
 
@@ -69,7 +69,7 @@ public class SemOptimizerRegression implements SemOptimizer {
             throw new IllegalArgumentException("Number of restarts must be 1 for this method.");
         }
 
-        TetradMatrix covar = semIm.getSampleCovar();
+        Matrix covar = semIm.getSampleCovar();
 
         if (covar == null) {
             throw new NullPointerException("Sample covar has not been set.");
@@ -103,8 +103,8 @@ public class SemOptimizerRegression implements SemOptimizer {
             double variance = covar.get(idx, idx);
 
             if (parents.size() > 0) {
-                TetradVector nodeParentsCov = new TetradVector(parents.size());
-                TetradMatrix parentsCov = new TetradMatrix(parents.size(), parents.size());
+                Vector nodeParentsCov = new Vector(parents.size());
+                Matrix parentsCov = new Matrix(parents.size(), parents.size());
 
                 for (int i = 0; i < parents.size(); i++) {
                     int idx2 = nodes.indexOf(parents.get(i));
@@ -117,7 +117,7 @@ public class SemOptimizerRegression implements SemOptimizer {
                     }
                 }
 
-                TetradVector b = parentsCov.inverse().times(nodeParentsCov);
+                Vector b = parentsCov.inverse().times(nodeParentsCov);
                 variance -= nodeParentsCov.dotProduct(b);
 
                 for (int i = 0; i < b.size(); i++) {

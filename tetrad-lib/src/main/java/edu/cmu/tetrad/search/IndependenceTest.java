@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.List;
 
@@ -122,7 +122,7 @@ public interface IndependenceTest {
 
     int getSampleSize();
 
-    List<TetradMatrix> getCovMatrices();
+    List<Matrix> getCovMatrices();
 
     /**
      * A score that is higher with more likely models.

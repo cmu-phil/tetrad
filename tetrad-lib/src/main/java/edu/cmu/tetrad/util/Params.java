@@ -66,6 +66,7 @@ public final class Params {
     public static final String ERRORS_NORMAL = "errorsNormal";
     public static final String SKEW_EDGE_THRESHOLD = "skewEdgeThreshold";
     public static final String TWO_CYCLE_SCREENING_THRESHOLD = "twoCycleScreeningThreshold";
+    public static final String TWO_CYCLE_TESTING_ALPHA = "twoCycleTestingAlpha";
     public static final String ACCEPTANCE_PROPORTION = "acceptanceProportion";
     public static final String FASK_DELTA = "faskDelta";
     public static final String FASK_LEFT_RIGHT_RULE = "faskLeftRightRule";
@@ -152,7 +153,7 @@ public final class Params {
     public static final String RCIT_NUM_FEATURES = "rcitNumFeatures";
     public static final String RESAMPLING_ENSEMBLE = "resamplingEnsemble";
     public static final String RESAMPLING_WITH_REPLACEMENT = "resamplingWithReplacement";
-    public static final String SAMPLE_PRIOR = "samplePrior";
+    public static final String PRIOR_EQUIVALENT_SAMPLE_SIZE = "priorEquivalentSampleSize";
     public static final String SAMPLE_SIZE = "sampleSize";
     public static final String SAVE_LATENT_VARS = "saveLatentVars";
     public static final String SCALE_FREE_ALPHA = "scaleFreeAlpha";
@@ -166,6 +167,7 @@ public final class Params {
     public static final String STRUCTURE_PRIOR = "structurePrior";
     public static final String SYMMETRIC_FIRST_STEP = "symmetricFirstStep";
     public static final String TARGET_NAME = "targetName";
+    public static final String TESTWISE_DELETION = "testwiseDeletion";
     public static final String THR = "thr";
     public static final String THRESHOLD_FOR_NUM_EIGENVALUES = "thresholdForNumEigenvalues";
     public static final String THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH = "thresholdNoRandomConstrainSearch";
@@ -216,7 +218,7 @@ public final class Params {
             ORIENT_TOWARD_DCONNECTIONS, ORIENT_VISIBLE_FEEDBACK_LOOPS, OUTPUT_RBD,
             PENALTY_DISCOUNT, PERCENT_DISCRETE, PERCENT_RESAMPLE_SIZE, POSSIBLE_DSEP_DONE,
             PROB_CYCLE, PROB_TWO_CYCLE, RANDOM_SELECTION_SIZE, RANDOMIZE_COLUMNS,
-            RCIT_NUM_FEATURES, RESAMPLING_ENSEMBLE, RESAMPLING_WITH_REPLACEMENT, SAMPLE_PRIOR,
+            RCIT_NUM_FEATURES, RESAMPLING_ENSEMBLE, RESAMPLING_WITH_REPLACEMENT, PRIOR_EQUIVALENT_SAMPLE_SIZE,
             SAMPLE_SIZE, SAVE_LATENT_VARS, SCALE_FREE_ALPHA, SCALE_FREE_BETA, SCALE_FREE_DELTA_IN,
             SCALE_FREE_DELTA_OUT, SELF_LOOP_COEF, SKIP_NUM_RECORDS, STABLE_FAS, STANDARDIZE,
             STRUCTURE_PRIOR, SYMMETRIC_FIRST_STEP, TARGET_NAME, THR, THRESHOLD_FOR_NUM_EIGENVALUES,
@@ -245,14 +247,14 @@ public final class Params {
     public static Set<String> getTestParameters(Algorithm algorithm) {
         return (algorithm instanceof TakesIndependenceWrapper)
                 ? ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getParameters()
-                .stream().collect(Collectors.toSet())
+                        .stream().collect(Collectors.toSet())
                 : Collections.emptySet();
     }
 
     public static Set<String> getScoreParameters(Algorithm algorithm) {
         return (algorithm instanceof UsesScoreWrapper)
                 ? ((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters()
-                .stream().collect(Collectors.toSet())
+                        .stream().collect(Collectors.toSet())
                 : Collections.emptySet();
     }
 

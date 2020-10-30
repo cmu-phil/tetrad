@@ -178,8 +178,8 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         DoubleMatrix1D y = data.viewColumn(yIndex);
         DoubleMatrix2D Zt = new Algebra().transpose(Z);
         DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
-        TetradMatrix _ZtZ = new TetradMatrix(ZtZ.toArray());
-        TetradMatrix ginverse = _ZtZ.inverse();
+        Matrix _ZtZ = new Matrix(ZtZ.toArray());
+        Matrix ginverse = _ZtZ.inverse();
         DoubleMatrix2D G = new DenseDoubleMatrix2D(ginverse.toArray());
 
         DoubleMatrix2D Zt2 = Zt.like();
@@ -403,8 +403,8 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         DoubleMatrix2D Zt = new Algebra().transpose(Z);
         DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
 
-        TetradMatrix _ZtZ = new TetradMatrix(ZtZ.toArray());
-        TetradMatrix ginverse = _ZtZ.inverse();
+        Matrix _ZtZ = new Matrix(ZtZ.toArray());
+        Matrix ginverse = _ZtZ.inverse();
         DoubleMatrix2D G = new DenseDoubleMatrix2D(ginverse.toArray());
 
 //        DoubleMatrix2D G = MatrixUtils.ginverse(ZtZ);
@@ -470,7 +470,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

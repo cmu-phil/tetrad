@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class StandardizeWrapper extends DataWrapper {
         }
 
         DataSet dataSet = (DataSet) data.getDataModelList().get(0);
-        TetradMatrix matrix2D = DataUtils.standardizeData(dataSet.getDoubleData());
+        Matrix matrix2D = DataUtils.standardizeData(dataSet.getDoubleData());
         DataSet _dataSet = new BoxDataSet(new VerticalDoubleDataBox(matrix2D.transpose().toArray()), data.getVariables());
         _dataSet.setName(dataSet.getName());
         setDataModel(_dataSet);

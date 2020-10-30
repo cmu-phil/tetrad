@@ -34,8 +34,8 @@ public class FactorAnalysis implements Algorithm {
 
             double threshold = parameters.getDouble("fa_threshold");
 
-            TetradMatrix unrotatedSolution = analysis.successiveResidual();
-            TetradMatrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
+            Matrix unrotatedSolution = analysis.successiveResidual();
+            Matrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
 
             SemGraph graph = new SemGraph();
 
@@ -126,7 +126,7 @@ public class FactorAnalysis implements Algorithm {
     	}
     }
 
-    private String tableString(TetradMatrix matrix, NumberFormat nf, double threshold) {
+    private String tableString(Matrix matrix, NumberFormat nf, double threshold) {
         TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
 
         for (int i = 0; i < matrix.rows() + 1; i++) {

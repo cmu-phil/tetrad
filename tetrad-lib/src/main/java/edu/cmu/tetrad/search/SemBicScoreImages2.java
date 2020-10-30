@@ -27,8 +27,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -110,13 +110,13 @@ public class SemBicScoreImages2 implements Score {
 
         for (int k = 0; k < covariances.size(); k++) {
             double residualVariance = getCovariances(k).getValue(i, i);
-            TetradMatrix covxx = getSelection1(getCovariances(k), parents);
+            Matrix covxx = getSelection1(getCovariances(k), parents);
 
             try {
-                TetradMatrix covxxInv = covxx.inverse();
+                Matrix covxxInv = covxx.inverse();
 
-                TetradVector covxy = getSelection2(getCovariances(k), parents, i);
-                TetradVector b = covxxInv.times(covxy);
+                Vector covxy = getSelection2(getCovariances(k), parents, i);
+                Vector b = covxxInv.times(covxy);
                 residualVariance -= covxy.dotProduct(b);
 
                 if (residualVariance <= 0) {
@@ -256,11 +256,11 @@ public class SemBicScoreImages2 implements Score {
 //    }
 
 
-    private TetradMatrix getSelection1(ICovarianceMatrix cov, int[] rows) {
+    private Matrix getSelection1(ICovarianceMatrix cov, int[] rows) {
         return cov.getSelection(rows, rows);
     }
 
-    private TetradVector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
+    private Vector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
         return cov.getSelection(rows, new int[]{k}).getColumn(0);
     }
 
@@ -280,7 +280,7 @@ public class SemBicScoreImages2 implements Score {
                 _sel.add(variables.get(sel[m]));
             }
 
-            TetradMatrix m = cov.getSelection(sel, sel);
+            Matrix m = cov.getSelection(sel, sel);
 
             try {
                 m.inverse();

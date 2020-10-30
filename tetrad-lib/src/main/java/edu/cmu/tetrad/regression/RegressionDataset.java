@@ -24,10 +24,9 @@ package edu.cmu.tetrad.regression;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,7 +45,7 @@ public class RegressionDataset implements Regression {
     /**
      * The data set.
      */
-    private TetradMatrix data;
+    private Matrix data;
 
     /**
      * The variables.
@@ -65,7 +64,7 @@ public class RegressionDataset implements Regression {
     private Graph graph = null;
 
     private int[] rows;
-    private TetradVector res2;
+    private Vector res2;
 
     //============================CONSTRUCTORS==========================//
 
@@ -82,7 +81,7 @@ public class RegressionDataset implements Regression {
         for (int i = 0; i < getRows().length; i++) getRows()[i] = i;
     }
 
-    public RegressionDataset(TetradMatrix data, List<Node> variables) {
+    public RegressionDataset(Matrix data, List<Node> variables) {
         this.data = data;
         this.variables = variables;
         setRows(new int[data.rows()]);
@@ -134,13 +133,13 @@ public class RegressionDataset implements Regression {
             System.out.println();
         }
 
-        TetradMatrix y = data.getSelection(getRows(), new int[]{_target}).copy();
-        TetradMatrix xSub = data.getSelection(getRows(), _regressors);
+        Matrix y = data.getSelection(getRows(), new int[]{_target}).copy();
+        Matrix xSub = data.getSelection(getRows(), _regressors);
 
-        TetradMatrix x;
+        Matrix x;
 
         if (regressors.size() > 0) {
-            x = new TetradMatrix(xSub.rows(), xSub.columns() + 1);
+            x = new Matrix(xSub.rows(), xSub.columns() + 1);
 
             for (int i = 0; i < x.rows(); i++) {
                 for (int j = 0; j < x.columns(); j++) {
@@ -152,7 +151,7 @@ public class RegressionDataset implements Regression {
                 }
             }
         } else {
-            x = new TetradMatrix(xSub.rows(), xSub.columns());
+            x = new Matrix(xSub.rows(), xSub.columns());
 
             for (int i = 0; i < x.rows(); i++) {
                 for (int j = 0; j < x.columns(); j++) {
@@ -161,25 +160,25 @@ public class RegressionDataset implements Regression {
             }
         }
 
-        TetradMatrix xT = x.transpose();
-        TetradMatrix xTx = xT.times(x);
-        TetradMatrix xTxInv = xTx.inverse();
-        TetradMatrix xTy = xT.times(y);
-        TetradMatrix b = xTxInv.times(xTy);
+        Matrix xT = x.transpose();
+        Matrix xTx = xT.times(x);
+        Matrix xTxInv = xTx.inverse();
+        Matrix xTy = xT.times(y);
+        Matrix b = xTxInv.times(xTy);
 
-        TetradMatrix yHat = x.times(b);
+        Matrix yHat = x.times(b);
         if (yHat.columns() == 0) yHat = y.like();
 
-        TetradMatrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
+        Matrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
 
-        TetradVector _yHat = yHat.getColumn(0);
-        TetradVector _res = res.getColumn(0);
+        Vector _yHat = yHat.getColumn(0);
+        Vector _res = res.getColumn(0);
 
-        TetradMatrix b2 = b.copy();
-        TetradMatrix yHat2 = x.times(b2);
+        Matrix b2 = b.copy();
+        Matrix yHat2 = x.times(b2);
         if (yHat.columns() == 0) yHat2 = y.like();
 
-        TetradMatrix res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
+        Matrix res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
         this.res2 = res2.getColumn(0);
 
         double rss = rss(x, y, b);
@@ -187,9 +186,9 @@ public class RegressionDataset implements Regression {
         double tss = tss(y);
         double r2 = 1.0 - (rss / tss);
 
-        TetradVector sqErr = new TetradVector(x.columns());
-        TetradVector t = new TetradVector(x.columns());
-        TetradVector p = new TetradVector(x.columns());
+        Vector sqErr = new Vector(x.columns());
+        Vector t = new Vector(x.columns());
+        Vector p = new Vector(x.columns());
 
         for (int i = 0; i < x.columns(); i++) {
             double _s = se * se * xTxInv.get(i, i);
@@ -229,38 +228,38 @@ public class RegressionDataset implements Regression {
             regressorNames[i] = "X" + (i + 1);
         }
 
-        TetradMatrix y = new TetradMatrix(new double[][]{target}).transpose();
-        TetradMatrix x = new TetradMatrix(regressors).transpose();
+        Matrix y = new Matrix(new double[][]{target}).transpose();
+        Matrix x = new Matrix(regressors).transpose();
 
-        TetradMatrix xT = x.transpose();
-        TetradMatrix xTx = xT.times(x);
-        TetradMatrix xTxInv = xTx.inverse();
-        TetradMatrix xTy = xT.times(y);
-        TetradMatrix b = xTxInv.times(xTy);
+        Matrix xT = x.transpose();
+        Matrix xTx = xT.times(x);
+        Matrix xTxInv = xTx.inverse();
+        Matrix xTy = xT.times(y);
+        Matrix b = xTxInv.times(xTy);
 
-        TetradMatrix yHat = x.times(b);
+        Matrix yHat = x.times(b);
         if (yHat.columns() == 0) yHat = y.like();
 
-        TetradMatrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
+        Matrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
 
-        TetradVector _yHat = yHat.getColumn(0);
-        TetradVector _res = res.getColumn(0);
+        Vector _yHat = yHat.getColumn(0);
+        Vector _res = res.getColumn(0);
 
-        TetradMatrix b2 = b.copy();
-        TetradMatrix yHat2 = x.times(b2);
+        Matrix b2 = b.copy();
+        Matrix yHat2 = x.times(b2);
         if (yHat.columns() == 0) yHat2 = y.like();
 
-        TetradMatrix _res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
-        TetradVector res2 = _res2.getColumn(0);
+        Matrix _res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
+        Vector res2 = _res2.getColumn(0);
 
         double rss = rss(x, y, b);
         double se = Math.sqrt(rss / (n - k));
         double tss = tss(y);
         double r2 = 1.0 - (rss / tss);
 
-        TetradVector sqErr = new TetradVector(x.columns());
-        TetradVector t = new TetradVector(x.columns());
-        TetradVector p = new TetradVector(x.columns());
+        Vector sqErr = new Vector(x.columns());
+        Vector t = new Vector(x.columns());
+        Vector p = new Vector(x.columns());
 
         for (int i = 0; i < x.columns(); i++) {
             double _s = se * se * xTxInv.get(i, i);
@@ -290,8 +289,8 @@ public class RegressionDataset implements Regression {
 
     //=======================PRIVATE METHODS================================//
 
-    private Graph createOutputGraph(String target, TetradMatrix x,
-                                    List<Node> regressors, TetradVector p) {
+    private Graph createOutputGraph(String target, Matrix x,
+                                    List<Node> regressors, Vector p) {
         // Create output graph.
         Node targetNode = new GraphNode(target);
 
@@ -352,7 +351,7 @@ public class RegressionDataset implements Regression {
      * @param b the regression coefficients.
      * @return the residual sum of squares.
      */
-    private static double rss(TetradMatrix x, TetradMatrix y, TetradMatrix b) {
+    private static double rss(Matrix x, Matrix y, Matrix b) {
         double rss = 0.0;
 
         for (int i = 0; i < x.rows(); i++) {
@@ -370,7 +369,7 @@ public class RegressionDataset implements Regression {
         return rss;
     }
 
-    private static double tss(TetradMatrix y) {
+    private static double tss(Matrix y) {
         // first calculate the mean
         double mean = 0.0;
 
@@ -401,7 +400,7 @@ public class RegressionDataset implements Regression {
         this.rows = rows;
     }
 
-    public TetradVector getResidualsWithoutFirstRegressor() {
+    public Vector getResidualsWithoutFirstRegressor() {
         return res2;
     }
 }

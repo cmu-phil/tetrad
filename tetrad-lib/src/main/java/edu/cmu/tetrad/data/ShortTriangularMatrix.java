@@ -22,8 +22,8 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,8 +48,8 @@ public class ShortTriangularMatrix implements TriangularMatrix {
         for (int i = 0; i < dataSet.getNumColumns(); i++)
             matrix[i][i] = 10000;
 
-        TetradMatrix doubleData = dataSet.getDoubleData();
-        TetradVector[] views = new TetradVector[dataSet.getNumColumns()];
+        Matrix doubleData = dataSet.getDoubleData();
+        Vector[] views = new Vector[dataSet.getNumColumns()];
         for (int i = 0; i < views.length; i++)
             views[i] = doubleData.getColumn(i);
 
@@ -118,14 +118,14 @@ public class ShortTriangularMatrix implements TriangularMatrix {
     }
 
     public String toString() {
-        String out = "";
+        StringBuilder out = new StringBuilder();
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
-                out += (getDouble(i, j) + "\t\t");
+                out.append(getDouble(i, j)).append("\t\t");
             }
-            out += "\n";
+            out.append("\n");
         }
-        return out;
+        return out.toString();
     }
 
     //testing sandbox

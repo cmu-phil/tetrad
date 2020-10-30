@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -40,12 +40,12 @@ import java.util.Map;
  * @author Bryan Andrews
  */
 public class IndTestMNLRLRT implements IndependenceTest {
-    private DataSet data;
-    private Map<Node, Integer> nodesHash;
-    private double alpha = 0.001;
+    private final DataSet data;
+    private final Map<Node, Integer> nodesHash;
+    private double alpha;
 
     // Likelihood function
-    private MNLRLikelihood likelihood;
+    private final MNLRLikelihood likelihood;
     private boolean verbose = false;
 
 
@@ -226,7 +226,7 @@ public class IndTestMNLRLRT implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

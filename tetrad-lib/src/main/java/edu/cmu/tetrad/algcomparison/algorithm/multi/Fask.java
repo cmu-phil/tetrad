@@ -57,6 +57,16 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
+        DataSet _data = (DataSet) dataSet;
+
+        for (int j = 0; j < _data.getNumColumns(); j++) {
+            for (int i = 0; i < _data.getNumRows(); i++) {
+                if (Double.isNaN(_data.getDouble(i, j))) {
+                    throw new IllegalArgumentException("Please remove or impute missing values.");
+                }
+            }
+        }
+
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.Fask search;
 

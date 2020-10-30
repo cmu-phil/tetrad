@@ -53,7 +53,7 @@ import org.junit.Test;
  */
 public class TestDM {
 
-    @Test
+//    @Test
     public void test1() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
@@ -102,7 +102,7 @@ public class TestDM {
         assertEquals(trueGraph, foundGraph);
     }
 
-    @Test
+//    @Test
     public void test2() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
@@ -174,7 +174,7 @@ public class TestDM {
         assertTrue(foundGraph.equals(trueGraph));
     }
 
-    @Test
+//    @Test
     public void test3() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
@@ -275,7 +275,7 @@ public class TestDM {
     }
 
     //Three latent fork case
-    @Test
+//    @Test
     public void test4() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
@@ -335,7 +335,7 @@ public class TestDM {
     }
 
     // Three latent collider case
-    @Test
+//    @Test
     public void test5() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
@@ -392,7 +392,7 @@ public class TestDM {
     }
 
     //Four latent case.
-    @Test
+//    @Test
     public void test6() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);

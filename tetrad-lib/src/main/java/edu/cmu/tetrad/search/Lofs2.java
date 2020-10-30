@@ -27,8 +27,8 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.analysis.MultivariateFunction;
-import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.PointValuePair;
@@ -44,6 +44,7 @@ import java.util.*;
 
 import static edu.cmu.tetrad.util.MatrixUtils.transpose;
 import static edu.cmu.tetrad.util.StatUtils.*;
+import static java.lang.Double.isNaN;
 import static java.lang.Math.*;
 
 /**
@@ -62,7 +63,7 @@ public class Lofs2 {
 
     private Graph pattern;
     private List<DataSet> dataSets;
-    private List<TetradMatrix> matrices;
+    private List<Matrix> matrices;
     private double alpha = 1.1;
     private List<Regression> regressions;
     private List<Node> variables;
@@ -90,6 +91,16 @@ public class Lofs2 {
 
         if (pattern == null) {
             throw new IllegalArgumentException("Pattern must be specified.");
+        }
+
+        for (DataSet dataSet : dataSets) {
+            for (int j = 0; j < dataSet.getNumRows(); j++) {
+                for (int i = 0; i < dataSet.getNumColumns(); i++) {
+                    if (isNaN(dataSet.getDouble(i, j))) {
+                        throw new IllegalArgumentException("Please remove or impute missing values.");
+                    }
+                }
+            }
         }
 
         this.pattern = pattern;
@@ -853,7 +864,7 @@ public class Lofs2 {
                 break;
             }
 
-            TetradMatrix data = dataSets.get(i).getDoubleData();
+            Matrix data = dataSets.get(i).getDoubleData();
             List<List<Double>> parameters = new ArrayList<>();
 
             // Note that the 1's along the diagonal of W are hard coded into the code for calculating scores.
@@ -1003,7 +1014,7 @@ public class Lofs2 {
         for (List<List<Double>> params : paramsforDataSets) {
             Double coef = params.get(i).get(j);
 
-            if (!Double.isNaN(coef)) {
+            if (!isNaN(coef)) {
                 sum += coef;
                 count++;
             }
@@ -1012,7 +1023,7 @@ public class Lofs2 {
         return sum / count;
     }
 
-    private void optimizeAllRows(TetradMatrix data, final double range,
+    private void optimizeAllRows(Matrix data, final double range,
                                  List<List<Integer>> rows, List<List<Double>> parameters) {
 
         for (int i = 0; i < rows.size(); i++) {
@@ -1026,7 +1037,7 @@ public class Lofs2 {
         }
     }
 
-    private void optimizeRow(final int rowIndex, final TetradMatrix data,
+    private void optimizeRow(final int rowIndex, final Matrix data,
                              final double range, final List<List<Integer>> rows,
                              final List<List<Double>> parameters) {
         System.out.println("A");
@@ -1104,7 +1115,7 @@ public class Lofs2 {
 
                     parameters.get(rowIndex).set(i, d);
                     double v = scoreRow(rowIndex, data, rows, parameters);
-                    if (Double.isNaN(v)) continue;
+                    if (isNaN(v)) continue;
                     if (v > vLeft) break;
                     vLeft = v;
                     dLeft = d;
@@ -1123,7 +1134,7 @@ public class Lofs2 {
 
                     parameters.get(rowIndex).set(i, d);
                     double v = scoreRow(rowIndex, data, rows, parameters);
-                    if (Double.isNaN(v)) continue;
+                    if (isNaN(v)) continue;
                     if (v > vRight) break;
                     vRight = v;
                     dRight = d;
@@ -1172,7 +1183,7 @@ public class Lofs2 {
 
                 double v = scoreRow(rowIndex, data, rows, parameters);
 
-                if (Double.isNaN(v)) {
+                if (isNaN(v)) {
                     return Double.POSITIVE_INFINITY; // was 10000
                 }
 
@@ -1202,7 +1213,7 @@ public class Lofs2 {
     private double[] col;
 
     // rowIndex is for the W matrix, not for the data.
-    public double scoreRow(int rowIndex, TetradMatrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
+    public double scoreRow(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
         if (col == null) {
             col = new double[data.rows()];
         }
@@ -1236,7 +1247,7 @@ public class Lofs2 {
         return score(col);
     }
 
-    public double rowPValue(int rowIndex, TetradMatrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
+    public double rowPValue(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
         if (col == null) {
             col = new double[data.rows()];
         }
@@ -1569,7 +1580,7 @@ public class Lofs2 {
             d1b[i] = y3;
         }
 
-        if (!Double.isNaN(cutoff)) {
+        if (!isNaN(cutoff)) {
             for (int i = 0; i < d1b.length; i++) {
                 if (d1b[i] > cutoff) d1b[i] = 1.0;
                 else d1b[i] = 0.0;
@@ -1588,7 +1599,7 @@ public class Lofs2 {
             d2b[i] = y3;
         }
 
-        if (!Double.isNaN(cutoff)) {
+        if (!isNaN(cutoff)) {
             for (int i = 0; i < d2b.length; i++) {
                 if (d2b[i] > cutoff) d2b[i] = 1.0;
                 else d2b[i] = 0.0;
@@ -1650,7 +1661,7 @@ public class Lofs2 {
         List<Double> yValues = new ArrayList<>();
 
         for (int i = 0; i < data.getNumRows(); i++) {
-            if (!Double.isNaN(xData[i]) && !Double.isNaN(yData[i])) {
+            if (!isNaN(xData[i]) && !isNaN(yData[i])) {
                 xValues.add(xData[i]);
                 yValues.add(yData[i]);
             }
@@ -1689,7 +1700,7 @@ public class Lofs2 {
         List<Double> yValues = new ArrayList<>();
 
         for (int i = 0; i < concatData.getNumRows(); i++) {
-            if (!Double.isNaN(xData[i]) && !Double.isNaN(yData[i])) {
+            if (!isNaN(xData[i]) && !isNaN(yData[i])) {
                 xValues.add(xData[i]);
                 yValues.add(yData[i]);
             }
@@ -1744,7 +1755,7 @@ public class Lofs2 {
         v.add(new GraphNode("x"));
         v.add(new GraphNode("y"));
 
-        TetradMatrix bothData = new TetradMatrix(xValues.length, 2);
+        Matrix bothData = new Matrix(xValues.length, 2);
 
         for (int i = 0; i < xValues.length; i++) {
             bothData.set(i, 0, xValues[i]);
@@ -1827,7 +1838,7 @@ public class Lofs2 {
         if (dataSets.size() > 1) throw new IllegalArgumentException("Expecting exactly one data set for IGCI.");
 
         DataSet dataSet = dataSets.get(0);
-        TetradMatrix matrix = dataSet.getDoubleData();
+        Matrix matrix = dataSet.getDoubleData();
 
         Graph _graph = new EdgeListGraph(graph.getNodes());
 
@@ -1943,7 +1954,7 @@ public class Lofs2 {
                 double delta = y1[i + 1] - y1[i];
 
                 if (delta != 0) {
-                    if (Double.isNaN(delta)) {
+                    if (isNaN(delta)) {
                         throw new IllegalArgumentException();
                     }
 
@@ -2108,7 +2119,7 @@ public class Lofs2 {
         List<Double> _leaveOutMissing = new ArrayList<>();
 
         for (int i = 0; i < data.length; i++) {
-            if (!Double.isNaN(data[i])) {
+            if (!isNaN(data[i])) {
                 _leaveOutMissing.add(data[i]);
             }
         }
@@ -2263,7 +2274,7 @@ public class Lofs2 {
             int targetCol = dataSet.getColumn(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
-                if (Double.isNaN(dataSet.getDouble(i, targetCol))) {
+                if (isNaN(dataSet.getDouble(i, targetCol))) {
                     continue DATASET;
                 }
             }
@@ -2276,7 +2287,7 @@ public class Lofs2 {
                 int regressorCol = dataSet.getColumn(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    if (Double.isNaN(dataSet.getDouble(i, regressorCol))) {
+                    if (isNaN(dataSet.getDouble(i, regressorCol))) {
                         continue DATASET;
                     }
                 }
@@ -2294,7 +2305,7 @@ public class Lofs2 {
             }
 
             for (double _x : residualsSingleDataset) {
-                if (removeNaN && Double.isNaN(_x)) continue;
+                if (removeNaN && isNaN(_x)) continue;
                 _residuals.add(_x);
             }
         }
@@ -2345,7 +2356,7 @@ public class Lofs2 {
             int targetCol = dataSet.getColumn(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
-                if (Double.isNaN(dataSet.getDouble(i, targetCol))) {
+                if (isNaN(dataSet.getDouble(i, targetCol))) {
                     continue DATASET;
                 }
             }
@@ -2358,22 +2369,22 @@ public class Lofs2 {
                 int regressorCol = dataSet.getColumn(regressors.get(g));
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    if (Double.isNaN(dataSet.getDouble(i, regressorCol))) {
+                    if (isNaN(dataSet.getDouble(i, regressorCol))) {
                         continue DATASET;
                     }
                 }
             }
 
             RegressionResult result = getRegressions().get(m).regress(target, regressors);
-            TetradVector residualsSingleDataset = result.getResiduals();
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
-                if (Double.isNaN(residualsSingleDataset.get(h))) {
+                if (isNaN(residualsSingleDataset.get(h))) {
                     continue DATASET;
                 }
             }
 
-            TetradVector _residualsSingleDataset = new TetradVector(residualsSingleDataset.toArray());
+            Vector _residualsSingleDataset = new Vector(residualsSingleDataset.toArray());
 
             for (int k = 0; k < _residualsSingleDataset.size(); k++) {
                 _residuals.add(_residualsSingleDataset.get(k));
@@ -2388,7 +2399,7 @@ public class Lofs2 {
 
         double p = new AndersonDarlingTest(_f).getP();
 
-        if (p > 1.0 || Double.isNaN(p)) p = 1.0;
+        if (p > 1.0 || isNaN(p)) p = 1.0;
 
         return p;
     }
@@ -2423,7 +2434,7 @@ public class Lofs2 {
         return graph;
     }
 
-    TetradMatrix _data = null;
+    Matrix _data = null;
 
     private void resolveEdgeConditional(Graph graph, Node x, Node y) {
         if (_data == null) {

@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,12 +52,12 @@ public class RegressionCovariance implements Regression {
     /**2
      * The standard deviations for the variable in <code>correlations</code>.
      */
-    private TetradVector sd;
+    private Vector sd;
 
     /**
      * The means for the variables in <code>correlations</code>. May be null.
      */
-    private TetradVector means;
+    private Vector means;
 
     /**
      * The alpha level, determining which coefficients will be considered
@@ -90,7 +90,7 @@ public class RegressionCovariance implements Regression {
      * @param means       A vector of means, for variables <V1,...,Vn>. May be
      *                    null.
      */
-    private RegressionCovariance(ICovarianceMatrix covariances, TetradVector means) {
+    private RegressionCovariance(ICovarianceMatrix covariances, Vector means) {
         this(new CorrelationMatrix(covariances), standardDeviations(covariances),
                 means);
     }
@@ -106,8 +106,8 @@ public class RegressionCovariance implements Regression {
      * @param means              3 for variables <V1,...,Vn>. May be null.
      */
     private RegressionCovariance(CorrelationMatrix correlations,
-                                 TetradVector standardDeviations,
-                                 TetradVector means) {
+                                 Vector standardDeviations,
+                                 Vector means) {
         if (correlations == null) {
             throw new NullPointerException();
         }
@@ -155,7 +155,7 @@ public class RegressionCovariance implements Regression {
      * @return the regression plane.
      */
     public RegressionResult regress(Node target, List<Node> regressors) {
-        TetradMatrix allCorrelations = correlations.getMatrix();
+        Matrix allCorrelations = correlations.getMatrix();
 
         List<Node> variables = correlations.getVariables();
 
@@ -171,12 +171,12 @@ public class RegressionCovariance implements Regression {
             }
         }
 
-        TetradMatrix rX = allCorrelations.getSelection(xIndices, xIndices);
-        TetradMatrix rY = allCorrelations.getSelection(xIndices, new int[]{yIndex});
+        Matrix rX = allCorrelations.getSelection(xIndices, xIndices);
+        Matrix rY = allCorrelations.getSelection(xIndices, new int[]{yIndex});
 
-        TetradMatrix bStar = rX.inverse().times(rY);
+        Matrix bStar = rX.inverse().times(rY);
 
-        TetradVector b = new TetradVector(bStar.rows() + 1);
+        Vector b = new Vector(bStar.rows() + 1);
 
         for (int k = 1; k < b.size(); k++) {
             double sdY = sd.get(yIndex);
@@ -203,8 +203,8 @@ public class RegressionCovariance implements Regression {
             allIndices[i] = variables.indexOf(regressors.get(i - 1));
         }
 
-        TetradMatrix r = allCorrelations.getSelection(allIndices, allIndices);
-        TetradMatrix rInv = r.inverse();
+        Matrix r = allCorrelations.getSelection(allIndices, allIndices);
+        Matrix rInv = r.inverse();
 
         int n = correlations.getSampleSize();
         int k = regressors.size() + 1;
@@ -215,15 +215,15 @@ public class RegressionCovariance implements Regression {
         double rss = tss * (1.0 - r2);
         double seY = Math.sqrt(rss / (double) (n - k));
 
-        TetradVector sqErr = new TetradVector(allIndices.length);
-        TetradVector t = new TetradVector(allIndices.length);
-        TetradVector p = new TetradVector(allIndices.length);
+        Vector sqErr = new Vector(allIndices.length);
+        Vector t = new Vector(allIndices.length);
+        Vector p = new Vector(allIndices.length);
 
         sqErr.set(0, Double.NaN);
         t.set(0, Double.NaN);
         p.set(0, Double.NaN);
 
-        TetradMatrix rxInv = rX.inverse();
+        Matrix rxInv = rX.inverse();
 
         for (int i = 0; i < regressors.size(); i++) {
             double _r2 = 1.0 - (1.0 / rxInv.get(i, i));
@@ -271,7 +271,7 @@ public class RegressionCovariance implements Regression {
         return new String[regressors.size()];
     }
 
-    private Graph createGraph(Node target, int[] allIndices, List<Node> regressors, TetradVector p) {
+    private Graph createGraph(Node target, int[] allIndices, List<Node> regressors, Vector p) {
         Graph graph = new EdgeListGraph();
         graph.addNode(target);
 
@@ -313,12 +313,12 @@ public class RegressionCovariance implements Regression {
 //        return summary;
 //    }
 
-    private static TetradVector zeroMeans(int numVars) {
-        return new TetradVector(numVars);
+    private static Vector zeroMeans(int numVars) {
+        return new Vector(numVars);
     }
 
-    private static TetradVector standardDeviations(ICovarianceMatrix covariances) {
-        TetradVector standardDeviations = new TetradVector(covariances.getDimension());
+    private static Vector standardDeviations(ICovarianceMatrix covariances) {
+        Vector standardDeviations = new Vector(covariances.getDimension());
 
         for (int i = 0; i < covariances.getDimension(); i++) {
             standardDeviations.set(i, Math.sqrt(covariances.getValue(i, i)));

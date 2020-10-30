@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.util.List;
 
@@ -48,7 +48,7 @@ public class DataCenterer extends DataWrapper {
 
             DataSet dataSet = (DataSet) model;
 
-            TetradMatrix data2 = DataUtils.centerData(dataSet.getDoubleData());
+            Matrix data2 = DataUtils.centerData(dataSet.getDoubleData());
             List<Node> list = dataSet.getVariables();
             DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
             dataSet2.setName(model.getName());

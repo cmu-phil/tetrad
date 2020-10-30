@@ -31,14 +31,14 @@ public class Point implements Comparable {
     /**
      * A vector representing the point coordinates.
      */
-    private final TetradVector vector;
+    private final Vector vector;
 
     /**
      * Constructs a point with coordinates as in the given vector.
      *
      * @param vector a vector representing the point coordinates, in order.
      */
-    public Point(TetradVector vector) {
+    public Point(Vector vector) {
         this.vector = vector.copy();
     }
 
@@ -103,7 +103,7 @@ public class Point implements Comparable {
     /**
      * @return Ibid.
      */
-    public TetradVector getVector() {
+    public Vector getVector() {
         return this.vector.copy();
     }
 }

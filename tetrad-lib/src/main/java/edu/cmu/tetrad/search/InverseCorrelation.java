@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 /**
  * Returns edges whose entries in the precision matrix exceed a certain threshold.
@@ -47,8 +47,8 @@ public class InverseCorrelation {
     public Graph search() {
         CovarianceMatrix cov = new CovarianceMatrix(data);
 
-        TetradMatrix _data = cov.getMatrix();
-        TetradMatrix inverse = _data.inverse();
+        Matrix _data = cov.getMatrix();
+        Matrix inverse = _data.inverse();
 
         System.out.println(inverse);
 

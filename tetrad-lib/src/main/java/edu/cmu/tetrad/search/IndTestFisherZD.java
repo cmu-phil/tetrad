@@ -25,10 +25,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import javax.swing.*;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -122,7 +121,7 @@ public final class IndTestFisherZD implements IndependenceTest {
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
-    public IndTestFisherZD(TetradMatrix data, List<Node> variables, double alpha) {
+    public IndTestFisherZD(Matrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.toArray()), variables);
         this.covMatrix = new CovarianceMatrix(dataSet);
         this.variables = Collections.unmodifiableList(variables);
@@ -213,7 +212,7 @@ public final class IndTestFisherZD implements IndependenceTest {
             indices[0] = indexMap.get(x);
             indices[1] = indexMap.get(y);
             for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
-            TetradMatrix submatrix = covMatrix.getSubmatrix(indices).getMatrix();
+            Matrix submatrix = covMatrix.getSubmatrix(indices).getMatrix();
             return StatUtils.partialCorrelation(submatrix);
         }
     }
@@ -303,7 +302,7 @@ public final class IndTestFisherZD implements IndependenceTest {
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            TetradMatrix Czz = covMatrix.getSelection(parents, parents);
+            Matrix Czz = covMatrix.getSelection(parents, parents);
 //            TetradMatrix inverse;
 
             try {
@@ -406,7 +405,7 @@ public final class IndTestFisherZD implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

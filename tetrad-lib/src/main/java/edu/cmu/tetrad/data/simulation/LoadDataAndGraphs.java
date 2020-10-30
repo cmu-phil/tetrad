@@ -39,6 +39,8 @@ public class LoadDataAndGraphs implements Simulation {
 
     @Override
     public void createData(Parameters parameters) {
+        if (!dataSets.isEmpty()) return;
+
         this.dataSets = new ArrayList<>();
 
         File path = new File(this.path);

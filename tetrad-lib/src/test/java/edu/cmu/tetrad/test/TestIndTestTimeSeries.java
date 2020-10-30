@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestTimeSeries;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -1051,7 +1051,7 @@ public class TestIndTestTimeSeries {
             vars.add(new ContinuousVariable(varName));
         }
 
-        TetradMatrix _data = new TetradMatrix(data.length, data[0].length);
+        Matrix _data = new Matrix(data.length, data[0].length);
 
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[0].length; j++) {

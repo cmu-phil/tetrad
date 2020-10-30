@@ -21,10 +21,12 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -45,17 +47,17 @@ import static java.lang.Math.log;
  * @author Joseph Ramsey
  */
 public class IndTestConditionalGaussianLRT implements IndependenceTest {
-    private DataSet data;
-    private Map<Node, Integer> nodesHash;
-    private double alpha = 0.001;
+    private final DataSet data;
+    private final Map<Node, Integer> nodesHash;
+    private double alpha;
 
     // Likelihood function
-    private ConditionalGaussianLikelihood likelihood;
+    private final ConditionalGaussianLikelihood likelihood;
     private double pValue = Double.NaN;
-    private int numCategoriesToDiscretize = 3;
 
     private boolean verbose = false;
     private boolean fastFDR = false;
+    private int numCategoriesToDiscretize = 3;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha, boolean discretize) {
         this.data = data;
@@ -85,71 +87,64 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
+        this.likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
+
+        List<Node> allVars = new ArrayList<>(z);
+        allVars.add(x);
+        allVars.add(y);
+
+        likelihood.setRows(getRows(allVars, nodesHash));
 
         int _x = nodesHash.get(x);
         int _y = nodesHash.get(y);
 
         int[] list0 = new int[z.size() + 1];
-        int[] list1 = new int[z.size() + 1];
         int[] list2 = new int[z.size()];
 
         list0[0] = _x;
-        list1[0] = _y;
 
         for (int i = 0; i < z.size(); i++) {
             int _z = nodesHash.get(z.get(i));
             list0[i + 1] = _z;
-            list1[i + 1] = _z;
             list2[i] = _z;
         }
 
         ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_y, list0);
         ConditionalGaussianLikelihood.Ret ret2 = likelihood.getLikelihood(_y, list2);
-        ConditionalGaussianLikelihood.Ret ret3 = likelihood.getLikelihood(_x, list1);
-        ConditionalGaussianLikelihood.Ret ret4 = likelihood.getLikelihood(_x, list2);
 
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
-        double lik1 = ret3.getLik() - ret4.getLik();
-        double dof1 = ret3.getDof() - ret4.getDof();
 
-        if (dof0 <= 0) {
-            dof0 = 1;
-//            throw new IllegalArgumentException("DOF must be >= 1");
-        }
-        if (dof1 <= 0) {
-            dof1 = 1;
-//            throw new IllegalArgumentException("DOF must be >= 1");
-        }
+        if (dof0 <= 0) return true;
+        if (alpha == 0) return true;
+        if (alpha == 1) return false;
+        if (lik0 == Double.POSITIVE_INFINITY) return false;
 
-        double p0 = 0;
-        double p1 = 0;
-        try {
-            p0 = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            p1 = 1.0 - new ChiSquaredDistribution(dof1).cumulativeProbability(2.0 * lik1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        this.pValue = Math.min(p0, p1);
-
-//        return this.pValue > alpha;
-
-        if(fastFDR) {
-            final int d1 = 0; // reference
-            final int d2 = z.size();
-            final int v = data.getNumColumns() - 2;
-
-            double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
-            return this.pValue > alpha2;
+        if (Double.isNaN(lik0)) {
+            this.pValue = 1.0;
         } else {
-            return this.pValue > alpha;
+            this.pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         }
+
+        return this.pValue > alpha;
+    }
+
+    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+        List<Integer> rows = new ArrayList<>();
+
+        K:
+        for (int k = 0; k < data.getNumRows(); k++) {
+            for (Node node : allVars) {
+                if (node instanceof ContinuousVariable) {
+                    if (Double.isNaN(data.getDouble(k, nodesHash.get(node)))) continue K;
+                } else if (node instanceof DiscreteVariable) {
+                    if (data.getInt(k, nodesHash.get(node)) == -99) continue K;
+                }
+            }
+
+            rows.add(k);
+        }
+        return rows;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -252,7 +247,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 
@@ -270,10 +265,6 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
     }
 
-    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
-        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
-    }
-
     @Override
     public boolean isVerbose() {
         return verbose;
@@ -286,5 +277,9 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     public void setFastFDR(boolean fastFDR) {
         this.fastFDR = fastFDR;
+    }
+
+    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
+        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 }

@@ -32,6 +32,8 @@ import static java.lang.Math.log;
  */
 public class BCInference {
 
+
+
     public enum OP {
 
         independent, dependent
@@ -39,7 +41,7 @@ public class BCInference {
     }
     private static final int MININUM_EXPONENT = -1022;
 
-    private static final double PESS_VALUE = 1;
+    private double priorEquivalentSampleSize = 1;
 
     private int[] countsTree;
 
@@ -316,7 +318,7 @@ public class BCInference {
         while (instancePtr < countsPtr) {
             double score;
             if (scoreFn == 1) {
-                score = scoringFn1(node, instancePtr, q, PESS_VALUE);
+                score = scoringFn1(node, instancePtr, q, priorEquivalentSampleSize);
             } else {
                 score = scoringFn2(node, instancePtr);
             }
@@ -549,6 +551,10 @@ public class BCInference {
         }
 
         return maxValue;
+    }
+
+    public void setPriorEqivalentSampleSize(double priorEquivalentSampleSize) {
+        this.priorEquivalentSampleSize = priorEquivalentSampleSize;
     }
 }
 

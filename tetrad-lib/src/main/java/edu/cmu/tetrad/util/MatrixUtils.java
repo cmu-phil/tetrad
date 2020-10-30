@@ -20,10 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.util;
 
-import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.CholeskyDecomposition;
 import cern.colt.matrix.linalg.Property;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -173,7 +170,7 @@ public final class MatrixUtils {
      */
     public static boolean equals(double[][] ma, double[][] mb,
             double tolerance) {
-        return new TetradMatrix(ma).equals(new TetradMatrix(mb), tolerance);
+        return new Matrix(ma).equals(new Matrix(mb), tolerance);
         //new Property(tolerance).equals(TetradMatrix.instance(ma),
         //     TetradMatrix.instance(mb));
     }
@@ -198,7 +195,7 @@ public final class MatrixUtils {
      * @return Ibid.
      */
     public static boolean isSquare(double[][] m) {
-        return new TetradMatrix(m).isSquare();
+        return new Matrix(m).isSquare();
 
     }
 
@@ -225,7 +222,7 @@ public final class MatrixUtils {
      * @return Ibid.
      */
     public static double determinant(double[][] m) {
-        return new TetradMatrix(m).det();
+        return new Matrix(m).det();
     }
 
     /**
@@ -244,7 +241,7 @@ public final class MatrixUtils {
             indices[i] = j;
         }
 
-        return new TetradMatrix(m).getSelection(indices,
+        return new Matrix(m).getSelection(indices,
                 indices).toArray();
     }
 
@@ -253,7 +250,7 @@ public final class MatrixUtils {
      * otherwise the pseudoinverse.
      */
     public static double[][] inverse(double[][] m) {
-        TetradMatrix mm = new TetradMatrix(m);
+        Matrix mm = new Matrix(m);
         return mm.inverse().toArray();
     }
 
@@ -280,48 +277,48 @@ public final class MatrixUtils {
      * be compatible for multiplication.
      */
     public static double[][] product(double[][] ma, double[][] mb) {
-        TetradMatrix d = new TetradMatrix(ma);
-        TetradMatrix e = new TetradMatrix(mb);
+        Matrix d = new Matrix(ma);
+        Matrix e = new Matrix(mb);
         return d.times(e).toArray();
     }
 
     public static double[] product(double[] ma, double[][] mb) {
-        return new TetradMatrix(mb).transpose().times(new TetradVector(ma)).toArray();
+        return new Matrix(mb).transpose().times(new Vector(ma)).toArray();
     }
 
-    public static TetradVector product(TetradVector ma, TetradMatrix mb) {
+    public static Vector product(Vector ma, Matrix mb) {
         return mb.transpose().times(ma);
     }
 
     public static double[] product(double[][] ma, double[] mb) {
-        return new TetradMatrix(ma).times(new TetradVector(mb)).toArray();
+        return new Matrix(ma).times(new Vector(mb)).toArray();
     }
 
     public static double[][] outerProduct(double[] ma, double[] mb) {
-        return TetradAlgebra.multOuter(new TetradVector(ma), new TetradVector(mb)).toArray();
+        return TetradAlgebra.multOuter(new Vector(ma), new Vector(mb)).toArray();
     }
 
     public static double innerProduct(double[] ma, double[] mb) {
-        return new TetradVector(ma).dotProduct(new TetradVector(mb));
+        return new Vector(ma).dotProduct(new Vector(mb));
     }
 
     /**
      * @return the transpose of the given matrix.
      */
     public static double[][] transpose(double[][] m) {
-        return new TetradMatrix(m).transpose().toArray();
+        return new Matrix(m).transpose().toArray();
     }
 
     /**
      * @return the trace of the given (square) m.
      */
     public static double trace(double[][] m) {
-        return new TetradMatrix(m).trace();
+        return new Matrix(m).trace();
     }
 
     //Returns the sum of all values in a double matrix.
     public static double zSum(double[][] m) {
-        return new TetradMatrix(m).zSum();
+        return new Matrix(m).zSum();
     }
 
     /**
@@ -335,29 +332,29 @@ public final class MatrixUtils {
      * @return the sum of ma and mb.
      */
     public static double[][] sum(double[][] ma, double[][] mb) {
-        TetradMatrix _ma = new TetradMatrix(ma);
-        TetradMatrix _mb = new TetradMatrix(mb);
+        Matrix _ma = new Matrix(ma);
+        Matrix _mb = new Matrix(mb);
         _ma = _ma.plus(_mb);
         return _ma.toArray();
     }
 
     public static double[] sum(double[] ma, double[] mb) {
-        TetradVector _ma = new TetradVector(ma);
-        TetradVector _mb = new TetradVector(mb);
+        Vector _ma = new Vector(ma);
+        Vector _mb = new Vector(mb);
         _ma = _ma.plus(_mb);
         return _ma.toArray();
     }
 
     public static double[][] subtract(double[][] ma, double[][] mb) {
-        TetradMatrix _ma = new TetradMatrix(ma);
-        TetradMatrix _mb = new TetradMatrix(mb);
+        Matrix _ma = new Matrix(ma);
+        Matrix _mb = new Matrix(mb);
         _ma = _ma.minus(_mb);
         return _ma.toArray();
     }
 
     public static double[] subtract(double[] ma, double[] mb) {
-        TetradVector _ma = new TetradVector(ma);
-        TetradVector _mb = new TetradVector(mb);
+        Vector _ma = new Vector(ma);
+        Vector _mb = new Vector(mb);
         _ma = _ma.minus(_mb);
         return _ma.toArray();
     }
@@ -392,12 +389,12 @@ public final class MatrixUtils {
      * Multiplies the given matrix through by the given scalar.
      */
     public static double[][] scalarProduct(double scalar, double[][] m) {
-        TetradMatrix _m = new TetradMatrix(m);
+        Matrix _m = new Matrix(m);
         return _m.scalarMult(scalar).toArray();
     }
 
     public static double[] scalarProduct(double scalar, double[] m) {
-        TetradVector _m = new TetradVector(m);
+        Vector _m = new Vector(m);
         _m = _m.scalarMult(scalar);
         return _m.toArray();
     }
@@ -450,7 +447,7 @@ public final class MatrixUtils {
      * @throws IllegalArgumentException if edgeCoef or errCovar contains an
      * undefined value (Double.NaN).
      */
-    public static TetradMatrix impliedCovar2(TetradMatrix edgeCoef, TetradMatrix errCovar) {
+    public static Matrix impliedCovar2(Matrix edgeCoef, Matrix errCovar) {
         if (containsNaN(edgeCoef)) {
             throw new IllegalArgumentException("Edge coefficient matrix must not "
                     + "contain undefined values. Probably the search put them "
@@ -465,10 +462,10 @@ public final class MatrixUtils {
 
         int sampleSize = 10000;
 
-        TetradMatrix iMinusBInverse = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef).inverse();
+        Matrix iMinusBInverse = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef).inverse();
 
-        TetradMatrix sample = new TetradMatrix(sampleSize, edgeCoef.columns());
-        TetradVector e = new TetradVector((edgeCoef.columns()));
+        Matrix sample = new Matrix(sampleSize, edgeCoef.columns());
+        Vector e = new Vector((edgeCoef.columns()));
 
         for (int i = 0; i < sampleSize; i++) {
             for (int j = 0; j < e.size(); j++) {
@@ -481,7 +478,7 @@ public final class MatrixUtils {
         return sample.transpose().times(sample).scalarMult(1.0 / sampleSize);
     }
 
-    public static TetradMatrix impliedCovar(TetradMatrix edgeCoef, TetradMatrix errCovar) {
+    public static Matrix impliedCovar(Matrix edgeCoef, Matrix errCovar) {
         if (containsNaN(edgeCoef)) {
             System.out.println(edgeCoef);
             throw new IllegalArgumentException("Edge coefficient matrix must not "
@@ -499,23 +496,23 @@ public final class MatrixUtils {
 //        return g.times(errCovar).times(g.transpose());
 //        return g.transpose().times(errCovar).times(g);
         // I - B
-        TetradMatrix m1 = TetradMatrix.identity(edgeCoef.rows()).minus(edgeCoef);
+        Matrix m1 = Matrix.identity(edgeCoef.rows()).minus(edgeCoef);
 //
 //        // (I - B) ^ -1
-        TetradMatrix m3 = m1.inverse();
+        Matrix m3 = m1.inverse();
 //
 //        // ((I - B) ^ -1)'
-        TetradMatrix m4 = m3.transpose();
+        Matrix m4 = m3.transpose();
 //
 //        // ((I - B) ^ -1) Cov(e)
-        TetradMatrix m5 = m3.times(errCovar);
+        Matrix m5 = m3.times(errCovar);
 //
 //        // ((I - B) ^ -1) Cov(e) ((I - B) ^ -1)'
 //
         return m5.times(m4);
     }
 
-    private static boolean containsNaN(TetradMatrix m) {
+    private static boolean containsNaN(Matrix m) {
         for (int i = 0; i < m.rows(); i++) {
             for (int j = 0; j < m.columns(); j++) {
                 if (Double.isNaN(m.get(i, j))) {
@@ -636,12 +633,12 @@ public final class MatrixUtils {
      * --that is, just in case m.length == i and m[0].length == j.
      */
     public static boolean hasDimensions(double[][] m, int i, int j) {
-        TetradMatrix _m = new TetradMatrix(m);
+        Matrix _m = new Matrix(m);
         return _m.rows() == i && _m.columns() == j;
     }
 
     public static double[][] zeros(int rows, int cols) {
-        return new TetradMatrix(rows, cols).toArray();
+        return new Matrix(rows, cols).toArray();
     }
 
     /**
@@ -649,13 +646,13 @@ public final class MatrixUtils {
      * if it would make a valid covariance matrix.
      */
     @SuppressWarnings({"BooleanMethodIsAlwaysInverted"})
-    public static boolean isPositiveDefinite(TetradMatrix matrix) {
+    public static boolean isPositiveDefinite(Matrix matrix) {
 //        DoubleMatrix2D _matrix = new DenseDoubleMatrix2D(matrix.toArray());
 //        System.out.println(MatrixUtils.toString(new CholeskyDecomposition(_matrix).getL().toArray()));
 //        return new CholeskyDecomposition(_matrix).isSymmetricPositiveDefinite();
 
         try {
-            new RectangularCholeskyDecomposition(matrix.getRealMatrix());
+            new RectangularCholeskyDecomposition(new BlockRealMatrix(matrix.toArray()));
         } catch (NonPositiveDefiniteMatrixException e) {
             return false;
         }
@@ -663,9 +660,9 @@ public final class MatrixUtils {
         return true;
     }
 
-    public static TetradMatrix cholesky(TetradMatrix covar) {
-        RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(covar.getRealMatrix()).getL();
-        return new TetradMatrix(L);
+    public static Matrix cholesky(Matrix covar) {
+        RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(new BlockRealMatrix(covar.toArray())).getL();
+        return new Matrix(L.getData());
 
 //        DoubleMatrix2D _covar = new DenseDoubleMatrix2D(covar.toArray());
 //        DoubleMatrix2D l = new CholeskyDecomposition(_covar).getL();
@@ -676,13 +673,13 @@ public final class MatrixUtils {
      * Converts a covariance matrix to a correlation matrix in place; the same
      * matrix is returned for convenience, but m is modified in the process.
      */
-    public static TetradMatrix convertCovToCorr(TetradMatrix m) {
+    public static Matrix convertCovToCorr(Matrix m) {
         if (m.rows() != m.columns()) throw new IllegalArgumentException("Not a square matrix.");
         if (!MatrixUtils.isSymmetric(m.toArray(),0.001)) {
             throw new IllegalArgumentException("Not symmetric with tolerance " + 0.001);
         }
 
-        TetradMatrix corr = m.like();
+        Matrix corr = m.like();
 
         for (int i = 0; i < m.rows(); i++) {
             for (int j = i + 1; j < m.columns(); j++) {

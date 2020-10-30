@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.test;
 
-import cern.colt.list.DoubleArrayList;
-import cern.jet.stat.Descriptive;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
@@ -104,7 +102,7 @@ public class TestSemIm {
         SemPm semPm1 = new SemPm(randomGraph);
         SemIm semIm1 = new SemIm(semPm1);
 
-        TetradMatrix implCovarC = semIm1.getImplCovar(true);
+        Matrix implCovarC = semIm1.getImplCovar(true);
         implCovarC.toArray();
 
         DataSet dataSet = semIm1.simulateDataRecursive(1000, false);
@@ -148,11 +146,11 @@ public class TestSemIm {
 
         DataSet dataSet = semIm.simulateData(500, false);
 
-        TetradMatrix data = dataSet.getDoubleData();
+        Matrix data = dataSet.getDoubleData();
         ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
         double[][] a = cov.getMatrix().toArray();
 
-        double[][] l = MatrixUtils.cholesky(new TetradMatrix(a)).toArray();
+        double[][] l = MatrixUtils.cholesky(new Matrix(a)).toArray();
         double[][] lT = MatrixUtils.transpose(l);
         double[][] product = MatrixUtils.product(l, lT);
 
@@ -207,22 +205,22 @@ public class TestSemIm {
         // X1 = e1
         // X2 = aX1 + e2
 
-        TetradMatrix B = new TetradMatrix(2, 2);
+        Matrix B = new Matrix(2, 2);
         B.set(0, 0, 0);
         B.set(0, 1, 0);
         B.set(1, 0, 5);
         B.set(1, 1, 0);
 
-        TetradMatrix I = TetradAlgebra.identity(2);
-        TetradMatrix iMinusB = TetradAlgebra.identity(2).minus(B);
-        TetradMatrix reduced = iMinusB.inverse();
-        TetradVector e = new TetradVector(2);
+        Matrix I = TetradAlgebra.identity(2);
+        Matrix iMinusB = TetradAlgebra.identity(2).minus(B);
+        Matrix reduced = iMinusB.inverse();
+        Vector e = new Vector(2);
 
         e.set(0, 0.5);
         e.set(1, -2);
 
-        TetradVector x = reduced.times(e);
-        TetradVector d1 = B.times(x);
+        Vector x = reduced.times(e);
+        Vector d1 = B.times(x);
 //        d1.assign(e, PlusMult.plusMult(1));
         d1 = d1.plus(e);
     }

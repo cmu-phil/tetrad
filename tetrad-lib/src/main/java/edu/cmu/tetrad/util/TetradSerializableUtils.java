@@ -69,8 +69,8 @@ public class TetradSerializableUtils {
      */
     private static final Class[] safelySerializableTypes = new Class[]{
             String.class, Class.class, Date.class, Collection.class, Map.class,
-            TetradMatrix.class, Document.class, Normal.class, Uniform.class,
-            BreitWigner.class, Beta.class, TetradVector.class, Number.class,
+            Matrix.class, Document.class, Normal.class, Uniform.class,
+            BreitWigner.class, Beta.class, Vector.class, Number.class,
             DoubleMatrix2D.class, DoubleMatrix1D.class, RealMatrix.class,
             NumberFormat.class, RealVector.class
     };

@@ -30,7 +30,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
  */
 public class RunConfig {
     public static void main(String... args) {
-        new Comparison().configuration("comparison/Config.txt");
+        new Comparison().configuration("comparison/Config");
     }
 }
 

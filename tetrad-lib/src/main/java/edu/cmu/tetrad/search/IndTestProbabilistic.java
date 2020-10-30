@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.statistic.BicDiff;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
@@ -28,14 +29,10 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Uses BCInference by Cooper and Bui to calculate probabilistic conditional independence judgments.
@@ -47,8 +44,7 @@ public class IndTestProbabilistic implements IndependenceTest {
     /**
      * Calculates probabilities of independence for conditional independence facts.
      */
-    private final BCInference bci;
-    // Not
+//    private BCInference bci;
     private boolean threshold = false;
 
     /**
@@ -72,10 +68,14 @@ public class IndTestProbabilistic implements IndependenceTest {
     private Map<IndependenceFact, Double> H;
     private double posterior;
     private boolean verbose = false;
-    
+
     private double cutoff = 0.5;
+    private double priorEquivalentSampleSize = 10;
+
+    private final BCInference bci;
 
     //==========================CONSTRUCTORS=============================//
+
     /**
      * Initializes the test using a discrete data sets.
      */
@@ -85,14 +85,48 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         }
 
-        this.data = dataSet;
+//        for (int i = 0; i < dataSet.getNumRows(); i++) {
+//            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+//                if (dataSet.getInt(i, j) == -99) {
+//                    throw new IllegalArgumentException("Please remove or impute missing values.");
+//                }
+//            }
+//        }
 
-        int[] nodeDimensions = new int[dataSet.getNumColumns() + 2];
+        nodes = dataSet.getVariables();
+
+        indices = new HashMap<>();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            indices.put(nodes.get(i), i);
+        }
+
+        this.data = dataSet;
+        this.H = new HashMap<>();
+
+        int[] _cols = new int[nodes.size()];
+        for (int i = 0; i < _cols.length; i++) _cols[i] = indices.get(nodes.get(i));
+
+        int[] _rows = new int[dataSet.getNumRows()];
+        for (int i = 0; i < dataSet.getNumRows(); i++) _rows[i] = i;
+
+        DataSet _data = data.subsetRowsColumns(_rows, _cols);
+
+        List<Node> nodes = _data.getVariables();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            indices.put(nodes.get(i), i);
+        }
+
+        this.bci = setup(_data);
+    }
+
+    private BCInference setup(DataSet dataSet) {
+        int[] nodeDimensions = new int[dataSet.getNumColumns() + 1];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             DiscreteVariable variable = (DiscreteVariable) (dataSet.getVariable(j));
             int numCategories = variable.getNumCategories();
-//            System.out.println("Variable " + variable + " # cat = " + numCategories);
             nodeDimensions[j + 1] = numCategories;
         }
 
@@ -104,17 +138,9 @@ public class IndTestProbabilistic implements IndependenceTest {
             }
         }
 
-        bci = new BCInference(cases, nodeDimensions);
-
-        nodes = dataSet.getVariables();
-
-        indices = new HashMap<>();
-
-        for (int i = 0; i < nodes.size(); i++) {
-            indices.put(nodes.get(i), i);
-        }
-
-        this.H = new HashMap<>();
+        BCInference bci = new BCInference(cases, nodeDimensions);
+        bci.setPriorEqivalentSampleSize(priorEquivalentSampleSize);
+        return bci;
     }
 
     @Override
@@ -124,7 +150,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     @Override
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[z.size()]);
+        Node[] _z = z.toArray(new Node[0]);
         return isIndependent(x, y, _z);
     }
 
@@ -132,36 +158,66 @@ public class IndTestProbabilistic implements IndependenceTest {
     public boolean isIndependent(Node x, Node y, Node... z) {
         IndependenceFact key = new IndependenceFact(x, y, z);
 
-        double pInd = Double.NaN;
-        
-        if (!H.containsKey(key)) {
-            pInd = probConstraint(BCInference.OP.independent, x, y, z);
-            H.put(key, pInd);
-        }else {
-        	pInd = H.get(key);
+        List<Node> allVars = new ArrayList<>();
+        allVars.add(x);
+        allVars.add(y);
+        Collections.addAll(allVars, z);
+
+        List<Integer> rows = getRows(data, allVars, indices);
+        if (rows.isEmpty()) return true;
+
+        BCInference bci;
+        Map<Node, Integer> indices;
+
+        if (rows.size() == data.getNumRows()) {
+            bci = this.bci;
+            indices = this.indices;
+        } else {
+
+            int[] _cols = new int[allVars.size()];
+            for (int i = 0; i < _cols.length; i++) _cols[i] = this.indices.get(allVars.get(i));
+
+            int[] _rows = new int[rows.size()];
+            for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
+
+            DataSet _data = data.subsetRowsColumns(_rows, _cols);
+
+            List<Node> nodes = _data.getVariables();
+
+            indices = new HashMap<>();
+
+            for (int i = 0; i < nodes.size(); i++) {
+                indices.put(nodes.get(i), i);
+            }
+
+            bci = setup(_data);
         }
 
-        double p = probOp(BCInference.OP.independent, pInd);
+        double pInd;
+
+        if (!H.containsKey(key)) {
+            pInd = probConstraint(bci, BCInference.OP.independent, x, y, z, indices);
+            H.put(key, pInd);
+        } else {
+            pInd = H.get(key);
+        }
+
+        double p = pInd;
 
         this.posterior = p;
 
-        boolean ind ;
-        if (this.threshold){
-        	ind = (p >= cutoff);
-        }
-        else{
-        	ind = RandomUtil.getInstance().nextDouble() < p;
+        boolean ind;
+        if (this.threshold) {
+            ind = (p >= cutoff);
+        } else {
+            ind = RandomUtil.getInstance().nextDouble() < p;
         }
 
-        if (ind) {
-            return true;
-        } else {
-            return false;
-        }
+        return ind;
     }
 
-   
-    public double probConstraint(BCInference.OP op, Node x, Node y, Node[] z) {
+
+    public double probConstraint(BCInference bci, BCInference.OP op, Node x, Node y, Node[] z, Map<Node, Integer> indices) {
 
         int _x = indices.get(x) + 1;
         int _y = indices.get(y) + 1;
@@ -177,7 +233,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     @Override
     public boolean isDependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[z.size()]);
+        Node[] _z = z.toArray(new Node[0]);
         return !isIndependent(x, y, _z);
     }
 
@@ -222,7 +278,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     @Override
     public double getAlpha() {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("The Probabiistic Test doesn't use an alpha parameter");
     }
 
     @Override
@@ -251,7 +307,7 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 
@@ -262,18 +318,6 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     public Map<IndependenceFact, Double> getH() {
         return new HashMap<>(H);
-    }
-
-    private double probOp(BCInference.OP type, double pInd) {
-        double probOp;
-
-        if (BCInference.OP.independent == type) {
-            probOp = pInd;
-        } else {
-            probOp = 1.0 - pInd;
-        }
-
-        return probOp;
     }
 
     public double getPosterior() {
@@ -290,16 +334,32 @@ public class IndTestProbabilistic implements IndependenceTest {
         this.verbose = verbose;
     }
 
-	/**
-	 * @param noRandomizedGeneratingConstraints
-	 */
-	public void setThreshold(boolean noRandomizedGeneratingConstraints) {
-		this.threshold = noRandomizedGeneratingConstraints;
-	}
+    public void setThreshold(boolean noRandomizedGeneratingConstraints) {
+        this.threshold = noRandomizedGeneratingConstraints;
+    }
 
-	public void setCutoff(double cutoff) {
-		this.cutoff = cutoff;
-	}
+    public void setCutoff(double cutoff) {
+        this.cutoff = cutoff;
+    }
+
+    public void setPriorEquivalentSampleSize(double priorEquivalentSampleSize) {
+        this.priorEquivalentSampleSize = priorEquivalentSampleSize;
+    }
+
+    private List<Integer> getRows(DataSet dataSet, List<Node> allVars, Map<Node, Integer> nodesHash) {
+        List<Integer> rows = new ArrayList<>();
+
+        K:
+        for (int k = 0; k < dataSet.getNumRows(); k++) {
+            for (Node node : allVars) {
+                if (dataSet.getInt(k, nodesHash.get(node)) == -99) continue K;
+            }
+
+            rows.add(k);
+        }
+
+        return rows;
+    }
 }
 
 

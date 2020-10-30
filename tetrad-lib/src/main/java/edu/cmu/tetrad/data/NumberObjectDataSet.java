@@ -630,6 +630,23 @@ public final class NumberObjectDataSet
         }
     }
 
+    @Override
+    public boolean existsMissingValue() {
+        for (int i = 0; i < getNumRows(); i++) {
+            for (int j = 0; j < getNumColumns(); j++) {
+                if (variables.get(j) instanceof ContinuousVariable) {
+                    if (Double.isNaN(getDouble(i, j))) return true;
+                }
+
+                if (variables.get(j) instanceof DiscreteVariable) {
+                    if (getInt(i, j) == -99) return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * @return true iff the given column has been marked as selected.
      */
@@ -846,7 +863,7 @@ public final class NumberObjectDataSet
      * not the desired behavior, missing values can be removed or imputed
      * first.
      */
-    public final TetradMatrix getCorrelationMatrix() {
+    public final Matrix getCorrelationMatrix() {
         if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
@@ -862,12 +879,12 @@ public final class NumberObjectDataSet
      * that's not the desired behavior, missing values can be removed or imputed
      * first.
      */
-    public final TetradMatrix getCovarianceMatrix() {
+    public final Matrix getCovarianceMatrix() {
         if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
 
-        TetradMatrix cov = new TetradMatrix(data[0].length, data[0].length);
+        Matrix cov = new Matrix(data[0].length, data[0].length);
 
         double[] x = new double[data.length];
         double[] y = new double[data.length];
@@ -1032,8 +1049,8 @@ public final class NumberObjectDataSet
      * @see #getVariables
 //     * @see #isMulipliersCollapsed()
      */
-    public final TetradMatrix getDoubleData() {
-        TetradMatrix copy = new TetradMatrix(data.length, data[0].length);
+    public final Matrix getDoubleData() {
+        Matrix copy = new Matrix(data.length, data[0].length);
 
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[0].length; j++) {
@@ -1097,6 +1114,13 @@ public final class NumberObjectDataSet
         }
 
         return _data;
+    }
+
+    @Override
+    public DataSet subsetRowsColumns(int[] rows, int[] columns) {
+        DataSet dataSet = subsetRows(rows);
+        dataSet = dataSet.subsetColumns(columns);
+        return dataSet;
     }
 
     /**

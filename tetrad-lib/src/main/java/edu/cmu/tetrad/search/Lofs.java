@@ -30,6 +30,7 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 
 import java.util.*;
 
@@ -449,7 +450,7 @@ public class Lofs {
         DATASET:
         for (int m = 0; m < dataSets.size(); m++) {
             RegressionResult result = regressions.get(m).regress(target, regressors);
-            TetradVector residualsSingleDataset = result.getResiduals();
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -510,7 +511,7 @@ public class Lofs {
         DATASET:
         for (int m = 0; m < dataSets.size(); m++) {
             RegressionResult result = regressions.get(m).regress(target, regressors);
-            TetradVector residualsSingleDataset = result.getResiduals();
+            Vector residualsSingleDataset = result.getResiduals();
             DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
@@ -570,7 +571,7 @@ public class Lofs {
         DATASET:
         for (int m = 0; m < dataSets.size(); m++) {
             RegressionResult result = regressions.get(m).regress(target, regressors);
-            TetradVector residualsSingleDataset = result.getResiduals();
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -626,7 +627,7 @@ public class Lofs {
         DATASET:
         for (int m = 0; m < dataSets.size(); m++) {
             RegressionResult result = regressions.get(m).regress(target, regressors);
-            TetradVector residualsSingleDataset = result.getResiduals();
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -678,7 +679,7 @@ public class Lofs {
         DATASET:
         for (int m = 0; m < dataSets.size(); m++) {
             RegressionResult result = regressions.get(m).regress(target, regressors);
-            TetradVector residualsSingleDataset = result.getResiduals();
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -730,7 +731,7 @@ public class Lofs {
         DATASET:
         for (int m = 0; m < dataSets.size(); m++) {
             RegressionResult result = regressions.get(m).regress(target, regressors);
-            TetradVector residualsSingleDataset = result.getResiduals();
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {

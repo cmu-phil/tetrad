@@ -25,8 +25,8 @@ import edu.cmu.tetrad.cluster.metrics.Dissimilarity;
 import edu.cmu.tetrad.cluster.metrics.SquaredErrorLoss;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Vector;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -65,12 +65,12 @@ public class KMeans implements ClusteringAlgorithm {
     /**
      * The data, columns as features, rows as cases.
      */
-    private TetradMatrix data;
+    private Matrix data;
 
     /**
      * The centers.
      */
-    private TetradMatrix centers;
+    private Matrix centers;
 
     /**
      * The maximum number of interations.
@@ -158,7 +158,7 @@ public class KMeans implements ClusteringAlgorithm {
      *                of columns in the data (that is, features).
      * @return The constructed algorithm.
      */
-    public static KMeans explicitPoints(TetradMatrix centers) {
+    public static KMeans explicitPoints(Matrix centers) {
         KMeans algorithm = new KMeans();
         algorithm.centers = centers;
 
@@ -171,7 +171,7 @@ public class KMeans implements ClusteringAlgorithm {
      * Runs the batch K-means clustering algorithm on the data, returning a
      * result.
      */
-    public void cluster(TetradMatrix data) {
+    public void cluster(Matrix data) {
         this.data = data;
 
         if (initializationType == RANDOM_POINTS) {
@@ -182,7 +182,7 @@ public class KMeans implements ClusteringAlgorithm {
                 clusters.add(-1);
             }
         } else if (initializationType == RANDOM_CLUSTERS) {
-            centers = new TetradMatrix(numCenters, data.columns());
+            centers = new Matrix(numCenters, data.columns());
 
             // Randomly assign points to clusters and get the initial centers of
             // mass from that assignment.
@@ -253,7 +253,7 @@ public class KMeans implements ClusteringAlgorithm {
         return clusters;
     }
 
-    public TetradMatrix getPrototypes() {
+    public Matrix getPrototypes() {
         return centers.copy();
     }
 
@@ -315,8 +315,8 @@ public class KMeans implements ClusteringAlgorithm {
 
         for (int i = 0; i < data.rows(); i++) {
             if (clusters.get(i) == k) {
-                TetradVector datum = data.getRow(i);
-                TetradVector center = centers.getRow(k);
+                Vector datum = data.getRow(i);
+                Vector center = centers.getRow(k);
                 squaredError += metric.dissimilarity(datum, center);
             }
         }
@@ -344,7 +344,7 @@ public class KMeans implements ClusteringAlgorithm {
     public String toString() {
         NumberFormat n1 = NumberFormatUtil.getInstance().getNumberFormat();
 
-        TetradVector counts = countClusterSizes();
+        Vector counts = countClusterSizes();
         double totalSquaredError = totalSquaredError();
 
         StringBuilder buf = new StringBuilder();
@@ -368,12 +368,12 @@ public class KMeans implements ClusteringAlgorithm {
         int numChanged = 0;
 
         for (int i = 0; i < data.rows(); i++) {
-            TetradVector datum = data.getRow(i);
+            Vector datum = data.getRow(i);
             double minDissimilarity = Double.POSITIVE_INFINITY;
             int cluster = -1;
 
             for (int k = 0; k < centers.rows(); k++) {
-                TetradVector center = centers.getRow(k);
+                Vector center = centers.getRow(k);
                 double dissimilarity = getMetric().dissimilarity(datum, center);
 
                 if (dissimilarity < minDissimilarity) {
@@ -415,7 +415,7 @@ public class KMeans implements ClusteringAlgorithm {
         }
     }
 
-    private TetradMatrix pickCenters(int numCenters, TetradMatrix data) {
+    private Matrix pickCenters(int numCenters, Matrix data) {
         SortedSet<Integer> indexSet = new TreeSet<>();
 
         while (indexSet.size() < numCenters) {
@@ -447,8 +447,8 @@ public class KMeans implements ClusteringAlgorithm {
 //        return DissimilarityMeasures.squaredEuclideanDistance(d1, d2);
 //    }
 
-    private TetradVector countClusterSizes() {
-        TetradVector counts = new TetradVector(centers.rows());
+    private Vector countClusterSizes() {
+        Vector counts = new Vector(centers.rows());
 
         for (int cluster : clusters) {
             if (cluster == -1) {

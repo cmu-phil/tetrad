@@ -1,11 +1,14 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,15 +22,16 @@ import java.util.List;
         command = "disc-bic-test",
         dataType = DataType.Discrete
 )
+@Experimental
 public class DiscreteBicTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        Score score = new BicScore(DataUtils.getDiscreteDataSet(dataSet));
-//        score.setSamplePrior(parameters.getDouble("samplePrior"));
-//        score.setStructurePrior(parameters.getDouble("structurePrior"));
+        BicScore score = new BicScore(DataUtils.getDiscreteDataSet(dataSet));
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         return new IndTestScore(score);
     }
 
@@ -44,8 +48,8 @@ public class DiscreteBicTest implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-//        parameters.add("samplePrior");
-//        parameters.add("structurePrior");
+        parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.STRUCTURE_PRIOR);
         return parameters;
     }
 }

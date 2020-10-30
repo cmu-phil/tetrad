@@ -21,13 +21,13 @@
 
 package edu.cmu.tetrad.cluster.metrics;
 
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Vector;
 
 /**
  * Interface for a dissilimarity metric.
  */
 public interface Dissimilarity {
-    double dissimilarity(TetradVector v1, TetradVector v2);
+    double dissimilarity(Vector v1, Vector v2);
 }
 
 

@@ -289,7 +289,7 @@ public class ParameterTab extends JPanel {
                 simulation.getParams().getString("simulationsDropdownPreference", simulationItems[0]));
         simulationsDropdown.addActionListener(e -> refreshParameters());
 
-        simOptBox.add(createLabeledComponent("Type of Simulation Model: ", simulationsDropdown));
+        simOptBox.add(createLabeledComponent("For a New Simulation, Select (or re-select) Type: ", simulationsDropdown));
         simOptBox.add(Box.createVerticalStrut(20));
 
         return simOptBox;

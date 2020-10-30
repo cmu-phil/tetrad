@@ -24,6 +24,7 @@ package edu.cmu.tetrad.data;
 import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -128,11 +129,7 @@ public final class DataUtils {
             DataSet inData, double[] probs) {
         DataSet outData;
 
-        try {
-            outData = new MarshalledObject<>(inData).get();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        outData = inData.copy();
 
         if (probs.length != outData.getNumColumns()) {
             throw new IllegalArgumentException(
@@ -146,14 +143,19 @@ public final class DataUtils {
         }
 
         for (int j = 0; j < outData.getNumColumns(); j++) {
-            Node variable = outData.getVariable(j);
+            Node node = outData.getVariable(j);
 
-            for (int i = 0; i < outData.getNumRows(); i++) {
-                double test = RandomUtil.getInstance().nextDouble();
-
-                if (test < probs[j]) {
-                    outData.setObject(i, j,
-                            ((Variable) variable).getMissingValueMarker());
+            if (node instanceof ContinuousVariable) {
+                for (int i = 0; i < outData.getNumRows(); i++) {
+                    if (RandomUtil.getInstance().nextDouble() < probs[j]) {
+                        outData.setDouble(i, j, Double.NaN);
+                    }
+                }
+            } else if (node instanceof DiscreteVariable) {
+                for (int i = 0; i < outData.getNumRows(); i++) {
+                    if (RandomUtil.getInstance().nextDouble() < probs[j]) {
+                        outData.setInt(i, j, -99);
+                    }
                 }
             }
         }
@@ -217,7 +219,7 @@ public final class DataUtils {
     public static DataSet continuousSerializableInstance() {
         List<Node> variables = new LinkedList<>();
         variables.add(new ContinuousVariable("X"));
-        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox( 10, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(10, variables.size()), variables);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
@@ -243,7 +245,7 @@ public final class DataUtils {
     /**
      * @return true iff the data sets contains a missing value.
      */
-    public static boolean containsMissingValue(TetradMatrix data) {
+    public static boolean containsMissingValue(Matrix data) {
         for (int i = 0; i < data.rows(); i++) {
             for (int j = 0; j < data.columns(); j++) {
                 if (Double.isNaN(data.get(i, j))) {
@@ -281,7 +283,6 @@ public final class DataUtils {
     }
 
     /**
-     *
      * Log or unlog data
      *
      * @param data
@@ -289,8 +290,8 @@ public final class DataUtils {
      * @param isUnlog
      * @return
      */
-    public static TetradMatrix logData(TetradMatrix data, double a, boolean isUnlog, int base) {
-        TetradMatrix copy = data.copy();
+    public static Matrix logData(Matrix data, double a, boolean isUnlog, int base) {
+        Matrix copy = data.copy();
 
         for (int j = 0; j < copy.columns(); j++) {
 
@@ -299,9 +300,9 @@ public final class DataUtils {
                     if (base == 0) {
                         copy.set(i, j, Math.exp(copy.get(i, j)) - a);
                     } else {
-                        copy.set(i, j, Math.pow(base,(copy.get(i, j))) - a);
+                        copy.set(i, j, Math.pow(base, (copy.get(i, j))) - a);
                     }
-                }  else {
+                } else {
                     if (base == 0) {
                         copy.set(i, j, Math.log(a + copy.get(i, j)));
                     } else {
@@ -315,8 +316,8 @@ public final class DataUtils {
     }
 
 
-    public static TetradMatrix standardizeData(TetradMatrix data) {
-        TetradMatrix data2 = data.copy();
+    public static Matrix standardizeData(Matrix data) {
+        Matrix data2 = data.copy();
 
         for (int j = 0; j < data2.columns(); j++) {
             double sum = 0.0;
@@ -417,7 +418,7 @@ public final class DataUtils {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
             }
 
-            TetradMatrix data2 = DataUtils.standardizeData(dataSet.getDoubleData());
+            Matrix data2 = DataUtils.standardizeData(dataSet.getDoubleData());
 
             DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), dataSet.getVariables());
             outList.add(dataSet2);
@@ -468,8 +469,8 @@ public final class DataUtils {
         return d2;
     }
 
-    public static TetradMatrix centerData(TetradMatrix data) {
-        TetradMatrix data2 = data.copy();
+    public static Matrix centerData(Matrix data) {
+        Matrix data2 = data.copy();
 
         for (int j = 0; j < data2.columns(); j++) {
             double sum = 0.0;
@@ -513,7 +514,7 @@ public final class DataUtils {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
             }
 
-            TetradMatrix data2 = DataUtils.centerData(dataSet.getDoubleData());
+            Matrix data2 = DataUtils.centerData(dataSet.getDoubleData());
             List<Node> list = dataSet.getVariables();
             List<Node> list2 = new ArrayList<>();
 
@@ -555,7 +556,7 @@ public final class DataUtils {
     /**
      * @return the submatrix of m with variables in the order of the x variables.
      */
-    public static TetradMatrix subMatrix(ICovarianceMatrix m, Node x, Node y, List<Node> z) {
+    public static Matrix subMatrix(ICovarianceMatrix m, Node x, Node y, List<Node> z) {
         if (x == null) {
             throw new NullPointerException();
         }
@@ -588,7 +589,7 @@ public final class DataUtils {
         }
 
         // Extract submatrix of correlation matrix using this index array.
-        TetradMatrix submatrix = m.getSelection(indices, indices);
+        Matrix submatrix = m.getSelection(indices, indices);
 
         if (containsMissingValue(submatrix)) {
             throw new IllegalArgumentException(
@@ -601,7 +602,7 @@ public final class DataUtils {
     /**
      * @return the submatrix of m with variables in the order of the x variables.
      */
-    public static TetradMatrix subMatrix(TetradMatrix m, List<Node> variables, Node x, Node y, List<Node> z) {
+    public static Matrix subMatrix(Matrix m, List<Node> variables, Node x, Node y, List<Node> z) {
         if (x == null) {
             throw new NullPointerException();
         }
@@ -643,7 +644,7 @@ public final class DataUtils {
     /**
      * @return the submatrix of m with variables in the order of the x variables.
      */
-    public static TetradMatrix subMatrix(TetradMatrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
+    public static Matrix subMatrix(Matrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
         if (x == null) {
             throw new NullPointerException();
         }
@@ -679,7 +680,7 @@ public final class DataUtils {
     /**
      * @return the submatrix of m with variables in the order of the x variables.
      */
-    public static TetradMatrix subMatrix(ICovarianceMatrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
+    public static Matrix subMatrix(ICovarianceMatrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
 //        if (x == null) {
 //            throw new NullPointerException();
 //        }
@@ -789,9 +790,9 @@ public final class DataUtils {
         int rows2 = dataSet2.getNumRows();
         int cols1 = dataSet1.getNumColumns();
 
-        TetradMatrix concatMatrix = new TetradMatrix(rows1 + rows2, cols1);
-        TetradMatrix matrix1 = dataSet1.getDoubleData();
-        TetradMatrix matrix2 = dataSet2.getDoubleData();
+        Matrix concatMatrix = new Matrix(rows1 + rows2, cols1);
+        Matrix matrix1 = dataSet1.getDoubleData();
+        Matrix matrix2 = dataSet2.getDoubleData();
 
         for (int i = 0; i < vars1.size(); i++) {
             int var2 = varMap2.get(vars1.get(i).getName());
@@ -834,19 +835,19 @@ public final class DataUtils {
         return concatenate(_dataSets);
     }
 
-    public static TetradMatrix concatenate(TetradMatrix... dataSets) {
+    public static Matrix concatenate(Matrix... dataSets) {
         int totalSampleSize = 0;
 
-        for (TetradMatrix dataSet : dataSets) {
+        for (Matrix dataSet : dataSets) {
             totalSampleSize += dataSet.rows();
         }
 
         int numColumns = dataSets[0].columns();
-        TetradMatrix allData = new TetradMatrix(totalSampleSize, numColumns);
+        Matrix allData = new Matrix(totalSampleSize, numColumns);
         int q = 0;
         int r;
 
-        for (TetradMatrix dataSet : dataSets) {
+        for (Matrix dataSet : dataSets) {
             r = dataSet.rows();
 
             for (int i = 0; i < r; i++) {
@@ -870,12 +871,12 @@ public final class DataUtils {
         }
 
         int numColumns = dataSets.get(0).getNumColumns();
-        TetradMatrix allData = new TetradMatrix(totalSampleSize, numColumns);
+        Matrix allData = new Matrix(totalSampleSize, numColumns);
         int q = 0;
         int r;
 
         for (DataSet dataSet : dataSets) {
-            TetradMatrix _data = dataSet.getDoubleData();
+            Matrix _data = dataSet.getDoubleData();
             r = _data.rows();
 
             for (int i = 0; i < r; i++) {
@@ -890,19 +891,19 @@ public final class DataUtils {
         return new BoxDataSet(new VerticalDoubleDataBox(allData.transpose().toArray()), dataSets.get(0).getVariables());
     }
 
-    public static TetradMatrix concatenateTetradMatrices(List<TetradMatrix> dataSets) {
+    public static Matrix concatenateTetradMatrices(List<Matrix> dataSets) {
         int totalSampleSize = 0;
 
-        for (TetradMatrix dataSet : dataSets) {
+        for (Matrix dataSet : dataSets) {
             totalSampleSize += dataSet.rows();
         }
 
         int numColumns = dataSets.get(0).columns();
-        TetradMatrix allData = new TetradMatrix(totalSampleSize, numColumns);
+        Matrix allData = new Matrix(totalSampleSize, numColumns);
         int q = 0;
         int r;
 
-        for (TetradMatrix _data : dataSets) {
+        for (Matrix _data : dataSets) {
             r = _data.rows();
 
             for (int i = 0; i < r; i++) {
@@ -925,12 +926,12 @@ public final class DataUtils {
         }
 
         int numRows = dataSets.get(0).getNumRows();
-        TetradMatrix allData = new TetradMatrix(numRows, totalNumColumns);
+        Matrix allData = new Matrix(numRows, totalNumColumns);
         int q = 0;
         int cc;
 
         for (DataSet dataSet : dataSets) {
-            TetradMatrix _data = dataSet.getDoubleData();
+            Matrix _data = dataSet.getDoubleData();
             cc = _data.columns();
 
             for (int jj = 0; jj < cc; jj++) {
@@ -959,7 +960,7 @@ public final class DataUtils {
             rows += dataset.getNumRows();
         }
 
-        TetradMatrix concatMatrix = new TetradMatrix(rows, vars1.size());
+        Matrix concatMatrix = new Matrix(rows, vars1.size());
 
         int index = 0;
 
@@ -1024,7 +1025,7 @@ public final class DataUtils {
         System.out.println("Anderson Darling P value for Variables\n");
 
         NumberFormat nf = new DecimalFormat("0.0000");
-        TetradMatrix m = dataSet.getDoubleData();
+        Matrix m = dataSet.getDoubleData();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             double[] x = m.getColumn(j).toArray();
@@ -1051,13 +1052,13 @@ public final class DataUtils {
         return latentVars.isEmpty() ? fullDataSet : fullDataSet.subsetColumns(measuredVars);
     }
 
-    public static TetradMatrix cov2(TetradMatrix data) {
-        RealMatrix covarianceMatrix = new Covariance(data.getRealMatrix()).getCovarianceMatrix();
-        return new TetradMatrix(covarianceMatrix, covarianceMatrix.getRowDimension(), covarianceMatrix.getColumnDimension());
+    public static Matrix cov2(Matrix data) {
+        RealMatrix covarianceMatrix = new Covariance(new BlockRealMatrix(data.toArray())).getCovarianceMatrix();
+        return new Matrix(covarianceMatrix.getData());
     }
 
-    public static TetradVector means(TetradMatrix data) {
-        TetradVector means = new TetradVector(data.columns());
+    public static Vector means(Matrix data) {
+        Vector means = new Vector(data.columns());
 
         for (int j = 0; j < means.size(); j++) {
             double sum = 0.0;
@@ -1083,8 +1084,8 @@ public final class DataUtils {
     /**
      * Column major data.
      */
-    public static TetradVector means(double[][] data) {
-        TetradVector means = new TetradVector(data.length);
+    public static Vector means(double[][] data) {
+        Vector means = new Vector(data.length);
         int rows = data[0].length;
 
         for (int j = 0; j < means.size(); j++) {
@@ -1108,7 +1109,7 @@ public final class DataUtils {
         return means;
     }
 
-    public static void demean(TetradMatrix data, TetradVector means) {
+    public static void demean(Matrix data, Vector means) {
         for (int j = 0; j < data.columns(); j++) {
             for (int i = 0; i < data.rows(); i++) {
                 data.set(i, j, data.get(i, j) - means.get(j));
@@ -1119,7 +1120,7 @@ public final class DataUtils {
     /**
      * Column major data.
      */
-    public static void demean(double[][] data, TetradVector means) {
+    public static void demean(double[][] data, Vector means) {
         int rows = data[0].length;
 
         for (int j = 0; j < data.length; j++) {
@@ -1129,7 +1130,7 @@ public final class DataUtils {
         }
     }
 
-    public static void remean(TetradMatrix data, TetradVector means) {
+    public static void remean(Matrix data, Vector means) {
         for (int j = 0; j < data.columns(); j++) {
             for (int i = 0; i < data.rows(); i++) {
                 data.set(i, j, data.get(i, j) + means.get(j));
@@ -1137,9 +1138,9 @@ public final class DataUtils {
         }
     }
 
-    public static TetradMatrix covDemeaned(TetradMatrix data) {
-        TetradMatrix transpose = data.transpose();
-        TetradMatrix prod = transpose.times(data);
+    public static Matrix covDemeaned(Matrix data) {
+        Matrix transpose = data.transpose();
+        Matrix prod = transpose.times(data);
 
         double factor = 1.0 / (data.rows() - 1);
 
@@ -1154,7 +1155,7 @@ public final class DataUtils {
 //        return prod.scalarMult(1.0 / (data.rows() - 1));
     }
 
-    public static TetradMatrix cov(TetradMatrix data) {
+    public static Matrix cov(Matrix data) {
 
 
         for (int j = 0; j < data.columns(); j++) {
@@ -1171,11 +1172,11 @@ public final class DataUtils {
             }
         }
 
-        RealMatrix q = data.getRealMatrix();
+        RealMatrix q = new BlockRealMatrix(data.toArray());
 
         RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
         RealMatrix q2 = times(q1, q);
-        TetradMatrix prod = new TetradMatrix(q2, q.getColumnDimension(), q.getColumnDimension());
+        Matrix prod = new Matrix(q2.getData());
 
         double factor = 1.0 / (data.rows() - 1);
 
@@ -1203,15 +1204,15 @@ public final class DataUtils {
 
         System.out.println(MatrixUtils.transposeWithoutCopy(m).multiply(m));
 
-        TetradMatrix n = new TetradMatrix(m, m.getRowDimension(), m.getColumnDimension());
+        Matrix n = new Matrix(m.getData());
 
         System.out.println(n);
 
-        RealMatrix q = n.getRealMatrix();
+        RealMatrix q = new BlockRealMatrix(n.toArray());
 
         RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
         RealMatrix q2 = times(q1, q);
-        System.out.println(new TetradMatrix(q2, q.getColumnDimension(), q.getColumnDimension()));
+        System.out.println(new Matrix(q2.getData()));
     }
 
     private static RealMatrix times(final RealMatrix m, final RealMatrix n) {
@@ -1262,11 +1263,11 @@ public final class DataUtils {
     }
 
     // for online learning.
-    public static TetradMatrix onlineCov(TetradMatrix data) {
+    public static Matrix onlineCov(Matrix data) {
         int N = data.rows();
         int M = data.columns();
 
-        TetradMatrix cov = new TetradMatrix(M, M);
+        Matrix cov = new Matrix(M, M);
 
         double[] m = new double[M];
         double[] d = new double[M];
@@ -1339,8 +1340,8 @@ public final class DataUtils {
 //
 //    }
 
-    public static TetradVector mean(TetradMatrix data) {
-        TetradVector mean = new TetradVector(data.columns());
+    public static Vector mean(Matrix data) {
+        Vector mean = new Vector(data.columns());
 
         for (int i = 0; i < data.columns(); i++) {
             mean.set(i, StatUtils.mean(data.getColumn(i).toArray()));
@@ -1360,9 +1361,9 @@ public final class DataUtils {
 
         List<Node> variables = cov.getVariables();
         DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
-        TetradMatrix _cov = cov.getMatrix().copy();
+        Matrix _cov = cov.getMatrix().copy();
 
-        TetradMatrix cholesky = MatrixUtils.cholesky(_cov);
+        Matrix cholesky = MatrixUtils.cholesky(_cov);
 
         System.out.println("Cholesky decomposition" + cholesky);
 
@@ -1409,7 +1410,7 @@ public final class DataUtils {
      * @return a sample with replacement with the given sample size from the
      * given dataset.
      */
-    public static TetradMatrix getBootstrapSample(TetradMatrix data, int sampleSize) {
+    public static Matrix getBootstrapSample(Matrix data, int sampleSize) {
         int actualSampleSize = data.rows();
 
         int[] rows = new int[sampleSize];
@@ -1429,27 +1430,27 @@ public final class DataUtils {
      * given dataset.
      */
     public static DataSet getResamplingDataset(DataSet data, int sampleSize) {
-    	int actualSampleSize = data.getNumRows();
-    	int _size = sampleSize;
-    	if(actualSampleSize < _size) {
-    		_size = actualSampleSize;
-    	}
-    	
-    	List<Integer> availRows = new ArrayList<>();
-    	for (int i = 0; i < actualSampleSize; i++) {
-    		availRows.add(i);
-    	}
-    	
-    	Collections.shuffle(availRows);
-    	
-    	List<Integer> addedRows = new ArrayList<>();
+        int actualSampleSize = data.getNumRows();
+        int _size = sampleSize;
+        if (actualSampleSize < _size) {
+            _size = actualSampleSize;
+        }
+
+        List<Integer> availRows = new ArrayList<>();
+        for (int i = 0; i < actualSampleSize; i++) {
+            availRows.add(i);
+        }
+
+        Collections.shuffle(availRows);
+
+        List<Integer> addedRows = new ArrayList<>();
         int[] rows = new int[_size];
-    	for (int i = 0; i < _size; i++) {
+        for (int i = 0; i < _size; i++) {
             int row = -1;
             int index = -1;
-            while(row == -1 || addedRows.contains(row)) {
-            	index = RandomUtil.getInstance().nextInt(availRows.size());
-            	row = availRows.get(index);
+            while (row == -1 || addedRows.contains(row)) {
+                index = RandomUtil.getInstance().nextInt(availRows.size());
+                row = availRows.get(index);
             }
             rows[i] = row;
             addedRows.add(row);
@@ -1545,11 +1546,11 @@ public final class DataUtils {
      * @param n       The returned sample size, n[0]. Provide a length 1 array.
      * @return The reduced covariance matrix.
      */
-    public static TetradMatrix covMatrixForDefinedRows(DataSet dataSet, int[] vars, int[] n) {
+    public static Matrix covMatrixForDefinedRows(DataSet dataSet, int[] vars, int[] n) {
         DataSet _dataSet = dataSet.copy();
         _dataSet = center(_dataSet);
 
-        TetradMatrix reduced = new TetradMatrix(vars.length, vars.length);
+        Matrix reduced = new Matrix(vars.length, vars.length);
 
         List<Integer> rows = new ArrayList<>();
 
@@ -1650,7 +1651,11 @@ public final class DataUtils {
         List<DataSet> ret = new ArrayList<>();
 
         for (DataSet m : dataSets) {
-            DataSet data = m.subsetColumns(vars);
+            List<Node> myVars = new ArrayList<>();
+            for (Node n1 : variables) {
+                myVars.add(m.getVariable(n1.getName()));
+            }
+            DataSet data = m.subsetColumns(myVars);
             data.setName(m.getName() + ".reordered");
             ret.add(data);
         }
@@ -1678,7 +1683,7 @@ public final class DataUtils {
 
     public static ICovarianceMatrix covarianceNonparanormalDrton(DataSet dataSet) {
         final CovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
-        final TetradMatrix data = dataSet.getDoubleData();
+        final Matrix data = dataSet.getDoubleData();
         final int NTHREDS = Runtime.getRuntime().availableProcessors() * 10;
         final int EPOCH_COUNT = 100000;
 
@@ -1783,8 +1788,8 @@ public final class DataUtils {
 //    }
 
     public static DataSet getNonparanormalTransformed(DataSet dataSet) {
-        final TetradMatrix data = dataSet.getDoubleData();
-        final TetradMatrix X = data.like();
+        final Matrix data = dataSet.getDoubleData();
+        final Matrix X = data.like();
         final double n = dataSet.getNumRows();
         final double delta = 1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
 
@@ -1815,13 +1820,13 @@ public final class DataUtils {
                 x[i] += mu1;
             }
 
-            X.assignColumn(j, new TetradVector(x));
+            X.assignColumn(j, new Vector(x));
         }
 
         return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
     }
 
-    private static double[] ranks(TetradMatrix data, double[] x) {
+    private static double[] ranks(Matrix data, double[] x) {
         double[] ranks = new double[x.length];
 
         for (int i = 0; i < data.rows(); i++) {

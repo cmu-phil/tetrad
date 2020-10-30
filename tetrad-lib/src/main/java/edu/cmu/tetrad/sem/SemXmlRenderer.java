@@ -60,7 +60,7 @@ public class SemXmlRenderer {
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, measuredNode.getName()));
             variable.addAttribute(new Attribute(SemXmlConstants.IS_LATENT, "no"));
-            variable.addAttribute(new Attribute(SemXmlConstants.MEAN, Double.toString(semIm.getMean(measuredNode))));
+            variable.addAttribute(new Attribute(SemXmlConstants.INTERCEPT, Double.toString(semIm.getIntercept(measuredNode))));
             variable.addAttribute(new Attribute(SemXmlConstants.X, Integer.toString(measuredNode.getCenterX())));
             variable.addAttribute(new Attribute(SemXmlConstants.Y, Integer.toString(measuredNode.getCenterY())));
             variablesElement.appendChild(variable);
@@ -70,7 +70,7 @@ public class SemXmlRenderer {
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, latentNode.getName()));
             variable.addAttribute(new Attribute(SemXmlConstants.IS_LATENT, "yes"));
-            variable.addAttribute(new Attribute(SemXmlConstants.MEAN, Double.toString(semIm.getMean(latentNode))));
+            variable.addAttribute(new Attribute(SemXmlConstants.INTERCEPT, Double.toString(semIm.getIntercept(latentNode))));
             variable.addAttribute(new Attribute(SemXmlConstants.X, Integer.toString(latentNode.getCenterX())));
             variable.addAttribute(new Attribute(SemXmlConstants.Y, Integer.toString(latentNode.getCenterY())));
             variablesElement.appendChild(variable);
@@ -89,7 +89,7 @@ public class SemXmlRenderer {
                 edge = new Element(SemXmlConstants.EDGE);
                 edge.addAttribute(new Attribute(SemXmlConstants.CAUSE_NODE, param.getNodeA().getName()));
                 edge.addAttribute(new Attribute(SemXmlConstants.EFFECT_NODE, param.getNodeB().getName()));
-                edge.addAttribute(new Attribute(SemXmlConstants.VALUE, Double.toString(semIm.getParamValue(param))));
+                edge.addAttribute(new Attribute(SemXmlConstants.COEF, Double.toString(semIm.getParamValue(param))));
                 edge.addAttribute(new Attribute(SemXmlConstants.FIXED, Boolean.valueOf(param.isFixed()).toString()));
                 edgesElement.appendChild(edge);
             }
@@ -106,9 +106,10 @@ public class SemXmlRenderer {
         semGraph.setShowErrorTerms(true);
 
         for (Node node : getExogenousNodes(semGraph)) {
+//            Node graphNode = semGraph.getChildren(node).get(0);
             normal = new Element(SemXmlConstants.NORMAL);
             normal.addAttribute(new Attribute(SemXmlConstants.VARIABLE, node.getName()));
-            normal.addAttribute(new Attribute(SemXmlConstants.MEAN, "0.0"));
+//            normal.addAttribute(new Attribute(SemXmlConstants.INTERCEPT, Double.toString(semIm.getIntercept(graphNode))));
             normal.addAttribute(new Attribute(SemXmlConstants.VARIANCE, Double.toString(semIm.getParamValue(node, node))));
             marginalErrorElement.appendChild(normal);
         }

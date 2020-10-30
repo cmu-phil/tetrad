@@ -137,7 +137,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
             }
         }
 
-        TetradVector v1, v2;
+        Vector v1, v2;
 
         try {
             List<Node> regressors = new ArrayList<>();
@@ -340,7 +340,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
         DoubleMatrix1D x = data.viewColumn(xIndex);
         DoubleMatrix2D Zt = new Algebra().transpose(Z);
         DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
-        DoubleMatrix2D G = new DenseDoubleMatrix2D(new TetradMatrix(ZtZ.toArray()).inverse().toArray());
+        DoubleMatrix2D G = new DenseDoubleMatrix2D(new Matrix(ZtZ.toArray()).inverse().toArray());
 
         // Bug in Colt? Need to make a copy before multiplying to avoid
         // a ClassCastException.
@@ -398,7 +398,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

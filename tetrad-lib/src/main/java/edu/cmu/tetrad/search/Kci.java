@@ -6,23 +6,20 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
-import edu.cmu.tetrad.util.TetradVector;
+import edu.cmu.tetrad.util.Vector;
 import edu.pitt.csb.mgm.EigenDecomposition;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
 import java.util.*;
 
 import static com.google.common.primitives.Doubles.asList;
-import static edu.cmu.tetrad.util.MathUtils.logChoose;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
 
@@ -44,20 +41,11 @@ import static java.lang.Math.*;
  */
 public class Kci implements IndependenceTest, ScoreForFact {
 
-    // Sample size.
-    private final int N;
-
-    // Bowman and Azzalini optimal bandwidths for each variable.
-    private final double[] h;
-
     // The supplied data set, standardized
     private final DataSet data;
 
-    // The data stored in vertical columns.
-    private final double[][] _data;
-
     // Variables in data
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // The alpha level of the test.
     private double alpha;
@@ -65,21 +53,15 @@ public class Kci implements IndependenceTest, ScoreForFact {
     // P value used to judge independence. This is the last p value calculated.
     private double p;
 
-    // Centering matrix.
-    private TetradMatrix H;
-
-    // Identity N x N
-    private TetradMatrix I;
-
     // A normal distribution with 1 degree of freedom.
-    private NormalDistribution normal = new NormalDistribution(new SynchronizedRandomGenerator(
+    private final NormalDistribution normal = new NormalDistribution(new SynchronizedRandomGenerator(
             new Well44497b(193924L)), 0, 1);
 
     // True if the approximation algorithms should be used instead of Theorems 3 or 4.
     private boolean approximate = false;
 
     // Convenience map from nodes to their indices in the list of variables.
-    private Map<Node, Integer> hash;
+    private final Map<Node, Integer> hash;
 
     // Eigenvalues greater than this time the maximum will be kept.
     private double threshold = 0.01;
@@ -90,20 +72,16 @@ public class Kci implements IndependenceTest, ScoreForFact {
     // Azzalini optimal kernel widths will be multiplied by this.
     private double widthMultiplier = 1.0;
 
-    // List of independent normal(1) samples to be reused.
-    private static List<Double> samples = new ArrayList<>();
-
     // Record of independence facts
-    private Map<IndependenceFact, Boolean> facts = new HashMap<>();
+    private final Map<IndependenceFact, Boolean> facts = new HashMap<>();
 
     // Record of independence pValues
-    private Map<IndependenceFact, Double> pValues = new HashMap<>();
+    private final Map<IndependenceFact, Double> pValues = new HashMap<>();
 
     // Epsilon for Propositio 5.
     private double epsilon = 0.001;
 
     private boolean verbose = false;
-    private boolean fastFDR = false;
 
     /**
      * Constructor.
@@ -112,16 +90,12 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * @param alpha The alpha value of the test.
      */
     public Kci(DataSet data, double alpha) {
-        this.data = DataUtils.standardizeData(data);
+        this.data = data;
         this.variables = data.getVariables();
-        this._data = this.data.getDoubleData().transpose().toArray();
-        this.N = this.data.getNumRows();
-        this.I = TetradMatrix.identity(N);
+        int n = this.data.getNumRows();
 
-        TetradMatrix Ones = new TetradMatrix(N, 1);
-        for (int j = 0; j < N; j++) Ones.set(j, 0, 1);
-
-        this.H = TetradMatrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
+        Matrix Ones = new Matrix(n, 1);
+        for (int j = 0; j < n; j++) Ones.set(j, 0, 1);
 
         this.alpha = alpha;
         this.p = -1;
@@ -130,25 +104,6 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
         for (int i = 0; i < getVariables().size(); i++) {
             hash.put(getVariables().get(i), i);
-        }
-
-        h = new double[this.data.getNumColumns()];
-        double sum = 0.0;
-        int count = 0;
-
-        for (int i = 0; i < this.data.getNumColumns(); i++) {
-            h[i] = h(this.data.getVariables().get(i).toString());
-
-            if (h[i] != 0) {
-                sum += h[i];
-                count++;
-            }
-        }
-
-        double avg = sum / count;
-
-        for (int i = 0; i < h.length; i++) {
-            if (h[i] == 0) h[i] = avg;
         }
     }
 
@@ -167,6 +122,55 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
+        List<Node> allVars = new ArrayList<>();
+        allVars.add(x);
+        allVars.add(y);
+        allVars.addAll(z);
+
+        List<Integer> rows = getRows(allVars, this.hash, this.data);
+
+        int[] _cols = new int[allVars.size()];
+        for (int i = 0; i < _cols.length; i++) _cols[i] = this.hash.get(allVars.get(i));
+
+        int[] _rows = new int[rows.size()];
+        for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
+
+        DataSet data = this.data.subsetRowsColumns(_rows, _cols);
+        data = DataUtils.standardizeData(data);
+        double[][] _data = data.getDoubleData().transpose().toArray();
+
+        Map<Node, Integer> hash = new HashMap<>();
+        for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
+
+        int N = data.getNumRows();
+
+        Matrix Ones = new Matrix(N, 1);
+        for (int j = 0; j < N; j++) Ones.set(j, 0, 1);
+
+        Matrix I = Matrix.identity(N);
+
+        Matrix H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
+
+        double[] h = new double[data.getNumColumns()];
+        int count = 0;
+
+        double sum = 0.0;
+        for (int i = 0; i < data.getNumColumns(); i++) {
+            h[i] = h(allVars.get(i), _data, hash);
+
+            if (h[i] != 0) {
+                sum += h[i];
+                count++;
+            }
+        }
+
+        double avg = sum / count;
+
+        for (int i = 0; i < h.length; i++) {
+            if (h[i] == 0) h[i] = avg;
+        }
+
+
         boolean independent;
 
         if (Thread.currentThread().isInterrupted()) {
@@ -180,9 +184,9 @@ public class Kci implements IndependenceTest, ScoreForFact {
             this.p = pValues.get(fact);
         } else {
             if (z.isEmpty()) {
-                independent = isIndependentUnconditional(x, y, fact);
+                independent = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
             } else {
-                independent = isIndependentConditional(x, y, z, fact);
+                independent = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
             }
 
             facts.put(fact, independent);
@@ -310,7 +314,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
         return data.getNumRows();
     }
 
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         throw new UnsupportedOperationException();
     }
 
@@ -374,9 +378,16 @@ public class Kci implements IndependenceTest, ScoreForFact {
      *
      * @return true just in case independence holds.
      */
-    private boolean isIndependentUnconditional(Node x, Node y, IndependenceFact fact) {
-        TetradMatrix kx = center(kernelMatrix(_data, x, null, getWidthMultiplier()));
-        TetradMatrix ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
+    private boolean isIndependentUnconditional(Node x, Node y, IndependenceFact fact, double[][] _data,
+                                               double[] _h, int N,
+                                               Map<Node, Integer> hash) {
+        Matrix Ones = new Matrix(N, 1);
+        for (int j = 0; j < N; j++) Ones.set(j, 0, 1);
+
+        Matrix H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
+
+        Matrix kx = center(kernelMatrix(_data, x, null, getWidthMultiplier(), hash, N, _h), H);
+        Matrix ky = center(kernelMatrix(_data, y, null, getWidthMultiplier(), hash, N, _h), H);
 
         try {
             if (isApproximate()) {
@@ -385,44 +396,12 @@ public class Kci implements IndependenceTest, ScoreForFact {
                 double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);
                 double k_appr = mean_appr * mean_appr / var_appr;
                 double theta_appr = var_appr / mean_appr;
-                double p_appr = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
-                p = p_appr;
+                double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
                 pValues.put(fact, p);
-
-                if (fastFDR) {
-                    final int d1 = 0; // reference
-                    final int d2 = fact.getZ().size();
-                    final int v = variables.size() - 2;
-
-                    double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
-                    final boolean independent = p > alpha2;
-
-//                    if (independent) {
-//                        System.out.println(fact + " INDEPENDENT p = " + p);
-//                        TetradLogger.getInstance().log("info", fact + " Independent");
-//
-//                    } else {
-//                        System.out.println(fact + " dependent p = " + p);
-//                        TetradLogger.getInstance().log("info", fact.toString());
-//                    }
-
-                    return independent;
-                } else {
-                    final boolean independent = p > alpha;
-
-//                    if (independent) {
-//                        System.out.println(fact + " INDEPENDENT p = " + p);
-//                        TetradLogger.getInstance().log("info", fact + " Independent");
-//
-//                    } else {
-//                        System.out.println(fact + " dependent p = " + p);
-//                        TetradLogger.getInstance().log("info", fact.toString());
-//                    }
-
-                    return independent;
-                }
+                this.p = p;
+                return p > alpha;
             } else {
-                return theorem4(kx, ky, fact);
+                return theorem4(kx, ky, fact, N);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -437,21 +416,22 @@ public class Kci implements IndependenceTest, ScoreForFact {
      *
      * @return true just in case independence holds.
      */
-    private boolean isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact) {
-        TetradMatrix kx = null;
-        TetradMatrix ky = null;
+    private boolean isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact, double[][] _data,
+                                             int N, Matrix H, Matrix I, double[] _h, Map<Node, Integer> hash) {
+        Matrix kx;
+        Matrix ky;
 
         try {
-            TetradMatrix KXZ = center(kernelMatrix(_data, x, z, getWidthMultiplier()));
-            TetradMatrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier()));
-            TetradMatrix KZ = center(kernelMatrix(_data, null, z, getWidthMultiplier()));
+            Matrix KXZ = center(kernelMatrix(_data, x, z, getWidthMultiplier(), hash, N, _h), H);
+            Matrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier(), hash, N, _h), H);
+            Matrix KZ = center(kernelMatrix(_data, null, z, getWidthMultiplier(), hash, N, _h), H);
 
-            TetradMatrix Rz = (KZ.plus(I.scalarMult(epsilon)).inverse().scalarMult(epsilon));
+            Matrix Rz = (KZ.plus(I.scalarMult(epsilon)).inverse().scalarMult(epsilon));
 
             kx = symmetrized(Rz.times(KXZ).times(Rz.transpose()));
             ky = symmetrized(Rz.times(Ky).times(Rz.transpose()));
 
-            return proposition5(kx, ky, fact);
+            return proposition5(kx, ky, fact, N);
         } catch (Exception e) {
             e.printStackTrace();
             pValues.put(fact, 0.0);
@@ -460,7 +440,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
         }
     }
 
-    private boolean theorem4(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
+    private boolean theorem4(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
 
         double T = (1.0 / N) * (kx.times(ky).trace());
 
@@ -483,66 +463,46 @@ public class Kci implements IndependenceTest, ScoreForFact {
                 }
             }
 
-            tui /= (double) (N * N);
+            tui /= N * N;
 
             if (tui > T) sum++;
         }
 
         // Calculate p.
-        p = sum / (double) getNumBootstraps();
-        pValues.put(fact, this.p);
+        double p = sum / (double) getNumBootstraps();
+        pValues.put(fact, p);
 
-        if (fastFDR) {
-            final int d1 = 0; // reference
-            final int d2 = fact.getZ().size();
-            final int v = variables.size() - 2;
+        final boolean independent = p > alpha;
 
-            double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
-            final boolean independent = p > alpha2;
+        if (independent) {
+            System.out.println(fact + " INDEPENDENT p = " + p);
+            TetradLogger.getInstance().log("info", fact + " Independent");
 
-            if (independent) {
-                System.out.println(fact + " INDEPENDENT p = " + p);
-                TetradLogger.getInstance().log("info", fact + " Independent");
-
-            } else {
-                System.out.println(fact + " dependent p = " + p);
-                TetradLogger.getInstance().log("info", fact.toString());
-            }
-
-            return independent;
         } else {
-            final boolean independent = p > alpha;
-
-            if (independent) {
-                System.out.println(fact + " INDEPENDENT p = " + p);
-                TetradLogger.getInstance().log("info", fact + " Independent");
-
-            } else {
-                System.out.println(fact + " dependent p = " + p);
-                TetradLogger.getInstance().log("info", fact.toString());
-            }
-
-            return independent;
+            System.out.println(fact + " dependent p = " + p);
+            TetradLogger.getInstance().log("info", fact.toString());
         }
+
+        return independent;
     }
 
-    private boolean proposition5(TetradMatrix kx, TetradMatrix ky, IndependenceFact fact) {
+    private boolean proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
         double T = (1.0 / N) * kx.times(ky).trace();
 
         Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
-        TetradMatrix vx = eigendecompositionx.getV();
-        TetradMatrix dx = eigendecompositionx.getD();
+        Matrix vx = eigendecompositionx.getV();
+        Matrix dx = eigendecompositionx.getD();
 
         Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke();
-        TetradMatrix vy = eigendecompositiony.getV();
-        TetradMatrix dy = eigendecompositiony.getD();
+        Matrix vy = eigendecompositiony.getV();
+        Matrix dy = eigendecompositiony.getD();
 
         // VD
-        TetradMatrix vdx = vx.times(dx);
-        TetradMatrix vdy = vy.times(dy);
+        Matrix vdx = vx.times(dx);
+        Matrix vdy = vy.times(dy);
 
         final int prod = vx.columns() * vy.columns();
-        TetradMatrix UU = new TetradMatrix(N, prod);
+        Matrix UU = new Matrix(N, prod);
 
         // stack
         for (int i = 0; i < vx.columns(); i++) {
@@ -553,7 +513,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
             }
         }
 
-        TetradMatrix uuprod = prod > N ? UU.times(UU.transpose()) : UU.transpose().times(UU);
+        Matrix uuprod = prod > N ? UU.times(UU.transpose()) : UU.transpose().times(UU);
 
         if (isApproximate()) {
             double sta = kx.times(ky).trace();
@@ -570,9 +530,6 @@ public class Kci implements IndependenceTest, ScoreForFact {
             Eigendecomposition eigendecompositionu = new Eigendecomposition(uuprod).invoke();
             List<Double> eigenu = eigendecompositionu.getTopEigenvalues();
 
-            // We're going to reuse the samples.
-            int sampleCount = -1;
-
             // Calculate formulas (13) and (14).
             int sum = 0;
 
@@ -588,41 +545,22 @@ public class Kci implements IndependenceTest, ScoreForFact {
                 if (s > T) sum++;
             }
 
-            this.p = sum / (double) getNumBootstraps();
-            pValues.put(fact, this.p);
+            double p = sum / (double) getNumBootstraps();
+            pValues.put(fact, p);
+            this.p = p;
 
-            if (fastFDR) {
-                final int d1 = 0; // reference
-                final int d2 = fact.getZ().size();
-                final int v = variables.size() - 2;
+            final boolean independent = p > alpha;
 
-                double alpha2 = (exp(log(alpha) + logChoose(v, d1) - logChoose(v, d2)));
-                final boolean independent = p > alpha2;
+            if (independent) {
+                System.out.println(fact + " INDEPENDENT p = " + p);
+                TetradLogger.getInstance().log("info", fact + " Independent");
 
-                if (independent) {
-                    System.out.println(fact + " INDEPENDENT p = " + p);
-                    TetradLogger.getInstance().log("info", fact + " Independent");
-
-                } else {
-                    System.out.println(fact + " dependent p = " + p);
-                    TetradLogger.getInstance().log("info", fact.toString());
-                }
-
-                return independent;
             } else {
-                final boolean independent = p > alpha;
-
-                if (independent) {
-                    System.out.println(fact + " INDEPENDENT p = " + p);
-                    TetradLogger.getInstance().log("info", fact + " Independent");
-
-                } else {
-                    System.out.println(fact + " dependent p = " + p);
-                    TetradLogger.getInstance().log("info", fact.toString());
-                }
-
-                return independent;
+                System.out.println(fact + " dependent p = " + p);
+                TetradLogger.getInstance().log("info", fact.toString());
             }
+
+            return independent;
         }
     }
 
@@ -632,7 +570,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
         return series;
     }
 
-    private TetradMatrix center(TetradMatrix K) {
+    private Matrix center(Matrix K, Matrix H) {
         return H.times(K).times(H);
     }
 
@@ -643,8 +581,8 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
     // using MAD.
-    private double h(String x) {
-        double[] xCol = _data[hash.get(data.getVariable(x))];
+    private double h(Node x, double[][] _data, Map<Node, Integer> hash) {
+        double[] xCol = _data[hash.get(x)];
         double[] g = new double[xCol.length];
         double median = median(xCol);
         for (int j = 0; j < xCol.length; j++) g[j] = abs(xCol[j] - median);
@@ -666,11 +604,13 @@ public class Kci implements IndependenceTest, ScoreForFact {
         return indices;
     }
 
-    private TetradMatrix symmetrized(TetradMatrix kx) {
+    private Matrix symmetrized(Matrix kx) {
         return (kx.plus(kx.transpose())).scalarMult(0.5);
     }
 
-    private TetradMatrix kernelMatrix(double[][] _data, Node x, List<Node> z, double widthMultiplier) {
+    private Matrix kernelMatrix(double[][] _data, Node x, List<Node> z, double widthMultiplier,
+                                Map<Node, Integer> hash,
+                                int N, double[] _h) {
 
         List<Integer> _z = new ArrayList<>();
 
@@ -684,9 +624,9 @@ public class Kci implements IndependenceTest, ScoreForFact {
             }
         }
 
-        double h = getH(_z);
+        double h = getH(_z, _h);
 
-        TetradMatrix result = new TetradMatrix(N, N);
+        Matrix result = new Matrix(N, N);
 
         for (int i = 0; i < N; i++) {
             for (int j = i + 1; j < N; j++) {
@@ -706,12 +646,12 @@ public class Kci implements IndependenceTest, ScoreForFact {
         return result;
     }
 
-    private double getH(List<Integer> _z) {
+    private double getH(List<Integer> _z, double[] _h) {
         double h = 0;
 
         for (int c : _z) {
-            if (this.h[c] > h) {
-                h = this.h[c];
+            if (_h[c] > h) {
+                h = _h[c];
             }
         }
 
@@ -754,13 +694,12 @@ public class Kci implements IndependenceTest, ScoreForFact {
     }
 
     private class Eigendecomposition {
-        private TetradMatrix k;
-        private List<Integer> topIndices;
-        private TetradMatrix D;
-        private TetradMatrix V;
+        private final Matrix k;
+        private Matrix D;
+        private Matrix V;
         private List<Double> topEigenvalues;
 
-        public Eigendecomposition(TetradMatrix k) {
+        public Eigendecomposition(Matrix k) {
             if (k.rows() == 0 || k.columns() == 0) {
                 throw new IllegalArgumentException("Empty matrix to decompose. Please don't do that to me.");
             }
@@ -768,11 +707,11 @@ public class Kci implements IndependenceTest, ScoreForFact {
             this.k = k;
         }
 
-        public TetradMatrix getD() {
+        public Matrix getD() {
             return D;
         }
 
-        public TetradMatrix getV() {
+        public Matrix getV() {
             return V;
         }
 
@@ -781,63 +720,80 @@ public class Kci implements IndependenceTest, ScoreForFact {
         }
 
         public Eigendecomposition invoke() {
-            if (true) {
-                EigenDecomposition ed = new EigenDecomposition(k.getRealMatrix());
+            List<Integer> topIndices;
 
-                List<Double> evxAll = asList(ed.getRealEigenvalues());
-                List<Integer> indx = series(evxAll.size()); // 1 2 3...
-                topIndices = getTopIndices(evxAll, indx, getThreshold());
+            EigenDecomposition ed = new EigenDecomposition(new BlockRealMatrix(k.toArray()));
 
-                D = new TetradMatrix(topIndices.size(), topIndices.size());
+            List<Double> evxAll = asList(ed.getRealEigenvalues());
+            List<Integer> indx = series(evxAll.size()); // 1 2 3...
+            topIndices = getTopIndices(evxAll, indx, getThreshold());
 
-                for (int i = 0; i < topIndices.size(); i++) {
-                    D.set(i, i, Math.sqrt(evxAll.get(topIndices.get(i))));
-                }
+            D = new Matrix(topIndices.size(), topIndices.size());
 
-                topEigenvalues = new ArrayList<>();
-
-                for (int t : topIndices) {
-                    getTopEigenvalues().add(evxAll.get(t));
-                }
-
-                V = new TetradMatrix(ed.getEigenvector(0).getDimension(), topIndices.size());
-
-                for (int i = 0; i < topIndices.size(); i++) {
-                    RealVector t = ed.getEigenvector(topIndices.get(i));
-                    V.assignColumn(i, new TetradVector(t));
-                }
-            } else {
-                SingularValueDecomposition svd = new SingularValueDecomposition(k.getRealMatrix());
-
-                List<Double> evxAll = asList(svd.getSingularValues());
-
-                List<Integer> indx = series(evxAll.size()); // 1 2 3...
-                topIndices = getTopIndices(evxAll, indx, getThreshold());
-
-                D = new TetradMatrix(topIndices.size(), topIndices.size());
-
-                for (int i = 0; i < topIndices.size(); i++) {
-                    D.set(i, i, Math.sqrt(evxAll.get(topIndices.get(i))));
-                }
-
-                RealMatrix V0 = svd.getV();
-
-                V = new TetradMatrix(V0.getRowDimension(), topIndices.size());
-
-                for (int i = 0; i < V.columns(); i++) {
-                    double[] t = V0.getColumn(topIndices.get(i));
-                    V.assignColumn(i, new TetradVector(t));
-                }
-
-                topEigenvalues = new ArrayList<>();
-
-                for (int t : topIndices) {
-                    getTopEigenvalues().add(evxAll.get(t));
-                }
-
+            for (int i = 0; i < topIndices.size(); i++) {
+                D.set(i, i, Math.sqrt(evxAll.get(topIndices.get(i))));
             }
+
+            topEigenvalues = new ArrayList<>();
+
+            for (int t : topIndices) {
+                getTopEigenvalues().add(evxAll.get(t));
+            }
+
+            V = new Matrix(ed.getEigenvector(0).getDimension(), topIndices.size());
+
+            for (int i = 0; i < topIndices.size(); i++) {
+                RealVector t = ed.getEigenvector(topIndices.get(i));
+                V.assignColumn(i, new Vector(t.toArray()));
+            }
+//            } else {
+//                SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(k.toArray()));
+//
+//                List<Double> evxAll = asList(svd.getSingularValues());
+//
+//                List<Integer> indx = series(evxAll.size()); // 1 2 3...
+//                topIndices = getTopIndices(evxAll, indx, getThreshold());
+//
+//                D = new Matrix(topIndices.size(), topIndices.size());
+//
+//                for (int i = 0; i < topIndices.size(); i++) {
+//                    D.set(i, i, Math.sqrt(evxAll.get(topIndices.get(i))));
+//                }
+//
+//                RealMatrix V0 = svd.getV();
+//
+//                V = new Matrix(V0.getRowDimension(), topIndices.size());
+//
+//                for (int i = 0; i < V.columns(); i++) {
+//                    double[] t = V0.getColumn(topIndices.get(i));
+//                    V.assignColumn(i, new Vector(t));
+//                }
+//
+//                topEigenvalues = new ArrayList<>();
+//
+//                for (int t : topIndices) {
+//                    getTopEigenvalues().add(evxAll.get(t));
+//                }
+//
+//            }
 
             return this;
         }
+    }
+
+
+    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash, DataSet dataSet) {
+        List<Integer> rows = new ArrayList<>();
+
+        K:
+        for (int k = 0; k < dataSet.getNumRows(); k++) {
+            for (Node node : allVars) {
+                if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
+            }
+
+            rows.add(k);
+        }
+
+        return rows;
     }
 }

@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.Arrays;
 import java.util.List;
@@ -63,13 +63,13 @@ public final class ContinuousTetradTest implements TetradTest {
     private boolean bvalues[], outputMessage;
     private ICovarianceMatrix covMatrix;
     //    private CorrelationMatrix corrMatrix;
-    private TetradMatrix rho;
+    private Matrix rho;
     private TestType sigTestType;
     private int sampleSize;
     private DataSet dataSet;
     private OneFactorEstimator oneFactorEst4, oneFactorEst5, oneFactorEst6;
     private TwoFactorsEstimator twoFactorsEst4, twoFactorsEst5, twoFactorsEst6;
-    private TetradMatrix bufferMatrix;
+    private Matrix bufferMatrix;
     //    private Map<Tetrad, Double> tetradDifference;
     private List<Node> variables;
     DeltaTetradTest deltaTest;
@@ -218,7 +218,7 @@ public final class ContinuousTetradTest implements TetradTest {
         twoFactorsEst4 = new TwoFactorsEstimator(covMatrix, sig, 4);
         twoFactorsEst5 = new TwoFactorsEstimator(covMatrix, sig, 5);
         twoFactorsEst6 = new TwoFactorsEstimator(covMatrix, sig, 6);
-        bufferMatrix = new TetradMatrix(4, 4);
+        bufferMatrix = new Matrix(4, 4);
         rho = covMatrix.getMatrix();
     }
 
@@ -527,7 +527,7 @@ public final class ContinuousTetradTest implements TetradTest {
         return Math.sqrt(abs(var));
     }
 
-    private double determinant44(TetradMatrix m) {
+    private double determinant44(Matrix m) {
         double a11 = m.get(0, 0);
         double a12 = m.get(0, 1);
         double a13 = m.get(0, 2);

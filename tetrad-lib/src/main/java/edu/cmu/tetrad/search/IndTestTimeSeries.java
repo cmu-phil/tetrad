@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.IndexedMatrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +51,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * Input time series data, n times x k vars.
      */
-    private final TetradMatrix data;
+    private final Matrix data;
 
     /**
      * The number of time points for which data is available.
@@ -118,7 +118,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @param vars The variables over which the data is (repeatedly) measured. The number of variables must equal the
      *             number of columns in the data-- that is, vars.size() == data[i].length for each i.
      */
-    public IndTestTimeSeries(TetradMatrix data, List<Node> vars) {
+    public IndTestTimeSeries(Matrix data, List<Node> vars) {
         if (data == null) {
             throw new NullPointerException("Data must not be null.");
         }
@@ -1504,7 +1504,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     @Override
-    public List<TetradMatrix> getCovMatrices() {
+    public List<Matrix> getCovMatrices() {
         return null;
     }
 

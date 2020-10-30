@@ -23,7 +23,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -38,20 +39,18 @@ import static java.lang.Math.log;
 
 /**
  * Implements a degenerate Gaussian BIC score for FGES.
- *
+ * <p>
  * http://proceedings.mlr.press/v104/andrews19a/andrews19a.pdf
  *
  * @author Bryan Andrews
  */
 public class DegenerateGaussianScore implements Score {
 
-    private DataSet dataSet;
+    private final BoxDataSet ddata;
+    private final DataSet dataSet;
 
     // The mixed variables of the original dataset.
-    private List<Node> variables;
-
-    // The continuous variables of the post-embedding dataset.
-    private List<Node> continuousVariables;
+    private final List<Node> variables;
 
     // The penalty discount.
     private double penaltyDiscount = 1.0;
@@ -59,17 +58,14 @@ public class DegenerateGaussianScore implements Score {
     // The structure prior.
     private double structurePrior = 0.0;
 
-    // The number of instances.
-    private int N;
-
     // The embedding map.
-    private Map<Integer, List<Integer>> embedding;
-
-    // The covariance matrix.
-    private TetradMatrix cov;
+    private final Map<Integer, List<Integer>> embedding;
 
     // A constant.
-    private static double L2PE = log(2.0*Math.PI*Math.E);
+    private static final double L2PE = log(2.0 * Math.PI * Math.E);
+
+    private final Map<Node, Integer> nodesHash;
+
 
     /**
      * Constructs the score using a covariance matrix.
@@ -81,11 +77,14 @@ public class DegenerateGaussianScore implements Score {
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
-        this.N = dataSet.getNumRows();
+        // The number of instances.
+        int n = dataSet.getNumRows();
         this.embedding = new HashMap<>();
 
         List<Node> A = new ArrayList<>();
         List<double[]> B = new ArrayList<>();
+
+        int index = 0;
 
         int i = 0;
         int i_ = 0;
@@ -95,15 +94,17 @@ public class DegenerateGaussianScore implements Score {
 
             if (v instanceof DiscreteVariable) {
 
-                Map<String, Integer> keys = new HashMap<>();
-                for (int j = 0; j < this.N; j++) {
-                    String key = v.getName().concat("_");
-                    key = key.concat(Integer.toString(this.dataSet.getInt(j, i_)));
+                Map<List<Integer>, Integer> keys = new HashMap<>();
+                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
+                for (int j = 0; j < n; j++) {
+                    List<Integer> key = new ArrayList<>();
+                    key.add(this.dataSet.getInt(j, i_));
                     if (!keys.containsKey(key)) {
                         keys.put(key, i);
-                        Node v_ = new ContinuousVariable(key);
+                        keysReverse.put(i, key);
+                        Node v_ = new ContinuousVariable("V__" + ++index);
                         A.add(v_);
-                        B.add(new double[this.N]);
+                        B.add(new double[n]);
                         i++;
                     }
                     B.get(keys.get(key))[j] = 1;
@@ -113,7 +114,7 @@ public class DegenerateGaussianScore implements Score {
                  * Remove a degenerate dimension.
                  */
                 i--;
-                keys.remove(A.get(i).getName());
+                keys.remove(keysReverse.get(i));
                 A.remove(i);
                 B.remove(i);
 
@@ -123,31 +124,37 @@ public class DegenerateGaussianScore implements Score {
             } else {
 
                 A.add(v);
-                double[] b = new double[this.N];
-                for (int j = 0; j < this.N; j++) {
-                    b[j] = this.dataSet.getDouble(j,i_);
+                double[] b = new double[n];
+                for (int j = 0; j < n; j++) {
+                    b[j] = this.dataSet.getDouble(j, i_);
                 }
 
                 B.add(b);
-                List<Integer> index = new ArrayList<>();
-                index.add(i);
-                this.embedding.put(i_, index);
+                List<Integer> index2 = new ArrayList<>();
+                index2.add(i);
+                this.embedding.put(i_, index2);
                 i++;
                 i_++;
 
             }
         }
-
-        double[][] B_ = new double[this.N][B.size()];
+        double[][] B_ = new double[n][B.size()];
         for (int j = 0; j < B.size(); j++) {
-            for (int k = 0; k < this.N; k++) {
+            for (int k = 0; k < n; k++) {
                 B_[k][j] = B.get(j)[k];
             }
         }
 
-        this.continuousVariables = A;
+        // The continuous variables of the post-embedding dataset.
         RealMatrix D = new BlockRealMatrix(B_);
-        this.cov = new BoxDataSet(new DoubleDataBox(D.getData()), A).getCovarianceMatrix();
+        ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
+        nodesHash = new HashedMap<>();
+
+        List<Node> variables = dataSet.getVariables();
+
+        for (int j = 0; j < variables.size(); j++) {
+            nodesHash.put(variables.get(j), j);
+        }
 
     }
 
@@ -156,9 +163,11 @@ public class DegenerateGaussianScore implements Score {
      */
     public double localScore(int i, int... parents) {
 
-        List<Integer> A = new ArrayList();
-        List<Integer> B = new ArrayList();
-        A.addAll(this.embedding.get(i));
+        List<Integer> rows = getRows(i, parents);
+        int N = rows.size();
+
+        List<Integer> B = new ArrayList<>();
+        List<Integer> A = new ArrayList<>(this.embedding.get(i));
         for (int i_ : parents) {
             B.addAll(this.embedding.get(i_));
         }
@@ -173,12 +182,12 @@ public class DegenerateGaussianScore implements Score {
             B_[i_] = B.get(i_);
         }
 
-        double dof = (A_.length*(A_.length + 1) - B_.length*(B_.length + 1)) / 2.0;
-        double ldetA = log(this.cov.getSelection(A_, A_).det());
-        double ldetB = log(this.cov.getSelection(B_, B_).det());
-        double lik = this.N *(ldetB - ldetA + L2PE*(B_.length - A_.length));
+        int dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2;
+        double ldetA = log(getCov(rows, A_).det());
+        double ldetB = log(getCov(rows, B_).det());
 
-        return lik + 2*calculateStructurePrior(parents.length) - dof*getPenaltyDiscount()*log(this.N);
+        double lik = N * (ldetB - ldetA + L2PE * (B_.length - A_.length));
+        return 2 * lik + 2 * calculateStructurePrior(parents.length) - dof * getPenaltyDiscount() * log(N);
     }
 
     private double calculateStructurePrior(int k) {
@@ -187,7 +196,7 @@ public class DegenerateGaussianScore implements Score {
         } else {
             double n = variables.size() - 1;
             double p = structurePrior / n;
-            return k*log(p) + (n - k)*log(1.0 - p);
+            return k * log(p) + (n - k) * log(1.0 - p);
         }
     }
 
@@ -279,7 +288,66 @@ public class DegenerateGaussianScore implements Score {
         return "Degenerate Gaussian Score Penalty " + nf.format(penaltyDiscount);
     }
 
+    // Subsample of the continuous mixedVariables conditioning on the given cols.
+    private Matrix getCov(List<Integer> rows, int[] cols) {
+        if (rows.isEmpty()) return new Matrix(0, 0);
+        Matrix cov = new Matrix(cols.length, cols.length);
 
+        for (int i = 0; i < cols.length; i++) {
+            for (int j = 0; j < cols.length; j++) {
+                double mui = 0.0;
+                double muj = 0.0;
+
+                for (int k : rows) {
+                    mui += ddata.getDouble(k, cols[i]);
+                    muj += ddata.getDouble(k, cols[j]);
+                }
+
+                mui /= rows.size();
+                muj /= rows.size();
+
+                double _cov = 0.0;
+
+                for (int k : rows) {
+                    _cov += (ddata.getDouble(k, cols[i]) - mui) * (ddata.getDouble(k, cols[j]) - muj);
+                }
+
+                double mean = _cov / (rows.size());
+                cov.set(i, j, mean);
+            }
+        }
+
+        return cov;
+    }
+
+    private List<Integer> getRows(int i, int[] parents) {
+        List<Integer> rows = new ArrayList<>();
+
+        K:
+        for (int k = 0; k < dataSet.getNumRows(); k++) {
+            Node ii = variables.get(i);
+
+            List<Integer> A = new ArrayList<>(this.embedding.get(nodesHash.get(ii)));
+
+            for (int j : A) {
+                if (Double.isNaN(ddata.getDouble(k, j))) continue K;
+            }
+
+            for (int p : parents) {
+                Node pp = variables.get(i);
+
+                List<Integer> AA = new ArrayList<>(this.embedding.get(nodesHash.get(pp)));
+
+                for (int j : AA) {
+                    if (Double.isNaN(ddata.getDouble(k, j))) continue K;
+                }
+            }
+
+            rows.add(k);
+        }
+
+        return rows;
+    }
 }
 
 

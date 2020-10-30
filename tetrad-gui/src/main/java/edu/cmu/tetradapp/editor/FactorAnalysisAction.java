@@ -31,7 +31,7 @@ import edu.cmu.tetrad.search.FactorAnalysis;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -95,8 +95,8 @@ public class FactorAnalysisAction extends AbstractAction {
     {
         double threshold = .2;
 
-        TetradMatrix unrotatedSolution = analysis.successiveResidual();
-        TetradMatrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
+        Matrix unrotatedSolution = analysis.successiveResidual();
+        Matrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
 
         DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -188,7 +188,7 @@ public class FactorAnalysisAction extends AbstractAction {
         return panel;
     }
 
-    private String tableString(TetradMatrix matrix, NumberFormat nf, double threshold) {
+    private String tableString(Matrix matrix, NumberFormat nf, double threshold) {
         TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
 
         for (int i = 0; i < matrix.rows() + 1; i++) {

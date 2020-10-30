@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -31,15 +31,15 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Joseph Ramsey
  */
-public class TestTetradMatrix {
+public class TestMatrix {
 
     @Test
     public void test1() {
-        TetradMatrix x = new TetradMatrix(4, 0);
+        Matrix x = new Matrix(4, 0);
 
-        TetradMatrix xT = x.transpose();
-        TetradMatrix xTx = xT.times(x);
-        TetradMatrix xTxInv = xTx.inverse();
+        Matrix xT = x.transpose();
+        Matrix xTx = xT.times(x);
+        Matrix xTxInv = xTx.inverse();
 
         assertEquals(0, xTx.trace(), 0.01);
         assertEquals(0, xTxInv.trace(), 0.01);

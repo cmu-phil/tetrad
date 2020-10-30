@@ -6,6 +6,8 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +31,8 @@ public class DiscreteBicScore implements ScoreWrapper {
         this.dataSet = dataSet;
         edu.cmu.tetrad.search.BicScore score
                 = new edu.cmu.tetrad.search.BicScore(DataUtils.getDiscreteDataSet(dataSet));
-        score.setPenaltyDiscount(1);//parameters.getDouble("penaltyDiscount"));
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         return score;
     }
 
@@ -45,9 +48,10 @@ public class DiscreteBicScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> paramDescriptions = new ArrayList<>();
-//        paramDescriptions.add("penaltyDiscount");
-        return paramDescriptions;
+        List<String> params = new ArrayList<>();
+        params.add(Params.PENALTY_DISCOUNT);
+        params.add(Params.STRUCTURE_PRIOR);
+        return params;
     }
 
     @Override

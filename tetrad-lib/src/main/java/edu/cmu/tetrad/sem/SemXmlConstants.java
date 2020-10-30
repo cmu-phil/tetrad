@@ -42,13 +42,13 @@ class SemXmlConstants {
     public static final String EDGE = "edge";
     public static final String CAUSE_NODE = "causeNode";
     public static final String EFFECT_NODE = "effectNode";
-    public static final String VALUE = "value";
+    public static final String COEF = "coef";
     public static final String FIXED = "fixed";
 
     public static final String MARGINAL_ERROR_DISTRIBUTION = "marginalErrorDistribution";
     public static final String NORMAL = "normal";
     public static final String VARIABLE = "variable";
-    public static final String MEAN = "mean";
+    public static final String INTERCEPT = "intercept";
     public static final String VARIANCE = "variance";
     public static final String IS_LATENT = "latent";
     public static final String X = "x";

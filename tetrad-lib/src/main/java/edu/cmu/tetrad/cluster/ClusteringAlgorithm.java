@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.cluster;
 
-import edu.cmu.tetrad.util.TetradMatrix;
+import edu.cmu.tetrad.util.Matrix;
 
 import java.util.List;
 
@@ -46,7 +46,7 @@ public interface ClusteringAlgorithm {
      * result of its being eliminated from consideration, for
      * instance).
      */
-    void cluster(TetradMatrix data);
+    void cluster(Matrix data);
 
     /**
      * @return a list of clusters, each consisting of a list of indices in the
@@ -62,7 +62,7 @@ public interface ClusteringAlgorithm {
      * columns in this array is equal to the number of columns in the dataset
      * provided as an argument to <code>cluster</code>.
      */
-    TetradMatrix getPrototypes();
+    Matrix getPrototypes();
 
     /**
      * True iff verbose output should be printed.

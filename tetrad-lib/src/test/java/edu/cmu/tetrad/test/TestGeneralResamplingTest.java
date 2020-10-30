@@ -22,12 +22,12 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.independence.BDeuTest;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
@@ -43,10 +43,11 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -93,9 +94,9 @@ public class TestGeneralResamplingTest {
 			causalOrdering[i] = i;
 		}
 
-		LargeScaleSimulation simulator = new LargeScaleSimulation(dag, dag.getNodes(), causalOrdering);
-
-		DataSet data = simulator.simulateDataFisher(numCases);
+		BayesPm pm = new BayesPm(dag);
+		BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+		DataSet data = im.simulateData(1000, false);
 
 		Parameters parameters = new Parameters();
 		parameters.set(Params.PENALTY_DISCOUNT, penaltyDiscount);
@@ -104,18 +105,18 @@ public class TestGeneralResamplingTest {
 		parameters.set("numPatternsToStore", 0);
 		parameters.set(Params.VERBOSE, verbose);
 
-		ScoreWrapper score = new SemBicScore();
+		ScoreWrapper score = new BdeuScore();
 		Algorithm algorithm = new Fges(score);
 
 		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
-		bootstrapTest.setResamplingWithReplacement(true);
-		bootstrapTest.setPercentResampleSize(100.00);
+		bootstrapTest.setResamplingWithReplacement(false);
+		bootstrapTest.setPercentResampleSize(80.00);
 		bootstrapTest.setVerbose(verbose);
 		bootstrapTest.setParameters(parameters);
 		bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
 		Graph resultGraph = bootstrapTest.search();
-		//System.out.println("Estimated Graph:");
-		//System.out.println(resultGraph.toString());
+//		System.out.println("Estimated Graph:");
+//		System.out.println(resultGraph.toString());
 
 		// Adjacency Confusion Matrix
 		int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(dag, resultGraph);
@@ -155,7 +156,7 @@ public class TestGeneralResamplingTest {
 
 		Parameters parameters = new Parameters();
 		parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
-		parameters.set(Params.SAMPLE_PRIOR, samplePrior);
+		parameters.set(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE, samplePrior);
 		parameters.set(Params.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
 		parameters.set(Params.MAX_DEGREE, maxDegree);
 		parameters.set("numPatternsToStore", 0);
@@ -163,7 +164,7 @@ public class TestGeneralResamplingTest {
 		
 		ScoreWrapper score = new BdeuScore();
 		Algorithm algorithm = new Fges(score);
-		
+
 		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
 		bootstrapTest.setResamplingWithReplacement(true);
 		bootstrapTest.setPercentResampleSize(100.00);
@@ -200,6 +201,9 @@ public class TestGeneralResamplingTest {
 
 		Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
+		BayesPm pm = new BayesPm(dag, 2, 3);
+		BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+
 		DagToPag2 dagToPag = new DagToPag2(dag);
 		Graph truePag = dagToPag.convert();
 
@@ -212,9 +216,7 @@ public class TestGeneralResamplingTest {
 			causalOrdering[i] = i;
 		}
 
-		LargeScaleSimulation simulator = new LargeScaleSimulation(dag, dag.getNodes(), causalOrdering);
-
-		DataSet data = simulator.simulateDataFisher(numCases);
+		DataSet data = im.simulateData(numCases, false);
 
 		Parameters parameters = new Parameters();
 		parameters.set(Params.PENALTY_DISCOUNT, penaltyDiscount);
@@ -223,8 +225,8 @@ public class TestGeneralResamplingTest {
 		parameters.set("numPatternsToStore", 0);
 		parameters.set(Params.VERBOSE, verbose);
 		
-		ScoreWrapper score = new SemBicScore();
-		IndependenceWrapper test =  new FisherZ();
+		ScoreWrapper score = new BdeuScore();
+		IndependenceWrapper test =  new BDeuTest();
 		Algorithm algorithm = new Gfci(test, score);
 		
 		GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
@@ -278,7 +280,7 @@ public class TestGeneralResamplingTest {
 
 		Parameters parameters = new Parameters();
 		parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
-		parameters.set(Params.SAMPLE_PRIOR, samplePrior);
+		parameters.set(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE, samplePrior);
 		parameters.set(Params.FAITHFULNESS_ASSUMED, faithfulnessAssumed);
 		parameters.set(Params.MAX_DEGREE, maxDegree);
 		parameters.set("numPatternsToStore", 0);
@@ -403,7 +405,7 @@ public class TestGeneralResamplingTest {
 
 		Parameters parameters = new Parameters();
 		parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
-		parameters.set(Params.SAMPLE_PRIOR, samplePrior);
+		parameters.set(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE, samplePrior);
 		parameters.set(Params.DEPTH, depth);
 		parameters.set(Params.MAX_PATH_LENGTH, maxPathLength);
 		parameters.set("numPatternsToStore", 0);

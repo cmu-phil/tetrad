@@ -4,12 +4,12 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditionalCorrelationIndependence;
 import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,14 +21,13 @@ import java.util.List;
  * @author jdramsey
  */
 @TestOfIndependence(
-        name = "Conditional Correlation Independence (CCI) Test",
+        name = "CCI-Test (Conditional Correlation Independence Test)",
         command = "cci-test",
         dataType = DataType.Continuous
 )
 public class CciTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
-    private Graph initialGraph = null;
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
@@ -53,10 +52,7 @@ public class CciTest implements IndependenceWrapper {
 
         cci.setNumFunctions(parameters.getInt(Params.NUM_BASIS_FUNCTIONS));
         cci.setKernelMultiplier(parameters.getDouble(Params.KERNEL_MULTIPLIER));
-        cci.setFastFDR(parameters.getBoolean("fastFDR"));
         cci.setKernelRegressionSampleSize(parameters.getInt(Params.KERNEL_REGRESSION_SAMPLE_SIZE));
-        cci.setNumDependenceSpotChecks(parameters.getInt("numDependenceSpotChecks"));
-        cci.setEarlyReturn(true);
 
         return cci;
     }
@@ -79,9 +75,7 @@ public class CciTest implements IndependenceWrapper {
         params.add(Params.KERNEL_TYPE);
         params.add(Params.KERNEL_MULTIPLIER);
         params.add(Params.BASIS_TYPE);
-        params.add("fastFDR");
         params.add(Params.KERNEL_REGRESSION_SAMPLE_SIZE);
-        params.add("numDependenceSpotChecks");
         return params;
     }
 }
