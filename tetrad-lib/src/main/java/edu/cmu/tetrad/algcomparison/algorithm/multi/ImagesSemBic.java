@@ -39,7 +39,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-//@Bootstrapping
+@Bootstrapping
 public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
