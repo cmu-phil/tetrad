@@ -193,7 +193,11 @@ public class GeneralResamplingTest {
 		}
 
 		if (verbose) {
-			out.println("Resampling on the " + algorithm.getDescription());
+			if (algorithm != null) {
+				out.println("Resampling on the " + algorithm.getDescription());
+			} else if (multiDataSetAlgorithm != null) {
+				out.println("Resampling on the " + multiDataSetAlgorithm.getDescription());
+			}
 		}
 
 		PAGs = resamplingSearch.search();
