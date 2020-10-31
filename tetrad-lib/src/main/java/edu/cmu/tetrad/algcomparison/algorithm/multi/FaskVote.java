@@ -36,7 +36,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-@Bootstrapping
+//@Bootstrapping
 public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;

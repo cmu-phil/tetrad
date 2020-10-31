@@ -40,7 +40,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Discrete
 )
-@Bootstrapping
+//@Bootstrapping
 public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
