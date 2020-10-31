@@ -139,7 +139,7 @@ public class SemBicScore implements Score {
     }
 
     public double localScore(int i, int... parents) {
-        List<Integer> rows = getRows(i, parents);
+    List<Integer> rows = getRows(i, parents);
 
         try {
             final int p = parents.length;
