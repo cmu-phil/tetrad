@@ -289,8 +289,8 @@ public final class IndTestFisherZ implements IndependenceTest {
                     muj += dataSet.getDouble(k, cols[j]);
                 }
 
-                mui /= rows.size();
-                muj /= rows.size();
+                mui /= rows.size() - 1;
+                muj /= rows.size() - 1;
 
                 double _cov = 0.0;
 
