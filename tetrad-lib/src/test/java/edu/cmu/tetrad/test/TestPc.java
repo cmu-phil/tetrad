@@ -116,7 +116,7 @@ public class TestPc {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.11));
+        Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.05));
         pc.setKnowledge(knowledge);
 
         Graph pattern = pc.search();
@@ -136,7 +136,7 @@ public class TestPc {
 
         System.out.println(pattern);
 
-        assertEquals(pattern, _true);
+        assertEquals(_true, pattern);
     }
 
     /**
