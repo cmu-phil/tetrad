@@ -245,7 +245,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.r = r;
         double q = 0.5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
         double fisherZ = sqrt(n - 3 - z.size()) * q;
-        double p = 2.0 * (1.0 - normal.cumulativeProbability(abs(fisherZ)));
+        double p = (1.0 - normal.cumulativeProbability(fisherZ));
 
         if (Double.isNaN(p)) {
             if (abs(r) < 0.5) p = 0;

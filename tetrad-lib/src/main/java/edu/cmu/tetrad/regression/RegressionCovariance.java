@@ -231,7 +231,7 @@ public class RegressionCovariance implements Regression {
             double _se = seY / Math.sqrt(_tss * (1.0 - _r2));
 
             double _t = b.get(i + 1) / _se;
-            double _p = 2 * (1.0 - ProbUtils.tCdf(Math.abs(_t), n - k));
+            double _p = (1.0 - ProbUtils.tCdf(Math.abs(_t), n - k));
 
             sqErr.set(i + 1, _se);
             t.set(i + 1, _t);
