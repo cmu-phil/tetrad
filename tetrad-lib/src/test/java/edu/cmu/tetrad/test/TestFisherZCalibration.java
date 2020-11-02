@@ -25,17 +25,17 @@ import static java.lang.StrictMath.abs;
 
 public class TestFisherZCalibration {
 
-    public static void main(String... args) {
-        test1();
-    }
+//    public static void main(String... args) {
+//        test1();
+//    }
 
     @Test
-    private static void test1() {
+    public void test1() {
         RandomUtil.getInstance().setSeed(105034020L);
         toTest(0.01);
     }
 
-    private static void toTest(double alpha) {
+    private void toTest(double alpha) {
         Parameters parameters = new Parameters();
         parameters.set(Params.ALPHA, alpha);
         parameters.set(Params.DEPTH, 2);
@@ -66,7 +66,7 @@ public class TestFisherZCalibration {
         }
     }
 
-    private static void testOneDepth(Parameters parameters, int numDraws, IndependenceTest test1, IndependenceTest test2, List<Node> variables, IndependenceTest dsep, int depth) {
+    private void testOneDepth(Parameters parameters, int numDraws, IndependenceTest test1, IndependenceTest test2, List<Node> variables, IndependenceTest dsep, int depth) {
         int countSame = 0;
         int fn1 = 0;
         int fn2 = 0;
