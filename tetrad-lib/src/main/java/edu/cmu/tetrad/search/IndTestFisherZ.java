@@ -243,14 +243,9 @@ public final class IndTestFisherZ implements IndependenceTest {
         }
 
         this.r = r;
-        double q = 0.5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
-        double fisherZ = sqrt(n - 3 - z.size()) * q;
+        double q = .5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
+        double fisherZ = sqrt(n - 3. - z.size()) * q;
         double p = (1.0 - normal.cumulativeProbability(fisherZ));
-
-        if (Double.isNaN(p)) {
-            if (abs(r) < 0.5) p = 0;
-            else p = 1;
-        }
 
         this.p = p;
         return p;
@@ -267,7 +262,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         Matrix cov = getCov(rows, indices);
         Matrix cor = MatrixUtils.convertCovToCorr(cov);
 
-        if (z.isEmpty()) return cor.get(0, 1);
+//        if (z.isEmpty()) return cor.get(0, 1);
 
         return StatUtils.partialCorrelation(cor);
     }
