@@ -176,8 +176,8 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
         double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-        double p1 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
-        double p2 = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
+        double p1 = (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
+        double p2 = (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
 
         boolean rejected1 = p1 < alpha;
         boolean rejected2 = p2 < alpha;

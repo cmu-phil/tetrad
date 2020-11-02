@@ -178,7 +178,7 @@ public class RegressionDatasetGeneralized implements Regression {
 //            double _s = se * se * xTxInv.get(i, i);
 //            double _se = Math.sqrt(_s);
 //            double _t = b.get(i) / _se;
-//            double _p = 2 * (1.0 - ProbUtils.tCdf(Math.abs(_t), n - k));
+//            double _p = (1.0 - ProbUtils.tCdf(Math.abs(_t), n - k));
 //
 //            sqErr.set(i, _se);
 //            t.set(i, _t);

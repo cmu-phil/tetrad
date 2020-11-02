@@ -88,42 +88,6 @@ public class TestStandardizedSem {
     }
 
     @Test
-    public void test2() {
-        RandomUtil.getInstance().setSeed(5729384723L);
-
-        SemGraph graph = new SemGraph();
-
-        Node x1 = new ContinuousVariable("X1");
-        Node x2 = new ContinuousVariable("X2");
-        Node x3 = new ContinuousVariable("X3");
-        Node x4 = new ContinuousVariable("X4");
-        Node x5 = new ContinuousVariable("X5");
-
-        graph.addNode(x1);
-        graph.addNode(x2);
-        graph.addNode(x3);
-        graph.addNode(x4);
-        graph.addNode(x5);
-
-        graph.setShowErrorTerms(true);
-
-        graph.addDirectedEdge(x1, x2);
-
-        graph.addDirectedEdge(x2, x3);
-        graph.addDirectedEdge(x4, x3);
-
-        graph.addDirectedEdge(x2, x4);
-        graph.addDirectedEdge(x1, x4);
-        graph.addDirectedEdge(x5, x4);
-
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        StandardizedSemIm sem = new StandardizedSemIm(im);
-
-        assertTrue(isStandardized(sem));
-    }
-
-    @Test
     public void test3() {
         RandomUtil.getInstance().setSeed(582374923L);
         SemGraph graph = new SemGraph();
@@ -150,7 +114,7 @@ public class TestStandardizedSem {
         DataSet data = sem.simulateData(5000, false);
 
         assertFalse(sem.setEdgeCoefficient(x1, x2, 1.2));
-        assertFalse(sem.setEdgeCoefficient(x1, x2, 1.5));
+        assertFalse(sem.setEdgeCoefficient(x1, x2, 1.1));
         assertTrue(sem.setEdgeCoefficient(x1, x2, .5));
         assertTrue(sem.setEdgeCoefficient(x1, x3, -.1));
 
@@ -194,47 +158,6 @@ public class TestStandardizedSem {
             coef = low - random.nextDouble() * (high - low);
             assertFalse(sem.setEdgeCoefficient(a, b, coef));
         }
-    }
-
-    @Test
-    public void test5() {
-        RandomUtil.getInstance().setSeed(582374923L);
-        SemGraph graph = new SemGraph();
-        graph.setShowErrorTerms(true);
-
-        Node x1 = new ContinuousVariable("X1");
-        Node x2 = new ContinuousVariable("X2");
-        Node x3 = new ContinuousVariable("X3");
-
-        graph.addNode(x1);
-        graph.addNode(x2);
-        graph.addNode(x3);
-
-        graph.setShowErrorTerms(true);
-
-        Node ex1 = graph.getExogenous(x1);
-        Node ex2 = graph.getExogenous(x2);
-        Node ex3 = graph.getExogenous(x3);
-
-        graph.addDirectedEdge(x1, x3);
-        graph.addDirectedEdge(x2, x3);
-//        graph.addDirectedEdge(x1, x2);
-//        graph.addBidirectedEdge(ex1, ex2);
-
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-
-        DataSet dataSet = im.simulateDataRecursive(1000, false);
-        Matrix _dataSet = dataSet.getDoubleData();
-        _dataSet = DataUtils.standardizeData(_dataSet);
-        DataSet dataSetStandardized = new BoxDataSet(new VerticalDoubleDataBox(_dataSet.transpose().toArray()), dataSet.getVariables());
-
-        SemEstimator estimator = new SemEstimator(dataSetStandardized, im.getSemPm());
-        SemIm imStandardized = estimator.estimate();
-
-        StandardizedSemIm sem = new StandardizedSemIm(im);
-//        sem.setErrorCovariance(ex1, ex2, -.24);
-        assertTrue(isStandardized(sem));
     }
 
     @Test

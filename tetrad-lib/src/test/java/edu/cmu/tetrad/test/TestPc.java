@@ -34,10 +34,12 @@ import org.junit.Test;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -116,7 +118,7 @@ public class TestPc {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.11));
+        Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.05));
         pc.setKnowledge(knowledge);
 
         Graph pattern = pc.search();
@@ -136,7 +138,7 @@ public class TestPc {
 
         System.out.println(pattern);
 
-        assertEquals(pattern, _true);
+        assertEquals(_true, pattern);
     }
 
     /**
