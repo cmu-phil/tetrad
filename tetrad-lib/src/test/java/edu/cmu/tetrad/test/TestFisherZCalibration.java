@@ -32,7 +32,7 @@ public class TestFisherZCalibration {
     @Test
     public void test1() {
         RandomUtil.getInstance().setSeed(105034020L);
-        toTest(0.01);
+        toTest(0.05);
     }
 
     private void toTest(double alpha) {
@@ -44,7 +44,7 @@ public class TestFisherZCalibration {
         parameters.set(Params.COEF_LOW, .2);
         parameters.set(Params.COEF_HIGH, .7);
         int numDraws = 2000;
-        int sampleSize = 1000;
+        int sampleSize = 2000;
 
         Graph graph = GraphUtils.randomDag(20, 0, 40, 100,
                 100, 100, false);
@@ -61,7 +61,7 @@ public class TestFisherZCalibration {
 
         IndependenceTest dsep = new IndTestDSep(graph);
 
-        for (int depth : new int[]{0, 1, 2}) {
+        for (int depth : new int[]{0, 1}) {
             testOneDepth(parameters, numDraws, test1, test2, variables, dsep, depth);
         }
     }
