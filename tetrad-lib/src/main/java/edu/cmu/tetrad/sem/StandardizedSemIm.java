@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Math.sqrt;
+
 /**
  * A special SEM model in which variances of variables are always 1 and means of variables
  * are always 0. In order to ensure that means of variables are always zero, means or error
@@ -53,6 +55,8 @@ import java.util.Map;
  * Currently we are not allowing bidirected edges in the SEM graph.
  */
 public class StandardizedSemIm implements Simulator, TetradSerializable {
+    private final int sampleSize;
+
     public enum Initialization {
         CALCULATE_FROM_SEM, INITIALIZE_FROM_DATA
     }
@@ -119,6 +123,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         this.semPm = new SemPm(im.getSemPm());
         this.semGraph = new SemGraph(semPm.getGraph());
         semGraph.setShowErrorTerms(true);
+        this.sampleSize = im.getSampleSize();
 
         if (semGraph.existsDirectedCycle()) {
             throw new IllegalArgumentException("The cyclic case is not handled.");
@@ -586,32 +591,41 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         int numVars = getVariableNodes().size();
 
-        // Calculate inv(I - edgeCoef)
-        Matrix edgeCoef = edgeCoef().copy().transpose();
-
-//        TetradMatrix iMinusB = TetradAlgebra.identity(edgeCoef.rows());
-//        iMinusB.assign(edgeCoef, Functions.minus);
-
-        Matrix iMinusB = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
-
-        Matrix inv = iMinusB.inverse();
+        // Calculate inv(I - edgeCoefC)
+        Matrix B = edgeCoef().transpose();
+        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
 
         // Pick error values e, for each calculate inv * e.
         Matrix sim = new Matrix(sampleSize, numVars);
 
-        // Generate error data with the right variances and covariances, then override this
-        // with error data for varaibles that have special distributions defined. Not ideal,
-        // but not sure what else to do at the moment. It's better than not taking covariances
-        // into account!
-        Matrix cholesky = MatrixUtils.cholesky(errCovar(errorVariances()));
+        for (int row = 0; row < sampleSize; row++) {
 
-        for (int i = 0; i < sampleSize; i++) {
-            Vector e = new Vector(exogenousData(cholesky, RandomUtil.getInstance()));
-            Vector ePrime = inv.times(e);
-            sim.assignRow(i, ePrime); // sim.viewRow(i).assign(ePrime);
+            // Step 1. Generate normal samples.
+            Vector e = new Vector(edgeCoef().columns());
+
+            for (int i = 0; i < e.size(); i++) {
+                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar(errorVariances()).get(i, i))));
+            }
+
+            // Step 3. Calculate the new rows in the data.
+            Vector sample = iMinusBInv.times(e);
+            sim.assignRow(row, sample);
+
+            for (int col = 0; col < sample.size(); col++) {
+                double value = sim.get(row, col);
+                sim.set(row, col, value);
+            }
         }
 
-        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sim.transpose().toArray()), getVariableNodes());
+        List<Node> continuousVars = new ArrayList<>();
+
+        for (Node node : getVariableNodes()) {
+            final ContinuousVariable var = new ContinuousVariable(node.getName());
+            var.setNodeType(node.getNodeType());
+            continuousVars.add(var);
+        }
+
+        DataSet fullDataSet = new BoxDataSet(new DoubleDataBox(sim.toArray()), continuousVars);
 
         if (latentDataSaved) {
             return fullDataSet;
@@ -620,11 +634,12 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         }
     }
 
+
     /**
      * @return a copy of the implied covariance matrix over all the variables.
      */
     public Matrix getImplCovar() {
-        return implCovar().copy();
+        return implCovar();
     }
 
     /**
