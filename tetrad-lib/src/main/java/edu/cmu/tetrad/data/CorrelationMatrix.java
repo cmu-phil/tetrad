@@ -69,7 +69,7 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * Constructs a correlation matrix data set using the given information. The
      * matrix matrix is internally converted to a correlation matrix.
      */
-    private CorrelationMatrix(List<Node> variables, Matrix matrix,
+    public CorrelationMatrix(List<Node> variables, Matrix matrix,
                               int sampleSize) {
         super(variables, MatrixUtils.convertCovToCorr(matrix).copy(), sampleSize);
     }
