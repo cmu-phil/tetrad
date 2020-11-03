@@ -128,8 +128,8 @@ public class SemBicScore implements Score {
         }
 
         // r could be NaN if the matrix is not invertible; this NaN will be returned.
-        return -n * Math.log(1.0 - r * r) - getPenaltyDiscount() * log(n)
-                + 2 * signum(getStructurePrior()) * (sp1 - sp2);
+        return -n * Math.log(1.0 - r * r) - 0.5 * getPenaltyDiscount() * log(n)
+                + signum(getStructurePrior()) * (sp1 - sp2);
 //        return (localScore(y, append(z, x)) - localScore(y, z));
     }
 
