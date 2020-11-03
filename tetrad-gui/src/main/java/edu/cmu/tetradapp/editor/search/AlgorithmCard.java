@@ -30,12 +30,7 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Gaussian;
 import edu.cmu.tetrad.annotation.Linear;
 import edu.cmu.tetrad.annotation.Nonexecutable;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -275,6 +270,8 @@ public class AlgorithmCard extends JPanel {
         if (dataModelList.containsEmptyData()) {
             return false;
         } else {
+            if (dataModelList.get(0) instanceof CovarianceMatrix) return false;
+
             DataSet dataSet = (DataSet) dataModelList.get(0);
 
             return dataSet.existsMissingValue();
