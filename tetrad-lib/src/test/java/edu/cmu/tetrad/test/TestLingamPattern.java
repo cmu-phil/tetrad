@@ -79,7 +79,7 @@ public class TestLingamPattern {
 
         double[] pvals = lingam.getPValues();
 
-        double[] expectedPVals = {0.18,0.29,0.88,0.00,0.01,0.51};
+        double[] expectedPVals = {0.18,0.29,0.88,0.00,0.01,0.575};
 
         for (int i = 0; i < pvals.length; i++) {
             assertEquals(expectedPVals[i], pvals[i], 0.01);

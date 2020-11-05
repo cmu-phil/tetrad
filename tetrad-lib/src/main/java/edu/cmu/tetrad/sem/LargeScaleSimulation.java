@@ -260,7 +260,7 @@ public final class LargeScaleSimulation {
      *                   integer.
      */
     public DataSet simulateDataFisher(int sampleSize) {
-        return simulateDataFisher(getSoCalledPoissonShocks(sampleSize), 50, 1e-5);
+        return simulateDataFisher(10, 10, sampleSize, 0.001, false);
     }
 
     /**
@@ -824,14 +824,10 @@ public final class LargeScaleSimulation {
         double[][] shocks = new double[sampleSize][numVars];
 
         for (int j = 0; j < numVars; j++) {
-            int v = 0;
+            double v = sqrt(RandomUtil.getInstance().nextUniform(varLow, varHigh));
 
             for (int i = 0; i < sampleSize; i++) {
-                if (RandomUtil.getInstance().nextDouble() < 0.3) {
-                    v = 1 - v;
-                }
-
-                shocks[i][j] = v + RandomUtil.getInstance().nextNormal(0, 0.1);
+                shocks[i][j] = RandomUtil.getInstance().nextNormal(0, v);
             }
         }
 

@@ -2,29 +2,23 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static java.lang.StrictMath.abs;
-
-public class TestFisherZCalibration {
+public class TestFisherZCalibration3 {
 
 //    public static void main(String... args) {
 //        test1();
@@ -32,37 +26,46 @@ public class TestFisherZCalibration {
 
     @Test
     public void test1() {
-        RandomUtil.getInstance().setSeed(105034020L);
-        toTest(0.01);
+//        RandomUtil.getInstance().setSeed(105034020L);
+        toTest();
     }
 
-    private void toTest(double alpha) {
+    private void toTest() {
         Parameters parameters = new Parameters();
-        parameters.set(Params.ALPHA, alpha);
+        parameters.set(Params.ALPHA, 0.01);
         parameters.set(Params.DEPTH, 2);
-        parameters.set(Params.PENALTY_DISCOUNT, 2);
+        parameters.set(Params.PENALTY_DISCOUNT, 1);
         parameters.set(Params.STRUCTURE_PRIOR, 0);
         parameters.set(Params.COEF_LOW, .2);
         parameters.set(Params.COEF_HIGH, 1.2);
-        int numDraws = 2000;
-        int sampleSize = 2000;
+        parameters.set(Params.SAMPLE_SIZE, 1000);
+        int numDraws = 1000;
 
-        Graph graph = GraphUtils.randomDag(20, 0, 40, 100,
+        Graph graph = GraphUtils.randomDag(20, 0, 20, 100,
                 100, 100, false);
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(sampleSize, false);
+//        SemPm pm = new SemPm(graph);
+//        SemIm im = new SemIm(pm);
+//        DataSet data = im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
+//
+//
+        LargeScaleSimulation largeScaleSimulation = new LargeScaleSimulation(graph);
+        largeScaleSimulation.setCoefRange(parameters.getDouble(Params.COEF_LOW), parameters.getDouble(Params.COEF_HIGH));
+        largeScaleSimulation.setVarRange(1, 3);
+        DataSet data = largeScaleSimulation.simulateDataFisher(10, 10,
+                parameters.getInt(Params.SAMPLE_SIZE), 0.001, false);
 
+//        IndependenceTest test1 = new FisherZ().getTest(new CovarianceMatrix(data), parameters);
+//        IndependenceTest test2 = new SemBicTest().getTest(new CovarianceMatrix(data), parameters);
 
-        IndependenceTest test1 = new FisherZ().getTest(new CovarianceMatrix(data), parameters);
-        IndependenceTest test2 = new SemBicTest().getTest(new CovarianceMatrix(data), parameters);
+        IndependenceTest test1 = new FisherZ().getTest(data, parameters);
+        IndependenceTest test2 = new SemBicTest().getTest(data, parameters);
 
         List<Node> variables = data.getVariables();
         graph = GraphUtils.replaceNodes(graph, variables);
 
         IndependenceTest dsep = new IndTestDSep(graph);
 
-        for (int depth : new int[]{0, 1, 2}) {
+        for (int depth : new int[]{0, 1, 2, 3}) {
             testOneDepth(parameters, numDraws, test1, test2, variables, dsep, depth);
         }
     }
@@ -76,6 +79,8 @@ public class TestFisherZCalibration {
         int ds = 0;
 
         for (int i = 0; i < numDraws; i++) {
+            Collections.shuffle(variables);
+            Collections.shuffle(variables);
             Collections.shuffle(variables);
             Collections.shuffle(variables);
             Collections.shuffle(variables);
@@ -126,6 +131,6 @@ public class TestFisherZCalibration {
         double alphaHat = fp1 / (double) ds;
         System.out.println("alpha^ = " + alphaHat);
 
-        Assert.assertTrue(abs(alpha - alphaHat) < 2 * alpha);
+//        Assert.assertTrue(abs(alpha - alphaHat) < 2 * alpha);
     }
 }
