@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -123,22 +124,30 @@ public class TestPc {
 
         Graph pattern = pc.search();
 
-        Graph _true = new EdgeListGraph(pattern.getNodes());
+        String trueString = "Graph Nodes:\n" +
+                "ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS\n" +
+                "\n" +
+                "Graph Edges:\n" +
+                "1. ABILITY --> CITES\n" +
+                "2. ABILITY --> GPQ\n" +
+                "3. ABILITY --> PREPROD\n" +
+                "4. GPQ --> QFJ\n" +
+                "5. PREPROD --> CITES\n" +
+                "6. PUBS --> CITES\n" +
+                "7. QFJ --> CITES\n" +
+                "8. QFJ --> PUBS\n" +
+                "9. SEX --> PUBS";
 
-        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("GPQ"));
-        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("PREPROD"));
-        _true.addDirectedEdge(pattern.getNode("GPQ"), pattern.getNode("QFJ"));
-        _true.addDirectedEdge(pattern.getNode("PREPROD"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("PREPROD"), pattern.getNode("PUBS"));
-        _true.addDirectedEdge(pattern.getNode("PUBS"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("PUBS"));
-        _true.addDirectedEdge(pattern.getNode("SEX"), pattern.getNode("PUBS"));
+        Graph trueGraph = null;
 
-        System.out.println(pattern);
 
-        assertEquals(_true, pattern);
+        try {
+            trueGraph = GraphUtils.readerToGraphTxt(trueString);
+            pattern = GraphUtils.replaceNodes(pattern, trueGraph.getNodes());
+            assertEquals(trueGraph, pattern);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
