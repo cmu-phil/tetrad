@@ -1,3 +1,23 @@
+6.8.0
+Added Testwise Deletion for Fisher Z, G Square, Chi Square, Conditional Gaussian Test, Degenerate Gaussian Test, KCI Test, Conditional Correlation Test, Probabilistic Test
+Added the Junction Tree Inference; that’s incorporated as an "Updater" as well in the Tetrad interface
+Added a backdoor criterion method to the code
+Added a joint probability method to the code
+Added FASK and MultiFASK algorithm
+Added Degenerate Gaussian Score and Likelihood Ratio Test
+Added Experimental option (by default experimental algorithms, scores, tests are not shown)
+Changed “Sample prior” to “Prior Equivalent Sample Size”
+Changed default percentage of discrete variables for mixed variable simulation to 50%
+Changed default discrete independence test to G Square
+Fixed saving SEM models as XML
+Fixed simulation so you can’t re-simulate data for the same model (fixes a problem for causal compare)
+Fixed the independence test comparison tool in the interface
+Fixed LiNGAM
+Many bug fixes
+
+6.7.1
+Hotfix #1246 - chi square test
+
 6.7.0
 Can override variable datatypes using metafile
 Functions for handling experimental variables
