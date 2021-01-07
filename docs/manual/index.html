@@ -4789,6 +4789,40 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="selfLoopCoef_value_type">Double</span></li>
         </ul>
 
+        <h3 id="semBicRule" class="parameter_description">semBicRule</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="semBicRule_short_desc">1 = Chickering, 2 = Nandy, 3 = High Dimensional</span>
+            </li>
+            <li>Long Description: <span id="semBicRule_long_desc">The rule used for calculating a score.
+                The Chickering Rule is the local scoring consistency criterion in Chickering's formulation of
+                GES, though we allow a multiplier on the penalty term called "penalty discount".
+                The Nandy et al. rule is a reformultion of the Chickering rule using a single calculation
+                of a partial correlation in place of the likelihood difference. For the high-dimensional score
+                we use the formulation in Gao and Chen, described on the Wikipedia page for Bayesian Information
+                Criterion, which is a pseudo-BIC formulation. It has two parameters, gamma (> 0) and omega (>= 1).
+                We fix gamma at 0.25 and allow omega to be adjusted using the "penalty discount" parameter.
+                In all cases we include a structure prior, which amounts to a prior on the number of
+                parents in any scoring, a binomial formula.</span>
+            </li>
+            <li>Default Value: <span id="semBicRule_default_value">1</span></li>
+            <li>Lower Bound: <span id="semBicRule_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="semBicRule_upper_bound">4</span></li>
+            <li>Value Type: <span id="semBicRule_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="semBicStructurePrior" class="parameter_description">semBicStructurePrior</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="semBicStructurePrior_short_desc">Structure Prior for SEM BIC (default 0)</span>
+            </li>
+            <li>Long Description: <span id="semBicStructurePrior_long_desc">Structure prior; default is 0 (turned off); may be
+                any positive number otherwise</span>
+            </li>
+            <li>Default Value: <span id="semBicStructurePrior_default_value">0</span></li>
+            <li>Lower Bound: <span id="semBicStructurePrior_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="semBicStructurePrior_upper_bound">Infinity</span></li>
+            <li>Value Type: <span id="semBicStructurePrior_value_type">Double</span></li>
+        </ul>
+
         <h3 id="skipNumRecords" class="parameter_description">skipNumRecords</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="skipNumRecords_short_desc">Number of records that should be skipped between recordings (min = 0)</span>

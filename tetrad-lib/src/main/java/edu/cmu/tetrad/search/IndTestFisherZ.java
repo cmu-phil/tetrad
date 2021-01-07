@@ -90,6 +90,24 @@ public final class IndTestFisherZ implements IndependenceTest {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
+        if (!dataSet.existsMissingValue()) {
+            this.cor = new CorrelationMatrix(dataSet);
+            this.variables = cor.getVariables();
+            this.indexMap = indexMap(variables);
+            this.nameMap = nameMap(variables);
+            setAlpha(alpha);
+
+            Map<Node, Integer> nodesHash = new HashMap<>();
+
+            for (int j = 0; j < variables.size(); j++) {
+                nodesHash.put(variables.get(j), j);
+            }
+
+            this.nodesHash = nodesHash;
+
+            return;
+        }
+
         if (!(alpha >= 0 && alpha <= 1)) {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }

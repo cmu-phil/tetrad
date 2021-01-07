@@ -188,6 +188,8 @@ public final class Params {
 
     // System prameters that are not supposed to put in the HTML manual documentation
     public static final String PRINT_STREAM = "printStream";
+    public static final String SEM_BIC_RULE = "semBicRule";
+    public static final String SEM_BIC_STRUCTURE_PRIOR = "semBicStructurePrior";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
