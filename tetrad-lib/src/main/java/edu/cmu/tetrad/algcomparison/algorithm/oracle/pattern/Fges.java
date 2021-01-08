@@ -148,7 +148,7 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
         parameters.add(Params.SYMMETRIC_FIRST_STEP);
         parameters.add(Params.MAX_DEGREE);
         parameters.add(Params.TDEPTH);
-        parameters.add(Params.TURNING);
+//        parameters.add(Params.TURNING);
 
         parameters.add(Params.VERBOSE);
 
