@@ -2253,8 +2253,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Parameters</h4>
 
     <p><a href="#samplePrior">samplePrior</a>, <a href="#structurePrior">structurePrior</a>, <a href="#penaltyDiscount">penaltyDiscount</a>,
-        <a href="#symmetricFirstStep">symmetricFirstStep</a>, <a href="#faithfulnessAssumed">faithfulnessAssumed</a>, <a
-                href="#maxDegree">maxDegree</a></p>
+        <a href="#symmetricFirstStep">symmetricFirstStep</a>,
+        <a href="#faithfulnessAssumed">faithfulnessAssumed</a>,
+        <a href="#maxDegree">maxDegree</a>
+        <a href="#tDepth">tDepth</a>
+        <a href="#turning">turning</a>
+    </p>
 
 
     <h3>The IMaGES Discrete Algorithm (BDeu Score)</h3>
@@ -4892,6 +4896,19 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="targetName_value_type">String</span></li>
         </ul>
 
+        <h3 id="tDepth" class="parameter_description">tDepth</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="tDepth_short_desc">"T-Depth", the maximum number of neighbors considered in power set calculations</span>
+            </li>
+            <li>Long Description: <span id="tDepth_long_desc">For FGES, this is the maximum number of T-neighbors or H-complement-neights
+                that are considered in any scoring step. Default is -1 (unlimited).</span>
+            </li>
+            <li>Default Value: <span id="tDepth_default_value">-1</span></li>
+            <li>Lower Bound: <span id="tDepth_lower_bound">-1</span></li>
+            <li>Upper Bound: <span id="tDepth_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="tDepth_value_type">Integer</span></li>
+        </ul>
+
         <h3 id="thr" class="parameter_description">thr</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="thr_short_desc">THR parameter (GLASSO) (min = 0.0)</span></li>
@@ -4946,6 +4963,17 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Lower Bound: <span id="twoCycleAlpha_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="twoCycleAlpha_upper_bound">1.0</span></li>
             <li>Value Type: <span id="twoCycleAlpha_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="turning" class="parameter_description">turning</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="turning_short_desc">Yes, if the turning step should be included</span>
+            </li>
+            <li>Long Description: <span id="turning_long_desc">Performs a turning step similar to (but not quite teh same as) that of PCALG's GES. The search in FGES repeats the sequence FES followed by BES, twice. The turning step is inserted between FGES and GES, if the user opts to use it. It is not used by default. The turning step is still somewhat experimental and may change in the future.</span></li>
+            <li>Default Value: <span id="turning_default_value">false</span></li>
+            <li>Lower Bound: <span id="turning_lower_bound"></span></li> g
+            <li>Upper Bound: <span id="turning_upper_bound"></span></li>
+            <li>Value Type: <span id="turning_value_type">Boolean</span></li>
         </ul>
 
         <h3 id="upperBound" class="parameter_description">upperBound</h3>

@@ -17,12 +17,9 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.lang3.RandomUtils;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static java.lang.Math.abs;
@@ -44,8 +41,8 @@ public class SpecialDataClark implements Simulation {
     }
 
     @Override
-    public void createData(Parameters parameters) {
-        if (!dataSets.isEmpty()) return;
+    public void createData(Parameters parameters, boolean newModel) {
+        if (!newModel && !dataSets.isEmpty()) return;
 
         Graph graph = randomGraph.createGraph(parameters);
 

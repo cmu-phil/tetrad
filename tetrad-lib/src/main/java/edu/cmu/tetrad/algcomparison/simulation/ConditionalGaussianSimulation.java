@@ -37,8 +37,8 @@ public class ConditionalGaussianSimulation implements Simulation {
     }
 
     @Override
-    public void createData(Parameters parameters) {
-        if (!dataSets.isEmpty()) return;
+    public void createData(Parameters parameters, boolean newModel) {
+        if (!newModel && !dataSets.isEmpty()) return;
 
         setVarLow(parameters.getDouble(Params.VAR_LOW));
         setVarHigh(parameters.getDouble(Params.VAR_HIGH));

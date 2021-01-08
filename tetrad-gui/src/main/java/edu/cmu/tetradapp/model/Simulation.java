@@ -282,7 +282,7 @@ public class Simulation extends DataWrapper implements SessionModel,
         // Every time the users click the Simulate button, new data needs to be created
         // regardless of already created data - Zhou
         //if (simulation.getNumDataModels() == 0) {
-        simulation.createData(parameters);
+        simulation.createData(parameters, false);
         //}
     }
 

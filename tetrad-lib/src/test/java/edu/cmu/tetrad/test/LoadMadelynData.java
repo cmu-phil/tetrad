@@ -34,7 +34,7 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
     }
 
     @Override
-    public void createData(Parameters parameters) {
+    public void createData(Parameters parameters, boolean newModel) {
         this.dataSets = new ArrayList<>();
 
         for (int run = 1; run <= 10; run++) {

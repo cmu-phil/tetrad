@@ -54,8 +54,8 @@ public class LinearFisherModel implements Simulation, TakesData {
     }
 
     @Override
-    public void createData(Parameters parameters) {
-        if (!dataSets.isEmpty()) return;
+    public void createData(Parameters parameters, boolean newModel) {
+        if (!newModel && !dataSets.isEmpty()) return;
 
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
