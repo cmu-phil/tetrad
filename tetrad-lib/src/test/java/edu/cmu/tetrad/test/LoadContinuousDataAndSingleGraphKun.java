@@ -30,7 +30,7 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
     }
 
     @Override
-    public void createData(Parameters parameters) {
+    public void createData(Parameters parameters, boolean newModel) {
         this.covs = new ArrayList<>();
 
         File dir = new File(path);

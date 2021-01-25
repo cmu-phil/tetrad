@@ -37,7 +37,7 @@ public class SemThenDiscretize implements Simulation {
     }
 
     @Override
-    public void createData(Parameters parameters) {
+    public void createData(Parameters parameters, boolean newModel) {
         double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
         boolean discrete = parameters.getString("dataType").equals("discrete");

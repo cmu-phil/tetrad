@@ -75,8 +75,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     private boolean defaultToKnowledgeLayout;
 
     private final Set<String> variables;
-    private final Set<OrderedPair<Set<String>>> forbiddenRulesSpecs;
-    private final Set<OrderedPair<Set<String>>> requiredRulesSpecs;
+    private final List<OrderedPair<Set<String>>> forbiddenRulesSpecs;
+    private final List<OrderedPair<Set<String>>> requiredRulesSpecs;
     private final List<Set<String>> tierSpecs;
 
     // Legacy.
@@ -85,8 +85,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
     public Knowledge2() {
         this.variables = new HashSet<>();
-        this.forbiddenRulesSpecs = new HashSet<>();
-        this.requiredRulesSpecs = new HashSet<>();
+        this.forbiddenRulesSpecs = new ArrayList<>();
+        this.requiredRulesSpecs = new ArrayList<>();
         this.tierSpecs = new ArrayList<>();
         this.knowledgeGroups = new LinkedList<>();
         this.knowledgeGroupRules = new HashMap<>();
@@ -108,8 +108,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         this.defaultToKnowledgeLayout = knowledge.defaultToKnowledgeLayout;
 
         this.variables = new HashSet<>(knowledge.variables);
-        this.forbiddenRulesSpecs = new HashSet<>(knowledge.forbiddenRulesSpecs);
-        this.requiredRulesSpecs = new HashSet<>(knowledge.requiredRulesSpecs);
+        this.forbiddenRulesSpecs = new ArrayList<>(knowledge.forbiddenRulesSpecs);
+        this.requiredRulesSpecs = new ArrayList<>(knowledge.requiredRulesSpecs);
         this.tierSpecs = new ArrayList<>(knowledge.tierSpecs);
 
         this.knowledgeGroups = knowledge.knowledgeGroups;
@@ -420,8 +420,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     private boolean isForbiddenByRules(String var1, String var2) {
         return forbiddenRulesSpecs.stream()
                 .anyMatch(rule -> !var1.equals(var2)
-                && rule.getFirst().contains(var1)
-                && rule.getSecond().contains(var2));
+                        && rule.getFirst().contains(var1)
+                        && rule.getSecond().contains(var2));
     }
 
     /**
@@ -456,7 +456,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         return s.stream()
                 .anyMatch(rule -> rule.getFirst().contains(var1)
-                && rule.getSecond().contains(var2));
+                        && rule.getSecond().contains(var2));
     }
 
     /**
@@ -471,7 +471,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public boolean isForbiddenByTiers(String var1, String var2) {
         return forbiddenTierRules().stream()
                 .anyMatch(rule -> rule.getFirst().contains(var1)
-                && rule.getSecond().contains(var2));
+                        && rule.getSecond().contains(var2));
     }
 
     /**
@@ -485,8 +485,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public boolean isRequired(String var1, String var2) {
         return requiredRulesSpecs.stream()
                 .anyMatch(rule -> !var1.equals(var2)
-                && rule.getFirst().contains(var1)
-                && rule.getSecond().contains(var2));
+                        && rule.getFirst().contains(var1)
+                        && rule.getSecond().contains(var2));
     }
 
     /**
@@ -505,7 +505,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         return s.stream()
                 .anyMatch(rule -> rule.getFirst().contains(var1)
-                && rule.getSecond().contains(var2));
+                        && rule.getSecond().contains(var2));
     }
 
     /**

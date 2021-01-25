@@ -30,8 +30,8 @@ public class LoadContinuousDataAndGraphs implements Simulation {
     }
 
     @Override
-    public void createData(Parameters parameters) {
-        if (!dataSets.isEmpty()) return;
+    public void createData(Parameters parameters, boolean newModel) {
+        if (!newModel && !dataSets.isEmpty()) return;
 
         this.dataSets = new ArrayList<>();
 
