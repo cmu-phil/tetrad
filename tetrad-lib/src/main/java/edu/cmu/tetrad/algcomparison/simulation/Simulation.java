@@ -20,7 +20,7 @@ public interface Simulation extends HasParameters, TetradSerializable {
     /**
      * Creates a data set and simulates data.
      */
-    void createData(Parameters parameters);
+    void createData(Parameters parameters, boolean newModel);
 
     /**
      * @return The number of data sets to simulate.

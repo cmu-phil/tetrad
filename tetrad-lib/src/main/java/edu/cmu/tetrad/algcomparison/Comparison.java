@@ -112,6 +112,7 @@ public class Comparison {
     private String resultsPath = null;
     private boolean parallelized = false;
     private boolean savePatterns = false;
+    private boolean saveData = true;
     private boolean savePags = false;
     //    private boolean saveTrueDags = false;
     private ArrayList<String> dirs = null;
@@ -264,7 +265,7 @@ public class Comparison {
             List<SimulationWrapper> wrappers = getSimulationWrappers(simulation, parameters);
 
             for (SimulationWrapper wrapper : wrappers) {
-                wrapper.createData(wrapper.getSimulationSpecificParameters());
+                wrapper.createData(wrapper.getSimulationSpecificParameters(), true);
                 simulationWrappers.add(wrapper);
             }
         }
@@ -543,7 +544,7 @@ public class Comparison {
                     parameters.set(param, simulationWrapper.getValue(param));
                 }
 
-                simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters());
+                simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters(), false);
 
                 File subdir = dir;
                 if (simulationWrappers.size() > 1) {
@@ -585,11 +586,13 @@ public class Comparison {
 
                     GraphUtils.saveGraph(graph, file2, false);
 
-                    File file = new File(dir2, "data." + (j + 1) + ".txt");
-                    Writer out = new FileWriter(file);
-                    DataModel dataModel = (DataModel) simulationWrapper.getDataModel(j);
-                    DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
-                    out.close();
+                    if (isSaveData()) {
+                        File file = new File(dir2, "data." + (j + 1) + ".txt");
+                        Writer out = new FileWriter(file);
+                        DataModel dataModel = (DataModel) simulationWrapper.getDataModel(j);
+                        DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
+                        out.close();
+                    }
 
                     if (isSavePatterns()) {
                         File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
@@ -1147,6 +1150,20 @@ public class Comparison {
 //    public void setSaveTrueDags(boolean saveTrueDags) {
 //        this.saveTrueDags = saveTrueDags;
 //    }
+
+    /**
+     * @return True if patterns should be saved out.
+     */
+    public boolean isSaveData() {
+        return this.saveData;
+    }
+
+    /**
+     * @return True if patterns should be saved out.
+     */
+    public void setSaveData(boolean saveData) {
+        this.saveData = saveData;
+    }
 
     /**
      * @return True iff tables should be tab delimited (e.g. for easy pasting
@@ -1939,7 +1956,6 @@ public class Comparison {
     }
 
     private class SimulationWrapper implements Simulation {
-
         static final long serialVersionUID = 23L;
         private Simulation simulation;
         private List<Graph> graphs;
@@ -1955,12 +1971,12 @@ public class Comparison {
         }
 
         @Override
-        public void createData(Parameters parameters) {
-            simulation.createData(parameters);
+        public void createData(Parameters parameters, boolean newModel) {
+            simulation.createData(parameters, newModel);
             this.graphs = new ArrayList<>();
             this.dataModels = new ArrayList<>();
             for (int i = 0; i < simulation.getNumDataModels(); i++) {
-                this.graphs.add(new EdgeListGraph(simulation.getTrueGraph(i)));
+                this.graphs.add(simulation.getTrueGraph(i));
                 this.dataModels.add(simulation.getDataModel(i));
             }
         }

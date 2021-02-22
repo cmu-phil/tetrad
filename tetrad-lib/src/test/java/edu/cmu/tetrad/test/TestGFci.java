@@ -27,6 +27,8 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -200,10 +202,10 @@ public class TestGFci {
 
         Graph g = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
 
-        LargeScaleSimulation semSimulator = new LargeScaleSimulation(g);
-        semSimulator.setErrorsNormal(true);
+        SemPm pm = new SemPm(g);
+        SemIm im = new SemIm(pm);
 
-        DataSet data = semSimulator.simulateDataFisher(sampleSize);
+        DataSet data = im.simulateData(1000, false);
 
         data = DataUtils.restrictToMeasured(data);
 
@@ -211,6 +213,7 @@ public class TestGFci {
 
         IndependenceTest test = new IndTestFisherZ(data, 0.001);
         SemBicScore score = new SemBicScore(data);
+        score.setRuleType(SemBicScore.RuleType.CHICKERING);
         score.setPenaltyDiscount(2);
         GFci gFci = new GFci(test, score);
         gFci.setFaithfulnessAssumed(true);

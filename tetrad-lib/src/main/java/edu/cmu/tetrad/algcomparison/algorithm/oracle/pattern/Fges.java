@@ -66,9 +66,9 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
     	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (algorithm != null) {
+//            if (algorithm != null) {
 //                initialGraph = algorithm.search(dataSet, parameters);
-            }
+//            }
 
             edu.cmu.tetrad.search.Fges search
                     = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters), Runtime.getRuntime().availableProcessors());
@@ -77,6 +77,8 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
             search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
+            search.setTDepth(parameters.getInt(Params.TDEPTH));
+            search.setTurning(parameters.getBoolean(Params.TURNING));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
@@ -145,6 +147,8 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.SYMMETRIC_FIRST_STEP);
         parameters.add(Params.MAX_DEGREE);
+        parameters.add(Params.TDEPTH);
+//        parameters.add(Params.TURNING);
 
         parameters.add(Params.VERBOSE);
 

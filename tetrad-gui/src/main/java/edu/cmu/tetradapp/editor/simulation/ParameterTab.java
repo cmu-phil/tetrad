@@ -43,6 +43,8 @@ import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.ParameterComponents;
 import edu.cmu.tetradapp.util.WatchedProcess;
+import org.jetbrains.annotations.NotNull;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -68,20 +70,20 @@ public class ParameterTab extends JPanel {
     private static final long serialVersionUID = 7074205549192562786L;
 
     private static final String[] GRAPH_ITEMS = new String[]{
-        GraphTypes.RANDOM_FOWARD_DAG,
-        GraphTypes.SCALE_FREE_DAG,
-        GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS,
-        GraphTypes.RANDOM_ONE_FACTOR_MIM,
-        GraphTypes.RANDOM_TWO_FACTOR_MIM
+            GraphTypes.RANDOM_FOWARD_DAG,
+            GraphTypes.SCALE_FREE_DAG,
+            GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS,
+            GraphTypes.RANDOM_ONE_FACTOR_MIM,
+            GraphTypes.RANDOM_TWO_FACTOR_MIM
     };
 
     private static final String[] SOURCE_GRAPH_ITEMS = {
-        SimulationTypes.BAYS_NET,
-        SimulationTypes.STRUCTURAL_EQUATION_MODEL,
-        SimulationTypes.LINEAR_FISHER_MODEL,
-        SimulationTypes.LEE_AND_HASTIE,
-        SimulationTypes.CONDITIONAL_GAUSSIAN,
-        SimulationTypes.TIME_SERIES
+            SimulationTypes.BAYS_NET,
+            SimulationTypes.STRUCTURAL_EQUATION_MODEL,
+            SimulationTypes.LINEAR_FISHER_MODEL,
+            SimulationTypes.LEE_AND_HASTIE,
+            SimulationTypes.CONDITIONAL_GAUSSIAN,
+            SimulationTypes.TIME_SERIES
     };
 
     private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
@@ -123,6 +125,16 @@ public class ParameterTab extends JPanel {
     }
 
     private void refreshParameters() {
+        RandomGraph randomGraph = newRandomGraph();
+        newSimulation(randomGraph);
+
+        showParameters();
+
+        firePropertyChange("refreshParameters", null, null);
+    }
+
+    @NotNull
+    private RandomGraph newRandomGraph() {
         RandomGraph randomGraph = (simulation.getSourceGraph() == null)
                 ? new SingleGraph(new EdgeListGraph())
                 : new SingleGraph(simulation.getSourceGraph());
@@ -151,7 +163,10 @@ public class ParameterTab extends JPanel {
                     throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
             }
         }
+        return randomGraph;
+    }
 
+    private void newSimulation(RandomGraph randomGraph) {
         if (!simulation.isFixedSimulation()) {
             String simulationItem = simulationsDropdown.getItemAt(simulationsDropdown.getSelectedIndex());
             simulation.getParams().set("simulationsDropdownPreference", simulationItem);
@@ -209,10 +224,6 @@ public class ParameterTab extends JPanel {
                 }
             }
         }
-
-        showParameters();
-
-        firePropertyChange("refreshParameters", null, null);
     }
 
     private void showParameters() {
@@ -289,7 +300,7 @@ public class ParameterTab extends JPanel {
                 simulation.getParams().getString("simulationsDropdownPreference", simulationItems[0]));
         simulationsDropdown.addActionListener(e -> refreshParameters());
 
-        simOptBox.add(createLabeledComponent("For a New Simulation, Select (or re-select) Type: ", simulationsDropdown));
+        simOptBox.add(createLabeledComponent("Type of Simulation: ", simulationsDropdown));
         simOptBox.add(Box.createVerticalStrut(20));
 
         return simOptBox;
@@ -300,7 +311,9 @@ public class ParameterTab extends JPanel {
             @Override
             public void watch() {
                 try {
-                    simulation.getSimulation().createData(simulation.getParams());
+                    RandomGraph randomGraph = newRandomGraph();
+                    newSimulation(randomGraph);
+                    simulation.getSimulation().createData(simulation.getParams(), false);
 
                     firePropertyChange("modelChanged", null, null);
                 } catch (Exception exception) {
@@ -339,27 +352,27 @@ public class ParameterTab extends JPanel {
         if (simulation.isFixedSimulation()) {
             if (simulation.getSimulation() instanceof BayesNetSimulation) {
                 items = new String[]{
-                    SimulationTypes.BAYS_NET
+                        SimulationTypes.BAYS_NET
                 };
             } else if (simulation.getSimulation() instanceof SemSimulation) {
                 items = new String[]{
-                    SimulationTypes.STRUCTURAL_EQUATION_MODEL
+                        SimulationTypes.STRUCTURAL_EQUATION_MODEL
                 };
             } else if (simulation.getSimulation() instanceof LinearFisherModel) {
                 items = new String[]{
-                    SimulationTypes.LINEAR_FISHER_MODEL
+                        SimulationTypes.LINEAR_FISHER_MODEL
                 };
             } else if (simulation.getSimulation() instanceof StandardizedSemSimulation) {
                 items = new String[]{
-                    SimulationTypes.STANDARDIZED_STRUCTURAL_EQUATION_MODEL
+                        SimulationTypes.STANDARDIZED_STRUCTURAL_EQUATION_MODEL
                 };
             } else if (simulation.getSimulation() instanceof GeneralSemSimulation) {
                 items = new String[]{
-                    SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL
+                        SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL
                 };
             } else if (simulation.getSimulation() instanceof LoadContinuousDataAndGraphs) {
                 items = new String[]{
-                    SimulationTypes.LOADED_FROM_FILES
+                        SimulationTypes.LOADED_FROM_FILES
                 };
             } else {
                 throw new IllegalStateException("Not expecting that model type: "
