@@ -6,7 +6,7 @@
     <parent>
         <groupId>edu.cmu</groupId>
         <artifactId>tetrad</artifactId>
-        <version>6.9.0-SNAPSHOT</version>
+        <version>6.8.1</version>
     </parent>
 
     <artifactId>tetrad-lib</artifactId>
@@ -22,7 +22,6 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.8</version>
@@ -41,9 +40,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-
-
         </plugins>
         <extensions>
             <extension>
@@ -154,12 +150,8 @@
         </dependency>
     </dependencies>
 
-
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-
 
 </project>
