@@ -141,7 +141,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
             Score score = this.score.getScore(covFa, parameters);
 
-            edu.cmu.tetrad.search.Fges2 search = new edu.cmu.tetrad.search.Fges2(score);
+            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
 
             if (parameters.getBoolean("enforceMinimumLeafNodes")) {

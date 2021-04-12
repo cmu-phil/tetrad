@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implements Meek's complete orientation rule set for PC (Chris Meek (1995), "Causal inference and causal explanation
@@ -67,8 +68,9 @@ public class MeekRulesPattern implements ImpliedOrientation {
     //======================== Public Methods ========================//
 
 
-    public void orientImplied(Graph graph) {
+    public Set<Node> orientImplied(Graph graph) {
         orientUsingMeekRulesLocally(IKnowledge, graph);
+        return null;
     }
 
     public void setKnowledge(IKnowledge IKnowledge) {

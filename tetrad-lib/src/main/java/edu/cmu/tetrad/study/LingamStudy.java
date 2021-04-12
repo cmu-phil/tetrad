@@ -25,20 +25,14 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FAS;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R3;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.RSkew;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -59,8 +53,6 @@ public class LingamStudy {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-//        statistics.add(new F1All());
-//        statistics.add(new GraphExactlyRight());
         statistics.add(new ElapsedTime());
 
         statistics.setWeight("AP", 1);
@@ -100,8 +92,6 @@ public class LingamStudy {
 
         parameters.set(Params.COEF_LOW, 0.2);
         parameters.set(Params.COEF_HIGH, 0.7);
-//        parameters.set(Params.VAR_LOW, 1);
-//        parameters.set(Params.VAR_HIGH, 3);
         parameters.set(Params.COEF_SYMMETRIC, true);
         parameters.set(Params.RANDOMIZE_COLUMNS, true);
 

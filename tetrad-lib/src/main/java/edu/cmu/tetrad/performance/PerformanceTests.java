@@ -31,12 +31,13 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-
-import static java.lang.Math.round;
 
 /**
  * Runs some basic performance tests of various algorithm.
@@ -45,7 +46,7 @@ import static java.lang.Math.round;
  */
 public class PerformanceTests {
     private PrintStream out = System.out;
-    private boolean writeToFile = true;
+    private final boolean writeToFile = true;
 
     public void testPc(int numVars, double edgeFactor, int numCases, double alpha) {
         int depth = -1;
@@ -883,7 +884,6 @@ public class PerformanceTests {
 //                fges.setVerbose(false);
                 fges.setOut(System.out);
                 fges.setFaithfulnessAssumed(faithfulness);
-                fges.setCycleBound(-1);
 
                 long timeb = System.currentTimeMillis();
 
@@ -925,7 +925,6 @@ public class PerformanceTests {
 //                fges.setVerbose(false);
                 fges.setOut(System.out);
                 fges.setFaithfulnessAssumed(faithfulness);
-                fges.setCycleBound(-1);
 
                 long timeb = System.currentTimeMillis();
 
@@ -2000,7 +1999,7 @@ public class PerformanceTests {
         b.append(nf.format(avg1 * 100) + "%\t" + nf.format(avg2 * 100)
                 + "%\t" + nf.format(avg3 * 100) + "%\t" + nf.format(avg4 * 100) + "%");
 
-        out.println(b.toString());
+        out.println(b);
     }
 
     private void printAggregatedPrecisionRecall(int[][] counts) {
@@ -2044,7 +2043,7 @@ public class PerformanceTests {
         b.append(nf.format(comparison[0] * 100) + "%\t" + nf.format(comparison[1] * 100)
                 + "%\t" + nf.format(comparison[2] * 100) + "%\t" + nf.format(comparison[3] * 100) + "%");
 
-        out.println(b.toString());
+        out.println(b);
     }
 
     private double[] printCorrectArrows(Graph dag, Graph outGraph, Graph truePag) {
@@ -2306,7 +2305,6 @@ public class PerformanceTests {
             System.out.println(i + " " + degreeCounts.get(i));
         }
     }
-
 
 
     public static void main(String... args) {

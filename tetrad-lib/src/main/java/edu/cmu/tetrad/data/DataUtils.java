@@ -1510,6 +1510,52 @@ public final class DataUtils {
                 data.getVariables());
     }
 
+    public static List<DataSet> split(DataSet data, double percentTest) {
+        if (percentTest <= 0 || percentTest >= 1) throw new IllegalArgumentException();
+
+        List<Integer> rows = new ArrayList<>();
+        for (int i = 0; i < data.getNumRows(); i++) rows.add(i);
+
+        Collections.shuffle(rows);
+
+        int split = (int) (rows.size() * percentTest);
+
+        List<Integer> rows1 = new ArrayList<>();
+        List<Integer> rows2 = new ArrayList<>();
+
+        for (int i = 0; i < split; i++) {
+            rows1.add(rows.get(i));
+        }
+
+        for (int i = split; i < rows.size(); i++) {
+            rows2.add(rows.get(i));
+        }
+
+        int[] _rows1 = new int[rows1.size()];
+        int[] _rows2 = new int[rows2.size()];
+
+        for (int i = 0; i < rows1.size(); i++) _rows1[i] = rows1.get(i);
+        for (int i = 0; i < rows2.size(); i++) _rows2[i] = rows2.get(i);
+
+        int[] cols = new int[data.getNumColumns()];
+        for (int i = 0; i < cols.length; i++) cols[i] = i;
+
+        BoxDataSet boxDataSet1 = new BoxDataSet(new VerticalDoubleDataBox(
+                data.getDoubleData().getSelection(_rows1, cols).transpose().toArray()),
+                data.getVariables());
+
+        BoxDataSet boxDataSet2 = new BoxDataSet(new VerticalDoubleDataBox(
+                data.getDoubleData().getSelection(_rows2, cols).transpose().toArray()),
+                data.getVariables());
+
+        List<DataSet> ret = new ArrayList<>();
+
+        ret.add(boxDataSet1);
+        ret.add(boxDataSet2);
+
+        return ret;
+    }
+
     /**
      * Subtracts the mean of each column from each datum that column.
      */
@@ -1910,6 +1956,27 @@ public final class DataUtils {
         }
 
         return (DataSet) dataSet;
+    }
+
+    /**
+     * Returns the equivalent sample size, assuming all units are equally correlated and all unit variances are equal.
+     */
+    public static double getEss(ICovarianceMatrix covariances) {
+        Matrix C = new CorrelationMatrix(covariances).getMatrix();
+
+        double m = covariances.getSize();
+        double n = covariances.getSampleSize();
+
+        double sum = 0;
+
+        for (int i = 0; i < C.rows(); i++) {
+            for (int j = 0; j < C.columns(); j++) {
+                sum += C.get(i, j);
+            }
+        }
+
+        double rho = (n * sum - n * m) / (m * (n * n - n));
+        return n / (1. + (n - 1.) * rho);
     }
 }
 

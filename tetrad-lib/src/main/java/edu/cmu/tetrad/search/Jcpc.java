@@ -196,7 +196,6 @@ public class Jcpc implements GraphSearch {
         meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         meekRules.setKnowledge(knowledge);
-        meekRules.setUndirectUnforcedEdges(true);
 
         long time1 = System.currentTimeMillis();
 
@@ -332,9 +331,7 @@ public class Jcpc implements GraphSearch {
     }
 
     private void applyMeek(List<Node> y, Graph graph) {
-        List<Node> start = new ArrayList<>();
-        for (Node n : y) start.add(n);
-        meekRules.orientImplied(graph, start);
+        meekRules.orientImplied(graph);
     }
 
     private void reorientNode(Node y, Graph graph) {

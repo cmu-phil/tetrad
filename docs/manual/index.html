@@ -2253,12 +2253,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Parameters</h4>
 
     <p><a href="#samplePrior">samplePrior</a>, <a href="#structurePrior">structurePrior</a>, <a href="#penaltyDiscount">penaltyDiscount</a>,
-        <a href="#symmetricFirstStep">symmetricFirstStep</a>,
-        <a href="#faithfulnessAssumed">faithfulnessAssumed</a>,
-        <a href="#maxDegree">maxDegree</a>
-        <a href="#tDepth">tDepth</a>
-<!--        <a href="#turning">turning</a>-->
-    </p>
+        <a href="#symmetricFirstStep">symmetricFirstStep</a>, <a href="#faithfulnessAssumed">faithfulnessAssumed</a>, <a
+                href="#maxDegree">maxDegree</a></p>
 
 
     <h3>The IMaGES Discrete Algorithm (BDeu Score)</h3>
@@ -3404,7 +3400,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Default Value: <span id="avgDegree_default_value">2</span></li>
             <li>Lower Bound: <span id="avgDegree_lower_bound">1</span></li>
             <li>Upper Bound: <span id="avgDegree_upper_bound">2147483647</span></li>
-            <li>Value Type: <span id="avgDegree_value_type">Integer</span></li>
+            <li>Value Type: <span id="avgDegree_value_type">Double</span></li>
         </ul>
 
         <h3 id="basisType" class="parameter_description">basisType</h3>
@@ -3659,6 +3655,31 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="discretize_value_type">Boolean</span></li>
         </ul>
 
+        <h3 id="calculateEuclidean" class="parameter_description">calculateEuclidean</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="calculateEuclidean_short_desc">Yes if the Euclidean norm squared should be calculated (slow), No if not</span>
+            </li>
+            <li>Long Description: <span id="calculateEuclidean_long_desc">The generalized information criterion is defined with an information term that
+            take a Euclidean norm squares; the can be calcuted directly.</span>
+            </li>
+            <li>Default Value: <span id="calculateEuclidean_default_value">false</span></li>
+            <li>Lower Bound: <span id="calculateEuclidean_lower_bound"></span></li>
+            <li>Upper Bound: <span id="calculateEuclidean_upper_bound"></span></li>
+            <li>Value Type: <span id="calculateEuclidean_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="takeLogs" class="parameter_description">takeLogs</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="takeLogs_short_desc">Yes logs should be taken, No if not</span>
+            </li>
+            <li>Long Description: <span id="takeLogs_long_desc">The formula for the score allows a log to be taken optionally in the information term.</span>
+            </li>
+            <li>Default Value: <span id="takeLogs_default_value">true</span></li>
+            <li>Lower Bound: <span id="takeLogs_lower_bound"></span></li>
+            <li>Upper Bound: <span id="takeLogs_upper_bound"></span></li>
+            <li>Value Type: <span id="takeLogs_value_type">Boolean</span></li>
+        </ul>
+
         <h3 id="doColliderOrientation" class="parameter_description">doColliderOrientation</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="doColliderOrientation_short_desc">Yes if unshielded collider orientation should be done</span>
@@ -3796,9 +3817,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="faithfulnessAssumed_short_desc">Yes if (one edge) faithfulness should be assumed</span>
             </li>
-            <li>Long Description: <span id="faithfulnessAssumed_long_desc">This is a parameter for FGES (“Fast GES”). If this is set to ‘Yes’, it will be assumed that if X _||_ Y, by an independence test, then X _||_ Y | Z for nonempty Z. If the model is faithful to the data, this will necessarily be the case. However, there are some non-faithful examples one can propose where this is not the case. If one is worried about this kind of unfaithfulness, one should set this parameter to ‘No’. If one is willing to tolerate this kind of unfaithfulness, then setting this parameter to ‘Yes’ leads to significantly faster searches.</span>
+            <li>Long Description: <span id="faithfulnessAssumed_long_desc">Assumes that if X _||_ Y, by an independence test, then X _||_ Y | Z for nonempty Z.</span>
             </li>
-            <li>Default Value: <span id="faithfulnessAssumed_default_value">true</span></li>
+            <li>Default Value: <span id="faithfulnessAssumed_default_value">false</span></li>
             <li>Lower Bound: <span id="faithfulnessAssumed_lower_bound"></span></li>
             <li>Upper Bound: <span id="faithfulnessAssumed_upper_bound"></span></li>
             <li>Value Type: <span id="faithfulnessAssumed_value_type">Boolean</span></li>
@@ -4167,6 +4188,18 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="maxCategories_value_type">Integer</span></li>
         </ul>
 
+        <h3 id="maxCorrelation" class="parameter_description">maxCorrelation</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="maxCorrelation_short_desc">Maximum absolute correlation considered</span>
+            </li>
+            <li>Long Description: <span id="maxCorrelation_long_desc">For the Nandy rule, the absolute max correlation r.
+                For the standard BIC or high-dimensional rule, the maximum absolute residual correlation.</span></li>
+            <li>Default Value: <span id="maxCorrelation_default_value">1.0</span></li>
+            <li>Lower Bound: <span id="maxCorrelation_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="maxCorrelation_upper_bound">1.0</span></li>
+            <li>Value Type: <span id="maxCorrelation_value_type">Double</span></li>
+        </ul>
+
         <h3 id="maxDegree" class="parameter_description">maxDegree</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="maxDegree_short_desc">The maximum degree of the graph (min = -1)</span>
@@ -4194,12 +4227,23 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 id="maxIndegree" class="parameter_description">maxIndegree</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="maxIndegree_short_desc">Maximum indegree of graph (min = 1)</span></li>
-            <li>Long Description: <span id="maxIndegree_long_desc">It is possible for a random graph to have a node in which there is a very large “indegree”—that is, number of parents, or number of edges into that node. This parameter places a bound on the maximum such indegree. If no limit is to be placed on the maximum indegree, use the value -1.</span>
+            <li>Long Description: <span id="maxIndegree_long_desc">It is possible for a random graph to have a node in which there is a very large “indegree”—that is, number of parents, or number of edges into that node. This parameter places a bound on the maximum such indegree.</span>
             </li>
             <li>Default Value: <span id="maxIndegree_default_value">100</span></li>
             <li>Lower Bound: <span id="maxIndegree_lower_bound">1</span></li>
             <li>Upper Bound: <span id="maxIndegree_upper_bound">2147483647</span></li>
             <li>Value Type: <span id="maxIndegree_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="zsMaxIndegree" class="parameter_description">zsMaxIndegree</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="zsMaxIndegree_short_desc">Maximum indegree of true graph (min = 0)</span></li>
+            <li>Long Description: <span id="zsMaxIndegree_long_desc">This is the maximum number of parents one expects any node to have in the true model.</span>
+            </li>
+            <li>Default Value: <span id="zsMaxIndegree_default_value">4</span></li>
+            <li>Lower Bound: <span id="zsMaxIndegree_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="zsMaxIndegree_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="zsMaxIndegree_value_type">Integer</span></li>
         </ul>
 
         <h3 id="maxIterations" class="parameter_description">maxIterations</h3>
@@ -4569,6 +4613,65 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="penaltyDiscount_value_type">Double</span></li>
         </ul>
 
+        <h3 id="ebicGamma" class="parameter_description">ebicGamma</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="ebicGamma_short_desc">EBIC Gamma (0-1)</span></li>
+            <li>Long Description: <span id="ebicGamma_long_desc">The gamma parameter for Extended BIC (Chen and Chen). In [0, 1].</span>
+            </li>
+            <li>Default Value: <span id="ebicGamma_default_value">1.0</span></li>
+            <li>Lower Bound: <span id="ebicGamma_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="ebicGamma_upper_bound">1.0</span></li>
+            <li>Value Type: <span id="ebicGamma_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="trueErrorVariance" class="parameter_description">trueErrorVariance</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="trueErrorVariance_short_desc">True error variance</span></li>
+            <li>Long Description: <span id="trueErrorVariance_long_desc">
+                The true error variance of the model, assuming this is the same for all variables.</span>
+            </li>
+            <li>Default Value: <span id="trueErrorVariance_default_value">1.0</span></li>
+            <li>Lower Bound: <span id="trueErrorVariance_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="trueErrorVariance_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="trueErrorVariance_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="zSRiskBound" class="parameter_description">zSRiskBound</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="zSRiskBound_short_desc">Risk bound</span></li>
+            <li>Long Description: <span id="zSRiskBound_long_desc">
+                This is the probability of getting the true model if a correct model is discovered. Could underfit.</span>
+            </li>
+            <li>Default Value: <span id="zSRiskBound_default_value">0.001</span></li>
+            <li>Lower Bound: <span id="zSRiskBound_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="zSRiskBound_upper_bound">1</span></li>
+            <li>Value Type: <span id="zSRiskBound_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="correlationThreshold" class="parameter_description">correlationThreshold</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="correlationThreshold_short_desc">Correlation Threshold</span></li>
+            <li>Long Description: <span id="correlationThreshold_long_desc">
+                The algorithm will complain if correlations are found that are greater than this in absolute value.</span>
+            </li>
+            <li>Default Value: <span id="correlationThreshold_default_value">1</span></li>
+            <li>Lower Bound: <span id="correlationThreshold_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="correlationThreshold_upper_bound">1</span></li>
+            <li>Value Type: <span id="correlationThreshold_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="manualLambda" class="parameter_description">manualLambda</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="manualLambda_short_desc">Lambda (manually set)</span></li>
+            <li>Long Description: <span id="manualLambda_long_desc">
+                The manually set lambda for GIC--the default is 10, though this should be set by the user to a good value.
+            </span></li>
+            <li>Default Value: <span id="manualLambda_default_value">10.0</span></li>
+            <li>Lower Bound: <span id="manualLambda_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="manualLambda_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="manualLambda_value_type">Double</span></li>
+        </ul>
+
         <h3 id="thresholdAlpha" class="parameter_description">errorThreshold</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="thresholdAlpha_short_desc">Error Threshold</span></li>
@@ -4579,6 +4682,19 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Upper Bound: <span id="thresholdAlpha_upper_bound">1</span></li>
             <li>Value Type: <span id="thresholdAlpha_value_type">Double</span></li>
         </ul>
+
+        <h3 id="parallelism" class="parameter_description">parallelism</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="parallelism_short_desc">The number of threads to use in the search</span>
+            </li>
+            <li>Long Description: <span id="parallelism_long_desc">If this parameter is offered, it will control the number of threads used in the search for the sections of the search that can be parallelized.</span>
+            </li>
+            <li>Default Value: <span id="parallelism_default_value">1</span></li>
+            <li>Lower Bound: <span id="parallelism_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="parallelism_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="parallelism_value_type">Integer</span></li>
+        </ul>
+
 
         <h3 id="percentDiscrete" class="parameter_description">percentDiscrete</h3>
         <ul class="parameter_description_list">
@@ -4795,28 +4911,44 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="semBicRule" class="parameter_description">semBicRule</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="semBicRule_short_desc">1 = Chickering, 2 = Nandy, 3 = High Dimensional</span>
+            <li>Short Description: <span id="semBicRule_short_desc">
+                Lambda: 1 = Chickering, 2 = Nandy</span>
             </li>
-            <li>Long Description: <span id="semBicRule_long_desc">The rule used for calculating a score.
-                The Chickering Rule is the local scoring consistency criterion in Chickering's formulation of
-                GES, though we allow a multiplier on the penalty term called "penalty discount".
-                The Nandy et al. rule is a reformultion of the Chickering rule using a single calculation
-                of a partial correlation in place of the likelihood difference. For the high-dimensional score
-                we use the formulation in Gao and Chen, described on the Wikipedia page for Bayesian Information
-                Criterion, which is a pseudo-BIC formulation. It has two parameters, gamma (> 0) and omega (>= 1).
-                We fix gamma at 0.25 and allow omega to be adjusted using the "penalty discount" parameter.
-                In all cases we include a structure prior, which amounts to a prior on the number of
-                parents in any scoring, a binomial formula.</span>
+            <li>Long Description: <span id="semBicRule_long_desc">The Chickering Rule is the local scoring consistency
+                criterion in Chickering's formulation of GES, which is a difference of BIC scores, though we allow a
+                multiplier on the penalty term called "penalty discount".
+                The Nandy et al. rule is a reformulation of the Chickering rule using a single calculation
+                of a partial correlation in place of the likelihood difference.
+            </span>
             </li>
             <li>Default Value: <span id="semBicRule_default_value">1</span></li>
             <li>Lower Bound: <span id="semBicRule_lower_bound">1</span></li>
-            <li>Upper Bound: <span id="semBicRule_upper_bound">4</span></li>
+            <li>Upper Bound: <span id="semBicRule_upper_bound">2</span></li>
             <li>Value Type: <span id="semBicRule_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="semGicRule" class="parameter_description">semGicRule</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="semGicRule_short_desc">
+                Lambda: 1 = ln n, 2 = pn^1/3, 3 = 2 ln pn, 4 = 2(ln pn + ln ln pn), 5 = ln ln n ln pn, 6 = ln n ln pn, 7 = Manual</span>
+            </li>
+            <li>Long Description: <span id="semGicRule_long_desc">The rule used for calculating the lambda term
+                of the score. a score. We follow Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection criteria
+                on high dimensions. The Journal of Machine Learning Research, 13(1), 1037-1057 and articles
+                referenced therein. The selling point for these scores is that with large numbers of variables,
+                if the density is not too high, adjacency precision will be kept in check.
+            </span>
+            </li>
+            <li>Default Value: <span id="semGicRule_default_value">4</span></li>
+            <li>Lower Bound: <span id="semGicRule_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="semGicRule_upper_bound">7</span></li>
+            <li>Value Type: <span id="semGicRule_value_type">Integer</span></li>
         </ul>
 
         <h3 id="semBicStructurePrior" class="parameter_description">semBicStructurePrior</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="semBicStructurePrior_short_desc">Structure Prior for SEM BIC (default 0)</span>
+            <li>Short Description: <span
+                    id="semBicStructurePrior_short_desc">Structure Prior for SEM BIC (default 0)</span>
             </li>
             <li>Long Description: <span id="semBicStructurePrior_long_desc">Structure prior; default is 0 (turned off); may be
                 any positive number otherwise</span>
@@ -4965,15 +5097,29 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="twoCycleAlpha_value_type">Double</span></li>
         </ul>
 
-        <h3 id="turning" class="parameter_description">turning</h3>
+        <h3 id="timeLimit" class="parameter_description">timeLimit</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="turning_short_desc">Yes, if the turning step should be included</span>
+            <li>Short Description: <span id="timeLimit_short_desc">Time limit</span></li>
+            <li>Long Description: <span
+                    id="timeLimit_long_desc">T-Separation requires a time limit. Default 1000.</span>
             </li>
-            <li>Long Description: <span id="turning_long_desc">Performs a turning step similar to (but not quite teh same as) that of PCALG's GES. The search in FGES repeats the sequence FES followed by BES, twice. The turning step is inserted between FGES and GES, if the user opts to use it. It is not used by default. The turning step is still somewhat experimental and may change in the future.</span></li>
-            <li>Default Value: <span id="turning_default_value">false</span></li>
-            <li>Lower Bound: <span id="turning_lower_bound"></span></li> g
-            <li>Upper Bound: <span id="turning_upper_bound"></span></li>
-            <li>Value Type: <span id="turning_value_type">Boolean</span></li>
+            <li>Default Value: <span id="timeLimit_default_value">1000.0</span></li>
+            <li>Lower Bound: <span id="timeLimit_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="timeLimit_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="timeLimit_value_type">Double</span></li>
+        </ul>
+
+
+        <h3 id="adjustOrientations" class="parameter_description">adjustOrientations</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="adjustOrientations_short_desc">Yes, if the orientation adjustment step should be included</span>
+            </li>
+            <li>Long Description: <span id="adjustOrientations_long_desc">null</span></li>
+            <li>Default Value: <span id="adjustOrientations_default_value">false</span></li>
+            <li>Lower Bound: <span id="adjustOrientations_lower_bound"></span></li>
+            g
+            <li>Upper Bound: <span id="adjustOrientations_upper_bound"></span></li>
+            <li>Value Type: <span id="adjustOrientations_value_type">Boolean</span></li>
         </ul>
 
         <h3 id="upperBound" class="parameter_description">upperBound</h3>
@@ -5009,6 +5155,32 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Upper Bound: <span id="useFasAdjacencies_upper_bound"></span></li>
             <li>Value Type: <span id="useFasAdjacencies_value_type">Boolean</span></li>
         </ul>
+
+        <h3 id="semImSimulationType" class="parameter_description">semImSimulationType</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="semImSimulationType_short_desc">Yes if recursive simulation, No if reduced form simulation</span>
+            </li>
+            <li>Long Description: <span id="semImSimulationType_long_desc">Determines the type of simulation done. If recursive, the graph must be a DAG in causal order.
+            "Reduced form" means X = (I - B)^-1 e, which requires a possibly large matrix inversion.</span>
+            </li>
+            <li>Default Value: <span id="semImSimulationType_default_value">true</span></li>
+            <li>Lower Bound: <span id="semImSimulationType_lower_bound"></span></li>
+            <li>Upper Bound: <span id="semImSimulationType_upper_bound"></span></li>
+            <li>Value Type: <span id="semImSimulationType_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="ess" class="parameter_description">ess</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="ess_short_desc">Yes if the equivalent sample size should be used in place of N</span>
+            </li>
+            <li>Long Description: <span id="ess_long_desc">We calculate the equivalent sample size by assuming that all record are equally correlated</span>
+            </li>
+            <li>Default Value: <span id="ess_default_value">false</span></li>
+            <li>Lower Bound: <span id="ess_lower_bound"></span></li>
+            <li>Upper Bound: <span id="ess_upper_bound"></span></li>
+            <li>Value Type: <span id="ess_value_type">Boolean</span></li>
+        </ul>
+
 
         <h3 id="useGap" class="parameter_description">useGap</h3>
         <ul class="parameter_description_list">
@@ -5091,6 +5263,19 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
             <li>Lower Bound: <span id="verbose_lower_bound"></span></li>
             <li>Upper Bound: <span id="verbose_upper_bound"></span></li>
             <li>Value Type: <span id="verbose_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="meekVerbose" class="parameter_description">meekVerbose</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="meekVerbose_short_desc">Yes if verbose output for Meek rule applications should be printed or logged</span>
+            </li>
+            <li>Long Description: <span id="meekVerbose_long_desc">If this parameter is set to ‘Yes’, Meek rule appications will be printed out to the log.</span>
+            </li>
+            <li>Default Value: <span id="meekVerbose_default_value">false</span></li>
+            <li>Lower Bound: <span id="meekVerbose_lower_bound"></span></li>
+            <li>Upper Bound: <span id="meekVerbose_upper_bound"></span></li>
+            <li>Value Type: <span id="meekVerbose_value_type">Boolean</span></li>
         </ul>
 
         <h3 id="include_structure_model" class="parameter_description">verbose</h3>
@@ -5407,6 +5592,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
 
 
 

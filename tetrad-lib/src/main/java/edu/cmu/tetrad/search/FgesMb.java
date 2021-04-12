@@ -1524,7 +1524,7 @@ public final class FgesMb {
             private int to;
 
             public BackwardTask(Node r, List<Node> adj, int chunk, int from, int to,
-                    Map<Node, Integer> hashIndices) {
+                                Map<Node, Integer> hashIndices) {
                 this.adj = adj;
                 this.hashIndices = hashIndices;
                 this.chunk = chunk;
@@ -1745,7 +1745,7 @@ public final class FgesMb {
 
     // Evaluate the Insert(X, Y, T) operator (Definition 12 from Chickering, 2002).
     private double insertEval(Node x, Node y, Set<Node> t, Set<Node> naYX,
-            Map<Node, Integer> hashIndices) {
+                              Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(t);
         set.addAll(graph.getParents(y));
@@ -1754,7 +1754,7 @@ public final class FgesMb {
 
     // Evaluate the Delete(X, Y, T) operator (Definition 12 from Chickering, 2002).
     private double deleteEval(Node x, Node y, Set<Node> diff, Set<Node> naYX,
-            Map<Node, Integer> hashIndices) {
+                              Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(diff);
         set.addAll(graph.getParents(y));
         set.remove(x);
@@ -2128,9 +2128,7 @@ public final class FgesMb {
     private Set<Node> meekOrientRestricted(List<Node> nodes, IKnowledge knowledge) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
-        rules.setUndirectUnforcedEdges(true);
-        rules.orientImplied(graph, nodes);
-        return rules.getVisited();
+        return rules.orientImplied(graph);
     }
 
     // Maps adj to their indices for quick lookup.
@@ -2202,7 +2200,7 @@ public final class FgesMb {
     }
 
     private double scoreGraphChange(Node y, Set<Node> parents,
-            Node x, Map<Node, Integer> hashIndices) {
+                                    Node x, Map<Node, Integer> hashIndices) {
         int yIndex = hashIndices.get(y);
 
         if (parents.contains(x)) {

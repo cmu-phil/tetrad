@@ -263,7 +263,6 @@ public final class GPc implements GraphSearch {
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(false);
         rules.setKnowledge(knowledge);
-        rules.setUndirectUnforcedEdges(false);
         rules.orientImplied(graph);
 
         GraphUtils.replaceNodes(graph, independenceTest.getVariables());
