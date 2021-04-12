@@ -2254,7 +2254,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#samplePrior">samplePrior</a>, <a href="#structurePrior">structurePrior</a>, <a href="#penaltyDiscount">penaltyDiscount</a>,
         <a href="#symmetricFirstStep">symmetricFirstStep</a>, <a href="#faithfulnessAssumed">faithfulnessAssumed</a>, <a
-                href="#maxDegree">maxDegree</a></p>
+                href="#maxDegree">maxDegree</a>, <a href="#parallalism">parallelism</a>, <a href="#verbose">verbose</a>
+        <a href="#meekVerbose">meekVerbose</a></p>
 
 
     <h3>The IMaGES Discrete Algorithm (BDeu Score)</h3>
@@ -3348,6 +3349,21 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
 
     <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
 
+    <h3>EBIC Score</h3>
+
+    <div id="ebic-score">
+        <p>
+            This is the Extended BIC (EBIC) score of Chen and Chen (Chen, J., & Chen, Z. (2008). Extended Bayesian
+            information criteria for model selection with large model spaces. Biometrika, 95(3), 759-771.). This score
+            is adapted to score-based search in high dimensions. There is one parameter, gamma, which takes a value
+            between 0 and 1; if it's 0, the score is standard BIC. A value of 0.5 or 1 is recommended depending on how
+            many variables there are per sample.
+        </p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#ebicGamma">ebicGamma</a></p>
 
     <div id="parameters">
         <h2>Search Parameters</h2>
