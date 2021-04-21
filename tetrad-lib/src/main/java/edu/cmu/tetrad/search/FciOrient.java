@@ -53,7 +53,7 @@ public final class FciOrient {
     /**
      * The SepsetMap being constructed.
      */
-    private SepsetProducer sepsets;
+    private final SepsetProducer sepsets;
 
     private IKnowledge knowledge = new Knowledge2();
 
@@ -79,7 +79,7 @@ public final class FciOrient {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     // The print stream that output is directed to.
     private PrintStream out = System.out;
@@ -169,11 +169,6 @@ public final class FciOrient {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
-    //===========================PRIVATE METHODS=========================//
-    private List<Node> getSepset(Node i, Node k) {
-        return this.sepsets.getSepset(i, k);
-    }
-
     /**
      * Orients colliders in the graph. (FCI Step C)
      * <p>
@@ -217,11 +212,11 @@ public final class FciOrient {
                 }
 
                 if (sepsets.isCollider(a, b, c)) {
-                    if (!isArrowpointAllowed(a, b, graph)) {
+                    if (isArrowpointDisallowed(a, b, graph)) {
                         continue;
                     }
 
-                    if (!isArrowpointAllowed(c, b, graph)) {
+                    if (isArrowpointDisallowed(c, b, graph)) {
                         continue;
                     }
 
@@ -288,10 +283,6 @@ public final class FciOrient {
         boolean firstTime = true;
 
         while (changeFlag && !Thread.currentThread().isInterrupted()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
             changeFlag = false;
             rulesR1R2cycle(graph);
             ruleR3(graph);
@@ -317,10 +308,6 @@ public final class FciOrient {
             changeFlag = true;
 
             while (changeFlag && !Thread.currentThread().isInterrupted()) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
                 changeFlag = false;
                 ruleR6R7(graph);
             }
@@ -329,10 +316,6 @@ public final class FciOrient {
             changeFlag = true;
 
             while (changeFlag && !Thread.currentThread().isInterrupted()) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
                 changeFlag = false;
                 rulesR8R9R10(graph);
             }
@@ -360,10 +343,6 @@ public final class FciOrient {
             int[] combination;
 
             while ((combination = cg.next()) != null && !Thread.currentThread().isInterrupted()) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
                 Node A = adj.get(combination[0]);
                 Node C = adj.get(combination[1]);
 
@@ -384,7 +363,7 @@ public final class FciOrient {
         }
 
         if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-            if (!isArrowpointAllowed(b, c, graph)) {
+            if (isArrowpointDisallowed(b, c, graph)) {
                 return;
             }
 
@@ -399,10 +378,6 @@ public final class FciOrient {
         }
     }
 
-    private boolean isNoncollider(Node a, Node b, Node c) {
-        return sepsets.isNoncollider(a, b, c);
-    }
-
     //if a*-oc and either a-->b*->c or a*->b-->c, then a*->c
     // This is Zhang's rule R2.
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
@@ -413,7 +388,7 @@ public final class FciOrient {
                     && (graph.getEndpoint(b, c) == Endpoint.ARROW) && ((graph.getEndpoint(b, a) == Endpoint.TAIL)
                     || (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
-                if (!isArrowpointAllowed(a, c, graph)) {
+                if (isArrowpointDisallowed(a, c, graph)) {
                     return;
                 }
 
@@ -429,40 +404,6 @@ public final class FciOrient {
         }
     }
 
-//    /**
-//     * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-oDo-*C, then
-//     * D*->B.
-//     * <p/>
-//     * This is Zhang's rule R3.
-//     */
-//    private void ruleR3(Graph graph) {
-//        List<Node> nodes = graph.getNodes();
-//
-//        for (Node d : nodes) {
-//            final List<Node> adjacentNodes = graph.getAdjacentNodes(d);
-//
-//            if (adjacentNodes.size() < 3) {
-//                continue;
-//            }
-//
-//            ChoiceGenerator gen = new ChoiceGenerator(adjacentNodes.size(), 3);
-//            int[] choice;
-//
-//            while ((choice = gen.next()) != null) {
-//                List<Node> adj = DataGraphUtils.asList(choice, adjacentNodes);
-//
-//                Node a = adj.get(0);
-//                Node b = adj.get(1);
-//                Node c = adj.get(2);
-//
-//                if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.ARROW
-//                    && graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.ARROW
-//                        && !graph.isAdjacentTo(a, c) && graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
-//                    graph.setEndpoint(d, b, Endpoint.ARROW);
-//                }
-//            }
-//        }
-//    }
     /**
      * Implements the double-triangle orientation rule, which states that if
      * D*-oB, A*->B<-*C and A*-oDo-*C, then
@@ -518,7 +459,7 @@ public final class FciOrient {
                         continue;
                     }
 
-                    if (!isArrowpointAllowed(D, B, graph)) {
+                    if (isArrowpointDisallowed(D, B, graph)) {
                         continue;
                     }
 
@@ -532,188 +473,6 @@ public final class FciOrient {
                     changeFlag = true;
                 }
             }
-        }
-    }
-
-//    public void ruleR4(Graph graph) {
-//        out.println("Starting DDP");
-//
-////        if (false) {
-////
-////            // Original implementation
-////            ruleR4A(graph);
-////        } else {
-////
-////            // Alternative implementation.
-////            ruleR4B(graph);
-////        }
-//
-//        out.println("Finishing DDP");
-//    }
-    /**
-     * The triangles that must be oriented this way (won't be done by another
-     * rule) all look like the ones below, where the dots are a collider path
-     * from L to A with each node on the path (except L) a parent of C.
-     * <pre>
-     *          B
-     *         xo           x is either an arrowhead or a circle
-     *        /  \
-     *       v    v
-     * L....A --> C
-     * </pre>
-     * <p>
-     * This is Zhang's rule R4, discriminating undirectedPaths.
-     */
-    private void ruleR4A(Graph graph) {
-        List<Node> nodes = graph.getNodes();
-
-        for (Node b : nodes) {
-
-            //potential A and C candidate pairs are only those
-            // that look like this:   A<-*Bo-*C
-            List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
-            List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
-
-            for (Node a : possA) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                for (Node c : possC) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    if (!graph.isParentOf(a, c)) {
-                        continue;
-                    }
-
-                    if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-                        continue;
-                    }
-
-                    LinkedList<Node> reachable = new LinkedList<Node>();
-                    reachable.add(a);
-
-                    if (verbose) {
-                        out.println("Found pattern " + a + " " + b + " " + c);
-                        reachablePathFind(a, b, c, reachable, graph);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * a method to search "back from a" to find a DDP. It is called with a
-     * reachability list (first consisting only of a). This is breadth-first,
-     * utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p>
-     * The body of a DDP consists of colliders that are parents of c.
-     */
-    private void reachablePathFind(Node a, Node b, Node c,
-            LinkedList<Node> reachable, Graph graph) {
-//        Map<Node, Node> next = new HashMap<Node, Node>();   // RFCI: stores the next node in the disciminating path
-//        // path containing the nodes in the traiangle
-//        next.put(a, b);
-//        next.put(b, c);
-
-        Set<Node> cParents = new HashSet<Node>(graph.getParents(c));
-
-        // Needed to avoid cycles in failure case.
-        Set<Node> visited = new HashSet<Node>();
-        visited.add(b);
-        visited.add(c);
-
-        Node e = reachable.getFirst();
-        int distance = 0;
-
-        // We don't want to include a,b,or c on the path, so they are added to
-        // the "visited" set.  b and c are added explicitly here; a will be
-        // added in the first while iteration.
-        while (reachable.size() > 0) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            Node x = reachable.removeFirst();
-            visited.add(x);
-
-            if (e == x) {
-                e = x;
-                distance++;
-
-                final int _maxPathLength = maxPathLength == -1 ? 1000 : maxPathLength;
-
-                if (distance > 0 && distance > _maxPathLength) {
-                    continue;
-                }
-            }
-
-            // Possible DDP path endpoints.
-            List<Node> pathExtensions = graph.getNodesInTo(x, Endpoint.ARROW);
-            pathExtensions.removeAll(visited);
-
-            for (Node d : pathExtensions) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                // If d is reachable and not adjacent to c, its a DDP
-                // endpoint, so do DDP orientation. Otherwise, if d <-> c,
-                // add d to the list of reachable nodes.
-                if (!graph.isAdjacentTo(d, c)) {
-                    // Check whether <a, b, c> should be reoriented given
-                    // that d is not adjacent to c; if so, orient and stop.
-                    doDdpOrientation(d, a, b, c, graph);
-                    return;
-                } else if (cParents.contains(d)) {
-                    if (graph.getEndpoint(x, d) == Endpoint.ARROW) {
-                        reachable.add(d);
-
-                        // RFCI: only record the next node of the first (shortest) occurrence
-//                        if (next.get(d) == null) {
-//                            next.put(d, x);  // next node of d is x in the shortest path from a
-//                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Orients the edges inside the definte discriminating path triangle. Takes
-     * the left endpoint, and a,b,c as arguments.
-     */
-    private void doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
-
-        List<Node> sepset = getSepset(d, c);
-
-        if (sepset == null) {
-            return;
-        }
-
-        if (sepset.contains(b)) {
-            graph.setEndpoint(c, b, Endpoint.TAIL);
-
-            if (verbose) {
-                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
-                out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
-            }
-
-            changeFlag = true;
-        } else {
-            if (!isArrowpointAllowed(a, b, graph)) {
-                return;
-            }
-
-            if (!isArrowpointAllowed(c, b, graph)) {
-                return;
-            }
-
-            graph.setEndpoint(a, b, Endpoint.ARROW);
-            graph.setEndpoint(c, b, Endpoint.ARROW);
-            logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
-            changeFlag = true;
         }
     }
 
@@ -779,13 +538,13 @@ public final class FciOrient {
      * The body of a DDP consists of colliders that are parents of c.
      */
     public void ddpOrient(Node a, Node b, Node c, Graph graph) {
-        Queue<Node> Q = new ArrayDeque<Node>();
-        Set<Node> V = new HashSet<Node>();
+        Queue<Node> Q = new ArrayDeque<>();
+        Set<Node> V = new HashSet<>();
 
         Node e = null;
         int distance = 0;
 
-        Map<Node, Node> previous = new HashMap<Node, Node>();
+        Map<Node, Node> previous = new HashMap<>();
 
         List<Node> cParents = graph.getParents(c);
 
@@ -851,20 +610,19 @@ public final class FciOrient {
         if (dag != null) {
             if (dag.isAncestorOf(b, c)) {
                 graph.setEndpoint(c, b, Endpoint.TAIL);
-                changeFlag = true;
             } else {
-                if (!isArrowpointAllowed(a, b, graph)) {
+                if (isArrowpointDisallowed(a, b, graph)) {
                     return false;
                 }
 
-                if (!isArrowpointAllowed(c, b, graph)) {
+                if (isArrowpointDisallowed(c, b, graph)) {
                     return false;
                 }
 
                 graph.setEndpoint(a, b, Endpoint.ARROW);
                 graph.setEndpoint(c, b, Endpoint.ARROW);
-                changeFlag = true;
             }
+            changeFlag = true;
 
             return true;
         }
@@ -877,7 +635,7 @@ public final class FciOrient {
 
         boolean ind = getSepsets().isIndependent(d, c, path);
 
-        List<Node> path2 = new ArrayList<Node>(path);
+        List<Node> path2 = new ArrayList<>(path);
 
         path2.remove(b);
 
@@ -900,24 +658,19 @@ public final class FciOrient {
             ind = sepset.contains(b);
         }
 
-//        printDdp(d, path, a, b, c, graph);
         if (ind) {
-//            if (sepset.contains(b)) {
             graph.setEndpoint(c, b, Endpoint.TAIL);
 
             if (verbose) {
                 logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
                 out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
-
-            changeFlag = true;
-            return true;
         } else {
-            if (!isArrowpointAllowed(a, b, graph)) {
+            if (isArrowpointDisallowed(a, b, graph)) {
                 return false;
             }
 
-            if (!isArrowpointAllowed(c, b, graph)) {
+            if (isArrowpointDisallowed(c, b, graph)) {
                 return false;
             }
 
@@ -929,26 +682,13 @@ public final class FciOrient {
                 out.println(SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
             }
 
-            changeFlag = true;
-            return true;
         }
-    }
-
-    private void printDdp(Node d, List<Node> path, Node a, Node b, Node c, Graph graph) {
-        List<Node> nodes = new ArrayList<Node>();
-        nodes.add(d);
-        nodes.addAll(path);
-        nodes.add(a);
-        nodes.add(b);
-        nodes.add(c);
-
-        if (verbose) {
-            out.println("DDP subgraph = " + graph.subgraph(nodes));
-        }
+        changeFlag = true;
+        return true;
     }
 
     private List<Node> getPath(Node c, Map<Node, Node> previous) {
-        List<Node> l = new ArrayList<Node>();
+        List<Node> l = new ArrayList<>();
 
         Node p = c;
 
@@ -1154,9 +894,9 @@ public final class FciOrient {
      * n2.
      */
     private List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
-        List<List<Node>> ucPdPaths = new LinkedList<List<Node>>();
+        List<List<Node>> ucPdPaths = new LinkedList<>();
 
-        LinkedList<Node> soFar = new LinkedList<Node>();
+        LinkedList<Node> soFar = new LinkedList<>();
         soFar.add(n1);
 
         List<Node> adjacencies = graph.getAdjacentNodes(n1);
@@ -1202,7 +942,7 @@ public final class FciOrient {
 
         if (curr.equals(end)) {
             // We've reached the goal! Save soFar as a path.
-            ucPdPaths.add(new LinkedList<Node>(soFar));
+            ucPdPaths.add(new LinkedList<>(soFar));
         } else {
             // Otherwise, try each node adjacent to the getModel one.
             List<Node> adjacents = graph.getAdjacentNodes(curr);
@@ -1226,7 +966,7 @@ public final class FciOrient {
      * @return A list of uncovered circle undirectedPaths between n1 and n2.
      */
     private List<List<Node>> getUcCirclePaths(Node n1, Node n2, Graph graph) {
-        List<List<Node>> ucCirclePaths = new LinkedList<List<Node>>();
+        List<List<Node>> ucCirclePaths = new LinkedList<>();
         List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2, graph);
 
         for (List<Node> path : ucPdPaths) {
@@ -1348,9 +1088,8 @@ public final class FciOrient {
      *
      * @param a The node A.
      * @param c The node C.
-     * @return Whether or not R10 was successfully applied.
      */
-    private boolean ruleR10(Node a, Node c, Graph graph) {
+    private void ruleR10(Node a, Node c, Graph graph) {
         List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
         for (Node b : intoCArrows) {
@@ -1408,13 +1147,12 @@ public final class FciOrient {
 
                         graph.setEndpoint(c, a, Endpoint.TAIL);
                         changeFlag = true;
-                        return true;
+                        return;
                     }
                 }
             }
         }
 
-        return false;
     }
 
     /**
@@ -1487,29 +1225,28 @@ public final class FciOrient {
      * @param y The possible point node.
      * @return Whether the arrowpoint is allowed.
      */
-    private boolean isArrowpointAllowed(Node x, Node y, Graph graph) {
+    private boolean isArrowpointDisallowed(Node x, Node y, Graph graph) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
-
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
             return false;
         }
 
+        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
+            return true;
+        }
+
         if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-//            return true;
             if (!knowledge.isForbidden(x.getName(), y.getName())) {
-                return true;
+                return false;
             }
         }
 
         if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
             if (!knowledge.isForbidden(x.getName(), y.getName())) {
-                return true;
+                return false;
             }
         }
 
-        return graph.getEndpoint(y, x) == Endpoint.CIRCLE;
+        return graph.getEndpoint(y, x) != Endpoint.CIRCLE;
     }
 
     public boolean isPossibleDsepSearchDone() {

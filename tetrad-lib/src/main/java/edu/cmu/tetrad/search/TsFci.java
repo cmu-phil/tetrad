@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.KnowledgeEdge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
@@ -116,6 +113,7 @@ public final class TsFci implements GraphSearch {
     private SepsetMap possibleDsepSepsets = new SepsetMap();
     private Graph initialGraph;
     private int possibleDsepDepth = -1;
+    private CorrelationMatrix corr;
 
 
     //============================CONSTRUCTORS============================//
@@ -131,6 +129,9 @@ public final class TsFci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
         buildIndexing(independenceTest.getVariables());
+
+        this.corr = new CorrelationMatrix(independenceTest.getCov());
+
     }
 
     /**
@@ -158,6 +159,9 @@ public final class TsFci implements GraphSearch {
             }
         }
         this.variables.removeAll(remVars);
+
+        this.corr = new CorrelationMatrix(independenceTest.getCov());
+
     }
 
     //========================PUBLIC METHODS==========================//

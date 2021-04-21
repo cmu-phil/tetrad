@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.KnowledgeEdge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
@@ -53,11 +50,6 @@ import java.util.concurrent.ConcurrentMap;
 public final class Fci implements GraphSearch {
 
     /**
-     * The PAG being constructed.
-     */
-    private Graph graph;
-
-    /**
      * The SepsetMap being constructed.
      */
     private SepsetMap sepsets;
@@ -70,9 +62,9 @@ public final class Fci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<>();
+    private final List<Node> variables = new ArrayList<>();
 
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
@@ -102,20 +94,20 @@ public final class Fci implements GraphSearch {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * True iff verbose output should be printed.
      */
     private boolean verbose = false;
-    private Graph truePag;
     private ConcurrentMap<Node, Integer> hashIndices;
     private ICovarianceMatrix covarianceMatrix;
     private double penaltyDiscount = 2;
-    private SepsetMap possibleDsepSepsets = new SepsetMap();
+    private final SepsetMap possibleDsepSepsets = new SepsetMap();
     private Graph initialGraph;
     private int possibleDsepDepth = -1;
-
+    private int heuristic = 0;
+    private boolean stable = false;
 
     //============================CONSTRUCTORS============================//
 
@@ -183,26 +175,24 @@ public final class Fci implements GraphSearch {
     }
 
     public Graph search() {
-        return search(new Fas(initialGraph, getIndependenceTest()));
-    }
-
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    public Graph search(IFas fas) {
+        Fas fas = new Fas(initialGraph, getIndependenceTest());
         logger.log("info", "Starting FCI algorithm.");
         logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(depth);
+        fas.setHeuristic(heuristic);
         fas.setVerbose(verbose);
-        this.graph = fas.search();
+        fas.setStable(stable);
+        fas.setHeuristic(heuristic);
+
+        //The PAG being constructed.
+        Graph graph = fas.search();
         this.sepsets = fas.getSepsets();
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetProducer sp = new SepsetsPossibleDsep(graph, independenceTest, knowledge, depth, maxPathLength);
+        SepsetsPossibleDsep sp = new SepsetsPossibleDsep(graph, independenceTest, knowledge, depth, maxPathLength);
         sp.setVerbose(verbose);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
@@ -254,12 +244,6 @@ public final class Fci implements GraphSearch {
 
         // Step CI C (Zhang's step F3.)
         long time5 = System.currentTimeMillis();
-        //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
-//        fciOrientbk(getKnowledge(), graph, variables);
-//        new FciOrient(graph, new Sepsets(this.sepsets)).ruleR0(new Sepsets(this.sepsets));
-
-        long time6 = System.currentTimeMillis();
-        logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
 
         final FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, independenceTest));
 
@@ -270,6 +254,10 @@ public final class Fci implements GraphSearch {
         fciOrient.doFinalOrientation(graph);
         graph.setPag(true);
         return graph;
+    }
+
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
     }
 
     public SepsetMap getSepsets() {
@@ -348,10 +336,6 @@ public final class Fci implements GraphSearch {
         return independenceTest;
     }
 
-    public void setTruePag(Graph truePag) {
-        this.truePag = truePag;
-    }
-
     public double getPenaltyDiscount() {
         return penaltyDiscount;
     }
@@ -369,73 +353,20 @@ public final class Fci implements GraphSearch {
         }
     }
 
-    /**
-     * Orients according to background knowledge
-     */
-    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
-        logger.log("info", "Starting BK Orientation.");
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*->from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.requiredEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        logger.log("info", "Finishing BK Orientation.");
-    }
-
     public int getPossibleDsepDepth() {
         return possibleDsepDepth;
     }
 
     public void setPossibleDsepDepth(int possibleDsepDepth) {
         this.possibleDsepDepth = possibleDsepDepth;
+    }
+
+    public void setHeuristic(int heuristic) {
+        this.heuristic = heuristic;
+    }
+
+    public void setStable(boolean stable) {
+        this.stable = stable;
     }
 }
 

@@ -50,9 +50,6 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
      * Constructs a new (empty) EdgeListGraph.
      */
     public EdgeListGraphSingleConnections() {
-        edgeLists = new ConcurrentHashMap<>();
-        nodes = new ArrayList<>();
-        edgesSet = new HashSet<>();
     }
 
     /**
@@ -70,15 +67,18 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
 
         if (graph instanceof EdgeListGraphSingleConnections) {
             EdgeListGraphSingleConnections _graph = (EdgeListGraphSingleConnections) graph;
-            nodes = new ArrayList<>(_graph.nodes);
-            edgesSet = new HashSet<>(_graph.edgesSet);
-            edgeLists = new ConcurrentHashMap<>();
-            
+            nodes.clear();
+            nodes.addAll(_graph.nodes);
+            edgesSet.clear();
+            edgesSet.addAll(_graph.edgesSet);
+            edgeLists.clear();
+            edgeLists.putAll(_graph.edgeLists);
+
             for (Node node : nodes) {
-            	this.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
-            	node.getAllAttributes().clear();
+                this.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
+                node.getAllAttributes().clear();
             }
-            
+
             ambiguousTriples = new HashSet<>(_graph.ambiguousTriples);
             underLineTriples = new HashSet<>(_graph.underLineTriples);
             dottedUnderLineTriples = new HashSet<>(_graph.dottedUnderLineTriples);
@@ -120,7 +120,8 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
             throw new NullPointerException();
         }
 
-        this.nodes = new ArrayList<>(nodes);
+        this.nodes.clear();
+        this.nodes.addAll(nodes);
 
         for (Node node : nodes) {
             edgeLists.put(node, new ArrayList<Edge>());
@@ -134,23 +135,24 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
     public synchronized static Graph shallowCopy(EdgeListGraphSingleConnections _graph) {
         EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections();
 
-        graph.nodes = new ArrayList<>(_graph.nodes);
-        graph.edgesSet = new HashSet<>(_graph.edgesSet);
-        graph.edgeLists = new ConcurrentHashMap<>(_graph.edgeLists);
-        
+        graph.nodes.addAll(_graph.nodes);
+        graph.edgesSet.addAll(_graph.edgesSet);
+        graph.edgeLists.clear();
+        graph.edgeLists.putAll(_graph.edgeLists);
+
         for (Node node : graph.nodes) {
-        	graph.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
+            graph.edgeLists.put(node, new ArrayList<>(_graph.edgeLists.get(node)));
         }
-        
+
         graph.ambiguousTriples = new HashSet<>(_graph.ambiguousTriples);
         graph.underLineTriples = new HashSet<>(_graph.underLineTriples);
         graph.dottedUnderLineTriples = new HashSet<>(_graph.dottedUnderLineTriples);
         graph.stuffRemovedSinceLastTripleAccess = _graph.stuffRemovedSinceLastTripleAccess;
         graph.highlightedEdges = new HashSet<>(_graph.highlightedEdges);
         graph.namesHash = new HashMap<>(_graph.namesHash);
-        
+
         graph.getAllAttributes().putAll(_graph.getAllAttributes());
-        
+
         return _graph;
     }
 
@@ -217,7 +219,32 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
      * a
      */
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-        return existsDirectedPathVisit(node1, node2, new HashSet<Node>());
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
+
+        for (Node c : getChildren(node1)) {
+            if (!V.contains(c)) {
+                V.add(c);
+                Q.offer(c);
+            }
+        }
+
+        while (!Q.isEmpty()) {
+            Node t = Q.remove();
+
+            if (t == node2) {
+                return true;
+            }
+
+            for (Node c : getChildren(t)) {
+                if (!V.contains(c)) {
+                    V.add(c);
+                    Q.offer(c);
+                }
+            }
+        }
+
+        return false;
     }
 
     public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
@@ -246,7 +273,7 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
      * Determines whether one node is a descendent of another.
      */
     public boolean isDescendentOf(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
+        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node2, node1, this);
 //        return (node1 == node2) || isProperDescendentOf(node1, node2);
     }
 
@@ -293,7 +320,8 @@ public class EdgeListGraphSingleConnections extends EdgeListGraph implements Tri
                     "you are trying to set.");
         }
 
-        this.nodes = nodes;
+        this.nodes.clear();
+        this.nodes.addAll(nodes);
     }
 
     /**

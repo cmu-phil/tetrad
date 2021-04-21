@@ -179,7 +179,8 @@ public class PcStableMax implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        FasStable fas = new FasStable(initialGraph, getIndependenceTest());
+        Fas fas = new Fas(initialGraph, getIndependenceTest());
+        fas.setStable(true);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(verbose);

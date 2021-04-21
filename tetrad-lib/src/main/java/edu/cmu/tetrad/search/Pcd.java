@@ -103,11 +103,6 @@ public class Pcd implements GraphSearch {
     private Graph trueGraph;
 
     /**
-     * The number of false dependence judgements from FAS, judging from the true graph, if set. Temporary.
-     */
-    private int numFalseDependenceJudgements;
-
-    /**
      * The number of dependence judgements from FAS. Temporary.
      */
     private int numDependenceJudgements;
@@ -264,7 +259,6 @@ public class Pcd implements GraphSearch {
         sepsets = fas.getSepsets();
 
         this.numIndependenceTests = fas.getNumIndependenceTests();
-        this.numFalseDependenceJudgements = fas.getNumFalseDependenceJudgments();
         this.numDependenceJudgements = fas.getNumDependenceJudgments();
 
         enumerateTriples();
@@ -370,10 +364,6 @@ public class Pcd implements GraphSearch {
 
     public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
-    }
-
-    public int getNumFalseDependenceJudgements() {
-        return numFalseDependenceJudgements;
     }
 
     public int getNumDependenceJudgements() {

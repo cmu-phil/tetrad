@@ -212,7 +212,8 @@ public final class Fask implements GraphSearch {
         Graph G;
 
         if (adjacencyMethod == AdjacencyMethod.FAS_STABLE) {
-            FasStable fas = new FasStable(test);
+            Fas fas = new Fas(test);
+            fas.setStable(true);
             fas.setDepth(getDepth());
             fas.setVerbose(false);
             fas.setKnowledge(knowledge);

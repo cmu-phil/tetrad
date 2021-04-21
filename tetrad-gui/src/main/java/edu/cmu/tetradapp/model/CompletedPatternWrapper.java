@@ -59,7 +59,7 @@ public class CompletedPatternWrapper implements SessionModel, GraphSource {
             throw new NullPointerException("Graph must not be null.");
         }
         graph = new EdgeListGraph(graph);
-        SearchGraphUtils.basicPattern(graph, false);
+        SearchGraphUtils.basicPattern(graph);
         MeekRules rules = new MeekRules();
         rules.setKnowledge(new Knowledge2());
         rules.orientImplied(graph);

@@ -47,7 +47,7 @@ public class NodesInCyclesRecall implements Statistic {
         Set<Node> inCycle = new HashSet<>();
 
         for (Node x : graph.getNodes()) {
-            if (GraphUtils.existsDirectedPathFromToBreathFirst(x, x, graph)) {
+            if (GraphUtils.existsDirectedPathFromTo(x, x, graph)) {
                 inCycle.add(x);
             }
         }

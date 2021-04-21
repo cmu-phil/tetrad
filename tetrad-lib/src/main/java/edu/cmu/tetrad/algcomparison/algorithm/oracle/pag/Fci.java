@@ -67,6 +67,8 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
+            search.setStable(parameters.getBoolean(Params.STABLE_FAS));
 
 //            if (initialGraph != null) {
 //                search.setInitialGraph(initialGraph);
@@ -126,6 +128,8 @@ public class Fci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
+        parameters.add(Params.FAS_HEURISTIC);
+        parameters.add(Params.STABLE_FAS);
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
 

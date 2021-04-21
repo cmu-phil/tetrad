@@ -102,7 +102,8 @@ public class MultiFaskV1 {
         IndependenceTest test = new IndTestScore(score);
         System.out.println("FAS");
 
-        FasStable fas = new FasStable(test);
+        Fas fas = new Fas(test);
+        fas.setStable(true);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
         fas.setKnowledge(knowledge);

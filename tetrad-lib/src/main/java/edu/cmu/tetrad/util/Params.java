@@ -74,6 +74,7 @@ public final class Params {
     public static final String FASK_ADJACENCY_METHOD = "faskAdjacencyMethod";
     public static final String FASK_NONEMPIRICAL = "faskNonempirical";
     public static final String FAITHFULNESS_ASSUMED = "faithfulnessAssumed";
+    public static final String FAS_HEURISTIC = "fasHeuristic";
     public static final String FAS_RULE = "fasRule";
     public static final String FAST_ICA_A = "fastIcaA";
     public static final String FAST_ICA_MAX_ITER = "fastIcaMaxIter";

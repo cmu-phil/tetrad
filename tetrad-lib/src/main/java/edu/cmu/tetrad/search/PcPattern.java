@@ -174,7 +174,8 @@ public class PcPattern implements GraphSearch {
         }
 
 //        Fas fas = new Fas(graph, getIndependenceTest());
-        FasStable fas = new FasStable(getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
+        fas.setStable(true);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         graph = fas.search();

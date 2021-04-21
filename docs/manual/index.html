@@ -3841,6 +3841,18 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="faithfulnessAssumed_value_type">Boolean</span></li>
         </ul>
 
+        <h3 id="fasHeuristic" class="parameter_description">fasHeuristic</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="fasHeuristic_short_desc">0 = no heuristic, 1 = Heuristic 1, 2 = Heuristic 2, 3 = Heuristic 3</span>
+            </li>
+            <li>Long Description: <span id="fasHeuristic_long_desc">See Causation, Prediction, and Search (2000).</span>
+            </li>
+            <li>Default Value: <span id="fasHeuristic_default_value">0</span></li>
+            <li>Lower Bound: <span id="fasHeuristic_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="fasHeuristic_upper_bound">3</span></li>
+            <li>Value Type: <span id="fasHeuristic_value_type">Integer</span></li>
+        </ul>
+
         <h3 id="fasRule" class="parameter_description">fasRule</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="fasRule_short_desc">Adjacency search: 1 = PC, 2 = PC-Stable, 3 =f Concurrent PC-Stable</span>
@@ -4253,7 +4265,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="zsMaxIndegree" class="parameter_description">zsMaxIndegree</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="zsMaxIndegree_short_desc">Maximum indegree of true graph (min = 0)</span></li>
+            <li>Short Description: <span id="zsMaxIndegree_short_desc">Maximum indegree of true graph (min = 0)</span>
+            </li>
             <li>Long Description: <span id="zsMaxIndegree_long_desc">This is the maximum number of parents one expects any node to have in the true model.</span>
             </li>
             <li>Default Value: <span id="zsMaxIndegree_default_value">4</span></li>
@@ -5608,6 +5621,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
 
 
 

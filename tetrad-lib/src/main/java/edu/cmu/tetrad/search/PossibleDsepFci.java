@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Edge;
@@ -58,6 +59,7 @@ public class PossibleDsepFci {
      */
     private IKnowledge knowledge = new Knowledge2();
     private int maxReachablePathLength = -1;
+    private CorrelationMatrix corr;
 
     /**
      * Creates a new SepSet and assumes that none of the variables have yet been checked.
@@ -65,7 +67,7 @@ public class PossibleDsepFci {
      * @param graph The GaSearchGraph on which to work
      * @param test  The IndependenceChecker to use as an oracle
      */
-    public PossibleDsepFci(Graph graph, IndependenceTest test) {
+    public PossibleDsepFci(Graph graph, IndependenceTest test, CorrelationMatrix corr) {
         if (graph == null) {
             throw new NullPointerException("null GaSearchGraph passed in " +
                     "PossibleDSepSearch constructor!");
@@ -78,6 +80,7 @@ public class PossibleDsepFci {
         this.graph = graph;
         this.test = test;
         this.sepset = new SepsetMap();
+        this.corr = corr;
 
         setMaxPathLength(maxReachablePathLength);
     }
@@ -98,7 +101,7 @@ public class PossibleDsepFci {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            List<Node> condSet = getSepset(x, y);
+            List<Node> condSet = getSepset(test, x, y);
 
             if (condSet != null) {
                 for (Node n : condSet) {
@@ -117,18 +120,18 @@ public class PossibleDsepFci {
         return sepset;
     }
 
-    public List<Node> getSepset(Node node1, Node node2) {
-        List<Node> condSet = getCondSet(node1, node2, maxReachablePathLength);
+    public List<Node> getSepset(IndependenceTest test, Node node1, Node node2) {
+        List<Node> condSet = getCondSet(test, node1, node2, maxReachablePathLength);
 
         if (sepset == null) {
-            condSet = getCondSet(node2, node1, maxReachablePathLength);
+            condSet = getCondSet(test, node2, node1, maxReachablePathLength);
         }
 
         return condSet;
     }
 
-    private List<Node> getCondSet(Node node1, Node node2, int maxPathLength) {
-        final Set<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
+    private List<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
+        final Set<Node> possibleDsepSet = getPossibleDsep(test, node1, node2, maxPathLength);
         List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = getKnowledge().noEdgeRequired(node1.getName(), node2.getName());
 
@@ -186,8 +189,8 @@ public class PossibleDsepFci {
      * 		(b) X is adjacent to Z.
      * </pre>
      */
-    private Set<Node> getPossibleDsep(Node node1, Node node2, int maxPathLength) {
-        Set<Node> dsep = GraphUtils.possibleDsep(node1, node2, graph, maxPathLength);
+    private Set<Node> getPossibleDsep(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
+        Set<Node> dsep = GraphUtils.possibleDsep(test, node1, node2, graph, maxPathLength);
 
         dsep.remove(node1);
         dsep.remove(node2);
