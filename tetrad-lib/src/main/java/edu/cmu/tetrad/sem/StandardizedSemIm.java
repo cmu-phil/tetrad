@@ -55,8 +55,6 @@ import static java.lang.Math.sqrt;
  * Currently we are not allowing bidirected edges in the SEM graph.
  */
 public class StandardizedSemIm implements Simulator, TetradSerializable {
-    private final int sampleSize;
-    private final Parameters parameters;
     private Matrix edgeCoef;
     private Matrix errorCovar;
     private Map<Node, Double> errorVariances;
@@ -123,17 +121,16 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      */
     public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) {
         this.semPm = new SemPm(im.getSemPm());
-        this.parameters = parameters;
         this.semGraph = new SemGraph(semPm.getGraph());
         semGraph.setShowErrorTerms(true);
-        this.sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
+        int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
         if (semGraph.existsDirectedCycle()) {
             throw new IllegalArgumentException("The cyclic case is not handled.");
         }
 
         if (initialization == Initialization.CALCULATE_FROM_SEM) {
-//         This code calculates the new coefficients directly from the old ones.
+//          This code calculates the new coefficients directly from the old ones.
             edgeParameters = new HashMap<>();
 
             List<Node> nodes = im.getVariableNodes();
@@ -198,7 +195,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
                     semGraph.getExogenous(edge.getNode2()));
         }
 
-        return edgeParameters.keySet().contains(edge);
+        return edgeParameters.containsKey(edge);
     }
 
     /**
@@ -217,7 +214,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             throw new NullPointerException("Not a coefficient parameter in this model: " + edge);
         }
 
-        if (editingEdge == null || !edge.equals(editingEdge)) {
+        if (!edge.equals(editingEdge)) {
             range = getParameterRange(edge);
             editingEdge = edge;
         }
@@ -228,14 +225,6 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         }
 
         return false;
-
-//        if (!paramInBounds(edge, coef)) {
-//            edgeParameters.put(edge, d);
-//            return false;
-//        }
-//
-//        edgeParameters.put(edge, coef);
-//        return true;
     }
 
     /**
@@ -254,7 +243,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             throw new IllegalArgumentException("Not a covariance parameter in this model: " + edge);
         }
 
-        if (editingEdge == null || !edge.equals(editingEdge)) {
+        if (!edge.equals(editingEdge)) {
             range = getParameterRange(edge);
             editingEdge = edge;
         }
@@ -265,22 +254,6 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         } else {
             return false;
         }
-
-//        if (!paramInBounds(edge, coef)) {
-//            edgeParameters.put(edge, d);
-//            return false;
-//        }
-//
-//        edgeParameters.put(edge, coef);
-//        return true;
-
-//        if (!paramInBounds(edge, covar)) {
-//            edgeParameters.put(edge, d);
-//            return false;
-//        }
-//
-//        edgeParameters.put(edge, covar);
-//        return true;
     }
 
     /**
@@ -355,7 +328,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         }
 
 
-        if (!(edgeParameters.keySet().contains(edge))) {
+        if (!(edgeParameters.containsKey(edge))) {
             throw new IllegalArgumentException("Not an edge in this model: " + edge);
         }
 
@@ -552,16 +525,6 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         return edgeCoef;
     }
 
-//    /**
-//     * @return Returns the error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b,
-//     * with [a][a] of course being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE
-//     * CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
-//     * elements cannot be calculated.
-//     */
-//    public TetradMatrix errCovar() {
-//        return errCovar(errorVariances());
-//    }
-
     /**
      * @return For compatibility only. Returns the variable means of the model. These are always
      * zero, since this is a standardized model. THESE ARE ALSO NOT PARAMETERS OF THE MODEL. ONLY THE
@@ -582,7 +545,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * method.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
-        return simulateDataDataReducedForm(sampleSize, latentDataSaved);
+        return simulateDataReducedForm(sampleSize, latentDataSaved);
     }
 
     @Override
@@ -595,7 +558,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         return dataSet;
     }
 
-    public DataSet simulateDataDataReducedForm(int sampleSize, boolean latentDataSaved) {
+    public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         this.edgeCoef = null;
         this.errorCovar = null;
         this.errorVariances = null;
@@ -615,10 +578,10 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             Vector e = new Vector(edgeCoef().columns());
 
             for (int i = 0; i < e.size(); i++) {
-                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar(errorVariances()).get(i, i))));
+                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar(errorVariances(), false).get(i, i))));
             }
 
-            // Step 3. Calculate the new rows in the data.x
+            // Step 3. Calculate the new rows in the data.
             Vector sample = iMinusBInv.times(e);
             sim.assignRow(row, sample);
 
@@ -645,59 +608,6 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         }
     }
 
-//    /**
-//     * @param sampleSize      The sample size of the desired data set.
-//     * @param latentDataSaved True if latent variables should be included in the data set.
-//     * @return This returns a standardized data set simulated from the model, using the reduced form
-//     * method.
-//     */
-//    public DataSet simulateDataRπeducedForm(int sampleSize, boolean latentDataSaved) {
-//        int numVars = getVariableNodes().size();
-//
-//        // Calculate inv(I - edgeCoefC)
-//        Matrix B = edgeCoef().transpose();
-//        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
-//
-//        // Pick error values e, for each calculate inv * e.
-//        Matrix sim = new Matrix(sampleSize, numVars);
-//
-//        for (int row = 0; row < sampleSize; row++) {
-//
-//            // Step 1. Generate normal samples.
-//            Vector e = new Vector(edgeCoef().columns());
-//
-//            for (int i = 0; i < e.size(); i++) {
-//                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar(errorVariances()).get(i, i))));
-//            }
-//
-//            // Step 3. Calculate the new rows in the data.
-//            Vector sample = iMinusBInv.times(e);
-//            sim.assignRow(row, sample);
-//
-//            for (int col = 0; col < sample.size(); col++) {
-//                double value = sim.get(row, col);
-//                sim.set(row, col, value);
-//            }
-//        }
-//
-//        List<Node> continuousVars = new ArrayList<>();
-//
-//        for (Node node : getVariableNodes()) {
-//            final ContinuousVariable var = new ContinuousVariable(node.getName());
-//            var.setNodeType(node.getNodeType());
-//            continuousVars.add(var);
-//        }
-//
-//        DataSet fullDataSet = new BoxDataSet(new DoubleDataBox(sim.toArray()), continuousVars);
-//
-//        if (latentDataSaved) {
-//            return fullDataSet;
-//        } else {
-//            return DataUtils.restrictToMeasured(fullDataSet);
-//        }
-//    }
-
-
     /**
      * @return a copy of the implied covariance matrix over all the variables.
      */
@@ -721,8 +631,8 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
      * elements cannot be calculated.
      */
-    private Matrix errCovar(Map<Node, Double> errorVariances) {
-        if (this.errorCovar != null) {
+    private Matrix errCovar(Map<Node, Double> errorVariances, boolean recalculate) {
+        if (!recalculate && this.errorCovar != null) {
             return this.errorCovar;
         }
 
@@ -780,7 +690,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
 
         // Note. Since the sizes of the temp matrices in this calculation
         // never change, we ought to be able to reuse them.
-        this.implCovar = MatrixUtils.impliedCovar(edgeCoefT, errCovar(errorVariances()));
+        this.implCovar = MatrixUtils.impliedCovar(edgeCoefT, errCovar(errorVariances(), true));
 
         // Submatrix of implied covar for measured vars only.
         int size = getMeasuredNodes().size();
@@ -806,45 +716,6 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         return getSemPm().getMeasuredNodes();
     }
 
-    /**
-     * Takes a Cholesky decomposition from the Cholesky.cholesky method and a
-     * set of data simulated using the information in that matrix. Written by
-     * Don Crimbchin. </p> Modified June 8, Matt Easterday: added a random #
-     * seed so that data can be recalculated with the same result in Causality
-     * lab
-     *
-     * @param cholesky   the result from cholesky above.
-     * @param randomUtil a random number generator, if null the method will make
-     *                   a new generator for each random number needed
-     * @return an array the same length as the width or length (cholesky should
-     * have the same width and length) containing a randomly generate
-     * data set.
-     */
-    private double[] exogenousData(Matrix cholesky, RandomUtil
-            randomUtil) {
-
-        // Step 1. Generate normal samples.
-        double exoData[] = new double[cholesky.rows()];
-
-        for (int i = 0; i < exoData.length; i++) {
-            exoData[i] = randomUtil.nextNormal(0, 1);
-        }
-
-        // Step 2. Multiply by cholesky to get correct covariance.
-        double point[] = new double[exoData.length];
-
-        for (int i = 0; i < exoData.length; i++) {
-            double sum = 0.0;
-
-            for (int j = 0; j <= i; j++) {
-                sum += cholesky.get(i, j) * exoData[j];
-            }
-
-            point[i] = sum;
-        }
-
-        return point;
-    }
 
     public List<Node> getErrorNodes() {
         List<Node> errorNodes = new ArrayList<>();
@@ -874,10 +745,10 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
     public static final class ParameterRange implements TetradSerializable {
         static final long serialVersionUID = 23L;
 
-        private Edge edge;
-        private double coef;
-        private double low;
-        private double high;
+        private final Edge edge;
+        private final double coef;
+        private final double low;
+        private final double high;
 
         public ParameterRange(Edge edge, double coef, double low, double high) {
             this.edge = edge;
@@ -933,7 +804,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             errorVariances.put(error, d2);
         }
 
-        return MatrixUtils.isPositiveDefinite(errCovar(errorVariances));
+        return MatrixUtils.isPositiveDefinite(errCovar(errorVariances, true));
     }
 
     /**
