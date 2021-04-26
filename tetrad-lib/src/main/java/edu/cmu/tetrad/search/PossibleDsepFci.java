@@ -131,7 +131,7 @@ public class PossibleDsepFci {
     }
 
     private List<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
-        final Set<Node> possibleDsepSet = getPossibleDsep(test, node1, node2, maxPathLength);
+        final List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
         List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = getKnowledge().noEdgeRequired(node1.getName(), node2.getName());
 
@@ -189,8 +189,8 @@ public class PossibleDsepFci {
      * 		(b) X is adjacent to Z.
      * </pre>
      */
-    private Set<Node> getPossibleDsep(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
-        Set<Node> dsep = GraphUtils.possibleDsep(test, node1, node2, graph, maxPathLength);
+    private List<Node> getPossibleDsep(Node node1, Node node2, int maxPathLength) {
+        List<Node> dsep = GraphUtils.possibleDsep(node1, node2, graph, maxPathLength, test);
 
         dsep.remove(node1);
         dsep.remove(node2);

@@ -20,58 +20,23 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.*;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.CharArrayReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.Writer;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.RecursiveTask;
-import java.util.regex.Matcher;
-
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
-import nu.xom.Builder;
-import nu.xom.Document;
-import nu.xom.Element;
-import nu.xom.Elements;
-import nu.xom.ParsingException;
-import nu.xom.Serializer;
-import nu.xom.Text;
+import nu.xom.*;
 
-import static java.lang.Math.abs;
+import java.io.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
+import java.util.concurrent.RecursiveTask;
+import java.util.regex.Matcher;
+
 import static java.lang.Math.min;
 
 /**
@@ -1027,39 +992,6 @@ public final class GraphUtils {
     }
 
     /**
-     * Check to see if a set of variables Z satisfies the back-door criterion
-     * relative to node x and node y.
-     *
-     * @param graph
-     * @param x
-     * @param y
-     * @param z
-     * @return
-     * @author Kevin V. Bui (March 2020)
-     */
-    public boolean isSatisfyBackDoorCriterion(Graph graph, Node x, Node y, List<Node> z) {
-        Dag dag = new Dag(graph);
-
-        // make sure no nodes in z is a descendant of x
-        if (!z.stream().noneMatch(zNode -> dag.isDescendentOf(zNode, x))) {
-            return false;
-        }
-
-        // make sure zNodes bock every path between node x and node y that contains an arrow into node x
-        List<List<Node>> directedPaths = GraphUtils.allDirectedPathsFromTo(graph, x, y, -1);
-        directedPaths.forEach(nodes -> {
-            // remove all variables that are not on the back-door path
-            nodes.forEach(node -> {
-                if (!(node == x || node == y)) {
-                    dag.removeNode(node);
-                }
-            });
-        });
-
-        return dag.isDSeparatedFrom(x, y, z);
-    }
-
-    /**
      * Calculates the Markov blanket of a target in a DAG. This includes the
      * target, the parents of the target, the children of the target, the
      * parents of the children of the target, edges from parents to target,
@@ -1070,9 +1002,9 @@ public final class GraphUtils {
      * (Joseph Ramsey 8/6/04)
      *
      * @param target a node in the given DAG.
-     * @param dag the DAG with respect to which a Markov blanket DAG is to to be
-     * calculated. All of the nodes and edges of the Markov Blanket DAG are in
-     * this DAG.
+     * @param dag    the DAG with respect to which a Markov blanket DAG is to to be
+     *               calculated. All of the nodes and edges of the Markov Blanket DAG are in
+     *               this DAG.
      */
     public static Dag markovBlanketDag(Node target, Graph dag) {
         if (dag.getNode(target.getName()) == null) {
@@ -1760,8 +1692,8 @@ public final class GraphUtils {
      * variables (with the same names as the old).
      *
      * @param originalGraph The graph to be converted.
-     * @param newVariables The new variables to use, with the same names as the
-     * old ones.
+     * @param newVariables  The new variables to use, with the same names as the
+     *                      old ones.
      * @return A new, converted, graph.
      */
     public static Graph replaceNodes(Graph originalGraph, List<Node> newVariables) {
@@ -1861,8 +1793,8 @@ public final class GraphUtils {
      * new variables (with the same names as the old).
      *
      * @param originalNodes The list of nodes to be converted.
-     * @param newNodes A list of new nodes, containing as a subset nodes with
-     * the same names as those in <code>originalNodes</code>. the old ones.
+     * @param newNodes      A list of new nodes, containing as a subset nodes with
+     *                      the same names as those in <code>originalNodes</code>. the old ones.
      * @return The converted list of nodes.
      */
     public static List<Node> replaceNodes(List<Node> originalNodes, List<Node> newNodes) {
@@ -1884,7 +1816,7 @@ public final class GraphUtils {
      * Counts the adjacencies that are in graph1 but not in graph2.
      *
      * @throws IllegalArgumentException if graph1 and graph2 are not namewise
-     * isomorphic.
+     *                                  isomorphic.
      */
     public static int countAdjErrors(Graph graph1, Graph graph2) {
         if (graph1 == null) {
@@ -2010,7 +1942,7 @@ public final class GraphUtils {
      * <code>graph</code>.
      *
      * @param originalNodes The list of nodes to be converted.
-     * @param graph A graph to be used as a source of new nodes.
+     * @param graph         A graph to be used as a source of new nodes.
      * @return A new, converted, graph.
      */
     public static List<Node> replaceNodes(List<Node> originalNodes, Graph graph) {
@@ -2431,8 +2363,8 @@ public final class GraphUtils {
 
     /**
      * @param graph The graph to be saved.
-     * @param file The file to save it in.
-     * @param xml True if to be saved in XML, false if in text.
+     * @param file  The file to save it in.
+     * @param xml   True if to be saved in XML, false if in text.
      * @return I have no idea whey I'm returning this; it's already closed...
      */
     public static PrintWriter saveGraph(Graph graph, File file, boolean xml) {
@@ -2839,7 +2771,7 @@ public final class GraphUtils {
      * is j-->i and -1 if i-->j.
      *
      * @throws IllegalArgumentException if <code>graph</code> is not a directed
-     * graph.
+     *                                  graph.
      */
     private static int[][] incidenceMatrix(Graph graph) throws IllegalArgumentException {
         List<Node> nodes = graph.getNodes();
@@ -3048,7 +2980,7 @@ public final class GraphUtils {
      * given indices in that list.
      *
      * @param indices The indices of the desired nodes in <code>nodes</code>.
-     * @param nodes The list of nodes from which we select a sublist.
+     * @param nodes   The list of nodes from which we select a sublist.
      * @return the The sublist selected.
      */
     public static List<Node> asList(int[] indices, List<Node> nodes) {
@@ -3137,7 +3069,7 @@ public final class GraphUtils {
         List<Node> allNodes = new ArrayList<>(notFound);
 
         while (!notFound.isEmpty()) {
-            for (Iterator<Node> it = notFound.iterator(); it.hasNext();) {
+            for (Iterator<Node> it = notFound.iterator(); it.hasNext(); ) {
                 Node node = it.next();
 
                 List<Node> parents = graph.getParents(node);
@@ -3600,48 +3532,19 @@ public final class GraphUtils {
         return false;
     }
 
-    private static class Counts {
-
-        private int[][] counts;
-
-        public Counts() {
-            this.counts = new int[8][6];
-        }
-
-        public void increment(int m, int n) {
-            this.counts[m][n]++;
-        }
-
-        public int getCount(int m, int n) {
-            return this.counts[m][n];
-        }
-
-        public void addAll(Counts counts2) {
-            for (int i = 0; i < 8; i++) {
-                for (int j = 0; j < 6; j++) {
-                    counts[i][j] += counts2.getCount(i, j);
-                }
-            }
-        }
-
-        public int[][] countArray() {
-            return counts;
-        }
-    }
-
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
 //        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
 
         class CountTask extends RecursiveTask<Counts> {
 
-            private int chunk;
-            private int from;
-            private int to;
             private final List<Edge> edges;
             private final Graph leftGraph;
             private final Graph topGraph;
             private final Counts counts;
             private final int[] count;
+            private int chunk;
+            private int from;
+            private int to;
 
             public CountTask(int chunk, int from, int to, List<Edge> edges, Graph leftGraph, Graph topGraph, int[] count) {
                 this.chunk = chunk;
@@ -4080,141 +3983,6 @@ public final class GraphUtils {
         return fmt.toString();
     }
 
-    public static class GraphComparison {
-
-        private final int[][] counts;
-        private int adjFn;
-        private int adjFp;
-        private int adjCorrect;
-        private int arrowptFn;
-        private int arrowptFp;
-        private int arrowptCorrect;
-
-        private double adjPrec;
-        private double adjRec;
-        private double arrowptPrec;
-        private double arrowptRec;
-
-        private int shd;
-        private int twoCycleFn;
-        private int twoCycleFp;
-        private int twoCycleCorrect;
-
-        private List<Edge> edgesAdded;
-        private List<Edge> edgesRemoved;
-        private List<Edge> edgesReorientedFrom;
-        private List<Edge> edgesReorientedTo;
-
-        public GraphComparison(int adjFn, int adjFp, int adjCorrect,
-                               int arrowptFn, int arrowptFp, int arrowptCorrect,
-                               double adjPrec, double adjRec, double arrowptPrec, double arrowptRec,
-                               int shd,
-                               int twoCycleCorrect, int twoCycleFn, int twoCycleFp,
-                               List<Edge> edgesAdded, List<Edge> edgesRemoved,
-                               List<Edge> edgesReorientedFrom,
-                               List<Edge> edgesReorientedTo,
-                               int[][] counts) {
-            this.adjFn = adjFn;
-            this.adjFp = adjFp;
-            this.adjCorrect = adjCorrect;
-            this.arrowptFn = arrowptFn;
-            this.arrowptFp = arrowptFp;
-            this.arrowptCorrect = arrowptCorrect;
-
-            this.adjPrec = adjPrec;
-            this.adjRec = adjRec;
-            this.arrowptPrec = arrowptPrec;
-            this.arrowptRec = arrowptRec;
-
-            this.shd = shd;
-            this.twoCycleCorrect = twoCycleCorrect;
-            this.twoCycleFn = twoCycleFn;
-            this.twoCycleFp = twoCycleFp;
-            this.edgesAdded = edgesAdded;
-            this.edgesRemoved = edgesRemoved;
-            this.edgesReorientedFrom = edgesReorientedFrom;
-            this.edgesReorientedTo = edgesReorientedTo;
-
-            this.counts = counts;
-        }
-
-        public int getAdjFn() {
-            return adjFn;
-        }
-
-        public int getAdjFp() {
-            return adjFp;
-        }
-
-        public int getAdjCor() {
-            return adjCorrect;
-        }
-
-        public int getAhdFn() {
-            return arrowptFn;
-        }
-
-        public int getAhdFp() {
-            return arrowptFp;
-        }
-
-        public int getAhdCor() {
-            return arrowptCorrect;
-        }
-
-        public int getShd() {
-            return shd;
-        }
-
-        public int getTwoCycleFn() {
-            return twoCycleFn;
-        }
-
-        public int getTwoCycleFp() {
-            return twoCycleFp;
-        }
-
-        public int getTwoCycleCorrect() {
-            return twoCycleCorrect;
-        }
-
-        public List<Edge> getEdgesAdded() {
-            return edgesAdded;
-        }
-
-        public List<Edge> getEdgesRemoved() {
-            return edgesRemoved;
-        }
-
-        public List<Edge> getEdgesReorientedFrom() {
-            return edgesReorientedFrom;
-        }
-
-        public List<Edge> getEdgesReorientedTo() {
-            return edgesReorientedTo;
-        }
-
-        public double getAdjPrec() {
-            return adjPrec;
-        }
-
-        public double getAdjRec() {
-            return adjRec;
-        }
-
-        public double getAhdPrec() {
-            return arrowptPrec;
-        }
-
-        public double getAhdRec() {
-            return arrowptRec;
-        }
-
-        public int[][] getCounts() {
-            return counts;
-        }
-    }
-
     public static TwoCycleErrors getTwoCycleErrors(Graph trueGraph, Graph estGraph) {
         Set<Edge> trueEdges = trueGraph.getEdges();
         Set<Edge> trueTwoCycle = new HashSet<>();
@@ -4277,28 +4045,6 @@ public final class GraphUtils {
         );
 
         return twoCycleErrors;
-    }
-
-    public static class TwoCycleErrors {
-
-        public int twoCycCor = 0;
-        public int twoCycFn = 0;
-        public int twoCycFp = 0;
-
-        public TwoCycleErrors(int twoCycCor, int twoCycFn, int twoCycFp) {
-            this.twoCycCor = twoCycCor;
-            this.twoCycFn = twoCycFn;
-            this.twoCycFp = twoCycFp;
-        }
-
-        public String toString() {
-            String buf = "2c cor = " + twoCycCor + "\t"
-                    + "2c fn = " + twoCycFn + "\t"
-                    + "2c fp = " + twoCycFp;
-
-            return buf;
-        }
-
     }
 
     public static boolean isDConnectedTo(Node x, Node y, List<Node> z, Graph graph) {
@@ -5015,8 +4761,8 @@ public final class GraphUtils {
         return null;
     }
 
-    public static Set<Node> possibleDsep(IndependenceTest teslt, Node x, Node y, Graph graph, int maxPathLength) {
-        Set<Node> dsep = new HashSet<>();
+    public static List<Node> possibleDsep(Node x, Node y, Graph graph, int maxPathLength, IndependenceTest test) {
+        List<Node> dsep = new ArrayList<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
         Set<OrderedPair<Node>> V = new HashSet<>();
@@ -5026,8 +4772,6 @@ public final class GraphUtils {
 
         OrderedPair<Node> e = null;
         int distance = 0;
-
-//        graph = GraphUtils.replaceNodes(graph, test.getVariables());
 
         assert graph != null;
         List<Node> adjacentNodes = graph.getAdjacentNodes(x);
@@ -5094,6 +4838,16 @@ public final class GraphUtils {
                 }
             }
         }
+
+        Map<Node, Double> scores = new HashMap<>();
+
+        for (Node node : dsep) {
+            test.isIndependent(x, y, Collections.singletonList(node));
+            scores.put(node, test.getScore());
+        }
+
+        dsep.sort(Comparator.comparing(scores::get));
+        Collections.reverse(dsep);
 
         dsep.remove(x);
         dsep.remove(y);
@@ -5284,6 +5038,225 @@ public final class GraphUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Check to see if a set of variables Z satisfies the back-door criterion
+     * relative to node x and node y.
+     *
+     * @param graph
+     * @param x
+     * @param y
+     * @param z
+     * @return
+     * @author Kevin V. Bui (March 2020)
+     */
+    public boolean isSatisfyBackDoorCriterion(Graph graph, Node x, Node y, List<Node> z) {
+        Dag dag = new Dag(graph);
+
+        // make sure no nodes in z is a descendant of x
+        if (!z.stream().noneMatch(zNode -> dag.isDescendentOf(zNode, x))) {
+            return false;
+        }
+
+        // make sure zNodes bock every path between node x and node y that contains an arrow into node x
+        List<List<Node>> directedPaths = GraphUtils.allDirectedPathsFromTo(graph, x, y, -1);
+        directedPaths.forEach(nodes -> {
+            // remove all variables that are not on the back-door path
+            nodes.forEach(node -> {
+                if (!(node == x || node == y)) {
+                    dag.removeNode(node);
+                }
+            });
+        });
+
+        return dag.isDSeparatedFrom(x, y, z);
+    }
+
+    private static class Counts {
+
+        private int[][] counts;
+
+        public Counts() {
+            this.counts = new int[8][6];
+        }
+
+        public void increment(int m, int n) {
+            this.counts[m][n]++;
+        }
+
+        public int getCount(int m, int n) {
+            return this.counts[m][n];
+        }
+
+        public void addAll(Counts counts2) {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 6; j++) {
+                    counts[i][j] += counts2.getCount(i, j);
+                }
+            }
+        }
+
+        public int[][] countArray() {
+            return counts;
+        }
+    }
+
+    public static class GraphComparison {
+
+        private final int[][] counts;
+        private int adjFn;
+        private int adjFp;
+        private int adjCorrect;
+        private int arrowptFn;
+        private int arrowptFp;
+        private int arrowptCorrect;
+
+        private double adjPrec;
+        private double adjRec;
+        private double arrowptPrec;
+        private double arrowptRec;
+
+        private int shd;
+        private int twoCycleFn;
+        private int twoCycleFp;
+        private int twoCycleCorrect;
+
+        private List<Edge> edgesAdded;
+        private List<Edge> edgesRemoved;
+        private List<Edge> edgesReorientedFrom;
+        private List<Edge> edgesReorientedTo;
+
+        public GraphComparison(int adjFn, int adjFp, int adjCorrect,
+                               int arrowptFn, int arrowptFp, int arrowptCorrect,
+                               double adjPrec, double adjRec, double arrowptPrec, double arrowptRec,
+                               int shd,
+                               int twoCycleCorrect, int twoCycleFn, int twoCycleFp,
+                               List<Edge> edgesAdded, List<Edge> edgesRemoved,
+                               List<Edge> edgesReorientedFrom,
+                               List<Edge> edgesReorientedTo,
+                               int[][] counts) {
+            this.adjFn = adjFn;
+            this.adjFp = adjFp;
+            this.adjCorrect = adjCorrect;
+            this.arrowptFn = arrowptFn;
+            this.arrowptFp = arrowptFp;
+            this.arrowptCorrect = arrowptCorrect;
+
+            this.adjPrec = adjPrec;
+            this.adjRec = adjRec;
+            this.arrowptPrec = arrowptPrec;
+            this.arrowptRec = arrowptRec;
+
+            this.shd = shd;
+            this.twoCycleCorrect = twoCycleCorrect;
+            this.twoCycleFn = twoCycleFn;
+            this.twoCycleFp = twoCycleFp;
+            this.edgesAdded = edgesAdded;
+            this.edgesRemoved = edgesRemoved;
+            this.edgesReorientedFrom = edgesReorientedFrom;
+            this.edgesReorientedTo = edgesReorientedTo;
+
+            this.counts = counts;
+        }
+
+        public int getAdjFn() {
+            return adjFn;
+        }
+
+        public int getAdjFp() {
+            return adjFp;
+        }
+
+        public int getAdjCor() {
+            return adjCorrect;
+        }
+
+        public int getAhdFn() {
+            return arrowptFn;
+        }
+
+        public int getAhdFp() {
+            return arrowptFp;
+        }
+
+        public int getAhdCor() {
+            return arrowptCorrect;
+        }
+
+        public int getShd() {
+            return shd;
+        }
+
+        public int getTwoCycleFn() {
+            return twoCycleFn;
+        }
+
+        public int getTwoCycleFp() {
+            return twoCycleFp;
+        }
+
+        public int getTwoCycleCorrect() {
+            return twoCycleCorrect;
+        }
+
+        public List<Edge> getEdgesAdded() {
+            return edgesAdded;
+        }
+
+        public List<Edge> getEdgesRemoved() {
+            return edgesRemoved;
+        }
+
+        public List<Edge> getEdgesReorientedFrom() {
+            return edgesReorientedFrom;
+        }
+
+        public List<Edge> getEdgesReorientedTo() {
+            return edgesReorientedTo;
+        }
+
+        public double getAdjPrec() {
+            return adjPrec;
+        }
+
+        public double getAdjRec() {
+            return adjRec;
+        }
+
+        public double getAhdPrec() {
+            return arrowptPrec;
+        }
+
+        public double getAhdRec() {
+            return arrowptRec;
+        }
+
+        public int[][] getCounts() {
+            return counts;
+        }
+    }
+
+    public static class TwoCycleErrors {
+
+        public int twoCycCor = 0;
+        public int twoCycFn = 0;
+        public int twoCycFp = 0;
+
+        public TwoCycleErrors(int twoCycCor, int twoCycFn, int twoCycFp) {
+            this.twoCycCor = twoCycCor;
+            this.twoCycFn = twoCycFn;
+            this.twoCycFp = twoCycFp;
+        }
+
+        public String toString() {
+            String buf = "2c cor = " + twoCycCor + "\t"
+                    + "2c fn = " + twoCycFn + "\t"
+                    + "2c fp = " + twoCycFp;
+
+            return buf;
+        }
+
     }
 
 }

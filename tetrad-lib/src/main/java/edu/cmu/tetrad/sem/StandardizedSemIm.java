@@ -56,6 +56,10 @@ import static java.lang.Math.sqrt;
  */
 public class StandardizedSemIm implements Simulator, TetradSerializable {
     private final int sampleSize;
+    private final Parameters parameters;
+    private Matrix edgeCoef;
+    private Matrix errorCovar;
+    private Map<Node, Double> errorVariances;
 
     public enum Initialization {
         CALCULATE_FROM_SEM, INITIALIZE_FROM_DATA
@@ -66,18 +70,18 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
     /**
      * The SEM model.
      */
-    private SemPm semPm;
+    private final SemPm semPm;
 
     /**
      * The graph of the model. Stored internally because it must be ensured that the error terms are showing.
      */
-    private SemGraph semGraph;
+    private final SemGraph semGraph;
 
     /**
      * A map from edges in the graph to their coefficients. These are the only freeParameters in the model. This
      * includes coefficients for directed as well as bidirected edges.
      */
-    private Map<Edge, Double> edgeParameters;
+    private final Map<Edge, Double> edgeParameters;
 
     /**
      * A map from error nodes in the graph to their error variances. These are not freeParameters in the model; their
@@ -99,31 +103,30 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      *
      * @param im The SEM IM that the freeParameters will be initialized from.
      */
-    public StandardizedSemIm(SemIm im) {
-        this(im, Initialization.CALCULATE_FROM_SEM);
+    public StandardizedSemIm(SemIm im, Parameters parameters) {
+        this(im, Initialization.CALCULATE_FROM_SEM, parameters);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static StandardizedSemIm serializableInstance() {
-        return new StandardizedSemIm(SemIm.serializableInstance());
+        return new StandardizedSemIm(SemIm.serializableInstance(), new Parameters());
     }
 
     //===========================================PUBLIC METHODS==================================================//
 
     /**
      * Constructs a new standardized SEM IM from the freeParameters in the given SEM IM.
-     *
-     * @param im             Stop asking me for these things! The given SEM IM!!!
+     *  @param im             Stop asking me for these things! The given SEM IM!!!
      * @param initialization CALCULATE_FROM_SEM if the initial values will be calculated from the given SEM IM;
-     *                       INITIALIZE_FROM_DATA if data will be simulated from the given SEM, standardized, and estimated.
      */
-    public StandardizedSemIm(SemIm im, Initialization initialization) {
+    public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) {
         this.semPm = new SemPm(im.getSemPm());
+        this.parameters = parameters;
         this.semGraph = new SemGraph(semPm.getGraph());
         semGraph.setShowErrorTerms(true);
-        this.sampleSize = im.getSampleSize();
+        this.sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
         if (semGraph.existsDirectedCycle()) {
             throw new IllegalArgumentException("The cyclic case is not handled.");
@@ -161,7 +164,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         } else {
 
             // This code estimates the new coefficients from simulated data from the old model.
-            DataSet dataSet = im.simulateData(1000, false);
+            DataSet dataSet = im.simulateData(sampleSize, false);
             Matrix _dataSet = dataSet.getDoubleData();
             _dataSet = DataUtils.standardizeData(_dataSet);
             DataSet dataSetStandardized = new BoxDataSet(new VerticalDoubleDataBox(_dataSet.toArray()), dataSet.getVariables());
@@ -454,12 +457,17 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @return a map from error to error variances, or to Double.NaN where these cannot be computed.
      */
     private Map<Node, Double> errorVariances() {
+        if (this.errorVariances != null) {
+            return this.errorVariances;
+        }
+
         Map<Node, Double> errorVarances = new HashMap<>();
 
         for (Node error : getErrorNodes()) {
             errorVarances.put(error, getErrorVariance(error));
         }
 
+        this.errorVariances = errorVarances;
         return errorVarances;
     }
 
@@ -516,6 +524,10 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * PARAMETERS OF THE MODEL--THE ONLY PARAMETERS.
      */
     private Matrix edgeCoef() {
+        if (this.edgeCoef != null) {
+            return this.edgeCoef;
+        }
+
         List<Node> variableNodes = getVariableNodes();
 
         Matrix edgeCoef = new Matrix(variableNodes.size(), variableNodes.size());
@@ -536,6 +548,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             edgeCoef.set(aindex, bindex, coef);
         }
 
+        this.edgeCoef = edgeCoef;
         return edgeCoef;
     }
 
@@ -569,7 +582,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * method.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
-        return simulateDataReducedForm(sampleSize, latentDataSaved);
+        return simulateDataDataReducedForm(sampleSize, latentDataSaved);
     }
 
     @Override
@@ -582,13 +595,11 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         return dataSet;
     }
 
-    /**
-     * @param sampleSize      The sample size of the desired data set.
-     * @param latentDataSaved True if latent variables should be included in the data set.
-     * @return This returns a standardized data set simulated from the model, using the reduced form
-     * method.
-     */
-    public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
+    public DataSet simulateDataDataReducedForm(int sampleSize, boolean latentDataSaved) {
+        this.edgeCoef = null;
+        this.errorCovar = null;
+        this.errorVariances = null;
+
         int numVars = getVariableNodes().size();
 
         // Calculate inv(I - edgeCoefC)
@@ -607,7 +618,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
                 e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar(errorVariances()).get(i, i))));
             }
 
-            // Step 3. Calculate the new rows in the data.
+            // Step 3. Calculate the new rows in the data.x
             Vector sample = iMinusBInv.times(e);
             sim.assignRow(row, sample);
 
@@ -634,6 +645,58 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         }
     }
 
+//    /**
+//     * @param sampleSize      The sample size of the desired data set.
+//     * @param latentDataSaved True if latent variables should be included in the data set.
+//     * @return This returns a standardized data set simulated from the model, using the reduced form
+//     * method.
+//     */
+//    public DataSet simulateDataRπeducedForm(int sampleSize, boolean latentDataSaved) {
+//        int numVars = getVariableNodes().size();
+//
+//        // Calculate inv(I - edgeCoefC)
+//        Matrix B = edgeCoef().transpose();
+//        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+//
+//        // Pick error values e, for each calculate inv * e.
+//        Matrix sim = new Matrix(sampleSize, numVars);
+//
+//        for (int row = 0; row < sampleSize; row++) {
+//
+//            // Step 1. Generate normal samples.
+//            Vector e = new Vector(edgeCoef().columns());
+//
+//            for (int i = 0; i < e.size(); i++) {
+//                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar(errorVariances()).get(i, i))));
+//            }
+//
+//            // Step 3. Calculate the new rows in the data.
+//            Vector sample = iMinusBInv.times(e);
+//            sim.assignRow(row, sample);
+//
+//            for (int col = 0; col < sample.size(); col++) {
+//                double value = sim.get(row, col);
+//                sim.set(row, col, value);
+//            }
+//        }
+//
+//        List<Node> continuousVars = new ArrayList<>();
+//
+//        for (Node node : getVariableNodes()) {
+//            final ContinuousVariable var = new ContinuousVariable(node.getName());
+//            var.setNodeType(node.getNodeType());
+//            continuousVars.add(var);
+//        }
+//
+//        DataSet fullDataSet = new BoxDataSet(new DoubleDataBox(sim.toArray()), continuousVars);
+//
+//        if (latentDataSaved) {
+//            return fullDataSet;
+//        } else {
+//            return DataUtils.restrictToMeasured(fullDataSet);
+//        }
+//    }
+
 
     /**
      * @return a copy of the implied covariance matrix over all the variables.
@@ -659,6 +722,10 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * elements cannot be calculated.
      */
     private Matrix errCovar(Map<Node, Double> errorVariances) {
+        if (this.errorCovar != null) {
+            return this.errorCovar;
+        }
+
         List<Node> variableNodes = getVariableNodes();
         List<Node> errorNodes = new ArrayList<>();
 
@@ -686,6 +753,8 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
                 }
             }
         }
+
+        this.errorCovar = errorCovar;
 
         return errorCovar;
     }

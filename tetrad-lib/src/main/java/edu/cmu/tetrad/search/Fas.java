@@ -160,13 +160,9 @@ public class Fas implements IFas {
             }
         }
 
-        for (Edge edge1 : edges) {
-            test.isIndependent(edge1.getNode1(), edge1.getNode2(), new ArrayList<>());
-            scores.put(edge1, test.getScore());
-        }
-
-        if (new HashSet<>(scores.values()).size() > scores.keySet().size()) {
-            throw new IllegalArgumentException("Ties");
+        for (Edge edge : edges) {
+            test.isIndependent(edge.getNode1(), edge.getNode2(), new ArrayList<>());
+            scores.put(edge, test.getScore());
         }
 
         if (heuristic == 2 || heuristic == 3) {
@@ -186,10 +182,10 @@ public class Fas implements IFas {
             adjacencies.put(node, set);
         }
 
-        for (Edge edge : scores.keySet()) {
+        for (Edge edge : new ArrayList<>(edges)) {
             if (scores.get(edge) < 0
                     || (knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
-                        && (knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())))) {
+                    && (knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())))) {
                 edges.remove(edge);
                 adjacencies.get(edge.getNode1()).remove(edge.getNode2());
                 adjacencies.get(edge.getNode2()).remove(edge.getNode1());
@@ -204,13 +200,13 @@ public class Fas implements IFas {
                 final Map<Node, Set<Node>> adjacenciesCopy = new HashMap<>();
 
                 for (Node node : adjacencies.keySet()) {
-                    adjacenciesCopy.put(node, new HashSet<>(adjacencies.get(node)));
+                    adjacenciesCopy.put(node, new LinkedHashSet<>(adjacencies.get(node)));
                 }
 
                 adjacencies = adjacenciesCopy;
             }
 
-            more = searchAtDepth(edges, test, adjacencies, d);
+            more = searchAtDepth(scores, edges, test, adjacencies, d);
 
             if (!more) {
                 break;
@@ -270,7 +266,7 @@ public class Fas implements IFas {
             Set<Node> opposites = adjacencies.get(x);
 
             for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<>(opposites);
+                Set<Node> adjx = new LinkedHashSet<>(opposites);
                 adjx.remove(y);
 
                 if (adjx.size() > max) {
@@ -282,7 +278,7 @@ public class Fas implements IFas {
         return max;
     }
 
-    private boolean searchAtDepth(List<Edge> edges, final IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
+    private boolean searchAtDepth(Map<Edge, Double> scores, List<Edge> edges, final IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
 
         for (Edge edge : edges) {
             Node x = edge.getNode1();
@@ -301,14 +297,14 @@ public class Fas implements IFas {
                 }
             }
 
-            checkSide(test, adjacencies, depth, x, y);
-            checkSide(test, adjacencies, depth, y, x);
+            checkSide(scores, test, adjacencies, depth, x, y);
+            checkSide(scores, test, adjacencies, depth, y, x);
         }
 
         return freeDegree(adjacencies) > depth;
     }
 
-    private void checkSide(IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, Node x, Node y) {
+    private void checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, Node x, Node y) {
         if (!adjacencies.get(x).contains(y)) return;
 
         List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
@@ -320,15 +316,16 @@ public class Fas implements IFas {
 
         List<Node> ppx = possibleParents(x, _adjx, knowledge, y);
 
-        Map<Node, Double> scores = new HashMap<>();
+        Map<Node, Double> scores2 = new HashMap<>();
 
         for (Node node : ppx) {
-            test.isIndependent(x, node, new ArrayList<>());
-            scores.put(node, test.getScore());
+//            test.isIndependent(x, node, new ArrayList<>());
+            double _score = scores.get(Edges.undirectedEdge(node, x));
+            scores2.put(node, _score);//test.getScore());
         }
 
         if (heuristic == 3) {
-            ppx.sort(Comparator.comparing(scores::get));
+            ppx.sort(Comparator.comparing(scores2::get));
             Collections.reverse(ppx);
         }
 

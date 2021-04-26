@@ -21,14 +21,12 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.MathUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -83,11 +81,9 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     }
 
     private List<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
-        final Set<Node> possibleDsepSet = getPossibleDsep(test, node1, node2, maxPathLength);
+        final List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
         List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = knowledge.noEdgeRequired(node1.getName(), node2.getName());
-
-//        List<Node> possParents = possibleParents(node1, possibleDsep, knowledge);
 
         int _depth = depth == -1 ? 1000 : depth;
 
@@ -125,8 +121,8 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         return null;
     }
 
-    private Set<Node> getPossibleDsep(IndependenceTest test, Node x, Node y, int maxPathLength) {
-        Set<Node> dsep = GraphUtils.possibleDsep(test, x, y, graph, maxPathLength);
+    private List<Node> getPossibleDsep(Node x, Node y, int maxPathLength) {
+        List<Node> dsep = GraphUtils.possibleDsep(x, y, graph, maxPathLength, test);
 
         if (verbose) {
             System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + dsep);

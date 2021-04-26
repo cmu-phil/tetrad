@@ -342,8 +342,6 @@ public final class PcAll implements GraphSearch {
             }
 
             orientUnshieldedTriplesConservative(knowledge);
-
-            //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
         }
 
         graph = GraphUtils.replaceNodes(graph, nodes);
@@ -359,15 +357,10 @@ public final class PcAll implements GraphSearch {
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
-        TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
 
         logTriples();
 
         TetradLogger.getInstance().flush();
-
-        System.out.println("now graph = " + graph);
-
-
 
         return graph;
     }
