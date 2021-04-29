@@ -319,9 +319,8 @@ public class Fas implements IFas {
         Map<Node, Double> scores2 = new HashMap<>();
 
         for (Node node : ppx) {
-//            test.isIndependent(x, node, new ArrayList<>());
             double _score = scores.get(Edges.undirectedEdge(node, x));
-            scores2.put(node, _score);//test.getScore());
+            scores2.put(node, _score);
         }
 
         if (heuristic == 3) {
