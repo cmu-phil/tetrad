@@ -58,6 +58,11 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
     private Matrix edgeCoef;
     private Matrix errorCovar;
     private Map<Node, Double> errorVariances;
+    private int sampleSize;
+
+    public int getSampleSize() {
+        return sampleSize;
+    }
 
     public enum Initialization {
         CALCULATE_FROM_SEM, INITIALIZE_FROM_DATA
@@ -123,7 +128,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         this.semPm = new SemPm(im.getSemPm());
         this.semGraph = new SemGraph(semPm.getGraph());
         semGraph.setShowErrorTerms(true);
-        int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
+        this.sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
         if (semGraph.existsDirectedCycle()) {
             throw new IllegalArgumentException("The cyclic case is not handled.");

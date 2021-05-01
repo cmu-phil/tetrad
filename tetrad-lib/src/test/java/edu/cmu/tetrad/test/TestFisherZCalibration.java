@@ -168,7 +168,7 @@ public class TestFisherZCalibration {
                                         d3 = Math.round(d3 * 10000.00) / 10000.00;
                                         d4 = Math.round(d4 * 10000.00) / 10000.00;
 
-                                        System.out.println("d1 = " + d1 + " d2 = " + d2 + " d3 = " + d3 + " d4 = " + d4);
+//                                        System.out.println("d1 = " + d1 + " d2 = " + d2 + " d3 = " + d3 + " d4 = " + d4);
 
                                         try {
                                             assertTrue(sem.setEdgeCoefficient(x1, x2, d1));
@@ -182,7 +182,7 @@ public class TestFisherZCalibration {
                                                     false);
 
                                             CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
-                                            IndependenceTest test = new IndTestFisherZ(covarianceMatrix, 0.0001);
+                                            IndependenceTest test = new IndTestFisherZ(covarianceMatrix, 0.001);
 
                                             Node _x1 = dataSet.getVariable("X1");
                                             Node _x2 = dataSet.getVariable("X2");
@@ -199,6 +199,9 @@ public class TestFisherZCalibration {
                                             if (out.getNumEdges() >= 4) {
                                                 System.out.println("\nd1 = " + d1 + " d2 = " + d2 + " d3 = " + d3 + " d4 = " + d4);
                                                 System.out.println(out);
+
+                                                CovarianceMatrix cov = new CovarianceMatrix(dataSet.getVariables(), sem.getImplCovar(), sem.getSampleSize());
+                                                System.out.println(cov);
                                             }
                                         } catch (AssertionError e) {
                                             System.out.println("Couldn't set parameters");
@@ -218,6 +221,12 @@ public class TestFisherZCalibration {
 
     @Test
     public void test17() {
+        double score;
+
+        double d1 = 0.5;
+        double d2 = 0.5;
+        double d3 = 0.5;
+        double d4 = .5;
 
         Graph gStar = new EdgeListGraph();
         Node x1 = new GraphNode("X1");
@@ -235,33 +244,27 @@ public class TestFisherZCalibration {
         gStar.addDirectedEdge(x3, x4);
         gStar.addDirectedEdge(x1, x4);
 
-        SemPm semPm = new SemPm(gStar);
-        SemIm semIm = new SemIm(semPm);
-
         Parameters parameters = new Parameters();
-        parameters.set(Params.SAMPLE_SIZE, 50000);
-
-        StandardizedSemIm sem = new StandardizedSemIm(semIm, parameters);
-
-        double d1 = 0.3;
-        double d2 = 0.3;
-        double d3 = 0.3;
-        double d4 = -0.3;
-
-        System.out.println("d1 = " + d1 + " d2 = " + d2 + " d3 = " + d3 + " d4 = " + d4);
+        parameters.set(Params.SAMPLE_SIZE, 500000);
 
         int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
-        DataSet[] dataSet = new DataSet[1];
+        StandardizedSemIm sem;
+//        DataSet[] dataSet;
 
-        double score = tryThis(sem, sampleSize, x1, x2, x3, x4, d1, d2, d3, d4, dataSet);
+//        do {
+            SemPm semPm = new SemPm(gStar);
+            SemIm semIm = new SemIm(semPm);
 
+            sem = new StandardizedSemIm(semIm, parameters);
+            System.out.println("d1 = " + d1 + " d2 = " + d2 + " d3 = " + d3 + " d4 = " + d4);
+//            dataSet = new DataSet[1];
+//
+//            score = tryThis(sem, sampleSize, x1, x2, x3, x4, d1, d2, d3, d4, dataSet, gStar, parameters);
+//        } while (Double.isNaN(score));
 
-        if (Double.isNaN(score)) {
-            throw new RuntimeException("Initial parameter combination illegal.");
-        }
-
-        double delta = 0.3;
+        double delta = 0.1;
+        score = 50;
 
         while (delta > 0.01) {
 
@@ -270,42 +273,95 @@ public class TestFisherZCalibration {
             double d32 = d2 + getRandom(delta);
             double d42 = d2 + getRandom(delta);
 
-            double p = tryThis(sem, sampleSize, x1, x2, x3, x4, d12, d22, d32, d42, dataSet);
+            try {
+                assertTrue(sem.setEdgeCoefficient(x1, x2, d12));
+                assertTrue(sem.setEdgeCoefficient(x2, x3, d22));
+                assertTrue(sem.setEdgeCoefficient(x3, x4, d32));
+                assertTrue(sem.setEdgeCoefficient(x1, x4, d42));
+            } catch (AssertionError e) {
+                continue;
+            }
 
-            if (Double.isNaN(p)) continue;
-            if (p > score) continue;
+            DataSet dataSet = sem.simulateDataReducedForm(parameters.getInt(Params.SAMPLE_SIZE),
+                    false);
 
-            score = p;
-            DataSet dataset = dataSet[0];
-            d1 = d12;
-            d2 = d22;
-            d3 = d32;
-            d4 = d42;
+            CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
+            IndependenceTest test = new IndTestFisherZ(covarianceMatrix, 0.0001);
 
-            delta *= 0.95;
+            Node _x1 = dataSet.getVariable("X1");
+            Node _x2 = dataSet.getVariable("X2");
+            Node _x3 = dataSet.getVariable("X3");
+            Node _x4 = dataSet.getVariable("X4");
 
-            Fges fges = new Fges(new SemBicScore(dataset));
+            boolean independent = test.isIndependent(_x1, _x2, Collections.singletonList(_x4));
+//            if (!independent) continue;
+
+            double _score = test.getScore();
+
+            if (_score > score) continue;
+
+            score = _score;
+
+            Fges fges = new Fges(new SemBicScore(dataSet));
 
             Graph out = fges.search();
 
-//            if (out.getNumEdges() >= 4) {
-                System.out.println("d1 = " + d1 + " d2 = " + d2 + " d3 = " + d3 + " d4 = " + d4 + " score = " + score);
+            if (out.getNumEdges() >= 4) {
+                System.out.println("\nd1 = " + d1 + " d2 = " + d2 + " d3 = " + d3 + " d4 = " + d4
+                        + " score = " + score);
                 System.out.println(out);
+            }
+
+
+//            double p = tryThis(sem, sampleSize, x1, x2, x3, x4, d12, d22, d32, d42, dataSet, gStar, parameters);
+//
+//            if (Double.isNaN(p)) continue;
+//            if (p > score) continue;
+//
+//            score = p;
+//            DataSet dataset = dataSet[0];
+//            d1 = d12;
+//            d2 = d22;
+//            d3 = d32;
+//            d4 = d42;
+//
+            delta *= 0.95;
+
+//            Fges fges = new Fges(new SemBicScore(dataset));
+//
+//            Graph out = fges.search();
+//
+//            if (out.getNumEdges() >= 4) {
+//            System.out.println("d1 = " + d1 + " d2 = " + d2 + " d3 = " + d3 + " d4 = " + d4 + " score = " + score);
+//            System.out.println(out);
 //            }
         }
     }
 
     private double getRandom(double delta) {
-        return 2 * (RandomUtil.getInstance().nextDouble() - 0.5) * delta;
+        return 3 * (RandomUtil.getInstance().nextDouble() - 0.5) * delta;
     }
 
-    private double tryThis(StandardizedSemIm sem, int sampleSize, Node x1, Node x2, Node x3, Node x4,
-                           double d1, double d2, double d3, double d4, DataSet[] _dataSet) {
+    private double tryThis(StandardizedSemIm sem3, int sampleSize, Node x1, Node x2, Node x3, Node x4,
+                           double d1, double d2, double d3, double d4, DataSet[] _dataSet, Graph gStar,
+                           Parameters parameters) {
         try {
-            assertTrue(sem.setEdgeCoefficient(x1, x2, d1));
-            assertTrue(sem.setEdgeCoefficient(x2, x3, d2));
-            assertTrue(sem.setEdgeCoefficient(x3, x4, d3));
-            assertTrue(sem.setEdgeCoefficient(x1, x4, d4));
+            SemPm semPm = new SemPm(gStar);
+            SemIm semIm = new SemIm(semPm);
+
+            semIm.setEdgeCoef(x1, x2, d1);
+            semIm.setEdgeCoef(x2, x3, d2);
+            semIm.setEdgeCoef(x3, x4, d3);
+            semIm.setEdgeCoef(x1, x4, d4);
+
+            StandardizedSemIm sem = new StandardizedSemIm(semIm, parameters);
+
+
+
+//            assertTrue(sem.setEdgeCoefficient(x1, x2, d1));
+//            assertTrue(sem.setEdgeCoefficient(x2, x3, d2));
+//            assertTrue(sem.setEdgeCoefficient(x3, x4, d3));
+//            assertTrue(sem.setEdgeCoefficient(x1, x4, d4));
             DataSet dataSet = sem.simulateDataReducedForm(sampleSize,
                     false);
 
