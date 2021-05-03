@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.MathUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -37,10 +36,11 @@ import java.util.Set;
 public class SepsetsPossibleDsep implements SepsetProducer {
     private Graph graph;
     private IndependenceTest independenceTest;
-    private int maxPathLength = 5;
+    private int maxPathLength = 100;
     private IKnowledge knowledge = new Knowledge2();
     private int depth = -1;
     private boolean verbose = false;
+    private IndependenceTest test;
 
     public SepsetsPossibleDsep(Graph graph, IndependenceTest independenceTest, IKnowledge knowledge,
                                int depth, int maxPathLength) {
@@ -49,16 +49,17 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         this.maxPathLength = maxPathLength;
         this.knowledge = knowledge;
         this.depth = depth;
+        this.test = independenceTest;
     }
 
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
     public List<Node> getSepset(Node i, Node k) {
-        List<Node> condSet = getCondSet(i, k, maxPathLength);
+        List<Node> condSet = getCondSet(test, i, k, maxPathLength);
 
         if (condSet == null) {
-            condSet = getCondSet(k, i, maxPathLength);
+            condSet = getCondSet(test, k, i, maxPathLength);
         }
 
         return condSet;
@@ -79,12 +80,10 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         return independenceTest.isIndependent(a, b, c);
     }
 
-    private List<Node> getCondSet(Node node1, Node node2, int maxPathLength) {
-        final Set<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
+    private List<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
+        final List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
         List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = knowledge.noEdgeRequired(node1.getName(), node2.getName());
-
-//        List<Node> possParents = possibleParents(node1, possibleDsep, knowledge);
 
         int _depth = depth == -1 ? 1000 : depth;
 
@@ -98,7 +97,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
                 }
 
                 List<Node> condSet = GraphUtils.asList(choice, possibleDsep);
-                /** check against bk knowledge added by DMalinsky 07/24/17 **/
+                // check against bk knowledge added by DMalinsky 07/24/17 **/
                 if (!(knowledge == null)) {
 //                    if (knowledge.isForbidden(node1.getName(), node2.getName())) continue;
                     boolean flagForbid = false;
@@ -122,9 +121,8 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         return null;
     }
 
-    private Set<Node> getPossibleDsep(Node x, Node y, int maxPathLength) {
-        Set<Node> dsep = GraphUtils.possibleDsep(x, y, graph, maxPathLength);
-//        TetradLogger.getInstance().log("details", "Possible-D-Sep(" + x + ", " + y + ") = " + dsep);
+    private List<Node> getPossibleDsep(Node x, Node y, int maxPathLength) {
+        List<Node> dsep = GraphUtils.possibleDsep(x, y, graph, maxPathLength, test);
 
         if (verbose) {
             System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + dsep);

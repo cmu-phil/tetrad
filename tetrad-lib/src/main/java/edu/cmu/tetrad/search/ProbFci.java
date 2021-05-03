@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
@@ -118,6 +119,8 @@ public final class ProbFci implements GraphSearch {
      */
     private boolean verbose = false;
 
+    private CorrelationMatrix corr;
+
 
     //============================CONSTRUCTORS============================//
 
@@ -131,6 +134,7 @@ public final class ProbFci implements GraphSearch {
 
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
+        this.corr = new CorrelationMatrix(independenceTest.getCov());
     }
 
     /**
@@ -236,7 +240,7 @@ public final class ProbFci implements GraphSearch {
                 // Step FCI D.
                 long time3 = System.currentTimeMillis();
 
-                PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
+                PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest, corr);
                 possibleDSep.setDepth(getDepth());
                 possibleDSep.setKnowledge(getKnowledge());
                 possibleDSep.setMaxPathLength(getMaxReachablePathLength());

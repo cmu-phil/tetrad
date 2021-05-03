@@ -698,7 +698,7 @@ public final class BffGes implements Bff {
      * Appendix C of (Chickering, 2002).
      */
     private void rebuildPattern(Graph graph) {
-        SearchGraphUtils.basicPattern(graph, false);
+        SearchGraphUtils.basicPattern(graph);
         addRequiredEdges(graph);
         pdagWithBk(graph, getKnowledge());
 

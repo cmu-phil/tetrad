@@ -43,13 +43,12 @@ import java.util.*;
  *
  * @author Joseph Ramsey.
  */
-public class FasStable implements IFas {
+public class FasOrig2 implements IFas {
 
     /**
-     * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
-     * x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
+     * The search nodes.
      */
-    private Graph graph;
+    private final List<Node> nodes;
 
     /**
      * The independence test. This should be appropriate to the types
@@ -79,16 +78,9 @@ public class FasStable implements IFas {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The number of false dependence judgements, judged from the true graph using d-separation. Temporary.
-     */
-    private int numFalseDependenceJudgments;
-
-    /**
      * The number of dependence judgements. Temporary.
      */
     private int numDependenceJudgement;
-
-    private int numIndependenceJudgements;
 
     /**
      * The sepsets found during the search.
@@ -114,13 +106,17 @@ public class FasStable implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public FasStable(Graph graph, IndependenceTest test) {
-        this.graph = graph;
+    public FasOrig2(Graph initialGraph, IndependenceTest test) {
+        if (initialGraph != null) {
+            this.initialGraph = new EdgeListGraph(initialGraph);
+        }
         this.test = test;
+        this.nodes = test.getVariables();
     }
 
-    public FasStable(IndependenceTest test) {
+    public FasOrig2(IndependenceTest test) {
         this.test = test;
+        this.nodes = test.getVariables();
     }
 
     //==========================PUBLIC METHODS===========================//
@@ -138,11 +134,8 @@ public class FasStable implements IFas {
     public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
 
-        if (graph == null) graph = new EdgeListGraphSingleConnections(test.getVariables());
-        graph.removeEdges(graph.getEdges());
-
         sepset = new SepsetMap();
-//        sepset.setReturnEmptyIfNotSet(true);
+//        sepset.setReturnEmptyIfNotSet(sepsetsReturnEmptyIfNotFixed);
 
         int _depth = depth;
 
@@ -151,7 +144,6 @@ public class FasStable implements IFas {
         }
 
         Map<Node, Set<Node>> adjacencies = new HashMap<>();
-        List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
             adjacencies.put(node, new TreeSet<>());
@@ -170,6 +162,8 @@ public class FasStable implements IFas {
                 break;
             }
         }
+
+        Graph graph = new EdgeListGraph(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
@@ -182,48 +176,9 @@ public class FasStable implements IFas {
             }
         }
 
-//        GraphUtils.checkMarkov(graph, test, depth);
-
         this.logger.log("info", "Finishing Fast Adjacency Search.");
 
         return graph;
-    }
-
-    public Map<Node, Set<Node>> searchMapOnly() {
-        this.logger.log("info", "Starting Fast Adjacency Search.");
-        graph.removeEdges(graph.getEdges());
-
-        sepset = new SepsetMap();
-
-        int _depth = depth;
-
-        if (_depth == -1) {
-            _depth = 1000;
-        }
-
-
-        Map<Node, Set<Node>> adjacencies = new HashMap<>();
-        List<Node> nodes = graph.getNodes();
-
-        for (Node node : nodes) {
-            adjacencies.put(node, new TreeSet<>());
-        }
-
-        for (int d = 0; d <= _depth; d++) {
-            boolean more;
-
-            if (d == 0) {
-                more = searchAtDepth0(nodes, test, adjacencies);
-            } else {
-                more = searchAtDepth(nodes, test, adjacencies, d);
-            }
-
-            if (!more) {
-                break;
-            }
-        }
-
-        return adjacencies;
     }
 
     public int getDepth() {
@@ -266,6 +221,7 @@ public class FasStable implements IFas {
             Node x = nodes.get(i);
 
             for (int j = i + 1; j < nodes.size(); j++) {
+
                 Node y = nodes.get(j);
 
                 if (initialGraph != null) {
@@ -287,9 +243,7 @@ public class FasStable implements IFas {
                     independent = false;
                 }
 
-                if (independent) {
-                    numIndependenceJudgements++;
-                } else {
+                if (!independent) {
                     numDependenceJudgement++;
                 }
 
@@ -298,12 +252,15 @@ public class FasStable implements IFas {
 
 
                 if (independent && noEdgeRequired) {
+//                    if (!getSepsets().isReturnEmptyIfNotSet()) {
                     getSepsets().set(x, y, empty);
+//                    }
 
                     if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                                nf.format(test.getPValue()));
-                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
+                        TetradLogger.getInstance().forceLogMessage(
+                                SearchLogUtils.independenceFact(x, y, empty) + " p-value = " +
+                                        nf.format(test.getPValue()));
+                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " p-value = " +
                                 nf.format(test.getPValue()));
                     }
 
@@ -342,7 +299,7 @@ public class FasStable implements IFas {
 
         if (knowledge.isForbidden(name1, name2) &&
                 knowledge.isForbidden(name2, name1)) {
-            this.logger.log("edgeRemoved", "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
+            System.out.println(Edges.undirectedEdge(x, y) + " because it was " +
                     "forbidden by background knowledge.");
 
             return true;
@@ -354,24 +311,22 @@ public class FasStable implements IFas {
     private boolean searchAtDepth(List<Node> nodes, final IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
         int count = 0;
 
-        final Map<Node, Set<Node>> adjacenciesCopy = new HashMap<>();
-
-        for (Node node : adjacencies.keySet()) {
-            adjacenciesCopy.put(node, new HashSet<>(adjacencies.get(node)));
-        }
-
         for (Node x : nodes) {
             if (verbose) {
                 if (++count % 100 == 0) out.println("count " + count + " of " + nodes.size());
             }
 
-            List<Node> adjx = new ArrayList<>(adjacenciesCopy.get(x));
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
             EDGE:
             for (Node y : adjx) {
-                List<Node> _adjx = new ArrayList<>(adjx);
+                List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
                 _adjx.remove(y);
-                List<Node> ppx = possibleParents(x, _adjx, knowledge);
+                List<Node> ppx = possibleParents(x, _adjx, knowledge, y);
 
                 if (ppx.size() >= depth) {
                     ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
@@ -393,9 +348,7 @@ public class FasStable implements IFas {
                             independent = false;
                         }
 
-                        if (independent) {
-                            numIndependenceJudgements++;
-                        } else {
+                        if (!independent) {
                             numDependenceJudgement++;
                         }
 
@@ -409,8 +362,8 @@ public class FasStable implements IFas {
                             getSepsets().set(x, y, condSet);
 
                             if (verbose) {
-                                TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-                                        nf.format(test.getPValue()));
+                                TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, condSet) +
+                                        " score = " + nf.format(test.getScore()));
                                 out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
                             }
 
@@ -425,11 +378,12 @@ public class FasStable implements IFas {
     }
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       IKnowledge knowledge) {
+                                       IKnowledge knowledge, Node y) {
         List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : adjx) {
+            if (z == y) continue;
             String _z = z.getName();
 
             if (possibleParentOf(_z, _x, knowledge)) {
@@ -449,13 +403,6 @@ public class FasStable implements IFas {
     }
 
     public void setTrueGraph(Graph trueGraph) {
-        /**
-         * The true graph, for purposes of comparison. Temporary.
-         */
-    }
-
-    public int getNumFalseDependenceJudgments() {
-        return numFalseDependenceJudgments;
     }
 
     public int getNumDependenceJudgments() {
@@ -464,10 +411,6 @@ public class FasStable implements IFas {
 
     public SepsetMap getSepsets() {
         return sepset;
-    }
-
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
     }
 
     public boolean isVerbose() {
@@ -513,13 +456,10 @@ public class FasStable implements IFas {
         return null;
     }
 
-    public int getNumIndependenceJudgements() {
-        return numIndependenceJudgements;
-    }
-
     @Override
     public void setOut(PrintStream out) {
         this.out = out;
     }
+
 }
 

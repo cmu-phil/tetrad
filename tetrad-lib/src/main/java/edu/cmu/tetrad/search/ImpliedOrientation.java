@@ -23,6 +23,9 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+
+import java.util.Set;
 
 /**
  * Adds any orientations implied by the given orientation.
@@ -38,8 +41,9 @@ public interface ImpliedOrientation {
 
     /**
      * Adds implied orientations.
+     * @return Affected nodes.
      */
-    void orientImplied(Graph graph);
+    Set<Node> orientImplied(Graph graph);
 }
 
 

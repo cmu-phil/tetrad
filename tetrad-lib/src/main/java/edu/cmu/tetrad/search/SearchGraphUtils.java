@@ -1214,7 +1214,7 @@ public final class SearchGraphUtils {
     /**
      * Get a graph and direct only the unshielded colliders.
      */
-    public static void basicPattern(Graph graph, boolean orientInPlace) {
+    public static void basicPattern(Graph graph) {
         Set<Edge> undirectedEdges = new HashSet<>();
 
         NEXT_EDGE:
@@ -1238,16 +1238,11 @@ public final class SearchGraphUtils {
         }
 
         for (Edge nextUndirected : undirectedEdges) {
-            if (orientInPlace) {
-                nextUndirected.setEndpoint1(Endpoint.TAIL);
-                nextUndirected.setEndpoint2(Endpoint.TAIL);
-            } else {
-                Node node1 = nextUndirected.getNode1();
-                Node node2 = nextUndirected.getNode2();
+            Node node1 = nextUndirected.getNode1();
+            Node node2 = nextUndirected.getNode2();
 
-                graph.removeEdges(node1, node2);
-                graph.addUndirectedEdge(node1, node2);
-            }
+            graph.removeEdges(node1, node2);
+            graph.addUndirectedEdge(node1, node2);
         }
     }
 
@@ -1459,7 +1454,7 @@ public final class SearchGraphUtils {
 //        return new PC(test).search();
 //
         Graph graph = new EdgeListGraph(dag);
-        SearchGraphUtils.basicPattern(graph, false);
+        SearchGraphUtils.basicPattern(graph);
         MeekRules rules = new MeekRules();
         rules.orientImplied(graph);
         return graph;
@@ -1470,81 +1465,34 @@ public final class SearchGraphUtils {
 
         for (Edge edge : dag.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                dag.removeEdge(edge);
-                dag.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+                throw new IllegalArgumentException("That 'pattern' contains a bidirected edge.");
             }
+        }
+
+        if (graph.existsDirectedCycle()) {
+            throw new IllegalArgumentException("That 'pattern' contains a directed cycle.");
         }
 
         MeekRules rules = new MeekRules();
-        rules.orientImplied(dag);
+        rules.setRevertToUnshieldedColliders(false);
 
-        Set<Edge> edges = dag.getEdges();
+        NEXT:
+        while (true) {
+            for (Edge edge : dag.getEdges()) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
-        for (Edge edge : edges) {
-            Edge edge1 = dag.getEdge(edge.getNode1(), edge.getNode2());
-
-            if (Edges.isUndirectedEdge(edge1)) {
-                Node node1 = edge1.getNode1();
-                Node node2 = edge1.getNode2();
-
-                if (!(dag.isAncestorOf(node2, node1))) {
-                    direct(node1, node2, dag);
-                } else if (!dag.isAncestorOf(node1, node2)) {
-                    direct(node2, node1, dag);
-                } else {
-                    System.out.println("Leaving edge unoriented to avoid cycle: " + edge);
+                if (Edges.isUndirectedEdge(edge) && !graph.isAncestorOf(y, x)) {
+                    direct(x, y, dag);
+                    rules.orientImplied(dag);
+                    continue NEXT;
                 }
-
-                rules.orientImplied(dag);
             }
+
+            break;
         }
 
         return dag;
-
-//        DagInPatternIterator dags = new DagInPatternIterator(graph);
-//        return dags.next();
-//        MeekRules rules = new MeekRules();
-//        rules.orientImplied(graph);
-//
-//        WHILE:
-//        while (true) {
-//            List<Edge> edges = graph.getEdges();
-//
-//            for (Edge edge : edges) {
-//                if (Edges.isUndirectedEdge(edge)) {
-//                    Node node1 = edge.getNode1();
-//                    Node node2 = edge.getNode2();
-//
-//                    if (!(pattern.isAncestorOf(node2, node1)) && !pattern.getParents(node2).isEmpty()) {
-//                        edge.setEndpoint2(Endpoint.ARROW);
-//                    }
-//                    else if (!pattern.getParents(node1).isEmpty()) {
-//                        edge.setEndpoint1(Endpoint.ARROW);
-//                    }
-//                    else {
-//                        throw new IllegalArgumentException("Can't orient " + edge);
-//                    }
-//
-//                    rules.orientImplied(graph);
-//                    continue WHILE;
-//                }
-//            }
-//
-//            break;
-//        }
-//
-////        if (pattern.getNumEdges() > 10) {
-////            System.out.println(pattern);
-////        }
-//
-//
-//        return pattern;
-
-//
-//
-//        Graph graph = new EdgeListGraph(pattern);
-//        pdagToDag(graph);
-//        return graph;
     }
 
     public static Graph patternFromEPattern(Graph ePattern) {
@@ -1642,7 +1590,7 @@ public final class SearchGraphUtils {
             Graph dag = chooseDagInPattern(_ePattern);
             double bic = SemBicScorer.scoreDag(dag, dataSet);
 
-            if (bic > bestBIC){
+            if (bic > bestBIC) {
                 bestBIC = bic;
                 out = _ePattern;
             }
@@ -2451,25 +2399,15 @@ public final class SearchGraphUtils {
     }
 
     public static Graph patternForDag(final Graph dag) {
-//        IndTestDSep test = new IndTestDSep(dag);
-//        return new PC(test).search();
-//
-        Graph pattern = new EdgeListGraph(dag);
-        SearchGraphUtils.basicPattern(pattern, false);
-        MeekRules rules = new MeekRules();
-        rules.orientImplied(pattern);
-//        GraphUtils.replaceNodes(pattern, dag.getNodes());
-        return pattern;
+        return patternForDag(dag, new Knowledge2());
     }
 
     public static Graph patternForDag(final Graph dag, IKnowledge knowledge) {
         Graph pattern = new EdgeListGraph(dag);
-        SearchGraphUtils.basicPattern(pattern, false);
-        orientRequired(knowledge, pattern, pattern.getNodes());
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
+        rules.setRevertToUnshieldedColliders(true);
         rules.orientImplied(pattern);
-//        DataGraphUtils.replaceNodes(pattern, dag.getNodes());
         return pattern;
     }
 
@@ -3340,11 +3278,11 @@ public final class SearchGraphUtils {
                 if (printStars) {
                     boolean directedInGraph2 = false;
 
-                    if (Edges.isDirectedEdge(edge) && GraphUtils.existsSemidirectedPathFromTo(node1, node2, graph2)) {
+                    if (Edges.isDirectedEdge(edge) && GraphUtils.existsSemidirectedPath(node1, node2, graph2)) {
                         directedInGraph2 = true;
                     } else if ((Edges.isUndirectedEdge(edge) || Edges.isBidirectedEdge(edge))
-                            && (GraphUtils.existsSemidirectedPathFromTo(node1, node2, graph2)
-                            || GraphUtils.existsSemidirectedPathFromTo(node2, node1, graph2))) {
+                            && (GraphUtils.existsSemidirectedPath(node1, node2, graph2)
+                            || GraphUtils.existsSemidirectedPath(node2, node1, graph2))) {
                         directedInGraph2 = true;
                     }
 
@@ -3373,11 +3311,11 @@ public final class SearchGraphUtils {
                 if (printStars) {
                     boolean directedInGraph1 = false;
 
-                    if (Edges.isDirectedEdge(edge) && GraphUtils.existsSemidirectedPathFromTo(node1, node2, graph1)) {
+                    if (Edges.isDirectedEdge(edge) && GraphUtils.existsSemidirectedPath(node1, node2, graph1)) {
                         directedInGraph1 = true;
                     } else if ((Edges.isUndirectedEdge(edge) || Edges.isBidirectedEdge(edge))
-                            && (GraphUtils.existsSemidirectedPathFromTo(node1, node2, graph1)
-                            || GraphUtils.existsSemidirectedPathFromTo(node2, node1, graph1))) {
+                            && (GraphUtils.existsSemidirectedPath(node1, node2, graph1)
+                            || GraphUtils.existsSemidirectedPath(node2, node1, graph1))) {
                         directedInGraph1 = true;
                     }
 

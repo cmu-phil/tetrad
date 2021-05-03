@@ -114,7 +114,7 @@ public class StandardizedSemSimulation implements Simulation {
                 pm = new SemPm(graph);
             }
 
-            standardizedIm = new StandardizedSemIm(new SemIm(pm));
+            standardizedIm = new StandardizedSemIm(new SemIm(pm), parameters);
         }
 
         return standardizedIm.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);

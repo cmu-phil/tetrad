@@ -101,11 +101,6 @@ public class Pc implements GraphSearch {
     private Graph trueGraph;
 
     /**
-     * The number of false dependence judgements from FAS, judging from the true graph, if set. Temporary.
-     */
-    private int numFalseDependenceJudgements;
-
-    /**
      * The number of dependence judgements from FAS. Temporary.
      */
     private int numDependenceJudgements;
@@ -236,9 +231,9 @@ public class Pc implements GraphSearch {
         IFas fas = null;
 
         if (initialGraph == null) {
-            fas = new Fas(getIndependenceTest());
-        } else {
             fas = new Fas(initialGraph, getIndependenceTest());
+        } else {
+            fas = new Fas(getIndependenceTest());
         }
         fas.setVerbose(verbose);
         return search(fas, nodes);
@@ -270,7 +265,6 @@ public class Pc implements GraphSearch {
         sepsets = fas.getSepsets();
 
         this.numIndependenceTests = fas.getNumIndependenceTests();
-        this.numFalseDependenceJudgements = fas.getNumFalseDependenceJudgments();
         this.numDependenceJudgements = fas.getNumDependenceJudgments();
 
 //        enumerateTriples();
@@ -286,9 +280,7 @@ public class Pc implements GraphSearch {
         }
 
         MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(false);
         rules.setKnowledge(knowledge);
-        rules.setUndirectUnforcedEdges(false);
         rules.orientImplied(graph);
 
         this.logger.log("graph", "\nReturning this graph: " + graph);
@@ -384,10 +376,6 @@ public class Pc implements GraphSearch {
 
     public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
-    }
-
-    public int getNumFalseDependenceJudgements() {
-        return numFalseDependenceJudgements;
     }
 
     public int getNumDependenceJudgements() {

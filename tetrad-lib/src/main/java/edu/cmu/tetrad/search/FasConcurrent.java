@@ -561,11 +561,6 @@ public class FasConcurrent implements IFas {
     }
 
     @Override
-    public int getNumFalseDependenceJudgments() {
-        return 0;
-    }
-
-    @Override
     public int getNumDependenceJudgments() {
         return 0;
     }

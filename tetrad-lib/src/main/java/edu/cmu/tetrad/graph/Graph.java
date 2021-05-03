@@ -24,10 +24,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <p>Implements a graph capable of storing edges of type N1 *-# N2 where * and
@@ -118,6 +115,8 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      * graph.
      */
     boolean existsDirectedPathFromTo(Node node1, Node node2);
+
+    List<Node> findCycle();
 
     /**
      * @return true iff there is a semi-directed path from node1 to something in

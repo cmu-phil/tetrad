@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.KnowledgeEdge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
@@ -32,9 +29,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 
 /**
  * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
@@ -53,11 +47,6 @@ import java.util.concurrent.ConcurrentMap;
 public final class Fci implements GraphSearch {
 
     /**
-     * The PAG being constructed.
-     */
-    private Graph graph;
-
-    /**
      * The SepsetMap being constructed.
      */
     private SepsetMap sepsets;
@@ -70,9 +59,12 @@ public final class Fci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<>();
+    private final List<Node> variables = new ArrayList<>();
 
-    private IndependenceTest independenceTest;
+    /**
+     * The test to use for the search.
+     */
+    private final IndependenceTest independenceTest;
 
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
@@ -102,20 +94,27 @@ public final class Fci implements GraphSearch {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * True iff verbose output should be printed.
      */
     private boolean verbose = false;
-    private Graph truePag;
-    private ConcurrentMap<Node, Integer> hashIndices;
-    private ICovarianceMatrix covarianceMatrix;
-    private double penaltyDiscount = 2;
-    private SepsetMap possibleDsepSepsets = new SepsetMap();
-    private Graph initialGraph;
-    private int possibleDsepDepth = -1;
 
+    /**
+     * FAS initial graph.
+     */
+    private Graph initialGraph;
+
+    /**
+     * FAS heuristic
+     */
+    private int heuristic = 0;
+
+    /**
+     * FAS stable option.
+     */
+    private boolean stable = false;
 
     //============================CONSTRUCTORS============================//
 
@@ -123,13 +122,12 @@ public final class Fci implements GraphSearch {
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
     public Fci(IndependenceTest independenceTest) {
-        if (independenceTest == null || knowledge == null) {
+        if (independenceTest == null) {
             throw new NullPointerException();
         }
 
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
-        buildIndexing(independenceTest.getVariables());
     }
 
     /**
@@ -137,7 +135,7 @@ public final class Fci implements GraphSearch {
      * search over.
      */
     public Fci(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null || knowledge == null) {
+        if (independenceTest == null) {
             throw new NullPointerException();
         }
 
@@ -160,6 +158,7 @@ public final class Fci implements GraphSearch {
                 remVars.add(node1);
             }
         }
+
         this.variables.removeAll(remVars);
     }
 
@@ -183,32 +182,31 @@ public final class Fci implements GraphSearch {
     }
 
     public Graph search() {
-        return search(new Fas(initialGraph, getIndependenceTest()));
-    }
+        long start = System.currentTimeMillis();
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    public Graph search(IFas fas) {
+        Fas fas = new Fas(initialGraph, getIndependenceTest());
         logger.log("info", "Starting FCI algorithm.");
         logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(depth);
+        fas.setHeuristic(heuristic);
         fas.setVerbose(verbose);
-        this.graph = fas.search();
+        fas.setStable(stable);
+        fas.setHeuristic(heuristic);
+
+        //The PAG being constructed.
+        Graph graph = fas.search();
         this.sepsets = fas.getSepsets();
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetProducer sp = new SepsetsPossibleDsep(graph, independenceTest, knowledge, depth, maxPathLength);
+        SepsetsPossibleDsep sp = new SepsetsPossibleDsep(graph, independenceTest, knowledge, depth, maxPathLength);
         sp.setVerbose(verbose);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
+        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
         if (isPossibleDsepSearchDone()) {
-//            long time1 = System.currentTimeMillis();
             new FciOrient(new SepsetsSet(this.sepsets, independenceTest)).ruleR0(graph);
 
             for (Edge edge : new ArrayList<>(graph.getEdges())) {
@@ -231,35 +229,11 @@ public final class Fci implements GraphSearch {
                 }
             }
 
-
-//            long time2 = System.currentTimeMillis();
-//            logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
-//
-//            // Step FCI D.
-//            long time3 = System.currentTimeMillis();
-//
-//            System.out.println("Starting possible dsep search");
-//            PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
-//            possibleDSep.setMaxDegree(getPossibleDsepDepth());
-//            possibleDSep.setKnowledge(getKnowledge());
-//            possibleDSep.setMaxPathLength(maxPathLength);
-//            this.sepsets.addAll(possibleDSep.search());
-//            long time4 = System.currentTimeMillis();
-//            logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
-//            System.out.println("Starting possible dsep search");
-
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
         }
 
         // Step CI C (Zhang's step F3.)
-        long time5 = System.currentTimeMillis();
-        //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
-//        fciOrientbk(getKnowledge(), graph, variables);
-//        new FciOrient(graph, new Sepsets(this.sepsets)).ruleR0(new Sepsets(this.sepsets));
-
-        long time6 = System.currentTimeMillis();
-        logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
 
         final FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, independenceTest));
 
@@ -269,17 +243,38 @@ public final class Fci implements GraphSearch {
         fciOrient.ruleR0(graph);
         fciOrient.doFinalOrientation(graph);
         graph.setPag(true);
+
+        long stop = System.currentTimeMillis();
+
+        elapsedTime = stop - start;
+
         return graph;
     }
 
+    /**
+     * Sets the initial graph to use for FAS.
+     */
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
+
+    /**
+     * Retrieves the sepset map from FAS.
+     */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
+    /**
+     * Retrieves the background knowledge that was set.
+     */
     public IKnowledge getKnowledge() {
         return knowledge;
     }
 
+    /**
+     * Sets background knowledge for the search.
+     */
     public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -304,10 +299,16 @@ public final class Fci implements GraphSearch {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
+    /**
+     * True iff the (time-consuming) possible dsep step should be done.
+     */
     public boolean isPossibleDsepSearchDone() {
         return possibleDsepSearchDone;
     }
 
+    /**
+     * True iff the (time-consuming) possible dsep step should be done.
+     */
     public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
@@ -337,6 +338,9 @@ public final class Fci implements GraphSearch {
         return verbose;
     }
 
+    /**
+     * True iff verbose output should be printed.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
@@ -348,94 +352,18 @@ public final class Fci implements GraphSearch {
         return independenceTest;
     }
 
-    public void setTruePag(Graph truePag) {
-        this.truePag = truePag;
-    }
-
-    public double getPenaltyDiscount() {
-        return penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    //===========================PRIVATE METHODS=========================//
-
-    private void buildIndexing(List<Node> nodes) {
-        this.hashIndices = new ConcurrentHashMap<>();
-        for (Node node : nodes) {
-            this.hashIndices.put(node, variables.indexOf(node));
-        }
+    /**
+     * The FAS heuristic.
+     */
+    public void setHeuristic(int heuristic) {
+        this.heuristic = heuristic;
     }
 
     /**
-     * Orients according to background knowledge
+     * The FAS stable option.
      */
-    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
-        logger.log("info", "Starting BK Orientation.");
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*->from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.requiredEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        logger.log("info", "Finishing BK Orientation.");
-    }
-
-    public int getPossibleDsepDepth() {
-        return possibleDsepDepth;
-    }
-
-    public void setPossibleDsepDepth(int possibleDsepDepth) {
-        this.possibleDsepDepth = possibleDsepDepth;
+    public void setStable(boolean stable) {
+        this.stable = stable;
     }
 }
 

@@ -7,6 +7,7 @@ import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.TabularComparison;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -28,7 +29,6 @@ public class StatsListEditor extends JPanel {
     }
 
     private void setup() {
-//        JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
 
         // We'll leave the underlying model the same but just complain if there's not exactly
         // one reference and one target graph.
@@ -42,28 +42,9 @@ public class StatsListEditor extends JPanel {
         targetGraph = targetGraphs.get(0);
 
         add(getTableDisplay());
-
-//        JTabbedPane pane2 = new JTabbedPane(JTabbedPane.LEFT);
-//
-//        JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
-//
-//        GraphEditor graphEditor = new GraphEditor(new GraphWrapper(targetGraph));
-//        graphEditor.enableEditing(false);
-//        pane3.add("Target Graph", graphEditor.getWorkbench());
-//
-//        graphEditor = new GraphEditor(new GraphWrapper(referenceGraph));
-//        graphEditor.enableEditing(false);
-//        pane3.add("True Graph", graphEditor.getWorkbench());
-//
-//        pane2.add("", pane3);
-//
-//        pane.addTab("Graphs", pane2);
-
-//        add(pane);
     }
 
     private JComponent getTableDisplay() {
-
         List<Statistic> statistics = new ArrayList<>();
 
         statistics.add(new AdjacencyPrecision());
@@ -87,8 +68,8 @@ public class StatsListEditor extends JPanel {
         statistics.add(new MathewsCorrAdj());
         statistics.add(new MathewsCorrArrow());
         statistics.add(new SHD());
-        statistics.add(new NodesInCyclesPrecision());
-        statistics.add(new NodesInCyclesRecall());
+//        statistics.add(new NodesInCyclesPrecision());
+//        statistics.add(new NodesInCyclesRecall());
         statistics.add(new NumAmbiguousTriples());
         statistics.add(new PercentAmbiguous());
         statistics.add(new PercentBidirectedEdges());
@@ -119,17 +100,18 @@ public class StatsListEditor extends JPanel {
                         table.toString()
         );
 
+        area.setBorder(new EmptyBorder(5, 5, 5, 5));
+
         area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
-        area.setMinimumSize(area.getPreferredSize());
-        area.setMaximumSize(area.getPreferredSize());
+        area.setPreferredSize(new Dimension(700, 1200));
 
         JScrollPane pane = new JScrollPane(area);
-        pane.setPreferredSize(new Dimension(700, 600));
+        pane.setPreferredSize(new Dimension(700, 700));
 
         Box b = Box.createVerticalBox();
         b.add(pane);
         b.add(new JPanel());
 
-        return pane;
+        return b;
     }
 }

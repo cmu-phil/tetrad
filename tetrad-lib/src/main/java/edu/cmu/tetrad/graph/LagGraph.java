@@ -40,7 +40,7 @@ public class LagGraph implements Graph {
     private Map<String, List<Node>> laggedVariables = new HashMap<>();
     private boolean pag;
     private boolean pattern;
-    
+
     private Map<String,Object> attributes = new HashMap<>();
 
     // New methods.
@@ -129,6 +129,11 @@ public class LagGraph implements Graph {
 
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
         return getGraph().existsDirectedPathFromTo(node1, node2);
+    }
+
+    @Override
+    public List<Node> findCycle() {
+        return getGraph().findCycle();
     }
 
     public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
@@ -359,9 +364,9 @@ public class LagGraph implements Graph {
     public void transferNodesAndEdges(Graph graph) throws IllegalArgumentException {
         this.getGraph().transferNodesAndEdges(graph);
     }
-    
+
     public void transferAttributes(Graph graph) throws IllegalArgumentException {
-    	this.getGraph().transferAttributes(graph);
+        this.getGraph().transferAttributes(graph);
     }
 
     public Set<Triple> getAmbiguousTriples() {
@@ -501,25 +506,25 @@ public class LagGraph implements Graph {
         this.pattern = pattern;
     }
 
-	@Override
-	public Map<String, Object> getAllAttributes() {
-		return attributes;
-	}
+    @Override
+    public Map<String, Object> getAllAttributes() {
+        return attributes;
+    }
 
-	@Override
-	public Object getAttribute(String key) {
-		return attributes.get(key);
-	}
+    @Override
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
 
-	@Override
-	public void removeAttribute(String key) {
-		attributes.remove(key);
-	}
+    @Override
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
 
-	@Override
-	public void addAttribute(String key, Object value) {
-		attributes.put(key, value);
-	}
+    @Override
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
 
 }
 

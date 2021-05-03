@@ -320,6 +320,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
         this.params = parameters;
 
+        this.sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
+
         this.semPm = new SemPm(semPm);
 
         this.variableNodes

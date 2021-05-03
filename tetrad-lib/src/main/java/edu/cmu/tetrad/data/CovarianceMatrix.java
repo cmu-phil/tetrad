@@ -376,6 +376,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         StringBuilder buf = new StringBuilder();
+        buf.append(sampleSize).append("\n");
 
         // Build the variable names
         buf.append(getVariableNames().stream().collect(Collectors.joining("\t")));
