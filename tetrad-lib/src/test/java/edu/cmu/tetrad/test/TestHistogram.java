@@ -85,7 +85,7 @@ public final class TestHistogram{
 
         assertEquals(3.76, histogram.getMax(), 0.01);
         assertEquals(-3.83, histogram.getMin(), 0.01);
-        assertEquals(188, histogram.getN());
+        assertEquals(107, histogram.getN());
 
         double[] arr = histogram.getContinuousData("X2");
         histogram.addConditioningVariable("X2", StatUtils.min(arr), StatUtils.mean(arr));

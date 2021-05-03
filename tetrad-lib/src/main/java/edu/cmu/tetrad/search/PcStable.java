@@ -45,7 +45,7 @@ public class PcStable implements GraphSearch {
     /**
      * The independence test used for the PC search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -81,7 +81,7 @@ public class PcStable implements GraphSearch {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * The initial graph for the Fast Adjacency Search, or null if there is none.
@@ -210,15 +210,13 @@ public class PcStable implements GraphSearch {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-//        this.logger.log("info", "Variables " + independenceTest.getVariable());
-
         long startTime = System.currentTimeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        List allNodes = getIndependenceTest().getVariables();
+        List<Node> allNodes = getIndependenceTest().getVariables();
 
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
@@ -227,7 +225,8 @@ public class PcStable implements GraphSearch {
 
         graph = new EdgeListGraph(nodes);
 
-        IFas fas = new FasStable(initialGraph, getIndependenceTest());
+        Fas fas = new Fas(initialGraph, getIndependenceTest());
+        fas.setStable(true);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(verbose);
@@ -236,9 +235,6 @@ public class PcStable implements GraphSearch {
         sepsets = fas.getSepsets();
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-//        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, initialGraph, verbose);
-//        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose);
-//        SearchGraphUtils.orientColeelidersLocally(knowledge, graph, independenceTest, depth);
         SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose, false);
 
         MeekRules rules = new MeekRules();

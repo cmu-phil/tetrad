@@ -30,6 +30,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
 import org.junit.Test;
@@ -77,7 +78,7 @@ public class TestStandardizedSem {
         imStandardized.getEdgeCoef();
         imStandardized.getErrCovar();
 
-        StandardizedSemIm sem = new StandardizedSemIm(im);
+        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
 
         imStandardized.getEdgeCoef();
         imStandardized.getErrCovar();
@@ -116,7 +117,7 @@ public class TestStandardizedSem {
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        StandardizedSemIm sem = new StandardizedSemIm(im);
+        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
 
         assertTrue(isStandardized(sem));
     }
@@ -143,7 +144,7 @@ public class TestStandardizedSem {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        StandardizedSemIm sem = new StandardizedSemIm(im);
+        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
 
         assertFalse(sem.setEdgeCoefficient(x1, x2, 1.2));
         assertFalse(sem.setEdgeCoefficient(x1, x2, 1.5));
@@ -166,7 +167,7 @@ public class TestStandardizedSem {
                 30, 15, 15, false)));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        StandardizedSemIm sem = new StandardizedSemIm(im);
+        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
 
         for (int i = 0; i < 20; i++) {
             List<Edge> edges = new ArrayList<>(graph.getEdges());
@@ -214,7 +215,7 @@ public class TestStandardizedSem {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        StandardizedSemIm sem = new StandardizedSemIm(im);
+        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
         assertTrue(isStandardized(sem));
     }
 
@@ -244,7 +245,7 @@ public class TestStandardizedSem {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        StandardizedSemIm sem = new StandardizedSemIm(im);
+        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
 
         assertTrue(isStandardized(sem));
     }
@@ -279,7 +280,7 @@ public class TestStandardizedSem {
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        StandardizedSemIm sem = new StandardizedSemIm(im);
+        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
 
         graph.setShowErrorTerms(false);
 

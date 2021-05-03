@@ -64,7 +64,7 @@ public final class Dag implements Graph {
 
     private boolean pag;
     private boolean pattern;
-    
+
     private Map<String, Object> attributes = new HashMap<>();
 
     //===============================CONSTRUCTORS=======================//
@@ -101,11 +101,11 @@ public final class Dag implements Graph {
         this.graph = new EdgeListGraph();
 
         transferNodesAndEdges(graph);
-        
+
         for (Node node : this.graph.getNodes()) {
-        	node.getAllAttributes().clear();
+            node.getAllAttributes().clear();
         }
-        
+
         resetDPath();
         reconstituteDpath();
 
@@ -243,6 +243,11 @@ public final class Dag implements Graph {
 //        int index2 = dpathNodes.indexOf(node2);
 
         return dpath[index1][index2] == 1;
+    }
+
+    @Override
+    public List<Node> findCycle() {
+        return getGraph().findCycle();
     }
 
     public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
@@ -404,7 +409,7 @@ public final class Dag implements Graph {
     }
 
     public boolean isAncestorOf(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node1, node2, this);
+        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
     }
 
     public boolean isDirectedFromTo(Node node1, Node node2) {
@@ -445,7 +450,7 @@ public final class Dag implements Graph {
     }
 
     public boolean isDescendentOf(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
+        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node2, node1, this);
     }
 
     public boolean removeEdge(Node node1, Node node2) {
@@ -582,12 +587,12 @@ public final class Dag implements Graph {
             throws IllegalArgumentException {
         this.getGraph().transferNodesAndEdges(graph);
         for (Node node : this.getGraph().getNodes()) {
-        	node.getAllAttributes().clear();
+            node.getAllAttributes().clear();
         }
     }
 
     public final void transferAttributes(Graph graph)
-    		throws IllegalArgumentException {
+            throws IllegalArgumentException {
         this.getGraph().transferAttributes(graph);
     }
 
@@ -731,25 +736,25 @@ public final class Dag implements Graph {
         this.pattern = pattern;
     }
 
-	@Override
-	public Map<String, Object> getAllAttributes() {
-		return attributes;
-	}
+    @Override
+    public Map<String, Object> getAllAttributes() {
+        return attributes;
+    }
 
-	@Override
-	public Object getAttribute(String key) {
-		return attributes.get(key);
-	}
+    @Override
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
 
-	@Override
-	public void removeAttribute(String key) {
-		attributes.remove(key);
-	}
+    @Override
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
 
-	@Override
-	public void addAttribute(String key, Object value) {
-		attributes.put(key, value);
-	}
+    @Override
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
 }
 
 

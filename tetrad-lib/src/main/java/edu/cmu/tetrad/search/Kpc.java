@@ -102,11 +102,6 @@ public class Kpc implements GraphSearch {
     private Graph trueGraph;
 
     /**
-     * The number of false dependence judgements from FAS, judging from the true graph, if set. Temporary.
-     */
-    private int numFalseDependenceJudgements;
-
-    /**
      * The number of dependence judgements from FAS. Temporary.
      */
     private int numDependenceJudgements;
@@ -273,7 +268,6 @@ public class Kpc implements GraphSearch {
         graph = fas.search();
         this.sepset = fas.getSepsets();
         this.numIndependenceTests = fas.getNumIndependenceTests();
-        this.numFalseDependenceJudgements = fas.getNumFalseDependenceJudgments();
         this.numDependenceJudgements = fas.getNumDependenceJudgments();
 
         enumerateTriples();
@@ -429,10 +423,6 @@ public class Kpc implements GraphSearch {
 
     public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
-    }
-
-    public int getNumFalseDependenceJudgements() {
-        return numFalseDependenceJudgements;
     }
 
     public int getNumDependenceJudgements() {

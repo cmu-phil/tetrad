@@ -420,8 +420,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     private boolean isForbiddenByRules(String var1, String var2) {
         return forbiddenRulesSpecs.stream()
                 .anyMatch(rule -> !var1.equals(var2)
-                        && rule.getFirst().contains(var1)
-                        && rule.getSecond().contains(var2));
+                && rule.getFirst().contains(var1)
+                && rule.getSecond().contains(var2));
     }
 
     /**
@@ -456,7 +456,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         return s.stream()
                 .anyMatch(rule -> rule.getFirst().contains(var1)
-                        && rule.getSecond().contains(var2));
+                && rule.getSecond().contains(var2));
     }
 
     /**
@@ -471,7 +471,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public boolean isForbiddenByTiers(String var1, String var2) {
         return forbiddenTierRules().stream()
                 .anyMatch(rule -> rule.getFirst().contains(var1)
-                        && rule.getSecond().contains(var2));
+                && rule.getSecond().contains(var2));
     }
 
     /**
@@ -485,8 +485,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public boolean isRequired(String var1, String var2) {
         return requiredRulesSpecs.stream()
                 .anyMatch(rule -> !var1.equals(var2)
-                        && rule.getFirst().contains(var1)
-                        && rule.getSecond().contains(var2));
+                && rule.getFirst().contains(var1)
+                && rule.getSecond().contains(var2));
     }
 
     /**
@@ -505,7 +505,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         return s.stream()
                 .anyMatch(rule -> rule.getFirst().contains(var1)
-                        && rule.getSecond().contains(var2));
+                && rule.getSecond().contains(var2));
     }
 
     /**

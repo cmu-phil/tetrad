@@ -51,7 +51,7 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
      */
     public List<Node> getSepset(Node i, Node k) {
         List<Node> sepset = getMaxSepset(i, k);
-        if (getScore() > getIndependenceTest().getAlpha()) {
+        if (getScore() < 0) {// getIndependenceTest().getAlpha()) {
             return sepset;
         } else {
             return null;
@@ -264,7 +264,9 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
 
     @Override
     public double getScore() {
-        return -(p - independenceTest.getAlpha());
+        return independenceTest.getScore();
+
+//        return -(p - independenceTest.getAlpha());
     }
 
     @Override

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.io.IOException;
@@ -57,22 +58,22 @@ public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput
     private boolean showErrors;
 
     //============================CONSTRUCTORS==========================//
-    public StandardizedSemImWrapper(SemImWrapper semImWrapper) {
+    public StandardizedSemImWrapper(SemImWrapper semImWrapper, Parameters parameters) {
         if (semImWrapper == null) {
             throw new NullPointerException();
         }
 
-        this.standardizedSemIm = new StandardizedSemIm(semImWrapper.getSemIm());
+        this.standardizedSemIm = new StandardizedSemIm(semImWrapper.getSemIm(), parameters);
         log(standardizedSemIm);
     }
 
-    public StandardizedSemImWrapper(SemPmWrapper semPmWrapper) {
+    public StandardizedSemImWrapper(SemPmWrapper semPmWrapper, Parameters parameters) {
         if (semPmWrapper == null) {
             throw new NullPointerException();
         }
 
         SemIm semIm = new SemIm(semPmWrapper.getSemPm());
-        this.standardizedSemIm = new StandardizedSemIm(semIm);
+        this.standardizedSemIm = new StandardizedSemIm(semIm, parameters);
         log(standardizedSemIm);
     }
 

@@ -13,16 +13,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for linear, Gaussian SEM BIC score.
+ * Wrapper for linear, Gaussian Extended BIC score (Chen and Chen).
  *
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Sem BIC Score",
-        command = "sem-bic-score",
+        name = "EBIC Score",
+        command = "ebic-score",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
-public class SemBicScore implements ScoreWrapper {
+public class EbicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
@@ -31,36 +31,24 @@ public class SemBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.SemBicScore semBicScore;
+        edu.cmu.tetrad.search.EbicScore score;
 
         if (dataSet instanceof DataSet) {
-            semBicScore = new edu.cmu.tetrad.search.SemBicScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.EbicScore((DataSet) this.dataSet);
         } else if (dataSet instanceof ICovarianceMatrix) {
-            semBicScore = new edu.cmu.tetrad.search.SemBicScore((ICovarianceMatrix) this.dataSet);
+            score = new edu.cmu.tetrad.search.EbicScore((ICovarianceMatrix) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
 
-        semBicScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        semBicScore.setStructurePrior(parameters.getDouble(Params.SEM_BIC_STRUCTURE_PRIOR));
-
-        switch (parameters.getInt(Params.SEM_BIC_RULE)) {
-            case 1:
-                semBicScore.setRuleType(edu.cmu.tetrad.search.SemBicScore.RuleType.CHICKERING);
-                break;
-            case 2:
-                semBicScore.setRuleType(edu.cmu.tetrad.search.SemBicScore.RuleType.NANDY);
-                break;
-            default:
-                throw new IllegalStateException("Expecting 1 or 2: " + parameters.getInt(Params.SEM_BIC_RULE));
-        }
-
-        return semBicScore;
+        score.setGamma(parameters.getDouble(Params.EBIC_GAMMA));
+//        score.setCorrelationThreshold(parameters.getDouble(Params.CORRELATION_THRESHOLD));
+        return score;
     }
 
     @Override
     public String getDescription() {
-        return "Sem BIC Score";
+        return "EBIC Score";
     }
 
     @Override
@@ -71,9 +59,8 @@ public class SemBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
-        parameters.add(Params.SEM_BIC_RULE);
+        parameters.add(Params.EBIC_GAMMA);
+//        parameters.add(Params.CORRELATION_THRESHOLD);
         return parameters;
     }
 
@@ -81,5 +68,4 @@ public class SemBicScore implements ScoreWrapper {
     public Node getVariable(String name) {
         return dataSet.getVariable(name);
     }
-
 }

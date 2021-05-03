@@ -141,9 +141,7 @@ public class PcLocal implements GraphSearch {
         sepsetProducer = new SepsetsMinScore(graph, getIndependenceTest(), -1);
 
         meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         meekRules.setKnowledge(knowledge);
-        meekRules.setUndirectUnforcedEdges(true);
 
         // This is the list of all changed nodes from the last iteration
         List<Node> nodes = getIndependenceTest().getVariables();
@@ -350,7 +348,7 @@ public class PcLocal implements GraphSearch {
     private void applyMeek(List<Node> y) {
         List<Node> start = new ArrayList<>();
         for (Node n : y) start.add(n);
-        meekRules.orientImplied(graph, start);
+        meekRules.orientImplied(graph);
     }
 
     private void unorientAdjacents(Node y) {

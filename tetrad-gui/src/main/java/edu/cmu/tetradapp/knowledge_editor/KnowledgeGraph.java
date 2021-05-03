@@ -28,11 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class represents a directed acyclic graph.  In addition to the
@@ -57,7 +53,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     private IKnowledge knowledge;
     private boolean pag;
     private boolean pattern;
-    
+
     private Map<String,Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS=============================//
@@ -88,15 +84,15 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
             throws IllegalArgumentException {
         this.getGraph().transferNodesAndEdges(graph);
         for (Node node : this.getGraph().getNodes()) {
-        	node.getAllAttributes().clear();
+            node.getAllAttributes().clear();
         }
     }
 
     public final void transferAttributes(Graph graph)
-    		throws IllegalArgumentException {
+            throws IllegalArgumentException {
         this.getGraph().transferAttributes(graph);
     }
-    
+
     public Set<Triple> getAmbiguousTriples() {
         return getGraph().getAmbiguousTriples();
     }
@@ -270,6 +266,11 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
         return getGraph().existsDirectedPathFromTo(node1, node2);
+    }
+
+    @Override
+    public List<Node> findCycle() {
+        return getGraph().findCycle();
     }
 
     public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
@@ -598,26 +599,26 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     public void setPattern(boolean pattern) {
         this.pattern = pattern;
     }
-    
-	@Override
-	public Map<String, Object> getAllAttributes() {
-		return attributes;
-	}
 
-	@Override
-	public Object getAttribute(String key) {
-		return attributes.get(key);
-	}
+    @Override
+    public Map<String, Object> getAllAttributes() {
+        return attributes;
+    }
 
-	@Override
-	public void removeAttribute(String key) {
-		attributes.remove(key);
-	}
+    @Override
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
 
-	@Override
-	public void addAttribute(String key, Object value) {
-		attributes.put(key, value);
-	}
+    @Override
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
+
+    @Override
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
 
 }
 

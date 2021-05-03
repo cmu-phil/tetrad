@@ -52,5 +52,9 @@ public interface Score {
     boolean determines(List<Node> z, Node y);
 
     String toString();
+
+    default Score defaultScore() {
+        return this;
+    }
 }
 

@@ -20,13 +20,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
-import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+
+import static edu.cmu.tetrad.graph.Edges.directedEdge;
 
 /**
  * <p>
@@ -51,21 +51,21 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      *
      * @serial
      */
-    protected List<Node> nodes;
+    protected final List<Node> nodes;
 
     /**
      * The edges in the graph.
      *
      * @serial
      */
-    Set<Edge> edgesSet;
+    final Set<Edge> edgesSet;
 
     /**
      * Map from each node to the List of edges connected to that node.
      *
      * @serial
      */
-    Map<Node, List<Edge>> edgeLists;
+    final Map<Node, List<Edge>> edgeLists;
 
     /**
      * Fires property change events.
@@ -76,17 +76,17 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * Set of ambiguous triples. Note the name can't be changed due to
      * serialization.
      */
-    protected Set<Triple> ambiguousTriples = Collections.newSetFromMap(new ConcurrentHashMap<Triple, Boolean>());
+    protected Set<Triple> ambiguousTriples = Collections.newSetFromMap(new HashMap<>());
 
     /**
      * @serial
      */
-    Set<Triple> underLineTriples = Collections.newSetFromMap(new ConcurrentHashMap<Triple, Boolean>());
+    Set<Triple> underLineTriples = Collections.newSetFromMap(new HashMap<>());
 
     /**
      * @serial
      */
-    Set<Triple> dottedUnderLineTriples = Collections.newSetFromMap(new ConcurrentHashMap<Triple, Boolean>());
+    Set<Triple> dottedUnderLineTriples = Collections.newSetFromMap(new HashMap<>());
 
     /**
      * True iff nodes were removed since the last call to an accessor for
@@ -104,27 +104,24 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * A hash from node names to nodes;
      */
-    Map<String, Node> namesHash = new HashMap<>();
+    Map<String, Node> namesHash;
 
     private boolean pattern = false;
 
     private boolean pag = false;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
+
     /**
      * Constructs a new (empty) EdgeListGraph.
      */
     public EdgeListGraph() {
-        this.edgeLists = new HashMap<>();
+        this.edgeLists = new TreeMap<>();
         this.nodes = new ArrayList<>();
-        this.edgesSet = new HashSet<>();
-        this.namesHash = new HashMap<>();
-
-        for (Node node : nodes) {
-            namesHash.put(node.getName(), node);
-        }
+        this.edgesSet = new TreeSet<>();
+        this.namesHash = new TreeMap<>();
     }
 
     /**
@@ -164,6 +161,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
         this.pag = graph.isPag();
         this.pattern = graph.isPattern();
+//        }
     }
 
     /**
@@ -177,52 +175,15 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             throw new NullPointerException();
         }
 
-//        for (int i = 0; i < nodes.size(); i++) {
-//            if (nodes.get(i) == null) {
-//                throw new NullPointerException();
-//            }
-//
-//            for (int j = 0; j < i; j++) {
-//                if (nodes.get(i).equals(nodes.get(j))) {
-//                    throw new IllegalArgumentException("Two variables by the same name: " + nodes.get(i));
-//                }
-//            }
-//        }
         for (Object variable : nodes) {
             if (!addNode((Node) variable)) {
                 throw new IllegalArgumentException();
             }
         }
 
-//        DataGraphUtils.circleLayout(this, 200, 200, 150);
         for (Node node : nodes) {
             namesHash.put(node.getName(), node);
         }
-    }
-
-    // Makes a copy with the same object identical edges in it. If you make changes to those edges they will be
-    // reflected here.
-    public static Graph shallowCopy(EdgeListGraph graph) {
-        EdgeListGraph _graph = new EdgeListGraph();
-
-        _graph.nodes = new ArrayList<>(graph.nodes);
-        _graph.edgesSet = new HashSet<>(graph.edgesSet);
-        _graph.edgeLists = new HashMap<>(graph.edgeLists);
-        for (Node node : graph.nodes) {
-            _graph.edgeLists.put(node, new ArrayList<>(graph.edgeLists.get(node)));
-        }
-        _graph.ambiguousTriples = new HashSet<>(graph.ambiguousTriples);
-        _graph.underLineTriples = new HashSet<>(graph.underLineTriples);
-        _graph.dottedUnderLineTriples = new HashSet<>(graph.dottedUnderLineTriples);
-        _graph.stuffRemovedSinceLastTripleAccess = graph.stuffRemovedSinceLastTripleAccess;
-        _graph.highlightedEdges = new HashSet<>(graph.highlightedEdges);
-        _graph.namesHash = new HashMap<>(graph.namesHash);
-        _graph.pag = graph.pag;
-        _graph.pattern = graph.pattern;
-
-        _graph.getAllAttributes().putAll(graph.getAllAttributes());
-
-        return _graph;
     }
 
     /**
@@ -233,6 +194,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     //===============================PUBLIC METHODS========================//
+
     /**
      * Adds a directed edge to the graph from node A to node B.
      *
@@ -291,13 +253,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public boolean existsDirectedCycle() {
         for (Node node : getNodes()) {
-            if (GraphUtils.existsDirectedPathFromToBreathFirst(node, node, this)) {
+//            if (findDirectedPath(node, node).size() > 1) return true;
+//
+            if (existsDirectedPathFromTo(node, node)) {
                 return true;
             }
-
-//            if (existsDirectedPathFromTo(node, node)) {
-//                return true;
-//            }
         }
         return false;
     }
@@ -315,12 +275,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public boolean isUndirectedFromTo(Node node1, Node node2) {
         Edge edge = getEdge(node1, node2);
-
         return edge != null && edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.TAIL;
-
-        //        return getEdges(node1, node2).size() == 1
-//                && getEndpoint(node2, node1) == Endpoint.TAIL
-//                && getEndpoint(node1, node2) == Endpoint.TAIL;
     }
 
     /**
@@ -328,7 +283,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      *
      * @return true if the given edge is definitely visible (Jiji, pg 25)
      * @throws IllegalArgumentException if the given edge is not a directed edge
-     * in the graph
+     *                                  in the graph
      */
     @Override
     public boolean defVisible(Edge edge) {
@@ -379,7 +334,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     private static boolean visibleEdgeHelperVisit(Graph graph, Node c, Node a, Node b,
-            LinkedList<Node> path) {
+                                                  LinkedList<Node> path) {
         if (path.contains(a)) {
             return false;
         }
@@ -449,25 +404,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
 
         return false;
-
-//        if (isDirectedFromTo(node2, node1) || isDirectedFromTo(node2, node3)) {
-//            return true;
-//        } else if (!isAdjacentTo(node1, node3)) {
-//            boolean endpt1 = getEndpoint(node1, node2) == Endpoint.CIRCLE;
-//            boolean endpt2 = getEndpoint(node3, node2) == Endpoint.CIRCLE;
-//            return (endpt1 && endpt2);
-////        } else if (getEndpoint(node1, node2) == Endpoint.TAIL && getEndpoint(node3, node2) == Endpoint.TAIL){
-////            return true;
-//        } else {
-//            return false;
-//        }
     }
 
     @Override
     public boolean isDefCollider(Node node1, Node node2, Node node3) {
-//        List<Node> nodes2 = getNodesInTo(node2, Endpoint.ARROW);
-//        return nodes2.contains(node1) && nodes2.contains(node3);
-
         Edge edge1 = getEdge(node1, node2);
         Edge edge2 = getEdge(node2, node3);
 
@@ -480,18 +420,115 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-        return existsDirectedPathVisit(node1, node2, new HashSet<Node>());
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new TreeSet<>();
+
+        Q.add(node1);
+        V.add(node1);
+
+        boolean started = false;
+
+        while (!Q.isEmpty()) {
+            Node t = Q.remove();
+
+            if (started && t == node2) {
+                return true;
+            }
+
+            started = true;
+
+            for (Node c : getChildren(t)) {
+                if (!V.contains(c)) {
+                    V.add(c);
+                    Q.offer(c);
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
+    public List<Node> findCycle() {
+        for (Node a : getNodes()) {
+            List<Node> path = findDirectedPath(a, a);
+            if (!path.isEmpty()) {
+                return path;
+            }
+        }
+
+        return new LinkedList<>();
+    }
+
+    public List<Node> findDirectedPath(Node from, Node to) {
+        LinkedList<Node> path = new LinkedList<>();
+
+        for (Node d : getChildren(from)) {
+            if (findDirectedPathVisit(from, d, to, path)) {
+                path.addFirst(from);
+                return path;
+            }
+        }
+
+        return path;
+    }
+
+    private boolean findDirectedPathVisit(Node prev, Node next, Node to, LinkedList<Node> path) {
+        if (path.contains(next)) return false;
+        path.addLast(next);
+        if (!getEdge(prev, next).pointsTowards(next)) throw new IllegalArgumentException();
+        if (next == to) return true;
+
+        for (Node d : getChildren(next)) {
+            if (findDirectedPathVisit(next, d, to, path)) return true;
+        }
+
+        path.removeLast();
+        return false;
+    }
+
+    public List<Node> findSemidirectedPath(Node from, Node to) {
+        LinkedList<Node> path = new LinkedList<>();
+
+        List<Node> nonParents = getAdjacentNodes(from);
+        nonParents.removeAll(getParents(from));
+
+        for (Node next : nonParents) {
+            if (findSemidirectedPathVisit(next, to, path)) {
+                path.addFirst(from);
+                return path;
+            }
+        }
+
+        return path;
+    }
+
+    private boolean findSemidirectedPathVisit(Node next, Node to, LinkedList<Node> path) {
+        if (path.contains(next)) return false;
+        path.addLast(next);
+        if (next == to) return true;
+
+        List<Node> nonParents = getAdjacentNodes(next);
+        nonParents.removeAll(getParents(next));
+
+        for (Node d : nonParents) {
+            if (findSemidirectedPathVisit(d, to, path)) return true;
+        }
+
+        path.removeLast();
+        return false;
+    }
+
+
+    @Override
     public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
-        return existsUndirectedPathVisit(node1, node2, new HashSet<Node>());
+        return existsUndirectedPathVisit(node1, node2, new TreeSet<>());
     }
 
     @Override
     public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes) {
         return existsSemiDirectedPathVisit(node1, nodes,
-                new LinkedList<Node>());
+                new LinkedList<>());
     }
 
     /**
@@ -518,12 +555,13 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     public List<Node> getChildren(Node node) {
         List<Node> children = new ArrayList<>();
 
-        for (Object o : getEdges(node)) {
-            Edge edge = (Edge) (o);
-            Node sub = Edges.traverseDirected(node, edge);
+        for (Edge edge : getEdges(node)) {
+            if (Edges.isDirectedEdge(edge)) {
+                Node sub = Edges.traverseDirected(node, edge);
 
-            if (sub != null) {
-                children.add(sub);
+                if (sub != null) {
+                    children.add(sub);
+                }
             }
         }
 
@@ -548,10 +586,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     @Override
     public List<Node> getDescendants(List<Node> nodes) {
-        Set<Node> descendants = new HashSet<>();
+        Set<Node> descendants = new TreeSet<>();
 
-        for (Object node1 : nodes) {
-            Node node = (Node) node1;
+        for (Node node : nodes) {
             collectDescendantsVisit(node, descendants);
         }
 
@@ -563,7 +600,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * exists.
      */
     @Override
-    public synchronized Edge getEdge(Node node1, Node node2) {
+    public Edge getEdge(Node node1, Node node2) {
         List<Edge> edges = edgeLists.get(node1);
 
         if (edges == null) {
@@ -611,7 +648,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         List<Edge> edges = edgeLists.get(node);
 
         for (Edge edge : new ArrayList<>(edges)) {
-//            if (edge == null) continue;
+            if (edge == null) continue;
 
             Endpoint endpoint1 = edge.getDistalEndpoint(node);
             Endpoint endpoint2 = edge.getProximalEndpoint(node);
@@ -666,13 +703,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * Determines whether one node is an ancestor of another.
      */
-//    public boolean isAncestorOf(Node node1, Node node2) {
-//        boolean b = (node1 == node2) || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
-//
-//        System.out.println(node1 + " ancestor of " + node2 + " = " + b);
-//
-//        return b;
-//    }
     protected Map<Node, Set<Node>> ancestors = null;
 
     /**
@@ -681,17 +711,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public boolean isAncestorOf(Node node1, Node node2) {
         return getAncestors(Collections.singletonList(node2)).contains(node1);
-//        if (ancestors == null) {
-//            ancestors = new HashMap<>();
-//        }
-//
-//        if (ancestors.get(node2) != null) {
-//            return ancestors.get(node2).contains(node1);
-//        }
-//
-//        ancestors.put(node2, new HashSet<>(getAncestors(Collections.singletonList(node2))));
-//
-//        return ancestors.get(node2).contains(node1);
     }
 
     @Override
@@ -715,10 +734,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     @Override
     public List<Node> getAncestors(List<Node> nodes) {
-        HashSet<Node> ancestors = new HashSet<>();
+        Set<Node> ancestors = new TreeSet<>();
 
-        for (Object node1 : nodes) {
-            Node node = (Node) node1;
+        for (Node node : nodes) {
             collectAncestorsVisit(node, ancestors);
         }
 
@@ -746,7 +764,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean isDescendentOf(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
+        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node2, node1, this);
     }
 
     /**
@@ -826,7 +844,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                     + "you are trying to set.");
         }
 
-        this.nodes = nodes;
+        this.nodes.clear();
+        this.nodes.addAll(nodes);
     }
 
     protected Set<Node> zAncestors(List<Node> z) {
@@ -842,6 +861,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             Node t = Q.poll();
 
             for (Node c : getParents(t)) {
+                if (c == t) continue;
                 if (V.contains(c)) {
                     continue;
                 }
@@ -887,8 +907,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     private static class Pair {
 
-        private Node x;
-        private Node y;
+        private final Node x;
+        private final Node y;
 
         Pair(Node x, Node y) {
             this.x = x;
@@ -939,7 +959,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      *
      * @param node1 the first node.
      * @param node2 the second node.
-     * @param z the conditioning set.
+     * @param z     the conditioning set.
      * @return true if node1 is d-separated from node2 given set t, false if
      * not.
      * @see #isDConnectedTo
@@ -952,7 +972,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     //added by ekorber, June 2004
     @Override
     public boolean possDConnectedTo(Node node1, Node node2,
-            List<Node> condNodes) {
+                                    List<Node> condNodes) {
         LinkedList<Node> allNodes = new LinkedList<>(getNodes());
         int sz = allNodes.size();
         int[][] edgeStage = new int[sz][sz];
@@ -1043,7 +1063,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean existsInducingPath(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromToBreathFirst(node2, node1, this);
+        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node2, node1, this);
     }
 
     /**
@@ -1093,7 +1113,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      *
      * @param graph the graph from which nodes and edges are to be pilfered.
      * @throws IllegalArgumentException This exception is thrown if adding some
-     * node or edge violates one of the basicConstraints of this graph.
+     *                                  node or edge violates one of the basicConstraints of this graph.
      */
     @Override
     public void transferNodesAndEdges(Graph graph)
@@ -1146,19 +1166,20 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public List<Node> getAdjacentNodes(Node node) {
         List<Edge> edges = edgeLists.get(node);
-        Set<Node> adj = new HashSet<>(edges.size());
+        List<Node> adj = new ArrayList<>();
 
         for (Edge edge : edges) {
             if (edge == null) {
                 continue;
             }
             Node z = edge.getDistalNode(node);
+
             if (!adj.contains(z)) {
                 adj.add(z);
             }
         }
 
-        return new ArrayList<>(adj);
+        return adj;
     }
 
     /**
@@ -1171,7 +1192,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         if (edges.size() > 1) {
             throw new IllegalStateException(
                     "There is more than one edge between " + node1 + " and "
-                    + node2);
+                            + node2);
         }
 
         return removeEdges(edges);
@@ -1191,19 +1212,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
 
         return null;
-
-//        List<Edge> edges = getEdges(node1, node2);
-//
-//        if (edges.size() == 0) {
-//            retu rn null;
-//        }
-//
-//        if (edges.size() > 1) {
-//            throw new IllegalArgumentException(
-//                    "More than one edge between " + node1 + " and " + node2);
-//        }
-//
-//        return (edges.get(0)).getProximalEndpoint(node2);
     }
 
     /**
@@ -1214,37 +1222,20 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * (If there is more than one edge, an exception is thrown.)
      *
      * @throws IllegalArgumentException if the edge with the revised endpoint
-     * cannot be added to the graph.
+     *                                  cannot be added to the graph.
      */
     @Override
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint)
             throws IllegalArgumentException {
-        List<Edge> edges = getEdges(from, to);
+        Edge edge = getEdge(from, to);
         ancestors = null;
 
-        if (endPoint == null) {
-            throw new NullPointerException();
-        } else if (edges.size() == 0) {
-            removeEdges(from, to);
-            addEdge(new Edge(from, to, Endpoint.TAIL, endPoint));
-            return true;
-        } else if (edges.size() >= 1) {
-            Edge edge = edges.get(0);
-            Edge newEdge = new Edge(from, to, edge.getProximalEndpoint(from), endPoint);
+        removeEdge(edge);
 
-            try {
-                removeEdges(edge.getNode1(), edge.getNode2());
-                addEdge(newEdge);
-                return true;
-            } catch (IllegalArgumentException e) {
-                return false;
-            }
-        } else {
-            throw new NullPointerException(
-                    "An endpoint between node1 and node2 "
-                    + "may not be set in this graph if there is more than one "
-                    + "edge between node1 and node2.");
-        }
+        Edge newEdge = new Edge(from, to,
+                edge.getProximalEndpoint(from), endPoint);
+        addEdge(newEdge);
+        return true;
     }
 
     /**
@@ -1255,9 +1246,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         List<Node> nodes = new ArrayList<>(4);
         List<Edge> edges = getEdges(node);
 
-        for (Object edge1 : edges) {
-            Edge edge = (Edge) edge1;
-
+        for (Edge edge : edges) {
             if (edge.getProximalEndpoint(node) == endpoint) {
                 nodes.add(edge.getDistalNode(node));
             }
@@ -1274,9 +1263,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         List<Node> nodes = new ArrayList<>(4);
         List<Edge> edges = getEdges(node);
 
-        for (Object edge1 : edges) {
-            Edge edge = (Edge) edge1;
-
+        for (Edge edge : edges) {
             if (edge.getDistalEndpoint(node) == endpoint) {
                 nodes.add(edge.getDistalNode(node));
             }
@@ -1317,50 +1304,23 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return true if the edge was added, false if not.
      */
     @Override
-    public boolean addEdge(Edge edge) {
+    public synchronized boolean addEdge(Edge edge) {
         if (edge == null) {
             throw new NullPointerException();
         }
 
-        List<Edge> edgeList1 = edgeLists.get(edge.getNode1());
-        List<Edge> edgeList2 = edgeLists.get(edge.getNode2());
+        synchronized (edgeLists) {
+            List<Edge> edgeList1 = edgeLists.get(edge.getNode1());
+            List<Edge> edgeList2 = edgeLists.get(edge.getNode2());
 
-        if (edgeList1 == null || edgeList2 == null) {
+            if (edgeList1.contains(edge)) {
+                return true;
+            }
 
-            // Do not comment this out; if the user changes the names of variables, this is the
-            // mechanism for adjusting the maps from nodes to edge lists to compensate.
-            edgeLists = new HashMap<>(edgeLists);
-            edgeList1 = edgeLists.get(edge.getNode1());
-            edgeList2 = edgeLists.get(edge.getNode2());
+            edgeList1.add(edge);
+            edgeList2.add(edge);
+            edgesSet.add(edge);
         }
-
-        if (edgeList1 == null || edgeList2 == null) {
-            throw new NullPointerException("Can't add an edge unless both "
-                    + "nodes are in the graph: " + edge);
-        }
-
-        if (edgeList1.contains(edge)) {
-            return true;
-//            throw new IllegalArgumentException(
-//                    "That edge is already in the graph: " + edge);
-        }
-
-        if (edgeList2.contains(edge)) {
-            return true;
-//            throw new IllegalArgumentException(
-//                    "That edge is already in the graph: " + edge);
-        }
-
-        edgeList1 = new ArrayList<>(edgeList1);
-        edgeList2 = new ArrayList<>(edgeList2);
-
-        edgeList1.add(edge);
-        edgeList2.add(edge);
-
-        edgeLists.put(edge.getNode1(), edgeList1);
-        edgeLists.put(edge.getNode2(), edgeList2);
-
-        edgesSet.add(edge);
 
         if (Edges.isDirectedEdge(edge)) {
             Node node = Edges.getDirectedEdgeTail(edge);
@@ -1412,7 +1372,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             return false;
         }
 
-        edgeLists.put(node, new ArrayList<Edge>(4));
+        edgeLists.put(node, new ArrayList<>(4));
         nodes.add(node);
         namesHash.put(node.getName(), node);
 
@@ -1429,7 +1389,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public Set<Edge> getEdges() {
-        return new HashSet<>(this.edgesSet);
+        return new TreeSet<>(this.edgesSet);
     }
 
     /**
@@ -1453,7 +1413,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * ordering of the edges in the list is guaranteed.
      */
     @Override
-    public synchronized List<Edge> getEdges(Node node) {
+    public List<Edge> getEdges(Node node) {
         List<Edge> list = edgeLists.get(node);
         if (list == null) {
             return new ArrayList<>();
@@ -1516,7 +1476,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         edgeLists.clear();
 
         for (Node node : nodes) {
-            edgeLists.put(node, new ArrayList<Edge>(4));
+            edgeLists.put(node, new ArrayList<>(4));
         }
 
         for (int i = 0; i < nodes.size(); i++) {
@@ -1621,18 +1581,20 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             return false;
         }
 
-        List<Edge> edgeList1 = edgeLists.get(edge.getNode1());
-        List<Edge> edgeList2 = edgeLists.get(edge.getNode2());
+        synchronized (edgeLists) {
+            List<Edge> edgeList1 = edgeLists.get(edge.getNode1());
+            List<Edge> edgeList2 = edgeLists.get(edge.getNode2());
 
-        edgeList1 = new ArrayList<>(edgeList1);
-        edgeList2 = new ArrayList<>(edgeList2);
+            edgeList1 = new ArrayList<>(edgeList1);
+            edgeList2 = new ArrayList<>(edgeList2);
 
-        edgesSet.remove(edge);
-        edgeList1.remove(edge);
-        edgeList2.remove(edge);
+            edgesSet.remove(edge);
+            edgeList1.remove(edge);
+            edgeList2.remove(edge);
 
-        edgeLists.put(edge.getNode1(), edgeList1);
-        edgeLists.put(edge.getNode2(), edgeList2);
+            edgeLists.put(edge.getNode1(), edgeList1);
+            edgeLists.put(edge.getNode2(), edgeList2);
+        }
 
         highlightedEdges.remove(edge);
         stuffRemovedSinceLastTripleAccess = true;
@@ -1685,7 +1647,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         List<Edge> edgeList1
                 = edgeLists.get(node);    //list of edges connected to that node
 
-        for (Iterator<Edge> i = edgeList1.iterator(); i.hasNext();) {
+        for (Iterator<Edge> i = edgeList1.iterator(); i.hasNext(); ) {
             Edge edge = (i.next());
             Node node2 = edge.getDistalNode(node);
 
@@ -1732,7 +1694,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public String toString() {
-        return GraphUtils.graphToText(this).toString();
+        return GraphUtils.graphToText(this);
     }
 
     @Override
@@ -1775,13 +1737,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     @Override
     public Set<Triple> getAmbiguousTriples() {
-//        removeTriplesNotInGraph();
         return new HashSet<>(ambiguousTriples);
     }
 
     @Override
     public Set<Triple> getUnderLines() {
-//        removeTriplesNotInGraph();
         return new HashSet<>(underLineTriples);
     }
 
@@ -1796,11 +1756,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean isAmbiguousTriple(Node x, Node y, Node z) {
-//        Triple triple = new Triple(x, y, z);
-//        if (!triple.alongPathIn(this)) {
-//            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> is not along a path.");
-//        }
-//        removeTriplesNotInGraph();
         return ambiguousTriples.contains(new Triple(x, y, z));
     }
 
@@ -1809,11 +1764,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean isUnderlineTriple(Node x, Node y, Node z) {
-//        Triple triple = new Triple(x, y, z);
-//        if (!triple.alongPathIn(this)) {
-//            throw new IllegalArgumentException("<" + r + ", " + s + ", " + t + "> is not along a path.");
-//        }
-//        removeTriplesNotInGraph();
         return underLineTriples.contains(new Triple(x, y, z));
     }
 
@@ -1822,11 +1772,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
-//        Triple triple = new Triple(x, y, z);
-//        if (!triple.alongPathIn(this)) {
-//            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> is not along a path.");
-//        }
-//        removeTriplesNotInGraph();
         return dottedUnderLineTriples.contains(new Triple(x, y, z));
     }
 
@@ -2000,26 +1945,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * This is a simple auxiliary visit method for the isDConnectedTo() method
-     * used to find the closure of a conditioning set of nodes under the parent
-     * relation.
-     *
-     * @param node the node in question
-     * @param closure the closure of the conditioning set uner the parent
-     * relation (to be calculated recursively).
-     */
-    /*private void doParentClosureVisit(Node node, Set<Node> closure) {
-        if (closure.contains(node)) return;
-        closure.add(node);
-
-        for (Edge edge : getEdges(node)) {
-            Node sub = Edges.traverseReverseDirected(node, edge);
-            if (sub != null) {
-                doParentClosureVisit(sub, closure);
-            }
-        }
-    }*/
-    /**
      * @return this object.
      */
     protected PropertyChangeSupport getPcs() {
@@ -2059,38 +1984,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return false;
     }
 
-    boolean existsDirectedPathVisit(Node node1, Node node2, Set<Node> path) {
-        path.add(node1);
-
-        for (Edge edge : getEdges(node1)) {
-            Node child = Edges.traverseDirected(node1, edge);
-
-            if (child == null) {
-                continue;
-            }
-
-            if (child == node2) {
-                return true;
-            }
-
-            if (path.contains(child)) {
-                continue;
-            }
-
-            if (existsDirectedPathVisit(child, node2, path)) {
-                return true;
-            }
-        }
-
-        path.remove(node1);
-        return false;
-    }
-
     /**
      * @return true iff there is a semi-directed path from node1 to node2
      */
     private boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2,
-            LinkedList<Node> path) {
+                                                LinkedList<Node> path) {
         path.addLast(node1);
 
         for (Edge edge : getEdges(node1)) {
@@ -2156,9 +2054,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -74,6 +74,7 @@ public final class Params {
     public static final String FASK_ADJACENCY_METHOD = "faskAdjacencyMethod";
     public static final String FASK_NONEMPIRICAL = "faskNonempirical";
     public static final String FAITHFULNESS_ASSUMED = "faithfulnessAssumed";
+    public static final String FAS_HEURISTIC = "fasHeuristic";
     public static final String FAS_RULE = "fasRule";
     public static final String FAST_ICA_A = "fastIcaA";
     public static final String FAST_ICA_MAX_ITER = "fastIcaMaxIter";
@@ -142,7 +143,9 @@ public final class Params {
     public static final String ORIENT_TOWARD_DCONNECTIONS = "orientTowardDConnections";
     public static final String ORIENT_VISIBLE_FEEDBACK_LOOPS = "orientVisibleFeedbackLoops";
     public static final String OUTPUT_RBD = "outputRBD";
+    public static final String PARALLELISM = "parallelism";
     public static final String PENALTY_DISCOUNT = "penaltyDiscount";
+    public static final String EBIC_GAMMA = "ebicGamma";
     public static final String PERCENT_DISCRETE = "percentDiscrete";
     public static final String PERCENT_RESAMPLE_SIZE = "percentResampleSize";
     public static final String POSSIBLE_DSEP_DONE = "possibleDsepDone";
@@ -187,11 +190,13 @@ public final class Params {
     public static final String VAR_HIGH = "varHigh";
     public static final String VAR_LOW = "varLow";
     public static final String VERBOSE = "verbose";
+    public static final String MEEK_VERBOSE = "meekVerbose";
 
     // System prameters that are not supposed to put in the HTML manual documentation
     public static final String PRINT_STREAM = "printStream";
     public static final String SEM_BIC_RULE = "semBicRule";
     public static final String SEM_BIC_STRUCTURE_PRIOR = "semBicStructurePrior";
+    public static final String CORRELATION_THRESHOLD = "correlationThreshold";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

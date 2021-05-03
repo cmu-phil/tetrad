@@ -89,7 +89,7 @@ public class TestPc {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D", /*"A---B,B-->C,A-->D,C-->D", */
+        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D",
                 knowledge);
     }
 
@@ -208,11 +208,11 @@ public class TestPc {
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
 //        System.out.println("Knowledge = " + knowledge);
-//        System.out.println("True graph = " + graph);
-//        System.out.println("Result graph = " + resultGraph);
+        System.out.println("True graph = " + graph);
+        System.out.println("Result graph = " + resultGraph);
 
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        assertEquals(trueGraph, resultGraph);
     }
 
     @Test

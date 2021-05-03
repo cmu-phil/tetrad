@@ -75,7 +75,7 @@ public class TestDagScorer {
         Scorer scorer = new DagScorer(data);
         double _fml = scorer.score(dag);
 
-        assertEquals(0.0358, _fml, 0.001);
+        assertEquals(0.0369, _fml, 0.001);
 
         double bicScore = scorer.getBicScore();
         assertEquals(-205, bicScore, 1);

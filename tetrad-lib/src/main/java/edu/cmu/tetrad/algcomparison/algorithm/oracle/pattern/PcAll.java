@@ -90,6 +90,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
             edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
             search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
             search.setKnowledge(knowledge);
 
             if (parameters.getBoolean(Params.STABLE_FAS)) {
@@ -169,6 +170,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
         parameters.add(Params.COLLIDER_DISCOVERY_RULE);
         parameters.add(Params.CONFLICT_RULE);
         parameters.add(Params.DEPTH);
+        parameters.add(Params.FAS_HEURISTIC);
         parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
         parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
 

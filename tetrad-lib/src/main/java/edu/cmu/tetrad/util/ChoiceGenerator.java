@@ -207,7 +207,11 @@ public final class ChoiceGenerator {
     }
 
     public static int getNumCombinations(int a, int b) {
-        return (int) round(exp(lngamma(a + 1) - lngamma(b + 1) - lngamma((a - b) + 1)));
+        return (int) round(exp(logCombinations(a, b)));
+    }
+
+    public static double logCombinations(int a, int b) {
+        return lngamma(a + 1) - lngamma(b + 1) - lngamma((a - b) + 1);
     }
 }
 

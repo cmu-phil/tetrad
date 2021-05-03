@@ -79,7 +79,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
 
     //======================== Public Methods ========================//
 
-    public void orientImplied(Graph graph) {
+    public Set<Node> orientImplied(Graph graph) {
         this.nodes = new HashSet<>(graph.getNodes());
         visitedNodes.addAll(nodes);
 
@@ -89,6 +89,8 @@ public class MeekRulesRestricted implements ImpliedOrientation {
         TetradLogger.getInstance().log("impliedOrientations", "Finishing Orientation Step D.");
 
         graph.removeTriplesNotInGraph();
+
+        return visitedNodes;
     }
 
     public void orientImplied(Graph graph, Set<Node> nodes) {
