@@ -20,6 +20,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
+import DataSet;
+import CovarianceMatrix;
+import ICovarianceMatrix;
+import SemBicScore;
+import Score;
+import CorrelationMatrix;
+import DataUtils;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
@@ -127,7 +134,7 @@ public class EbicScore implements Score {
     }
 
     public static double getP(int pn, int m0, double lambda) {
-        return 2 - pow((1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda)), pn - m0);
+        return 2 - pow(1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda), (double) pn - m0);
     }
 
     /**
