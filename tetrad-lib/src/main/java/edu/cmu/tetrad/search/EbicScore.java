@@ -20,13 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
-import DataSet;
-import CovarianceMatrix;
-import ICovarianceMatrix;
-import SemBicScore;
-import Score;
-import CorrelationMatrix;
-import DataUtils;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
