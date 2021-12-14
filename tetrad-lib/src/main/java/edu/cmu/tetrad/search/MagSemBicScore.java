@@ -88,14 +88,6 @@ public class MagSemBicScore implements Score{
         this.order = null;
     }
 
-
-
-
-
-
-
-
-
     @Override
     public double localScore(int i, int... js) {
         if (this.mag == null || this.order == null) {
