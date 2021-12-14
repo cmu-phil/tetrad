@@ -45,17 +45,17 @@ public class TestMBG {
             order.add(0, node);
         }
 
-        int i = 3;
-        int[] js = new int[]{0, 1, 2, 4};
+//        int i = 3;
+//        int[] js = new int[] {0, 1, 2, 4};
 
 //        int i = 3;
-//        int[] js = new int[]{0, 1, 2};
+//        int[] js = new int[] {0, 1, 2};
 
 //        int i = 3;
 //        int[] js = new int[] {0,1};
 
-//        int i = 2;
-//        int[] js = new int[] {0,1};
+        int i = 2;
+        int[] js = new int[] {0,1};
 
         Node node1 = variables.get(i);
 
@@ -97,20 +97,24 @@ public class TestMBG {
             System.out.println();
 
 
-            for (int j = 0; j < 1 << tail.size(); j++) {
-                List<Node> paraSet = copy(head);
-                for (int k = 0; k < tail.size(); k++) {
+            List<Node> temp = copy(head);
+            temp.remove(node1);
+            for (int j = 0; j < 1 << temp.size(); j++) {
+                List<Node> condSet = copy(tail);
+                for (int k = 0; k < temp.size(); k++) {
                     if ((j & (1 << k)) > 0) {
-                        paraSet.add(tail.get(k));
+                        condSet.add(temp.get(k));
                     }
                 }
 
-                System.out.println(paraSet);
+                System.out.print((((temp.size() - j) % 2) == 0) ? " + " : " - ");
+                System.out.print(node1);
+                System.out.print(" | ");
+                System.out.println(condSet);
 
             }
 
             System.out.println();
-
         }
     }
 
