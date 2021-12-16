@@ -107,12 +107,12 @@ public class MagSemBicScore implements Score{
         }
 
         List<List<Node>> heads = new ArrayList<>();
-        List<List<Node>> tails = new ArrayList<>();
+        List<Set<Node>> tails = new ArrayList<>();
         constructHeadsTails(heads, tails, mbo, new ArrayList<>(), new ArrayList<>(), new HashSet<>(), v1);
 
         for (int l = 0; l < heads.size(); l++) {
             List<Node> head = heads.get(l);
-            List<Node> tail = tails.get(l);
+            Set<Node> tail = tails.get(l);
 
 //            System.out.print("head: ");
 //            System.out.println(head);
@@ -152,9 +152,9 @@ public class MagSemBicScore implements Score{
         return score;
     }
 
-    private void constructHeadsTails(List<List<Node>> heads, List<List<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1) {
-        /**
-         * Calculates the head and tails of a MAG for vertex v1 and ordered Markov blanket mbo.
+    private void constructHeadsTails(List<List<Node>> heads, List<Set<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1) {
+        /*
+          Calculates the head and tails of a MAG for vertex v1 and ordered Markov blanket mbo.
          */
 
         head.add(v1);
@@ -164,8 +164,8 @@ public class MagSemBicScore implements Score{
         updateAncestors(an, v1);
         updateIntrinsics(in, sib, an, v1, mbo);
 
-        List<Node> tail = new ArrayList<>(in);
-        tail.removeAll(head);
+        Set<Node> tail = new HashSet<>(in);
+        head.forEach(tail::remove);
         for (Node v2 : in) {
             tail.addAll(this.mag.getParents(v2));
         }

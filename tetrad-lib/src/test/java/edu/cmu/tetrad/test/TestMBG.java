@@ -35,7 +35,8 @@ public class TestMBG {
     public void test1() {
 
 //        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X2-->X4,X3<->X4,X5-->X1");
-        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X3<->X4,X4<->X5,X3-->X5");
+//        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X3<->X4,X4<->X5,X3-->X5");
+        Graph mag = GraphConverter.convert("X1<->X2,X2<->X3,X3<->X4,X4<->X5,X2-->X4,X3-->X5");
         List<Node> variables = mag.getNodes();
 
         List<Node> order = new ArrayList<>();
@@ -75,12 +76,12 @@ public class TestMBG {
         long startTime = System.currentTimeMillis();
 
         List<List<Node>> heads = new ArrayList<>();
-        List<List<Node>> tails = new ArrayList<>();
+        List<Set<Node>> tails = new ArrayList<>();
         constructHeadsTails(heads, tails, mbo, new ArrayList<>(), new ArrayList<>(), new HashSet<>(), v1, mag);
 
         for (int l = 0; l < heads.size(); l++) {
             List<Node> head = heads.get(l);
-            List<Node> tail = tails.get(l);
+            Set<Node> tail = tails.get(l);
             System.out.print("head: ");
             System.out.println(head);
             System.out.print("tail: ");
@@ -111,7 +112,7 @@ public class TestMBG {
         System.out.println("That took " + (endTime - startTime) + " milliseconds");
     }
 
-    private void constructHeadsTails(List<List<Node>> heads, List<List<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1, Graph mag) {
+    private void constructHeadsTails(List<List<Node>> heads, List<Set<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1, Graph mag) {
         head.add(v1);
         heads.add(head);
 
@@ -119,8 +120,8 @@ public class TestMBG {
         updateAncestors(an, v1, mag);
         updateIntrinsics(in, sib, an, v1, mbo, mag);
 
-        List<Node> tail = new ArrayList<>(in);
-        tail.removeAll(head);
+        Set<Node> tail = new HashSet<>(in);
+        head.forEach(tail::remove);
         for (Node v2 : in) {
             tail.addAll(mag.getParents(v2));
         }
