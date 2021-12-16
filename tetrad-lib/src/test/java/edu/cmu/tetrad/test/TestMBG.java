@@ -24,10 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.graph.*;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * @author Bryan Andrews
@@ -37,7 +34,8 @@ public class TestMBG {
     @Test
     public void test1() {
 
-        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X2-->X4,X3<->X4,X5-->X1");
+//        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X2-->X4,X3<->X4,X5-->X1");
+        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X3<->X4,X4<->X5,X3-->X5");
         List<Node> variables = mag.getNodes();
 
         List<Node> order = new ArrayList<>();
@@ -54,10 +52,13 @@ public class TestMBG {
 //        int i = 3;
 //        int[] js = new int[] {0,1};
 
-        int i = 2;
-        int[] js = new int[] {0,1};
+//        int i = 2;
+//        int[] js = new int[] {0,1};
 
-        Node node1 = variables.get(i);
+        int i = 4;
+        int[] js = new int[]{0, 1, 2, 3};
+
+        Node v1 = variables.get(i);
 
         List<Node> mb = new ArrayList<>();
         for (int j : js) {
@@ -71,103 +72,91 @@ public class TestMBG {
             }
         }
 
+        long startTime = System.currentTimeMillis();
+
         List<List<Node>> heads = new ArrayList<>();
-        constructHeads(node1, copy(mbo), new ArrayList<>(), heads, mag);
+        List<List<Node>> tails = new ArrayList<>();
+        constructHeadsTails(heads, tails, mbo, new ArrayList<>(), new ArrayList<>(), new HashSet<>(), v1, mag);
 
-        for (List<Node> head : heads) {
-            List<Node> anc = mag.getAncestors(head);
-
-            Set<Node> dis = new TreeSet<>();
-            for (Node node2 : head) {
-                collectDistrictVisit(node2, dis, anc, mag);
-            }
-
-            List<Node> tail = new ArrayList<>(dis);
-            tail.removeAll(head);
-            for (Node node2 : dis) {
-                for (Node node3 : mag.getParents(node2)) {
-                    if (tail.contains(node3)) continue;
-                    tail.add(node3);
-                }
-            }
-
-
+        for (int l = 0; l < heads.size(); l++) {
+            List<Node> head = heads.get(l);
+            List<Node> tail = tails.get(l);
+            System.out.print("head: ");
             System.out.println(head);
+            System.out.print("tail: ");
             System.out.println(tail);
             System.out.println();
 
-
-            List<Node> temp = copy(head);
-            temp.remove(node1);
-            for (int j = 0; j < 1 << temp.size(); j++) {
-                List<Node> condSet = copy(tail);
-                for (int k = 0; k < temp.size(); k++) {
+            head.remove(v1);
+            int h = head.size();
+            int max = h + tail.size();
+            for (int j = 0; j < 1 << h; j++) {
+                List<Node> condSet = new ArrayList<>(tail);
+                for (int k = 0; k < h; k++) {
                     if ((j & (1 << k)) > 0) {
-                        condSet.add(temp.get(k));
+                        condSet.add(head.get(k));
                     }
                 }
 
-                System.out.print((((temp.size() - j) % 2) == 0) ? " + " : " - ");
-                System.out.print(node1);
+                System.out.print((((max - condSet.size()) % 2) == 0) ? " + " : " - ");
+                System.out.print(v1);
                 System.out.print(" | ");
                 System.out.println(condSet);
-
             }
-
             System.out.println();
         }
+
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("That took " + (endTime - startTime) + " milliseconds");
     }
 
-    private void constructHeads (Node node1, List<Node> mbo, List<Node> head, List <List<Node>> heads, Graph mag) {
-        head.add(node1);
+    private void constructHeadsTails(List<List<Node>> heads, List<List<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1, Graph mag) {
+        head.add(v1);
         heads.add(head);
 
-        while (!mbo.isEmpty()) {
-            Node node2 = mbo.remove(0);
+        List<Node> sib = new ArrayList<>();
+        updateAncestors(an, v1, mag);
+        updateIntrinsics(in, sib, an, v1, mbo, mag);
 
-            if (mag.getEdge(node1, node2) == null) continue;
-            if (mag.getAncestors(head).contains(node2)) continue;
-            constructHeads(node2, copy(mbo), copy(head), heads, mag);
+        List<Node> tail = new ArrayList<>(in);
+        tail.removeAll(head);
+        for (Node v2 : in) {
+            tail.addAll(mag.getParents(v2));
+        }
+        tails.add(tail);
+
+        for (Node v2 : sib) {
+            constructHeadsTails(heads, tails, mbo.subList(mbo.indexOf(v2)+1,mbo.size()), new ArrayList<>(head), new ArrayList<>(in), new HashSet<>(an), v2, mag);
         }
     }
 
-    public List<Node> getSiblings(Node node1, List<Node> anc, Graph mag){
-        List<Node> siblings = new ArrayList<>();
+    private void updateAncestors(Set<Node> an, Node v1, Graph mag) {
+        an.add(v1);
 
-        for (Node node2 : anc){
-            Edge edge = mag.getEdge(node1, node2);
+        for (Node v2 : mag.getParents(v1)) {
+            updateAncestors(an, v2, mag);
+        }
+    }
 
-            if (edge == null) continue;
-            if (edge.getEndpoint1() == Endpoint.ARROW && edge.getEndpoint2() == Endpoint.ARROW) {
-                siblings.add(node2);
+    private void updateIntrinsics(List<Node> in, List<Node> sib, Set<Node> an, Node v1, List<Node> mbo, Graph mag) {
+        in.add(v1);
+
+        List<Node> mb = new ArrayList<>(mbo);
+        mb.removeAll(in);
+
+        for (Node v3 : in.subList(0,in.size())) {
+            for (Node v2 : mb) {
+                Edge e = mag.getEdge(v2,v3);
+                if (e != null && e.getEndpoint1() == Endpoint.ARROW && e.getEndpoint2() == Endpoint.ARROW) {
+                    if (an.contains(v2)) {
+                        updateIntrinsics(in, sib, an, v2, mbo, mag);
+                    } else {
+                        sib.add(v2);
+                    }
+                }
             }
         }
-
-        return siblings;
-    }
-
-    private void collectDistrictVisit(Node node, Set<Node> dis, List<Node> anc, Graph mag) {
-        if (dis.contains(node)) {
-            return;
-        }
-
-        dis.add(node);
-        List<Node> siblings = getSiblings(node, anc, mag);
-
-        if (!siblings.isEmpty()) {
-            for (Node sibling : siblings) {
-                collectDistrictVisit(sibling, dis, anc, mag);
-            }
-        }
-    }
-
-
-    private List<Node> copy(List<Node> list1) {
-        List<Node> list2 = new ArrayList<>();
-        for (Node node : list1) {
-            list2.add(node);
-        }
-        return list2;
     }
 
 }

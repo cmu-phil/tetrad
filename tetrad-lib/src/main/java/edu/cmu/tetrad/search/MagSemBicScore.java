@@ -96,7 +96,7 @@ public class MagSemBicScore implements Score{
 
         double score = 0;
 
-        Node node1 = this.variables.get(i);
+        Node v1 = this.variables.get(i);
 
         List<Node> mb = new ArrayList<>();
         for (int j : js) {
@@ -111,36 +111,27 @@ public class MagSemBicScore implements Score{
         }
 
         List<List<Node>> heads = new ArrayList<>();
-        constructHeads(node1, copy(mbo), new ArrayList<>(), heads);
+        List<List<Node>> tails = new ArrayList<>();
+        constructHeadsTails(heads, tails, mbo, new ArrayList<>(), new ArrayList<>(), new HashSet<>(), v1, mag);
 
-        for (List<Node> head : heads) {
-            List<Node> anc = this.mag.getAncestors(head);
+        for (int l = 0; l < heads.size(); l++) {
+            List<Node> head = heads.get(l);
+            List<Node> tail = tails.get(l);
 
-            Set<Node> dis = new TreeSet<>();
-            for (Node node2 : head) {
-                collectDistrictVisit(node2, dis, anc);
-            }
-
-            List<Node> tail = new ArrayList<>(dis);
-            tail.removeAll(head);
-            for (Node node2 : dis) {
-                for (Node node3 : this.mag.getParents(node2)) {
-                    if (tail.contains(node3)) continue;
-                    tail.add(node3);
-                }
-            }
-
+//            System.out.print("head: ");
 //            System.out.println(head);
+//            System.out.print("tail: ");
 //            System.out.println(tail);
 //            System.out.println();
 
-            List<Node> temp = copy(head);
-            temp.remove(node1);
-            for (int j = 0; j < 1 << temp.size(); j++) {
-                List<Node> condSet = copy(tail);
-                for (int k = 0; k < temp.size(); k++) {
+            head.remove(v1);
+            int h = head.size();
+            int max = h + tail.size();
+            for (int j = 0; j < 1 << h; j++) {
+                List<Node> condSet = new ArrayList<>(tail);
+                for (int k = 0; k < h; k++) {
                     if ((j & (1 << k)) > 0) {
-                        condSet.add(temp.get(k));
+                        condSet.add(head.get(k));
                     }
                 }
 
@@ -149,14 +140,14 @@ public class MagSemBicScore implements Score{
                     parents[k] = this.variables.indexOf(condSet.get(k));
                 }
 
-                if (((temp.size() - j) % 2) == 0) {
+                if (((max - condSet.size()) % 2) == 0) {
                     score += this.score.localScore(i, parents);
                 } else {
                     score -= this.score.localScore(i, parents);
                 }
 
-//                System.out.print((((temp.size() - j) % 2) == 0) ? " + " : " - ");
-//                System.out.print(node1);
+//                System.out.print((((max - condSet.size()) % 2) == 0) ? " + " : " - ");
+//                System.out.print(v1);
 //                System.out.print(" | ");
 //                System.out.println(condSet);
             }
@@ -165,55 +156,52 @@ public class MagSemBicScore implements Score{
         return score;
     }
 
-    private void constructHeads (Node node1, List<Node> mbo, List<Node> head, List <List<Node>> heads) {
-        head.add(node1);
+    private void constructHeadsTails(List<List<Node>> heads, List<List<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1, Graph mag) {
+        head.add(v1);
         heads.add(head);
 
-        while (!mbo.isEmpty()) {
-            Node node2 = mbo.remove(0);
+        List<Node> sib = new ArrayList<>();
+        updateAncestors(an, v1, mag);
+        updateIntrinsics(in, sib, an, v1, mbo, mag);
 
-            if (this.mag.getEdge(node1, node2) == null) continue;
-            if (this.mag.getAncestors(head).contains(node2)) continue;
-            constructHeads(node2, copy(mbo), copy(head), heads);
+        List<Node> tail = new ArrayList<>(in);
+        tail.removeAll(head);
+        for (Node v2 : in) {
+            tail.addAll(mag.getParents(v2));
+        }
+        tails.add(tail);
+
+        for (Node v2 : sib) {
+            constructHeadsTails(heads, tails, mbo.subList(mbo.indexOf(v2)+1,mbo.size()), new ArrayList<>(head), new ArrayList<>(in), new HashSet<>(an), v2, mag);
         }
     }
 
-    public List<Node> getSiblings(Node node1, List<Node> anc){
-        List<Node> siblings = new ArrayList<>();
+    private void updateAncestors(Set<Node> an, Node v1, Graph mag) {
+        an.add(v1);
 
-        for (Node node2 : anc){
-            Edge edge = this.mag.getEdge(node1, node2);
+        for (Node v2 : mag.getParents(v1)) {
+            updateAncestors(an, v2, mag);
+        }
+    }
 
-            if (edge == null) continue;
-            if (edge.getEndpoint1() == Endpoint.ARROW && edge.getEndpoint2() == Endpoint.ARROW) {
-                siblings.add(node2);
+    private void updateIntrinsics(List<Node> in, List<Node> sib, Set<Node> an, Node v1, List<Node> mbo, Graph mag) {
+        in.add(v1);
+
+        List<Node> mb = new ArrayList<>(mbo);
+        mb.removeAll(in);
+
+        for (Node v3 : in.subList(0,in.size())) {
+            for (Node v2 : mb) {
+                Edge e = mag.getEdge(v2,v3);
+                if (e != null && e.getEndpoint1() == Endpoint.ARROW && e.getEndpoint2() == Endpoint.ARROW) {
+                    if (an.contains(v2)) {
+                        updateIntrinsics(in, sib, an, v2, mbo, mag);
+                    } else {
+                        sib.add(v2);
+                    }
+                }
             }
         }
-
-        return siblings;
-    }
-
-    private void collectDistrictVisit(Node node, Set<Node> dis, List<Node> anc) {
-        if (dis.contains(node)) {
-            return;
-        }
-
-        dis.add(node);
-        List<Node> siblings = getSiblings(node, anc);
-
-        if (!siblings.isEmpty()) {
-            for (Node sibling : siblings) {
-                collectDistrictVisit(sibling, dis, anc);
-            }
-        }
-    }
-
-    private List<Node> copy(List<Node> list1) {
-        List<Node> list2 = new ArrayList<>();
-        for (Node node : list1) {
-            list2.add(node);
-        }
-        return list2;
     }
 
     public double getPenaltyDiscount() {
