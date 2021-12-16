@@ -25,8 +25,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -34,13 +32,13 @@ import java.util.*;
  */
 public class MagSemBicScore implements Score{
 
+    private final SemBicScore score;
+
     private final List<Node> variables;
 
     private Graph mag;
 
     private List<Node> order;
-
-    private SemBicScore score;
 
     public MagSemBicScore(ICovarianceMatrix covariances) {
         if (covariances == null) {

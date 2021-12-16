@@ -29,59 +29,162 @@ import java.util.*;
 /**
  * @author Bryan Andrews
  */
-public class TestMBG {
+public class TestHeadsTails {
 
     @Test
     public void test1() {
-
-//        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X2-->X4,X3<->X4,X5-->X1");
-//        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X3<->X4,X4<->X5,X3-->X5");
-        Graph mag = GraphConverter.convert("X1<->X2,X2<->X3,X3<->X4,X4<->X5,X2-->X4,X3-->X5");
+        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X2-->X4,X3<->X4,X5-->X1");
         List<Node> variables = mag.getNodes();
 
         List<Node> order = new ArrayList<>();
-        for (Node node : variables) {
-            order.add(0, node);
+        for (Node v : variables) {
+            order.add(0, v);
         }
 
-//        int i = 3;
-//        int[] js = new int[] {0, 1, 2, 4};
+        int i = 3;
+        int[] js = new int[] {0, 1, 2, 4};
 
-//        int i = 3;
-//        int[] js = new int[] {0, 1, 2};
+        System.out.println(mag);
 
-//        int i = 3;
-//        int[] js = new int[] {0,1};
+        headsTails(order, mag, i, js);
+    }
 
-//        int i = 2;
-//        int[] js = new int[] {0,1};
+    @Test
+    public void test2() {
+        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X2-->X4,X3<->X4,X5-->X1");
+        List<Node> variables = mag.getNodes();
+
+        List<Node> order = new ArrayList<>();
+        for (Node v : variables) {
+            order.add(0, v);
+        }
+
+        int i = 3;
+        int[] js = new int[] {0, 1, 2};
+
+        System.out.println(mag);
+
+        headsTails(order, mag, i, js);
+    }
+
+    @Test
+    public void test3() {
+        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X2-->X4,X3<->X4,X5-->X1");
+        List<Node> variables = mag.getNodes();
+
+        List<Node> order = new ArrayList<>();
+        for (Node v : variables) {
+            order.add(0, v);
+        }
+
+        int i = 3;
+        int[] js = new int[] {0,1};
+        System.out.println(mag);
+
+        headsTails(order, mag, i, js);
+    }
+
+    @Test
+    public void test4() {
+        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X2-->X4,X3<->X4,X5-->X1");
+        List<Node> variables = mag.getNodes();
+
+        List<Node> order = new ArrayList<>();
+        for (Node v : variables) {
+            order.add(0, v);
+        }
+
+            int i = 2;
+            int[] js = new int[] {0,1};
+        System.out.println(mag);
+
+        headsTails(order, mag, i, js);
+    }
+
+    @Test
+    public void test5() {
+        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X3<->X4,X3-->X5,X4<->X5");
+        List<Node> variables = mag.getNodes();
+
+        List<Node> order = new ArrayList<>();
+        for (Node v : variables) {
+            order.add(0, v);
+        }
 
         int i = 4;
         int[] js = new int[]{0, 1, 2, 3};
 
-        Node v1 = variables.get(i);
+        System.out.println(mag);
 
-        List<Node> mb = new ArrayList<>();
-        for (int j : js) {
-            mb.add(variables.get(j));
+        headsTails(order, mag, i, js);
+    }
+
+    @Test
+    public void test6() {
+        Graph mag = GraphConverter.convert("X1-->X2,X2<->X3,X2-->X4,X3<->X4,X3-->X5,X4<->X5");
+        List<Node> variables = mag.getNodes();
+
+        List<Node> order = new ArrayList<>();
+        for (Node v : variables) {
+            order.add(0, v);
         }
 
+        int i = 4;
+        int[] js = new int[]{0, 1, 2, 3};
+
+        System.out.println(mag);
+
+        headsTails(order, mag, i, js);
+    }
+
+    @Test
+    public void test7() {
+        Graph mag = GraphConverter.convert("X1<--X2,X1<--X3,X1<--X4,X1<--X5");
+        List<Node> variables = mag.getNodes();
+
+        List<Node> order = new ArrayList<>();
+        for (Node v : variables) {
+            order.add(0, v);
+        }
+
+        int i = 0;
+        int[] js = new int[]{1, 2, 3, 4};
+
+        System.out.println(mag);
+
+        headsTails(order, mag, i, js);
+    }
+
+    private void headsTails(List<Node> order, Graph mag, int i, int... js) {
+        List<Node> variables = mag.getNodes();
+        Node v1 = variables.get(i);
+
         List<Node> mbo = new ArrayList<>();
-        for (Node node2 : order) {
-            if (mb.contains(node2)) {
-                mbo.add(node2);
+        Arrays.sort(js);
+        for (Node v2 : order) {
+            if (Arrays.binarySearch(js, variables.indexOf(v2)) >= 0) {
+                mbo.add(v2);
             }
         }
 
-        long startTime = System.currentTimeMillis();
+        System.out.println(v1);
+        System.out.println(mbo);
+        System.out.println();
+
+        long t1 = System.currentTimeMillis();
 
         List<List<Node>> heads = new ArrayList<>();
         List<Set<Node>> tails = new ArrayList<>();
         constructHeadsTails(heads, tails, mbo, new ArrayList<>(), new ArrayList<>(), new HashSet<>(), v1, mag);
 
+        long t2 = System.currentTimeMillis();
+        System.out.println("heads and tails took " + (t2 - t1) + " milliseconds");
+        System.out.println();
+
         for (int l = 0; l < heads.size(); l++) {
             List<Node> head = heads.get(l);
             Set<Node> tail = tails.get(l);
+
             System.out.print("head: ");
             System.out.println(head);
             System.out.print("tail: ");
@@ -98,7 +201,6 @@ public class TestMBG {
                         condSet.add(head.get(k));
                     }
                 }
-
                 System.out.print((((max - condSet.size()) % 2) == 0) ? " + " : " - ");
                 System.out.print(v1);
                 System.out.print(" | ");
@@ -107,9 +209,9 @@ public class TestMBG {
             System.out.println();
         }
 
-        long endTime = System.currentTimeMillis();
-
-        System.out.println("That took " + (endTime - startTime) + " milliseconds");
+        long t3 = System.currentTimeMillis();
+        System.out.println("That took " + (t3 - t1) + " milliseconds");
+        System.out.println();
     }
 
     private void constructHeadsTails(List<List<Node>> heads, List<Set<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1, Graph mag) {
