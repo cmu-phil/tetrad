@@ -98,21 +98,17 @@ public class MagSemBicScore implements Score{
 
         Node v1 = this.variables.get(i);
 
-        List<Node> mb = new ArrayList<>();
-        for (int j : js) {
-            mb.add(this.variables.get(j));
-        }
-
         List<Node> mbo = new ArrayList<>();
-        for (Node node2 : this.order) {
-            if (mb.contains(node2)) {
-                mbo.add(node2);
+        Arrays.sort(js);
+        for (Node v2 : this.order) {
+            if (Arrays.binarySearch(js, this.variables.indexOf(v2)) >= 0) {
+                mbo.add(v2);
             }
         }
 
         List<List<Node>> heads = new ArrayList<>();
         List<List<Node>> tails = new ArrayList<>();
-        constructHeadsTails(heads, tails, mbo, new ArrayList<>(), new ArrayList<>(), new HashSet<>(), v1, mag);
+        constructHeadsTails(heads, tails, mbo, new ArrayList<>(), new ArrayList<>(), new HashSet<>(), v1);
 
         for (int l = 0; l < heads.size(); l++) {
             List<Node> head = heads.get(l);
@@ -156,35 +152,39 @@ public class MagSemBicScore implements Score{
         return score;
     }
 
-    private void constructHeadsTails(List<List<Node>> heads, List<List<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1, Graph mag) {
+    private void constructHeadsTails(List<List<Node>> heads, List<List<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1) {
+        /**
+         * Calculates the head and tails of a MAG for vertex v1 and ordered Markov blanket mbo.
+         */
+
         head.add(v1);
         heads.add(head);
 
         List<Node> sib = new ArrayList<>();
-        updateAncestors(an, v1, mag);
-        updateIntrinsics(in, sib, an, v1, mbo, mag);
+        updateAncestors(an, v1);
+        updateIntrinsics(in, sib, an, v1, mbo);
 
         List<Node> tail = new ArrayList<>(in);
         tail.removeAll(head);
         for (Node v2 : in) {
-            tail.addAll(mag.getParents(v2));
+            tail.addAll(this.mag.getParents(v2));
         }
         tails.add(tail);
 
         for (Node v2 : sib) {
-            constructHeadsTails(heads, tails, mbo.subList(mbo.indexOf(v2)+1,mbo.size()), new ArrayList<>(head), new ArrayList<>(in), new HashSet<>(an), v2, mag);
+            constructHeadsTails(heads, tails, mbo.subList(mbo.indexOf(v2) + 1, mbo.size()), new ArrayList<>(head), new ArrayList<>(in), new HashSet<>(an), v2);
         }
     }
 
-    private void updateAncestors(Set<Node> an, Node v1, Graph mag) {
+    private void updateAncestors(Set<Node> an, Node v1) {
         an.add(v1);
 
-        for (Node v2 : mag.getParents(v1)) {
-            updateAncestors(an, v2, mag);
+        for (Node v2 : this.mag.getParents(v1)) {
+            updateAncestors(an, v2);
         }
     }
 
-    private void updateIntrinsics(List<Node> in, List<Node> sib, Set<Node> an, Node v1, List<Node> mbo, Graph mag) {
+    private void updateIntrinsics(List<Node> in, List<Node> sib, Set<Node> an, Node v1, List<Node> mbo) {
         in.add(v1);
 
         List<Node> mb = new ArrayList<>(mbo);
@@ -192,10 +192,10 @@ public class MagSemBicScore implements Score{
 
         for (Node v3 : in.subList(0,in.size())) {
             for (Node v2 : mb) {
-                Edge e = mag.getEdge(v2,v3);
+                Edge e = this.mag.getEdge(v2,v3);
                 if (e != null && e.getEndpoint1() == Endpoint.ARROW && e.getEndpoint2() == Endpoint.ARROW) {
                     if (an.contains(v2)) {
-                        updateIntrinsics(in, sib, an, v2, mbo, mag);
+                        updateIntrinsics(in, sib, an, v2, mbo);
                     } else {
                         sib.add(v2);
                     }
