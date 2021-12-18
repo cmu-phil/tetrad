@@ -34,8 +34,6 @@ public class MagSemBicScore implements Score{
 
     private final SemBicScore score;
 
-    private final List<Node> variables;
-
     private Graph mag;
 
     private List<Node> order;
@@ -46,7 +44,6 @@ public class MagSemBicScore implements Score{
         }
 
         this.score = new SemBicScore(covariances);
-        this.variables = covariances.getVariables();
         this.mag = null;
         this.order = null;
     }
@@ -57,7 +54,6 @@ public class MagSemBicScore implements Score{
         }
 
         this.score = new SemBicScore(dataSet);
-        this.variables = dataSet.getVariables();
         this.mag = null;
         this.order = null;
     }
@@ -94,12 +90,12 @@ public class MagSemBicScore implements Score{
 
         double score = 0;
 
-        Node v1 = this.variables.get(i);
+        Node v1 = this.score.getVariables().get(i);
 
         List<Node> mbo = new ArrayList<>();
         Arrays.sort(js);
         for (Node v2 : this.order) {
-            if (Arrays.binarySearch(js, this.variables.indexOf(v2)) >= 0) {
+            if (Arrays.binarySearch(js, this.score.getVariables().indexOf(v2)) >= 0) {
                 mbo.add(v2);
             }
         }
@@ -131,7 +127,7 @@ public class MagSemBicScore implements Score{
 
                 int[] parents = new int[j];
                 for (int k = 0 ; k < j ; k++){
-                    parents[k] = this.variables.indexOf(condSet.get(k));
+                    parents[k] = this.score.getVariables().indexOf(condSet.get(k));
                 }
 
                 if (((max - condSet.size()) % 2) == 0) {
@@ -244,7 +240,7 @@ public class MagSemBicScore implements Score{
 
     @Override
     public List<Node> getVariables() {
-        return this.variables;
+        return this.score.getVariables();
     }
 
     @Override
@@ -254,7 +250,7 @@ public class MagSemBicScore implements Score{
 
     @Override
     public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
+        for (Node node : this.score.getVariables()) {
             if (node.getName().equals(targetName)) {
                 return node;
             }

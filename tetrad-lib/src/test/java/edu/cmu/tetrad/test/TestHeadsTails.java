@@ -44,8 +44,6 @@ public class TestHeadsTails {
         int i = 3;
         int[] js = new int[] {0, 1, 2, 4};
 
-        System.out.println(mag);
-
         headsTails(order, mag, i, js);
     }
 
@@ -62,8 +60,6 @@ public class TestHeadsTails {
         int i = 3;
         int[] js = new int[] {0, 1, 2};
 
-        System.out.println(mag);
-
         headsTails(order, mag, i, js);
     }
 
@@ -79,7 +75,6 @@ public class TestHeadsTails {
 
         int i = 3;
         int[] js = new int[] {0,1};
-        System.out.println(mag);
 
         headsTails(order, mag, i, js);
     }
@@ -94,9 +89,8 @@ public class TestHeadsTails {
             order.add(0, v);
         }
 
-            int i = 2;
-            int[] js = new int[] {0,1};
-        System.out.println(mag);
+        int i = 2;
+        int[] js = new int[] {0,1};
 
         headsTails(order, mag, i, js);
     }
@@ -114,8 +108,6 @@ public class TestHeadsTails {
         int i = 4;
         int[] js = new int[]{0, 1, 2, 3};
 
-        System.out.println(mag);
-
         headsTails(order, mag, i, js);
     }
 
@@ -131,8 +123,6 @@ public class TestHeadsTails {
 
         int i = 4;
         int[] js = new int[]{0, 1, 2, 3};
-
-        System.out.println(mag);
 
         headsTails(order, mag, i, js);
     }
@@ -150,7 +140,21 @@ public class TestHeadsTails {
         int i = 0;
         int[] js = new int[]{1, 2, 3, 4};
 
-        System.out.println(mag);
+        headsTails(order, mag, i, js);
+    }
+
+    @Test
+    public void test8() {
+        Graph mag = GraphConverter.convert("A<->B,B<->C,C<->D,D<--E");
+        List<Node> variables = mag.getNodes();
+
+        List<Node> order = new ArrayList<>();
+        for (Node v : variables) {
+            order.add(0, v);
+        }
+
+        int i = 2;
+        int[] js = new int[]{0, 1, 3, 4};
 
         headsTails(order, mag, i, js);
     }
@@ -167,9 +171,12 @@ public class TestHeadsTails {
             }
         }
 
-        System.out.println(v1);
-        System.out.println(mbo);
-        System.out.println();
+//        System.out.println(mag);
+//        System.out.println();
+
+//        System.out.println(v1);
+//        System.out.println(mbo);
+//        System.out.println();
 
         long t1 = System.currentTimeMillis();
 
