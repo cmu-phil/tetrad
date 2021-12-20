@@ -109,6 +109,26 @@ public class TestHeadsTails {
         int[] js = new int[]{0, 1, 2, 3};
 
         headsTails(order, mag, i, js);
+
+        i = 3;
+        js = new int[]{0, 1, 2};
+
+        headsTails(order, mag, i, js);
+
+        i = 2;
+        js = new int[]{0, 1};
+
+        headsTails(order, mag, i, js);
+
+        i = 1;
+        js = new int[]{0};
+
+        headsTails(order, mag, i, js);
+
+        i = 0;
+        js = new int[]{};
+
+        headsTails(order, mag, i, js);
     }
 
     @Test
@@ -145,16 +165,21 @@ public class TestHeadsTails {
 
     @Test
     public void test8() {
-        Graph mag = GraphConverter.convert("A<->B,B<->C,C<->D,D<--E");
+        Graph mag = GraphConverter.convert("A-->B,E-->D,A-->C,B-->C,C<->D");
         List<Node> variables = mag.getNodes();
 
         List<Node> order = new ArrayList<>();
         for (Node v : variables) {
-            order.add(0, v);
+            order.add(v);
         }
 
-        int i = 2;
-        int[] js = new int[]{0, 1, 3, 4};
+        int i = 4;
+        int[] js = new int[]{0, 1, 2, 3};
+
+        headsTails(order, mag, i, js);
+
+        i = 3;
+        js = new int[]{0, 1, 2};
 
         headsTails(order, mag, i, js);
     }
@@ -172,6 +197,7 @@ public class TestHeadsTails {
         }
 
 //        System.out.println(mag);
+//        System.out.println(order);
 //        System.out.println();
 
 //        System.out.println(v1);
@@ -208,12 +234,12 @@ public class TestHeadsTails {
                         condSet.add(head.get(k));
                     }
                 }
-                System.out.print((((max - condSet.size()) % 2) == 0) ? " + " : " - ");
-                System.out.print(v1);
-                System.out.print(" | ");
-                System.out.println(condSet);
+//                System.out.print((((max - condSet.size()) % 2) == 0) ? " + " : " - ");
+//                System.out.print(v1);
+//                System.out.print(" | ");
+//                System.out.println(condSet);
             }
-            System.out.println();
+//            System.out.println();
         }
 
         long t3 = System.currentTimeMillis();
