@@ -428,8 +428,8 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                 algorithmParamRequest.setJvmOptions(jvmOptions);
             }
 
-            ///////////////////////////// DISABLING REMOTE JOB MANAGER ////////////////////////////
-            ///////////// THIS WAS PREVENTING THE TETRAD FROM LUNCHING PROPERLY ///////////////////
+            /* DISABLING REMOTE JOB MANAGER */
+            /* THIS WAS PREVENTING THE TETRAD FROM LUNCHING PROPERLY */
 
             // Hpc parameters
             final HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
@@ -467,8 +467,8 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             progressTextArea.append("Preparing...");
             progressTextArea.updateUI();
 
-            ///////////////////////////// DISABLING REMOTE JOB MANAGER ////////////////////////////
-            ///////////// THIS WAS PREVENTING THE TETRAD FROM LUNCHING PROPERLY ///////////////////
+            /* DISABLING REMOTE JOB MANAGER */
+            /* THIS WAS PREVENTING THE TETRAD FROM LUNCHING PROPERLY */
 
             HpcJobManager hpcJobManager = desktop.getHpcJobManager();
 
@@ -502,8 +502,8 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     private HpcAccount showRemoteComputingOptions(String algoId) {
         List<HpcAccount> hpcAccounts = null;
 
-        ///////////////////////////// DISABLING REMOTE JOB MANAGER ////////////////////////////
-        ///////////// THIS WAS PREVENTING THE TETRAD FROM LUNCHING PROPERLY ///////////////////
+        /* DISABLING REMOTE JOB MANAGER */
+        /* THIS WAS PREVENTING THE TETRAD FROM LUNCHING PROPERLY */
 
         try {
             hpcAccounts = desktop.getHpcAccountManager().getHpcAccounts();

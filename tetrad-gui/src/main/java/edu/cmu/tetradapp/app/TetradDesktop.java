@@ -115,8 +115,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         desktopPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
         desktopPane.addPropertyChangeListener(this);
 
-        ///////////////////////////// DISABLING REMOTE JOB MANAGER ////////////////////////////
-        ///////////// THIS WAS PREVENTING THE TETRAD FROM LUNCHING PROPERLY ///////////////////
+        /* DISABLING REMOTE JOB MANAGER */
+        /* THIS WAS PREVENTING THE TETRAD FROM LUNCHING PROPERLY */
 
         // HPC account manager
         final org.hibernate.Session session;
