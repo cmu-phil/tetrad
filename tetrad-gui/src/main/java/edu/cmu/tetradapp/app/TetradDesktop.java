@@ -115,6 +115,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         desktopPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
         desktopPane.addPropertyChangeListener(this);
 
+        ///////////////////////////// DISABLING REMOTE JOB MANAGER ////////////////////////////
+        ///////////// THIS WAS PREVENTING THE TETRAD FROM LUNCHING PROPERLY ///////////////////
+
         // HPC account manager
         final org.hibernate.Session session;
         try {
@@ -127,7 +130,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             this.hpcJobManager = new HpcJobManager(session, processors);
 
         } catch (ExceptionInInitializerError e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            TetradLogger.getInstance().forceLogMessage("Disabling remote job manager.");
         }
 
         this.setupDesktop();
