@@ -234,12 +234,12 @@ public class TestHeadsTails {
                         condSet.add(head.get(k));
                     }
                 }
-//                System.out.print((((max - condSet.size()) % 2) == 0) ? " + " : " - ");
-//                System.out.print(v1);
-//                System.out.print(" | ");
-//                System.out.println(condSet);
+                System.out.print((((max - condSet.size()) % 2) == 0) ? " + " : " - ");
+                System.out.print(v1);
+                System.out.print(" | ");
+                System.out.println(condSet);
             }
-//            System.out.println();
+            System.out.println();
         }
 
         long t3 = System.currentTimeMillis();
