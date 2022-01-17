@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.Tetrad;
-import edu.cmu.tetradapp.app.hpc.action.HpcAccountSettingAction;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -141,8 +140,6 @@ final class TetradMenuBar extends JMenuBar {
         JMenu settingsMenu = new JMenu("Settings");
 
         JMenuItem loggingSettingMenuItem = new JMenuItem(new SetupLoggingAction());
-        JMenuItem hpcAccountSettingMenuItem = new JMenuItem(new HpcAccountSettingAction());
-
 
         JCheckBox showExperimentalBox = new JCheckBox(" Enable Experimental");
         showExperimentalBox.setSelected(Tetrad.enableExperimental);
@@ -152,7 +149,6 @@ final class TetradMenuBar extends JMenuBar {
         });
 
         settingsMenu.add(loggingSettingMenuItem);
-        settingsMenu.add(hpcAccountSettingMenuItem);
         settingsMenu.add(showExperimentalBox);
 
         fileMenu.add(settingsMenu);

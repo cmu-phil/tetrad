@@ -25,10 +25,6 @@ import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
-import edu.cmu.tetradapp.app.hpc.action.HpcJobActivityAction;
-import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
-import edu.pitt.dbmi.tetrad.db.entity.HpcAccount;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
@@ -130,17 +126,6 @@ final class WindowMenuListener implements MenuListener, ActionListener {
             this.windowMenu.add(item);
             item.addActionListener(this);
             this.itemsToFrames.put(item, titlesToFrames.get(title));
-        }
-        
-        // If there are hpc account(s) setup, show the hpc activity
-        HpcAccountManager hpcAccountManager = desktop.getHpcAccountManager();
-        List<HpcAccount> hpcAccounts = hpcAccountManager.getHpcAccounts();
-        if(hpcAccounts != null && !hpcAccounts.isEmpty()){
-            this.windowMenu.addSeparator();
-            String title = "HPC Job Activity";
-            JMenuItem item = new JMenuItem(new HpcJobActivityAction(title));
-            this.windowMenu.add(item);
-            //item.addActionListener(hpcJobActivityMenuListener);
         }
     }
 

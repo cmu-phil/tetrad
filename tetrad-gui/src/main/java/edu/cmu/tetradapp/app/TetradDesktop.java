@@ -29,8 +29,6 @@ import edu.cmu.tetrad.util.TetradLoggerConfig;
 import edu.cmu.tetrad.util.TetradLoggerEvent;
 import edu.cmu.tetrad.util.TetradLoggerListener;
 import edu.cmu.tetrad.util.Version;
-import edu.cmu.tetradapp.app.hpc.manager.HpcAccountManager;
-import edu.cmu.tetradapp.app.hpc.manager.HpcJobManager;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
@@ -40,7 +38,6 @@ import edu.cmu.tetradapp.util.EditorWindowIndirectRef;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 import edu.cmu.tetradapp.util.SessionWrapperIndirectRef;
 import edu.cmu.tetradapp.util.TetradMetadataIndirectRef;
-import edu.pitt.dbmi.tetrad.db.TetradDatabaseApplication;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -119,10 +116,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      */
     private TetradLogArea logArea;
 
-    private final HpcAccountManager hpcAccountManager;
-
-    private final HpcJobManager hpcJobManager;
-
     /**
      * Constructs a new desktop.
      */
@@ -138,15 +131,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         desktopPane.setDesktopManager(new DefaultDesktopManager());
         desktopPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
         desktopPane.addPropertyChangeListener(this);
-
-        // HPC account manager
-        final org.hibernate.Session session = TetradDatabaseApplication
-                .getSessionFactory().openSession();
-        this.hpcAccountManager = new HpcAccountManager(session);
-
-        // HPC Job Manager
-        int processors = Runtime.getRuntime().availableProcessors();
-        this.hpcJobManager = new HpcJobManager(session, processors);
 
         this.setupDesktop();
         Preferences.userRoot().putBoolean("displayLogging", false);
@@ -745,14 +729,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             }
         }
 
-    }
-
-    public HpcAccountManager getHpcAccountManager() {
-        return hpcAccountManager;
-    }
-
-    public HpcJobManager getHpcJobManager() {
-        return hpcJobManager;
     }
 
 }

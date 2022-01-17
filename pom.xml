@@ -52,30 +52,6 @@
         </extensions>
     </build>
 
-
-
-    <distributionManagement>
-
-        <repository>
-            <id>ccd-releases</id>
-            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ccd-snapshots</id>
-            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-    <repositories>
-        <repository>
-            <id>ccd-releases</id>
-            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/</url>
-        </repository>
-        <repository>
-            <id>ccd-snapshots</id>
-            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/snapshots/</url>
-        </repository>
-    </repositories>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <additionalparam>-Xdoclint:none</additionalparam>
