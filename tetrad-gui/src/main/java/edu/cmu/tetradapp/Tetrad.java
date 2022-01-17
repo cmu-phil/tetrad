@@ -76,11 +76,6 @@ public final class Tetrad implements PropertyChangeListener {
             = "Tetrad " + Version.currentViewableVersion()
                     .toString();
 
-    /**
-     * Skip latest version checking
-     */
-    private static boolean skipLatest;
-
     public static boolean enableExperimental;
 
     //==============================CONSTRUCTORS===========================//
@@ -128,8 +123,7 @@ public final class Tetrad implements PropertyChangeListener {
         Locale.setDefault(Locale.US);
 
         // Check if we should skip checking for latest version
-        skipLatest = argv.length > 0 && argv[0] != null && argv[0].compareToIgnoreCase("--skip-latest") == 0;
-        SplashScreen.show("Loading Tetrad...", 1000, skipLatest);
+        SplashScreen.show("Loading Tetrad...", 1000);
         EventQueue.invokeLater(() -> {
             new Tetrad().launchFrame();
         });

@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.util;
 
-import edu.cmu.tetrad.latest.LatestClient;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -53,19 +52,19 @@ public class SplashScreen {
     private static SplashWindow WINDOW;
     private static JFrame frame;
 
-    public static void show(Frame parent, String title, int max, boolean skipLatest) {
+    public static void show(Frame parent, String title, int max) {
         hide();
         SplashScreen.COUNTER = 0;
         SplashScreen.MAX = max;
-        WINDOW = new SplashWindow(parent, null, title, skipLatest);
+        WINDOW = new SplashWindow(parent, null, title);
     }
 
-    public static void show(String title, int max, boolean skipLatest) {
+    public static void show(String title, int max) {
         hide();
         SplashScreen.COUNTER = 0;
         SplashScreen.MAX = max;
         frame = new JFrame();
-        WINDOW = new SplashWindow(frame, null, title, skipLatest);
+        WINDOW = new SplashWindow(frame, null, title);
     }
 
     public static void hide() {
@@ -107,7 +106,7 @@ public class SplashScreen {
         final Image splashIm;
         final JProgressBar bar;
 
-        SplashWindow(Frame parent, Image image, String title, boolean skipLatest) {
+        SplashWindow(Frame parent, Image image, String title) {
             super(parent);
             this.splashIm = image;
             //setSize(200, 100);
@@ -133,16 +132,6 @@ public class SplashScreen {
 
             // optionally check if we are running latest version
             String version = this.getClass().getPackage().getImplementationVersion();
-            if (!skipLatest) {
-                LatestClient latestClient = LatestClient.getInstance();
-
-                // if no version it means we are not running a jar so probably development
-                if (version == null) {
-                    version = "DEVELOPMENT";
-                }
-                latestClient.checkLatest("tetrad", version);
-                text = text + "\n" + latestClient.getLatestResult(60);
-            }
 
             JTextArea textArea = new JTextArea(text);
             textArea.setBorder(new EmptyBorder(5, 5, 5, 5));

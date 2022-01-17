@@ -11,17 +11,6 @@
 
     <artifactId>tetrad-gui</artifactId>
 
-    <repositories>
-        <repository>
-            <id>ccd-releases</id>
-            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/</url>
-        </repository>
-        <repository>
-            <id>ccd-snapshots</id>
-            <url>https://cloud.ccd.pitt.edu/nexus/content/repositories/snapshots/</url>
-        </repository>
-    </repositories>
-
     <build>
         <resources>
             <resource>
@@ -124,21 +113,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.1</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.pitt.dbmi</groupId>
-            <artifactId>tetrad-db</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.pitt.dbmi.ccd</groupId>
-            <artifactId>causal-tetrad-rest-client</artifactId>
-            <version>0.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.pitt.dbmi</groupId>
-            <artifactId>ccd-commons</artifactId>
-            <version>0.3.1</version>
         </dependency>
         <!-- Used for deep copy dataset during determinism - Zhou -->
         <dependency>
