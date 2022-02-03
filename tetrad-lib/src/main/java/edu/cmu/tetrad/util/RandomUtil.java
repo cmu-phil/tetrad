@@ -27,7 +27,6 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -51,24 +50,26 @@ public class RandomUtil {
      * The singleton instance.
      */
     private static final RandomUtil randomUtil = new RandomUtil();
-
+    private static long seedUniquifier = 8682522807148012L;
+    private static long current;
+    private final Map<Long, RandomGenerator> seedsToGenerators = new HashedMap<>();
     // Random number generator from the Apache library.
     private RandomGenerator randomGenerator;
-
     private NormalDistribution normal = new NormalDistribution(0, 1);
-
-    private long seed;
-
-    private Map<Long, RandomGenerator> seedsToGenerators = new HashedMap<>();
 
 
     //========================================CONSTRUCTORS===================================//
+    private long seed;
+
+//    public Random() {
+//        this(seedUniquifier() ^ System.nanoTime());
+//    }
 
     /**
      * Constructs a new random number generator based on the getModel date in milliseconds.
      */
     private RandomUtil() {
-        this(new Date().getTime());
+        this(seedUniquifier() ^ System.nanoTime());
     }
 
     /**
@@ -78,6 +79,14 @@ public class RandomUtil {
      */
     private RandomUtil(long seed) {
         setSeed(seed);
+    }
+
+    private static long seedUniquifier() {
+        // L'Ecuyer, "Tables of Linear Congruential Generators of
+        // Different Sizes and Good Lattice Structure", 1999
+        long current = seedUniquifier;
+        seedUniquifier = current *  1181783497276652981L;
+        return seedUniquifier;
     }
 
     /**
@@ -145,27 +154,11 @@ public class RandomUtil {
 
         double d;
 
-        while (true) {
+        do {
             d = nextNormal(mean, sd);
-            if (d >= low && d <= high) break;
-        }
+        } while (!(d >= low) || !(d <= high));
 
         return d;
-    }
-
-    /**
-     * Sets the seed to the given value.
-     *
-     * @param seed A long value. Once this seed is set, the behavior of the random number generator is deterministic, so
-     *             setting the seed can be used to repeat previous behavior.
-     */
-    public void setSeed(long seed) {
-
-        // Do not change this generator; you will screw up innuerable unit tests!
-        randomGenerator = new SynchronizedRandomGenerator(new Well44497b(seed));
-        seedsToGenerators.put(seed, randomGenerator);
-        normal = new NormalDistribution(randomGenerator, 0, 1);
-        this.seed = seed;
     }
 
     public void revertSeed(long seed) {
@@ -204,8 +197,6 @@ public class RandomUtil {
      */
     public double normalCdf(double mean, double sd, double value) {
         return normal.cumulativeProbability((value - mean) / sd);
-//        value = (value - mean) / sd;
-//        return ProbUtils.normalCdf(value);
     }
 
     /**
@@ -252,6 +243,21 @@ public class RandomUtil {
 
     public long getSeed() {
         return seed;
+    }
+
+    /**
+     * Sets the seed to the given value.
+     *
+     * @param seed A long value. Once this seed is set, the behavior of the random number generator is deterministic, so
+     *             setting the seed can be used to repeat previous behavior.
+     */
+    public void setSeed(long seed) {
+
+        // Do not change this generator; you will screw up innuerable unit tests!
+        randomGenerator = new SynchronizedRandomGenerator(new Well44497b(seed));
+        seedsToGenerators.put(seed, randomGenerator);
+        normal = new NormalDistribution(randomGenerator, 0, 1);
+        this.seed = seed;
     }
 
     public RandomGenerator getRandomGenerator() {
