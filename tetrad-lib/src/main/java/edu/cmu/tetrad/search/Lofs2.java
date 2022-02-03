@@ -93,15 +93,15 @@ public class Lofs2 {
             throw new IllegalArgumentException("Pattern must be specified.");
         }
 
-        for (DataSet dataSet : dataSets) {
-            for (int j = 0; j < dataSet.getNumRows(); j++) {
-                for (int i = 0; i < dataSet.getNumColumns(); i++) {
-                    if (isNaN(dataSet.getDouble(i, j))) {
-                        throw new IllegalArgumentException("Please remove or impute missing values.");
-                    }
-                }
-            }
-        }
+//        for (DataSet dataSet : dataSets) {
+//            for (int j = 0; j < dataSet.getNumRows(); j++) {
+//                for (int i = 0; i < dataSet.getNumColumns(); i++) {
+//                    if (isNaN(dataSet.getDouble(j, i))) {
+//                        throw new IllegalArgumentException("Please remove or impute missing values.");
+//                    }
+//                }
+//            }
+//        }
 
         this.pattern = pattern;
         this.variables = dataSets.get(0).getVariables();
