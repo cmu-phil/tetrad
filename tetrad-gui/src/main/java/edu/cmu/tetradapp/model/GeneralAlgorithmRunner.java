@@ -242,6 +242,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 }
             }
 
+            if (algo instanceof HasKnowledge) {
+                ((HasKnowledge) algo).setKnowledge(knowledge.copy());
+            }
+
             graphList.add(algo.search(null, parameters));
         } else {
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
@@ -263,8 +267,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
 
                     if (algo instanceof HasKnowledge) {
-                        ((HasKnowledge) algo).setKnowledge(getKnowledge());
+                        ((HasKnowledge) algo).setKnowledge(knowledge.copy());
                     }
+
                     graphList.add(((MultiDataSetAlgorithm) algo).search(sub, parameters));
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
@@ -272,12 +277,21 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     getDataModelList().forEach(dataModel -> {
                         if (dataModel instanceof ICovarianceMatrix) {
                             ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
+
+                            if (algorithm instanceof HasKnowledge) {
+                                ((HasKnowledge) algorithm).setKnowledge(knowledge.copy());
+                            }
+
                             graphList.add(algorithm.search(dataSet, parameters));
                         } else if (dataModel instanceof DataSet) {
                             DataSet dataSet = (DataSet) dataModel;
 
                             if (!dataSet.isContinuous()) {
                                 throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
+                            }
+
+                            if (algorithm instanceof HasKnowledge) {
+                                ((HasKnowledge) algorithm).setKnowledge(knowledge.copy());
                             }
 
                             graphList.add(algorithm.search(dataSet, parameters));
@@ -296,11 +310,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                             this.knowledge = knowledgeFromData;
                         }
 
-                        if (algo instanceof HasKnowledge) {
-                            ((HasKnowledge) algo).setKnowledge(getKnowledge());
-                        }
-
                         DataType algDataType = algo.getDataType();
+
+                        if (algo instanceof HasKnowledge) {
+                            ((HasKnowledge) algo).setKnowledge(knowledge.copy());
+                        }
 
                         if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
                             graphList.add(algo.search(data, parameters));
@@ -543,7 +557,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     public void setAlgorithm(Algorithm algorithm) {
         if (algorithm == null) {
-            return;
+            throw new NullPointerException("Algorithm not specified");
         }
         this.algorithm = algorithm;
     }
