@@ -183,7 +183,7 @@ public class Fas implements IFas {
         }
 
         for (Edge edge : new ArrayList<>(edges)) {
-            if (scores.get(edge) < 0
+            if (scores.get(edge) != null && scores.get(edge) < 0
                     || (knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
                     && (knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())))) {
                 edges.remove(edge);
@@ -319,7 +319,7 @@ public class Fas implements IFas {
         Map<Node, Double> scores2 = new HashMap<>();
 
         for (Node node : ppx) {
-            double _score = scores.get(Edges.undirectedEdge(node, x));
+            Double _score = scores.get(Edges.undirectedEdge(node, x));
             scores2.put(node, _score);
         }
 
@@ -371,6 +371,7 @@ public class Fas implements IFas {
         String _x = x.getName();
 
         for (Node z : adjx) {
+            if (z == x) continue;
             if (z == y) continue;
             String _z = z.getName();
 
