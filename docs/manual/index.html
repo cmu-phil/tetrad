@@ -769,8 +769,8 @@
 
     <p>Using this box, you can specify the ranges of values from which you want coefficients, covariances, and variances
         to be drawn for the parameters in the model. In the above box, for example, all linear coefficients will be
-        between -1.5 and -0.5 or 0.5 and 1.5. If you uncheck “symmetric about zero,” they will only be between 0.5 and
-        1.5.</p>
+        between -1.0 and 1.0. If you uncheck “symmetric about zero,” they will only be between 0.0 and
+        1.0.</p>
 
     <p>Here is an example of a SEM PM and a SEM IM generated from it using the default settings: </p>
 
@@ -3458,7 +3458,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Short Description: <span id="coefHigh_short_desc">High end of coefficient range (min = 0.0)</span></li>
             <li>Long Description: <span id="coefHigh_long_desc">When simulating data from linear models, one needs to specify the distribution of the coefficient parameters. Here, we draw coefficients from U(-m2, -m1) U U(m1, m2); m2 is what is being called the “high end of the coefficient range” and must be greater than m1.</span>
             </li>
-            <li>Default Value: <span id="coefHigh_default_value">0.7</span></li>
+            <li>Default Value: <span id="coefHigh_default_value">1.0</span></li>
             <li>Lower Bound: <span id="coefHigh_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="coefHigh_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="coefHigh_value_type">Double</span></li>
@@ -3469,7 +3469,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Short Description: <span id="coefLow_short_desc">Low end of coefficient range (min = 0.0)</span></li>
             <li>Long Description: <span id="coefLow_long_desc">When simulating data from linear models, one needs to specify the distribution of the coefficient parameters. Here, we draw coefficients from U(-m2, -m1) U U(m1, m2); m1 is what is being called the “low end of the coefficient range” and has a minimum value of 0.</span>
             </li>
-            <li>Default Value: <span id="coefLow_default_value">0.2</span></li>
+            <li>Default Value: <span id="coefLow_default_value">0.0</span></li>
             <li>Lower Bound: <span id="coefLow_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="coefLow_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="coefLow_value_type">Double</span></li>
@@ -3549,7 +3549,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         <h3 id="covHigh" class="parameter_description">covHigh</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="covHigh_short_desc">High end of covariance range (min = 0.0)</span></li>
-            <li>Long Description: <span id="covHigh_long_desc">When simulating data from linear models, one needs to specify the distribution of the covariance parameters. Here, we draw coefficients from U(-c2, -c1) U U(c1, c2); c2 is what is being called the “high end of the covariance range” and must be greater  than c1. The default value is 1.5.</span>
+            <li>Long Description: <span id="covHigh_long_desc">When simulating data from linear models, one needs to specify the distribution of the covariance parameters. Here, we draw coefficients from U(-c2, -c1) U U(c1, c2); c2 is what is being called the “high end of the covariance range” and must be greater  than c1. The default value is 1.0.</span>
             </li>
             <li>Default Value: <span id="covHigh_default_value">0.0</span></li>
             <li>Lower Bound: <span id="covHigh_lower_bound">0.0</span></li>
@@ -4338,7 +4338,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="meanHigh_short_desc">High end of mean range (min = 0.0)</span></li>
             <li>Long Description: <span id="meanHigh_long_desc">For a linear model, means of variables may be randomly shifted. The default is for there to be no shift, but shifts from a minimum value to a maximum value may be specified. The minimum must be less than or equal to the maximum.</span>
             </li>
-            <li>Default Value: <span id="meanHigh_default_value">1.5</span></li>
+            <li>Default Value: <span id="meanHigh_default_value">1.0</span></li>
             <li>Lower Bound: <span id="meanHigh_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="meanHigh_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="meanHigh_value_type">Double</span></li>

@@ -106,9 +106,9 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
         String[] funcs = {"TSUM(NEW(B)*$)", "TSUM(NEW(B)*$+NEW(C)*sin(NEW(T)*$+NEW(A)))",
                 "TSUM(NEW(B)*(.5*$ + .5*(sqrt(abs(NEW(b)*$+NEW(exoErrorType))) ) ) )"};
         paramMap.put("s", "U(1,3)");
-        paramMap.put("B", "Split(-1.5,-.5,.5,1.5)");
-        paramMap.put("C", "Split(-1.5,-.5,.5,1.5)");
-        paramMap.put("T", "U(.5,1.5)");
+        paramMap.put("B", "Split(-1.0,-.0,.0,1.0)");
+        paramMap.put("C", "Split(-1.0,-.0,.0,1.0)");
+        paramMap.put("T", "U(.0,1.0)");
         paramMap.put("A", "U(0,.25)");
         paramMap.put("exoErrorType", "U(-.5,.5)");
         paramMap.put("funcType", "U(1,5)");

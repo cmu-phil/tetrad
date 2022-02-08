@@ -78,7 +78,7 @@ public class Split implements Distribution {
      * @return the exemplar.
      */
     public static Split serializableInstance() {
-        return new Split(0.5, 1.5);
+        return new Split(0.0, 1.0);
     }
 
     //==========================PUBLIC METHODS==========================//

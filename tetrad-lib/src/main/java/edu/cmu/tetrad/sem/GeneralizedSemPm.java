@@ -364,8 +364,8 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
                     buf.append("*");
                     buf.append(parents.get(j).getName());
 
-                    setParameterExpression(parameter, "Split(-1.5, -.5, .5, 1.5)");
-                    setStartsWithParametersTemplate(parameter.substring(0, 1), "Split(-1.5, -.5, .5, 1.5)");
+                    setParameterExpression(parameter, "Split(-1.0, -.0, .0, 1.0)");
+                    setStartsWithParametersTemplate(parameter.substring(0, 1), "Split(-1.0, -.0, .0, 1.0)");
                     setStartsWithParametersEstimationInitializaationTemplate(parameter.substring(0, 1), "Split(-1.5, -.5, .5, 1.5)");
 
                     if (j < parents.size() - 1) {

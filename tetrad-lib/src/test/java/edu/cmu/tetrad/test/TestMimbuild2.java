@@ -57,8 +57,8 @@ public class TestMimbuild2 {
             Graph mimStructure = structure(mim);
 
             Parameters params = new Parameters();
-            params.set("coefLow", .5);
-            params.set("coefHigh", 1.5);
+            params.set("coefLow", 0.0);
+            params.set("coefHigh", 1.0);
 
             SemPm pm = new SemPm(mim);
             SemIm im = new SemIm(pm, params);
@@ -173,7 +173,7 @@ public class TestMimbuild2 {
 //
 //        SemPm pm = new SemPm(mim);
 //        Parameters params = new Parameters();
-//        params.setCoefRange(0.5, 1.5);
+//        params.setCoefRange(0.0, 1.0);
 //
 //        NumberFormat nf = new DecimalFormat("0.0000");
 //
@@ -375,7 +375,7 @@ public class TestMimbuild2 {
 //        System.out.println(mimStructure);
 //
 //        Parameters params = new Parameters();
-//        params.setCoefRange(0.5, 1.5);
+//        params.setCoefRange(0.0, 1.0);
 //
 //        SemIm im = new SemIm(pm, params);
 //
@@ -441,7 +441,7 @@ public class TestMimbuild2 {
 //
 //        SemPm pm = new SemPm(mim);
 //        Parameters params = new Parameters();
-//        params.setCoefRange(0.5, 1.5);
+//        params.setCoefRange(0.0, 1.0);
 //
 //        NumberFormat nf = new DecimalFormat("0.0000");
 //

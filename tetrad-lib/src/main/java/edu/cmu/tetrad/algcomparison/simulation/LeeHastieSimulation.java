@@ -152,7 +152,7 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
         Graph graph = MixedUtils.makeMixedGraph(dag, nd);
 
-        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
+        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.0,-.0,.0,1.0)");
         GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);

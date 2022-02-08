@@ -57,8 +57,8 @@ public final class LargeScaleSimulation {
     private transient TetradAlgebra algebra;
     private List<Node> variableNodes;
     private Graph graph;
-    private double coefLow = .2;
-    private double coefHigh = 1.5;
+    private double coefLow = 0.0;
+    private double coefHigh = 1.0;
     private double varLow = 1.0;
     private double varHigh = 3.0;
     private double meanLow = 0;

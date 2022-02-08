@@ -228,6 +228,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         Algorithm algo = getAlgorithm();
 
+        if (algo instanceof HasKnowledge) {
+            ((HasKnowledge) algo).setKnowledge(knowledge.copy());
+        }
+
         if (getDataModelList().size() == 0 && getSourceGraph() != null) {
             if (algo instanceof UsesScoreWrapper) {
                 // We inject the graph to the score to satisfy the tests like DSeparationScore - Zhou
@@ -240,10 +244,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 if (wrapper instanceof DSeparationTest) {
                     ((DSeparationTest) wrapper).setGraph(getSourceGraph());
                 }
-            }
-
-            if (algo instanceof HasKnowledge) {
-                ((HasKnowledge) algo).setKnowledge(knowledge.copy());
             }
 
             graphList.add(algo.search(null, parameters));
@@ -266,10 +266,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         sub.add(dataSets.get(j));
                     }
 
-                    if (algo instanceof HasKnowledge) {
-                        ((HasKnowledge) algo).setKnowledge(knowledge.copy());
-                    }
-
                     graphList.add(((MultiDataSetAlgorithm) algo).search(sub, parameters));
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
@@ -288,10 +284,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                             if (!dataSet.isContinuous()) {
                                 throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
-                            }
-
-                            if (algorithm instanceof HasKnowledge) {
-                                ((HasKnowledge) algorithm).setKnowledge(knowledge.copy());
                             }
 
                             graphList.add(algorithm.search(dataSet, parameters));
