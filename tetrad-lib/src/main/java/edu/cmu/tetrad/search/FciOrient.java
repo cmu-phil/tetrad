@@ -1232,8 +1232,6 @@ public final class FciOrient {
     }
 
     private boolean isArrowpointAllowed(Node x, Node y, Graph graph) {
-//        if (true) return true;
-
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }
