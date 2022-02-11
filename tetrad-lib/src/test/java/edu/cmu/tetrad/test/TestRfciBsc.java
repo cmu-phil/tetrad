@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class TestRfciBsc {
 
-	@Test
+//	@Test
 	public void testRandomDiscreteData() {
 		// RFCI
 		int depth = 5;

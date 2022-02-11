@@ -3708,6 +3708,22 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="doColliderOrientation_value_type">Boolean</span></li>
         </ul>
 
+        <h3 id="doFgesFirst" class="parameter_description">doFgesFirst</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="doFgesFirst_short_desc">
+            Yes if FGES should be done as an initial step</span>
+            </li>
+            <li>Long Description: <span id="doFgesFirst_long_desc">
+                For BOSS, for some cases, doing FGES as an initial step can reduce
+                the maximum permutation size needed to solve a problem.
+            </span>
+            </li>
+            <li>Default Value: <span id="doFgesFirst_default_value">false</span></li>
+            <li>Lower Bound: <span id="doFgesFirst_lower_bound"></span></li>
+            <li>Upper Bound: <span id="doFgesFirst_upper_bound"></span></li>
+            <li>Value Type: <span id="doFgesFirst_value_type">Boolean</span></li>
+        </ul>
+
         <h3 id="errorsNormal" class="parameter_description">errorsNormal</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="errorsNormal_short_desc">Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian)</span>
@@ -4596,6 +4612,281 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="numberResampling_value_type">Integer</span></li>
         </ul>
 
+        <h3 id="numStarts" class="parameter_description">numStarts</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="numStarts_short_desc">The number of random restarts (default 1)</span>
+            </li>
+            <li>Long Description: <span id="numStarts_long_desc">The number of times the algorithm should srarted from different initializations.
+                By default, the algorithm will be run through at least once using the initialized parameters
+                (zero random restarts).</span>
+            </li>
+            <li>Default Value: <span id="numStarts_default_value">1</span></li>
+            <li>Lower Bound: <span id="numStarts_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="numStarts_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="numStarts_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="otherPermMethod" class="parameter_description">otherPermMethod</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="otherPermMethod_short_desc">
+                1 = RCG, 2 = GSP, 3 = ESP, 4 = SP</span>
+            </li>
+            <li>Long Description: <span id="otherPermMethod_long_desc">
+                 RCG (Random Carnival Game);
+                 GSP ("Greedy SP") GSP using tucking
+                 ESP ("Edge SP") is from Solus et al.
+                 SP ("Sparsest Permutation") Raskutti and Uhler
+            </span>
+            </li>
+            <li>Default Value: <span id="otherPermMethod_default_value">1</span></li>
+            <li>Lower Bound: <span id="otherPermMethod_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="otherPermMethod_upper_bound">5</span></li>
+            <li>Value Type: <span id="otherPermMethod_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="bossScoreType" class="parameter_description">bossScoreType</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="bossScoreType_short_desc">
+                Yes if edge count of the model should be minimized, No if BIC should be maximized</span>
+            </li>
+            <li>Long Description: <span id="bossScoreType_long_desc">
+                If Yes, the number of edges in the model will be minimized, following Raskutti
+                and Uhler 2018. If second, the supplied score
+                of the model (preferably a BIC score) will be optimized, a suggestion made
+                in Solus et al. 2017.
+            </span>
+            </li>
+            <li>Default Value: <span id="bossScoreType_default_value">false</span></li>
+            <li>Lower Bound: <span id="bossScoreType_lower_bound"></span></li>
+            <li>Upper Bound: <span id="bossScoreType_upper_bound"></span></li>
+            <li>Value Type: <span id="bossScoreType_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspCheckCovering" class="parameter_description">graspCheckCovering</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspCheckCovering_short_desc">
+                Yes if covering of edges should be checked (GASP), no if not (GRASP)
+            </span>
+            </li>
+            <li>Long Description: <span id="graspCheckCovering_long_desc">
+				An edge X is covered if Parents(X) = Parents(Y) \ {X}. Not checking
+				covering expands the search space.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspCheckCovering_default_value">false</span></li>
+            <li>Lower Bound: <span id="graspCheckCovering_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspCheckCovering_upper_bound"></span></li>
+            <li>Value Type: <span id="graspCheckCovering_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspForwardTuckOnly" class="parameter_description">graspForwardTuckOnly</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspForwardTuckOnly_short_desc">
+                Yes if only forward tucks should be checked, no if also reverse tucks
+                should be checked.</span>
+            </li>
+            <li>Long Description: <span id="graspForwardTuckOnly_long_desc">
+				A forward tuck for X->Y moves Y to the before position of X in the permutation.
+				A reverse tuck moves Y to after the position of X in the permutation.
+				Including reverse tucks expands the search space.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspForwardTuckOnly_default_value">false</span></li>
+            <li>Lower Bound: <span id="graspForwardTuckOnly_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspForwardTuckOnly_upper_bound"></span></li>
+            <li>Value Type: <span id="graspForwardTuckOnly_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspBreakAFterImprovement" class="parameter_description">graspBreakAFterImprovement</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspBreakAFterImprovement_short_desc">
+                Yes if depth first search returns after first improvement, No for depth first traversal.
+            </span>
+            </li>
+            <li>Long Description: <span id="graspBreakAFterImprovement_long_desc">
+				Exploring the full list in every DFS call is equivalent to what we've been
+				calling the Random Carnival Game procedure (RCG).
+            </span>
+            </li>
+            <li>Default Value: <span id="graspBreakAFterImprovement_default_value">true</span></li>
+            <li>Lower Bound: <span id="graspBreakAFterImprovement_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspBreakAFterImprovement_upper_bound"></span></li>
+            <li>Value Type: <span id="graspBreakAFterImprovement_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspOrderedAlg" class="parameter_description">graspOrderedAlg</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspOrderedAlg_short_desc">
+                Yes if ordered search should be done, No if not
+            </span>
+            </li>
+            <li>Long Description: <span id="graspOrderedAlg_long_desc">
+				Exploring all covered edges first ensures that when exploring the
+				uncovered edges a graph with few edges will be obtained.
+                Note this option forces a depth first search with the breaking option.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspOrderedAlg_default_value">false</span></li>
+            <li>Lower Bound: <span id="graspOrderedAlg_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspOrderedAlg_upper_bound"></span></li>
+            <li>Value Type: <span id="graspOrderedAlg_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspUseScore" class="parameter_description">graspUseScore</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspUseScore_short_desc">
+                Yes if the score should be used for MB calculations, no if the test
+                should be used instead.
+            </span>
+            </li>
+            <li>Long Description: <span id="graspUseScore_long_desc">
+				In either case, compositional graphoid axioms are assumed by the
+				Grow-Shrink algorithm.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspUseScore_default_value">true</span></li>
+            <li>Lower Bound: <span id="graspUseScore_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspUseScore_upper_bound"></span></li>
+            <li>Value Type: <span id="graspUseScore_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspUsePearl" class="parameter_description">graspUsePearl</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspUsePearl_short_desc">
+                Yes if Pearl's DAG-building method should be used (test), No if Grow-Shrink MB should be used (score).</span>
+            </li>
+            <li>Long Description: <span id="graspUsePearl_long_desc">
+				Pearl's method adds and edge X->Y if Y ~_||_ X | Prefix(Y, pi) \ {X}. Grow-Shink
+				adds an edge X->Y if X is in the Markov blanket of Y where the variable
+				set is restricted to Prefix(Y, pi).
+            </span>
+            </li>
+            <li>Default Value: <span id="graspUsePearl_default_value">false</span></li>
+            <li>Lower Bound: <span id="graspUsePearl_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspUsePearl_upper_bound"></span></li>
+            <li>Value Type: <span id="graspUsePearl_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspUseDataOrder" class="parameter_description">graspUseDataOrder</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspUseDataOrder_short_desc">
+                Yes just in case data variable order should be used for the first initial
+                permutation.
+            </span>
+            </li>
+            <li>Long Description: <span id="graspUseDataOrder_long_desc">
+				In either case, if multiple starting points are used, taking the best
+				scoring model from among these, subsequent starting points will all be
+				random shuffles.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspUseDataOrder_default_value">true</span></li>
+            <li>Lower Bound: <span id="graspUseDataOrder_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspUseDataOrder_upper_bound"></span></li>
+            <li>Value Type: <span id="graspUseDataOrder_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspUseVpScoring" class="parameter_description">graspUseVpScoring</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspUseVpScoring_short_desc">
+                No sure
+            </span>
+            </li>
+            <li>Long Description: <span id="graspUseVpScoring_long_desc">
+				Not sure
+            </span>
+            </li>
+            <li>Default Value: <span id="graspUseVpScoring_default_value">false</span></li>
+            <li>Lower Bound: <span id="graspUseVpScoring_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspUseVpScoring_upper_bound"></span></li>
+            <li>Value Type: <span id="graspUseVpScoring_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspAlg" class="parameter_description">graspAlg</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspAlg_short_desc">
+                1 = GRaSP1, 2 = GRaSP2, 3 = esp, 4 = GRaSP4, 5 = GRaSP4
+            </span>
+            </li>
+            <li>Long Description: <span id="graspAlg_long_desc">
+				Which version of GRaSP (temp parameter)
+            </span>
+            </li>
+            <li>Default Value: <span id="graspAlg_default_value">1</span></li>
+            <li>Lower Bound: <span id="graspAlg_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="graspAlg_upper_bound">5</span></li>
+            <li>Value Type: <span id="graspAlg_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="graspDepth" class="parameter_description">graspDepth</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspDepth_short_desc">Recursion depth</span>
+            </li>
+            <li>Long Description: <span id="graspDepth_long_desc">
+            	This is the depth of recursion for the depth first search.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspDepth_default_value">4</span></li>
+            <li>Lower Bound: <span id="graspDepth_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="graspDepth_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="graspDepth_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="graspUncoveredDepth" class="parameter_description">graspUncoveredDepth</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspUncoveredDepth_short_desc">Recursion depth for uncovered edges</span>
+            </li>
+            <li>Long Description: <span id="graspUncoveredDepth_long_desc">
+            	This is the depth of recursion for the uncovered edges, past the point where there
+            	are not longer any more covered edges to recurse on.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspUncoveredDepth_default_value">1</span></li>
+            <li>Lower Bound: <span id="graspUncoveredDepth_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="graspUncoveredDepth_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="graspUncoveredDepth_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="timeout" class="parameter_description">timeout</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="timeout_short_desc">Timeout (best graph returned, -1 = no timeout)</span>
+            </li>
+            <li>Long Description: <span id="timeout_long_desc">
+            	The algorithm will timeout at approximately this number of seconds from when it started
+            	and return the final graph found at that point.
+            </span>
+            </li>
+            <li>Default Value: <span id="timeout_default_value">-1</span></li>
+            <li>Lower Bound: <span id="timeout_lower_bound">-1</span></li>
+            <li>Upper Bound: <span id="timeout_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="timeout_value_type">Integer</span></li>
+        </ul>
+
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="breakTies_short_desc">Yes if the algorithm should try moving variables pairwise</span>
+            </li>
+            <li>Long Description: <span id="breakTies_long_desc">
+                In some cases, two moves are required simultaneously to get an orientation right in the final step.
+                This is not generally needed when optimizing using BIC or for large models.</span>
+            </li>
+            <li>Default Value: <span id="breakTies_default_value">true</span></li>
+            <li>Lower Bound: <span id="breakTies_lower_bound"></span></li>
+            <li>Upper Bound: <span id="breakTies_upper_bound"></span></li>
+            <li>Value Type: <span id="breakTies_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="recursive" class="parameter_description">recursive</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="recursive_short_desc">Yes if the algorithm should proceed recursively, no if not</span>
+            </li>
+            <li>Long Description: <span id="recursive_long_desc">Where recursive or nonrecursive variants of an algorithm are available, this selects which one to use.</span>
+            </li>
+            <li>Default Value: <span id="recursive_default_value">false</span></li>
+            <li>Lower Bound: <span id="recursive_lower_bound"></span></li>
+            <li>Upper Bound: <span id="recursive_upper_bound"></span></li>
+            <li>Value Type: <span id="recursive_value_type">Boolean</span></li>
+        </ul>
+
         <h3 id="orientTowardDConnections" class="parameter_description">orientTowardDConnections</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="orientTowardDConnections_short_desc">Yes if Richardson's step C (orient toward d-connection) should be used</span>
@@ -5305,6 +5596,44 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
             <li>Lower Bound: <span id="meekVerbose_lower_bound"></span></li>
             <li>Upper Bound: <span id="meekVerbose_upper_bound"></span></li>
             <li>Value Type: <span id="meekVerbose_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="useScore" class="parameter_description">useScore</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="useScore_short_desc">Yes if the score should be used; no if the test should be used</span>
+            </li>
+            <li>Long Description: <span id="useScore_long_desc">BOSS can run either from a score or a test; this lets you choose which.</span>
+            </li>
+            <li>Default Value: <span id="useScore_default_value">true</span></li>
+            <li>Lower Bound: <span id="useScore_lower_bound"></span></li>
+            <li>Upper Bound: <span id="useScore_upper_bound"></span></li>
+            <li>Value Type: <span id="useScore_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="outputCpdag" class="parameter_description">outputCpdag</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="outputCpdag_short_desc">Yes if CPDAG should be ouput, no if a DAG.</span>
+            </li>
+            <li>Long Description: <span id="outputCpdag_long_desc">BOSS can output a DAG or the CPDAG of the DAG.</span>
+            </li>
+            <li>Default Value: <span id="outputCpdag_default_value">true</span></li>
+            <li>Lower Bound: <span id="outputCpdag_lower_bound"></span></li>
+            <li>Upper Bound: <span id="outputCpdag_upper_bound"></span></li>
+            <li>Value Type: <span id="outputCpdag_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="cacheScores" class="parameter_description">cacheScores</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="cacheScores_short_desc">Yes score results should be cached, no if not</span>
+            </li>
+            <li>Long Description: <span id="cacheScores_long_desc">Caching scores can use a lot of memory.</span>
+            </li>
+            <li>Default Value: <span id="cacheScores_default_value">true</span></li>
+            <li>Lower Bound: <span id="cacheScores_lower_bound"></span></li>
+            <li>Upper Bound: <span id="cacheScores_upper_bound"></span></li>
+            <li>Value Type: <span id="cacheScores_value_type">Boolean</span></li>
         </ul>
 
         <h3 id="include_structure_model" class="parameter_description">verbose</h3>

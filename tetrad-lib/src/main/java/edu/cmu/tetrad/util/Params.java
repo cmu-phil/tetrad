@@ -22,11 +22,11 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -66,11 +66,8 @@ public final class Params {
     public static final String ERRORS_NORMAL = "errorsNormal";
     public static final String SKEW_EDGE_THRESHOLD = "skewEdgeThreshold";
     public static final String TWO_CYCLE_SCREENING_THRESHOLD = "twoCycleScreeningThreshold";
-    public static final String TWO_CYCLE_TESTING_ALPHA = "twoCycleTestingAlpha";
-    public static final String ACCEPTANCE_PROPORTION = "acceptanceProportion";
     public static final String FASK_DELTA = "faskDelta";
     public static final String FASK_LEFT_RIGHT_RULE = "faskLeftRightRule";
-    public static final String FASK_LINEARITY_ASSUMED = "faskAssumeLinearity";
     public static final String FASK_ADJACENCY_METHOD = "faskAdjacencyMethod";
     public static final String FASK_NONEMPIRICAL = "faskNonempirical";
     public static final String FAITHFULNESS_ASSUMED = "faithfulnessAssumed";
@@ -79,7 +76,8 @@ public final class Params {
     public static final String FAST_ICA_A = "fastIcaA";
     public static final String FAST_ICA_MAX_ITER = "fastIcaMaxIter";
     public static final String FAST_ICA_TOLERANCE = "fastIcaTolerance";
-    public static final String FDR_Q = "fdrQ";
+    public static final String ICA_ALGORITHM = "icaAlgorithm";
+    public static final String ICA_FUNCTION = "icaFunction";
     public static final String ORIENTATION_ALPHA = "orientationAlpha";
     public static final String FISHER_EPSILON = "fisherEpsilon";
     public static final String GENERAL_SEM_ERROR_TEMPLATE = "generalSemErrorTemplate";
@@ -170,21 +168,16 @@ public final class Params {
     public static final String STRUCTURE_PRIOR = "structurePrior";
     public static final String SYMMETRIC_FIRST_STEP = "symmetricFirstStep";
     public static final String TARGET_NAME = "targetName";
-    public static final String TDEPTH = "tDepth";
-    public static final String TESTWISE_DELETION = "testwiseDeletion";
     public static final String THR = "thr";
     public static final String THRESHOLD_FOR_NUM_EIGENVALUES = "thresholdForNumEigenvalues";
     public static final String THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH = "thresholdNoRandomConstrainSearch";
     public static final String THRESHOLD_NO_RANDOM_DATA_SEARCH = "thresholdNoRandomDataSearch";
-    public static final String TURNING = "turning";
     public static final String TWO_CYCLE_ALPHA = "twoCycleAlpha";
     public static final String UPPER_BOUND = "upperBound";
     public static final String USE_CORR_DIFF_ADJACENCIES = "useCorrDiffAdjacencies";
     public static final String USE_FAS_ADJACENCIES = "useFasAdjacencies";
-    public static final String USE_FDR_FOR_INDEPENDENCE = "useFdrForIndependence";
     public static final String USE_GAP = "useGap";
     public static final String USE_MAX_P_ORIENTATION_HEURISTIC = "useMaxPOrientationHeuristic";
-    public static final String USE_SELLKE_ADJUSTMENT = "useSellkeAdjustment";
     public static final String USE_SKEW_ADJACENCIES = "useSkewAdjacencies";
     public static final String USE_WISHART = "useWishart";
     public static final String VAR_HIGH = "varHigh";
@@ -196,7 +189,28 @@ public final class Params {
     public static final String PRINT_STREAM = "printStream";
     public static final String SEM_BIC_RULE = "semBicRule";
     public static final String SEM_BIC_STRUCTURE_PRIOR = "semBicStructurePrior";
-    public static final String CORRELATION_THRESHOLD = "correlationThreshold";
+    public static final String NUM_STARTS = "numStarts";
+    public static final String CACHE_SCORES = "cacheScores";
+    public static final String OTHER_PERM_METHOD = "otherPermMethod";
+    public static final String BOSS_SCORE_TYPE = "bossScoreType";
+    public static final String BREAK_TIES = "breakTies";
+    public static final String OUTPUT_CPDAG = "outputCpdag";
+    public static final String ZS_RISK_BOUND = "zSRiskBound";
+    public static final String NUM_ROUNDS = "numRounds";
+
+    // GRASP parameters and flags.
+    public static final String GRASP_CHECK_COVERING = "graspCheckCovering";
+    public static final String GRASP_FORWARD_TUCK_ONLY = "graspForwardTuckOnly";
+    public static final String GRASP_BREAK_AFTER_IMPROVEMENT = "graspBreakAFterImprovement";
+    public static final String GRASP_ORDERED_ALG = "graspOrderedAlg";
+    public static final String GRASP_USE_SCORE = "graspUseScore";
+    public static final String GRASP_USE_PEARL = "graspUsePearl";
+    public static final String GRASP_USE_DATA_ORDER = "graspUseDataOrder";
+    public static final String GRASP_DEPTH = "graspDepth";
+    public static final String GRASP_UNCOVERED_DEPTH = "graspUncoveredDepth";
+    public static final String GRASP_ALG = "graspAlg";
+    public static final String TIMEOUT = "timeout";
+    public static final String GRASP_USE_VP_SCORING = "graspUseVpScoring";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -249,21 +263,18 @@ public final class Params {
     }
 
     public static Set<String> getAlgorithmParameters(Algorithm algorithm) {
-        return algorithm.getParameters()
-                .stream().collect(Collectors.toSet());
+        return new HashSet<>(algorithm.getParameters());
     }
 
     public static Set<String> getTestParameters(Algorithm algorithm) {
         return (algorithm instanceof TakesIndependenceWrapper)
-                ? ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getParameters()
-                        .stream().collect(Collectors.toSet())
+                ? new HashSet<>(((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getParameters())
                 : Collections.emptySet();
     }
 
     public static Set<String> getScoreParameters(Algorithm algorithm) {
         return (algorithm instanceof UsesScoreWrapper)
-                ? ((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters()
-                        .stream().collect(Collectors.toSet())
+                ? new HashSet<>(((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters())
                 : Collections.emptySet();
     }
 
@@ -273,7 +284,7 @@ public final class Params {
                 : Collections.emptySet();
     }
 
-    public static final Set<String> getParameters() {
+    public static Set<String> getParameters() {
         return ALL_PARAMS_IN_HTML_MANUAL;
     }
 
