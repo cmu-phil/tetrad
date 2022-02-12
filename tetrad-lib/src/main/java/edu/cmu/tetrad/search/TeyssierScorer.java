@@ -36,7 +36,6 @@ public class TeyssierScorer {
     private LinkedList<Pair> scores;
     private IKnowledge knowledge = new Knowledge2();
     private LinkedList<Set<Node>> prefixes;
-    private float runningScore = 0F;
 
     private boolean useScore = true;
     private boolean useVermaPearl = false;
@@ -113,7 +112,6 @@ public class TeyssierScorer {
      * @return The score of it.
      */
     public float score(List<Node> order) {
-        runningScore = 0F;
         this.pi = new LinkedList<>(order);
         this.scores = new LinkedList<>();
 
@@ -131,7 +129,6 @@ public class TeyssierScorer {
      * @return The score of the current permutation.
      */
     public float score() {
-//        return runningScore;
         return sum();
     }
 
