@@ -563,6 +563,10 @@ class VariableNameRenderer extends DefaultTableCellRenderer {
             value = "";
         }
 
+        if (((String) value).contains("\b")) {
+            return;
+        }
+
         setText((String) value);
         setFont(new Font("SansSerif", Font.BOLD, 12));
         setHorizontalAlignment(JLabel.CENTER);

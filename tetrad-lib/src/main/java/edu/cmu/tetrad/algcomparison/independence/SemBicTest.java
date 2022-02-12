@@ -19,7 +19,6 @@ import java.util.*;
         command = "sem-bic-test",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
-@Experimental
 public class SemBicTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;

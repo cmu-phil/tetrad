@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import com.google.common.collect.Sets;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
@@ -61,7 +60,7 @@ public class Grasp {
         long start = System.currentTimeMillis();
 
         scorer = new TeyssierScorer(test, score);
-        scorer.setUsePearl(usePearl);
+        scorer.setUseVermaPearl(usePearl);
 
         if (usePearl) {
             scorer.setUseScore(false);

@@ -40,7 +40,7 @@ public class TeyssierScorer {
     private float runningScore = 0F;
 
     private boolean useScore = true;
-    private boolean usePearl = false;
+    private boolean useVermaPearl = false;
     private boolean useVPScoring = false;
     private boolean cachingScores = true;
 
@@ -96,10 +96,10 @@ public class TeyssierScorer {
     }
 
     /**
-     * @param usePearl True if Pearl's method for building a DAG should be used.
+     * @param useVermaPearl True if Pearl's method for building a DAG should be used.
      */
-    public void setUsePearl(boolean usePearl) {
-        this.usePearl = usePearl;
+    public void setUseVermaPearl(boolean useVermaPearl) {
+        this.useVermaPearl = useVermaPearl;
         this.useScore = false;
     }
 
@@ -800,8 +800,8 @@ public class TeyssierScorer {
     }
 
     private Pair getParentsInternal(int p) {
-        if (usePearl) {
-            return getPearlParents(p);
+        if (useVermaPearl) {
+            return getVermaPearlParents(p);
         } else {
             if (useScore) {
                 return getGrowShrinkScore(p);
@@ -816,7 +816,7 @@ public class TeyssierScorer {
      * @param p The index.
      * @return The parents, as a Pair object (parents + score).
      */
-    private Pair getPearlParents(int p) {
+    private Pair getVermaPearlParents(int p) {
         Node x = pi.get(p);
         Set<Node> parents = new HashSet<>();
         Set<Node> prefix = getPrefix(p);
