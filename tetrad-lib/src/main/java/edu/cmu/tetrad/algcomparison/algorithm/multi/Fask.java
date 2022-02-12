@@ -104,9 +104,9 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
             int adjacencyMethod = parameters.getInt(FASK_ADJACENCY_METHOD);
 
             if (adjacencyMethod == 1) {
-                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FAS_STABLE);
+                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.GRASP);
             } else if (adjacencyMethod == 2) {
-                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FAS_STABLE_CONCURRENT);
+                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FAS_STABLE);
             } else if (adjacencyMethod == 3) {
                 search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FGES);
             } else if (adjacencyMethod == 4) {

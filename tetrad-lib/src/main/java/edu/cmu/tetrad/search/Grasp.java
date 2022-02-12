@@ -58,6 +58,7 @@ public class Grasp {
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
         long start = System.currentTimeMillis();
+        order = new ArrayList<>(order);
 
         scorer = new TeyssierScorer(test, score);
         scorer.setUseVermaPearl(usePearl);

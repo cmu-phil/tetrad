@@ -41,7 +41,7 @@ public class TeyssierScorer {
 
     private boolean useScore = true;
     private boolean useVermaPearl = false;
-    private boolean useVPScoring = false;
+    private boolean useBackwardScoring = false;
     private boolean cachingScores = true;
 
     public TeyssierScorer(IndependenceTest test, Score score) {
@@ -103,8 +103,8 @@ public class TeyssierScorer {
         this.useScore = false;
     }
 
-    public void setUseVPScoring(boolean useVPScoring) {
-        this.useVPScoring = useVPScoring;
+    public void setUseBackwardScoring(boolean useBackwardScoring) {
+        this.useBackwardScoring = useBackwardScoring;
     }
 
     /**
@@ -687,8 +687,8 @@ public class TeyssierScorer {
         float sMax = score(n, new HashSet<>());
         List<Node> prefix = new ArrayList<>(getPrefix(p));
 
-        // Verma-Pearl scoring
-        if (useVPScoring) {
+        // Backward scoring only from the prefix variables
+        if (useBackwardScoring) {
             parents.addAll(prefix);
             sMax = score(n, parents);
             changed = false;

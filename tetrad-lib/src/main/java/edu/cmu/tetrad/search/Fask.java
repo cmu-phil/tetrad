@@ -87,7 +87,7 @@ import static java.lang.Math.*;
 public final class Fask implements GraphSearch {
 
     // The method to use for finding the adjacencies.
-    public enum AdjacencyMethod {FAS_STABLE, FAS_STABLE_CONCURRENT, FGES, EXTERNAL_GRAPH}
+    public enum AdjacencyMethod {GRASP, FAS_STABLE, FGES, EXTERNAL_GRAPH}
 
     // The left-right rule to use. Options include the FASK left-right rule and three left-right rules
     // from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
@@ -141,7 +141,7 @@ public final class Fask implements GraphSearch {
     private boolean useFasAdjacencies = true;
 
     // By default, FAS Stable will be used for adjacencies, though this can be set.
-    private AdjacencyMethod adjacencyMethod = AdjacencyMethod.FAS_STABLE;
+    private AdjacencyMethod adjacencyMethod = AdjacencyMethod.GRASP;
 
     // The left right rule to use, default FASK.
     private LeftRight leftRight = LeftRight.RSKEW;
@@ -211,15 +211,15 @@ public final class Fask implements GraphSearch {
 
         Graph G;
 
-        if (adjacencyMethod == AdjacencyMethod.FAS_STABLE) {
+        if (adjacencyMethod == AdjacencyMethod.GRASP) {
+            Grasp search = new Grasp(test);
+            search.setDepth(getDepth());
+            search.setVerbose(false);
+            search.setKnowledge(knowledge);
+            search.bestOrder(test.getVariables());
+            G = search.getGraph(false);
+        } else if (adjacencyMethod == AdjacencyMethod.FAS_STABLE) {
             Fas fas = new Fas(test);
-            fas.setStable(true);
-            fas.setDepth(getDepth());
-            fas.setVerbose(false);
-            fas.setKnowledge(knowledge);
-            G = fas.search();
-        } else if (adjacencyMethod == AdjacencyMethod.FAS_STABLE_CONCURRENT) {
-            FasConcurrent fas = new FasConcurrent(test);
             fas.setStable(true);
             fas.setVerbose(false);
             fas.setKnowledge(knowledge);
