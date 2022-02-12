@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BOSS (Best Order Score Search).
+ * GRaSP (Greedy Relaxations of Sparsest Permutation)
  *
  * @author bryanandrews
  * @author josephramsey
