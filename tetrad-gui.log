@@ -79,3 +79,9 @@
 2022-02-12 15:39:38 INFO  org.reflections.Reflections:232 - Reflections took 150 ms to scan 1 urls, producing 17 keys and 271 values 
 2022-02-12 15:39:39 INFO  org.reflections.Reflections:232 - Reflections took 35 ms to scan 1 urls, producing 7 keys and 40 values 
 2022-02-12 15:39:56 INFO  org.reflections.Reflections:232 - Reflections took 33 ms to scan 1 urls, producing 5 keys and 34 values 
+2022-02-12 18:39:35 INFO  org.reflections.Reflections:232 - Reflections took 108 ms to scan 1 urls, producing 17 keys and 271 values 
+2022-02-12 18:39:35 INFO  org.reflections.Reflections:232 - Reflections took 39 ms to scan 1 urls, producing 7 keys and 40 values 
+2022-02-12 18:39:35 INFO  org.reflections.Reflections:232 - Reflections took 20 ms to scan 1 urls, producing 5 keys and 34 values 
+2022-02-12 18:41:22 INFO  org.reflections.Reflections:232 - Reflections took 114 ms to scan 1 urls, producing 17 keys and 271 values 
+2022-02-12 18:41:22 INFO  org.reflections.Reflections:232 - Reflections took 36 ms to scan 1 urls, producing 7 keys and 40 values 
+2022-02-12 18:41:22 INFO  org.reflections.Reflections:232 - Reflections took 19 ms to scan 1 urls, producing 5 keys and 34 values 
