@@ -59,14 +59,11 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
             grasp.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             grasp.setUncoveredDepth(parameters.getInt(Params.GRASP_UNCOVERED_DEPTH));
-            grasp.setCheckCovering(parameters.getBoolean(Params.GRASP_CHECK_COVERING));
-            grasp.setUseTuck(parameters.getBoolean(Params.GRASP_FORWARD_TUCK_ONLY));
-            grasp.setBreakAfterImprovement(parameters.getBoolean(Params.GRASP_BREAK_AFTER_IMPROVEMENT));
+            grasp.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
             grasp.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             grasp.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             grasp.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             grasp.setUsePearl(parameters.getBoolean(Params.GRASP_USE_PEARL));
-            grasp.setUseVPScoring(parameters.getBoolean(Params.GRASP_USE_VP_SCORING));
             grasp.setVerbose(parameters.getBoolean(Params.VERBOSE));
             grasp.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
@@ -125,14 +122,11 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         ArrayList<String> params = new ArrayList<>();
 
         // Flags
-//        params.add(Params.GRASP_UNCOVERED_DEPTH);
-//        params.add(Params.GRASP_CHECK_COVERING);
-//        params.add(Params.GRASP_FORWARD_TUCK_ONLY);
-//        params.add(Params.GRASP_BREAK_AFTER_IMPROVEMENT);
-//        params.add(Params.GRASP_ORDERED_ALG);
+        params.add(Params.GRASP_UNCOVERED_DEPTH);
+        params.add(Params.GRASP_NONSINGULAR_DEPTH);
+        params.add(Params.GRASP_ORDERED_ALG);
 //        params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_PEARL);
-//        params.add(Params.GRASP_USE_VP_SCORING);
 //        params.add(Params.GRASP_USE_DATA_ORDER);
 //        params.add(Params.CACHE_SCORES);
 //        params.add(Params.OUTPUT_CPDAG);

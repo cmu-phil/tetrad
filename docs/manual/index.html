@@ -4841,10 +4841,25 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             	are not longer any more covered edges to recurse on.
             </span>
             </li>
-            <li>Default Value: <span id="graspUncoveredDepth_default_value">1</span></li>
+            <li>Default Value: <span id="graspUncoveredDepth_default_value">2</span></li>
             <li>Lower Bound: <span id="graspUncoveredDepth_lower_bound">0</span></li>
             <li>Upper Bound: <span id="graspUncoveredDepth_upper_bound">2147483647</span></li>
             <li>Value Type: <span id="graspUncoveredDepth_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="graspNonSingularDepth" class="parameter_description">graspNonSingularDepth</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspNonSingularDepth_short_desc">Recursion depth at which to consider nonsingular tuck operations</span>
+            </li>
+            <li>Long Description: <span id="graspNonSingularDepth_long_desc">
+            	This is the depth of recursion at which multiple tucks may be consdidered
+            	per score improvement
+            </span>
+            </li>
+            <li>Default Value: <span id="graspNonSingularDepth_default_value">2</span></li>
+            <li>Lower Bound: <span id="graspNonSingularDepth_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="graspNonSingularDepth_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="graspNonSingularDepth_value_type">Integer</span></li>
         </ul>
 
         <h3 id="timeout" class="parameter_description">timeout</h3>

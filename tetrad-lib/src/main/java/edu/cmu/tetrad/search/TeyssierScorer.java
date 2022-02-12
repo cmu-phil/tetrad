@@ -13,13 +13,14 @@ import static java.util.Collections.sort;
 
 
 /**
- * Implements a scorer as in Teyssier, M., & Koller, D. (2012). Ordering-based search: A simple and effective
+ * Implements a scorer extending Teyssier, M., & Koller, D. (2012). Ordering-based search: A simple and effective
  * algorithm for learning Bayesian networks. arXiv preprint arXiv:1207.1429. You give it a score function
  * and a variable ordering, and it computes the score. You can move any variable left or right, and it will
  * keep track of the score using the Teyssier and Kohler method. You can move a variable to a new position,
  * and you can bookmark a state and come back to it.
  *
  * @author josephramsey
+ * @author bryanandrews
  */
 public class TeyssierScorer {
     private final List<Node> variables;
@@ -44,6 +45,8 @@ public class TeyssierScorer {
     private boolean cachingScores = true;
 
     public TeyssierScorer(IndependenceTest test, Score score) {
+        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
+
         this.score = score;
         this.test = test;
 
@@ -876,6 +879,4 @@ public class TeyssierScorer {
             return this.parents.equals(thatPair.parents) && this.score == thatPair.score;
         }
     }
-
-    public enum ParentCalculation {GrowShrinkMb, Pearl}
 }

@@ -217,8 +217,6 @@ public final class Fask2 implements GraphSearch {
 
         Grasp grasp = new Grasp(score);
         grasp.setUsePearl(false);
-        grasp.setUseTuck(false);
-        grasp.setCheckCovering(false);
         grasp.bestOrder(dataSet.getVariables());
         Graph G = grasp.getGraph(false);
         G = GraphUtils.replaceNodes(G, dataSet.getVariables());
