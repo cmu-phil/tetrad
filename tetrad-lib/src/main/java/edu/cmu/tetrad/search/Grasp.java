@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -105,8 +106,8 @@ public class Grasp {
         long stop = System.currentTimeMillis();
 
         if (verbose) {
-            System.out.println("Final order = " + scorer.getPi());
-            System.out.println("Elapsed time = " + (stop - start) / 1000.0 + " s");
+            TetradLogger.getInstance().forceLogMessage("Final order = " + scorer.getPi());
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
         }
 
         return bestPerm;
@@ -168,7 +169,7 @@ public class Grasp {
         }
 
         if (verbose) {
-            System.out.println("# Edges = " + scorer.getNumEdges()
+            TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
                     + " Score = " + scorer.score()
                     + " (GRaSP)"
                     + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
@@ -225,8 +226,9 @@ public class Grasp {
                 sNew = scorer.score();
                 if (sNew > sOld) {
                     if (verbose) {
-                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
+                        String msg = String.format("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s",
                                 scorer.getNumEdges(), sNew - sOld, tucks, tuck);
+                        TetradLogger.getInstance().forceLogMessage(msg);
                     }
                     return;
                 }
