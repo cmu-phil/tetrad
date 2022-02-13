@@ -32,7 +32,6 @@ public class Grasp {
     private boolean ordered = false;
     private boolean verbose = false;
     private boolean cachingScores = true;
-    private boolean useDataOrder = false;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
     // other params
@@ -80,8 +79,8 @@ public class Grasp {
 
         scorer.score(order);
 
-        for (int r = 0; r < (useDataOrder ? 1 : numStarts); r++) {
-            if (!useDataOrder) {
+        for (int r = 0; r < numStarts; r++) {
+            if (r > 0) {
                 shuffle(order);
             }
 
@@ -283,10 +282,6 @@ public class Grasp {
 
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
     }
 
     public void setDepth(int depth) {

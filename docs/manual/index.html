@@ -2698,6 +2698,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <p>
             graspSingularDepth - This controls the depth at which single tucks sets only (essentially changes of permutation where one variable is placed before another in the permutation order) are considered.
         <p>
+            numRestarts - By default 1; if > 1, additional random restarts are done, and the best of these results is returned.
+        <p>
             TSP corresponds to uncovered depth 0, singular depth 0. ESP corresponds to  uncovered depth > 0, singular depth = 0. GRaSP corresponds to uncovered depth > 0, singular depth > 0. In each case, an ordering option is available to find best permutations from lower levels before proceeding to higher levels.
         <p>
             The algorithms works by building DAGs given permutations in ways similar to those described in Raskutti and Uhler (ref?) and Solus et al. Two ways of building DAGs are considered, one due to Verma and Pearl and another novel method, using the Grow-Shrink (GS)  method (Margaritis and Thrun, 1999). If the Pearl method is selected, an independence test will be used; if the GS method is selected, a score will be used, so both a test and a score need to be supplied so that this choice can be made.
