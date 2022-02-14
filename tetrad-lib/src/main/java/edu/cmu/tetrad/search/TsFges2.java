@@ -112,14 +112,14 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     private TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The top n graphs found by the algorithm, where n is numPatternsToStore.
+     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
      */
     private LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
 
     /**
-     * The number of top patterns to store.
+     * The number of top CPDAGs to store.
      */
-    private int numPatternsToStore = 0;
+    private int numCPDAGsToStore = 0;
 
     /**
      * True if verbose output should be printed.
@@ -213,7 +213,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
      * edges till a minimum is achieved.
      *
-     * @return the resulting Pattern.
+     * @return the resulting CPDAG.
      */
     public Graph search() {
         topGraphs.clear();
@@ -320,19 +320,19 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     /**
      * @return the number of patterns to store.
      */
-    public int getNumPatternsToStore() {
-        return numPatternsToStore;
+    public int getnumCPDAGsToStore() {
+        return numCPDAGsToStore;
     }
 
     /**
      * Sets the number of patterns to store. This should be set to zero for fast search.
      */
-    public void setNumPatternsToStore(int numPatternsToStore) {
-        if (numPatternsToStore < 0) {
-            throw new IllegalArgumentException("# graphs to store must at least 0: " + numPatternsToStore);
+    public void setNumCPDAGsToStore(int numCPDAGsToStore) {
+        if (numCPDAGsToStore < 0) {
+            throw new IllegalArgumentException("# graphs to store must at least 0: " + numCPDAGsToStore);
         }
 
-        this.numPatternsToStore = numPatternsToStore;
+        this.numCPDAGsToStore = numCPDAGsToStore;
     }
 
     /**
@@ -1898,12 +1898,12 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
     // Stores the graph, if its totalScore knocks out one of the top ones.
     private void storeGraph() {
-        if (getNumPatternsToStore() > 0) {
+        if (getnumCPDAGsToStore() > 0) {
             Graph graphCopy = new EdgeListGraph(graph);
             topGraphs.addLast(new ScoredGraph(graphCopy, totalScore));
         }
 
-        if (topGraphs.size() == getNumPatternsToStore() + 1) {
+        if (topGraphs.size() == getnumCPDAGsToStore() + 1) {
             topGraphs.removeFirst();
         }
     }

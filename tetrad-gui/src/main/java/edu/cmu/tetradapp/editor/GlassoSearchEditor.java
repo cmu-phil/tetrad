@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Edits some algorithm to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket CPDAGs.
  *
  * @author Joseph Ramsey
  */

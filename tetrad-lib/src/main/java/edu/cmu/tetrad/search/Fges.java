@@ -125,7 +125,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The top n graphs found by the algorithm, where n is numPatternsToStore.
+     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
      */
     private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
 
@@ -220,7 +220,7 @@ public final class Fges implements GraphSearch, GraphScorer {
      * model is significant. Then start deleting edges till a minimum is
      * achieved.
      *
-     * @return the resulting Pattern.
+     * @return the resulting CPDAG.
      */
     public Graph search() {
         long start = System.currentTimeMillis();
@@ -262,7 +262,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(SearchGraphUtils.dagFromPattern(graph), true);
+        this.modelScore = scoreDag(SearchGraphUtils.dagFromCPDAG(graph), true);
 
         return graph;
     }
@@ -431,7 +431,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * The maximum of parents any nodes can have in output pattern.
+     * The maximum of parents any nodes can have in output CPDAG.
      *
      * @return -1 for unlimited.
      */
@@ -440,7 +440,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * The maximum of parents any nodes can have in output pattern.
+     * The maximum of parents any nodes can have in output CPDAG.
      *
      * @param maxDegree -1 for unlimited.
      */
@@ -637,7 +637,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
             insert(x, y, arrow.getHOrT(), arrow.getBump());
 
-            Set<Node> process = revertToPattern();
+            Set<Node> process = revertToCPDAG();
 
 //            System.out.println("Graph after insert " + graph);
 
@@ -692,7 +692,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
             delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX());
 
-            Set<Node> process = revertToPattern();
+            Set<Node> process = revertToCPDAG();
             process.add(x);
             process.add(y);
             process.addAll(graph.getAdjacentNodes(x));
@@ -1523,7 +1523,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     // Runs Meek rules on just the changed adj.
-    private Set<Node> revertToPattern() {
+    private Set<Node> revertToCPDAG() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
         rules.setVerbose(meekVerbose);
@@ -1650,7 +1650,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         builder.append("Edge Posterior Log Bayes Factors:\n\n");
 
-        builder.append("For a DAG in the IMaGES pattern with model totalScore m, for each edge e in the "
+        builder.append("For a DAG in the IMaGES CPDAG with model totalScore m, for each edge e in the "
                 + "DAG, the model totalScore that would result from removing each edge, calculating "
                 + "the resulting model totalScore m(e), and then reporting m - m(e). The totalScore used is "
                 + "the IMScore, L - SUM_i{kc ln n(i)}, L is the maximum likelihood of the model, "

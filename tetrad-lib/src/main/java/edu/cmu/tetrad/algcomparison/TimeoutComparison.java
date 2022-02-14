@@ -63,7 +63,7 @@ public class TimeoutComparison {
     private static final DateFormat DF = new SimpleDateFormat("EEE, MMMM dd, yyyy hh:mm:ss a");
 
     public enum ComparisonGraph {
-        true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG
+        true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
     }
 
     private boolean[] graphTypeUsed;
@@ -78,7 +78,7 @@ public class TimeoutComparison {
     private String dataPath = null;
     private String resultsPath = null;
     private boolean parallelized = true;
-    private boolean savePatterns = false;
+    private boolean saveCPDAGs = false;
     private boolean savePags = false;
     private ArrayList<String> dirs = null;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
@@ -501,7 +501,7 @@ public class TimeoutComparison {
 
                 File dir3 = null;
 
-                if (isSavePatterns()) {
+                if (isSaveCPDAGs()) {
                     dir3 = new File(subdir, "patterns");
                     dir3.mkdirs();
                 }
@@ -525,9 +525,9 @@ public class TimeoutComparison {
                     DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
                     out.close();
 
-                    if (isSavePatterns()) {
+                    if (isSaveCPDAGs()) {
                         File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(SearchGraphUtils.patternForDag(graph), file3, false);
+                        GraphUtils.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
@@ -951,17 +951,17 @@ public class TimeoutComparison {
     }
 
     /**
-     * @return True if patterns should be saved out.
+     * @return True if CPDAGs should be saved out.
      */
-    public boolean isSavePatterns() {
-        return savePatterns;
+    public boolean isSaveCPDAGs() {
+        return saveCPDAGs;
     }
 
     /**
-     * @param savePatterns True if patterns should be saved out.
+     * @param saveCPDAGs True if CPDAGs should be saved out.
      */
-    public void setSavePatterns(boolean savePatterns) {
-        this.savePatterns = savePatterns;
+    public void setSaveCPDAGs(boolean saveCPDAGs) {
+        this.saveCPDAGs = saveCPDAGs;
     }
 
     /**
@@ -1204,8 +1204,8 @@ public class TimeoutComparison {
 
         if (this.comparisonGraph == ComparisonGraph.true_DAG) {
             comparisonGraph = new EdgeListGraph(trueGraph);
-        } else if (this.comparisonGraph == ComparisonGraph.Pattern_of_the_true_DAG) {
-            comparisonGraph = SearchGraphUtils.patternForDag(new EdgeListGraph(trueGraph));
+        } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
+            comparisonGraph = SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueGraph));
         } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
             comparisonGraph = new DagToPag2(new EdgeListGraph(trueGraph)).convert();
         } else {

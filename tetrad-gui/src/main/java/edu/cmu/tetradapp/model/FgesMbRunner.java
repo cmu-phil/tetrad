@@ -163,7 +163,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
             target = gesScore.getVariable(targetName);
             fges = new FgesMb(gesScore);
             fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-            fges.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
+            fges.setNumCPDAGsToStore(params.getInt("numCPDAGsToSave", 1));
             fges.setVerbose(true);
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
@@ -306,7 +306,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
 
 //        fges.setInitialGraph(initialGraph);
         fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-        fges.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
+        fges.setNumCPDAGsToStore(params.getInt("numCPDAGsToSave", 1));
         fges.setVerbose(true);
 //        fges.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed());
         fges.setMaxDegree(params.getInt("depth", -1));

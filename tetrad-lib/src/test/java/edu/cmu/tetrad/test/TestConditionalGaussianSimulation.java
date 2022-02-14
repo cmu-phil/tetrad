@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;

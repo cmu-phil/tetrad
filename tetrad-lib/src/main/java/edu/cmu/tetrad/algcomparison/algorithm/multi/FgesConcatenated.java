@@ -156,7 +156,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         if (compareToTrue) {
             return new EdgeListGraph(graph);
         } else {
-            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+            return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
         }
     }
 
@@ -196,7 +196,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     /**
      * @param compareToTrue true if the result should be compared to the true graph, false
-     *                      if to the pattern of the true graph.
+     *                      if to the CPDAG of the true graph.
      */
     public void setCompareToTrue(boolean compareToTrue) {
         this.compareToTrue = compareToTrue;

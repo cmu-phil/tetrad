@@ -61,7 +61,7 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         this.indexable = indexable;
         this.topGraphs = topGraphs;
 
-        final int numPatterns = topGraphs.size();
+        final int numCPDAGs = topGraphs.size();
 
         if (topGraphs.size() == 0) {
             workbench = new GraphWorkbench();
@@ -72,21 +72,21 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         this.resultGraph = resultGraph;
 
         scoreLabel = new JLabel();
-        setPattern();
+        setCPDAG();
 
         final SpinnerNumberModel model =
-                new SpinnerNumberModel(numPatterns == 0 ? 1 : indexable.getIndex() + 1, 1, numPatterns == 0 ? 1 : numPatterns, 1);
+                new SpinnerNumberModel(numCPDAGs == 0 ? 1 : indexable.getIndex() + 1, 1, numCPDAGs == 0 ? 1 : numCPDAGs, 1);
 
         model.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 getIndexable().setIndex((Integer) model.getValue() - 1);
-                setPattern();
+                setCPDAG();
             }
         });
 
 //        spinner = new JSpinner();
         spinner.setModel(model);
-        totalLabel = new JLabel(" of " + numPatterns);
+        totalLabel = new JLabel(" of " +  numCPDAGs);
 
         spinner.setPreferredSize(new Dimension(50, 20));
         spinner.setMaximumSize(spinner.getPreferredSize());
@@ -113,7 +113,7 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         add(b, BorderLayout.CENTER);
     }
 
-    private void setPattern() {
+    private void setCPDAG() {
         setDisplayGraph();
         setDisplayScore();
     }
@@ -144,23 +144,23 @@ public class FgesDisplay extends JPanel implements GraphEditable {
     }
 
     private void resetDisplay() {
-        final int numPatterns = topGraphs.size();
+        final int numCPDAGs = topGraphs.size();
 
-        final SpinnerNumberModel model = new SpinnerNumberModel(numPatterns, 0, numPatterns, 1);
+        final SpinnerNumberModel model = new SpinnerNumberModel(numCPDAGs, 0, numCPDAGs, 1);
         model.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 getIndexable().setIndex((Integer) model.getValue() - 1);
-                setPattern();
+                setCPDAG();
             }
         });
 
         spinner.setModel(model);
-        totalLabel.setText(" of " + numPatterns);
+        totalLabel.setText(" of " + numCPDAGs);
 
-        if (numPatterns == 0) {
+        if (numCPDAGs == 0) {
             workbench.setGraph(resultGraph);
         } else {
-            workbench.setGraph(topGraphs.get(numPatterns - 1).getGraph());
+            workbench.setGraph(topGraphs.get(numCPDAGs - 1).getGraph());
         }
 
         setDisplayScore();

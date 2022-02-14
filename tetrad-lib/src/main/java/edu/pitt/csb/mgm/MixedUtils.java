@@ -720,8 +720,8 @@ public class MixedUtils {
             }
         }
         //enforce patterns?
-        //Graph pT = SearchGraphUtils.patternFromDag(tg);
-        //Graph pE = SearchGraphUtils.patternFromDag(eg);
+        //Graph pT = SearchGraphUtils.cpdagFromDag(tg);
+        //Graph pE = SearchGraphUtils.cpdagFromDag(eg);
 
         //check that variable names are the same...
 

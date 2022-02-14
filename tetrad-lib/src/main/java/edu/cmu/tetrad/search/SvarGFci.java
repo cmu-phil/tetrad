@@ -155,7 +155,7 @@ public final class SvarGFci implements GraphSearch {
         TsFges2 fges = new TsFges2(score);
         fges.setKnowledge(getKnowledge());
         fges.setVerbose(verbose);
-        fges.setNumPatternsToStore(0);
+        fges.setNumCPDAGsToStore(0);
         fges.setFaithfulnessAssumed(faithfulnessAssumed);
         graph = fges.search();
         Graph fgesGraph = new EdgeListGraph(graph);

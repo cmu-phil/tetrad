@@ -195,7 +195,7 @@ public class TestMimbuild2 {
 //
 //            CovarianceMatrix _cov = new CovarianceMatrix(data);
 //
-//            ICovarianceMatrix cov = DataUtils.reorderColumns(_cov);
+//            ICovarianceMatrix cov = DataUtils.shuffleColumns(_cov);
 //
 //            String algorithm = "FOFC";
 //            Graph searchGraph;
@@ -392,7 +392,7 @@ public class TestMimbuild2 {
 //
 //        for (int i = 0; i < 1; i++) {
 //
-//            ICovarianceMatrix _cov = DataUtils.reorderColumns(cov);
+//            ICovarianceMatrix _cov = DataUtils.shuffleColumns(cov);
 //            List<List<Node>> partition;
 //
 //            FindOneFactorClusters fofc = new FindOneFactorClusters(_cov, TestType.TETRAD_WISHART, .001);
@@ -467,7 +467,7 @@ public class TestMimbuild2 {
 //
 //            CovarianceMatrix _cov = new CovarianceMatrix(data);
 //
-//            ICovarianceMatrix cov = DataUtils.reorderColumns(_cov);
+//            ICovarianceMatrix cov = DataUtils.shuffleColumns(_cov);
 //
 //            String algorithm = "FOFC";
 //            Graph searchGraph;

@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Edits some algorithm to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket CPDAGs.
  *
  * @author Joseph Ramsey
  */
@@ -105,7 +105,7 @@ public class LingamSearchEditor extends AbstractSearchEditor
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
             tabbedPane.add("Model Statistics", modelStatsText);
-            tabbedPane.add("DAG in pattern", dagWorkbench);
+            tabbedPane.add("DAG in CPDAG", dagWorkbench);
         }*/
 
         add(tabbedPane, BorderLayout.CENTER);

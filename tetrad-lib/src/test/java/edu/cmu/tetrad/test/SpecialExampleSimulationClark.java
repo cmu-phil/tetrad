@@ -61,7 +61,7 @@ public class SpecialExampleSimulationClark {
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(true);
-        comparison.setSavePatterns(true);
+        comparison.setSaveCPDAGs(true);
         comparison.setSavePags(true);
 
 //        comparison.saveToFiles("comparison", new SpecialDataClark(new SpecialGraphClark()), parameters);

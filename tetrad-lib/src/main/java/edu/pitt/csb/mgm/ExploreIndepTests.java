@@ -60,7 +60,7 @@ public class ExploreIndepTests {
 //        System.out.println(ds.isMixed());
         try {
             String path = ExampleMixedSearch.class.getResource("test_data").getPath();
-            Graph trueGraph = SearchGraphUtils.patternFromDag(GraphUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt")));
+            Graph trueGraph = SearchGraphUtils.cpdagFromDag(GraphUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt")));
             DataSet ds = MixedUtils.loadDataSet(path, "DAG_0_data.txt");
 
             IndTestMultinomialLogisticRegression indMix = new IndTestMultinomialLogisticRegression(ds, .05);
@@ -72,15 +72,15 @@ public class ExploreIndepTests {
             PcStable s3 = new PcStable(indWalLog);
 
             long time = System.currentTimeMillis();
-            Graph g1 = SearchGraphUtils.patternFromDag(s1.search());
+            Graph g1 = SearchGraphUtils.cpdagFromDag(s1.search());
             System.out.println("Mix Time " + ((System.currentTimeMillis() - time) / 1000.0));
 
             time = System.currentTimeMillis();
-            Graph g2 = SearchGraphUtils.patternFromDag(s2.search());
+            Graph g2 = SearchGraphUtils.cpdagFromDag(s2.search());
             System.out.println("Wald lin Time " + ((System.currentTimeMillis() - time) / 1000.0));
 
             time = System.currentTimeMillis();
-            Graph g3 = SearchGraphUtils.patternFromDag(s3.search());
+            Graph g3 = SearchGraphUtils.cpdagFromDag(s3.search());
             System.out.println("Wald log Time " + ((System.currentTimeMillis() - time) / 1000.0));
 
 //            System.out.println(g);

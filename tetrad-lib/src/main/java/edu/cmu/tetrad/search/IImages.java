@@ -74,9 +74,9 @@ public interface IImages extends GraphScorer {
 
     SortedSet<ScoredGraph> getTopGraphs();
 
-    int getNumPatternsToStore();
+    int getNumCPDAGsToStore();
 
-    void setNumPatternsToStore(int numPatternsToStore);
+    void setNumCPDAGsToStore(int numCPDAGsToStore);
 
     Map<Edge, Integer> getBoostrapCounts(int numBootstraps);
 

@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.examples;
 
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FAS;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FAS;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.data.BoxDataSet;

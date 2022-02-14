@@ -25,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgGes;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -189,7 +189,7 @@ public class Condition1 {
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
         comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_1",
                 "/Users/user/causal-comparisons/condition_1",

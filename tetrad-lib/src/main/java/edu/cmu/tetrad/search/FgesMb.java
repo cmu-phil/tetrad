@@ -120,14 +120,14 @@ public final class FgesMb {
     private TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The top n graphs found by the algorithm, where n is numPatternsToStore.
+     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
      */
     private LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
 
     /**
-     * The number of top patterns to store.
+     * The number of top CPDAGs to store.
      */
-    private int numPatternsToStore = 0;
+    private int numCPDAGsToStore = 0;
 
     /**
      * True if verbose output should be printed.
@@ -226,7 +226,7 @@ public final class FgesMb {
      * model is significant. Then start deleting edges till a minimum is
      * achieved.
      *
-     * @return the resulting Pattern.
+     * @return the resulting CPDAG.
      */
 //    public Graph search() {
 //        topGraphs.clear();
@@ -563,22 +563,22 @@ public final class FgesMb {
     }
 
     /**
-     * @return the number of patterns to store.
+     * @return the number of CPDAGs to store.
      */
-    public int getNumPatternsToStore() {
-        return numPatternsToStore;
+    public int getnumCPDAGsToStore() {
+        return numCPDAGsToStore;
     }
 
     /**
-     * Sets the number of patterns to store. This should be set to zero for fast
+     * Sets the number of CPDAGs to store. This should be set to zero for fast
      * search.
      */
-    public void setNumPatternsToStore(int numPatternsToStore) {
-        if (numPatternsToStore < 0) {
-            throw new IllegalArgumentException("# graphs to store must at least 0: " + numPatternsToStore);
+    public void setNumCPDAGsToStore(int numCPDAGsToStore) {
+        if (numCPDAGsToStore < 0) {
+            throw new IllegalArgumentException("# graphs to store must at least 0: " + numCPDAGsToStore);
         }
 
-        this.numPatternsToStore = numPatternsToStore;
+        this.numCPDAGsToStore = numCPDAGsToStore;
     }
 
     /**
@@ -726,7 +726,7 @@ public final class FgesMb {
     }
 
     /**
-     * The maximum of parents any nodes can have in output pattern.
+     * The maximum of parents any nodes can have in output CPDAG.
      *
      * @return -1 for unlimited.
      */
@@ -735,7 +735,7 @@ public final class FgesMb {
     }
 
     /**
-     * The maximum of parents any nodes can have in output pattern.
+     * The maximum of parents any nodes can have in output CPDAG.
      *
      * @param maxDegree -1 for unlimited.
      */
@@ -2226,12 +2226,12 @@ public final class FgesMb {
 
     // Stores the graph, if its totalScore knocks out one of the top ones.
     private void storeGraph(Graph graph) {
-        if (getNumPatternsToStore() > 0) {
+        if (getnumCPDAGsToStore() > 0) {
             Graph graphCopy = new EdgeListGraph(graph);
             topGraphs.addLast(new ScoredGraph(graphCopy, totalScore));
         }
 
-        if (topGraphs.size() == getNumPatternsToStore() + 1) {
+        if (topGraphs.size() == getnumCPDAGsToStore() + 1) {
             topGraphs.removeFirst();
         }
     }
@@ -2271,7 +2271,7 @@ public final class FgesMb {
 
         builder.append("Edge Posterior Log Bayes Factors:\n\n");
 
-        builder.append("For a DAG in the IMaGES pattern with model totalScore m, for each edge e in the "
+        builder.append("For a DAG in the IMaGES CPDAG with model totalScore m, for each edge e in the "
                 + "DAG, the model totalScore that would result from removing each edge, calculating "
                 + "the resulting model totalScore m(e), and then reporting m - m(e). The totalScore used is "
                 + "the IMScore, L - SUM_i{kc ln n(i)}, L is the maximum likelihood of the model, "

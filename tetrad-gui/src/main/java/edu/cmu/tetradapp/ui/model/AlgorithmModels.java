@@ -73,7 +73,7 @@ public final class AlgorithmModels {
     }
 
     public static AlgorithmModels getInstance() {
-        INSTANCE.refreshModels();   // if we had a subscriber pattern for app settings would not have to waste time doing this every time!
+        INSTANCE.refreshModels();   // if we had a subscriber CPDAG for app settings would not have to waste time doing this every time!
         return INSTANCE;
     }
 

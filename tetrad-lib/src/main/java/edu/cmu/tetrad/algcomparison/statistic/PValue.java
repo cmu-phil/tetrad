@@ -31,7 +31,7 @@
 //
 //    @Override
 //    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-//        Graph dag = SearchGraphUtils.dagFromPattern(estGraph);
+//        Graph dag = SearchGraphUtils.dagFromCPDAG(estGraph);
 //        SemPm pm = new SemPm(dag);
 //        SemEstimator est = new SemEstimator((DataSet) dataModel, pm);
 //        est.estimate();
@@ -39,7 +39,7 @@
 //
 //
 ////        FmlBicScorer scorer = new FmlBicScorer((DataSet) dataModel, 1);
-////        scorer.score(SearchGraphUtils.dagFromPattern(estGraph));
+////        scorer.score(SearchGraphUtils.dagFromCPDAG(estGraph));
 ////        return scorer.getPValue();
 //    }
 //

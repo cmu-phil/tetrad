@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Stores a covariance matrix together with variable names and sample size,
@@ -128,7 +127,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     public CovarianceMatrix(List<Node> variables, double[][] matrix,
                             int sampleSize) {
-        if (variables.size() != matrix.length && variables.size() != matrix[0].length) {
+        if (variables.size() > matrix.length && variables.size() != matrix[0].length) {
             throw new IllegalArgumentException("# variables not equal to matrix dimension.");
         }
 
@@ -236,7 +235,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @return the knowledge associated with this data.
      */
     public final IKnowledge getKnowledge() {
-        return this.knowledge.copy();
+        return this.knowledge;
     }
 
     /**
@@ -282,6 +281,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         List<Node> submatrixVars = new LinkedList<>();
 
         for (String submatrixVarName : submatrixVarNames) {
+            if (submatrixVarName.startsWith("E_")) continue;
             submatrixVars.add(getVariable(submatrixVarName));
         }
 
@@ -379,7 +379,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         buf.append(sampleSize).append("\n");
 
         // Build the variable names
-        buf.append(getVariableNames().stream().collect(Collectors.joining("\t")));
+        buf.append(String.join("\t", getVariableNames()));
 
         int numVars = getVariableNames().size();
         buf.append("\n");
@@ -446,12 +446,13 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     @Override
     public DataModel copy() {
-        return null;
+        return new CovarianceMatrix(this);
     }
 
     @Override
     public void setValue(int i, int j, double v) {
         _covariancesMatrix.set(i, j, v);
+        _covariancesMatrix.set(j, i, v);
     }
 
     @Override

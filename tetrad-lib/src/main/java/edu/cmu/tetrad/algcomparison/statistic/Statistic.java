@@ -32,7 +32,7 @@ public interface Statistic extends Serializable {
     /**
      * Returns the value of this statistic, given the true graph and the estimated graph.
      *
-     * @param trueGraph The true graph (DAG, Pattern, PAG_of_the_true_DAG).
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph  The estimated graph (same type).
      * @param dataModel
      * @return The value of the statistic.

@@ -549,7 +549,7 @@ public final class SvarFciOrient {
                     reachable.add(a);
 
                     if (verbose) {
-                        System.out.println("Found pattern " + a + " " + b + " " + c);
+                        System.out.println("Found CPDAG " + a + " " + b + " " + c);
                         reachablePathFind(a, b, c, reachable, graph);
                     }
                 }

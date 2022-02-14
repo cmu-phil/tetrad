@@ -45,7 +45,7 @@ import java.util.Map;
 
 
 /**
- * Edits some algorithm to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket CPDAGs.
  *
  * @author Joseph Ramsey
  */
@@ -223,7 +223,7 @@ public class MbSearchEditor extends AbstractSearchEditor
                         return;
                     }
 
-                    MbPatternDisplay display = new MbPatternDisplay(search);
+                    MbCPDAGDisplay display = new MbCPDAGDisplay(search);
 
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             display, "MB DAG's Consistent with forbid_latent_common_causes",

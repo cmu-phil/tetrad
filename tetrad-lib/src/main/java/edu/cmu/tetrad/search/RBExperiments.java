@@ -267,8 +267,8 @@ public class RBExperiments {
         System.out.println("Dep data creation done!");
 
         // learn structure of constraints using empirical data
-        Graph depPattern = runFGS(depData);
-        Graph estDepBN = SearchGraphUtils.dagFromPattern(depPattern);
+        Graph depCPDAG = runFGS(depData);
+        Graph estDepBN = SearchGraphUtils.dagFromCPDAG(depCPDAG);
         System.out.println("estDepBN: " + estDepBN.getEdges());
         out.println("DepGraph(nodes,edges):" + estDepBN.getNumNodes() + "," + estDepBN.getNumEdges());
         System.out.println("Dependency graph done!");
@@ -521,7 +521,7 @@ public class RBExperiments {
 
         tableColumns.add(Comparison.TableColumn.SHD);
 
-        GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison3(graph, trueGraph, null);
+        GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison(graph, trueGraph);
 
         List<Node> variables = new ArrayList<>();
         for (TableColumn column : tableColumns) {
@@ -808,9 +808,9 @@ public class RBExperiments {
         Fges fgs = new Fges(sd);
         fgs.setVerbose(false);
         fgs.setFaithfulnessAssumed(true);
-        Graph fgsPattern = fgs.search();
-        fgsPattern = GraphUtils.replaceNodes(fgsPattern, data.getVariables());
-        return fgsPattern;
+        Graph fgsCPDAG = fgs.search();
+        fgsCPDAG = GraphUtils.replaceNodes(fgsCPDAG, data.getVariables());
+        return fgsCPDAG;
     }
 
     private allScores getLnProbsAll(List<Graph> pags, Map<IndependenceFact, Double> H, DataSet data, BayesIm im,

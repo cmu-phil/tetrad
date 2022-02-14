@@ -23,10 +23,10 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cpc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.CpcStable;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcStable;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Cpc;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.CpcStable;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcStable;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;

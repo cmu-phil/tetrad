@@ -103,7 +103,7 @@ public class GwpResult {
     public CoefficientEvaluationResult coeffAll;
     public CoefficientEvaluationResult coeffSome;
 
-    public PatternEvaluationResult pat;
+    public CPDAGEvaluationResult pat;
 
     public String name = null;
 
@@ -112,12 +112,12 @@ public class GwpResult {
      * undirected when it should be directed: 0.5 * directed when it should be undirected: 0.5 * directed the wrong way:
      * 1.0 (in other words, 0.5 for each arrow-head difference, for orientation errors)
      */
-    public static class PatternEvaluationResult {
+    public static class CPDAGEvaluationResult {
 
         public AdjacencyEvaluationResult adj;
         public OrientationEvaluationResult ori;
 
-        public PatternEvaluationResult(AdjacencyEvaluationResult adj, OrientationEvaluationResult ori) {
+        public CPDAGEvaluationResult(AdjacencyEvaluationResult adj, OrientationEvaluationResult ori) {
             this.adj = adj;
             this.ori = ori;
         }
@@ -154,11 +154,11 @@ public class GwpResult {
 
     /**
      * constructor for evaluations where the method evaluated purports to give us the Markov-equivalence class, represented
-     * by a pattern.
+     * by a CPDAG.
      * <p>
      * * @param methodName
      */
-    public GwpResult(String methodName, PatternEvaluationResult pat) {
+    public GwpResult(String methodName, CPDAGEvaluationResult pat) {
         super();
         this.name = methodName;
         this.pat = pat;

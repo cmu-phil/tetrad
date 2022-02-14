@@ -266,7 +266,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        setResultGraph(SearchGraphUtils.patternForDag(graph, knowledge));
+        setResultGraph(SearchGraphUtils.cpdagForDag(graph));
     }
 
     public boolean supportsKnowledge() {

@@ -264,7 +264,7 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
 
 //        gfci.setInitialGraph(initialGraph);
 //        gfci.setKnowledge(getParameters().getKnowledge());
-//        gfci.setNumPatternsToStore(params.getNumPatternsToSave());
+//        gfci.setnumCPDAGsToStore(params.getnumCPDAGsToSave());
         gfci.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);
 //        gfci.setMaxIndegree(3);

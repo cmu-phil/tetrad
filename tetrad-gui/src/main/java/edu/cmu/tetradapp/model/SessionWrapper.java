@@ -83,7 +83,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     private transient SessionHandler sessionHandler;
     private boolean highlighted = false;
     private boolean pag;
-    private boolean pattern;
+    private boolean CPDAG;
 
     //==========================CONSTRUCTORS=======================//
 
@@ -754,13 +754,13 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     @Override
-    public boolean isPattern() {
-        return pattern;
+    public boolean isCPDAG() {
+        return CPDAG;
     }
 
     @Override
-    public void setPattern(boolean pattern) {
-        this.pattern = pattern;
+    public void setCPDAG(boolean CPDAG) {
+        this.CPDAG = CPDAG;
     }
 
     /**

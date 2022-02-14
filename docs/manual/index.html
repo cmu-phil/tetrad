@@ -250,9 +250,9 @@
         <li>Degree (displays the selected nodes and their parents and children)</li>
     </ul>
 
-    <h3>Choose DAG in Pattern</h3>
+    <h3>Choose DAG in CPDAG</h3>
 
-    <p>If given a pattern as input, this chooses a random DAG from the Markov equivalence class of the pattern to
+    <p>If given a CPDAG as input, this chooses a random DAG from the Markov equivalence class of the CPDAG to
         display. The resulting DAG functions as a normal graph box.</p>
 
     <h3>Choose MAG in PAG</h3>
@@ -260,16 +260,16 @@
     <p>If given a partial ancestral graph (PAG) as input, this chooses a random mixed ancestral graph (MAG) from the
         equivalence class of the PAG to display. The resulting MAG functions as a normal graph box.</p>
 
-    <h3>Show DAGs in Pattern</h3>
+    <h3>Show DAGs in CPDAG</h3>
 
-    <p>If given a pattern as input, this displays all DAGs in the pattern’s Markov equivalence class. Each DAG is
+    <p>If given a CPDAG as input, this displays all DAGs in the CPDAG’s Markov equivalence class. Each DAG is
         displayed in its own tab. Most graph box functionality is not available in this type of graph box, but the DAG
         currently on display can be copied by clicking “Copy Selected Graph.”</p>
 
-    <h3>Generate Pattern from DAG</h3>
+    <h3>Generate CPDAG from DAG</h3>
 
-    <p>If given a DAG as input, this displays the pattern of the Markov equivalence class to which the parent graph
-        belongs. The resulting pattern functions as a normal graph box.</p>
+    <p>If given a DAG as input, this displays the CPDAG of the Markov equivalence class to which the parent graph
+        belongs. The resulting CPDAG functions as a normal graph box.</p>
 
     <h3>Generate PAG from DAG</h3>
 
@@ -1958,7 +1958,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>The search box takes as input a data set (in either a data or simulation box) and optionally a knowledge box, and
         searches for causal explanations represented by directed graphs. The result of a search is not necessarily—and
-        not usually—a unique graph, but an object such as a pattern that represents a set of graphs, usually a Markov
+        not usually—a unique graph, but an object such as a CPDAG that represents a set of graphs, usually a Markov
         Equivalence class. More alternatives can be found by varying the parameters of search algorithms.</p>
 
     <h2>Possible Parent Boxes of the Search Box</h2>
@@ -2002,7 +2002,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>Choosing the correct algorithm for your needs is an important consideration. Tetrad provides over 30 search
         algorithms (and more are added all of the time) each of which makes different assumptions about the input data,
         uses different parameters, and produces different kinds of output. For instance, some algorithms produce Markov
-        blankets or patterns, and some produce full graphs; some algorithms work best with Gaussian or non-Gaussian
+        blankets or CPDAGs, and some produce full graphs; some algorithms work best with Gaussian or non-Gaussian
         data; some algorithms require an alpha value, some require a penalty discount, and some require both or neither.
         You can narrow down the list using the “Algorithm filter" panel, which allows you to limit the provided
         algorithms according to whichever factor is important to you.</p>
@@ -2027,7 +2027,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="pc-all">
 
-        <p>PC algorithm (Spirtes and Glymour, Social Science Computer Review, 1991) is a pattern search which assumes
+        <p>PC algorithm (Spirtes and Glymour, Social Science Computer Review, 1991) is a CPDAG search which assumes
             that the underlying causal structure of the input data is acyclic, and that no two variables are caused by
             the same latent (unmeasured) variable. In addition, it is assumed that the input data set is either entirely
             continuous or entirely discrete; if the data set is continuous, it is assumed that the causal relation
@@ -2040,7 +2040,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
         <p>The PC algorithm is correct whenever decision procedures for independence and conditional independence are
             available. The procedure conducts a sequence of independence and conditional independence tests, and
-            efficiently builds a pattern from the results of those tests. As implemented in TETRAD, PC is intended for
+            efficiently builds a CPDAG from the results of those tests. As implemented in TETRAD, PC is intended for
             multinomial and approximately Normal distributions with i.i.d. data. The tests have an alpha value for
             rejecting the null hypothesis, which is always a hypothesis of independence or conditional independence. For
             continuous variables, PC uses tests of zero correlation or zero partial correlation for independence or
@@ -2061,9 +2061,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>The graph outputs a pattern (or CP-DAG). This is an equivalence class of directed acyclic graphs (DAGs). Each DAG
-        in the equivalence class has all of the adjacencies (and no more) of the pattern. Each oriented edge in the
-        pattern is so oriented in each of the DAG in the equivalence class. Unoriented edges in the equivalence class
+    <p>The graph outputs a CPDAG. This is an equivalence class of directed acyclic graphs (DAGs). Each DAG
+        in the equivalence class has all of the adjacencies (and no more) of the CPDAG. Each oriented edge in the
+        CPDAG is so oriented in each of the DAG in the equivalence class. Unoriented edges in the equivalence class
         cannot be oriented by conditional independence facts. For example, if the model is X->Y->Z, the output will be
         X—Y—Z. There are not collider in this model, so the algorithm will not detect one. Since there are not
         colliders, the Meek cannot orient additional edges. If the model were X<-Y<-Z, the output would also be X—Y—Z;
@@ -2087,13 +2087,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             conditional on S. The CPC algorithm considers all possible such sets and records the set on which X is
             conditionally independent of Z. If all of these sets contain Y, it orients X—Y—Z as a noncollider. If none
             of them contains Z, if orient X—Y—Z as a collider. If some contain Z but other don’t, it marks it as
-            ambiguous, with an underline. Thus, the output is ambiguous between patterns; in order to get a specific
-            pattern out of the output, one needs first to decide whether the underlined triples are colliders or
+            ambiguous, with an underline. Thus, the output is ambiguous between CPDAGs; in order to get a specific
+            CPDAG out of the output, one needs first to decide whether the underlined triples are colliders or
             noncolliders and then to apply the orientation rules in Meek (1997).</p>
 
         <p>The PC algorithm is correct whenever decision procedures for independence and conditional independence are
             available. The procedure conducts a sequence of independence and conditional independence tests, and
-            efficiently builds a pattern from the results of those tests. As implemented in TETRAD, PC is intended for
+            efficiently builds a CPDAG from the results of those tests. As implemented in TETRAD, PC is intended for
             multinomial and approximately Normal distributions with i.i.d. data. The tests have an alpha value for
             rejecting the null hypothesis, which is always a hypothesis of independence or conditional independence. For
             continuous variables, PC uses tests of zero correlation or zero partial correlation for independence or
@@ -2111,7 +2111,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>An e-pattern (extended pattern), consistent of directed and undirected edges where some of the triple may have
+    <p>An e-CPDAG (extended CPDAG), consistent of directed and undirected edges where some of the triple may have
         been marked with underlines to indicate ambiguity, as above. It may be that bidirected edges are oriented as
         X->Y<->X<-W if two adjacent colliders are oriented; this is not ruled out.</p>
 
@@ -2169,7 +2169,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>Same as for CPC (an e-pattern).</p>
+    <p>Same as for CPC (an e-CPDAG).</p>
 
     <h4>Parameters</h4>
 
@@ -2189,7 +2189,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             and pick the set S’ that yields the highest such p-value. Then orient X->Y<-Z if S does not contain Y and
             X—Y—Z otherwise. This orients all unshielded triples. It’s possible (though rare) that adjacent triples both
             be oriented as 2-cycles, X->Y<->Z<-W. If this happens, pick one of the other of these triples or orient
-            as a collider, arbitrarily. This guarantees that the resulting graph will be a pattern.</p>
+            as a collider, arbitrarily. This guarantees that the resulting graph will be a CPDAG.</p>
 
     </div>
 
@@ -2199,7 +2199,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>Same as PC, a pattern.</p>
+    <p>Same as PC, a CPDAG.</p>
 
     <h4>Parameters</h4>
 
@@ -2247,7 +2247,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>A pattern, same as PC.</p>
+    <p>A CPDAG, same as PC.</p>
 
 
     <h4>Parameters</h4>
@@ -2277,7 +2277,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>A pattern, interpreted as a common model for all datasets.</p>
+    <p>A CPDAG, interpreted as a common model for all datasets.</p>
 
     <h4>Parameters</h4>
 
@@ -2305,7 +2305,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>A pattern, interpreted as a common model for all datasets.</p>
+    <p>A CPDAG, interpreted as a common model for all datasets.</p>
 
     <h4>Parameters</h4>
 
@@ -2575,7 +2575,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             In the interface, just one target may be specified. See Ramsey et al., 2017 for details. In the general
             case,
             finding the graph over the Markov blanket variables of a target (including the target) is far faster than
-            finding the pattern for all of the variables.</p>
+            finding the CPDAG for all of the variables.</p>
 
     </div>
 
@@ -2588,7 +2588,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>A graph over a selected group of nodes that includes the target and each node in the Markov blanket of the
         target.
         This will be the same as if FGES were run and the result restricted to just these variables,
-        so some edges may be oriented in the returned graph that may not have been oriented in a pattern over the
+        so some edges may be oriented in the returned graph that may not have been oriented in a CPDAG over the
         selected nodes.</p>
 
     <h4>Parameters</h4>
@@ -2607,7 +2607,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             of FGES.
             The rules of the PC search are restricted to just the variables in the Markov blanket of a target T,
             including T;
-            the result is a graph that is a pattern over these variables.</p>
+            the result is a graph that is a CPDAG over these variables.</p>
 
     </div>
 
@@ -2617,7 +2617,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>A pattern over a selected group of nodes that includes the target and each node in the Markov blanket of the
+    <p>A CPDAG over a selected group of nodes that includes the target and each node in the Markov blanket of the
         target.</p>
 
     <h4>Parameters</h4>
@@ -2780,10 +2780,10 @@ The idea is this. There is a set of latent (unmeasured) variables over which a d
 Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is,
 measured variables that are all children of L.
 Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
-There is a theorem to the effect that if certain patterns of these tetrad constraints hold,
+There is a theorem to the effect that if certain CPDAGs of these tetrad constraints hold,
 there must be a latent common cause of all of them (the Tetrad Representation Theorem, see Silva et al., 2003,
 where the BPC (“Build Pure Clusters”) algorithm is defined and discussed.) Moreover, once one has such a “measurement model,”
-once can estimate a covariance matrix over the latent variables that are parents of the measures and use some algorithm such as PC or GES to estimate a pattern over the latents.
+once can estimate a covariance matrix over the latent variables that are parents of the measures and use some algorithm such as PC or GES to estimate a CPDAG over the latents.
 The algorithm to run PC or GES on this covariance matrix is called MimBuild (“MIM” is the the graph, Multiple Indicator Model; “Build” means build).
 In this way, one may recover causal structure over the latents. The more measures one has for each latent, the better the result is, generally.
 The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called “impurities”—that is,
@@ -2799,7 +2799,7 @@ The algorithm will in effect remove one measure in each impure pair from conside
 <h4>Output Format</h4>
 
 <p>For BPC, a measurement model, in the above sense. This is represented as a clustering of variables; it may be inferred that
-there is a single latent for each output cluster. For MimBuild, a pattern over the latent variables, one for each cluster.</p>
+there is a single latent for each output cluster. For MimBuild, a CPDAG over the latent variables, one for each cluster.</p>
 
 <h4>Parameters</h4>
 
@@ -2820,7 +2820,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             variable—that is,
             measured variables that are all children of L.
             Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
-            There is a theorem to the effect that if certain patterns of these tetrad constraints hold,
+            There is a theorem to the effect that if certain CPDAGs of these tetrad constraints hold,
             there must be a latent common cause of all of them (the Tetrad Representation Theorem).
             The FOFC (Find One Factor Clusters) takes advantage of this fact. The basic idea is to build up clusters one
             at a time by adding variables that keep them pure in the sense that all relevant tetrad constraints still
@@ -2833,7 +2833,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             In general, GAP is more accurate. The result is a clustering of variables.
             Once one has such a “measurement model, one can estimate (using the ESTIMATOR box) a covariance matrix over
             the latent variables that are parents of the
-            measures and use some algorithm such as PC or GES to estimate a pattern over the latent variables. The
+            measures and use some algorithm such as PC or GES to estimate a CPDAG over the latent variables. The
             algorithm to run PC or GES on this covariance matrix is
             called MimBuild (“MIM” is the graph, Multiple Indicator Model; “Build” means build). MimBUILD is an optional
             choice inside FOFC
@@ -5217,7 +5217,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="priorEquivalentSampleSize_short_desc">Prior equivalent sample size (min = 1.0)</span>
             </li>
-            <li>Long Description: <span id="priorEquivalentSampleSize_long_desc">This sets the prior equivalent sample size. This number is added to the sample size for each conditional probability table in the model and is divided equally among the cells in the table. A prior of 15 (default) does well as optimizing the estimate of the output pattern; a prior of 5 will optimize the structural Hamming distance.</span>
+            <li>Long Description: <span id="priorEquivalentSampleSize_long_desc">This sets the prior equivalent sample size. This number is added to the sample size for each conditional probability table in the model and is divided equally among the cells in the table. A prior of 15 (default) does well as optimizing the estimate of the output CPDAG; a prior of 5 will optimize the structural Hamming distance.</span>
             </li>
             <li>Default Value: <span id="priorEquivalentSampleSize_default_value">10.0</span></li>
             <li>Lower Bound: <span id="priorEquivalentSampleSize_lower_bound">1.0</span></li>
@@ -5987,7 +5987,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         graph.</p>
 
     <h5>Meek Orientation Rules</h5>
-    <p>Rules for finding all directions of edges implied by a pattern, consistent with any specified “knowledge”
+    <p>Rules for finding all directions of edges implied by a CPDAG, consistent with any specified “knowledge”
         constraints on directions. See <a
                 href="https://arxiv.org/pdf/1302.4972.pdf">https://arxiv.org/pdf/1302.4972.pdf</a></p>
 
@@ -6007,7 +6007,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
     <h5>Partial Ancestral Graph (PAG)</h5>
     <p>See PAG description in this manual.</p>
 
-    <h5>Pattern</h5>
+    <h5>CPDAG</h5>
     <p>A graphical representation of a Markov Equivalence Class or Classes, having both directed and undirected edges,
         with an undirected edge indicating that for each possible direction of the edge, there is a graph in the class
         or classes having that edge direction.</p>

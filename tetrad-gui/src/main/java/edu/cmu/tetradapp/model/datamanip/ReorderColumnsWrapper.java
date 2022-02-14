@@ -59,12 +59,12 @@ public class ReorderColumnsWrapper extends DataWrapper {
             for (int i = 0; i < dataModelList.size(); i++) {
                 dataSets.add((DataSet) dataModelList.get(i));
             }
-            newData.addAll((DataUtils.reorderColumns(dataSets)));
+            newData.addAll((DataUtils.shuffleColumns2(dataSets)));
         } else {
 
             for (DataModel dataModel : dataModelList) {
 //            if (dataModel instanceof DataSet) {
-//                DataSet _newData = reorderColumns((DataSet) dataModel);
+//                DataSet _newData = shuffleColumns((DataSet) dataModel);
 //                newData.add(_newData);
 //            }
 //            else
@@ -90,7 +90,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
 
     }
 
-    public static DataSet reorderColumns(DataSet dataModel) {
+    public static DataSet shuffleColumns(DataSet dataModel) {
         DataSet dataSet = dataModel;
 
         List<Node> vars = new ArrayList<>();

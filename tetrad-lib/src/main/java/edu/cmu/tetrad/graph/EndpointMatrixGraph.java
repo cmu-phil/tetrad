@@ -89,7 +89,7 @@ public class EndpointMatrixGraph implements Graph {
     private int numEdges = 0;
 
     private boolean pag;
-    private boolean pattern;
+    private boolean CPDAG;
 
     private Map<String, Object> attributes = new HashMap<>();
 
@@ -737,13 +737,13 @@ public class EndpointMatrixGraph implements Graph {
     }
 
     @Override
-    public boolean isPattern() {
-        return pattern;
+    public boolean isCPDAG() {
+        return CPDAG;
     }
 
     @Override
-    public void setPattern(boolean pattern) {
-        this.pattern = pattern;
+    public void setCPDAG(boolean CPDAG) {
+        this.CPDAG = CPDAG;
     }
 
     private static class Pair {

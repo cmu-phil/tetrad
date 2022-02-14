@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.*;
 
 /**
- * Assumes that the search method of the pattern search has been run and shows the
+ * Assumes that the search method of the CPDAG search has been run and shows the
  * various options for DAG's consistent with correlation information over the variables.
  *
  * @author Joseph Ramsey
@@ -71,7 +71,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
     }
 
     public ScoredGraphsDisplay(Graph graph, GraphScorer scorer) {
-        final List<Graph> _dags = SearchGraphUtils.generatePatternDags(graph, true);
+        final List<Graph> _dags = SearchGraphUtils.generateCpdagDags(graph, true);
 
         for (Graph _graph : _dags) {
             double score = Double.NaN;

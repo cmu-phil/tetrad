@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.GesMe;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GesMe;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -59,9 +59,9 @@ public class TestFgesFa {
         parameters.set(Params.DETERMINISM_THRESHOLD, 1);
 
         GesMe alg = new GesMe();
-        Graph pattern = alg.search(dataSet, parameters);
+        Graph CPDAG = alg.search(dataSet, parameters);
 
-        System.out.println(pattern);
+        System.out.println(CPDAG);
     }
 
     public static void main(String... args) {

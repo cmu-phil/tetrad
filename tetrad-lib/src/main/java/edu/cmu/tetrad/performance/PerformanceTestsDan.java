@@ -92,8 +92,8 @@ public class PerformanceTestsDan {
                 out5 = new PrintStream(new File(dir, "coef.matrix.txt"));
                 out6 = new PrintStream(new File(dir, "pag.long.txt"));
                 out7 = new PrintStream(new File(dir, "pag.matrix.txt"));
-                out8 = new PrintStream(new File(dir, "pattern.long.txt"));
-                out9 = new PrintStream(new File(dir, "pattern.matrix.txt"));
+                out8 = new PrintStream(new File(dir, "cpdag.long.txt"));
+                out9 = new PrintStream(new File(dir, "cpdag.matrix.txt"));
                 out10 = new PrintStream(new File(dir, "data.txt"));
                 out11 = new PrintStream(new File(dir, "true.pag.long.txt"));
                 out12 = new PrintStream(new File(dir, "true.pag.matrix.txt"));
@@ -189,7 +189,7 @@ public class PerformanceTestsDan {
             out6.println(pag);
             printDanMatrix(_vars, pag, out7);
 
-            out8.println("Pattern_of_the_true_DAG OVER MEASURED VARIABLES");
+            out8.println("CPDAG_of_the_true_DAG OVER MEASURED VARIABLES");
 
             final IndTestFisherZ independencePc = new IndTestFisherZ(cov, alphaPc);
 
@@ -197,11 +197,11 @@ public class PerformanceTestsDan {
             pc.setVerbose(false);
             pc.setDepth(depth);
 
-            Graph pattern = pc.search();
+            Graph CPDAG = pc.search();
 
-            out8.println(pattern);
+            out8.println(CPDAG);
 
-            printDanMatrix(_vars, pattern, out9);
+            printDanMatrix(_vars, CPDAG, out9);
 
             out10.println(data);
 
@@ -225,11 +225,11 @@ public class PerformanceTestsDan {
         }
     }
 
-    private void printDanMatrix(List<Node> vars, Graph pattern, PrintStream out) {
-        pattern = GraphUtils.replaceNodes(pattern, vars);
+    private void printDanMatrix(List<Node> vars, Graph CPDAG, PrintStream out) {
+        CPDAG = GraphUtils.replaceNodes(CPDAG, vars);
         for (int i = 0; i < vars.size(); i++) {
             for (Node var : vars) {
-                Edge edge = pattern.getEdge(vars.get(i), var);
+                Edge edge = CPDAG.getEdge(vars.get(i), var);
 
                 if (edge == null) {
                     out.print(0 + "\t");

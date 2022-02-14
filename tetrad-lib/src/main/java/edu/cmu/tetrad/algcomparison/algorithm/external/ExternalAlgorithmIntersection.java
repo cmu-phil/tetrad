@@ -82,7 +82,7 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     }
 
     /**
-     * Returns the pattern of the supplied DAG.
+     * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
         return algorithms[0].getComparisonGraph(graph);

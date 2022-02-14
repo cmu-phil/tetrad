@@ -55,18 +55,18 @@ public class GraphWithParameters {
 
     private HashMap<Edge, Double> weightHash;
 
-//	public Dag patDag = null; //only non-null when graph is a pattern
+//	public Dag patDag = null; //only non-null when graph is a CPDAG
 
     /*
      * estimate the weights for the nodes that have all parents determined.
      */
     //it would have been more efficient to only regression on the nodes that matter
 
-    public GraphWithParameters(SemIm semIm, Graph truePattern) {
-//		Graph g = (truePattern==null) ? semIm.getEstIm().getGraph() : truePattern;
+    public GraphWithParameters(SemIm semIm, Graph trueCPDAG) {
+//		Graph g = (trueCPDAG==null) ? semIm.getEstIm().getGraph() : trueCPDAG;
 //		this.graph = g;
 //		weightHash = new HashMap<Edge,Double>();
-        this(truePattern);
+        this(trueCPDAG);
 
         //make the SemIm
 
@@ -89,7 +89,7 @@ public class GraphWithParameters {
         weightHash = new HashMap<>();
     }
 
-//	public PatternWithParameters(ColtDataSet B) {
+//	public CPDAGWithParameters(ColtDataSet B) {
 //		Shimizu2006Search.makeDagWithParms(B);
 //	}
 
@@ -298,7 +298,7 @@ public class GraphWithParameters {
     /**
      * evalute coefficients for some node pairs
      *
-     * @param edges edges from the pattern returned by PC-search
+     * @param edges edges from the CPDAG returned by PC-search
      */
     public CoefficientEvaluationResult evalCoeffsForNodePairs(GraphWithParameters standardGraph, List<Edge> edges) {
 
@@ -444,7 +444,7 @@ public class GraphWithParameters {
     }
 
     /**
-     * creates a PatternWithParameters by running a regression, given a graph and data
+     * creates a CPDAGWithParameters by running a regression, given a graph and data
      */
     public static GraphWithParameters regress(DataSet dataSet, Graph graph) {
         SemPm semPmEstDag = new SemPm(graph);

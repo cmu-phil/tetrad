@@ -166,7 +166,7 @@ public class LinearFisherModel implements Simulation, TakesData {
             }
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.reorderColumns(dataSet);
+                dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
             dataSets.add(saveLatentVars ? dataSet : DataUtils.restrictToMeasured(dataSet));

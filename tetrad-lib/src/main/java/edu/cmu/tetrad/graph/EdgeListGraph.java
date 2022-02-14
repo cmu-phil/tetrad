@@ -155,7 +155,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
 
         this.pag = graph.isPag();
-        this.cpdag = graph.isPattern();
+        this.cpdag = graph.isCPDAG();
     }
 
     /**
@@ -777,12 +777,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * should do this.
      */
     @Override
-    public boolean isPattern() {
+    public boolean isCPDAG() {
         return cpdag;
     }
 
     @Override
-    public void setPattern(boolean cpdag) {
+    public void setCPDAG(boolean cpdag) {
         this.cpdag = cpdag;
     }
 

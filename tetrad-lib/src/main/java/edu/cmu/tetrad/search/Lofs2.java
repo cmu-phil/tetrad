@@ -62,7 +62,7 @@ public class Lofs2 {
         exp, expUnstandardized, expUnstandardizedInverted, other, logcosh, entropy
     }
 
-    private Graph pattern;
+    private Graph CPDAG;
     private List<DataSet> dataSets;
     private List<Matrix> matrices;
     private double alpha = 1.1;
@@ -83,15 +83,15 @@ public class Lofs2 {
 
     //===============================CONSTRUCTOR============================//
 
-    public Lofs2(Graph pattern, List<DataSet> dataSets)
+    public Lofs2(Graph CPDAG, List<DataSet> dataSets)
             throws IllegalArgumentException {
 
         if (dataSets == null) {
             throw new IllegalArgumentException("Data set must be specified.");
         }
 
-        if (pattern == null) {
-            throw new IllegalArgumentException("Pattern must be specified.");
+        if (CPDAG == null) {
+            throw new IllegalArgumentException("CPDAG must be specified.");
         }
 
 //        for (DataSet dataSet : dataSets) {
@@ -104,7 +104,7 @@ public class Lofs2 {
 //            }
 //        }
 
-        this.pattern = pattern;
+        this.CPDAG = CPDAG;
         this.variables = dataSets.get(0).getVariables();
         this.varnames = dataSets.get(0).getVariableNames();
 
@@ -148,7 +148,7 @@ public class Lofs2 {
 
     public Graph orient() {
 
-        Graph skeleton = GraphUtils.undirectedGraph(getPattern());
+        Graph skeleton = GraphUtils.undirectedGraph(getCPDAG());
         Graph graph = new EdgeListGraph(skeleton.getNodes());
 
         List<Node> nodes = skeleton.getNodes();
@@ -2405,8 +2405,8 @@ public class Lofs2 {
         return p;
     }
 
-    private Graph getPattern() {
-        return pattern;
+    private Graph getCPDAG() {
+        return CPDAG;
     }
 
     private Node getVariable(List<Node> variables, String name) {

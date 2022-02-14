@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Reorients edges in the getModel graph as CPC would orient them. Basically, does a pattern search using CPC over the
+ * Reorients edges in the getModel graph as CPC would orient them. Basically, does a CPDAG search using CPC over the
  * given (undirected) edges in the given graph.
  *
  * @author Joseph Ramsey (this version).

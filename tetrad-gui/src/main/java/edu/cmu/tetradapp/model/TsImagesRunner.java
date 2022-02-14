@@ -189,7 +189,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgesRunn
         }
 
         fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-//        fges.setNumPatternsToStore(params.getNumPatternsToSave()); // removed for SvarGFci
+//        fges.setNumCPDAGsToStore(params.getnumCPDAGsToSave()); // removed for SvarGFci
 //        fges.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed()); // removed for SvarGFci
         fges.setVerbose(true);
         Graph graph = fges.search();

@@ -45,7 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 
 /**
- * Edits some algorithm to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket CPDAGs.
  *
  * @author Joseph Ramsey
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)

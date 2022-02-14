@@ -140,7 +140,7 @@ public class MbClassify implements DiscreteClassifier {
 
     /**
      * Classifies the test data by Bayesian updating. The procedure is as follows. First, MBFS is run on the training
-     * data to estimate an MB pattern. Bidirected edges are removed; an MB DAG G is selected from the pattern that
+     * data to estimate an MB CPDAG. Bidirected edges are removed; an MB DAG G is selected from the CPDAG that
      * remains. Second, a Bayes model B is estimated using this G and the training data. Third, for each case in the
      * test data, the marginal for the target variable in B is calculated conditioning on values of the other varialbes
      * in B in the test data; these are reported as classifications. Estimation of B is done using a Dirichlet
@@ -169,25 +169,25 @@ public class MbClassify implements DiscreteClassifier {
 
         System.out.println("subset vars = " + subset.getVariables());
 
-        Pc patternSearch = new Pc(new IndTestChiSquare(subset, 0.05));
-//        patternSearch.setMaxIndegree(depth);
-        Graph mbPattern = patternSearch.search();
+        Pc cpdagSearch = new Pc(new IndTestChiSquare(subset, 0.05));
+//        cpdagSearch.setMaxIndegree(depth);
+        Graph mbCPDAG = cpdagSearch.search();
 
 //        MbFanSearch search = new MbFanSearch(indTest, depth);
-//        Graph mbPattern = search.search(target);
+//        Graph mbCPDAG = search.search(target);
 
-        TetradLogger.getInstance().log("details", "Pattern = " + mbPattern);
-        MbUtils.trimToMbNodes(mbPattern, train.getVariable(target), true);
-        TetradLogger.getInstance().log("details", "Trimmed pattern = " + mbPattern);
+        TetradLogger.getInstance().log("details", "CPDAG = " + mbCPDAG);
+        MbUtils.trimToMbNodes(mbCPDAG, train.getVariable(target), true);
+        TetradLogger.getInstance().log("details", "Trimmed CPDAG = " + mbCPDAG);
 
-        // Removing bidirected edges from the pattern before selecting a DAG.                                   4
-        for (Edge edge : mbPattern.getEdges()) {
+        // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
+        for (Edge edge : mbCPDAG.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                mbPattern.removeEdge(edge);
+                mbCPDAG.removeEdge(edge);
             }
         }
 
-        Graph selectedDag = MbUtils.getOneMbDag(mbPattern);
+        Graph selectedDag = MbUtils.getOneMbDag(mbCPDAG);
 
         TetradLogger.getInstance().log("details", "Selected DAG = " + selectedDag);
         TetradLogger.getInstance().log("details", "Vars = " + selectedDag.getNodes());

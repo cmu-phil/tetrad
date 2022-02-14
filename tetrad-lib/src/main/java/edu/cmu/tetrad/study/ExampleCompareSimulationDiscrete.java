@@ -23,8 +23,8 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcAll;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.independence.GSquare;
@@ -116,7 +116,7 @@ public class ExampleCompareSimulationDiscrete {
         comparison.setSortByUtility(true);
 //        comparison.setShowUtilities(true);
 
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
         comparison.compareFromSimulations("comparison.discrete.study", simulations, "comparison_all_" + sampleSize, algorithms, statistics, parameters);
     }

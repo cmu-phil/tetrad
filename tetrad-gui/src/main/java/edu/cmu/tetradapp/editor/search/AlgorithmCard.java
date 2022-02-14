@@ -20,9 +20,7 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.SingleGraphAlg;
-import edu.cmu.tetrad.algcomparison.score.BdeuScore;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;

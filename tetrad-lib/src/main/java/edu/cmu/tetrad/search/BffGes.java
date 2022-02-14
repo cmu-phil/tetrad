@@ -59,10 +59,10 @@ public final class BffGes implements Bff {
 
         boolean allowArbitraryOrientations = true;
         boolean allowNewColliders = true;
-        DagInPatternIterator iterator = new DagInPatternIterator(graph, getKnowledge(), allowArbitraryOrientations,
+        DagInCPDAGIterator iterator = new DagInCPDAGIterator(graph, getKnowledge(), allowArbitraryOrientations,
                 allowNewColliders);
         graph = iterator.next();
-        graph = SearchGraphUtils.patternForDag(graph);
+        graph = SearchGraphUtils.cpdagForDag(graph);
 
         if (GraphUtils.containsBidirectedEdge(graph)) {
             throw new IllegalArgumentException("Contains bidirected edge.");
@@ -118,7 +118,7 @@ public final class BffGes implements Bff {
     }
 
     public Score scoreGraph(Graph graph) {
-        Graph dag = SearchGraphUtils.dagFromPattern(graph, getKnowledge());
+        Graph dag = SearchGraphUtils.dagFromCPDAG(graph, getKnowledge());
 
         if (dag == null) {
             return Score.negativeInfinity();
@@ -200,7 +200,7 @@ public final class BffGes implements Bff {
 
 //        removeHighPValueEdges(getGraph());
 
-        setNewDag(SearchGraphUtils.dagFromPattern(getGraph()));
+        setNewDag(SearchGraphUtils.dagFromCPDAG(getGraph()));
 
         Score _score = scoreGraph(getGraph());
         newSemIm = _score.getEstimatedSem();
@@ -279,7 +279,7 @@ public final class BffGes implements Bff {
             if (x != null) {
                 score = bestScore;
                 insert(x, y, t, graph, true);
-                rebuildPattern(graph);
+                rebuildCPDAG(graph);
 
                 saveModelIfSignificant(graph);
 
@@ -359,7 +359,7 @@ public final class BffGes implements Bff {
                 delete(x, y, t, graph, true);
 
 
-                rebuildPattern(graph);
+                rebuildCPDAG(graph);
 
                 saveModelIfSignificant(graph);
             }
@@ -596,7 +596,7 @@ public final class BffGes implements Bff {
 
 //    private double scoreGraphChange(Node y, Set<Node> parents1,
 //                                    Set<Node> parents2, Graph graph) {
-//        graph = SearchGraphUtils.dagFromPattern(graph);
+//        graph = SearchGraphUtils.dagFromCPDAG(graph);
 //
 //        List<Node> currentParents = graph.getParents(y);
 //        List<Node> currentChildren = graph.getChildren(y);
@@ -694,15 +694,15 @@ public final class BffGes implements Bff {
 
 
     /**
-     * Completes a pattern that was modified by an insertion/deletion operator Based on the algorithm described on
+     * Completes a CPDAG that was modified by an insertion/deletion operator Based on the algorithm described on
      * Appendix C of (Chickering, 2002).
      */
-    private void rebuildPattern(Graph graph) {
-        SearchGraphUtils.basicPattern(graph);
+    private void rebuildCPDAG(Graph graph) {
+        SearchGraphUtils.basicCPDAG(graph);
         addRequiredEdges(graph);
         pdagWithBk(graph, getKnowledge());
 
-        TetradLogger.getInstance().log("rebuiltPatterns", "Rebuilt pattern = " + graph);
+        TetradLogger.getInstance().log("rebuiltCPDAGs", "Rebuilt CPDAG = " + graph);
     }
 
     /**

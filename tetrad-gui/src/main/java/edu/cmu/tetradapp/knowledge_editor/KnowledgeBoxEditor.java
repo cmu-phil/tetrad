@@ -405,7 +405,7 @@ public class KnowledgeBoxEditor extends JPanel {
             textRow.add(regexAdd);
 
             regexAdd.addActionListener((e) -> {
-                String regex = JOptionPane.showInputDialog("Search Pattern");
+                String regex = JOptionPane.showInputDialog("Search CPDAG");
                 try {
                     getKnowledge().removeFromTiers(regex);
                     getKnowledge().addToTier(_tier, regex);

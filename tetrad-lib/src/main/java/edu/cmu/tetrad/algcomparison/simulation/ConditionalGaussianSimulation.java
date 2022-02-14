@@ -94,7 +94,7 @@ public class ConditionalGaussianSimulation implements Simulation {
             dataSet.setName("" + (i + 1));
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.reorderColumns(dataSet);
+                dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
             dataSets.add(dataSet);

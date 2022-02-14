@@ -35,11 +35,11 @@
     rules are then applied as usual, with the exception that where these orientation rules require noncolliders, the
     fact that a triple is a noncollider is checked against the previously compiled classification of unshielded
     triples. </p>
-<p>Whereas the output graph of PC is a <em>pattern</em> (allowing for bidirected edges in some cases where independence
-    information conflicts with the assumptions of PC), the output graph of CPC is an <em>e-pattern</em> (with the same
-    allowance). The e-pattern represents an equivalence class of DAGs that have the same adjacencies as the e-pattern,
-    with every edge A--&gt;B in the e-pattern also in the DAG and every unshielded collider in the DAG either an
-    unshielded collider in the e-pattern or marked as unfaithful in the e-pattern. (Currently, the interface in Tetrad
+<p>Whereas the output graph of PC is a <em>CPDAG</em> (allowing for bidirected edges in some cases where independence
+    information conflicts with the assumptions of PC), the output graph of CPC is an <em>e-CPDAG</em> (with the same
+    allowance). The e-CPDAG represents an equivalence class of DAGs that have the same adjacencies as the e-CPDAG,
+    with every edge A--&gt;B in the e-CPDAG also in the DAG and every unshielded collider in the DAG either an
+    unshielded collider in the e-CPDAG or marked as unfaithful in the e-CPDAG. (Currently, the interface in Tetrad
     does how show which triples are marked as unfaithful, but the logs, accessed through the Logging menu, provide this
     information.) </p>
 <p>&nbsp;</p>

@@ -73,7 +73,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
     public ScoredGraphsWrapper(Graph graph, GraphScorer scorer) {
-        final List<Graph> dags = SearchGraphUtils.generatePatternDags(graph, true);
+        final List<Graph> dags = SearchGraphUtils.generateCpdagDags(graph, true);
         graphsToScores = new HashMap<>();
         this.graphScorer = scorer;
 

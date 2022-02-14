@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.PatternToDag;
+import edu.cmu.tetrad.search.CPDAGToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.DataConvertUtils;
@@ -52,9 +52,9 @@ public class HsimRun {
             Graph estGraph = fges.search();
             System.out.println(estGraph);
 
-            Graph estPattern = new EdgeListGraph(estGraph);
-            PatternToDag patternToDag = new PatternToDag(estPattern);
-            Graph estGraphDAG = patternToDag.patternToDagMeek();
+            Graph estCPDAG = new EdgeListGraph(estGraph);
+            CPDAGToDag CPDAGToDag = new CPDAGToDag(estCPDAG);
+            Graph estGraphDAG = CPDAGToDag.cpdagToDagMeek();
             Dag estDAG = new Dag(estGraphDAG);
 
             //===========Identify the nodes to be resimulated===========

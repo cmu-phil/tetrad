@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.Lofs;
-import edu.cmu.tetrad.search.PatternToDag;
+import edu.cmu.tetrad.search.CPDAGToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -48,7 +48,7 @@ import java.util.Map;
 
 
 /**
- * Edits some algorithm to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket CPDAGs.
  *
  * @author Joseph Ramsey
  */
@@ -313,7 +313,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
         JMenu graph = new JMenu("Graph");
         JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");
@@ -329,7 +329,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
         graph.addSeparator();
 
 //        graph.add(meekOrient);
-        graph.add(dagInPattern);
+        graph.add(dagInCPDAG);
         graph.add(gesOrient);
         graph.addSeparator();
 
@@ -352,7 +352,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
                 new WatchedProcess(owner) {
                     public void watch() {
 
-                        // Needs to be a pattern search; this isn't checked
+                        // Needs to be a CPDAG search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
                         AlgorithmRunner runner = getAlgorithmRunner();
@@ -380,7 +380,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
 //                            editorWindow.setVisible(true);
 //                        }
 //                        else {
-                        PatternDisplay display = new PatternDisplay(graph);
+                        CPDAGDisplay display = new CPDAGDisplay(graph);
                         GraphWorkbench workbench = getWorkbench();
 
                         EditorWindow editorWindow =
@@ -405,19 +405,19 @@ public class LofsSearchEditor extends AbstractSearchEditor
 //            }
 //        });
 
-        dagInPattern.addActionListener(new ActionListener() {
+        dagInCPDAG.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Graph graph = new EdgeListGraph(getGraph());
 
-                // Removing bidirected edges from the pattern before selecting a DAG.                                   4
+                // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
                 for (Edge edge : graph.getEdges()) {
                     if (Edges.isBidirectedEdge(edge)) {
                         graph.removeEdge(edge);
                     }
                 }
 
-                PatternToDag search = new PatternToDag(new EdgeListGraph(graph));
-                Graph dag = search.patternToDagMeek();
+                CPDAGToDag search = new CPDAGToDag(new EdgeListGraph(graph));
+                Graph dag = search.cpdagToDagMeek();
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);
@@ -547,7 +547,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
         }
 
         if (params instanceof Parameters) {
-            if (getAlgorithmRunner() instanceof LingamPatternRunner) {
+            if (getAlgorithmRunner() instanceof LingamCPDAGRunner) {
                 return new PcLingamIndTestParamsEditor(params);
             }
 

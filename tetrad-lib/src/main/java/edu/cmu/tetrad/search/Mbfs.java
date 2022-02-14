@@ -33,8 +33,8 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Searches for a pattern representing all of the Markov blankets for a given target T consistent with the given
- * independence information. This pattern may be used to generate the actual list of DAG's that might be Markov
+ * Searches for a CPDAG representing all of the Markov blankets for a given target T consistent with the given
+ * independence information. This CPDAG may be used to generate the actual list of DAG's that might be Markov
  * blankets. Note that this code has been converted to be consistent with the CPC algorithm.
  *
  * @author Joseph Ramsey
@@ -63,7 +63,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     private int depth;
 
     /**
-     * The pattern output by the most recent search. This is saved in case the user wants to generate the list of MB
+     * The CPDAG output by the most recent search. This is saved in case the user wants to generate the list of MB
      * DAGs.
      */
     private Graph resultGraph;
@@ -178,7 +178,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     }
 
     /**
-     * Searches for the MB Pattern for the given target.
+     * Searches for the MB CPDAG for the given target.
      *
      * @param targetName The name of the target variable.
      */
@@ -192,7 +192,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     }
 
     /**
-     * Searches for the MB Pattern for the given target.
+     * Searches for the MB CPDAG for the given target.
      *
      * @param target The target variable.
      */
@@ -366,7 +366,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     }
 
     /**
-     * Does a pattern search.
+     * Does a CPDAG search.
      */
     public Graph search() {
         long start = System.currentTimeMillis();

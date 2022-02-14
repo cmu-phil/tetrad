@@ -22,8 +22,8 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
@@ -49,7 +49,7 @@ public class SemBicScore implements Score {
     private boolean calculateRowSubsets = false;
 
     // The dataset.
-    private DataSet dataSet;
+    private DataModel dataModel;
 
     // .. as matrix
     private Matrix data;
@@ -103,7 +103,7 @@ public class SemBicScore implements Score {
             throw new NullPointerException();
         }
 
-        this.dataSet = dataSet;
+        this.dataModel = dataSet;
         this.data = dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
@@ -267,7 +267,7 @@ public class SemBicScore implements Score {
         if (ruleType == RuleType.CHICKERING || ruleType == RuleType.NANDY) {
 
             // Standard BIC, with penalty discount and structure prior.
-            return -n * log(varey) - c * k * log(n);// - 2 * getStructurePrior(k);
+            return -c * k * log(n) - n * log(varey);// - 2 * getStructurePrior(k);
         } else {
             throw new IllegalStateException("That rule type is not implemented: " + ruleType);
         }
@@ -309,8 +309,8 @@ public class SemBicScore implements Score {
         return bump > 0;
     }
 
-    public DataSet getDataSet() {
-        return dataSet;
+    public DataModel getDataModel() {
+        return dataModel;
     }
 
     public void setPenaltyDiscount(double penaltyDiscount) {
@@ -331,7 +331,7 @@ public class SemBicScore implements Score {
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return new ArrayList<>(variables);
     }
 
     public void setVariables(List<Node> variables) {
@@ -373,14 +373,21 @@ public class SemBicScore implements Score {
         return Double.isNaN(v);
     }
 
+//    @Override
+    public DataModel getData() {
+        return dataModel;
+    }
+
     private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
         this.matrix = this.covariances.getMatrix();
 
-        double n = covariances.getSampleSize();
-        double ess = DataUtils.getEss(covariances);
+        this.dataModel = covariances;
 
-        System.out.println("n = " + n + " ess = " + ess);
+//        double n = covariances.getSampleSize();
+//        double ess = DataUtils.getEss(covariances);
+//
+//        System.out.println("n = " + n + " ess = " + ess);
     }
 
     private static int[] append(int[] z, int x) {
@@ -417,11 +424,13 @@ public class SemBicScore implements Score {
     }
 
     private List<Integer> getRows(int i, int[] parents) {
-        if (dataSet == null) {
+        if (dataModel == null) {
             return null;
         }
 
         List<Integer> rows = new ArrayList<>();
+
+        DataSet dataSet = (DataSet) dataModel;
 
         K:
         for (int k = 0; k < dataSet.getNumRows(); k++) {
@@ -454,9 +463,11 @@ public class SemBicScore implements Score {
     }
 
     private Matrix getCov(List<Integer> rows, int[] cols) {
-        if (dataSet == null) {
+        if (dataModel == null) {
             return matrix.getSelection(cols, cols);
         }
+
+        DataSet dataSet = (DataSet) dataModel;
 
         Matrix cov = new Matrix(cols.length, cols.length);
 

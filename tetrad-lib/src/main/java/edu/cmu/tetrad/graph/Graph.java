@@ -375,9 +375,9 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      */
     boolean isDConnectedTo(Node node1, Node node2, List<Node> z);
 
-    boolean isPattern();
+    boolean isCPDAG();
 
-    void setPattern(boolean pattern);
+    void setCPDAG(boolean cpdag);
 
     boolean isPag();
 

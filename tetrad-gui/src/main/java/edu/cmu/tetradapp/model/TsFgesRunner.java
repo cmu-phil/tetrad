@@ -209,7 +209,7 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
 
         fges.setInitialGraph(initialGraph);
         fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-        fges.setNumPatternsToStore(params.getInt("numPatternsToSave", 1));
+        fges.setNumCPDAGsToStore(params.getInt("numCPDAGsToSave", 1));
         fges.setVerbose(true);
 //        fges.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed());
 //        * there is no setHeuristicSpeedup option in Fges2 and so likewise TsFges2. *

@@ -25,11 +25,19 @@ import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.data.reader.ContinuousData;
+import edu.pitt.dbmi.data.reader.Delimiter;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.rmi.MarshalledObject;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -38,6 +46,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * Some static utility methods for dealing with data sets.
@@ -718,10 +727,8 @@ public final class DataUtils {
      * @param dataSet The data set to shuffle.
      * @return Ibid.
      */
-    public static DataSet shuffleColumns(DataSet dataSet) {
-        int numVariables;
-
-        numVariables = dataSet.getNumColumns();
+    public static DataSet shuffleColumnsCov(DataSet dataSet) {
+        int numVariables = dataSet.getNumColumns();
 
         List<Integer> indicesList = new ArrayList<>();
         for (int i = 0; i < numVariables; i++) indicesList.add(i);
@@ -1660,27 +1667,26 @@ public final class DataUtils {
         return knowledge;
     }
 
-    public static DataSet reorderColumns(DataSet dataModel) {
+    public static DataSet shuffleColumns(DataSet dataModel) {
         String name = dataModel.getName();
-        List<Node> vars = new ArrayList<>();
+        int numVariables = dataModel.getNumColumns();
 
-        List<Node> variables = dataModel.getVariables();
-        Collections.shuffle(variables);
+        List<Integer> indicesList = new ArrayList<>();
+        for (int i = 0; i < numVariables; i++) indicesList.add(i);
+        Collections.shuffle(indicesList);
 
-        for (Node node : variables) {
-            Node _node = dataModel.getVariable(node.getName());
+        int[] indices = new int[numVariables];
 
-            if (_node != null) {
-                vars.add(_node);
-            }
+        for (int i = 0; i < numVariables; i++) {
+            indices[i] = indicesList.get(i);
         }
 
-        DataSet dataSet = dataModel.subsetColumns(vars);
+        DataSet dataSet = dataModel.subsetColumns(indices);
         dataSet.setName(name);
         return dataSet;
     }
 
-    public static List<DataSet> reorderColumns(List<DataSet> dataSets) {
+    public static List<DataSet> shuffleColumns2(List<DataSet> dataSets) {
         List<Node> vars = new ArrayList<>();
 
         List<Node> variables = dataSets.get(0).getVariables();
@@ -1709,7 +1715,7 @@ public final class DataUtils {
         return ret;
     }
 
-    public static ICovarianceMatrix reorderColumns(ICovarianceMatrix cov) {
+    public static ICovarianceMatrix shuffleColumnsCov(ICovarianceMatrix cov) {
         List<String> vars = new ArrayList<>();
 
         List<Node> variables = new ArrayList<>(cov.getVariables());
@@ -1834,42 +1840,68 @@ public final class DataUtils {
 //    }
 
     public static DataSet getNonparanormalTransformed(DataSet dataSet) {
-        final Matrix data = dataSet.getDoubleData();
-        final Matrix X = data.like();
-        final double n = dataSet.getNumRows();
-        final double delta = 1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
+        try {
+            final Matrix data = dataSet.getDoubleData();
+            final Matrix X = data.like();
+            final double n = dataSet.getNumRows();
+            double delta = 1e-8;;// 1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
 
-        final NormalDistribution normalDistribution = new NormalDistribution();
+            final NormalDistribution normalDistribution = new NormalDistribution();
 
-        double std = Double.NaN;
+            double std = Double.NaN;
 
-        for (int j = 0; j < data.columns(); j++) {
-            final double[] x1 = data.getColumn(j).toArray();
-            double std1 = StatUtils.sd(x1);
-            double mu1 = StatUtils.mean(x1);
-            double[] x = ranks(data, x1);
+            for (int j = 0; j < data.columns(); j++) {
+                final double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
+                final double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
 
-            for (int i = 0; i < x.length; i++) {
-                x[i] /= n;
-                if (x[i] < delta) x[i] = delta;
-                if (x[i] > (1. - delta)) x[i] = 1. - delta;
-                x[i] = normalDistribution.inverseCumulativeProbability(x[i]);
+                double a2Orig = new AndersonDarlingTest(x1).getASquaredStar();
+
+                if (dataSet.getVariable(j) instanceof DiscreteVariable) {
+                    X.assignColumn(j, new Vector(x1));
+                    continue;
+                }
+
+                double std1 = StatUtils.sd(x1);
+                double mu1 = StatUtils.mean(x1);
+                double[] xTransformed = ranks(data, x1);
+
+                for (int i = 0; i < xTransformed.length; i++) {
+                    xTransformed[i] /= n;
+
+                    if (xTransformed[i] < delta) xTransformed[i] = delta;
+                    if (xTransformed[i] > (1. - delta)) xTransformed[i] = 1. - delta;
+
+//                    if (xTransformed[i] <= 0) xTransformed[i] = 0;
+//                    if (xTransformed[i] >= 1) xTransformed[i] = 1;
+                    xTransformed[i] = normalDistribution.inverseCumulativeProbability(xTransformed[i]);
+                }
+
+                if (Double.isNaN(std)) {
+                    std = StatUtils.sd(x1Orig);
+                }
+
+                for (int i = 0; i < xTransformed.length; i++) {
+//                    xTransformed[i] /= std;
+                    xTransformed[i] *= std1;
+                    xTransformed[i] += mu1;
+                }
+
+                double a2Transformed = new AndersonDarlingTest(xTransformed).getASquaredStar();
+
+                System.out.println(dataSet.getVariable(j) + ": A^2* = " + a2Orig + " transformed A^2* = " + a2Transformed);
+
+                if (a2Transformed < a2Orig) {
+                    X.assignColumn(j, new Vector(xTransformed));
+                } else {
+                    X.assignColumn(j, new Vector(x1Orig));
+                }
             }
 
-            if (Double.isNaN(std)) {
-                std = StatUtils.sd(x);
-            }
-
-            for (int i = 0; i < x.length; i++) {
-                x[i] /= std;
-                x[i] *= std1;
-                x[i] += mu1;
-            }
-
-            X.assignColumn(j, new Vector(x));
+            return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
+        } catch (OutOfRangeException e) {
+            e.printStackTrace();
+            return dataSet;
         }
-
-        return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
     }
 
     private static double[] ranks(Matrix data, double[] x) {
@@ -1908,6 +1940,16 @@ public final class DataUtils {
                 if (!previous.equals(current)) {
                     constant = false;
                     break;
+                }
+
+                if (previous instanceof Double && current instanceof Double) {
+                    double _previouw = (Double) previous;
+                    double _current= (Double) current;
+
+                    if (Double.isNaN(_previouw) && Double.isNaN(_current)) {
+                        constant = false;
+                        break;
+                    }
                 }
             }
 
@@ -1977,6 +2019,384 @@ public final class DataUtils {
 
         double rho = (n * sum - n * m) / (m * (n * n - n));
         return n / (1. + (n - 1.) * rho);
+    }
+
+    /**
+     * Loads knowledge from a file. Assumes knowledge is the only thing in the
+     * file. No jokes please. :)
+     */
+    public static IKnowledge parseKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
+        FileReader reader = new FileReader(file);
+        Lineizer lineizer = new Lineizer(reader, commentMarker);
+        IKnowledge knowledge = parseKnowledge(lineizer, DelimiterType.WHITESPACE.getPattern());
+        TetradLogger.getInstance().reset();
+        return knowledge;
+    }
+
+    /**
+     * Reads a knowledge file in tetrad2 format (almost--only does temporal
+     * tiers currently). Format is:
+     * <pre>
+     * /knowledge
+     * addtemporal
+     * 0 x1 x2
+     * 1 x3 x4
+     * 4 x5
+     * </pre>
+     */
+    public static IKnowledge parseKnowledge(Lineizer lineizer, Pattern delimiter) {
+        IKnowledge knowledge = new Knowledge2();
+
+        String line = lineizer.nextLine();
+        String firstLine = line;
+
+        if (line == null) {
+            return new Knowledge2();
+        }
+
+        if (line.startsWith("/knowledge")) {
+            line = lineizer.nextLine();
+            firstLine = line;
+        }
+
+        TetradLogger.getInstance().log("info", "\nLoading knowledge.");
+
+        SECTIONS:
+        while (lineizer.hasMoreLines()) {
+            if (firstLine == null) {
+                line = lineizer.nextLine();
+            } else {
+                line = firstLine;
+            }
+
+            // "addtemp" is the original in Tetrad 2.
+            if ("addtemporal".equalsIgnoreCase(line.trim())) {
+                while (lineizer.hasMoreLines()) {
+                    line = lineizer.nextLine();
+
+                    if (line.startsWith("forbiddirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("forbiddengroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredgroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    int tier = -1;
+
+                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
+                    if (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        boolean forbiddenWithin = false;
+                        if (token.endsWith("*")) {
+                            forbiddenWithin = true;
+                            token = token.substring(0, token.length() - 1);
+                        }
+
+                        tier = Integer.parseInt(token);
+                        if (tier < 1) {
+                            throw new IllegalArgumentException(
+                                    lineizer.getLineNumber() + ": Tiers must be 1, 2...");
+                        }
+                        if (forbiddenWithin) {
+                            knowledge.setTierForbiddenWithin(tier - 1, true);
+                        }
+                    }
+
+                    while (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        token = token.trim();
+
+                        if (token.isEmpty()) {
+                            continue;
+                        }
+
+                        String name = substitutePeriodsForSpaces(token);
+
+                        addVariable(knowledge, name);
+
+                        knowledge.addToTier(tier - 1, name);
+
+                        TetradLogger.getInstance().log("info", "Adding to tier " + (tier - 1) + " " + name);
+                    }
+                }
+            } else if ("forbiddengroup".equalsIgnoreCase(line.trim())) {
+                while (lineizer.hasMoreLines()) {
+                    line = lineizer.nextLine();
+
+                    if (line.startsWith("forbiddirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("addtemporal")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredgroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    Set<String> from = new HashSet<>();
+                    Set<String> to = new HashSet<>();
+
+                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
+
+                    while (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        token = token.trim();
+                        String name = substitutePeriodsForSpaces(token);
+
+                        addVariable(knowledge, name);
+
+                        from.add(name);
+                    }
+
+                    line = lineizer.nextLine();
+
+                    st = new RegexTokenizer(line, delimiter, '"');
+
+                    while (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        token = token.trim();
+                        String name = substitutePeriodsForSpaces(token);
+
+                        addVariable(knowledge, name);
+
+                        to.add(name);
+                    }
+
+                    KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, from, to);
+
+                    knowledge.addKnowledgeGroup(group);
+                }
+            } else if ("requiredgroup".equalsIgnoreCase(line.trim())) {
+                while (lineizer.hasMoreLines()) {
+                    line = lineizer.nextLine();
+
+                    if (line.startsWith("forbiddirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("forbiddengroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("addtemporal")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    Set<String> from = new HashSet<>();
+                    Set<String> to = new HashSet<>();
+
+                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
+
+                    while (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        token = token.trim();
+                        String name = substitutePeriodsForSpaces(token);
+
+                        addVariable(knowledge, name);
+
+                        from.add(name);
+                    }
+
+                    line = lineizer.nextLine();
+
+                    st = new RegexTokenizer(line, delimiter, '"');
+
+                    while (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        token = token.trim();
+                        String name = substitutePeriodsForSpaces(token);
+
+                        addVariable(knowledge, name);
+
+                        to.add(name);
+                    }
+
+                    KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.REQUIRED, from, to);
+
+                    knowledge.addKnowledgeGroup(group);
+                }
+            } else if ("forbiddirect".equalsIgnoreCase(line.trim())) {
+                while (lineizer.hasMoreLines()) {
+                    line = lineizer.nextLine();
+
+                    if (line.startsWith("addtemporal")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("forbiddengroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredgroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
+                    String from = null, to = null;
+
+                    if (st.hasMoreTokens()) {
+                        from = st.nextToken();
+                    }
+
+                    if (st.hasMoreTokens()) {
+                        to = st.nextToken();
+                    }
+
+                    if (st.hasMoreTokens()) {
+                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                                + ": Lines contains more than two elements.");
+                    }
+
+                    if (from == null || to == null) {
+                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                                + ": Line contains fewer than two elements.");
+                    }
+
+                    addVariable(knowledge, from);
+
+                    addVariable(knowledge, to);
+
+                    knowledge.setForbidden(from, to);
+                }
+            } else if ("requiredirect".equalsIgnoreCase(line.trim())) {
+                while (lineizer.hasMoreLines()) {
+                    line = lineizer.nextLine();
+
+                    if (line.startsWith("forbiddirect")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("addtemporal")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("forbiddengroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    if (line.startsWith("requiredgroup")) {
+                        firstLine = line;
+                        continue SECTIONS;
+                    }
+
+                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
+                    String from = null, to = null;
+
+                    if (st.hasMoreTokens()) {
+                        from = st.nextToken();
+                    }
+
+                    if (st.hasMoreTokens()) {
+                        to = st.nextToken();
+                    }
+
+                    if (st.hasMoreTokens()) {
+                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                                + ": Lines contains more than two elements.");
+                    }
+
+                    if (from == null || to == null) {
+                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                                + ": Line contains fewer than two elements.");
+                    }
+
+                    addVariable(knowledge, from);
+                    addVariable(knowledge, to);
+
+                    knowledge.removeForbidden(from, to);
+                    knowledge.setRequired(from, to);
+                }
+            } else {
+                throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                        + ": Expecting 'addtemporal', 'forbiddirect' or 'requiredirect'.");
+            }
+        }
+
+        return knowledge;
+    }
+
+    private static void addVariable(IKnowledge knowledge, String from) {
+        if (!knowledge.getVariables().contains(from)) {
+            knowledge.addVariable(from);
+        }
+    }
+
+    private static String substitutePeriodsForSpaces(String s) {
+        return s.replaceAll(" ", ".");
+    }
+
+    public static double[] removeMissingValues(double[] data) {
+        int c = 0;
+
+        for (double datum : data) {
+            if (Double.isNaN(datum)) c++;
+        }
+
+        double[] data2 = new double[data.length - c];
+
+        int i = 0;
+
+        for (double datum : data) {
+            if (!Double.isNaN(data[i])) {
+                data2[i++] = datum;
+            }
+        }
+
+        return data2;
+    }
+
+    @NotNull
+    public static DataSet loadContinuousData(File file, String commentMarker, char quoteCharacter, String missingValueMarker, boolean hasHeader) throws IOException {
+        ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(file.toPath(), Delimiter.COMMA);
+        dataReader.setCommentMarker(commentMarker);
+        dataReader.setQuoteCharacter(quoteCharacter);
+        dataReader.setMissingDataMarker(missingValueMarker);
+        dataReader.setHasHeader(hasHeader);
+        ContinuousData data = (ContinuousData) dataReader.readInData();
+        DataSet dataSet = (DataSet) DataConvertUtils.toContinuousDataModel(data);
+        return dataSet;
     }
 }
 

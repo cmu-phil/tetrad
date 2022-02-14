@@ -38,6 +38,7 @@ import static java.lang.Math.*;
  */
 public class EbicScore implements Score {
 
+    private DataSet dataSet;
     // The covariance matrix.
     private ICovarianceMatrix covariances;
 
@@ -84,6 +85,8 @@ public class EbicScore implements Score {
         if (dataSet == null) {
             throw new NullPointerException();
         }
+
+        this.dataSet = dataSet;
 
         this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
@@ -197,9 +200,9 @@ public class EbicScore implements Score {
         return Double.isNaN(v);
     }
 
-    @Override
-    public Score defaultScore() {
-        return new EbicScore(covariances);
+//    @Override
+    public DataModel getData() {
+        return dataSet;
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {

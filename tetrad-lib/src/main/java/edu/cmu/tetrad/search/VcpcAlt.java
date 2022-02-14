@@ -88,9 +88,9 @@ public final class VcpcAlt implements GraphSearch {
 
     private Set<Edge> definitelyNonadjacencies;
 
-    private Set<Node> markovInAllPatterns;
+    private Set<Node> markovInAllCPDAGs;
 
-    private Set<Graph> markovPattern;
+    private Set<Graph> markovCPDAG;
 
     private Set<Node> markovNodes;
 
@@ -260,7 +260,7 @@ public final class VcpcAlt implements GraphSearch {
         this.noncolliderTriples = new HashSet<>();
         Vcfas fas = new Vcfas(getIndependenceTest());
         definitelyNonadjacencies = new HashSet<>();
-        markovInAllPatterns = new HashSet<>();
+        markovInAllCPDAGs = new HashSet<>();
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
@@ -593,7 +593,7 @@ public final class VcpcAlt implements GraphSearch {
             System.out.println(edge);
         }
 
-        System.out.println("markov in all patterns:" + markovInAllPatterns);
+        System.out.println("markov in all CPDAGs:" + markovInAllCPDAGs);
         System.out.println("patterns:" + patterns);
         System.out.println("Apparently Nonadjacencies:");
 

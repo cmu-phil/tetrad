@@ -69,7 +69,7 @@ public class BayesNetSimulation implements Simulation {
             DataSet dataSet = simulate(graph, parameters);
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.reorderColumns(dataSet);
+                dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
             dataSet.setName("" + (i + 1));

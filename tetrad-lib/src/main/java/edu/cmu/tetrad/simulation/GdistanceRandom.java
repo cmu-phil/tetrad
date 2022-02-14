@@ -51,13 +51,13 @@ public class GdistanceRandom {
         if (verbose) System.out.println(dag1);
         Graph dag2 = GraphUtils.randomGraphRandomForwardEdges(locationMap.getVariables(), 0, numEdges2, numVars, numVars, numVars, false, false);
 
-        //convert those dags to patterns
-        if (verbose) System.out.println("converting dags to patterns");
-        Graph graph1 = SearchGraphUtils.patternFromDag(dag1);
-        Graph graph2 = SearchGraphUtils.patternFromDag(dag2);
+        //convert those dags to CPDAGs
+        if (verbose) System.out.println("converting dags to CPDAGs");
+        Graph graph1 = SearchGraphUtils.cpdagFromDag(dag1);
+        Graph graph2 = SearchGraphUtils.cpdagFromDag(dag2);
 
         //run Gdistance on these two graphs
-        if (verbose) System.out.println("running Gdistance on the patterns");
+        if (verbose) System.out.println("running Gdistance on the CPDAGs");
         Gdistance gdist = new Gdistance(locationMap, xdist, ydist, zdist);
         return gdist.distances(graph1, graph2);
     }

@@ -84,9 +84,6 @@ public class BooleanFunction implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static BooleanFunction serializableInstance() {
         IndexedParent[] parents = new IndexedParent[2];
@@ -207,7 +204,7 @@ public class BooleanFunction implements TetradSerializable {
 
         // Stores, for each parent encounted in the parent column, the
         // last value encounted in the function value column in an
-        // unbroken pattern. -2 means the pattern was broken, -1 means
+        // unbroken CPDAG. -2 means the pattern was broken, -1 means
         // no value was encounntered yet, 0 means false, and 1 means
         // true.
         int[] lastValues = new int[2];

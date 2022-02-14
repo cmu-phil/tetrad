@@ -83,7 +83,7 @@ public final class BffBeam implements Bff {
     public Graph search() {
         EdgeListGraph _graph = new EdgeListGraph(initialGraph);
         addRequiredEdges(_graph);
-        Graph bestGraph = SearchGraphUtils.dagFromPattern(_graph);
+        Graph bestGraph = SearchGraphUtils.dagFromCPDAG(_graph);
 
         if (getGraph().getNumEdges() == 0) {
             System.out.println("Found one!");
@@ -105,7 +105,7 @@ public final class BffBeam implements Bff {
 
         if (trueModel != null) {
             trueModel = GraphUtils.replaceNodes(trueModel, bestGraph.getNodes());
-            trueModel = SearchGraphUtils.patternForDag(trueModel);
+            trueModel = SearchGraphUtils.cpdagForDag(trueModel);
         }
 
         System.out.println("Initial Score = " + nf.format(bestScore));

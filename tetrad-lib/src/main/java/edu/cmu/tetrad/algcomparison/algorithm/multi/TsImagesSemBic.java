@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -128,7 +128,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override

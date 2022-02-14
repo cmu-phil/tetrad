@@ -81,7 +81,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     private boolean showErrorTerms = false;
 
     private boolean pag;
-    private boolean pattern;
+    private boolean cpdag;
 
     private Map<String, Object> attributes = new HashMap<>();
 
@@ -1004,13 +1004,13 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     @Override
-    public boolean isPattern() {
-        return pattern;
+    public boolean isCPDAG() {
+        return cpdag;
     }
 
     @Override
-    public void setPattern(boolean pattern) {
-        this.pattern = pattern;
+    public void setCPDAG(boolean cpdag) {
+        this.cpdag = cpdag;
     }
 
     @Override

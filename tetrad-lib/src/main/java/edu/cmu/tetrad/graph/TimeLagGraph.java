@@ -50,7 +50,7 @@ public class TimeLagGraph implements Graph {
     private List<Node> lag0Nodes = new ArrayList<>();
 
     private boolean pag;
-    private boolean pattern;
+    private boolean CPDAG;
 
     private Map<String, Object> attributes = new HashMap<>();
 
@@ -396,13 +396,13 @@ public class TimeLagGraph implements Graph {
     }
 
     @Override
-    public boolean isPattern() {
-        return pattern;
+    public boolean isCPDAG() {
+        return CPDAG;
     }
 
     @Override
-    public void setPattern(boolean pattern) {
-        this.pattern = pattern;
+    public void setCPDAG(boolean CPDAG) {
+        this.CPDAG = CPDAG;
     }
 
     public static class NodeId {

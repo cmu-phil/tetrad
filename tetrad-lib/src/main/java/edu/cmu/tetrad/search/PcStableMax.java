@@ -158,14 +158,14 @@ public class PcStableMax implements GraphSearch {
     }
 
     /**
-     * Runs PC search, returning the output pattern.
+     * Runs PC search, returning the output CPDAG.
      */
     public Graph search() {
         return search(independenceTest.getVariables());
     }
 
     /**
-     * Runs PC search, returning the output pattern, over the given nodes.
+     * Runs PC search, returning the output CPDAG, over the given nodes.
      */
     public Graph search(List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
