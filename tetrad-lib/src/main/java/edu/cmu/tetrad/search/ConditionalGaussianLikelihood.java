@@ -43,15 +43,12 @@ import static java.lang.Math.log;
  */
 public class ConditionalGaussianLikelihood {
 
+    // A constant.
+    private static final double LOG2PI = log(2.0 * Math.PI);
     // The data set. May contain continuous and/or discrete mixedVariables.
     private final DataSet mixedDataSet;
-
     // The data set with all continuous mixedVariables discretized.
     private final DataSet dataSet;
-
-    // Number of categories to use to discretize continuous mixedVariables.
-    private int numCategoriesToDiscretize = 3;
-
     // The mixedVariables of the mixed data set.
     private final List<Node> mixedVariables;
 
@@ -60,48 +57,14 @@ public class ConditionalGaussianLikelihood {
 
     // Continuous data only.
     private final double[][] continuousData;
-
+    // Number of categories to use to discretize continuous mixedVariables.
+    private int numCategoriesToDiscretize = 3;
     // Multiplier on degrees of freedom for the continuous portion of those degrees.
     private double penaltyDiscount = 1;
-
     // "Cell" consisting of all rows.
     private List<Integer> rows;
-
     // Discretize the parents
     private boolean discretize = false;
-
-    // A constant.
-    private static final double LOG2PI = log(2.0 * Math.PI);
-
-    public void setRows(List<Integer> rows) {
-        this.rows = rows;
-    }
-
-    /**
-     * A return value for a likelihood--returns a likelihood value and the degrees of freedom
-     * for it.
-     */
-    public static class Ret {
-        private final double lik;
-        private final int dof;
-
-        private Ret(double lik, int dof) {
-            this.lik = lik;
-            this.dof = dof;
-        }
-
-        public double getLik() {
-            return lik;
-        }
-
-        public int getDof() {
-            return dof;
-        }
-
-        public String toString() {
-            return "lik = " + lik + " dof = " + dof;
-        }
-    }
 
     /**
      * Constructs the score using a covariance matrix.
@@ -141,6 +104,10 @@ public class ConditionalGaussianLikelihood {
 
         rows = new ArrayList<>();
         for (int i = 0; i < dataSet.getNumRows(); i++) rows.add(i);
+    }
+
+    public void setRows(List<Integer> rows) {
+        this.rows = rows;
     }
 
     private DataSet useErsatzVariables() {
@@ -281,13 +248,25 @@ public class ConditionalGaussianLikelihood {
                 try {
 
                     // Determinant will be zero if data are linearly dependent.
-                    double gl = gaussianLikelihood(k, cov(getSubsample(continuousCols, cell)));
+                    Matrix subsample = getSubsample(continuousCols, cell);
 
-                    if (!Double.isNaN(gl)) {
-                        c2 += a * gl;
+                    if (subsample.rows() < 2 || subsample.columns() < 1) {
+                        continue;
                     }
+
+                    double gl = gaussianLikelihood(k, cov(subsample));
+
+                    if (Double.isInfinite(gl)) {
+                        continue;
+                    }
+
+                    if (Double.isNaN(gl)) {
+                        continue;
+                    }
+
+                    c2 += a * gl;
                 } catch (Exception e) {
-                    // No contribution.
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -309,7 +288,7 @@ public class ConditionalGaussianLikelihood {
     }
 
     private Matrix cov(Matrix x) {
-        return new Matrix(new Covariance(x.toArray(), true).getCovarianceMatrix().getData());
+        return new Matrix(new Covariance(x.toArray(), false).getCovarianceMatrix().getData());
     }
 
     // Subsample of the continuous mixedVariables conditioning on the given cell.
@@ -364,5 +343,31 @@ public class ConditionalGaussianLikelihood {
         }
 
         return cells;
+    }
+
+    /**
+     * A return value for a likelihood--returns a likelihood value and the degrees of freedom
+     * for it.
+     */
+    public static class Ret {
+        private final double lik;
+        private final int dof;
+
+        private Ret(double lik, int dof) {
+            this.lik = lik;
+            this.dof = dof;
+        }
+
+        public double getLik() {
+            return lik;
+        }
+
+        public int getDof() {
+            return dof;
+        }
+
+        public String toString() {
+            return "lik = " + lik + " dof = " + dof;
+        }
     }
 }
