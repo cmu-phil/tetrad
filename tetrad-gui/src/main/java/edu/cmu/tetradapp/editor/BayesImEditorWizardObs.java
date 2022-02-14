@@ -22,11 +22,12 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+
+import javax.swing.*;
+import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.*;
-import javax.swing.border.MatteBorder;
 
 /**
  * Allows the user to choose a variable in a Bayes net and edit the parameters

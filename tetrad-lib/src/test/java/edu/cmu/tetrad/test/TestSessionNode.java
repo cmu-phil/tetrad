@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.session.*;
+import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
 import java.rmi.MarshalledObject;

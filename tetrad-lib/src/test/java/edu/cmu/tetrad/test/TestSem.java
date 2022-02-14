@@ -29,8 +29,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.MatrixUtils;
 import org.junit.Test;
 
 import java.util.List;

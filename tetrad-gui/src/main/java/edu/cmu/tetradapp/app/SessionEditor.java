@@ -29,14 +29,12 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 /**
  * Displays a toolbar and workbench for editing Session's.

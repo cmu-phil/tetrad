@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.util.TetradSerializable;
+
 import java.io.ObjectStreamException;
 import java.util.regex.Pattern;
 

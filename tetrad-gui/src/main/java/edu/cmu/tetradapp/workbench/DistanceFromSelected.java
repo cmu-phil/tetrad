@@ -29,8 +29,8 @@ import edu.cmu.tetradapp.util.LayoutEditable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Lays out a graph by placing springs between the nodes and letting the system

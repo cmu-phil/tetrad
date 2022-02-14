@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
+
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
@@ -104,7 +105,7 @@ public final class GFciMax implements GraphSearch {
         logger.log("info", "Starting FCI algorithm.");
         logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        this.graph = new EdgeListGraphSingleConnections(nodes);
+        this.graph = new EdgeListGraph(nodes);
 
         Fges fges = new Fges(score);
         fges.setKnowledge(getKnowledge());
@@ -113,7 +114,7 @@ public final class GFciMax implements GraphSearch {
         fges.setMaxDegree(maxDegree);
         fges.setOut(out);
         graph = fges.search();
-        Graph fgesGraph = new EdgeListGraphSingleConnections(graph);
+        Graph fgesGraph = new EdgeListGraph(graph);
         sepsets = new SepsetsGreedy(fgesGraph, independenceTest, null, maxDegree);
 
         graph.reorientAllWith(Endpoint.CIRCLE);

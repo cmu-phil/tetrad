@@ -23,7 +23,6 @@ package edu.cmu.tetrad.data;
 
 import org.apache.commons.math3.distribution.RealDistribution;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 

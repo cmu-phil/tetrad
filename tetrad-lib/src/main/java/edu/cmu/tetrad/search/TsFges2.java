@@ -190,7 +190,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     public TsFges2(Score score) {
         if (score == null) throw new NullPointerException();
         setScore(score);
-        this.graph = new EdgeListGraphSingleConnections(getVariables());
+        this.graph = new EdgeListGraph(getVariables());
     }
 
     //==========================PUBLIC METHODS==========================//
@@ -220,14 +220,14 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
         lookupArrows = new ConcurrentHashMap<>();
         final List<Node> nodes = new ArrayList<>(variables);
-        graph = new EdgeListGraphSingleConnections(nodes);
+        graph = new EdgeListGraph(nodes);
 
         if (adjacencies != null) {
             adjacencies = GraphUtils.replaceNodes(adjacencies, nodes);
         }
 
         if (initialGraph != null) {
-            graph = new EdgeListGraphSingleConnections(initialGraph);
+            graph = new EdgeListGraph(initialGraph);
             graph = GraphUtils.replaceNodes(graph, nodes);
         }
 
@@ -595,7 +595,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         final Set<Node> emptySet = new HashSet<>();
 
         long start = System.currentTimeMillis();
-        this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
+        this.effectEdgesGraph = new EdgeListGraph(nodes);
 
         class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
 
@@ -1897,7 +1897,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     // Stores the graph, if its totalScore knocks out one of the top ones.
     private void storeGraph() {
         if (getNumPatternsToStore() > 0) {
-            Graph graphCopy = new EdgeListGraphSingleConnections(graph);
+            Graph graphCopy = new EdgeListGraph(graph);
             topGraphs.addLast(new ScoredGraph(graphCopy, totalScore));
         }
 

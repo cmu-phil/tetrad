@@ -21,12 +21,12 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.graph.Edge.Property;
+import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 
 
 /**

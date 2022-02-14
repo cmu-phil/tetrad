@@ -18,15 +18,7 @@
  */
 package edu.cmu.tetrad.util;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataBox;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.data.DoubleDataBox;
-import edu.cmu.tetrad.data.MixedDataBox;
-import edu.cmu.tetrad.data.VerticalIntDataBox;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.pitt.dbmi.data.reader.ContinuousData;
@@ -38,6 +30,7 @@ import edu.pitt.dbmi.data.reader.metadata.ColumnMetadata;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
 import edu.pitt.dbmi.data.reader.tabular.MixedTabularData;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularData;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,6 +1,19 @@
 package edu.cmu.tetrad.search;
 
-import static java.lang.Math.exp;
+import edu.cmu.tetrad.bayes.BayesIm;
+import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.DirichletBayesIm;
+import edu.cmu.tetrad.bayes.DirichletEstimator;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.performance.Comparison;
+import edu.cmu.tetrad.performance.Comparison.TableColumn;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TextTable;
+import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
+import nu.xom.Builder;
+import nu.xom.Document;
+import nu.xom.ParsingException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,22 +24,8 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static java.lang.Math.*;
-
-import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.bayes.BayesPm;
-import edu.cmu.tetrad.bayes.DirichletBayesIm;
-import edu.cmu.tetrad.bayes.DirichletEstimator;
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.performance.Comparison;
-import edu.cmu.tetrad.performance.Comparison.*;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TextTable;
-import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
-import nu.xom.Builder;
-import nu.xom.Document;
-import nu.xom.ParsingException;
+import static java.lang.Math.exp;
+import static java.lang.Math.log;
 
 public class RBExperiments {
 

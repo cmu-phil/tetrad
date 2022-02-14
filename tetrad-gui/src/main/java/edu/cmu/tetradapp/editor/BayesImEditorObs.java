@@ -25,15 +25,11 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.BayesImWrapperObs;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and

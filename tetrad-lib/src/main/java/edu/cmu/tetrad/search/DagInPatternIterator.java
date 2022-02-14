@@ -148,7 +148,7 @@ public class DagInPatternIterator {
         } while (decoratedGraphs.getLast().getEdge() == null && !allowNewColliders &&
                 !GraphUtils.listColliderTriples(decoratedGraphs.getLast().getGraph()).equals(colliders));
 
-        return new EdgeListGraphSingleConnections(decoratedGraphs.getLast().getGraph());
+        return new EdgeListGraph(decoratedGraphs.getLast().getGraph());
     }
 
     /**
@@ -237,7 +237,7 @@ public class DagInPatternIterator {
                     !getKnowledge().isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
-                Graph graph = new EdgeListGraphSingleConnections(this.graph);
+                Graph graph = new EdgeListGraph(this.graph);
                 graph.removeEdges(edge.getNode1(), edge.getNode2());
 
                 graph.addDirectedEdge(edge.getNode2(), edge.getNode1());
@@ -270,7 +270,7 @@ public class DagInPatternIterator {
                     !getKnowledge().isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
-                Graph graph = new EdgeListGraphSingleConnections(this.graph);
+                Graph graph = new EdgeListGraph(this.graph);
                 graph.removeEdges(edge.getNode1(), edge.getNode2());
                 graph.addDirectedEdge(edge.getNode1(), edge.getNode2());
                 graph.setHighlighted(graph.getEdge(edge.getNode1(), edge.getNode2()), true);

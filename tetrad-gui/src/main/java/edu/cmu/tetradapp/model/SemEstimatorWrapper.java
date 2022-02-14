@@ -25,31 +25,16 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.sem.ParamType;
-import edu.cmu.tetrad.sem.Parameter;
-import edu.cmu.tetrad.sem.ScoreType;
-import edu.cmu.tetrad.sem.SemEstimator;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemOptimizer;
-import edu.cmu.tetrad.sem.SemOptimizerEm;
-import edu.cmu.tetrad.sem.SemOptimizerPowell;
-import edu.cmu.tetrad.sem.SemOptimizerRegression;
-import edu.cmu.tetrad.sem.SemOptimizerRicf;
-import edu.cmu.tetrad.sem.SemOptimizerScattershot;
-import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetrad.util.*;
+
+import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 /**
  * Wraps a SemEstimator for use in the Tetrad application.

@@ -1,24 +1,15 @@
 package edu.cmu.tetrad.util;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraphSingleConnections;
-import edu.cmu.tetrad.graph.EdgeTypeProbability;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 
@@ -40,7 +31,7 @@ public class JsonUtils {
 		
 		// Node
 		List<Node> nodes = parseJSONArrayToTetradNodes(jObj.getJSONArray("nodes"));
-		EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(nodes);
+		EdgeListGraph graph = new EdgeListGraph(nodes);
 
 		// Edge
 		Set<Edge> edges = parseJSONArrayToTetradEdges(graph, jObj.getJSONArray("edgesSet"));

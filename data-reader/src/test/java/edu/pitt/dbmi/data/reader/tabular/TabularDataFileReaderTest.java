@@ -18,24 +18,19 @@
  */
 package edu.pitt.dbmi.data.reader.tabular;
 
-import edu.pitt.dbmi.data.reader.ContinuousData;
-import edu.pitt.dbmi.data.reader.Data;
-import edu.pitt.dbmi.data.reader.DataColumn;
-import edu.pitt.dbmi.data.reader.DataColumns;
-import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.DiscreteData;
-import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
+import edu.pitt.dbmi.data.reader.*;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
 import edu.pitt.dbmi.data.reader.metadata.MetadataFileReader;
 import edu.pitt.dbmi.data.reader.metadata.MetadataReader;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  *

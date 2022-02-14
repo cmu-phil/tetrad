@@ -307,7 +307,7 @@ public class MbUtils {
     }
 
     public static Graph getOneMbDag(Graph mbPattern) {
-        PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(mbPattern));
+        PatternToDag search = new PatternToDag(new EdgeListGraph(mbPattern));
         return search.patternToDagMeek();
     }
 

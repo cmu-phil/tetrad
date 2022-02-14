@@ -26,7 +26,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.AbstractAlgorithmRunner;
 
 import javax.swing.*;
-import java.awt.*;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Iterator;

@@ -23,6 +23,7 @@ import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.util.AlgorithmDescriptions;
+
 import java.io.Serializable;
 
 /**

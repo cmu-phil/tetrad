@@ -1,8 +1,5 @@
 package edu.pitt.dbmi.algo.resampling.task;
 
-import java.io.PrintStream;
-import java.util.List;
-
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -13,6 +10,9 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch;
+
+import java.io.PrintStream;
+import java.util.List;
 
 /**
  * 

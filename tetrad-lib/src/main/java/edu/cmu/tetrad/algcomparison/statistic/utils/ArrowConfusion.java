@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.algcomparison.statistic.utils;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 
 import java.util.List;
 

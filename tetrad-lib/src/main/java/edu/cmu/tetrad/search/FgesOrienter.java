@@ -23,8 +23,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
+import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -276,9 +276,9 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         Graph graph;
 
         if (initialGraph == null) {
-            graph = new EdgeListGraphSingleConnections(getVariables());
+            graph = new EdgeListGraph(getVariables());
         } else {
-            graph = new EdgeListGraphSingleConnections(initialGraph);
+            graph = new EdgeListGraph(initialGraph);
 
             for (Edge edge : initialGraph.getEdges()) {
                 if (!effectEdgesGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
@@ -539,7 +539,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     // not canceled by other undirectedPaths (the "effect edges")
     private Graph getEffectEdges(final List<Node> nodes) {
         long start = System.currentTimeMillis();
-        final Graph effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
+        final Graph effectEdgesGraph = new EdgeListGraph(nodes);
         final Set<Node> emptySet = new HashSet<>(0);
 
         final int[] count = new int[1];
@@ -1776,7 +1776,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         if (numPatternsToStore < 1) return;
 
         if (topGraphs.isEmpty() || score > topGraphs.first().getScore()) {
-            Graph graphCopy = new EdgeListGraphSingleConnections(graph);
+            Graph graphCopy = new EdgeListGraph(graph);
 
             topGraphs.add(new ScoredGraph(graphCopy, score));
 

@@ -135,7 +135,7 @@ public class Fasts implements IFas {
     }
 
     public Fasts(IndependenceTest test) {
-        this.graph = new EdgeListGraphSingleConnections(test.getVariables());
+        this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
     }
 

@@ -18,12 +18,13 @@
  */
 package edu.cmu.tetrad.annotation;
 
+import org.reflections.Reflections;
+
 import java.lang.annotation.Annotation;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.reflections.Reflections;
 
 /**
  *

@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.test;
+
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import junit.framework.TestCase;
 import org.junit.Test;
 
 import static junit.framework.TestCase.fail;

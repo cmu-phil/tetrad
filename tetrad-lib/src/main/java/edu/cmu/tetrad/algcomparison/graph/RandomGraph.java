@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;

@@ -31,9 +31,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import static edu.cmu.tetrad.util.MathUtils.logChoose;
 import static java.lang.Math.*;
 
 /*

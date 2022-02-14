@@ -13,8 +13,12 @@ import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.csb.mgm.MixedUtils;
-import java.util.*;
 import org.apache.commons.lang3.RandomUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * A version of the Lee & Hastic simulation which is guaranteed ot generate a

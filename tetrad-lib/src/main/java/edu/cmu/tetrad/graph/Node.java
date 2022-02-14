@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
+
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.regex.Pattern;

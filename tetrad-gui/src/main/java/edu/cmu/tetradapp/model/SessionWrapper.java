@@ -36,8 +36,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Wraps a Session as a Graph so that an AbstractWorkbench can be used to edit

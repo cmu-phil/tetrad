@@ -31,7 +31,6 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 public class SepsetsPossibleDsep implements SepsetProducer {
     private Graph graph;

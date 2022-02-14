@@ -26,7 +26,6 @@ import edu.cmu.tetradapp.util.ImageUtils;
 import javax.swing.*;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 

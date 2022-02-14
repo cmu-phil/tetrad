@@ -23,7 +23,10 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.LingamPattern;
+import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -32,10 +35,12 @@ import edu.cmu.tetrad.util.dist.Normal;
 import edu.cmu.tetrad.util.dist.Uniform;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 
 /**

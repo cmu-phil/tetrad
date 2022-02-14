@@ -146,7 +146,7 @@ public final class TsGFci implements GraphSearch {
         logger.log("info", "Starting tsGFCI algorithm.");
         logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        this.graph = new EdgeListGraphSingleConnections(nodes);
+        this.graph = new EdgeListGraph(nodes);
 
         if (score == null) {
             setScore();
@@ -158,7 +158,7 @@ public final class TsGFci implements GraphSearch {
         fges.setNumPatternsToStore(0);
         fges.setFaithfulnessAssumed(faithfulnessAssumed);
         graph = fges.search();
-        Graph fgesGraph = new EdgeListGraphSingleConnections(graph);
+        Graph fgesGraph = new EdgeListGraph(graph);
 
 //        System.out.println("GFCI: FGES done");
 

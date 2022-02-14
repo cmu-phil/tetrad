@@ -3,7 +3,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.collections4.iterators.CollatingIterator;
 import org.apache.commons.collections4.map.HashedMap;
 
 import java.util.*;

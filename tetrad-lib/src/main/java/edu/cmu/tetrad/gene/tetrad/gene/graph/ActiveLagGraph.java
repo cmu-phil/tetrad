@@ -21,12 +21,12 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.graph;
 
-import edu.cmu.tetrad.util.NamingProtocol;
-import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.gene.tetrad.gene.history.BasicLagGraph;
 import edu.cmu.tetrad.gene.tetrad.gene.history.LagGraph;
 import edu.cmu.tetrad.gene.tetrad.gene.history.LaggedEdge;
 import edu.cmu.tetrad.gene.tetrad.gene.history.LaggedFactor;
+import edu.cmu.tetrad.util.NamingProtocol;
+import edu.cmu.tetrad.util.PointXy;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

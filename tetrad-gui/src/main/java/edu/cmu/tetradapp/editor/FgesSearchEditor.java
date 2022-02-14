@@ -47,8 +47,8 @@ import java.awt.event.MouseEvent;
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Edits some algorithm to search for Markov blanket patterns.
@@ -480,7 +480,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
                     }
                 }
 
-                PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(graph));
+                PatternToDag search = new PatternToDag(new EdgeListGraph(graph));
                 Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);

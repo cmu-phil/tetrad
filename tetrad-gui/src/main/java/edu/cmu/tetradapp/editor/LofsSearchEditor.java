@@ -25,7 +25,10 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.IndTestType;
+import edu.cmu.tetrad.search.Lofs;
+import edu.cmu.tetrad.search.PatternToDag;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.*;
@@ -422,7 +425,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
                     }
                 }
 
-                PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(graph));
+                PatternToDag search = new PatternToDag(new EdgeListGraph(graph));
                 Graph dag = search.patternToDagMeek();
 
                 getGraphHistory().add(dag);

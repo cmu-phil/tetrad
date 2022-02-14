@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
+import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
 import java.text.NumberFormat;

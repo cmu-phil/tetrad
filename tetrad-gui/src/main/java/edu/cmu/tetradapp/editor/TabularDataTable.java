@@ -26,10 +26,11 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
+
+import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import javax.swing.table.AbstractTableModel;
 
 /**
  * Wraps a dataSet which is possibly smaller than the display window in a larger

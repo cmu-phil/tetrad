@@ -27,7 +27,9 @@
 package jgpml.covariancefunctions;
 
 import Jama.Matrix;
-import static jgpml.covariancefunctions.MatrixOperations.*;
+
+import static jgpml.covariancefunctions.MatrixOperations.exp;
+import static jgpml.covariancefunctions.MatrixOperations.sumRows;
 
 /** Linear covariance function with Automatic Relevance Determination (ARD). The
  * covariance function is parameterized as:

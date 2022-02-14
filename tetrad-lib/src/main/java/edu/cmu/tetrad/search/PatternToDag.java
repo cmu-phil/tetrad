@@ -21,11 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import edu.cmu.tetrad.graph.Graph;
 
 /**
  * Given a pattern this class implements two algortithms for finding an associated directed acyclic graph (DAG).

@@ -22,10 +22,11 @@ package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TaskManager;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.*;
 
 /**
  * Runs a process, popping up a dialog with a stop button if the time to

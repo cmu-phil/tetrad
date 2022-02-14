@@ -20,12 +20,13 @@ package edu.pitt.dbmi.data.reader.validation.covariance;
 
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  *

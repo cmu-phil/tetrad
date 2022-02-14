@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.data;
 
-import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.Vector;
 
 import java.io.File;

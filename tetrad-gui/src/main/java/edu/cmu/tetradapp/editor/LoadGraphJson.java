@@ -1,15 +1,13 @@
 package edu.cmu.tetradapp.editor;
 
-import java.awt.Component;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.prefs.Preferences;
-
-import javax.swing.AbstractAction;
-import javax.swing.JFileChooser;
-
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 
 /**
  * 

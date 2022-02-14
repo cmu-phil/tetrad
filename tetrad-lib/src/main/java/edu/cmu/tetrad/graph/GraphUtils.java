@@ -253,7 +253,7 @@ public final class GraphUtils {
                     + numLatentConfounders);
         }
 
-        final Graph dag = new EdgeListGraphSingleConnections(nodes);
+        final Graph dag = new EdgeListGraph(nodes);
 
         if (connected) {
             for (int i = 0; i < nodes.size() - 1; i++) {
@@ -477,7 +477,7 @@ public final class GraphUtils {
         LinkedList<Node> nodes = new LinkedList<>();
         nodes.add(_nodes.get(0));
 
-        Graph G = new EdgeListGraphSingleConnections(_nodes);
+        Graph G = new EdgeListGraph(_nodes);
 
         if (alpha <= 0) {
             throw new IllegalArgumentException("alpha must be > 0.");

@@ -37,8 +37,8 @@ import java.awt.event.ItemListener;
 import java.awt.geom.Point2D;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * This is the wizard which allows the user to select the x and y-axis variables

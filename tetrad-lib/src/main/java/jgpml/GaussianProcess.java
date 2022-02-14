@@ -27,12 +27,12 @@
 
 package jgpml;
 
+import Jama.CholeskyDecomposition;
+import Jama.Matrix;
 import jgpml.covariancefunctions.CovLINone;
 import jgpml.covariancefunctions.CovNoise;
 import jgpml.covariancefunctions.CovSum;
 import jgpml.covariancefunctions.CovarianceFunction;
-import Jama.Matrix;
-import Jama.CholeskyDecomposition;
 
 /**
  * Main class of the package, contains the objects that constitutes a Gaussian Process as well

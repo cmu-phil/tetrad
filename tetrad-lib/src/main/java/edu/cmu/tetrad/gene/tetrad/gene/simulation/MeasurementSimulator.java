@@ -21,13 +21,13 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.simulation;
 
+import edu.cmu.tetrad.gene.tetrad.gene.history.DishModel;
+import edu.cmu.tetrad.gene.tetrad.gene.history.GeneHistory;
+import edu.cmu.tetrad.gene.tetrad.gene.history.UpdateFunction;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Normal;
-import edu.cmu.tetrad.gene.tetrad.gene.history.DishModel;
-import edu.cmu.tetrad.gene.tetrad.gene.history.GeneHistory;
-import edu.cmu.tetrad.gene.tetrad.gene.history.UpdateFunction;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

@@ -21,10 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Implements a mixed variable polynomial BIC score for fGES.

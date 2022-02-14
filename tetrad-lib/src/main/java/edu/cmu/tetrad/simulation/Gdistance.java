@@ -5,9 +5,10 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by Erich on 7/3/2016.

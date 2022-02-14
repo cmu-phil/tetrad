@@ -42,7 +42,7 @@ import java.util.Set;
  */
 public class DagToPattern {
 
-    private final EdgeListGraphSingleConnections dag;
+    private final EdgeListGraph dag;
     /**
      * Forbidden and required edges for the search.
      */
@@ -124,7 +124,7 @@ public class DagToPattern {
      * Constructs a new PC search using the given independence test as oracle.
      */
     public DagToPattern(Graph dag) {
-        this.dag = new EdgeListGraphSingleConnections(dag);
+        this.dag = new EdgeListGraph(dag);
     }
 
     //==============================PUBLIC METHODS========================//
@@ -224,7 +224,7 @@ public class DagToPattern {
             }
         }
 
-        graph = new EdgeListGraphSingleConnections(measured);
+        graph = new EdgeListGraph(measured);
         graph.fullyConnect(Endpoint.CIRCLE);
 
         for (int i = 0; i < measured.size(); i++) {

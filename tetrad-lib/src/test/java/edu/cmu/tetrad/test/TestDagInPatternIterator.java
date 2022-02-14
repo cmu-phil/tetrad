@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagInPatternIterator;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +51,7 @@ public class TestDagInPatternIterator {
         RandomUtil.getInstance().setSeed(342233L);
         Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 10, 3,
                 3, 3, false, true);
-        Graph p = new EdgeListGraphSingleConnections(graph);
+        Graph p = new EdgeListGraph(graph);
 
         Dag dag = new Dag(graph);
 

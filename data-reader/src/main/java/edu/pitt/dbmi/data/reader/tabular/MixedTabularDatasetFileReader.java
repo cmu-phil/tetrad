@@ -18,13 +18,8 @@
  */
 package edu.pitt.dbmi.data.reader.tabular;
 
-import edu.pitt.dbmi.data.reader.ContinuousData;
-import edu.pitt.dbmi.data.reader.Data;
-import edu.pitt.dbmi.data.reader.DataColumn;
-import edu.pitt.dbmi.data.reader.DatasetFileReader;
-import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.DiscreteData;
-import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
+import edu.pitt.dbmi.data.reader.*;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;

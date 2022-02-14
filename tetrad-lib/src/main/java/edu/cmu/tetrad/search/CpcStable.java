@@ -207,7 +207,7 @@ public final class CpcStable implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
-        graph = new EdgeListGraphSingleConnections(nodes);
+        graph = new EdgeListGraph(nodes);
 
 
         final FasConcurrent fas = new FasConcurrent(getIndependenceTest());

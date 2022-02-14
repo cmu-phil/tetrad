@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.ArrayList;

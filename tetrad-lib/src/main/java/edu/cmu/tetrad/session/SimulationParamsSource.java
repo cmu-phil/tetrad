@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.session;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**

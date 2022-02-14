@@ -3,7 +3,6 @@ package edu.cmu.tetrad.simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.DagToPattern;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.ArrayList;

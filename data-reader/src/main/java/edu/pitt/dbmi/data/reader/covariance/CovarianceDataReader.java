@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.data.reader.covariance;
 
 import edu.pitt.dbmi.data.reader.DataReader;
+
 import java.io.IOException;
 
 /**

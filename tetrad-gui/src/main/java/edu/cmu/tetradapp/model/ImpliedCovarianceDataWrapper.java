@@ -27,8 +27,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.List;

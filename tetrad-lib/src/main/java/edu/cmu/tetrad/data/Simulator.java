@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.data;
 
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**

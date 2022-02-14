@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
@@ -270,7 +271,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
                 edges.addAll(ys);
             }
 
-            Graph subGraph = new EdgeListGraphSingleConnections();
+            Graph subGraph = new EdgeListGraph();
 
             for (Edge edge : edges) {
                 if (!subGraph.containsNode(edge.getNode1())) {
@@ -294,7 +295,7 @@ public class GraphSelectionWrapper implements SessionModel, GraphSource, Knowled
                 edges.addAll(ys);
             }
 
-            Graph subGraph = new EdgeListGraphSingleConnections();
+            Graph subGraph = new EdgeListGraph();
 
             for (Edge edge : edges) {
                 if (!subGraph.containsNode(edge.getNode1())) {

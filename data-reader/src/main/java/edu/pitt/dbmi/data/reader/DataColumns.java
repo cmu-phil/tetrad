@@ -22,6 +22,7 @@ import edu.pitt.dbmi.data.reader.metadata.ColumnMetadata;
 import edu.pitt.dbmi.data.reader.metadata.InterventionalColumn;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataColumn;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;

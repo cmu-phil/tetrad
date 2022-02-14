@@ -27,9 +27,9 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Collections;
 
 
 /**
@@ -164,7 +164,7 @@ public final class TsDagToPag {
             }
         }
 
-        Graph graph = new EdgeListGraphSingleConnections(measured);
+        Graph graph = new EdgeListGraph(measured);
 
         for (int i = 0; i < measured.size(); i++) {
             for (int j = i + 1; j < measured.size(); j++) {

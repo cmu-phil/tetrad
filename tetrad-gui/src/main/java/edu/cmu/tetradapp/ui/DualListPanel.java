@@ -19,16 +19,9 @@
 package edu.cmu.tetradapp.ui;
 
 import edu.cmu.tetrad.graph.Node;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.LayoutStyle;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  *

@@ -26,13 +26,15 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import static java.lang.Math.abs;
-import static java.lang.Math.pow;
 import java.text.NumberFormat;
 import java.util.*;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.pow;
 
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm

@@ -1,7 +1,13 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.File;
@@ -870,7 +876,7 @@ public class DMSearch {
 
         public Graph latentStructToEdgeListGraph(LatentStructure structure) {
 
-            Graph structureGraph = new EdgeListGraphSingleConnections();
+            Graph structureGraph = new EdgeListGraph();
 
 
             for (Node latent : latents) {

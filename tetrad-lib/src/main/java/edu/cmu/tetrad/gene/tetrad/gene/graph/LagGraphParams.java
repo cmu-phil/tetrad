@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.gene.tetrad.gene.graph;
 
-import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;

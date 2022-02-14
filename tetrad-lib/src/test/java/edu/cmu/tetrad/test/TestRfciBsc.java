@@ -13,7 +13,6 @@ import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.ParsingException;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;

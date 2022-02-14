@@ -18,8 +18,8 @@
  */
 package edu.pitt.dbmi.data.reader.tabular;
 
-import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
 import edu.pitt.dbmi.data.reader.DiscreteData;
+import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
 
 /**
  *

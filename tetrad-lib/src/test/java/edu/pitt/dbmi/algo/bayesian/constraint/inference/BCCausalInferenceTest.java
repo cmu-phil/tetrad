@@ -5,14 +5,15 @@
  */
 package edu.pitt.dbmi.algo.bayesian.constraint.inference;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.regex.Pattern;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  *

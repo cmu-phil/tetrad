@@ -25,7 +25,6 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.BayesProperties;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.PatternToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -51,8 +50,8 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Edits some algorithm to search for Markov blanket patterns.
@@ -382,7 +381,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Graph pattern = new EdgeListGraphSingleConnections(resultGraph);
+            Graph pattern = new EdgeListGraph(resultGraph);
             PatternToDag ptd = new PatternToDag(pattern);
             Graph dag = ptd.patternToDagMeek();
 

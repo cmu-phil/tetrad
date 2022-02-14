@@ -3,19 +3,11 @@
  */
 package edu.cmu.tetradapp.workbench;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.util.Map;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Map;
 
 /**
  * Jan 22, 2019 3:39:27 PM

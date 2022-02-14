@@ -1,9 +1,11 @@
 package edu.pitt.csb.mgm;
-import java.util.Arrays;
+
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.NonSquareMatrixException;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
+
+import java.util.Arrays;
 
 
 /**

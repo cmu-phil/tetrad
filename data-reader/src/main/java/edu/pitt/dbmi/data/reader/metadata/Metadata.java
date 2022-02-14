@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.data.reader.metadata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.LinkedList;
 import java.util.List;
 

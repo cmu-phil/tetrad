@@ -21,7 +21,9 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.SemGraph;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

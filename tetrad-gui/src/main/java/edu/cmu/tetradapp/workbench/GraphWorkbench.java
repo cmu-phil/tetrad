@@ -20,19 +20,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.workbench;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.graph.TripleClassifier;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetradapp.model.EditorUtils;
-import java.awt.Color;
-import java.awt.Point;
+
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;

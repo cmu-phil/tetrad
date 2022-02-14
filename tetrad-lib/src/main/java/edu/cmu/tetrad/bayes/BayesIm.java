@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.VariableSource;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.IM;
+
 import java.util.List;
 
 /**

@@ -28,9 +28,10 @@
 package jgpml.covariancefunctions;
 
 import Jama.Matrix;
-import static jgpml.covariancefunctions.MatrixOperations.*;
 
 import java.util.Arrays;
+
+import static jgpml.covariancefunctions.MatrixOperations.exp;
 
 /**
  * Squared Exponential covariance function with isotropic distance measure. The

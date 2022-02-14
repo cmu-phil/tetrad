@@ -33,7 +33,6 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**

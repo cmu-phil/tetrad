@@ -18,25 +18,8 @@
  */
 package edu.cmu.tetradapp.editor.simulation;
 
-import edu.cmu.tetrad.algcomparison.graph.Cyclic;
-import edu.cmu.tetrad.algcomparison.graph.GraphTypes;
-import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.graph.RandomSingleFactorMim;
-import edu.cmu.tetrad.algcomparison.graph.RandomTwoFactorMim;
-import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
-import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.BooleanGlassSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulationSpecial1;
-import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.SimulationTypes;
-import edu.cmu.tetrad.algcomparison.simulation.StandardizedSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation;
+import edu.cmu.tetrad.algcomparison.graph.*;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.data.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetradapp.model.Simulation;
@@ -45,19 +28,11 @@ import edu.cmu.tetradapp.util.ParameterComponents;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Window;
+import javax.swing.*;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
 /**
  *

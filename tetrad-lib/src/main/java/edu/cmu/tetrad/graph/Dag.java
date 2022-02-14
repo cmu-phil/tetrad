@@ -82,7 +82,7 @@ public final class Dag implements Graph {
     }
 
     public Dag(List<Node> nodes) {
-        this.graph = new EdgeListGraphSingleConnections(nodes);
+        this.graph = new EdgeListGraph(nodes);
         reconstituteDpath();
     }
 

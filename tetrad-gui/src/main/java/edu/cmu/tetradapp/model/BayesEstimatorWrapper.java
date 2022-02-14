@@ -33,6 +33,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;

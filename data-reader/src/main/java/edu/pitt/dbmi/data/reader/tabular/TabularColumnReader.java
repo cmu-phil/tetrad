@@ -20,6 +20,7 @@ package edu.pitt.dbmi.data.reader.tabular;
 
 import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.DataReader;
+
 import java.io.IOException;
 import java.util.Set;
 

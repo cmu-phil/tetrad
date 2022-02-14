@@ -21,15 +21,13 @@
 
 package edu.cmu.tetradapp.editor;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import javax.swing.*;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;

@@ -26,12 +26,13 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.DirichletBayesImWrapper;
 import edu.cmu.tetradapp.model.DirichletEstimatorWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and

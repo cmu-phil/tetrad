@@ -26,10 +26,12 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static edu.cmu.tetrad.data.Discretizer.*;
-import static java.lang.Double.NaN;
 import static java.lang.Math.log;
 
 /**

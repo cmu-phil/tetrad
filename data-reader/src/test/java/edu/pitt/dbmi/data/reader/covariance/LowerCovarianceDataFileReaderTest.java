@@ -19,12 +19,13 @@
 package edu.pitt.dbmi.data.reader.covariance;
 
 import edu.pitt.dbmi.data.reader.Delimiter;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  *

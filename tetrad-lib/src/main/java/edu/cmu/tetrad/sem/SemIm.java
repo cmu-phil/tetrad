@@ -25,16 +25,18 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import static java.lang.Math.sqrt;
 import java.rmi.MarshalledObject;
 import java.util.*;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+
+import static java.lang.Math.sqrt;
 
 /**
  * Stores an instantiated structural equation model (SEM), with error covariance

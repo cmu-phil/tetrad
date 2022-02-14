@@ -1,10 +1,10 @@
 package edu.cmu.tetrad.graph;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.util.TetradSerializable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 

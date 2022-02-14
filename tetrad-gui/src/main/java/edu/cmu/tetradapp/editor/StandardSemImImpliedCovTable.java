@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 
 import javax.swing.table.AbstractTableModel;
 import java.text.NumberFormat;

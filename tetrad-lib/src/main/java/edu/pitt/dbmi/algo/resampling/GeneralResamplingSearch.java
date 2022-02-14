@@ -3,23 +3,19 @@
  */
 package edu.pitt.dbmi.algo.resampling;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.algo.resampling.task.GeneralResamplingSearchRunnable;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.resampling.task.GeneralResamplingSearchRunnable;
 
 /**
  * Sep 7, 2018 1:38:50 PM

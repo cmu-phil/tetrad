@@ -24,8 +24,8 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.MatrixUtils;
 
 import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeListener;

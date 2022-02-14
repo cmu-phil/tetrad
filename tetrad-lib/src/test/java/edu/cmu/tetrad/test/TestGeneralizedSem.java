@@ -21,15 +21,14 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.Vector;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -510,7 +509,7 @@ public class TestGeneralizedSem {
         nodes.add(x);
         nodes.add(y);
 
-        Graph graph = new EdgeListGraphSingleConnections(nodes);
+        Graph graph = new EdgeListGraph(nodes);
 
         graph.addDirectedEdge(x, y);
 
@@ -557,7 +556,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -632,7 +631,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -706,7 +705,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -772,7 +771,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -850,7 +849,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -926,7 +925,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -996,7 +995,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -1063,7 +1062,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -1143,7 +1142,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);

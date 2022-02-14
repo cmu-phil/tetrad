@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

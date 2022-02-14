@@ -55,7 +55,7 @@ public final class TestSearchGraph {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(new Dag(GraphUtils.randomGraph(nodes1, 0, 7,
+        EdgeListGraph graph = new EdgeListGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 7,
                 30, 15, 15, true)));
 
         List<Node> nodes = graph.getNodes();
@@ -102,7 +102,7 @@ public final class TestSearchGraph {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(new Dag(GraphUtils.randomGraph(nodes1, 0, 14,
+        EdgeListGraph graph = new EdgeListGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 14,
                 30, 15, 15, true)));
 
         List<Node> nodes = graph.getNodes();

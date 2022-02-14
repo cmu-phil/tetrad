@@ -28,7 +28,6 @@
 package jgpml.covariancefunctions;
 
 import Jama.Matrix;
-import static jgpml.covariancefunctions.MatrixOperations.*;
 
 /**
  * Neural network covariance function with a single parameter for the distance

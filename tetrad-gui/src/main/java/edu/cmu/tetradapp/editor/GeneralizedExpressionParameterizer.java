@@ -34,8 +34,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Edits an expression for a node in the generalized SEM PM.

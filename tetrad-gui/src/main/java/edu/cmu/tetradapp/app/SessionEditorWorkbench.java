@@ -28,13 +28,14 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.IDisplayEdge;
+
+import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.rmi.MarshalledObject;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.*;
 
 /**
  * Adds the functionality needed to turn an abstract workbench into a workbench

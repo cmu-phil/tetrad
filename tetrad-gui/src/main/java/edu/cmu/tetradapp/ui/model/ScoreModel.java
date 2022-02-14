@@ -21,6 +21,7 @@ package edu.cmu.tetradapp.ui.model;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.util.ScoreDescriptions;
+
 import java.io.Serializable;
 
 /**

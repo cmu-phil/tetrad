@@ -22,23 +22,23 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
+import org.apache.commons.collections4.map.HashedMap;
+import org.apache.commons.math3.distribution.AbstractRealDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.random.Well1024a;
 
 import java.io.PrintStream;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.sqrt;
-
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
-import org.apache.commons.collections4.map.HashedMap;
-import org.apache.commons.math3.distribution.*;
-import org.apache.commons.math3.random.Well1024a;
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 
 /**
  * Stores a SEM model, pared down, for purposes of simulating data sets with

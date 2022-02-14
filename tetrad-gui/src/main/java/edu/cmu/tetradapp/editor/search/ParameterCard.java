@@ -20,7 +20,8 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetradapp.editor.AlgorithmParameterPanel;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
-import java.awt.Dimension;
+
+import java.awt.*;
 
 /**
  *

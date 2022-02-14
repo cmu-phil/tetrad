@@ -20,6 +20,7 @@ package edu.pitt.dbmi.data.reader.validation;
 
 import edu.pitt.dbmi.data.reader.DataFileReader;
 import edu.pitt.dbmi.data.reader.Delimiter;
+
 import java.nio.file.Path;
 
 /**

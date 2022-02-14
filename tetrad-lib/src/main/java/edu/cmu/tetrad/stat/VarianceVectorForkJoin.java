@@ -19,7 +19,6 @@
 package edu.cmu.tetrad.stat;
 
 import java.util.concurrent.ForkJoinPool;
-import static java.util.concurrent.ForkJoinTask.invokeAll;
 import java.util.concurrent.RecursiveAction;
 
 /**

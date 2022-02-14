@@ -19,11 +19,8 @@
 package edu.pitt.dbmi.data.reader.validation.covariance;
 
 import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.validation.AbstractDataFileValidation;
-import edu.pitt.dbmi.data.reader.validation.MessageType;
-import edu.pitt.dbmi.data.reader.validation.ValidationAttribute;
-import edu.pitt.dbmi.data.reader.validation.ValidationCode;
-import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+import edu.pitt.dbmi.data.reader.validation.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
