@@ -69,7 +69,7 @@ public class ConvertToPositiveSkew extends DataWrapper {
             List<Node> list = dataSet.getVariables();
             List<Node> list2 = new ArrayList<>();
 
-            for (Node node: list) {
+            for (Node node : list) {
                 list2.add(node);
             }
 

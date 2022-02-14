@@ -39,15 +39,15 @@ import java.util.prefs.Preferences;
  *
  * @author Tyler Gibson
  */
-public class ExtractMarkovBlanketWrapper extends GraphWrapper{
+public class ExtractMarkovBlanketWrapper extends GraphWrapper {
     static final long serialVersionUID = 23L;
 
-    public ExtractMarkovBlanketWrapper(GraphSource source){
+    public ExtractMarkovBlanketWrapper(GraphSource source) {
         this(source.getGraph());
     }
 
 
-    public ExtractMarkovBlanketWrapper(Graph graph){
+    public ExtractMarkovBlanketWrapper(Graph graph) {
         super(new EdgeListGraph(), "Extract Markov Blanket");
 
         String targetName = getVariableName(graph);
@@ -59,7 +59,7 @@ public class ExtractMarkovBlanketWrapper extends GraphWrapper{
     }
 
 
-    public static BidirectedToUndirectedWrapper serializableInstance(){
+    public static BidirectedToUndirectedWrapper serializableInstance() {
         return new BidirectedToUndirectedWrapper(EdgeListGraph.serializableInstance());
     }
 

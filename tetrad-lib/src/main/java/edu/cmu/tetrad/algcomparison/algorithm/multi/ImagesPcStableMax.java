@@ -37,7 +37,7 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             List<DataSet> dataSets = new ArrayList<>();
 
             for (DataModel dataModel : dataModels) {
@@ -54,20 +54,20 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
-    	}else{
-    		ImagesPcStableMax imagesPcStableMax = new ImagesPcStableMax();
-    		
-    		List<DataSet> datasets = new ArrayList<>();
+        } else {
+            ImagesPcStableMax imagesPcStableMax = new ImagesPcStableMax();
 
-			for (DataModel dataModel : dataModels) {
-				datasets.add((DataSet) dataModel);
-			}
-			GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesPcStableMax, parameters.getInt(Params.NUMBER_RESAMPLING));
-			search.setKnowledge(knowledge);
-            
-			search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            List<DataSet> datasets = new ArrayList<>();
+
+            for (DataModel dataModel : dataModels) {
+                datasets.add((DataSet) dataModel);
+            }
+            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesPcStableMax, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
+
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -79,29 +79,29 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-			
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-			return search.search();
-    	}
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            return search.search();
+        }
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
-    	}else{
-    		ImagesPcStableMax imagesPcStableMax = new ImagesPcStableMax();
-    		
-    		List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-    		GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesPcStableMax, parameters.getInt(Params.NUMBER_RESAMPLING));
-    		search.setKnowledge(knowledge);
+        } else {
+            ImagesPcStableMax imagesPcStableMax = new ImagesPcStableMax();
 
-    		search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesPcStableMax, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
+
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -113,13 +113,13 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-			
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-			return search.search();
-    	}
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            return search.search();
+        }
     }
 
     @Override
@@ -152,8 +152,8 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
 
-  	parameters.add(Params.VERBOSE);
-  		
+        parameters.add(Params.VERBOSE);
+
         return parameters;
     }
 

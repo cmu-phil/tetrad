@@ -56,8 +56,8 @@ public class SaveGraph extends AbstractAction {
      * True if the graph should be saved in XML, false if in text.
      */
     private Type type = Type.xml;
-    
-    public enum Type{text, xml, json, r, dot}
+
+    public enum Type {text, xml, json, r, dot}
 
     public SaveGraph(GraphEditable graphEditable, String title, Type type) {
         super(title);
@@ -85,14 +85,12 @@ public class SaveGraph extends AbstractAction {
             PrintWriter out = GraphUtils.saveGraph(graph, file, true);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
-        }
-        else if (type == Type.text) {
+        } else if (type == Type.text) {
             File file = EditorUtils.getSaveFile("graph", "txt", parent, false, title);
             PrintWriter out = GraphUtils.saveGraph(graph, file, false);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
-        }
-        else if (type == Type.r) {
+        } else if (type == Type.r) {
             File file = EditorUtils.getSaveFile("graph", "r.txt", parent, false, title);
             try {
                 String text = GraphUtils.graphRMatrixTxt(graph);
@@ -109,11 +107,10 @@ public class SaveGraph extends AbstractAction {
                 // Probably not a directed graph.
                 JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
             }
-        }
-        else if (type == Type.json) {
+        } else if (type == Type.json) {
             File file = EditorUtils.getSaveFile("graph", "json", parent, false, title);
             try {
-            	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String text = gson.toJson(graph);
 
                 PrintWriter out = new PrintWriter(file);
@@ -128,8 +125,7 @@ public class SaveGraph extends AbstractAction {
                 // Probably not a directed graph.
                 JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
             }
-        }
-        else if (type == Type.dot) {
+        } else if (type == Type.dot) {
             File file = EditorUtils.getSaveFile("graph", "dot", parent, false, title);
             try {
                 String text = GraphUtils.graphToDot(graph);

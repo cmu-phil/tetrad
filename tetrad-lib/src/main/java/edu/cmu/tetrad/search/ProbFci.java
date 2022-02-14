@@ -827,7 +827,7 @@ public final class ProbFci implements GraphSearch {
             logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from ancestor (a)", graph.getEdge(a, c)));
         } else if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.TAIL
                 && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE
-                ) {
+        ) {
             if (!isArrowpointAllowed(a, c)) {
                 return;
             }

@@ -339,7 +339,7 @@ public final class Cfci implements GraphSearch {
                     }
 
                     colliderTriples.add(new Triple(x, y, z));
-                } else if (type == TripleType.NONCOLLIDER ||  (sepset != null && sepset.contains(y))) {
+                } else if (type == TripleType.NONCOLLIDER || (sepset != null && sepset.contains(y))) {
                     noncolliderTriples.add(new Triple(x, y, z));
                     if (verbose) {
                         TetradLogger.getInstance().log("tripleClassifications", "Noncollider: " + Triple.pathString(graph, x, y, z));

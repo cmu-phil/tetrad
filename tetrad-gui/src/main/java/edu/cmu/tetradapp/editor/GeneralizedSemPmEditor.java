@@ -184,7 +184,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                 } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
                                             "Could not set the expression for " + node + " to "
-                                            + _semPm.getNodeExpressionString(node));
+                                                    + _semPm.getNodeExpressionString(node));
                                 }
                             }
 
@@ -194,7 +194,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                 } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
                                             "Could not set the expression for " + startsWith + " to "
-                                            + _semPm.getParameterExpressionString(_semPm.getStartsWithParameterTemplate(startsWith)));
+                                                    + _semPm.getParameterExpressionString(_semPm.getStartsWithParameterTemplate(startsWith)));
                                 }
                             }
 
@@ -216,7 +216,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                 } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
                                             "Could not set the expression for " + parameter + " to "
-                                            + _semPm.getParameterExpressionString(parameter));
+                                                    + _semPm.getParameterExpressionString(parameter));
                                 }
                             }
 

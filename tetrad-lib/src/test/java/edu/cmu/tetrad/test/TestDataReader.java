@@ -57,7 +57,6 @@ public final class TestDataReader {
     }
 
 
-
     // Without the ar names.
     @Test
     public void test1b() {
@@ -105,8 +104,7 @@ public final class TestDataReader {
             }
 
             return writer.toCharArray();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

@@ -180,7 +180,6 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
     }
 
 
-
     //=========================PUBLIC METHODS=============================//
 
     /**

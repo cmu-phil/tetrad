@@ -66,6 +66,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * Sets the parameters.
+     *
      * @param params
      */
     public void setParams(Parameters params) {
@@ -111,7 +112,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         }
 
         SpinnerModel maxVarsModel = new SpinnerNumberModel(
-            Preferences.userRoot().getInt("shiftSearchMaxNumShifts", 3), 1, 50, 1);
+                Preferences.userRoot().getInt("shiftSearchMaxNumShifts", 3), 1, 50, 1);
         JSpinner maxVarsSpinner = new JSpinner(maxVarsModel);
         maxVarsSpinner.setMaximumSize(maxVarsSpinner.getPreferredSize());
 
@@ -125,7 +126,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         });
 
         SpinnerModel maxShiftModel = new SpinnerNumberModel(
-            Preferences.userRoot().getInt("shiftSearchMaxShift", 2), 1, 50, 1);
+                Preferences.userRoot().getInt("shiftSearchMaxShift", 2), 1, 50, 1);
         JSpinner maxShiftSpinner = new JSpinner(maxShiftModel);
         maxShiftSpinner.setMaximumSize(maxShiftSpinner.getPreferredSize());
 
@@ -168,7 +169,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         });
 
 
-        JComboBox directionBox = new JComboBox(new String[] {"forward", "backward"});
+        JComboBox directionBox = new JComboBox(new String[]{"forward", "backward"});
         directionBox.setSelectedItem(params.getBoolean("forwardSearch", true) ? "forward" : "backward");
         directionBox.setMaximumSize(directionBox.getPreferredSize());
 
@@ -243,15 +244,15 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
             throw new IllegalArgumentException("There are not datasets to shift.");
         }
 
-        if (shifts.length != ((DataSet)dataSets.get(0)).getNumColumns()) {
-            shifts = new int[((DataSet)dataSets.get(0)).getNumColumns()];
+        if (shifts.length != ((DataSet) dataSets.get(0)).getNumColumns()) {
+            shifts = new int[((DataSet) dataSets.get(0)).getNumColumns()];
             params.set("shifts", shifts);
         }
 
         final int[] _shifts = shifts;
 
-        for (int i = 0; i < ((DataSet)dataSets.get(0)).getNumColumns(); i++) {
-            Node node = ((DataSet)dataSets.get(0)).getVariable(i);
+        for (int i = 0; i < ((DataSet) dataSets.get(0)).getNumColumns(); i++) {
+            Node node = ((DataSet) dataSets.get(0)).getVariable(i);
             Box a5 = Box.createHorizontalBox();
 
             SpinnerModel shiftModel = new SpinnerNumberModel(_shifts[i], -50, 50, 1);

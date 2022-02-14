@@ -28,7 +28,6 @@ import java.nio.file.Paths;
 import java.util.List;
 
 /**
- *
  * Dec 7, 2018 4:39:33 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -40,8 +39,8 @@ public class LowerCovarianceDataFileReaderTest {
     private final String commentMarker = "//";
 
     private final Path[] dataFiles = {
-        Paths.get(getClass().getResource("/data/covariance/spartina.txt").getFile()),
-        Paths.get(getClass().getResource("/data/covariance/quotes_spartina.txt").getFile())
+            Paths.get(getClass().getResource("/data/covariance/spartina.txt").getFile()),
+            Paths.get(getClass().getResource("/data/covariance/quotes_spartina.txt").getFile())
     };
 
     public LowerCovarianceDataFileReaderTest() {

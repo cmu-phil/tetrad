@@ -294,7 +294,10 @@ public class Ricf {
 
         return new RicfResult(sigmahat, lambdahat, bhat, omegahat, i, _diff, covMatrix);
     }
-    /** same as above but takes a Graph instead of a SemGraph **/
+
+    /**
+     * same as above but takes a Graph instead of a SemGraph
+     **/
     public RicfResult ricf2(Graph mag, ICovarianceMatrix covMatrix, double tolerance) {
 //        mag.setShowErrorTerms(false);
 

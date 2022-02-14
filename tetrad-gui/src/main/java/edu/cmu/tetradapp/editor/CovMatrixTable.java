@@ -89,7 +89,7 @@ class CovMatrixTable extends AbstractTableModel {
      * this number will be at least 30.
      *
      * @return the column count of the wrapped model or 30, whichever is
-     *         larger.
+     * larger.
      */
     public int getColumnCount() {
         return (getNumVariables() < 30) ? 30 : getNumVariables() + 1;

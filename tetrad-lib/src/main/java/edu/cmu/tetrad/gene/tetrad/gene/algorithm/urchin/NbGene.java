@@ -23,7 +23,7 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 
 public class NbGene extends AbstractNbComponent {
     public NbGene(double factor, double power, NbComponent[] parents,
-            int[] inhibitExcite, String name) {
+                  int[] inhibitExcite, String name) {
 
         super(factor, power, parents, inhibitExcite, name);
     }

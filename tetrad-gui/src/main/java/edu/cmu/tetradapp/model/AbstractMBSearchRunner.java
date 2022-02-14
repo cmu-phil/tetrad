@@ -218,14 +218,12 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     //==================== Private Methods ===========================//
 
 
-    private static DataSet castData(DataModel model){
-        if(model instanceof DataSet){
-            return (DataSet)model;
+    private static DataSet castData(DataModel model) {
+        if (model instanceof DataSet) {
+            return (DataSet) model;
         }
         throw new IllegalStateException("The data model must be a rectangular data set.");
     }
-
-
 
 
     /**

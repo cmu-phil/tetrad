@@ -48,7 +48,7 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
         construct(data1);
     }
 
-    private void construct(GraphSource...GraphSources) {
+    private void construct(GraphSource... GraphSources) {
         for (GraphSource wrapper : GraphSources) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");

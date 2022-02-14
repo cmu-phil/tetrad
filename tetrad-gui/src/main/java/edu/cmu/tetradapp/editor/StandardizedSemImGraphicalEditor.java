@@ -149,7 +149,7 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
         edgeLabel = new JLabel();
         valueField = new DoubleTextField(0, 8, NumberFormatUtil.getInstance().getNumberFormat());
         slider = new JSlider();
-        setEditorToEdge(semIm.getSemPm().getGraph().getEdges().iterator().     next());
+        setEditorToEdge(semIm.getSemPm().getGraph().getEdges().iterator().next());
 
         valueField.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
@@ -344,13 +344,13 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
             getWorkbench().setAllowEdgeReorientations(false);
             getWorkbench().addPropertyChangeListener(
                     new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if ("BackgroundClicked".equals(
-                            evt.getPropertyName())) {
-                        finishEdit();
-                    }
-                }
-            });
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if ("BackgroundClicked".equals(
+                                    evt.getPropertyName())) {
+                                finishEdit();
+                            }
+                        }
+                    });
             resetLabels();
         }
         return getWorkbench();

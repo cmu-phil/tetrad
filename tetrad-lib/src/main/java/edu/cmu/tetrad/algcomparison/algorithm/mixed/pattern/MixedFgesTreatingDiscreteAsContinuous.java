@@ -24,8 +24,9 @@ import java.util.List;
 @Bootstrapping
 public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
     static final long serialVersionUID = 23L;
+
     public Graph search(DataModel Dk, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet mixedDataSet = DataUtils.getMixedDataSet(Dk);
             mixedDataSet = DataUtils.convertNumericalDiscreteToContinuous(mixedDataSet);
             SemBicScore score = new SemBicScore(new CovarianceMatrix(mixedDataSet));
@@ -34,15 +35,15 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
             fges.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph p = fges.search();
             return convertBack(mixedDataSet, p);
-    	}else{
-    		MixedFgesTreatingDiscreteAsContinuous algorithm = new MixedFgesTreatingDiscreteAsContinuous();
-    		
-    		DataSet data = (DataSet) Dk;
-    		GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-    		
-    		search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+        } else {
+            MixedFgesTreatingDiscreteAsContinuous algorithm = new MixedFgesTreatingDiscreteAsContinuous();
+
+            DataSet data = (DataSet) Dk;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -54,13 +55,13 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
-    		search.setEdgeEnsemble(edgeEnsemble);
-    		search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-    		
-    		search.setParameters(parameters);    		
-    		search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-    		return search.search();
-    	}
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            return search.search();
+        }
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {

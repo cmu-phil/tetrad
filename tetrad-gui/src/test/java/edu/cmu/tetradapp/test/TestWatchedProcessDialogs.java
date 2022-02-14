@@ -52,12 +52,10 @@ public class TestWatchedProcessDialogs {
                         "boolean SHOW_DIALOG = true. Please revise before " +
                         "posting next time.");
             }
-        }
-        catch (NoSuchFieldException e) {
+        } catch (NoSuchFieldException e) {
             throw new RuntimeException(
                     "No field showDialog in WatchedProcess!");
-        }
-        catch (IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }

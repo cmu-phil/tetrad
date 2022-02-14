@@ -25,8 +25,7 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
  * Implements a space-efficient Lower Triangular Matrix of
  * elements of type <code>short</code>
  *
- * @author
- * <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
+ * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
 
@@ -96,8 +95,7 @@ public abstract class BasicLTMatrix extends BasicMatrix {
         while (true) {
             try {
                 nt = strmTok.nextToken();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 break;
             }
             if (nt == strmTok.TT_EOF) {
@@ -107,13 +105,11 @@ public abstract class BasicLTMatrix extends BasicMatrix {
                 this.setDoubleValue(row, col, strmTok.nval);
                 if (col < row) {
                     col++;
-                }
-                else {
+                } else {
                     col = 0;
                     row++;
                 }
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("Error parsing element (" +
                         row + "," + col + "): " + strmTok.sval);
             }

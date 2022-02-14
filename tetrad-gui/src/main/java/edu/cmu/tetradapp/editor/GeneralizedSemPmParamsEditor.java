@@ -168,8 +168,7 @@ class GeneralizedSemPmParamsEditor extends JPanel {
                         e.printStackTrace();
                         launchedEditors.remove(parameter);
                         throw new RuntimeException("The expression editor returned an unparseable string: " + expressionString, e);
-                    }
-                    catch (IllegalArgumentException e) {
+                    } catch (IllegalArgumentException e) {
                         JOptionPane.showMessageDialog(panel, e.getMessage());
                         launchedEditors.remove(parameter);
                     }

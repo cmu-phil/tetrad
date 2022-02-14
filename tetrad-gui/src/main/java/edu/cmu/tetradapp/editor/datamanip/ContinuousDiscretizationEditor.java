@@ -90,7 +90,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     /**
      * The default number of categories to use.
      */
-     private int numberOfCategories = 2;
+    private int numberOfCategories = 2;
 
 
     /**
@@ -113,8 +113,8 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
      * spent the interval up in equal segments which may or may not include an even distribution of
      * values.
      *
-     * @param dataSet       The dataset containing the data for the variable.
-     * @param variable      The variable to be edited.
+     * @param dataSet  The dataset containing the data for the variable.
+     * @param variable The variable to be edited.
      */
     public ContinuousDiscretizationEditor(DataSet dataSet,
                                           ContinuousVariable variable) {
@@ -239,7 +239,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     /**
      * @return the method.
      */
-    public Method getMethod(){
+    public Method getMethod() {
         return this.method;
     }
 
@@ -344,14 +344,11 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
         if (method == Method.EQUAL_SIZE_BUCKETS) {
             equalBuckets.setSelected(true);
-        }
-        else if (method == Method.EVENLY_DIVIDED_INTERNVALS) {
+        } else if (method == Method.EVENLY_DIVIDED_INTERNVALS) {
             equalInterval.setSelected(true);
-        }
-        else if (method == Method.NONE) {
+        } else if (method == Method.NONE) {
             none.setSelected(true);
-        }
-        else {
+        } else {
             none.setSelected(true);
         }
 

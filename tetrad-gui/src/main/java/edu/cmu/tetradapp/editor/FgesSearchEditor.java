@@ -801,7 +801,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
         if (testType != IndTestType.FISHER_Z
 //                &&
 //                testType != IndTestType.CORRELATION_T
-                ) {
+        ) {
             setTestType(IndTestType.FISHER_Z);
         }
 

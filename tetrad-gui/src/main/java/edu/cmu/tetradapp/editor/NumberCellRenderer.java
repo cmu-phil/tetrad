@@ -66,20 +66,16 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
     public void setValue(Object value) {
         if (value == null) {
             setText(getEmptyString());
-        }
-        else if (value instanceof Integer) {
+        } else if (value instanceof Integer) {
             setText(value.toString());
-        }
-        else if (value instanceof Double) {
+        } else if (value instanceof Double) {
             double doubleValue = (Double) value;
             if (Double.isNaN(doubleValue)) {
                 setText(getEmptyString());
-            }
-            else {
+            } else {
                 setText(nf.format(doubleValue));
             }
-        }
-        else {
+        } else {
             setText("");
         }
     }

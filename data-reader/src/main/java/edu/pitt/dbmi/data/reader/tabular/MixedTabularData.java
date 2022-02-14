@@ -22,7 +22,6 @@ import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
 import edu.pitt.dbmi.data.reader.MixedData;
 
 /**
- *
  * Dec 29, 2018 5:16:48 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

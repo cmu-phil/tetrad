@@ -144,7 +144,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     public String getDescription() {
         return "PC-Max (\"Peter and Clark\") on concatenating datasets using " + test.getDescription()
                 + (initialGraph != null ? " with initial graph from "
-                        + initialGraph.getDescription() : "");
+                + initialGraph.getDescription() : "");
     }
 
     @Override

@@ -22,7 +22,6 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
 /**
- *
  * Feb 9, 2016 3:15:29 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

@@ -293,7 +293,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      * @param history the history using which the new value is to be
      *                calculated.
      * @return 1.0 or -1.0 depending on whether the boolean value
-     *         looked up in the table is <pre>true</pre> or <pre>false</pre>.
+     * looked up in the table is <pre>true</pre> or <pre>false</pre>.
      */
     public double getFValue(int factor, double[][] history) {
         if (booleanFunctions[factor] == null) {

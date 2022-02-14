@@ -54,7 +54,7 @@ public class IndTestMNLRLRT implements IndependenceTest {
 
     public IndTestMNLRLRT(DataSet data, double alpha) {
         this.data = data;
-        this.likelihood= new MNLRLikelihood(data, -1, 1);
+        this.likelihood = new MNLRLikelihood(data, -1, 1);
 
         nodesHash = new HashedMap<>();
 
@@ -107,8 +107,12 @@ public class IndTestMNLRLRT implements IndependenceTest {
         dof_1 = likelihood.getLik(_x, list1) - likelihood.getLik(_x, list2);
 
 
-        if (dof_0 <= 0) { dof_0 = 1; }
-        if (dof_1 <= 0) { dof_1 = 1; }
+        if (dof_0 <= 0) {
+            dof_0 = 1;
+        }
+        if (dof_1 <= 0) {
+            dof_1 = 1;
+        }
         double p_0 = 0;
         double p_1 = 0;
         try {

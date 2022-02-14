@@ -49,7 +49,7 @@ class SaveScreenshot extends AbstractAction {
     private boolean editorWindowUsed;
 
     public SaveScreenshot(JComponent comp, boolean editorWindowUsed,
-            String title) {
+                          String title) {
         super(title);
 
         if (comp == null) {
@@ -76,8 +76,7 @@ class SaveScreenshot extends AbstractAction {
         // Write the image to file.
         try {
             ImageIO.write(image, "png", file);
-        }
-        catch (IOException e1) {
+        } catch (IOException e1) {
             throw new RuntimeException(e1);
         }
     }
@@ -89,8 +88,7 @@ class SaveScreenshot extends AbstractAction {
 
         if (editorWindowUsed && editorWindow != null) {
             return editorWindow.getRootPane().getContentPane();
-        }
-        else {
+        } else {
             return comp;
         }
     }

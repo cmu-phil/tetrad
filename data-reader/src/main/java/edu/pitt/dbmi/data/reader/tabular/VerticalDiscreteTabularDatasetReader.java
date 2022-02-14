@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.data.reader.tabular;
 
 /**
- *
  * Jan 2, 2019 2:39:21 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

@@ -33,7 +33,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler Gibson
  */
 public class InvertCovMatrixWrapper extends DataWrapper {
-     static final long serialVersionUID = 23L;
+    static final long serialVersionUID = 23L;
 
     /**
      * Splits the given data set by collinear columns.

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package edu.pitt.dbmi.algo.resampling;
 
@@ -25,364 +25,364 @@ import java.util.concurrent.Executors;
  */
 public class GeneralResamplingSearch {
 
-	private Algorithm algorithm = null;
+    private Algorithm algorithm = null;
 
-	private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
+    private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
 
-	private double percentResampleSize = 100;
-	
-	private boolean resamplingWithReplacement = true;
+    private double percentResampleSize = 100;
 
-	private int numberResampling = 0;
+    private boolean resamplingWithReplacement = true;
 
-	private boolean runParallel = false;
-	
-	private boolean addOriginalDataset = false;
+    private int numberResampling = 0;
 
-	private boolean verbose = false;
+    private boolean runParallel = false;
 
-	private List<Graph> PAGs = Collections.synchronizedList(new ArrayList<>());
+    private boolean addOriginalDataset = false;
 
-	// private ForkJoinPool pool = null;
+    private boolean verbose = false;
 
-	private final ExecutorService pool;
+    private List<Graph> PAGs = Collections.synchronizedList(new ArrayList<>());
 
-	private DataSet data = null;
+    // private ForkJoinPool pool = null;
 
-	private List<DataSet> dataSets = null;
+    private final ExecutorService pool;
 
-	/**
-	 * Specification of forbidden and required edges.
-	 */
-	private IKnowledge knowledge = new Knowledge2();
+    private DataSet data = null;
 
-	private PrintStream out = System.out;
+    private List<DataSet> dataSets = null;
 
-	private Parameters parameters;
+    /**
+     * Specification of forbidden and required edges.
+     */
+    private IKnowledge knowledge = new Knowledge2();
 
-	/**
-	 * An initial graph to start from.
-	 */
-	private Graph initialGraph = null;
+    private PrintStream out = System.out;
 
-	public GeneralResamplingSearch(DataSet data) {
-		this.data = data;
-		// pool = ForkJoinPoolInstance.getInstance().getPool();
-		pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-	}
+    private Parameters parameters;
 
-	public GeneralResamplingSearch(List<DataSet> dataSets) {
-		this.dataSets = dataSets;
-		// pool = ForkJoinPoolInstance.getInstance().getPool();
-		pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-	}
+    /**
+     * An initial graph to start from.
+     */
+    private Graph initialGraph = null;
 
-	public void addPAG(Graph pag) {
-		PAGs.add(pag);
-	}
+    public GeneralResamplingSearch(DataSet data) {
+        this.data = data;
+        // pool = ForkJoinPoolInstance.getInstance().getPool();
+        pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    }
 
-	public void setAlgorithm(Algorithm algorithm) {
-		this.algorithm = algorithm;
-		this.multiDataSetAlgorithm = null;
-	}
+    public GeneralResamplingSearch(List<DataSet> dataSets) {
+        this.dataSets = dataSets;
+        // pool = ForkJoinPoolInstance.getInstance().getPool();
+        pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    }
 
-	public void setMultiDataSetAlgorithm(MultiDataSetAlgorithm multiDataSetAlgorithm) {
-		this.multiDataSetAlgorithm = multiDataSetAlgorithm;
-		this.algorithm = null;
-	}
+    public void addPAG(Graph pag) {
+        PAGs.add(pag);
+    }
 
-	public void setPercentResampleSize(double percentResampleSize) {
-		this.percentResampleSize = percentResampleSize;
-	}
+    public void setAlgorithm(Algorithm algorithm) {
+        this.algorithm = algorithm;
+        this.multiDataSetAlgorithm = null;
+    }
 
-	public void setResamplingWithReplacement(boolean resamplingWithReplacement) {
-		this.resamplingWithReplacement = resamplingWithReplacement;
-	}
+    public void setMultiDataSetAlgorithm(MultiDataSetAlgorithm multiDataSetAlgorithm) {
+        this.multiDataSetAlgorithm = multiDataSetAlgorithm;
+        this.algorithm = null;
+    }
 
-	public void setNumberResampling(int numberResampling) {
-		this.numberResampling = numberResampling;
-	}
+    public void setPercentResampleSize(double percentResampleSize) {
+        this.percentResampleSize = percentResampleSize;
+    }
 
-	public void setRunParallel(boolean runParallel) {
-		this.runParallel = runParallel;
-	}
+    public void setResamplingWithReplacement(boolean resamplingWithReplacement) {
+        this.resamplingWithReplacement = resamplingWithReplacement;
+    }
 
-	public void setAddOriginalDataset(boolean addOriginalDataset) {
-		this.addOriginalDataset = addOriginalDataset;
-	}
+    public void setNumberResampling(int numberResampling) {
+        this.numberResampling = numberResampling;
+    }
 
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
-	}
+    public void setRunParallel(boolean runParallel) {
+        this.runParallel = runParallel;
+    }
 
-	public void setData(DataSet data) {
-		this.data = data;
-	}
+    public void setAddOriginalDataset(boolean addOriginalDataset) {
+        this.addOriginalDataset = addOriginalDataset;
+    }
 
-	public void setDataSets(List<DataSet> dataSets) {
-		this.dataSets = dataSets;
-	}
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
-	/**
-	 * Sets the background knowledge.
-	 *
-	 * @param knowledge
-	 *            the knowledge object, specifying forbidden and required edges.
-	 */
-	public void setKnowledge(IKnowledge knowledge) {
-		if (knowledge == null)
-			throw new NullPointerException();
-		this.knowledge = knowledge;
-	}
+    public void setData(DataSet data) {
+        this.data = data;
+    }
 
-	public void setInitialGraph(Graph initialGraph) {
-		this.initialGraph = initialGraph;
-	}
+    public void setDataSets(List<DataSet> dataSets) {
+        this.dataSets = dataSets;
+    }
 
-	/**
-	 * Sets the output stream that output (except for log output) should be sent to.
-	 * By detault System.out.
-	 */
-	public void setOut(PrintStream out) {
-		this.out = out;
-	}
+    /**
+     * Sets the background knowledge.
+     *
+     * @param knowledge
+     *            the knowledge object, specifying forbidden and required edges.
+     */
+    public void setKnowledge(IKnowledge knowledge) {
+        if (knowledge == null)
+            throw new NullPointerException();
+        this.knowledge = knowledge;
+    }
 
-	/**
-	 * @return the output stream that output (except for log output) should be sent
-	 *         to.
-	 */
-	public PrintStream getOut() {
-		return out;
-	}
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
 
-	public void setParameters(Parameters parameters) {
-		this.parameters = parameters;
-	}
+    /**
+     * Sets the output stream that output (except for log output) should be sent to.
+     * By detault System.out.
+     */
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
 
-	public List<Graph> search() {
+    /**
+     * @return the output stream that output (except for log output) should be sent
+     *         to.
+     */
+    public PrintStream getOut() {
+        return out;
+    }
 
-		PAGs.clear();
-		parameters.set("numberResampling", 0); // This needs to be set to zero to not loop indefinitely
+    public void setParameters(Parameters parameters) {
+        this.parameters = parameters;
+    }
 
-		if (!this.runParallel) {
-			// Running in the sequential form
-			if (verbose) {
-				out.println("Running Resamplings in Sequential Mode, numberResampling = " + numberResampling);
-			}
-			for (int i1 = 0; i1 < this.numberResampling; i1++) {
-				GeneralResamplingSearchRunnable task = null;
+    public List<Graph> search() {
 
-				// Bootstrapping
-				if (resamplingWithReplacement) {
-					if (data != null) {
-						DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
-					} else {
-						List<DataModel> dataModels = new ArrayList<>();
-						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-							dataModels.add(dataSet);
-						}
-						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
-								verbose);
-					}
-				// Sub-sampling
-				} else {
-					if (data != null) {
-						DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
-					} else {
-						List<DataModel> dataModels = new ArrayList<>();
-						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-							dataModels.add(dataSet);
-						}
-						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
-								verbose);
-					}
-				}
+        PAGs.clear();
+        parameters.set("numberResampling", 0); // This needs to be set to zero to not loop indefinitely
 
-				if (initialGraph != null) {
-					task.setInitialGraph(initialGraph);
-				}
-				task.setKnowledge(knowledge);
-				task.run();
-			}
-			
-			// Search again with original dataset
-			if (resamplingWithReplacement && addOriginalDataset) {
-				GeneralResamplingSearchRunnable task = null;
-				
-				if (data != null) {
-					task = new GeneralResamplingSearchRunnable(data, algorithm, parameters, this, verbose);
-				} else {
-					List<DataModel> dataModels = new ArrayList<>();
-					for (DataSet data : dataSets) {
-						dataModels.add(data);
-					}
-					task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
-							verbose);
-				}
-				
-				if (initialGraph != null) {
-					task.setInitialGraph(initialGraph);
-				}
-				task.setKnowledge(knowledge);
-				task.run();
-			}
-			
-		} else {
-			// Running in the parallel multiThread form
-			if (verbose) {
-				out.println("Running Resamplings in Parallel Mode, numberResampling = " + numberResampling);
-			}
+        if (!this.runParallel) {
+            // Running in the sequential form
+            if (verbose) {
+                out.println("Running Resamplings in Sequential Mode, numberResampling = " + numberResampling);
+            }
+            for (int i1 = 0; i1 < this.numberResampling; i1++) {
+                GeneralResamplingSearchRunnable task = null;
 
-			for (int i1 = 0; i1 < this.numberResampling; i1++) {
+                // Bootstrapping
+                if (resamplingWithReplacement) {
+                    if (data != null) {
+                        DataSet dataSet = DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                        task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
+                    } else {
+                        List<DataModel> dataModels = new ArrayList<>();
+                        for (DataSet data : dataSets) {
+                            DataSet dataSet = DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                            dataModels.add(dataSet);
+                        }
+                        task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
+                                verbose);
+                    }
+                    // Sub-sampling
+                } else {
+                    if (data != null) {
+                        DataSet dataSet = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                        task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
+                    } else {
+                        List<DataModel> dataModels = new ArrayList<>();
+                        for (DataSet data : dataSets) {
+                            DataSet dataSet = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                            dataModels.add(dataSet);
+                        }
+                        task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
+                                verbose);
+                    }
+                }
 
-				GeneralResamplingSearchRunnable task = null;
+                if (initialGraph != null) {
+                    task.setInitialGraph(initialGraph);
+                }
+                task.setKnowledge(knowledge);
+                task.run();
+            }
 
-				// Bootstrapping
-				if (resamplingWithReplacement) {
-					if (data != null) {
-						DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
-					} else {
-						List<DataModel> dataModels = new ArrayList<>();
-						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-							dataModels.add(dataSet);
-						}
-						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
-								verbose);
-					}
-				// Sub-sampling
-				} else {
-					if (data != null) {
-						DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
-					} else {
-						List<DataModel> dataModels = new ArrayList<>();
-						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-							dataModels.add(dataSet);
-						}
-						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
-								verbose);
-					}
-				}
+            // Search again with original dataset
+            if (resamplingWithReplacement && addOriginalDataset) {
+                GeneralResamplingSearchRunnable task = null;
 
-				if (initialGraph != null) {
-					task.setInitialGraph(initialGraph);
-				}
-				task.setKnowledge(knowledge);
-				pool.submit(task);
-			}
-			
-			// Search again with original dataset
-			if (resamplingWithReplacement && addOriginalDataset) {
-				GeneralResamplingSearchRunnable task = null;
-				
-				if (data != null) {
-					task = new GeneralResamplingSearchRunnable(data, algorithm, parameters, this, verbose);
-				} else {
-					List<DataModel> dataModels = new ArrayList<>();
-					for (DataSet data : dataSets) {
-						dataModels.add(data);
-					}
-					task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
-							verbose);
-				}
-				
-				if (initialGraph != null) {
-					task.setInitialGraph(initialGraph);
-				}
-				task.setKnowledge(knowledge);
-				pool.submit(task);
-			}
+                if (data != null) {
+                    task = new GeneralResamplingSearchRunnable(data, algorithm, parameters, this, verbose);
+                } else {
+                    List<DataModel> dataModels = new ArrayList<>();
+                    for (DataSet data : dataSets) {
+                        dataModels.add(data);
+                    }
+                    task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
+                            verbose);
+                }
 
-			pool.shutdown();
+                if (initialGraph != null) {
+                    task.setInitialGraph(initialGraph);
+                }
+                task.setKnowledge(knowledge);
+                task.run();
+            }
 
-			while (!pool.isTerminated()) {
-				try {
-					Thread.sleep(1000);
-					// out.println("Waiting...");
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			// out.println("Is terminated: " + pool.isTerminated());
-		}
+        } else {
+            // Running in the parallel multiThread form
+            if (verbose) {
+                out.println("Running Resamplings in Parallel Mode, numberResampling = " + numberResampling);
+            }
 
-		// If the pool is prematurely terminated, do sequentially
-		if (PAGs == null || PAGs.size() == 0) {
-			for (int i1 = 0; i1 < this.numberResampling; i1++) {
-				GeneralResamplingSearchRunnable task = null;
+            for (int i1 = 0; i1 < this.numberResampling; i1++) {
 
-				// Bootstrapping
-				if (resamplingWithReplacement) {
-					if (data != null) {
-						DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
-					} else {
-						List<DataModel> dataModels = new ArrayList<>();
-						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getBootstrapSample(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-							dataModels.add(dataSet);
-						}
-						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
-								verbose);
-					}
-				// Sub-sampling
-				} else {
-					if (data != null) {
-						DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-						task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
-					} else {
-						List<DataModel> dataModels = new ArrayList<>();
-						for (DataSet data : dataSets) {
-							DataSet dataSet = DataUtils.getResamplingDataset(data, (int)(data.getNumRows()*percentResampleSize/100.0));
-							dataModels.add(dataSet);
-						}
-						task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
-								verbose);
-					}
-				}
+                GeneralResamplingSearchRunnable task = null;
 
-				if (initialGraph != null) {
-					task.setInitialGraph(initialGraph);
-				}
-				task.setKnowledge(knowledge);
-				task.run();
-			}
-			
-			// Search again with original dataset
-			if (resamplingWithReplacement && addOriginalDataset) {
-				GeneralResamplingSearchRunnable task = null;
-				
-				if (data != null) {
-					task = new GeneralResamplingSearchRunnable(data, algorithm, parameters, this, verbose);
-				} else {
-					List<DataModel> dataModels = new ArrayList<>();
-					for (DataSet data : dataSets) {
-						dataModels.add(data);
-					}
-					task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
-							verbose);
-				}
-				
-				if (initialGraph != null) {
-					task.setInitialGraph(initialGraph);
-				}
-				task.setKnowledge(knowledge);
-				task.run();
-			}
-			
-		}
+                // Bootstrapping
+                if (resamplingWithReplacement) {
+                    if (data != null) {
+                        DataSet dataSet = DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                        task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
+                    } else {
+                        List<DataModel> dataModels = new ArrayList<>();
+                        for (DataSet data : dataSets) {
+                            DataSet dataSet = DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                            dataModels.add(dataSet);
+                        }
+                        task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
+                                verbose);
+                    }
+                    // Sub-sampling
+                } else {
+                    if (data != null) {
+                        DataSet dataSet = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                        task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
+                    } else {
+                        List<DataModel> dataModels = new ArrayList<>();
+                        for (DataSet data : dataSets) {
+                            DataSet dataSet = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                            dataModels.add(dataSet);
+                        }
+                        task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
+                                verbose);
+                    }
+                }
 
-		parameters.set("numberResampling", numberResampling); // This needs to be reset back to the previous value
+                if (initialGraph != null) {
+                    task.setInitialGraph(initialGraph);
+                }
+                task.setKnowledge(knowledge);
+                pool.submit(task);
+            }
 
-		return PAGs;
-	}
+            // Search again with original dataset
+            if (resamplingWithReplacement && addOriginalDataset) {
+                GeneralResamplingSearchRunnable task = null;
+
+                if (data != null) {
+                    task = new GeneralResamplingSearchRunnable(data, algorithm, parameters, this, verbose);
+                } else {
+                    List<DataModel> dataModels = new ArrayList<>();
+                    for (DataSet data : dataSets) {
+                        dataModels.add(data);
+                    }
+                    task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
+                            verbose);
+                }
+
+                if (initialGraph != null) {
+                    task.setInitialGraph(initialGraph);
+                }
+                task.setKnowledge(knowledge);
+                pool.submit(task);
+            }
+
+            pool.shutdown();
+
+            while (!pool.isTerminated()) {
+                try {
+                    Thread.sleep(1000);
+                    // out.println("Waiting...");
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            // out.println("Is terminated: " + pool.isTerminated());
+        }
+
+        // If the pool is prematurely terminated, do sequentially
+        if (PAGs == null || PAGs.size() == 0) {
+            for (int i1 = 0; i1 < this.numberResampling; i1++) {
+                GeneralResamplingSearchRunnable task = null;
+
+                // Bootstrapping
+                if (resamplingWithReplacement) {
+                    if (data != null) {
+                        DataSet dataSet = DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                        task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
+                    } else {
+                        List<DataModel> dataModels = new ArrayList<>();
+                        for (DataSet data : dataSets) {
+                            DataSet dataSet = DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                            dataModels.add(dataSet);
+                        }
+                        task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
+                                verbose);
+                    }
+                    // Sub-sampling
+                } else {
+                    if (data != null) {
+                        DataSet dataSet = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                        task = new GeneralResamplingSearchRunnable(dataSet, algorithm, parameters, this, verbose);
+                    } else {
+                        List<DataModel> dataModels = new ArrayList<>();
+                        for (DataSet data : dataSets) {
+                            DataSet dataSet = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * percentResampleSize / 100.0));
+                            dataModels.add(dataSet);
+                        }
+                        task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
+                                verbose);
+                    }
+                }
+
+                if (initialGraph != null) {
+                    task.setInitialGraph(initialGraph);
+                }
+                task.setKnowledge(knowledge);
+                task.run();
+            }
+
+            // Search again with original dataset
+            if (resamplingWithReplacement && addOriginalDataset) {
+                GeneralResamplingSearchRunnable task = null;
+
+                if (data != null) {
+                    task = new GeneralResamplingSearchRunnable(data, algorithm, parameters, this, verbose);
+                } else {
+                    List<DataModel> dataModels = new ArrayList<>();
+                    for (DataSet data : dataSets) {
+                        dataModels.add(data);
+                    }
+                    task = new GeneralResamplingSearchRunnable(dataModels, multiDataSetAlgorithm, parameters, this,
+                            verbose);
+                }
+
+                if (initialGraph != null) {
+                    task.setInitialGraph(initialGraph);
+                }
+                task.setKnowledge(knowledge);
+                task.run();
+            }
+
+        }
+
+        parameters.set("numberResampling", numberResampling); // This needs to be reset back to the previous value
+
+        return PAGs;
+    }
 
 }

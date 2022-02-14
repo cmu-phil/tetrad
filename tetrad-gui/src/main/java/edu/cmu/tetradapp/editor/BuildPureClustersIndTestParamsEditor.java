@@ -55,8 +55,7 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
                 try {
                     getParams().set("alpha", 0.001);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -100,8 +99,7 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
                     testSelector.addItem(TestType.SAG);
                     testSelector.addItem(TestType.GAP);
                     testSelector.revalidate();
-                }
-                else {
+                } else {
                     testSelector.removeAllItems();
                     testSelector.addItem(TestType.TETRAD_WISHART);
                     testSelector.addItem(TestType.TETRAD_DELTA);
@@ -112,8 +110,7 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
 
                 if (paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
                     testSelector.setSelectedItem(TestType.TETRAD_WISHART);
-                }
-                else {
+                } else {
                     testSelector.setSelectedItem(TestType.TETRAD_DELTA);
                 }
 

@@ -489,7 +489,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 class RowNumberRenderer extends DefaultTableCellRenderer {
 
     public Component getTableCellRendererComponent(JTable table, Object value,
-            boolean isSelected, boolean hasFocus, int row, int column) {
+                                                   boolean isSelected, boolean hasFocus, int row, int column) {
         JLabel label = (JLabel) super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
 
@@ -659,7 +659,7 @@ class DataCellRenderer extends DefaultTableCellRenderer {
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value,
-            boolean isSelected, boolean hasFocus, int row, int col) {
+                                                   boolean isSelected, boolean hasFocus, int row, int col) {
 
         // Have to set the alignment here, since this is the only place the col
         // index of the component is available...

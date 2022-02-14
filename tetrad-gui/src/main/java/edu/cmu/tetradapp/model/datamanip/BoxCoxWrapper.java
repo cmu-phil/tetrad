@@ -83,8 +83,7 @@ public class BoxCoxWrapper extends DataWrapper {
 
                 if (lambda == 0.0) {
                     d2 = Math.log(y);
-                }
-                else {
+                } else {
                     d2 = (Math.pow(y, lambda) - 1.0) / lambda;
                 }
 
@@ -106,17 +105,13 @@ public class BoxCoxWrapper extends DataWrapper {
 
                 if (lambda != 0 && y >= 0.0) {
                     d2 = (Math.pow(y + 1.0, lambda) - 1.0) / lambda;
-                }
-                else if (lambda == 0 && y >= 0.0) {
+                } else if (lambda == 0 && y >= 0.0) {
                     d2 = Math.log(y + 1.0);
-                }
-                else if (lambda != 2 && y < 0.0) {
+                } else if (lambda != 2 && y < 0.0) {
                     d2 = (Math.pow(1.0 - y, 2.0 - lambda) - 1) / (lambda - 2.0);
-                }
-                else if (lambda == 2 && y < 0.0) {
+                } else if (lambda == 2 && y < 0.0) {
                     d2 = -Math.log(1.0 - y);
-                }
-                else {
+                } else {
                     throw new IllegalStateException("Impossible state.");
                 }
 

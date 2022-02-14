@@ -38,6 +38,7 @@ import java.util.prefs.Preferences;
 public class GraphEditorUtils {
 
     /**
+     *
      */
     public static void editkamadaKawaiLayoutParams() {
         boolean initializeRandomly = Preferences.userRoot().getBoolean(
@@ -63,8 +64,7 @@ public class GraphEditorUtils {
                 if ("No".equals(selection)) {
                     Preferences.userRoot().putBoolean(
                             "kamadaKawaiLayoutInitializeRandomly", false);
-                }
-                else {
+                } else {
                     Preferences.userRoot().putBoolean(
                             "kamadaKawaiLayoutInitializeRandomly", true);
                 }

@@ -44,11 +44,9 @@ public class VariableSubsetterWrapper extends DataWrapper {
 
         if (selection.isDiscrete()) {
             selectionCopy = selection;
-        }
-        else if (selection.isContinuous()) {
+        } else if (selection.isContinuous()) {
             selectionCopy = selection;
-        }
-        else {
+        } else {
             selectionCopy = selection;
         }
 

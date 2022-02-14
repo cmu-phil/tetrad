@@ -90,10 +90,10 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         params.set("clusters", mmWrapper.getClusters());
     }
 
-     public MimBuildTrekRunner(MimBuildTrekRunner runner, Parameters params) {
+    public MimBuildTrekRunner(MimBuildTrekRunner runner, Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
-         setClusters((Clusters) params.get("clusters", null));
+        setClusters((Clusters) params.get("clusters", null));
     }
 
     public MimBuildTrekRunner(MimBuildTrekRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
@@ -131,8 +131,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
         if (getParams().getBoolean("includeThreeClusters", true)) {
             mimbuild.setMinClusterSize(3);
-        }
-        else {
+        } else {
             mimbuild.setMinClusterSize(4);
         }
 

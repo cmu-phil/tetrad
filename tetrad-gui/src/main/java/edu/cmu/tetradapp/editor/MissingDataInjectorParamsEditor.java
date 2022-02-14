@@ -34,7 +34,7 @@ import java.awt.*;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  * @author Frank Wimberly based on similar classes by Joe Ramsey
  */
-public class MissingDataInjectorParamsEditor extends JPanel implements  ParameterEditor {
+public class MissingDataInjectorParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * The parameters object being edited.
@@ -76,8 +76,7 @@ public class MissingDataInjectorParamsEditor extends JPanel implements  Paramete
                 try {
                     params.set("prob", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }

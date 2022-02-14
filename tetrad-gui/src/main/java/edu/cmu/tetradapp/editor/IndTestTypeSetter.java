@@ -31,8 +31,11 @@ import edu.cmu.tetrad.search.IndTestType;
  */
 interface IndTestTypeSetter {
     void setTestType(IndTestType testType);
+
     IndTestType getTestType();
+
     DataModel getDataModel();
+
     Object getSourceGraph();
 }
 

@@ -519,7 +519,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     void transferNodesAndEdges(Graph graph) throws IllegalArgumentException;
 
     void transferAttributes(Graph graph) throws IllegalArgumentException;
-    
+
     /**
      * @return the list of ambiguous triples associated with this graph. Triples <x, y, z> that no longer
      * lie along a path in the getModel graph are removed.
@@ -655,13 +655,13 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     List<Node> getSepset(Node n1, Node n2);
 
     void setNodes(List<Node> nodes);
-    
+
     Map<String, Object> getAllAttributes();
-    
+
     Object getAttribute(String key);
-    
+
     void removeAttribute(String key);
-    
+
     void addAttribute(String key, Object value);
 }
 

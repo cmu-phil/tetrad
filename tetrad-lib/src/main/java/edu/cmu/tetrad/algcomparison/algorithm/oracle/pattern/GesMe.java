@@ -50,7 +50,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
 //          dataSet = DataUtils.center((DataSet) dataSet);
             CovarianceMatrix covarianceMatrix = new CovarianceMatrix((DataSet) dataSet);
 
@@ -94,11 +94,11 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
             System.out.println(covFa);
 
-	        final double[] vars = covarianceMatrix.getMatrix().diag().toArray();
-	        List<Integer> indices = new ArrayList<>();
-	        for (int i = 0; i < vars.length; i++) {
-	            indices.add(i);
-	        }
+            final double[] vars = covarianceMatrix.getMatrix().diag().toArray();
+            List<Integer> indices = new ArrayList<>();
+            for (int i = 0; i < vars.length; i++) {
+                indices.add(i);
+            }
 
             Collections.sort(indices, new Comparator<Integer>() {
                 @Override
@@ -178,18 +178,18 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
             System.out.println("residual = " + residual);
 
             return search.search();
-    	}else{
-    		GesMe algorithm = new GesMe(compareToTrue);
-    		
-			if (initialGraph != null) {
-				algorithm.setInitialGraph(initialGraph);
-			}
-			DataSet data = (DataSet) dataSet;
-			GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+        } else {
+            GesMe algorithm = new GesMe(compareToTrue);
 
-			search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+            if (initialGraph != null) {
+                algorithm.setInitialGraph(initialGraph);
+            }
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+
+            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -201,13 +201,13 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-			
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-			return search.search();
-    	}
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            return search.search();
+        }
     }
 
     @Override
@@ -247,7 +247,7 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
         return parameters;
     }
 
-//    @Override
+    //    @Override
 //    public IKnowledge getKnowledge() {
 //        return knowledge;
 //    }
@@ -282,15 +282,15 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
 
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		return initialGraph;
-	}
+    @Override
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
 
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		this.initialGraph = initialGraph;
-	}
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {

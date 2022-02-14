@@ -161,11 +161,9 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else if (knowledge.isDefaultToKnowledgeLayout()) {
+        } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 

@@ -126,8 +126,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 

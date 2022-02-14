@@ -96,7 +96,7 @@ public final class TestKnowledge {
 
         boolean found = false;
 
-        for (Iterator i = knowledge.forbiddenEdgesIterator(); i.hasNext();) {
+        for (Iterator i = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
             KnowledgeEdge edge = (KnowledgeEdge) i.next();
             if (edge.getFrom().equals("X1.1") && edge.getTo().equals("X2-1")) {
                 found = true;
@@ -137,7 +137,7 @@ public final class TestKnowledge {
         knowledge.setRequired("X6*", "X5*");
 
         assertTrue(knowledge.isForbidden("X20", "X10"));
-        assertTrue(knowledge.isRequired("X6","X5"));
+        assertTrue(knowledge.isRequired("X6", "X5"));
     }
 
     @Test

@@ -21,7 +21,6 @@ package edu.pitt.dbmi.data.reader;
 import java.util.List;
 
 /**
- *
  * Dec 10, 2018 3:24:22 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

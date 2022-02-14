@@ -81,8 +81,8 @@ public class CompletedPatternWrapper implements SessionModel, GraphSource {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return the serializable instance.
+     * @see TetradSerializableUtils
      */
     public static CompletedPatternWrapper serializableInstance() {
         return new CompletedPatternWrapper(Dag.serializableInstance());
@@ -111,9 +111,9 @@ public class CompletedPatternWrapper implements SessionModel, GraphSource {
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
      * @param s the stream from which objects are read.
-     * @throws IOException if there are problems reading from the stream.
+     * @throws IOException            if there are problems reading from the stream.
      * @throws ClassNotFoundException if some expected class cannot be found
-     * in the stream.
+     *                                in the stream.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

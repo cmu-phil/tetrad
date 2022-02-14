@@ -26,7 +26,6 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- *
  * Mar 8, 2017 10:51:43 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -43,18 +42,18 @@ public class TextFileUtils {
 
     /**
      * Determine the delimiter for a text data file.
-     *
+     * <p>
      * Reads the first n lines of data in a text file and attempts to infer what
      * delimiter is used.
-     *
+     * <p>
      * Idea expanded from <a>https://rdrr.io/cran/reader/man/get.delim.html</a>.
      *
-     * @param file the file to examine
-     * @param n the number of lines to read to make the inference
-     * @param skip number of lines to skip at top of file before processing
-     * @param comment a comment symbol to ignore lines in files
+     * @param file           the file to examine
+     * @param n              the number of lines to read to make the inference
+     * @param skip           number of lines to skip at top of file before processing
+     * @param comment        a comment symbol to ignore lines in files
      * @param quoteCharacter used for grouping characters
-     * @param delims the set of delimiters to test for
+     * @param delims         the set of delimiters to test for
      * @return
      * @throws IOException
      */

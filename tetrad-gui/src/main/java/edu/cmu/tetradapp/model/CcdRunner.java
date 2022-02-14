@@ -108,7 +108,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
         super(model, params, knowledgeBoxModel);
     }
 
-	/**
+    /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
@@ -133,8 +133,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 

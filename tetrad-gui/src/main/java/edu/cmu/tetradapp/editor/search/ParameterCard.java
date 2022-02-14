@@ -24,7 +24,6 @@ import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import java.awt.*;
 
 /**
- *
  * Apr 15, 2019 3:35:36 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

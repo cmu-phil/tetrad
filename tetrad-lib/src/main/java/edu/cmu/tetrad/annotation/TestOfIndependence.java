@@ -23,7 +23,6 @@ import edu.cmu.tetrad.data.DataType;
 import java.lang.annotation.*;
 
 /**
- *
  * Aug 31, 2017 4:42:08 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

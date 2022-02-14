@@ -85,7 +85,7 @@ public class RandomUtil {
         // L'Ecuyer, "Tables of Linear Congruential Generators of
         // Different Sizes and Good Lattice Structure", 1999
         long current = seedUniquifier;
-        seedUniquifier = current *  1181783497276652981L;
+        seedUniquifier = current * 1181783497276652981L;
         return seedUniquifier;
     }
 

@@ -59,7 +59,7 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
     }
 
     public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
-            Parameters params) {
+                                   Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -81,7 +81,7 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
 
     }
 
-//    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
+    //    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
 //                                   DataWrapper dataWrapper) {
 //        if (bayesPmWrapper == null) {
 //            throw new NullPointerException();

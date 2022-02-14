@@ -3,7 +3,8 @@ package edu.cmu.tetrad.performance;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 
-/**.
+/**
+ * .
  * Result of a comparison.
  *
  * @author jdramsey 2016.03.24

@@ -41,6 +41,7 @@ public class TestIndexedLagGraph extends TestCase {
     }
 
     /**
+     *
      */
     public void testConstruction() {
         LagGraph lagGraph = new BasicLagGraph();

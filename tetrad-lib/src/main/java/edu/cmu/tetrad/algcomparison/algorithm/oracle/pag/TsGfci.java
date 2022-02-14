@@ -57,18 +57,18 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
 //    	if (!(dataSet instanceof TimeSeriesData)) {
 //            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsGFCI.");
 //        }
-        
+
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-        	if(knowledge != null) {
-        		dataSet.setKnowledge(knowledge);
-        	}
+            if (knowledge != null) {
+                dataSet.setKnowledge(knowledge);
+            }
             edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters),
                     score.getScore(dataSet, parameters));
             IKnowledge _knowledge = dataSet.getKnowledge() != null ? dataSet.getKnowledge() : new Knowledge2();
             search.setKnowledge(dataSet.getKnowledge());
-            
+
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            
+
             return search.search();
         } else {
             TsGfci algorithm = new TsGfci(test, score);
@@ -79,7 +79,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -93,7 +93,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -108,7 +108,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     public String getDescription() {
         return "tsGFCI (Time Series GFCI) using " + test.getDescription() + " and " + score.getDescription()
                 + (algorithm != null ? " with initial graph from "
-                        + algorithm.getDescription() : "");
+                + algorithm.getDescription() : "");
     }
 
     @Override
@@ -119,7 +119,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        
+
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_INDEGREE);
         parameters.add(Params.PRINT_STREAM);
@@ -162,7 +162,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     public IndependenceWrapper getIndependenceWrapper() {
         return test;
     }
-    
+
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
@@ -172,5 +172,5 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     public ScoreWrapper getScoreWrapper() {
         return score;
     }
-    
+
 }

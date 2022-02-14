@@ -30,7 +30,7 @@ public class LagGraphParams {
     }
 
     public void setVarsPerInd(int varsPerInd) {
-        if(varsPerInd > 0) {
+        if (varsPerInd > 0) {
             parameters.set("lagGraphVarsPerInd", varsPerInd);
             this.varsPerInd = varsPerInd;
         }
@@ -42,7 +42,7 @@ public class LagGraphParams {
     }
 
     public void setMlag(int mlag) {
-        if(mlag > 0) {
+        if (mlag > 0) {
             parameters.set("lagGraphMLag", mlag);
             this.mlag = mlag;
         }
@@ -54,7 +54,7 @@ public class LagGraphParams {
     }
 
     public void setIndegree(int indegree) {
-        if(indegree > 1) {
+        if (indegree > 1) {
             this.indegree = indegree;
             parameters.set("lagGraphIndegree", indegree);
         }
@@ -66,7 +66,7 @@ public class LagGraphParams {
     }
 
     public void setIndegreeType(int indegreeType) {
-        switch(indegreeType) {
+        switch (indegreeType) {
             case 0:
             case 1:
             case 2:
@@ -82,7 +82,7 @@ public class LagGraphParams {
     }
 
     public void setPercentUnregulated(double percentUnregulated) {
-        if(percentUnregulated >= 0.0D && percentUnregulated <= 100.0D) {
+        if (percentUnregulated >= 0.0D && percentUnregulated <= 100.0D) {
             this.percentUnregulated = percentUnregulated;
         } else {
             throw new IllegalArgumentException();
@@ -91,18 +91,18 @@ public class LagGraphParams {
 
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-        switch(this.indegreeType) {
+        switch (this.indegreeType) {
             case 0:
             case 1:
             case 2:
-                if(this.varsPerInd < 1) {
+                if (this.varsPerInd < 1) {
                     throw new IllegalStateException("VarsPerInd out of range: " + this.varsPerInd);
-                } else if(this.mlag <= 0) {
+                } else if (this.mlag <= 0) {
                     throw new IllegalStateException("Mlag out of range: " + this.mlag);
-                } else if(this.varsPerInd <= 1) {
+                } else if (this.varsPerInd <= 1) {
                     throw new IllegalStateException("VarsPerInd out of range: " + this.varsPerInd);
                 } else {
-                    if(this.percentUnregulated > 0.0D && this.percentUnregulated < 100.0D) {
+                    if (this.percentUnregulated > 0.0D && this.percentUnregulated < 100.0D) {
                         return;
                     }
 

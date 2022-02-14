@@ -65,7 +65,7 @@ public class EditorWindow extends JInternalFrame
      * Pops a new editor window up from a dialog.
      */
     public EditorWindow(JPanel editor, String title, String buttonName,
-            boolean cancellable, Component centeringComp) {
+                        boolean cancellable, Component centeringComp) {
         super(title, true, true, true, false);
 
         if (editor == null) {

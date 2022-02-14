@@ -24,7 +24,6 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- *
  * Nov 21, 2017 2:13:40 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

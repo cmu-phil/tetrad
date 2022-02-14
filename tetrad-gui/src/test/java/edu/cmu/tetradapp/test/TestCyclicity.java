@@ -48,8 +48,7 @@ public class TestCyclicity {
         try {
 //            jdepend.addDirectory(new File("../../../lib-tetrad/target/classes/edu/cmu/tetrad").getAbsolutePath());
             jdepend.addDirectory(new File("target/classes/edu/cmu/tetradapp").getAbsolutePath());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             fail(e.getMessage());
         }
     }
@@ -65,7 +64,7 @@ public class TestCyclicity {
     /**
      * Tests that a package dependency cycle does not exist for any of the
      * analyzed packages.
-     *
+     * <p>
      * NOTE: THIS NEEDS TO BE TURNED OFF UNTIL THE OLD CALCULATORWRAPPER CAN BE
      * REMOVED FROM THE CODE (edu.cmu.tetrad.model.calculator.CalculatorWrapper).
      * UNTIL THEN IT HAS TO BE RUN MANUALLY BY DELETING THE OLD CALCULATORWRAPPER

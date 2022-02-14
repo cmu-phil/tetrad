@@ -47,7 +47,7 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             IndependenceTest test = this.test.getTest(dataSet, parameters);
             edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(test, parameters.getInt(Params.DEPTH));
 
@@ -58,11 +58,11 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             if (targetName.isEmpty()) {
                 throw new IllegalArgumentException("Target variable name needs to be provided.");
             }
-            
+
             if (test.getVariable(targetName) == null) {
                 throw new IllegalArgumentException("Target variable name '" + targetName + "' not found in dataset.");
             }
-            
+
             Node target = test.getVariable(targetName);
             return search.search(target.getName());
         } else {
@@ -74,7 +74,7 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -88,7 +88,7 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -135,7 +135,7 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
-    
+
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return test;

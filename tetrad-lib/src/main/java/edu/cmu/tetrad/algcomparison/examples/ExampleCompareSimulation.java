@@ -39,7 +39,8 @@ import edu.cmu.tetrad.util.Parameters;
 public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        https://arxiv.org/abs/1607.08110
+        https:
+//arxiv.org/abs/1607.08110
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 10);
         parameters.set("avgDegree", 2);

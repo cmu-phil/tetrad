@@ -44,21 +44,21 @@ import java.util.concurrent.RecursiveAction;
 /**
  * Runs a search algorithm over a N subsamples of size b to asses stability
  * as in "Stability Selection" and "Stability Approach to Regularization Selection"
- *
+ * <p>
  * This is under construction...likely to be buggy
- *
+ * <p>
  * Created by ajsedgewick on 9/4/15.
  */
 public class StabilityUtils {
 
     //returns an adjacency matrix containing the edgewise instability as defined in Liu et al
-    public static DoubleMatrix2D StabilitySearch(DataSet data, DataGraphSearch gs, int N, int b){
+    public static DoubleMatrix2D StabilitySearch(DataSet data, DataGraphSearch gs, int N, int b) {
         int numVars = data.getNumColumns();
         DoubleMatrix2D thetaMat = DoubleFactory2D.dense.make(numVars, numVars, 0.0);
 
         int[][] samps = subSampleNoReplacement(data.getNumRows(), b, N);
 
-        for(int s = 0; s < N; s++){
+        for (int s = 0; s < N; s++) {
             DataSet dataSubSamp = data.subsetRows(samps[s]);
             Graph g = gs.search(dataSubSamp);
 
@@ -71,7 +71,7 @@ public class StabilityUtils {
     }
 
     //returns an adjacency matrix containing the edgewise instability as defined in Liu et al
-    public static DoubleMatrix2D StabilitySearchPar(final DataSet data, final DataGraphSearch gs, int N, int b){
+    public static DoubleMatrix2D StabilitySearchPar(final DataSet data, final DataGraphSearch gs, int N, int b) {
 
         final int numVars = data.getNumColumns();
         final DoubleMatrix2D thetaMat = DoubleFactory2D.dense.make(numVars, numVars, 0.0);
@@ -80,12 +80,12 @@ public class StabilityUtils {
 
         final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
-        class StabilityAction extends RecursiveAction{
+        class StabilityAction extends RecursiveAction {
             private int chunk;
             private int from;
             private int to;
 
-            public StabilityAction(int chunk, int from, int to){
+            public StabilityAction(int chunk, int from, int to) {
                 this.chunk = chunk;
                 this.from = from;
                 this.to = to;
@@ -93,12 +93,12 @@ public class StabilityUtils {
 
             //could avoid using syncronized if we keep track of array of mats and add at end, but that needs lots of
             //memory
-            private synchronized void addToMat(DoubleMatrix2D matSum, DoubleMatrix2D curMat){
+            private synchronized void addToMat(DoubleMatrix2D matSum, DoubleMatrix2D curMat) {
                 matSum.assign(curMat, Functions.plus);
             }
 
             @Override
-            protected void compute(){
+            protected void compute() {
                 if (to - from <= chunk) {
                     for (int s = from; s < to; s++) {
                         DataSet dataSubSamp = data.subsetRows(samps[s]).copy();
@@ -139,8 +139,8 @@ public class StabilityUtils {
 
     //needs a symmetric matrix
     //array of averages of instability matrix over [all, cc, cd, dd] edges
-    public static double[] totalInstabilityUndir(DoubleMatrix2D xi, List<Node> vars){
-        if (vars.size()!= xi.columns() || vars.size()!= xi.rows()) {
+    public static double[] totalInstabilityUndir(DoubleMatrix2D xi, List<Node> vars) {
+        if (vars.size() != xi.columns() || vars.size() != xi.rows()) {
             throw new IllegalArgumentException("stability mat must have same number of rows and columns as there are vars");
         }
 
@@ -154,21 +154,21 @@ public class StabilityUtils {
         int[] contInds = MixedUtils.getContinuousInds(vars);
         int p = contInds.length;
         int q = discInds.length;
-        double temp = MGM.upperTri(xiu.copy(),1).zSum();
-        D[0] = temp/ ((p+q-1.0)*(p+q)/2.0);
+        double temp = MGM.upperTri(xiu.copy(), 1).zSum();
+        D[0] = temp / ((p + q - 1.0) * (p + q) / 2.0);
         temp = MGM.upperTri(xiu.viewSelection(contInds, contInds).copy(), 1).zSum();
-        D[1] = temp/(p*(p-1.0)/2.0);
+        D[1] = temp / (p * (p - 1.0) / 2.0);
         temp = xiu.viewSelection(contInds, discInds).zSum();
-        D[2] = temp/(p*q);
+        D[2] = temp / (p * q);
         temp = MGM.upperTri(xiu.viewSelection(discInds, discInds).copy(), 1).zSum();
-        D[3] = temp/(q*(q-1.0)/2.0);
+        D[3] = temp / (q * (q - 1.0) / 2.0);
 
         return D;
     }
 
     //array of averages of instability matrix over [all, cc, cd, dd] edges
-    public static double[] totalInstabilityDir(DoubleMatrix2D xi, List<Node> vars){
-        if (vars.size()!= xi.columns() || vars.size()!= xi.rows()) {
+    public static double[] totalInstabilityDir(DoubleMatrix2D xi, List<Node> vars) {
+        if (vars.size() != xi.columns() || vars.size() != xi.rows()) {
             throw new IllegalArgumentException("stability mat must have same number of rows and columns as there are vars");
         }
 
@@ -177,17 +177,17 @@ public class StabilityUtils {
         int[] contInds = MixedUtils.getContinuousInds(vars);
         int p = contInds.length;
         int q = discInds.length;
-        D[0] = xi.zSum()/ ((p+q-1)*(p+q)/2);
+        D[0] = xi.zSum() / ((p + q - 1) * (p + q) / 2);
 
-        D[1] = xi.viewSelection(contInds, contInds).zSum()/(p*(p-1));
-        D[2] = xi.viewSelection(contInds, discInds).zSum()/(p*q);
-        D[3] = xi.viewSelection(discInds, discInds).zSum()/(q*(q-1));
+        D[1] = xi.viewSelection(contInds, contInds).zSum() / (p * (p - 1));
+        D[2] = xi.viewSelection(contInds, discInds).zSum() / (p * q);
+        D[3] = xi.viewSelection(discInds, discInds).zSum() / (q * (q - 1));
 
         return D;
     }
 
     //returns an numSub by subSize matrix of subsamples of the sequence 1:sampSize
-    public static int[][] subSampleNoReplacement(int sampSize, int subSize, int numSub){
+    public static int[][] subSampleNoReplacement(int sampSize, int subSize, int numSub) {
 
         if (subSize < 1) {
             throw new IllegalArgumentException("Sample size must be > 0.");
@@ -200,14 +200,14 @@ public class StabilityUtils {
 
         int[][] sampMat = new int[numSub][subSize];
 
-        for(int i = 0; i < numSub; i++) {
+        for (int i = 0; i < numSub; i++) {
             Collections.shuffle(indices);
             int[] curSamp;
             SAMP:
-            while(true){
+            while (true) {
                 curSamp = subSampleIndices(sampSize, subSize);
-                for(int j = 0; j < i; j++){
-                    if(Arrays.equals(curSamp, sampMat[j])){
+                for (int j = 0; j < i; j++) {
+                    if (Arrays.equals(curSamp, sampMat[j])) {
                         continue SAMP;
                     }
                 }
@@ -219,7 +219,7 @@ public class StabilityUtils {
         return sampMat;
     }
 
-    private static int[] subSampleIndices(int N, int subSize){
+    private static int[] subSampleIndices(int N, int subSize) {
         List<Integer> indices = new ArrayList<>(N);
         for (int i = 0; i < N; i++) {
             indices.add(i);
@@ -227,34 +227,35 @@ public class StabilityUtils {
 
         Collections.shuffle(indices);
         int[] samp = new int[subSize];
-        for(int i = 0; i < subSize; i++){
+        for (int i = 0; i < subSize; i++) {
             samp[i] = indices.get(i);
         }
         return samp;
     }
 
 
-
     //some tests...
-    public static void main(String[] args){
+    public static void main(String[] args) {
         String fn = "/Users/ajsedgewick/tetrad_mgm_runs/run2/networks/DAG_0_graph.txt";
         Graph trueGraph = GraphUtils.loadGraphTxt(new File(fn));
         DataSet ds = null;
         try {
             ds = MixedUtils.loadData("/Users/ajsedgewick/tetrad_mgm_runs/run2/data/", "DAG_0_data.txt");
-        } catch (Throwable t) {t.printStackTrace();}
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
 
         double lambda = .1;
         SearchWrappers.MGMWrapper mgm = new SearchWrappers.MGMWrapper(new double[]{lambda, lambda, lambda});
         long start = System.currentTimeMillis();
         DoubleMatrix2D xi = StabilitySearch(ds, mgm, 8, 200);
         long end = System.currentTimeMillis();
-        System.out.println("Not parallel: " + ((end-start)/1000.0));
+        System.out.println("Not parallel: " + ((end - start) / 1000.0));
 
         start = System.currentTimeMillis();
         DoubleMatrix2D xi2 = StabilitySearchPar(ds, mgm, 8, 200);
         end = System.currentTimeMillis();
-        System.out.println("Parallel: " + ((end-start)/1000.0));
+        System.out.println("Parallel: " + ((end - start) / 1000.0));
 
         System.out.println(xi);
         System.out.println(xi2);

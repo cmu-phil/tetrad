@@ -34,7 +34,7 @@ import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.
- *
+ * <p>
  * Borrows from the histogram stuff yet again
  *
  * @author Michael Freenor
@@ -88,7 +88,7 @@ class QQPlotEditorPanel extends JPanel {
                     Node node = (Node) e.getItem();
                     QQPlot newValue = new QQPlot(QQPlotEditorPanel.this.dataSet, node);
                     //numBarsSelector.setValue(newValue.getNumberOfCategories());
-                 //   numBarsSelector.setMax(getMaxCategoryValue(newValue));
+                    //   numBarsSelector.setMax(getMaxCategoryValue(newValue));
                     //System.out.println(node.getNode());
                     changeQQPlot(newValue);
                 }

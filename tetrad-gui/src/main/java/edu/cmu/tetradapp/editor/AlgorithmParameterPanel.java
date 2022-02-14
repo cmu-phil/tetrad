@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- *
  * Dec 4, 2017 5:05:42 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

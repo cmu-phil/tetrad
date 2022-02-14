@@ -66,10 +66,11 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
     private final GraphEditorOptionsPanel graphEditorOptionsPanel;
     private JPanel workbenchScrollsPanel = new JPanel();
-    private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo = new JComboBox<>();;
+    private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo = new JComboBox<>();
+    ;
 
     private final HelpSet helpSet;
- 
+
     /**
      * Holds the graphs.
      */
@@ -91,7 +92,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         if (wrapper == null) {
             throw new NullPointerException("The regression wrapper is required.");
         }
- 
+
         this.wrapper = wrapper;
 
         if (layoutGraph == null) {
@@ -112,13 +113,13 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         setLayout(new BorderLayout());
 
-       
+
         // Must before calling setSelectedGraphType()
         graphEditorOptionsPanel = new GraphEditorOptionsPanel(wrapper);
 
         // Select the graph type if graph wrapper has the type info
         setSelectedGraphType(wrapper.getType());
-        
+
         // Graph panel on right
         workbenchScrollsPanel = workbenchScrollsPanel(wrapper);
 
@@ -159,10 +160,10 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         });
 
         workbenchScrollsPanel.validate();
-        
+
         // Add to buttonPanel
         buttonPanel.add(executeButton);
-        
+
         // Info button added by Zhou to show edge types
         JLabel infoLabel = new JLabel("More information on graph edge types");
         infoLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -178,7 +179,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             ActionListener listener = new CSH.DisplayHelpFromSource(broker);
             listener.actionPerformed(e);
         });
-        
+
         // Add to buttonPanel
         buttonPanel.add(infoLabel);
         buttonPanel.add(infoBtn);
@@ -198,14 +199,14 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         // Add the save options - Zhou
         JMenu saveMenu = createSaveMenu(this);
         menuBar.add(saveMenu);
-        
+
         // Add the graph options
         JMenu graphMenu = createGraphMenu();
         menuBar.add(graphMenu);
-        
+
         return menuBar;
     }
-    
+
     // Graph type selection
     private void graphTypeSelection() {
         for (GraphSelectionWrapper.Type type : GraphSelectionWrapper.Type.values()) {
@@ -220,7 +221,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             setSelectedGraphType(selectedItem);
         });
     }
-    
+
     private void setSelectedGraphType(GraphSelectionWrapper.Type type) {
         if (type == GraphSelectionWrapper.Type.Subgraph) {
             graphEditorOptionsPanel.setNLabel("");
@@ -298,7 +299,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         List<JScrollPane> workbenchScrolls = new ArrayList<>();
 
         //workbenchScrolls.clear();
-        
+
         List<Graph> graphs = wrapper.getGraphs();
 
         for (int i = 0; i < graphs.size(); i++) {
@@ -334,16 +335,16 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 triplesAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());
             }
         });
-        
+
         // Show graph in each tabbed pane
         tabbedPaneGraphs(wrapper);
-        
+
         // Make the tabbedPane auto resize - Zhou
         workbenchScrollsPanel.setLayout(new BorderLayout());
         workbenchScrollsPanel.add(tabbedPane, BorderLayout.CENTER);
-        
+
         workbenchScrollsPanel.validate();
-        
+
         return workbenchScrollsPanel;
     }
 
@@ -392,11 +393,12 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
     /**
      * File save menu - Zhou
+     *
      * @param editable
      * @param comp
-     * @return 
+     * @return
      */
-    private JMenu createSaveMenu(GraphEditable editable) { 
+    private JMenu createSaveMenu(GraphEditable editable) {
         JMenu save = new JMenu("Save As");
 
         save.add(new SaveGraph(editable, "Graph XML...", SaveGraph.Type.xml));
@@ -734,9 +736,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             varManupBox.add(Box.createGlue());
 
             Box graphTypeBox = Box.createHorizontalBox();
-            
+
             graphTypeSelection();
-            
+
             graphTypeBox.add(new GraphTypePanel(atMost, equals, nField, nLabel, graphTypeCombo));
             graphTypeBox.add(Box.createGlue());
 
@@ -872,7 +874,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         private JButton createTextButton() {
             GraphSelectionTextInputAction action
                     = new GraphSelectionTextInputAction(GraphEditorOptionsPanel.this,
-                            wrapper, sourceList, selectedList);
+                    wrapper, sourceList, selectedList);
             JButton sort = new JButton(action);
             sort.setFont(sort.getFont().deriveFont(11f));
             sort.setMargin(new Insets(3, 3, 3, 3));
@@ -1203,7 +1205,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
          * @param selectedList
          */
         public GraphSelectionTextInputAction(JComponent component, GraphSelectionWrapper wrapper,
-                JList<Node> sourceList, JList<Node> selectedList) {
+                                             JList<Node> sourceList, JList<Node> selectedList) {
             super("Text Input...");
             this.component = component;
             this.wrapper = wrapper;

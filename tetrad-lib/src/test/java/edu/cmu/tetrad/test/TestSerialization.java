@@ -115,7 +115,7 @@ import static junit.framework.TestCase.fail;
  * <p>Or Joshua Block, Effective Java.</p>                                                                                     fd
  *
  * @author Joseph Ramsey
-// * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+ * // * @see edu.cmu.tetradapp.util.TetradSerializableUtils
  */
 public class TestSerialization {
 
@@ -138,8 +138,7 @@ public class TestSerialization {
             utils.serializeCurrentDirectory();
             utils.deserializeCurrentDirectory();
             utils.deserializeArchivedVersions();
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             System.out.println();
             e.printStackTrace();
             fail("TestSerialization.testLoadability() failed! Please fix " +

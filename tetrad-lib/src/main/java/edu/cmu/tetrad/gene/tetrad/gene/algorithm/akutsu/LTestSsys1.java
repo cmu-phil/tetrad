@@ -45,8 +45,7 @@ public class LTestSsys1 {
 
         try {
             s = new FileInputStream(fileName);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Cannot open file " + fileName);
             return;
         }
@@ -64,8 +63,7 @@ public class LTestSsys1 {
                 for (int j = 0; j < ntimes * ngenes; j++) {
                     cases[k - 1][j] = Double.parseDouble(st.nextToken("\t"));
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.out.println("Read error in " + fileName);
                 return;
             }
@@ -143,8 +141,7 @@ public class LTestSsys1 {
                         System.out.println("lnamlnb+" + g0 + "gmh0+" + g1 +
                                 "gmh1+" + g2 + "gmh2+" + g3 + "gmh3+" + g4 +
                                 "gmh4 > 0");
-                    }
-                    else if (deriv[t][g] < -0.35) {
+                    } else if (deriv[t][g] < -0.35) {
                         System.out.println("lnamlnb+" + g0 + "gmh0+" + g1 +
                                 "gmh1+" + g2 + "gmh2+" + g3 + "gmh3+" + g4 +
                                 "gmh4 < 0");

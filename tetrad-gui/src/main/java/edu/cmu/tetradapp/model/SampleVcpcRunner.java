@@ -36,10 +36,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
-* Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
-*
-* @author Joseph Ramsey
-*/
+ * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
+ *
+ * @author Joseph Ramsey
+ */
 public class SampleVcpcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
@@ -52,10 +52,10 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     private SemIm semIm;
 
 
-    private Set<Edge>sVcpcAdjacent;
-    private Set<Edge>sVcpcApparent;
-    private Set<Edge>sVcpcDefinite;
-    private List<Node>sVcpcNodes;
+    private Set<Edge> sVcpcAdjacent;
+    private Set<Edge> sVcpcApparent;
+    private Set<Edge> sVcpcDefinite;
+    private List<Node> sVcpcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -203,18 +203,17 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else if (knowledge.isDefaultToKnowledgeLayout()) {
+        } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
         setResultGraph(graph);
         setSvcpcFields(svcpc);
     }
-//
+
+    //
     public IndependenceTest getIndependenceTest() {
         Object dataModel = getDataModel();
 
@@ -225,10 +224,6 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
-
-
-
-
 
 
     public Graph getGraph() {
@@ -289,6 +284,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     public SemIm getSemIm() {
         return this.semIm;
     }
+
     public SemPm getSemPm() {
         return this.semPm;
     }

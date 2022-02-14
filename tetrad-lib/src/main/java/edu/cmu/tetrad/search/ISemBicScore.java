@@ -5,5 +5,6 @@ package edu.cmu.tetrad.search;
  */
 public interface ISemBicScore extends Score {
     void setPenaltyDiscount(double penaltyDiscount);
+
     double getPenaltyDiscount();
 }

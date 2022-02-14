@@ -107,14 +107,14 @@ public class TestGFci {
         int[][] counts = SearchGraphUtils.graphComparison(outGraph, truePag, null);
 
         int[][] expectedCounts = {
-            {0, 0, 0, 0, 0, 0},
-            {0, 4, 0, 0, 0, 1},
-            {0, 0, 3, 0, 0, 1},
-            {0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0},};
+                {0, 0, 0, 0, 0, 0},
+                {0, 4, 0, 0, 0, 1},
+                {0, 0, 3, 0, 0, 1},
+                {0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0},};
 
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));

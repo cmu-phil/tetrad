@@ -49,7 +49,7 @@ public class IonRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource, DoNotAddOldModel, IonInput {
     static final long serialVersionUID = 23L;
     private List<Graph> graphs;
-                                                                                         
+
     //=========================CONSTRUCTORS================================//
 
     public IonRunner(IonInput pag, Parameters params) {
@@ -163,6 +163,7 @@ public class IonRunner extends AbstractAlgorithmRunner
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph(), pag8.getGraph(),
                 pag9.getGraph(), pag10.getGraph());
     }
+
     public IonRunner(FciRunner fci, Parameters params) {
         super(params, fci.getResultGraph());
     }
@@ -202,7 +203,7 @@ public class IonRunner extends AbstractAlgorithmRunner
         ion.setAdjacencySearch(getParams().getBoolean("pruneByAdjacencies", true));
         ion.setPathLengthSearch(getParams().getBoolean("pruneByPathLength", true));
         ion.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-        
+
         List<Graph> graphs = ion.search();
 
         Collections.sort(graphs, new Comparator<Graph>() {

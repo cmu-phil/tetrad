@@ -250,8 +250,8 @@ public final class GFciMax implements GraphSearch {
 
     /**
      * @param completeRuleSetUsed set to true if Zhang's complete rule set
-     * should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
+     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
+     *                            should be used. False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
@@ -267,7 +267,7 @@ public final class GFciMax implements GraphSearch {
 
     /**
      * @param maxPathLength the maximum length of any discriminating path, or -1
-     * if unlimited.
+     *                      if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -324,13 +324,14 @@ public final class GFciMax implements GraphSearch {
     }
 
     //===========================================PRIVATE METHODS=======================================//
+
     /**
      * Orients according to background knowledge
      */
     private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {
         logger.log("info", "Starting BK Orientation.");
 
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext();) {
+        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
@@ -351,7 +352,7 @@ public final class GFciMax implements GraphSearch {
             logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext();) {
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph

@@ -52,7 +52,7 @@ public class FactorAnalysis {
     private Matrix residual;
 
     public FactorAnalysis(ICovarianceMatrix covarianceMatrix) {
-        this.covariance = new CovarianceMatrix( covarianceMatrix);
+        this.covariance = new CovarianceMatrix(covarianceMatrix);
     }
 
     public FactorAnalysis(DataSet dataSet) {

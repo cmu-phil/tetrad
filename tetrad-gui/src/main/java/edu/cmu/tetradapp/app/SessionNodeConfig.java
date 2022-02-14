@@ -52,10 +52,9 @@ public interface SessionNodeConfig {
 
 
     /**
+     * @param sessionNode - The CessionNode for the getModel node.
      * @return a newly created <code>ModelChooser</code> that should be utilized to select a model. If no
      * chooser was specified then the default chooser will be returned.
-     *
-     * @param sessionNode - The CessionNode for the getModel node.
      */
     ModelChooser getModelChooserInstance(SessionNode sessionNode);
 

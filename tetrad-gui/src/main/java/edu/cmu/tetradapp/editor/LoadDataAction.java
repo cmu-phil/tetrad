@@ -138,6 +138,7 @@ final class LoadDataAction extends AbstractAction {
     }
 
     //======================= private methods =========================//
+
     /**
      * States whether the data is empty.
      */

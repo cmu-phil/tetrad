@@ -83,14 +83,16 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 //
 //        execute();
 //    }
-    
+
     public void execute() {
         GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
         estIm = estimator.estimate(this.semPm, this.data);
         this.report = estimator.getReport();
     }
 
-    public static Node serializableInstance() {return new GraphNode("X");}
+    public static Node serializableInstance() {
+        return new GraphNode("X");
+    }
 
 
     //============================PUBLIC METHODS=========================//
@@ -139,26 +141,26 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 
     //======================= Private methods ====================//
 
-    private void log(GeneralizedSemIm im){
+    private void log(GeneralizedSemIm im) {
         TetradLogger.getInstance().log("info", "Generalized SEM IM");
         TetradLogger.getInstance().log("im", im.toString());
     }
 
-	public Graph getSourceGraph() {
-		return getGraph();
-	}
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
 
     public Graph getResultGraph() {
         return getGraph();
     }
 
     public List<String> getVariableNames() {
-		return getGraph().getNodeNames();
-	}
+        return getGraph().getNodeNames();
+    }
 
-	public List<Node> getVariables() {
-		return getGraph().getNodes();
-	}
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
 
 
     /**

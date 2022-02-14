@@ -22,7 +22,7 @@ import java.lang.annotation.*;
 
 /**
  * Data are normal distributed.
- *
+ * <p>
  * Sep 19, 2017 12:03:36 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

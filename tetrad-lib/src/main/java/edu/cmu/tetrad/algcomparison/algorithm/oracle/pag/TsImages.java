@@ -61,15 +61,15 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet dataSet = (DataSet) dataModel;
             TsGFci search;
-            if(knowledge != null) {
-        		dataSet.setKnowledge(knowledge);
-        	}
+            if (knowledge != null) {
+                dataSet.setKnowledge(knowledge);
+            }
             Score score1 = score.getScore(dataSet, parameters);
             IndependenceTest test = new IndTestScore(score1);
             search = new TsGFci(test, score1);
             search.setKnowledge(dataSet.getKnowledge());
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            
+
             return search.search();
         } else {
             TsImages algorithm = new TsImages(score);
@@ -80,7 +80,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -94,7 +94,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -109,7 +109,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
     public String getDescription() {
         return "tsFCI (Time Series Fast Causal Inference) using " + score.getDescription()
                 + (initialGraph != null ? " with initial graph from "
-                        + initialGraph.getDescription() : "");
+                + initialGraph.getDescription() : "");
     }
 
     @Override
@@ -173,7 +173,7 @@ public class TsImages implements Algorithm, HasKnowledge, MultiDataSetAlgorithm,
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
-    
+
     @Override
     public ScoreWrapper getScoreWrapper() {
         return score;

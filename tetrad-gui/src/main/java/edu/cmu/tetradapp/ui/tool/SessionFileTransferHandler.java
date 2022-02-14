@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 /**
- *
  * Dec 6, 2017 1:02:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -124,7 +123,7 @@ public class SessionFileTransferHandler extends TransferHandler {
 
                         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                                 "Could not load this session file into Tetrad " + Version.currentViewableVersion() + "! \n" +
-                                "The session was saved by Tetrad " + version + " on " +  df.format(date));
+                                        "The session was saved by Tetrad " + version + " on " + df.format(date));
 
                         return false;
                     }

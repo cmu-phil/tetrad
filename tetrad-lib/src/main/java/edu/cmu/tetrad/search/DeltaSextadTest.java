@@ -165,7 +165,7 @@ public class DeltaSextadTest {
 
                     // General.
                     double rr2 = r(e, f, g, h) + 0.25 * r(e, f) * r(g, h) *
-                            (r(e, e, g, g) * r(f, f, g, g) + r(e                        , e, h, h) + r(f, f, h, h))
+                            (r(e, e, g, g) * r(f, f, g, g) + r(e, e, h, h) + r(f, f, h, h))
                             - 0.5 * r(e, f) * (r(e, e, g, h) + r(f, f, g, h))
                             - 0.5 * r(g, h) * (r(e, f, g, g) + r(e, f, h, h));
 
@@ -228,7 +228,7 @@ public class DeltaSextadTest {
         return chisq;
     }
 
-     /**
+    /**
      * If using a covariance matrix or a correlation matrix, just returns the lookups. Otherwise calculates the
      * covariance.
      */

@@ -29,8 +29,8 @@ import cern.colt.matrix.DoubleMatrix1D;
  * necessarily differentiable (i.e. non-smooth) and has a proximal operator prox_t(x) = argmin_z 1/(2t) norm2(x-z)^2 +
  * h(z) has a solution for any t > 0. Typically g(x) will be a likelihood, and h(x) is a penalty term (as in l_1 in the
  * lasso)
- *
- *
+ * <p>
+ * <p>
  * Created by ajsedgewick on 8/4/15.
  */
 public abstract class ConvexProximal {
@@ -55,11 +55,11 @@ public abstract class ConvexProximal {
     /**
      * Calculate value of g(X) and gradient of g(X) at the same time for efficiency reasons.
      *
-     * @param X input Vector
+     * @param X    input Vector
      * @param Xout gradient of g(X)
      * @return value of g(X)
      */
-    public double smooth(DoubleMatrix1D X, DoubleMatrix1D Xout){
+    public double smooth(DoubleMatrix1D X, DoubleMatrix1D Xout) {
         Xout.assign(smoothGradient(X));
         return smoothValue(X);
     }
@@ -74,7 +74,7 @@ public abstract class ConvexProximal {
 
     /**
      * A proximal operator is the solution to this optimization problem:
-     *     prox_t(x) = argmin_z \frac{1}{2t} \|x-z\|^2_2 + h(x)
+     * prox_t(x) = argmin_z \frac{1}{2t} \|x-z\|^2_2 + h(x)
      *
      * @param t positive parameter for prox operator
      * @param X input vector
@@ -85,13 +85,13 @@ public abstract class ConvexProximal {
     /**
      * Calculate value of h(X) and proxOperator of h(X) at the same time for efficiency reasons.
      *
-     * @param t positive parameter for prox operator
-     * @param X input vector
+     * @param t    positive parameter for prox operator
+     * @param X    input vector
      * @param Xout vector solution to prox_t(X)
      * @return value of h(X)
      */
-    public double nonSmooth(double t, DoubleMatrix1D X, DoubleMatrix1D Xout){
-        Xout.assign(proximalOperator(t,X));
+    public double nonSmooth(double t, DoubleMatrix1D X, DoubleMatrix1D Xout) {
+        Xout.assign(proximalOperator(t, X));
         return nonSmoothValue(X);
     }
 

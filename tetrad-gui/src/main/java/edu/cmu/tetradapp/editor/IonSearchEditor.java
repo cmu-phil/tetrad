@@ -62,7 +62,7 @@ import java.util.Map;
 public class IonSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable {
 
-//    private JTabbedPane tabbedPane;
+    //    private JTabbedPane tabbedPane;
     private IonDisplay ionDisplay;
 
     //=========================CONSTRUCTORS============================//
@@ -81,6 +81,7 @@ public class IonSearchEditor extends AbstractSearchEditor
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
+
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }
@@ -271,8 +272,7 @@ public class IonSearchEditor extends AbstractSearchEditor
                             getExecuteButton().setEnabled(true);
                             return;
                         }
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
@@ -467,14 +467,14 @@ public class IonSearchEditor extends AbstractSearchEditor
 //                            editorWindow.setVisible(true);
 //                        }
 //                        else {
-                            PatternDisplay display = new PatternDisplay(graph);
-                            GraphWorkbench workbench = getWorkbench();
+                        PatternDisplay display = new PatternDisplay(graph);
+                        GraphWorkbench workbench = getWorkbench();
 
-                            EditorWindow editorWindow =
-                                    new EditorWindow(display, "Independence Facts",
-                                            "Close", false, workbench);
-                            DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                            editorWindow.setVisible(true);
+                        EditorWindow editorWindow =
+                                new EditorWindow(display, "Independence Facts",
+                                        "Close", false, workbench);
+                        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+                        editorWindow.setVisible(true);
 //                        }
                     }
                 };

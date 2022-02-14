@@ -472,8 +472,7 @@ public class IndependenceFactsEditor extends JPanel {
                     } else {
                         setBackground(table.getBackground());
                     }
-                }
-                else {
+                } else {
                     setBackground(table.getBackground());
                 }
             }

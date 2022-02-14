@@ -63,27 +63,21 @@ public class ScatterPlotOld {
             uses that instead.
          */
 
-        if(xVariable != null)
+        if (xVariable != null)
             this.xVariable = xVariable;
-        else
-        {
-            for(int i = 0; i < dataSet.getNumColumns(); i++)
-            {
-                if (dataSet.getVariable(i) instanceof ContinuousVariable)
-                {
+        else {
+            for (int i = 0; i < dataSet.getNumColumns(); i++) {
+                if (dataSet.getVariable(i) instanceof ContinuousVariable) {
                     this.xVariable = (ContinuousVariable) dataSet.getVariable(i);
                     break;
                 }
             }
         }
-        if(yVariable != null)
+        if (yVariable != null)
             this.setyVariable(yVariable);
-        else
-        {
-            for(int i = 0; i < dataSet.getNumColumns(); i++)
-            {
-                if (dataSet.getVariable(i) instanceof ContinuousVariable)
-                {
+        else {
+            for (int i = 0; i < dataSet.getNumColumns(); i++) {
+                if (dataSet.getVariable(i) instanceof ContinuousVariable) {
                     this.setyVariable((ContinuousVariable) dataSet.getVariable(i));
                     break;
                 }
@@ -107,31 +101,30 @@ public class ScatterPlotOld {
         yMin = Double.MAX_VALUE;
         yMax = Double.MIN_VALUE;
 
-        for(int i = 0; i < dataSet.getNumRows(); i++)
-        {
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
             getyData()[i] = dataSet.getDouble(i, yIndex);
             getxData()[i] = dataSet.getDouble(i, xIndex);
 
-            if(getyData()[i] < yMin) yMin = getyData()[i];
-            if(getyData()[i] > yMax) yMax = getyData()[i];
-            if(getxData()[i] < xMin) xMin = getxData()[i];
-            if(getxData()[i] > xMax) xMax = getxData()[i];
+            if (getyData()[i] < yMin) yMin = getyData()[i];
+            if (getyData()[i] > yMax) yMax = getyData()[i];
+            if (getxData()[i] < xMin) xMin = getxData()[i];
+            if (getxData()[i] > xMax) xMax = getxData()[i];
         }
-        
+
         this.setDataSet(dataSet);
         setIndexSet(new Vector());
         setComplementIndexSet(new Vector());
-        for(int i = 0; i < dataSet.getNumRows(); i++)
+        for (int i = 0; i < dataSet.getNumRows(); i++)
             getIndexSet().add(i);
     }
 
     //==================================== Public Methods ====================================//
 
-     /**
+    /**
      * @return the max sample value between the y and x variables.
      */
     public double getMaxSample() {
-        if(xMax > yMax) return xMax;
+        if (xMax > yMax) return xMax;
         else return yMax;
     }
 
@@ -140,27 +133,23 @@ public class ScatterPlotOld {
      * @return the min sample value.
      */
     public double getMinSample() {
-        if(xMin < yMin) return xMin;
+        if (xMin < yMin) return xMin;
         else return yMin;
     }
 
-    public ContinuousVariable getXVariable()
-    {
+    public ContinuousVariable getXVariable() {
         return xVariable;
     }
 
-    public ContinuousVariable getYVariable()
-    {
+    public ContinuousVariable getYVariable() {
         return getyVariable();
     }
 
-    public double[] getYData()
-    {
+    public double[] getYData() {
         return getyData();
     }
 
-    public double[] getXData()
-    {
+    public double[] getXData() {
         return getxData();
     }
 
@@ -196,7 +185,7 @@ public class ScatterPlotOld {
      * ScatterPlot is drawn.  This is used in the case of adding conditional
      * variables, where we only want to view the y/x variables plotted against
      * each other when some other set of variables fall within particular ranges.
-     *
+     * <p>
      * When there are no conditional variables in use, the indexSet contains
      * numbers (0, ..., (n - 1)) (all of the indices).
      */

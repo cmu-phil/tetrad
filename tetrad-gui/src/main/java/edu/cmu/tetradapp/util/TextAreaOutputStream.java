@@ -29,9 +29,9 @@ import java.io.OutputStream;
 /**
  * An output stream to pipe stuff written to it directly to a JTextArea.
  *
- * @author  Joseph Ramsey
+ * @author Joseph Ramsey
  */
-public class TextAreaOutputStream extends OutputStream implements TetradLogger.LogDisplayOutputStream{
+public class TextAreaOutputStream extends OutputStream implements TetradLogger.LogDisplayOutputStream {
 
     /**
      * The text area written to.
@@ -59,14 +59,14 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      * @param textArea The text area written to.
      */
     public TextAreaOutputStream(JTextArea textArea) {
-        this.textArea = textArea;        
+        this.textArea = textArea;
         lengthWritten = textArea.getText().length();
     }
 
     /**
      * Writes the specified byte to this byte array output stream.
      *
-     * @param   b   the byte to be written.
+     * @param b the byte to be written.
      */
     public synchronized void write(int b) {
         if (buf.length() > 5000) return;
@@ -90,8 +90,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }
-            else {
+            } else {
                 textArea.append(buf.toString());
 //            textArea.setText(buf.toString());
                 lengthWritten = lengthWritten + buf.length();
@@ -112,7 +111,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
     }
 
 
-    public void reset(){
+    public void reset() {
         this.textArea.setText("");
         this.lengthWritten = 0;
     }
@@ -120,6 +119,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
 
     /**
      * The total string length written to the text area.
+     *
      * @return The total string length written to the text area.
      */
     public int getLengthWritten() {

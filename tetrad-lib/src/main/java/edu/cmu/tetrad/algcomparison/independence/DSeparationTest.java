@@ -32,7 +32,7 @@ public class DSeparationTest implements IndependenceWrapper {
     public DSeparationTest() {
 
     }
-    
+
     public DSeparationTest(Graph graph) {
         this.graph = graph;
     }
@@ -64,5 +64,5 @@ public class DSeparationTest implements IndependenceWrapper {
     public void setGraph(Graph graph) {
         this.graph = graph;
     }
-    
+
 }

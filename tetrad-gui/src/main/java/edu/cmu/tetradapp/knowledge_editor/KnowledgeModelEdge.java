@@ -64,14 +64,14 @@ public class KnowledgeModelEdge extends Edge
      * @param type  one of FORBIDDEN or REQUIRED.           _
      */
     public KnowledgeModelEdge(KnowledgeModelNode node1,
-            KnowledgeModelNode node2, int type) {
+                              KnowledgeModelNode node2, int type) {
         super(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
 
         if (node1 == null || node2 == null) {
             throw new NullPointerException();
         }
-        if(this.type != FORBIDDEN_EXPLICITLY && this.type != FORBIDDEN_BY_TIERS
-                && this.type != REQUIRED && this.type != FORBIDDEN_BY_GROUPS && this.type != REQUIRED_BY_GROUPS){
+        if (this.type != FORBIDDEN_EXPLICITLY && this.type != FORBIDDEN_BY_TIERS
+                && this.type != REQUIRED && this.type != FORBIDDEN_BY_GROUPS && this.type != REQUIRED_BY_GROUPS) {
             throw new IllegalArgumentException("The given type is not known");
         }
 

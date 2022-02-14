@@ -145,14 +145,13 @@ class ExpressionEditor extends JPanel {
 
         add(box);
 
-        
+
     }
 
     //============================ Public Method ======================================//
 
     /**
      * @return the expression.
-     *
      * @throws java.text.ParseException - If the values in the editor are not well-formed.
      */
     public Equation getEquation() throws ParseException {

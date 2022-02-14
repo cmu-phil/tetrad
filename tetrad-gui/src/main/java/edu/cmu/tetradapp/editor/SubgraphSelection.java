@@ -72,8 +72,7 @@ class SubgraphSelection implements Transferable {
         Object result;
         try {
             result = new MarshalledObject(graphElements).get();
-        }
-        catch (Exception e1) {
+        } catch (Exception e1) {
             e1.printStackTrace();
             throw new IllegalStateException("Could not clone.");
         }
@@ -81,11 +80,10 @@ class SubgraphSelection implements Transferable {
     }
 
     /**
+     * @param flavor the requested flavor for the data
      * @return an object which represents the data to be transferred.  The class
      * of the object returned is defined by the representation class of the
      * flavor.
-     *
-     * @param flavor the requested flavor for the data
      * @throws IOException                if the data is no longer available in
      *                                    the requested flavor.
      * @throws UnsupportedFlavorException if the requested data flavor is not
@@ -104,10 +102,9 @@ class SubgraphSelection implements Transferable {
     }
 
     /**
+     * @param flavor the requested flavor for the data
      * @return whether or not the specified data flavor is supported for this
      * object.
-     *
-     * @param flavor the requested flavor for the data
      */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);

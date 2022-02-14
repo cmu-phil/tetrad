@@ -47,7 +47,7 @@ public interface DesktopControllable {
     void closeEmptySessions();
 
     void putMetadata(SessionWrapperIndirectRef sessionWrapper,
-            TetradMetadataIndirectRef metadata);
+                     TetradMetadataIndirectRef metadata);
 
     TetradMetadataIndirectRef getTetradMetadata(
             SessionWrapperIndirectRef sessionWrapper);

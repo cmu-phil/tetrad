@@ -56,7 +56,7 @@ class HistogramAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
-        if(dataSet == null || dataSet.getNumColumns() == 0){
+        if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot display a histogram for an empty data set.");
             return;
         }
@@ -67,11 +67,11 @@ class HistogramAction extends AbstractAction {
         if (selected != null && selected.length >= 1) {
 
             // warn user if they selected more than 10
-            if(selected.length > 10){
+            if (selected.length > 10) {
                 int option = JOptionPane.showConfirmDialog(findOwner(), "You are about to open " + selected.length +
-                " histograms, are you sure you want to proceed?", "Histogram Warning", JOptionPane.YES_NO_OPTION);
+                        " histograms, are you sure you want to proceed?", "Histogram Warning", JOptionPane.YES_NO_OPTION);
                 // if selected no, return
-                if(option == JOptionPane.NO_OPTION){
+                if (option == JOptionPane.NO_OPTION) {
                     return;
                 }
             }
@@ -112,8 +112,8 @@ class HistogramAction extends AbstractAction {
 
         int x = (int) (150 * Math.cos(index * 15 * (Math.PI / 180)));
         int y = (int) (150 * Math.sin(index * 15 * (Math.PI / 180)));
-        x += (dim.width - bounds.width)/2;
-        y += (dim.height - bounds.height)/2;
+        x += (dim.width - bounds.width) / 2;
+        y += (dim.height - bounds.height) / 2;
         dialog.setLocation(x, y);
     }
 

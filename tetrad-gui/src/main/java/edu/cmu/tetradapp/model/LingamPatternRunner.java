@@ -154,7 +154,7 @@ public class LingamPatternRunner extends AbstractAlgorithmRunner implements
             list.add(source);
 
             graph = multiLingamPattern(list, pattern);
- 
+
         }
 
 

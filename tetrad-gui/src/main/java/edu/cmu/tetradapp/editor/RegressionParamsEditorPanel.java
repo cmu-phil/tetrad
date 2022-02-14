@@ -92,7 +92,7 @@ class RegressionParamsEditorPanel extends JPanel {
      * <code>DataModel</code> that should be used.
      */
     public RegressionParamsEditorPanel(RegressionModel regressionModel, Parameters parameters,
-            DataModel model, boolean logistic) {
+                                       DataModel model, boolean logistic) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         if (parameters == null) {
             throw new NullPointerException("The given params must not be null");
@@ -409,6 +409,7 @@ class RegressionParamsEditorPanel extends JPanel {
     }
 
     //========================== Inner classes (a lot of'em) =========================================//
+
     /**
      * A renderer that adds info about whether a variable is binary or not.
      */

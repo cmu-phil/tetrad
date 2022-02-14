@@ -260,7 +260,7 @@ public class MixedDataBox implements DataBox {
 
         int row_num = rows.length;
         int col_num = cols.length;
-        
+
         DataBox _dataBox = new MixedDataBox(newVars, row_num);
 
         for (int i = 0; i < row_num; i++) {
@@ -271,7 +271,7 @@ public class MixedDataBox implements DataBox {
 
         return _dataBox;
     }
-    
+
     public double[][] getContinuousData() {
         return continuousData;
     }

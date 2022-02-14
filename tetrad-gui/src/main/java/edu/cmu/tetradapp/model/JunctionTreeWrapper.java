@@ -30,7 +30,6 @@ import edu.cmu.tetrad.util.Unmarshallable;
 import java.text.NumberFormat;
 
 /**
- *
  * Jan 21, 2020 1:27:44 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

@@ -136,15 +136,16 @@ public final class MlBayesIm implements BayesIm {
     private double[][][] probs;
 
     //===============================CONSTRUCTORS=========================//
+
     /**
      * Constructs a new BayesIm from the given BayesPm, initializing all values
      * as Double.NaN ("?").
      *
      * @param bayesPm the given Bayes PM. Carries with it the underlying graph
-     * model.
+     *                model.
      * @throws IllegalArgumentException if the array of nodes provided is not a
-     * permutation of the nodes contained in the bayes parametric model
-     * provided.
+     *                                  permutation of the nodes contained in the bayes parametric model
+     *                                  provided.
      */
     public MlBayesIm(BayesPm bayesPm) throws IllegalArgumentException {
         this(bayesPm, null, MANUAL);
@@ -156,12 +157,12 @@ public final class MlBayesIm implements BayesIm {
      * set to Double.NaN ("?") in each row; if initialized randomly, all values
      * will distributed randomly in each row.
      *
-     * @param bayesPm the given Bayes PM. Carries with it the underlying graph
-     * model.
+     * @param bayesPm              the given Bayes PM. Carries with it the underlying graph
+     *                             model.
      * @param initializationMethod either MANUAL or RANDOM.
      * @throws IllegalArgumentException if the array of nodes provided is not a
-     * permutation of the nodes contained in the bayes parametric model
-     * provided.
+     *                                  permutation of the nodes contained in the bayes parametric model
+     *                                  provided.
      */
     public MlBayesIm(BayesPm bayesPm, int initializationMethod)
             throws IllegalArgumentException {
@@ -176,17 +177,17 @@ public final class MlBayesIm implements BayesIm {
      * row; if initialized randomly, all values that cannot be retrieved from
      * oldBayesIm will distributed randomly in each such row.
      *
-     * @param bayesPm the given Bayes PM. Carries with it the underlying graph
-     * model.
-     * @param oldBayesIm an already-constructed BayesIm whose values may be used
-     * where possible to initialize this BayesIm. May be null.
+     * @param bayesPm              the given Bayes PM. Carries with it the underlying graph
+     *                             model.
+     * @param oldBayesIm           an already-constructed BayesIm whose values may be used
+     *                             where possible to initialize this BayesIm. May be null.
      * @param initializationMethod either MANUAL or RANDOM.
      * @throws IllegalArgumentException if the array of nodes provided is not a
-     * permutation of the nodes contained in the bayes parametric model
-     * provided.
+     *                                  permutation of the nodes contained in the bayes parametric model
+     *                                  provided.
      */
     public MlBayesIm(BayesPm bayesPm, BayesIm oldBayesIm,
-            int initializationMethod) throws IllegalArgumentException {
+                     int initializationMethod) throws IllegalArgumentException {
         if (bayesPm == null) {
             throw new NullPointerException("BayesPm must not be null.");
         }
@@ -238,6 +239,7 @@ public final class MlBayesIm implements BayesIm {
     }
 
     //===============================PUBLIC METHODS========================//
+
     /**
      * @return this PM.
      */
@@ -381,7 +383,7 @@ public final class MlBayesIm implements BayesIm {
 
     /**
      * @param nodeIndex the index of the node.
-     * @param rowIndex the index of the row in question.
+     * @param rowIndex  the index of the row in question.
      * @return the array representing the combination of parent values for this
      * row.
      * @see #getNodeIndex
@@ -409,10 +411,10 @@ public final class MlBayesIm implements BayesIm {
 
     /**
      * @param nodeIndex the index of the node in question.
-     * @param rowIndex the row in the table for this for node which represents
-     * the combination of parent values in question.
-     * @param colIndex the column in the table for this node which represents
-     * the value of the node in question.
+     * @param rowIndex  the row in the table for this for node which represents
+     *                  the combination of parent values in question.
+     * @param colIndex  the column in the table for this node which represents
+     *                  the value of the node in question.
      * @return the probability stored for this parameter.
      * @see #getNodeIndex
      * @see #getRowIndex
@@ -490,9 +492,9 @@ public final class MlBayesIm implements BayesIm {
      * represent column index, the column in the table for this node which
      * represents the value of the node in question.
      *
-     * @param nodeIndex the index of the node in question.
+     * @param nodeIndex  the index of the node in question.
      * @param probMatrix a matrix containing probabilities of a node along with
-     * its parents
+     *                   its parents
      */
     @Override
     public void setProbability(int nodeIndex, double[][] probMatrix) {
@@ -512,15 +514,15 @@ public final class MlBayesIm implements BayesIm {
      * indicated is the combination indicated by rowIndex.
      *
      * @param nodeIndex the index of the node in question.
-     * @param rowIndex the row in the table for this for node which represents
-     * the combination of parent values in question.
-     * @param colIndex the column in the table for this node which represents
-     * the value of the node in question.
-     * @param value the desired probability to be set.
+     * @param rowIndex  the row in the table for this for node which represents
+     *                  the combination of parent values in question.
+     * @param colIndex  the column in the table for this node which represents
+     *                  the value of the node in question.
+     * @param value     the desired probability to be set.
      * @see #getProbability
      */
     public void setProbability(int nodeIndex, int rowIndex, int colIndex,
-            double value) {
+                               double value) {
         if (colIndex >= getNumColumns(nodeIndex)) {
             throw new IllegalArgumentException("Column out of range: "
                     + colIndex + " >= " + getNumColumns(nodeIndex));
@@ -549,7 +551,7 @@ public final class MlBayesIm implements BayesIm {
      * add to 1.
      *
      * @param nodeIndex the node for the table that this row belongs to.
-     * @param rowIndex the index of the row.
+     * @param rowIndex  the index of the row.
      */
     public void clearRow(int nodeIndex, int rowIndex) {
         for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
@@ -562,7 +564,7 @@ public final class MlBayesIm implements BayesIm {
      * add to 1.
      *
      * @param nodeIndex the node for the table that this row belongs to.
-     * @param rowIndex the index of the row.
+     * @param rowIndex  the index of the row.
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
         final int size = getNumColumns(nodeIndex);
@@ -618,7 +620,7 @@ public final class MlBayesIm implements BayesIm {
      * Double.NaN value in it.
      *
      * @param nodeIndex the node for the table whose incomplete rows are to be
-     * randomized.
+     *                  randomized.
      */
     public void randomizeIncompleteRows(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
@@ -640,7 +642,7 @@ public final class MlBayesIm implements BayesIm {
 //        randomizeTable4(nodeIndex);
     }
 
-//    private void randomizeTable2(int nodeIndex) {
+    //    private void randomizeTable2(int nodeIndex) {
 //        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
 //            if (isIncomplete(nodeIndex, rowIndex)) {
 //                break;
@@ -899,6 +901,7 @@ public final class MlBayesIm implements BayesIm {
 //        }
 //        return norm;
 //    }
+
     /**
      * Randomizes every row in the table for the given node index.
      *
@@ -1057,9 +1060,9 @@ public final class MlBayesIm implements BayesIm {
      * Simulates a sample with the given sample size.
      *
      * @param sampleSize the sample size.
-     * @param seed the random number generator seed allows you recreate the
-     * simulated data by passing in the same seed (so you don't have to store
-     * the sample data
+     * @param seed       the random number generator seed allows you recreate the
+     *                   simulated data by passing in the same seed (so you don't have to store
+     *                   the sample data
      * @return the simulated sample as a DataSet.
      */
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
@@ -1375,6 +1378,7 @@ public final class MlBayesIm implements BayesIm {
     }
 
     //=============================PRIVATE METHODS=======================//
+
     /**
      * This method initializes the probability tables for all of the nodes in
      * the Bayes net.
@@ -1396,7 +1400,7 @@ public final class MlBayesIm implements BayesIm {
      * This method initializes the node indicated.
      */
     private void initializeNode(int nodeIndex, BayesIm oldBayesIm,
-            int initializationMethod) {
+                                int initializationMethod) {
         Node node = nodes[nodeIndex];
 
         // Set up parents array.  Should store the parents of
@@ -1429,10 +1433,10 @@ public final class MlBayesIm implements BayesIm {
             if (numRows > 1000000 /* Integer.MAX_VALUE / dim*/) {
                 throw new IllegalArgumentException(
                         "The number of rows in the "
-                        + "conditional probability table for "
-                        + nodes[nodeIndex]
-                        + " is greater than 1,000,000 and cannot be "
-                        + "represented.");
+                                + "conditional probability table for "
+                                + nodes[nodeIndex]
+                                + " is greater than 1,000,000 and cannot be "
+                                + "represented.");
             }
 
             numRows *= dim;
@@ -1459,7 +1463,7 @@ public final class MlBayesIm implements BayesIm {
     }
 
     private void overwriteRow(int nodeIndex, int rowIndex,
-            int initializationMethod) {
+                              int initializationMethod) {
         if (initializationMethod == RANDOM) {
             randomizeRow(nodeIndex, rowIndex);
         } else if (initializationMethod == MANUAL) {
@@ -1504,7 +1508,7 @@ public final class MlBayesIm implements BayesIm {
         return row;
     }
 
-//    private static double[] getRandomWeights2(int size) {
+    //    private static double[] getRandomWeights2(int size) {
 //        assert size >= 0;
 //
 //        double[] row = new double[size];
@@ -1572,7 +1576,7 @@ public final class MlBayesIm implements BayesIm {
      * This method initializes the node indicated.
      */
     private void retainOldRowIfPossible(int nodeIndex, int rowIndex,
-            BayesIm oldBayesIm, int initializationMethod) {
+                                        BayesIm oldBayesIm, int initializationMethod) {
 //        Set<Node> newParents = new HashSet<Node>(getBayesPm().getDag().getParents(node));
 //        Set<Node> oldParents = new HashSet<Node>(oldBayesIm.getBayesPm().getDag().getParents(node));
 //        int method = newParents == oldParents ? initializationMethod : MlBayesIm.MANUAL;
@@ -1613,6 +1617,7 @@ public final class MlBayesIm implements BayesIm {
 //
 //        return true;
 //    }
+
     /**
      * @return the unique rowIndex in the old BayesIm for the given node that is
      * compatible with the given rowIndex in the new BayesIm for that node, if
@@ -1625,7 +1630,7 @@ public final class MlBayesIm implements BayesIm {
      * -1 is returned.
      */
     private int getUniqueCompatibleOldRow(int nodeIndex, int rowIndex,
-            BayesIm oldBayesIm) {
+                                          BayesIm oldBayesIm) {
         int oldNodeIndex = getCorrespondingNodeIndex(nodeIndex, oldBayesIm);
         int oldNumParents = oldBayesIm.getNumParents(oldNodeIndex);
 
@@ -1720,7 +1725,7 @@ public final class MlBayesIm implements BayesIm {
     }
 
     private void copyValuesFromOldToNew(int oldNodeIndex, int oldRowIndex,
-            int nodeIndex, int rowIndex, BayesIm oldBayesIm) {
+                                        int nodeIndex, int rowIndex, BayesIm oldBayesIm) {
         if (getNumColumns(nodeIndex) != oldBayesIm.getNumColumns(oldNodeIndex)) {
             throw new IllegalArgumentException("It's only possible to copy "
                     + "one row of probability values to another in a Bayes IM "

@@ -612,7 +612,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * rectangles but doesn't always...)
      *
      * @return a point pair which represents the connecting line segment through
-     *         the center of each rectangle touching the edge of each.
+     * the center of each rectangle touching the edge of each.
      */
     private PointPair calculateEdge(Component comp1, Component comp2) {
         Rectangle r1 = comp1.getBounds();
@@ -802,7 +802,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @param pp the point pair representing the line segment of the edge.
      * @return the Polygon representing the sleeve, or null if no such Polygon
-     *         exists (because, e.g., one of the endpoints is null).
+     * exists (because, e.g., one of the endpoints is null).
      */
     private static Polygon getSleeve(PointPair pp) {
         if ((pp == null) || (pp.getFrom() == null) || (pp.getTo() == null)) {
@@ -979,6 +979,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Unimplemented.
+     *
      * @throws UnsupportedOperationException
      */
     public void setLineColor(Color lineColor) {
@@ -995,6 +996,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Unimplemented.
+     *
      * @throws UnsupportedOperationException
      */
     public Color getSelectedColor() {
@@ -1003,6 +1005,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Unimplemented.
+     *
      * @throws UnsupportedOperationException
      */
     public void setSelectedColor(Color selectedColor) {
@@ -1019,6 +1022,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Unimplemented.
+     *
      * @throws UnsupportedOperationException
      */
     public float getStrokeWidth() {
@@ -1027,6 +1031,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Unimplemented.
+     *
      * @throws UnsupportedOperationException
      */
     public void setStrokeWidth(float strokeWidth) {

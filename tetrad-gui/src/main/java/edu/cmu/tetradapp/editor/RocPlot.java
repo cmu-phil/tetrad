@@ -233,10 +233,9 @@ class RocPlot extends JPanel implements PropertyChangeListener {
     }
 
     /**
+     * @param x the value of x (between pi_c and 1.0).
      * @return a pixel x position which is the proportion x / (range from pi_e
      * to 1.0) from the left side of the unit square to the right.
-     *
-     * @param x the value of x (between pi_c and 1.0).
      */
     private int getXPos(double x) {
         Rectangle r = getPlotRect();
@@ -245,10 +244,9 @@ class RocPlot extends JPanel implements PropertyChangeListener {
     }
 
     /**
+     * @param y a value between 0.0 and 1.0, inclusive.
      * @return a pixel y position which is the proportion x / 1.0 from the
      * bottom of the unit square to the top.
-     *
-     * @param y a value between 0.0 and 1.0, inclusive.
      */
     private int getYPos(double y) {
         Rectangle r = getPlotRect();

@@ -506,7 +506,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
         if (depth < 0) {
             depth = 1000;
         }
-        
+
         this.depth = depth;
     }
 

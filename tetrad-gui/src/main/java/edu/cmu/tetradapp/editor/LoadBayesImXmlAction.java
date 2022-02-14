@@ -90,12 +90,10 @@ class LoadBayesImXmlAction extends AbstractAction {
 
             bayesImWrapper.setBayesIm(bayesIm);
             bayesImEditor.getBayesIm(bayesIm);
-        }
-        catch (ParsingException e2) {
+        } catch (ParsingException e2) {
             e2.printStackTrace();
             throw new RuntimeException("Had trouble parsing that...");
-        }
-        catch (IOException e2) {
+        } catch (IOException e2) {
             e2.printStackTrace();
             throw new RuntimeException("Had trouble reading the file...");
         }
@@ -119,8 +117,7 @@ class LoadBayesImXmlAction extends AbstractAction {
 
         try {
             serializer.write(document);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

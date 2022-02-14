@@ -58,7 +58,7 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
     private boolean enableEditing = true;
 
     public EMBayesEstimatorEditorWizard(BayesIm bayesIm,
-            GraphWorkbench workbench) {
+                                        GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }

@@ -29,7 +29,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- *
  * Nov 30, 2017 4:20:43 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -38,14 +37,14 @@ public final class AlgorithmModels {
 
     private static final AlgorithmModels INSTANCE = new AlgorithmModels();
 
-    private  List<AlgorithmModel> models;
-    private  Map<AlgType, List<AlgorithmModel>> modelMap;
+    private List<AlgorithmModel> models;
+    private Map<AlgType, List<AlgorithmModel>> modelMap;
 
     private AlgorithmModels() {
         refreshModels();
     }
 
-    private  void refreshModels() {
+    private void refreshModels() {
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
         List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
                 ? algoAnno.getAnnotatedClasses()
@@ -84,20 +83,20 @@ public final class AlgorithmModels {
         return (dataType == DataType.All)
                 ? algorithmModels
                 : algorithmModels.stream()
-                        .filter(e -> {
-                            return multiDataSetAlgorithm
-                                    ? algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz())
-                                    : true;
-                        })
-                        .filter(e -> {
-                            for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
-                                if (dt == DataType.All || dt == dataType) {
-                                    return true;
-                                }
-                            }
-                            return false;
-                        })
-                        .collect(Collectors.toList());
+                .filter(e -> {
+                    return multiDataSetAlgorithm
+                            ? algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz())
+                            : true;
+                })
+                .filter(e -> {
+                    for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
+                        if (dt == DataType.All || dt == dataType) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })
+                .collect(Collectors.toList());
     }
 
     public List<AlgorithmModel> getModels(DataType dataType, boolean multiDataSetAlgorithm) {

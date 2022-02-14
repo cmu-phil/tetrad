@@ -22,7 +22,7 @@ import java.lang.annotation.*;
 
 /**
  * Data with variables that have linear relationship.
- *
+ * <p>
  * Sep 19, 2017 12:09:28 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

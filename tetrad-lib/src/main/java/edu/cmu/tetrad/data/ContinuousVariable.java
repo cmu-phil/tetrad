@@ -86,6 +86,7 @@ public final class ContinuousVariable extends AbstractVariable
     private Map<String, Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS=========================//
+
     /**
      * Constructs a new continuous variable with the given name.
      *
@@ -113,6 +114,7 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     //==============================PUBLIC METHODS======================//
+
     /**
      * Checks the value to make sure it's a legitimate value for this column.
      *
@@ -158,7 +160,7 @@ public final class ContinuousVariable extends AbstractVariable
      * Determines whether the argument is equal to the missing value marker.
      *
      * @param value the Object to test--should be a wrapped version of the
-     * missing value marker.
+     *              missing value marker.
      * @return true iff it really is a wrapped version of the missing value
      * marker.
      */
@@ -170,7 +172,7 @@ public final class ContinuousVariable extends AbstractVariable
      * Determines whether the argument is equal to the missing value marker.
      *
      * @param value the Object to test--should be a wrapped version of the
-     * missing value marker.
+     *              missing value marker.
      * @return true iff it really is a wrapped version of the missing value
      * marker.
      */

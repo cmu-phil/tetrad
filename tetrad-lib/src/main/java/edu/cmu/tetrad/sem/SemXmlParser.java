@@ -28,6 +28,7 @@ import nu.xom.Elements;
 /**
  * This class takes an xml element representing a SEM im and converts it to
  * a SemIM
+ *
  * @author Matt Easterday
  */
 public class SemXmlParser {

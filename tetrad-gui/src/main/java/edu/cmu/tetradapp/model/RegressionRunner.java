@@ -77,7 +77,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
             throw new NullPointerException();
         }
 
-        if (dataWrapper instanceof  Simulation) {
+        if (dataWrapper instanceof Simulation) {
             Simulation simulation = (Simulation) dataWrapper;
             this.numModels = dataWrapper.getDataModelList().size();
             this.modelIndex = 0;

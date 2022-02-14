@@ -33,7 +33,7 @@ public class DSeparationScore implements ScoreWrapper {
     public DSeparationScore() {
 
     }
-    
+
     public DSeparationScore(Graph graph) {
         this.graph = graph;
     }
@@ -72,5 +72,5 @@ public class DSeparationScore implements ScoreWrapper {
         this.graph = graph;
     }
 
-    
+
 }

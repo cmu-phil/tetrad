@@ -347,7 +347,6 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     *
      * @return a shallow copy of the list of group rules.
      */
     @Override
@@ -368,7 +367,6 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     *
      * @return the list of edges not in any tier.
      */
     @Override
@@ -381,7 +379,6 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     *
      * @param tier the index of the desired tier
      * @return a copy of this tier
      */
@@ -395,7 +392,6 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     *
      * @return the number of temporal tiers
      */
     @Override
@@ -411,8 +407,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     private boolean isForbiddenByRules(String var1, String var2) {
         return forbiddenRulesSpecs.stream()
                 .anyMatch(rule -> !var1.equals(var2)
-                && rule.getFirst().contains(var1)
-                && rule.getSecond().contains(var2));
+                        && rule.getFirst().contains(var1)
+                        && rule.getSecond().contains(var2));
     }
 
     /**
@@ -447,7 +443,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         return s.stream()
                 .anyMatch(rule -> rule.getFirst().contains(var1)
-                && rule.getSecond().contains(var2));
+                        && rule.getSecond().contains(var2));
     }
 
     /**
@@ -462,7 +458,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public boolean isForbiddenByTiers(String var1, String var2) {
         return forbiddenTierRules().stream()
                 .anyMatch(rule -> rule.getFirst().contains(var1)
-                && rule.getSecond().contains(var2));
+                        && rule.getSecond().contains(var2));
     }
 
     /**
@@ -476,8 +472,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public boolean isRequired(String var1, String var2) {
         return requiredRulesSpecs.stream()
                 .anyMatch(rule -> !var1.equals(var2)
-                && rule.getFirst().contains(var1)
-                && rule.getSecond().contains(var2));
+                        && rule.getFirst().contains(var1)
+                        && rule.getSecond().contains(var2));
     }
 
     /**
@@ -496,7 +492,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         return s.stream()
                 .anyMatch(rule -> rule.getFirst().contains(var1)
-                && rule.getSecond().contains(var2));
+                        && rule.getSecond().contains(var2));
     }
 
     /**
@@ -547,7 +543,6 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     *
      * @param x
      * @param y
      * @return true iff no edge between x and y is required
@@ -780,7 +775,6 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     *
      * @return the largest indes of a tier in which every variable is forbidden
      * by every other variable, or -1 if there is not such tier.
      */

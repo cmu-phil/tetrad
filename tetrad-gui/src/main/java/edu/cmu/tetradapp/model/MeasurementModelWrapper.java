@@ -88,8 +88,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
 
             getParams().set("clusters", clusters);
             getParams().set("varNames", nodeNames);
-        }
-        else {
+        } else {
             this.setVarNames(knowledgeInput.getVariableNames());
             this.setClusters((Clusters) params.get("clusters", null));
             this.params = params;
@@ -102,7 +101,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
 
         DataModel selectedDataModel = dataWrapper.getSelectedDataModel();
 
-        if (!(selectedDataModel instanceof  DataSet)) {
+        if (!(selectedDataModel instanceof DataSet)) {
             throw new IllegalArgumentException("That data box did not contain a dataset.");
         }
 

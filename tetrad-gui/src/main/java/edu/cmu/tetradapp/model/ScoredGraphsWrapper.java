@@ -157,9 +157,9 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     private void log() {
         TetradLogger.getInstance().log("info", "DAGs in forbid_latent_common_causes");
         TetradLogger.getInstance().log("selected_graph", "\nSelected Graph\n");
-        TetradLogger.getInstance().log("selected_graph",  getGraph() + "");
+        TetradLogger.getInstance().log("selected_graph", getGraph() + "");
 
-        TetradLogger.getInstance().log("all_graphs",  "\nAll Graphs:\n");
+        TetradLogger.getInstance().log("all_graphs", "\nAll Graphs:\n");
         int index = 0;
 
         for (Graph graph : graphsToScores.keySet()) {

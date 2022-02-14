@@ -2688,29 +2688,49 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <div id="fas">
 
         <p>
-            GRaSP (Greedy Relations of Sparsest Permutation) is an algorithm that generalizes and extends the GSP (Greedy Sparsest Permutation) algorithm. Is generalizes specifically the algorithms TSP (or which GSP is a bounded and iterated version) and ESP (Solus et al., 2017) by allowing those algorithms to equivalently be run by selecting particular parameterizations of GrASP, where ESP enlarges the search space of GSP. The implementation given for ESP renders that algorithm tractable. By choosing other parameterizations of GRaSP, it is possible to further enlarge the search space even over and above that of ESP to render the algorithm significantly more accurate. In all cases, these algorithms come back quickly enough to analyze accurately sparse problems of up to 300 variables and denser problems with up to about 100 variables.
+            GRaSP (Greedy Relations of Sparsest Permutation) is an algorithm that generalizes and extends the GSP
+            (Greedy Sparsest Permutation) algorithm. Is generalizes specifically the algorithms TSP (or which GSP is a
+            bounded and iterated version) and ESP (Solus et al., 2017) by allowing those algorithms to equivalently be
+            run by selecting particular parameterizations of GrASP, where ESP enlarges the search space of GSP. The
+            implementation given for ESP renders that algorithm tractable. By choosing other parameterizations of GRaSP,
+            it is possible to further enlarge the search space even over and above that of ESP to render the algorithm
+            significantly more accurate. In all cases, these algorithms come back quickly enough to analyze accurately
+            sparse problems of up to 300 variables and denser problems with up to about 100 variables.
         <p>
             The parameters are as follows:
         <p>
             graspDepth - This controls the overall recursion depth for a depth first search.
         <p>
-            graspUncoveredDepth - This controls the depth to which uncovered edges (that is, edges X->Y such that parents(X) != parents(Y) \ {X}) are explored.
+            graspUncoveredDepth - This controls the depth to which uncovered edges (that is, edges X->Y such that
+            parents(X) != parents(Y) \ {X}) are explored.
         <p>
-            graspSingularDepth - This controls the depth at which single tucks sets only (essentially changes of permutation where one variable is placed before another in the permutation order) are considered.
+            graspSingularDepth - This controls the depth at which single tucks sets only (essentially changes of
+            permutation where one variable is placed before another in the permutation order) are considered.
         <p>
-            numRestarts - By default 1; if > 1, additional random restarts are done, and the best of these results is returned.
+            numRestarts - By default 1; if > 1, additional random restarts are done, and the best of these results is
+            returned.
         <p>
-            TSP corresponds to uncovered depth 0, singular depth 0. ESP corresponds to  uncovered depth > 0, singular depth = 0. GRaSP corresponds to uncovered depth > 0, singular depth > 0. In each case, an ordering option is available to find best permutations from lower levels before proceeding to higher levels.
+            TSP corresponds to uncovered depth 0, singular depth 0. ESP corresponds to uncovered depth > 0, singular
+            depth = 0. GRaSP corresponds to uncovered depth > 0, singular depth > 0. In each case, an ordering option is
+            available to find best permutations from lower levels before proceeding to higher levels.
         <p>
-            The algorithms works by building DAGs given permutations in ways similar to those described in Raskutti and Uhler (ref?) and Solus et al. Two ways of building DAGs are considered, one due to Verma and Pearl and another novel method, using the Grow-Shrink (GS)  method (Margaritis and Thrun, 1999). If the Pearl method is selected, an independence test will be used; if the GS method is selected, a score will be used, so both a test and a score need to be supplied so that this choice can be made.
+            The algorithms works by building DAGs given permutations in ways similar to those described in Raskutti and
+            Uhler (ref?) and Solus et al. Two ways of building DAGs are considered, one due to Verma and Pearl and
+            another novel method, using the Grow-Shrink (GS) method (Margaritis and Thrun, 1999). If the Pearl method is
+            selected, an independence test will be used; if the GS method is selected, a score will be used, so both a
+            test and a score need to be supplied so that this choice can be made.
         <p>
-            We recommend that the user turn on logging to watch the progress of the algorithm; this helps with larger searches especially.
+            We recommend that the user turn on logging to watch the progress of the algorithm; this helps with larger
+            searches especially.
         <p>
-            Dimitris Margaritis and Sebastian Thrun. Bayesian network induction via local neighborhoods. Advances in neural information processing systems, 12, 1999.
+            Dimitris Margaritis and Sebastian Thrun. Bayesian network induction via local neighborhoods. Advances in
+            neural information processing systems, 12, 1999.
         <p>
-            Raskutti, G., & Uhler, C. (2018). Learning directed acyclic graph   models based on sparsest permutations. Stat, 7(1), e183.
+            Raskutti, G., & Uhler, C. (2018). Learning directed acyclic graph models based on sparsest permutations.
+            Stat, 7(1), e183.
         <p>
-            Solus, L., Wang, Y., Matejovicova, L., & Uhler, C. (2017). Consistency guarantees for permutation-based causal inference algorithms. arXiv preprint arXiv:1702.03530.            </p>
+            Solus, L., Wang, Y., Matejovicova, L., & Uhler, C. (2017). Consistency guarantees for permutation-based
+            causal inference algorithms. arXiv preprint arXiv:1702.03530. </p>
 
     </div>
 
@@ -2720,7 +2740,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>The CPDAG equivalence class of DAGs representing estimated possible causal structures over the set of variables.</p>
+    <p>The CPDAG equivalence class of DAGs representing estimated possible causal structures over the set of
+        variables.</p>
 
 
     <h3>The GLASSO Algorithm</h3>
@@ -3900,7 +3921,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="fasHeuristic" class="parameter_description">fasHeuristic</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="fasHeuristic_short_desc">Test ordering: 1 = PC-1 1, 2 = PC-2, 3 = PC-3</span>
+            <li>Short Description: <span
+                    id="fasHeuristic_short_desc">Test ordering: 1 = PC-1 1, 2 = PC-2, 3 = PC-3</span>
             </li>
             <li>Long Description: <span id="fasHeuristic_long_desc">See Causation, Prediction, and Search (2000).</span>
             </li>
@@ -5682,7 +5704,8 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 
         <h3 id="cacheScores" class="parameter_description">cacheScores</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="cacheScores_short_desc">Yes score results should be cached, no if not</span>
+            <li>Short Description: <span
+                    id="cacheScores_short_desc">Yes score results should be cached, no if not</span>
             </li>
             <li>Long Description: <span id="cacheScores_long_desc">Caching scores can use a lot of memory.</span>
             </li>
@@ -6006,6 +6029,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
 
 
 

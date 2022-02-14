@@ -43,6 +43,7 @@ import java.util.List;
 
 /**
  * Contains some tests for Dan Malinsky, that might be of interest to others.
+ *
  * @author Joseph Ramsey.
  */
 public class PerformanceTestsDan {
@@ -146,9 +147,9 @@ public class PerformanceTestsDan {
             out5.println();
 
             String vars_temp = vars.toString();
-            vars_temp = vars_temp.replace("[","");
-            vars_temp = vars_temp.replace("]","");
-            vars_temp = vars_temp.replace("X","");
+            vars_temp = vars_temp.replace("[", "");
+            vars_temp = vars_temp.replace("]", "");
+            vars_temp = vars_temp.replace("X", "");
             out2.println(vars_temp);
 
             List<Node> _vars = new ArrayList<>();
@@ -160,9 +161,9 @@ public class PerformanceTestsDan {
             }
 
             String _vars_temp = _vars.toString();
-            _vars_temp = _vars_temp.replace("[","");
-            _vars_temp = _vars_temp.replace("]","");
-            _vars_temp = _vars_temp.replace("X","");
+            _vars_temp = _vars_temp.replace("[", "");
+            _vars_temp = _vars_temp.replace("]", "");
+            _vars_temp = _vars_temp.replace("X", "");
             out2.println(_vars_temp);
 
             DataSet fullData = im.simulateData(numCases, false);

@@ -39,7 +39,7 @@ import java.io.ObjectInputStream;
  *
  * @author Joseph Ramsey
  * @author Frank Wimberly adapted for EM Bayes estimator and structural EM Bayes
- *         search
+ * search
  */
 public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;
@@ -85,12 +85,12 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     }
 
     public StructEmBayesSearchRunner(Simulation simulation,
-            BayesPmWrapper bayesPmWrapper) {
+                                     BayesPmWrapper bayesPmWrapper) {
         this((DataWrapper) simulation, bayesPmWrapper);
     }
 
     public StructEmBayesSearchRunner(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper, Parameters params) {
+                                     BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -114,8 +114,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
             this.estimatedBayesIm =
                     estimator.maximization(params.getDouble("tolerance", 0.0001));
 
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException(e);
         }
 
@@ -123,7 +122,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     }
 
     public StructEmBayesSearchRunner(DataWrapper dataWrapper,
-            BayesImWrapper bayesImWrapper, Parameters params) {
+                                     BayesImWrapper bayesImWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -148,8 +147,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         try {
             this.estimatedBayesIm =
                     estimator.maximization(params.getDouble("tolerance", 0.0001));
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException(
                     "Please specify the search tolerance first.");
         }
@@ -188,8 +186,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
                     new FactoredBayesStructuralEM(DataSet, bayesPm);
             this.dataSet = estimator.getDataSet();
             this.estimatedBayesIm = estimator.maximization(thresh);
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
                     "and discrete data set do not match.");
@@ -242,7 +239,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         this.name = name;
     }
 
-    private void log(){
+    private void log() {
         TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM");
         TetradLogger.getInstance().log("im", "" + estimatedBayesIm);
     }

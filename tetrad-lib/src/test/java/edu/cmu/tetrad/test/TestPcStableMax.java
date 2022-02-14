@@ -88,7 +88,7 @@ public class TestPcStableMax {
                 knowledge);
     }
 
-//    @Test
+    //    @Test
     public void testCites() {
         String citesString = "164\n" +
                 "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +

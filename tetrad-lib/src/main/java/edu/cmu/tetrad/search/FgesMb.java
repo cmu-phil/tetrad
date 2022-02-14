@@ -188,6 +188,7 @@ public final class FgesMb {
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
     //===========================CONSTRUCTORS=============================//
+
     /**
      * Construct a Score and pass it in here. The totalScore should return a
      * positive value in case of conditional dependence and a negative values in
@@ -203,6 +204,7 @@ public final class FgesMb {
     }
 
     //==========================PUBLIC METHODS==========================//
+
     /**
      * Set to true if it is assumed that all path pairs with one length 1 path
      * do not cancel.
@@ -525,7 +527,7 @@ public final class FgesMb {
      * Sets the background knowledge.
      *
      * @param knowledge the knowledge object, specifying forbidden and required
-     * edges.
+     *                  edges.
      */
     public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
@@ -1946,7 +1948,7 @@ public final class FgesMb {
             return;
         }
 
-        for (Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext();) {
+        for (Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge next = it.next();
 
             Node nodeA = graph.getNode(next.getFrom());
@@ -2170,6 +2172,7 @@ public final class FgesMb {
     }
 
     //===========================SCORING METHODS===================//
+
     /**
      * Scores the given DAG, up to a constant.
      */

@@ -46,12 +46,10 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     private final static Color BACKGROUND_COLOR = new Color(255, 255, 219);
 
 
-
     /**
      * The Jlable that contains the name
      */
     private final JLabel name = new JLabel("Note");
-
 
 
     /**
@@ -128,7 +126,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     //========================== Private methods ===============================//
 
 
-    private void buildComponents(){
+    private void buildComponents() {
         removeAll();
         setLayout(new BorderLayout());
         setBackground(BACKGROUND_COLOR);
@@ -150,7 +148,6 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
         revalidate();
         repaint();
     }
-
 
 
 }

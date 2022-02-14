@@ -33,7 +33,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- *
  * Jan 2, 2019 2:19:53 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -47,10 +46,10 @@ public class ContinuousTabularDatasetFileReaderTest {
     private final boolean hasHeader = true;
 
     private final Path[] dataFiles = {
-        Paths.get(getClass().getResource("/data/tabular/continuous/dos_sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/continuous/mac_sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/continuous/quotes_sim_test_data.csv").getFile())
+            Paths.get(getClass().getResource("/data/tabular/continuous/dos_sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/continuous/mac_sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/continuous/quotes_sim_test_data.csv").getFile())
     };
 
     public ContinuousTabularDatasetFileReaderTest() {

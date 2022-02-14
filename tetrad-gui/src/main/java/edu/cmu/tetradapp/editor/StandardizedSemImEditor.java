@@ -69,6 +69,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
     private StandardizedSemImImpliedMatricesPanel impliedMatricesPanel;
 
     //========================CONSTRUCTORS===========================//
+
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
      */
@@ -234,11 +235,11 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
             this.standardizedSemImGraphicalEditor = new StandardizedSemImGraphicalEditor(getSemIm(), this);
             this.standardizedSemImGraphicalEditor.addPropertyChangeListener(
                     new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    firePropertyChange(evt.getPropertyName(), null,
-                            null);
-                }
-            });
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            firePropertyChange(evt.getPropertyName(), null,
+                                    null);
+                        }
+                    });
             this.standardizedSemImGraphicalEditor.enableEditing(false);
         }
 

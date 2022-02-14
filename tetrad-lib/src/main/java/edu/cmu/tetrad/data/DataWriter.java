@@ -188,7 +188,7 @@ public final class DataWriter {
      * @param out The writer to write the output to.
      */
     public static void writeCovMatrix(ICovarianceMatrix covMatrix,
-            PrintWriter out, NumberFormat nf) {
+                                      PrintWriter out, NumberFormat nf) {
 //        out.println("/Covariance");
         out.println(covMatrix.getSampleSize());
 
@@ -214,8 +214,8 @@ public final class DataWriter {
                 } else {
                     out.print(nf.format(value));
                 }
-                
-                out.print((i < j)  ? "\t" : "\n");
+
+                out.print((i < j) ? "\t" : "\n");
             }
         }
         out.flush();
@@ -232,7 +232,7 @@ public final class DataWriter {
 
             String forbiddenWithin = knowledge.isTierForbiddenWithin(i) ? "*" : "";
             String onlyCanCauseNextTier = knowledge.isOnlyCanCauseNextTier(i) ? "-" : "";
-            buf.append("\n").append(i+1).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
+            buf.append("\n").append(i + 1).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
 
 
             List<String> tier = knowledge.getTier(i);
@@ -245,7 +245,7 @@ public final class DataWriter {
         buf.append("\n\nforbiddirect");
 
         for (Iterator<KnowledgeEdge> i
-             = knowledge.forbiddenEdgesIterator(); i.hasNext();) {
+             = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
             KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();
@@ -260,7 +260,7 @@ public final class DataWriter {
         buf.append("\n\nrequiredirect");
 
         for (Iterator<KnowledgeEdge> i
-                = knowledge.requiredEdgesIterator(); i.hasNext();) {
+             = knowledge.requiredEdgesIterator(); i.hasNext(); ) {
             KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();

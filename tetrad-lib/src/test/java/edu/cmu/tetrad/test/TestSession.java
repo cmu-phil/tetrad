@@ -191,8 +191,7 @@ public class TestSession {
             setEventId(null);
             this.session.removeNode(node2);
             assertEquals("nodeRemoved", getEventId());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
@@ -236,15 +235,13 @@ public class TestSession {
             node2.createModel(Type7.class, simulation);
             node3.createModel(Type8.class, simulation);
             node1.createModel(Type6.class, simulation);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail("Model not created.");
         }
 
         try {
             new MarshalledObject(this.session).get();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail("Serialization failed.");
         }
     }

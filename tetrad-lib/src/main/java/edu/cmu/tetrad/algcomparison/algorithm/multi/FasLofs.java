@@ -37,23 +37,23 @@ public class FasLofs implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.FasLofs search = new edu.cmu.tetrad.search.FasLofs((DataSet) dataSet, rule);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             search.setKnowledge(knowledge);
             return getGraph(search);
-    	}else{
-    		FasLofs fasLofs = new FasLofs(rule);
-    		//fasLofs.setKnowledge(knowledge);
-    		
-    		DataSet data = (DataSet) dataSet;
-    		GeneralResamplingTest search = new GeneralResamplingTest(data, fasLofs, parameters.getInt(Params.NUMBER_RESAMPLING));
+        } else {
+            FasLofs fasLofs = new FasLofs(rule);
+            //fasLofs.setKnowledge(knowledge);
+
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, fasLofs, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -65,13 +65,13 @@ public class FasLofs implements Algorithm, HasKnowledge {
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
-    		search.setEdgeEnsemble(edgeEnsemble);
-    		search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-    		
-    		search.setParameters(parameters);    		
-    		search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-    		return search.search();
-    	}
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            return search.search();
+        }
     }
 
     @Override
@@ -93,10 +93,10 @@ public class FasLofs implements Algorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
-	parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.PENALTY_DISCOUNT);
 
         parameters.add(Params.VERBOSE);
-        
+
         return parameters;
     }
 

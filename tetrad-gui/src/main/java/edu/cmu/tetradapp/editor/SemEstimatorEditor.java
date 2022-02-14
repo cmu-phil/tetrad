@@ -55,9 +55,9 @@ public final class SemEstimatorEditor extends JPanel {
     private final IntTextField restarts;
 
     public SemEstimatorEditor(SemIm semIm, DataSet dataSet) {
-    	this(new SemEstimatorWrapper(dataSet, semIm.getSemPm(), new Parameters()));
+        this(new SemEstimatorWrapper(dataSet, semIm.getSemPm(), new Parameters()));
     }
-    
+
     public SemEstimatorEditor(SemPm semPm, DataSet dataSet) {
         this(new SemEstimatorWrapper(dataSet, semPm, new Parameters()));
     }

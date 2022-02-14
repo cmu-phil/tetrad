@@ -121,18 +121,18 @@ public class DirichletBayesImEditor extends JPanel {
         setName("Dirichlet Bayes IM Editor");
         getProbsWizard().addPropertyChangeListener(
                 new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorClosing".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorClosing", null,
-                            getName());
-                }
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if ("editorClosing".equals(evt.getPropertyName())) {
+                            firePropertyChange("editorClosing", null,
+                                    getName());
+                        }
 
-                if ("closeFrame".equals(evt.getPropertyName())) {
-                    firePropertyChange("closeFrame", null, null);
-                    firePropertyChange("editorClosing", true, true);
-                }
-            }
-        });
+                        if ("closeFrame".equals(evt.getPropertyName())) {
+                            firePropertyChange("closeFrame", null, null);
+                            firePropertyChange("editorClosing", true, true);
+                        }
+                    }
+                });
     }
 
     /**

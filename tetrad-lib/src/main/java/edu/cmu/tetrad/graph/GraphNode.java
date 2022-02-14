@@ -83,6 +83,7 @@ public class GraphNode implements Node, TetradSerializable {
     private Map<String, Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS==========================//
+
     /**
      * Constructs a new Tetrad node with the given (non-null) string.
      */
@@ -108,6 +109,7 @@ public class GraphNode implements Node, TetradSerializable {
     }
 
     //============================PUBLIC METHODS========================//
+
     /**
      * @return the name of the variable.
      */

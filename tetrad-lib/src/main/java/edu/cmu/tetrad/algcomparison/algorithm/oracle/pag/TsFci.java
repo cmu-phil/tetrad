@@ -61,16 +61,16 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 //    	if (!(dataSet instanceof TimeSeriesData)) {
 //            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsFCI.");
 //        }
-        
+
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-        	if(knowledge != null) {
-        		dataSet.setKnowledge(knowledge);
-        	}
+            if (knowledge != null) {
+                dataSet.setKnowledge(knowledge);
+            }
             edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(dataSet.getKnowledge());
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            
+
             return search.search();
         } else {
             TsFci tsFci = new TsFci(test, algorithm);
@@ -81,7 +81,7 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -95,7 +95,7 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -110,7 +110,7 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     public String getDescription() {
         return "tsFCI (Time Series Fast Causal Inference) using " + test.getDescription()
                 + (algorithm != null ? " with initial graph from "
-                        + algorithm.getDescription() : "");
+                + algorithm.getDescription() : "");
     }
 
     @Override

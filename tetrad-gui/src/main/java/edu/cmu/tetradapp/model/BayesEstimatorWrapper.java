@@ -67,10 +67,10 @@ public class BayesEstimatorWrapper implements SessionModel {
     private int numModels = 1;
     private int modelIndex = 0;
     private List<BayesIm> bayesIms = new ArrayList<>();
-    
+
     //=================================CONSTRUCTORS========================//
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper) {
+                                 BayesPmWrapper bayesPmWrapper) {
 
         if (dataWrapper == null) {
             throw new NullPointerException(
@@ -78,29 +78,29 @@ public class BayesEstimatorWrapper implements SessionModel {
         }
 
         this.dataWrapper = dataWrapper;
-        
+
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null");
         }
-        
+
         DataModelList dataModel = dataWrapper.getDataModelList();
-        
+
         if (dataModel != null) {
             for (int i = 0; i < dataWrapper.getDataModelList().size(); i++) {
                 DataModel model = dataWrapper.getDataModelList().get(i);
-            	DataSet dataSet = (DataSet) model;
-            	bayesPmWrapper.setModelIndex(i);
-            	BayesPm bayesPm = bayesPmWrapper.getBayesPm();
-            	
-            	estimate(dataSet, bayesPm);
-            	bayesIms.add(this.bayesIm);
+                DataSet dataSet = (DataSet) model;
+                bayesPmWrapper.setModelIndex(i);
+                BayesPm bayesPm = bayesPmWrapper.getBayesPm();
+
+                estimate(dataSet, bayesPm);
+                bayesIms.add(this.bayesIm);
             }
-            
+
             this.bayesIm = bayesIms.get(0);
             log(bayesIm);
 
         } else {
-            throw new IllegalArgumentException("Data must consist of discrete data sets.");       	
+            throw new IllegalArgumentException("Data must consist of discrete data sets.");
         }
 
         this.name = bayesPmWrapper.getName();
@@ -108,14 +108,14 @@ public class BayesEstimatorWrapper implements SessionModel {
         this.modelIndex = 0;
         this.bayesIm = bayesIms.get(modelIndex);
         DataModel model = dataModel.get(modelIndex);
-        this.dataSet = (DataSet)model;
+        this.dataSet = (DataSet) model;
     }
 
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
                                  BayesImWrapper bayesImWrapper) {
-    	this(dataWrapper, new BayesPmWrapper(bayesImWrapper));
+        this(dataWrapper, new BayesPmWrapper(bayesImWrapper));
     }
-    
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -127,19 +127,19 @@ public class BayesEstimatorWrapper implements SessionModel {
 
     //==============================PUBLIC METHODS========================//
     public BayesIm getEstimatedBayesIm() {
-    	return bayesIm;
+        return bayesIm;
     }
 
     public void setBayesIm(BayesIm bayesIm) {
-    	bayesIms.clear();
+        bayesIms.clear();
         bayesIms.add(bayesIm);
     }
 
     public DataSet getDataSet() {
         return dataSet;
     }
-    
-	public Graph getGraph() {
+
+    public Graph getGraph() {
         return bayesIm.getBayesPm().getDag();
     }
 
@@ -151,29 +151,30 @@ public class BayesEstimatorWrapper implements SessionModel {
         this.name = name;
     }
 
-	public int getNumModels() {
-		return numModels;
-	}
+    public int getNumModels() {
+        return numModels;
+    }
 
-	public void setNumModels(int numModels) {
-		this.numModels = numModels;
-	}
+    public void setNumModels(int numModels) {
+        this.numModels = numModels;
+    }
 
-	public int getModelIndex() {
-		return modelIndex;
-	}
+    public int getModelIndex() {
+        return modelIndex;
+    }
 
-	public void setModelIndex(int modelIndex) {
-		this.modelIndex = modelIndex;
-		this.bayesIm = bayesIms.get(modelIndex);
-		
-		DataModel dataModel = dataWrapper.getDataModelList();
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
+        this.bayesIm = bayesIms.get(modelIndex);
 
-		this.dataSet = (DataSet) ((DataModelList)dataModel).get(modelIndex);
-		
-	}
+        DataModel dataModel = dataWrapper.getDataModelList();
+
+        this.dataSet = (DataSet) ((DataModelList) dataModel).get(modelIndex);
+
+    }
 
     //======================== Private Methods ======================//
+
     /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of

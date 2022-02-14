@@ -74,11 +74,11 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
 
 
     private static DataModel createRectangularModel(DataSet data) {
-        for (int i = data.getNumColumns() -1; i >= 0; i--) {
+        for (int i = data.getNumColumns() - 1; i >= 0; i--) {
             if (!data.isSelected(data.getVariable(i))) {
                 data.removeColumn(i);
             }
-        }                                    
+        }
         return data;
     }
 

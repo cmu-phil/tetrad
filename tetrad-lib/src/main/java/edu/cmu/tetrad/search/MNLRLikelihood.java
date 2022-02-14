@@ -71,9 +71,10 @@ public class MNLRLikelihood {
 
     private final PrintStream original = System.out;
 
-    private final PrintStream nullout = new PrintStream(new OutputStream() { public void write(int b) {
-        //DO NOTHING
-    }
+    private final PrintStream nullout = new PrintStream(new OutputStream() {
+        public void write(int b) {
+            //DO NOTHING
+        }
     });
 
     public MNLRLikelihood(DataSet dataSet, double structurePrior, int fDegree) {
@@ -127,22 +128,22 @@ public class MNLRLikelihood {
             r = X.times(XtX.inverse().times(Xt.times(Y))).minus(Y);
         } catch (Exception e) {
             Vector ones = new Vector(n);
-            for (int i = 0; i < n; i++) ones.set(i,1);
-            r = ones.scalarMult(ones.dotProduct(Y)/(double)n).minus(Y);
+            for (int i = 0; i < n; i++) ones.set(i, 1);
+            r = ones.scalarMult(ones.dotProduct(Y) / (double) n).minus(Y);
         }
 
         double sigma2 = r.dotProduct(r) / n;
 
-        if(sigma2 <= 0) {
+        if (sigma2 <= 0) {
             Vector ones = new Vector(n);
-            for (int i = 0; i < n; i++) ones.set(i,1);
-            r = ones.scalarMult(ones.dotProduct(Y)/(double)Math.max(n,2)).minus(Y);
+            for (int i = 0; i < n; i++) ones.set(i, 1);
+            r = ones.scalarMult(ones.dotProduct(Y) / (double) Math.max(n, 2)).minus(Y);
             sigma2 = r.dotProduct(r) / n;
         }
 
         double lik = -(n / 2.) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
 
-        if(Double.isInfinite(lik) || Double.isNaN(lik)) {
+        if (Double.isInfinite(lik) || Double.isNaN(lik)) {
             System.out.println(lik);
         }
 
@@ -194,7 +195,9 @@ public class MNLRLikelihood {
                 }
 
                 int degree = fDegree;
-                if (fDegree < 1) { degree = (int) Math.floor(Math.log(r)); }
+                if (fDegree < 1) {
+                    degree = (int) Math.floor(Math.log(r));
+                }
                 Matrix subset = new Matrix(r, p * degree + 1);
                 for (int i = 0; i < r; i++) {
                     subset.set(i, p * degree, 1);
@@ -255,7 +258,9 @@ public class MNLRLikelihood {
             if (r > 0) {
 
                 int degree = fDegree;
-                if (fDegree < 1) { degree = (int) Math.floor(Math.log(r)); }
+                if (fDegree < 1) {
+                    degree = (int) Math.floor(Math.log(r));
+                }
                 if (c instanceof ContinuousVariable) {
                     dof += degree * continuous_parents.size() + 1;
                 } else {
@@ -269,13 +274,17 @@ public class MNLRLikelihood {
 
     public double getStructurePrior(int k) {
 
-        if (structurePrior < 0) { return getEBICprior(); }
+        if (structurePrior < 0) {
+            return getEBICprior();
+        }
 
         double n = dataSet.getNumColumns() - 1;
-        double p = structurePrior/n;
+        double p = structurePrior / n;
 
-        if (structurePrior == 0) { return 0; }
-        return k*Math.log(p) + (n - k)*Math.log(1 - p);
+        if (structurePrior == 0) {
+            return 0;
+        }
+        return k * Math.log(p) + (n - k) * Math.log(1 - p);
 
     }
 
@@ -294,9 +303,9 @@ public class MNLRLikelihood {
         problem.n = subset.columns(); // number of features
         problem.x = new FeatureNode[problem.l][problem.n]; // feature nodes
         problem.bias = 0;
-        for (int i = 0; i < problem.l; i ++) {
+        for (int i = 0; i < problem.l; i++) {
             for (int j = 0; j < problem.n; j++) {
-                problem.x[i][j] = new FeatureNode(j+1, subset.get(i,j));
+                problem.x[i][j] = new FeatureNode(j + 1, subset.get(i, j));
             }
         }
         SolverType solver = SolverType.L2R_LR; // -s 0
@@ -321,14 +330,14 @@ public class MNLRLikelihood {
             for (int i = 0; i < targets.columns(); i++) {
                 double[] p = new double[models.get(i).getNrClass()];
                 Linear.predictProbability(models.get(i), problem.x[j], p);
-                if (targets.get(j,i) == 1) {
+                if (targets.get(j, i) == 1) {
                     num = p[0];
                     den += p[0];
                 } else if (p.length > 1) {
                     den += p[0];
                 }
             }
-            lik += Math.log(num/den);
+            lik += Math.log(num / den);
         }
 
         return lik;

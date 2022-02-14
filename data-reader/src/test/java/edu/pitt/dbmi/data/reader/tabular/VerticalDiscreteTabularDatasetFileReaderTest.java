@@ -33,7 +33,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- *
  * Jan 2, 2019 2:57:44 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -47,10 +46,10 @@ public class VerticalDiscreteTabularDatasetFileReaderTest {
     private final boolean hasHeader = true;
 
     private final Path[] dataFiles = {
-        Paths.get(getClass().getResource("/data/tabular/discrete/dos_sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/discrete/mac_sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/discrete/sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/discrete/quotes_sim_test_data.csv").getFile())
+            Paths.get(getClass().getResource("/data/tabular/discrete/dos_sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/discrete/mac_sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/discrete/sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/discrete/quotes_sim_test_data.csv").getFile())
     };
 
     public VerticalDiscreteTabularDatasetFileReaderTest() {

@@ -97,7 +97,7 @@ class NeighborhoodsAction extends AbstractAction implements ClipboardOwner {
                 "Neighborhoods", "Close", false, workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
-        
+
 //        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), b,
 //                "Graph Properties", JOptionPane.PLAIN_MESSAGE);
     }

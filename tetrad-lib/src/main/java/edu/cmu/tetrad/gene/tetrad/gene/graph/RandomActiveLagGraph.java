@@ -62,7 +62,7 @@ public class RandomActiveLagGraph extends ActiveLagGraph
                 indegreeType = SimpleRandomizer.MEAN;
                 break;
 
-            default :
+            default:
                 throw new IllegalArgumentException();
         }
 

@@ -71,8 +71,7 @@ final class CloseSessionAction extends AbstractAction {
                 SaveSessionAction saveSessionAction = new SaveSessionAction();
                 saveSessionAction.actionPerformed(e);
                 this.saved = saveSessionAction.isSaved();
-            }
-            else if (response == JOptionPane.CANCEL_OPTION) {
+            } else if (response == JOptionPane.CANCEL_OPTION) {
                 return;
             }
         }

@@ -25,7 +25,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- *
  * Aug 7, 2018 10:21:59 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -341,7 +340,7 @@ public final class MultidataUtils {
      * one variable list.
      *
      * @param dataModels list of data models that has the same list of variables
-     * @param variables list where all the combined variables are stored
+     * @param variables  list where all the combined variables are stored
      */
     public static void combineVariables(List<DataModel> dataModels, List<Node> variables) {
         if (dataModels == null || dataModels.isEmpty()) {

@@ -57,7 +57,7 @@ public final class ManualLagGraph implements LagGraph {
         setMaxLagAllowable(params.getMlag());
 
         // Add edges one time step back.
-        for (Iterator it = getFactors().iterator(); it.hasNext();) {
+        for (Iterator it = getFactors().iterator(); it.hasNext(); ) {
             String factor = (String) it.next();
             LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
             addEdge(factor, laggedFactor);

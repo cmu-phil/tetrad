@@ -63,8 +63,7 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
                 try {
                     getLagIndTestParams().set("alpha", 0.001);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -76,8 +75,7 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
                 try {
                     getLagIndTestParams().set("numLags", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }

@@ -60,7 +60,8 @@ final class SessionEditorToolbarHarry extends JPanel {
     private final String selectType = "Select";
 
 
-    /**\
+    /**
+     * \
      * The map from JToggleButtons to String node types.
      */
     private final Map<JToggleButton, String> nodeTypes = new HashMap<>();

@@ -41,7 +41,6 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
- *
  * Jan 16, 2020 4:59:57 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -49,14 +48,14 @@ import java.util.stream.Collectors;
 public class JunctionTreeAlgorithmTest {
 
     private static final int[][] THREE_NODE_VALUES = {
-        {0, 0, 0},
-        {0, 0, 1},
-        {0, 1, 0},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 1, 0},
-        {1, 1, 1}
+            {0, 0, 0},
+            {0, 0, 1},
+            {0, 1, 0},
+            {0, 1, 1},
+            {1, 0, 0},
+            {1, 0, 1},
+            {1, 1, 0},
+            {1, 1, 1}
     };
 
     @Ignore

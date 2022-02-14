@@ -101,8 +101,7 @@ class MbPatternDisplay extends JPanel {
                     spinner.setModel(model);
                     totalLabel.setText(" of " + dags.size());
                     graphWorkbench.setGraph((Graph) dags.get(0));
-                }
-                else if ("Orient ---, <->".equals(option)) {
+                } else if ("Orient ---, <->".equals(option)) {
                     List _dags = MbUtils.generateMbDags(search.resultGraph(), true,
                             search.getTest(), search.getDepth(), search.getTarget());
                     dags.clear();

@@ -55,7 +55,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
      * Constructs a new editing table from a given editing table model.
      */
     public DirichletBayesImNodeCountsTable(final Node node,
-            final DirichletBayesIm dirichletBayesIm) {
+                                           final DirichletBayesIm dirichletBayesIm) {
         if (node == null) {
             throw new NullPointerException();
         }
@@ -266,8 +266,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
 //                requestRowTotal(dirichletBayesIm);
 
                 for (int nodeIndex = 0;
-                        nodeIndex < dirichletBayesIm.getNumNodes(); nodeIndex++)
-                {
+                     nodeIndex < dirichletBayesIm.getNumNodes(); nodeIndex++) {
 
                     DirichletBayesImNodeCountsTable editingTable =
                             DirichletBayesImNodeCountsTable.this;
@@ -361,11 +360,11 @@ class DirichletBayesImNodeCountsTable extends JTable {
 //    }
 
     private boolean existsCompleteRow(DirichletBayesIm dirichletBayesIm,
-            int nodeIndex) {
+                                      int nodeIndex) {
         boolean existsCompleteRow = false;
 
         for (int rowIndex = 0;
-                rowIndex < dirichletBayesIm.getNumRows(nodeIndex); rowIndex++) {
+             rowIndex < dirichletBayesIm.getNumRows(nodeIndex); rowIndex++) {
             if (!dirichletBayesIm.isIncomplete(nodeIndex, rowIndex)) {
                 existsCompleteRow = true;
                 break;
@@ -375,11 +374,11 @@ class DirichletBayesImNodeCountsTable extends JTable {
     }
 
     private boolean existsIncompleteRow(DirichletBayesIm dirichletBayesIm,
-            int nodeIndex) {
+                                        int nodeIndex) {
         boolean existsCompleteRow = false;
 
         for (int rowIndex = 0;
-                rowIndex < dirichletBayesIm.getNumRows(nodeIndex); rowIndex++) {
+             rowIndex < dirichletBayesIm.getNumRows(nodeIndex); rowIndex++) {
             if (dirichletBayesIm.isIncomplete(nodeIndex, rowIndex)) {
                 existsCompleteRow = true;
                 break;
@@ -503,7 +502,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
          * dirichletBayesIm.
          */
         public Model(Node node, DirichletBayesIm dirichletBayesIm,
-                JComponent messageAnchor) {
+                     JComponent messageAnchor) {
             if (node == null) {
                 throw new NullPointerException("Node must not be null.");
             }
@@ -537,17 +536,14 @@ class DirichletBayesImNodeCountsTable extends JTable {
                 int parent =
                         getDirichletBayesIm().getParent(getNodeIndex(), col);
                 return getDirichletBayesIm().getNode(parent).getName();
-            }
-            else if (col < numParents + numColumns) {
+            } else if (col < numParents + numColumns) {
                 int valIndex = col - numParents;
                 String value = getDirichletBayesIm().getBayesPm().getCategory(
                         node, valIndex);
                 return node.getName() + "=" + value;
-            }
-            else if (col == totalsColumn) {
+            } else if (col == totalsColumn) {
                 return "TOTAL COUNT";
-            }
-            else {
+            } else {
                 return null;
             }
         }
@@ -598,24 +594,20 @@ class DirichletBayesImNodeCountsTable extends JTable {
                                 .getParent(getNodeIndex(), tableCol));
                 BayesPm bayesPm = getDirichletBayesIm().getBayesPm();
                 return bayesPm.getCategory(columnNode, parentVals[tableCol]);
-            }
-            else if (tableCol < numParents + numColumns) {
+            } else if (tableCol < numParents + numColumns) {
                 int colIndex = tableCol - numParents;
                 double value = getDirichletBayesIm().getPseudocount(
                         getNodeIndex(), tableRow, colIndex);
 
                 if (value == -1) {
                     return null;
-                }
-                else {
+                } else {
                     return value;
                 }
-            }
-            else if (tableCol == totalsColumn) {
+            } else if (tableCol == totalsColumn) {
                 return getDirichletBayesIm().getRowPseudocount(getNodeIndex(),
                         tableRow);
-            }
-            else {
+            } else {
                 return null;
             }
         }
@@ -644,8 +636,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
 
             if (col == numParents + numColumns) {
                 setTotal(row, aValue);
-            }
-            else {
+            } else {
                 setPseudocount(row, col, aValue);
             }
         }
@@ -666,8 +657,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Total must be nonnegative.");
                     failedRow = row;
-                }
-                else {
+                } else {
                     double currentTotal = getDirichletBayesIm()
                             .getRowPseudocount(getNodeIndex(), row);
                     double ratio = total / currentTotal;
@@ -684,8 +674,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
                     getPcs().firePropertyChange("editorValueChanged", null,
                             null);
                 }
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Could not interpret '" + aValue + "'");
                 failedRow = row;
@@ -709,16 +698,14 @@ class DirichletBayesImNodeCountsTable extends JTable {
                             "Counts must be nonnegative.");
                     failedRow = row;
                     failedCol = col;
-                }
-                else {
+                } else {
                     getDirichletBayesIm().setPseudocount(getNodeIndex(), row,
                             colIndex, pseudocount);
                     fireTableRowsUpdated(row, row);
                     getPcs().firePropertyChange("editorValueChanged", null,
                             null);
                 }
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Could not interpret '" + aValue + "'");
                 failedRow = row;

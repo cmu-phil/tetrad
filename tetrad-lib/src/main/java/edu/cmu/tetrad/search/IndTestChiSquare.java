@@ -72,6 +72,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     private int df;
 
     /**
+     *
      */
     private double pValue;
 

@@ -24,7 +24,6 @@ import edu.pitt.dbmi.data.reader.Delimiter;
 import java.nio.file.Path;
 
 /**
- *
  * Dec 12, 2018 12:14:52 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

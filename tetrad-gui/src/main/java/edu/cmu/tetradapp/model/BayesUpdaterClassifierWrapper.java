@@ -51,7 +51,7 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
     //==============================CONSTRUCTORS===========================//
 
     public BayesUpdaterClassifierWrapper(BayesImWrapper bayesImWrapper,
-            DataWrapper dataWrapper) {
+                                         DataWrapper dataWrapper) {
         if (bayesImWrapper == null) {
             throw new NullPointerException();
         }
@@ -68,7 +68,7 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
     }
 
     public BayesUpdaterClassifierWrapper(DirichletBayesImWrapper bayesImWrapper,
-            DataWrapper dataWrapper) {
+                                         DataWrapper dataWrapper) {
         if (bayesImWrapper == null) {
             throw new NullPointerException();
         }

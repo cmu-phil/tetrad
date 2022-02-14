@@ -37,7 +37,7 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 final class SessionWrappers {
 
     public static Node addNode(SessionWrapper sessionWrapper, String nodeType,
-            String nodeName, int centerX, int centerY) {
+                               String nodeName, int centerX, int centerY) {
         SessionNodeWrapper node = getNewModelNode(nodeType, nodeName);
         node.setCenter(centerX, centerY);
         sessionWrapper.addNode(node);
@@ -45,7 +45,7 @@ final class SessionWrappers {
     }
 
     public static void addEdge(SessionWrapper sessionWrapper, String nodeName1,
-            String nodeName2) {
+                               String nodeName2) {
 
         // Retrieve the nodes from the session wrapper.
         Node node1 = sessionWrapper.getNode(nodeName1);
@@ -75,7 +75,7 @@ final class SessionWrappers {
     }
 
     private static SessionNodeWrapper getNewModelNode(String nextButtonType,
-            String name) {
+                                                      String name) {
         if (nextButtonType == null) {
             throw new NullPointerException(
                     "Next button type must be a " + "non-null string.");
@@ -91,7 +91,6 @@ final class SessionWrappers {
 
     /**
      * @return the model classes associated with the given button type.
-     *
      * @throws NullPointerException if no classes are stored for the given
      *                              type.
      */

@@ -34,7 +34,7 @@ import java.util.List;
 public class EB implements Algorithm, TakesInitialGraph {
 
     static final long serialVersionUID = 23L;
-    
+
     private Algorithm algorithm = null;
     private Graph initialGraph = null;
 
@@ -47,7 +47,7 @@ public class EB implements Algorithm, TakesInitialGraph {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             initialGraph = algorithm.search(dataSet, parameters);
 
             if (initialGraph != null) {
@@ -75,7 +75,7 @@ public class EB implements Algorithm, TakesInitialGraph {
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -89,7 +89,7 @@ public class EB implements Algorithm, TakesInitialGraph {
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();

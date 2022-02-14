@@ -31,7 +31,8 @@ import Jama.Matrix;
 import static jgpml.covariancefunctions.MatrixOperations.exp;
 import static jgpml.covariancefunctions.MatrixOperations.sumRows;
 
-/** Linear covariance function with Automatic Relevance Determination (ARD). The
+/**
+ * Linear covariance function with Automatic Relevance Determination (ARD). The
  * covariance function is parameterized as:
  * <p>
  * k(x^p,x^q) = x^p'*inv(P)*x^q
@@ -40,23 +41,23 @@ import static jgpml.covariancefunctions.MatrixOperations.sumRows;
  * D is the dimension of the input space. The hyperparameters are:
  * <p>
  * [ log(ell_1)  <br>
- *              log(ell_2)  <br>
- *               .          <br>
- *              log(ell_D) ] <br>
+ * log(ell_2)  <br>
+ * .          <br>
+ * log(ell_D) ] <br>
  * <p>
  * Note that there is no bias term; use covConst to add a bias.
- *
  */
 
-public class CovLINard implements CovarianceFunction{
+public class CovLINard implements CovarianceFunction {
 
     private int D;
 
     /**
      * Creates a new <code>CovSEard CovarianceFunction<code>
+     *
      * @param inputDimension muber of dimension of the input
      */
-    public CovLINard(int inputDimension){
+    public CovLINard(int inputDimension) {
         this.D = inputDimension;
     }
 
@@ -78,15 +79,15 @@ public class CovLINard implements CovarianceFunction{
      */
     public Matrix compute(Matrix loghyper, Matrix X) {
 
-        if(X.getColumnDimension()!=D)
-            throw new IllegalArgumentException("The number of dimensions specified on the covariance function "+D+" must agree with the size of the input vector"+X.getColumnDimension());
-        if(loghyper.getColumnDimension()!=1 || loghyper.getRowDimension()!=numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, "+loghyper.getRowDimension()+" instead of "+numParameters());
+        if (X.getColumnDimension() != D)
+            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + D + " must agree with the size of the input vector" + X.getColumnDimension());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        final Matrix ell = exp(loghyper.getMatrix(0,D-1,0,0));                         // characteristic length scales
-        Matrix diag = new Matrix(D,D);
-        for(int i=0; i<D; i++)
-            diag.set(i,i,1/ell.get(i,0));
+        final Matrix ell = exp(loghyper.getMatrix(0, D - 1, 0, 0));                         // characteristic length scales
+        Matrix diag = new Matrix(D, D);
+        for (int i = 0; i < D; i++)
+            diag.set(i, i, 1 / ell.get(i, 0));
 
         X = X.times(diag);
 
@@ -99,19 +100,19 @@ public class CovLINard implements CovarianceFunction{
      * @param loghyper column <code>Matrix</code> of hyperparameters
      * @param X        input dataset
      * @param Xstar    test set
-     * @return [K(Xstar,Xstar) K(X,Xstar)]
+     * @return [K(Xstar, Xstar) K(X,Xstar)]
      */
     public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
 
-        if(X.getColumnDimension()!=D)
-            throw new IllegalArgumentException("The number of dimensions specified on the covariance function "+D+" must agree with the size of the input vector"+X.getColumnDimension());
-        if(loghyper.getColumnDimension()!=1 || loghyper.getRowDimension()!=numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, "+loghyper.getRowDimension()+" instead of "+numParameters());
+        if (X.getColumnDimension() != D)
+            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + D + " must agree with the size of the input vector" + X.getColumnDimension());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        final Matrix ell = exp(loghyper.getMatrix(0,D-1,0,0));                         // characteristic length scales
-        Matrix diag = new Matrix(D,D);
-        for(int i=0; i<D; i++)
-            diag.set(i,i,1/ell.get(i,0));
+        final Matrix ell = exp(loghyper.getMatrix(0, D - 1, 0, 0));                         // characteristic length scales
+        Matrix diag = new Matrix(D, D);
+        for (int i = 0; i < D; i++)
+            diag.set(i, i, 1 / ell.get(i, 0));
 
         X = X.times(diag);
 
@@ -119,7 +120,7 @@ public class CovLINard implements CovarianceFunction{
         Matrix A = sumRows(Xstar.arrayTimes(Xstar));
 
         Matrix B = X.times(Xstar.transpose());
-        return new Matrix[]{A,B};
+        return new Matrix[]{A, B};
     }
 
     /**
@@ -132,34 +133,33 @@ public class CovLINard implements CovarianceFunction{
      * @return <code>Matrix</code> of derivatives
      */
     public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index) {
-        if(X.getColumnDimension()!=D)
-            throw new IllegalArgumentException("The number of dimensions specified on the covariance function "+D+" must agree with the size of the input vector"+X.getColumnDimension());
-        if(loghyper.getColumnDimension()!=1 || loghyper.getRowDimension()!=numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, "+loghyper.getRowDimension()+" instead of "+numParameters());
-        if(index>numParameters()-1)
-            throw new IllegalArgumentException("Wrong hyperparameters index "+index+" it should be smaller or equal to "+(numParameters()-1));
+        if (X.getColumnDimension() != D)
+            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + D + " must agree with the size of the input vector" + X.getColumnDimension());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
+        if (index > numParameters() - 1)
+            throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
-        final Matrix ell = exp(loghyper.getMatrix(0,D-1,0,0));                         // characteristic length scales
-        Matrix diag = new Matrix(D,D);
-        for(int i=0; i<D; i++)
-            diag.set(i,i,1/ell.get(i,0));
+        final Matrix ell = exp(loghyper.getMatrix(0, D - 1, 0, 0));                         // characteristic length scales
+        Matrix diag = new Matrix(D, D);
+        for (int i = 0; i < D; i++)
+            diag.set(i, i, 1 / ell.get(i, 0));
 
         X = X.times(diag);
 
-        Matrix tmp =  X.getMatrix(0,X.getRowDimension()-1,index,index);
+        Matrix tmp = X.getMatrix(0, X.getRowDimension() - 1, index, index);
         return tmp.times(tmp.transpose()).times(-2);
     }
-
 
 
     public static void main(String[] args) {
 
         CovLINard cf = new CovLINard(6);
 
-        Matrix X = Matrix.identity(6,6);
-        Matrix logtheta = new Matrix(new double[][]{{0.1},{0.2},{0.3},{0.4},{0.5},{0.6}});
+        Matrix X = Matrix.identity(6, 6);
+        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}, {0.3}, {0.4}, {0.5}, {0.6}});
 
-        Matrix z = new Matrix(new double[][]{{1,2,3,4,5,6},{1,2,3,4,5,6}});
+        Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
 
         System.out.println("");
         //Matrix K = cf.compute(logtheta,X);
@@ -170,7 +170,7 @@ public class CovLINard implements CovarianceFunction{
         //res[0].print(res[0].getColumnDimension(), 8);
         //res[1].print(res[1].getColumnDimension(), 8);
 
-        Matrix d = cf.computeDerivatives(logtheta,X,5);
+        Matrix d = cf.computeDerivatives(logtheta, X, 5);
 
         d.print(d.getColumnDimension(), 8);
 

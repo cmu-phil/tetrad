@@ -56,10 +56,11 @@ public class ExampleCompareSimulationDiscrete {
 
         parameters.set("alpha", 0.05, 0.01, 0.001);
         parameters.set("colliderDiscoveryRule", 1, 2, 3);
-        parameters.set("conflictRule", 3);;
+        parameters.set("conflictRule", 3);
+        ;
 
         parameters.set("maxDegree", 100);
-        parameters.set("samplePrior",  1, 5, 10, 15, 20, 25, 30, 50, 80, 100);
+        parameters.set("samplePrior", 1, 5, 10, 15, 20, 25, 30, 50, 80, 100);
         parameters.set("structurePrior", 1, 2, 3, 4, 5);
 
 //        parameters.set("penaltyDiscount", 1, 2, 3, 4);

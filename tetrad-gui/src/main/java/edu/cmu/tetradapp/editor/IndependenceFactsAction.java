@@ -539,8 +539,7 @@ public class IndependenceFactsAction extends AbstractAction {
                 if (xIndex < yIndex) {
                     _x = dataVars.get(_i);
                     _y = dataVars.get(_j);
-                }
-                else {
+                } else {
                     _y = dataVars.get(_i);
                     _x = dataVars.get(_j);
                 }

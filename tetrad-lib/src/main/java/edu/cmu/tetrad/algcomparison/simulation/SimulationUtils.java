@@ -21,7 +21,6 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 
 /**
- *
  * Jun 4, 2019 5:21:45 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

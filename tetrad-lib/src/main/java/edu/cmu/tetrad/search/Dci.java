@@ -281,11 +281,11 @@ public class Dci {
         if (currentUsage > maxMemory) maxMemory = currentUsage;
 
         /*
-        * Step 5 - For each possible skeleton from Step 4 finds every combination
-        * of orienting unshield possible colliders and possible discriminating path
-        * colliders which preserve every d-connection and add only those that
-        * preserve every d-separation to the output set.
-        */
+         * Step 5 - For each possible skeleton from Step 4 finds every combination
+         * of orienting unshield possible colliders and possible discriminating path
+         * colliders which preserve every d-connection and add only those that
+         * preserve every d-separation to the output set.
+         */
         Iterator<Set<Edge>> itr = possibleSkeletons.keySet().iterator();
         while (itr.hasNext()) {
             Set<Edge> edgesToRemove = itr.next();

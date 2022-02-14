@@ -20,7 +20,7 @@ import java.util.Set;
  */
 public class HsimUtils {
     //this method will trim an input graph down to the nodes and edges that are used for evaluation
-    public static Graph evalEdges(Graph inputgraph, Set<Node> simnodes, Set<Node> realnodes){
+    public static Graph evalEdges(Graph inputgraph, Set<Node> simnodes, Set<Node> realnodes) {
         //first, restrict down to subgraph containing only simnods and realnodes
         Set<Node> aNodes = new HashSet<Node>();
         aNodes.addAll(simnodes);
@@ -34,7 +34,7 @@ public class HsimUtils {
         //loop through all edges
         Set<Edge> edges = subgraph.getEdges();
 
-        for(Edge edge : edges) {
+        for (Edge edge : edges) {
             //if the edge connects realnodes to realnodes, remove it
             if (realnodes.contains(edge.getNode1())) {
                 if (realnodes.contains(edge.getNode2())) {
@@ -51,7 +51,7 @@ public class HsimUtils {
         List<Node> pAdd = new ArrayList<Node>();
 
         //loop through inputnodes
-        for(Node node : inputnodes) {
+        for (Node node : inputnodes) {
             //get its parents from graph
             pAdd = inputgraph.getParents(node);
             //merge parents into output
@@ -90,11 +90,11 @@ public class HsimUtils {
 
         double[] output;
         output = new double[5];
-        output[0]=edgeRatio;
-        output[1]=adjRecall;
-        output[2]=adjPrecision;
-        output[3]=arrowRecall;
-        output[4]=arrowPrecision;
+        output[0] = edgeRatio;
+        output[1] = adjRecall;
+        output[2] = adjPrecision;
+        output[3] = arrowRecall;
+        output[4] = arrowPrecision;
 
         return output;
     }
@@ -160,45 +160,47 @@ public class HsimUtils {
         }
         return new VerticalIntDataBox(data);
     }
+
     //returns a String formatted as a latex table, which can be pasted directly into a latex document
-    public static String makeLatexTable(String[][] tablevalues){
+    public static String makeLatexTable(String[][] tablevalues) {
         String nl = System.lineSeparator();
-        String output = "\\begin{table}[ht]"+nl;
-        output = output + "\\begin{center}" +nl;
+        String output = "\\begin{table}[ht]" + nl;
+        output = output + "\\begin{center}" + nl;
         int dim1 = tablevalues.length;
         int dim2 = tablevalues[0].length;
         //determines number of columns in the table
-        output=output + "\\begin{tabular}{|";
-        for (int c=0;c<dim2;c++){
-            output=output+"c|";
+        output = output + "\\begin{tabular}{|";
+        for (int c = 0; c < dim2; c++) {
+            output = output + "c|";
         }
-        output = output + "}"+nl+"\\hline"+nl;
+        output = output + "}" + nl + "\\hline" + nl;
         //fills in values of the table
-        for (int i=0;i<dim1;i++){
-            for (int j=0;j<dim2;j++){
+        for (int i = 0; i < dim1; i++) {
+            for (int j = 0; j < dim2; j++) {
                 output = output + tablevalues[i][j];
-                if (dim2>1 && j!=dim2-1){
-                    output = output+" & ";
+                if (dim2 > 1 && j != dim2 - 1) {
+                    output = output + " & ";
                 }
             }
-            output=output+"\\\\ \\hline" + nl;
+            output = output + "\\\\ \\hline" + nl;
         }
         //caps off the environments used by the table
-        output=output+"\\end{tabular}"+nl+"\\end{center}"+nl+"\\end{table}"+nl;
+        output = output + "\\end{tabular}" + nl + "\\end{center}" + nl + "\\end{table}" + nl;
         return output;
     }
+
     //this turns an array of doubles into an array of strings, formatted for easier reading
     //the input String should be formatted appropriately for the String.format method
-    public static String[] formatErrorsArray(double[] inputArray,String formatting){
+    public static String[] formatErrorsArray(double[] inputArray, String formatting) {
         String[] output = new String[inputArray.length];
-        for (int i=0;i<inputArray.length;i++){
-            output[i]=String.format(formatting,inputArray[i]);
+        for (int i = 0; i < inputArray.length; i++) {
+            output[i] = String.format(formatting, inputArray[i]);
         }
         return output;
     }
-    
+
     //used for making random graphs for SEMS without having to manually constuct the variable set each time
-    public static Graph mkRandSEMDAG(int numVars,int numEdges){
+    public static Graph mkRandSEMDAG(int numVars, int numEdges) {
         List<Node> varslist = new ArrayList<>();
         for (int i = 0; i < numVars; i++) {
             varslist.add(new ContinuousVariable("X" + i));

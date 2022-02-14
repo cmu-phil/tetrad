@@ -61,6 +61,7 @@ public class BayesPmWrapper implements SessionModel {
     private List<BayesPm> bayesPms;
 
     //==============================CONSTRUCTORS=========================//
+
     /**
      * Creates a new BayesPm from the given DAG and uses it to construct a new
      * BayesPm.
@@ -160,7 +161,7 @@ public class BayesPmWrapper implements SessionModel {
      * new BayesPm.
      *
      * @throws RuntimeException If the parent graph cannot be converted into a
-     * DAG.
+     *                          DAG.
      */
     public BayesPmWrapper(GraphWrapper graphWrapper, Parameters params) {
         if (graphWrapper == null) {
@@ -195,7 +196,7 @@ public class BayesPmWrapper implements SessionModel {
     }
 
     public BayesPmWrapper(GraphWrapper graphWrapper,
-            BayesPmWrapper oldBayesPmWrapper, Parameters params) {
+                          BayesPmWrapper oldBayesPmWrapper, Parameters params) {
         try {
             if (graphWrapper == null) {
                 throw new NullPointerException("Graph must not be null.");
@@ -286,7 +287,7 @@ public class BayesPmWrapper implements SessionModel {
     }
 
     public BayesPmWrapper(GraphWrapper graphWrapper,
-            Simulation simulation) {
+                          Simulation simulation) {
         this(graphWrapper, (DataWrapper) simulation);
     }
 
@@ -307,7 +308,7 @@ public class BayesPmWrapper implements SessionModel {
     }
 
     public BayesPmWrapper(BayesEstimatorWrapper wrapper,
-            DataWrapper dataWrapper) {
+                          DataWrapper dataWrapper) {
         this(new Dag(wrapper.getGraph()), dataWrapper);
     }
 
@@ -316,7 +317,7 @@ public class BayesPmWrapper implements SessionModel {
      * new BayesPm.
      *
      * @throws RuntimeException If the parent graph cannot be converted into a
-     * DAG.
+     *                          DAG.
      */
     public BayesPmWrapper(DagWrapper dagWrapper, Parameters params) {
         if (dagWrapper == null) {
@@ -348,7 +349,7 @@ public class BayesPmWrapper implements SessionModel {
     }
 
     public BayesPmWrapper(DagWrapper dagWrapper,
-            BayesPmWrapper oldBayesPmWrapper, Parameters params) {
+                          BayesPmWrapper oldBayesPmWrapper, Parameters params) {
         try {
             if (dagWrapper == null) {
                 throw new NullPointerException("Graph must not be null.");

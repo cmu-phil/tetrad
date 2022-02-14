@@ -43,7 +43,7 @@ public class DeltaTetradTest2 {
     private int df;
     private double chisq;
     private double[][][][] fourthMoment;
-//    private int numVars;
+    //    private int numVars;
 //    private double[] means;
     private List<Node> variables;
     private Map<Node, Integer> variablesHash;

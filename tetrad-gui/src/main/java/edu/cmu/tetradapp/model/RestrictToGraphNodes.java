@@ -101,8 +101,7 @@ public class RestrictToGraphNodes extends DataWrapper {
 
             LogDataUtils.logDataModelList("Parent data restricted to variable in the given graph.", getDataModelList());
             return dataSubset;
-        }
-        else {
+        } else {
             throw new IllegalStateException("Unexpected data type.");
         }
 

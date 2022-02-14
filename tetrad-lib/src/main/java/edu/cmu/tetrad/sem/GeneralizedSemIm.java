@@ -501,7 +501,6 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                 variableValues.put(node.getName(), value);
 
 
-
 //                if (isSimulatePositiveDataOnly() && value < 0) {
 //                    row--;
 //                    continue ROW;

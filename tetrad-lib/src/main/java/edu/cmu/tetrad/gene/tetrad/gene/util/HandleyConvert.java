@@ -58,8 +58,7 @@ public class HandleyConvert {
                 addEdges(line, lagGraph);
             }
             out.print(lagGraph);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -109,8 +108,7 @@ public class HandleyConvert {
 
             new HandleyConvert().convert(in, out);
             out.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

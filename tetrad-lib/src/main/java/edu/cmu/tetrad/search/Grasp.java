@@ -142,17 +142,17 @@ public class Grasp {
 
         // GRaSP-TSP
         if (ordered && uncoveredDepth != 0 && nonSingularDepth != 0) {
-            depths.add(new int[] {depth < 1 ? Integer.MAX_VALUE : depth, 0, 0});
+            depths.add(new int[]{depth < 1 ? Integer.MAX_VALUE : depth, 0, 0});
         }
 
         // GRaSP-ESP
         if (ordered && nonSingularDepth != 0) {
-            depths.add(new int[] {depth < 1 ? Integer.MAX_VALUE : depth,
+            depths.add(new int[]{depth < 1 ? Integer.MAX_VALUE : depth,
                     uncoveredDepth < 0 ? Integer.MAX_VALUE : uncoveredDepth, 0});
         }
 
         // GRaSP
-        depths.add(new int[] {depth < 1 ? Integer.MAX_VALUE : depth,
+        depths.add(new int[]{depth < 1 ? Integer.MAX_VALUE : depth,
                 uncoveredDepth < 0 ? Integer.MAX_VALUE : uncoveredDepth,
                 nonSingularDepth < 0 ? Integer.MAX_VALUE : nonSingularDepth});
 
@@ -318,7 +318,7 @@ public class Grasp {
     }
 
     public void setOrdered(boolean ordered) {
-        this.ordered = ordered  ;
+        this.ordered = ordered;
     }
 
     public void setUsePearl(boolean usePearl) {

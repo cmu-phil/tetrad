@@ -52,20 +52,16 @@ class DataCellEditor extends DefaultCellEditor {
             public void setValue(Object value) {
                 if (value == null) {
                     textField.setText("");
-                }
-                else if (value instanceof String) {
+                } else if (value instanceof String) {
                     textField.setText((String) value);
-                }
-                else if (value instanceof Integer) {
+                } else if (value instanceof Integer) {
                     textField.setText(value.toString());
-                }
-                else if (value instanceof Double) {
+                } else if (value instanceof Double) {
                     double doubleValue = (Double) value;
 
                     if (Double.isNaN(doubleValue)) {
                         textField.setText("");
-                    }
-                    else {
+                    } else {
                         textField.setText(nf.format(doubleValue));
                     }
                 }

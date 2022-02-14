@@ -40,7 +40,7 @@ import java.util.List;
  * likelihood method.
  *
  * @author Frank Wimberly based on related classes by Shane Harwood, Joseph
- *         Ramsey
+ * Ramsey
  */
 public final class EmBayesEstimator {
     private BayesPm bayesPm;

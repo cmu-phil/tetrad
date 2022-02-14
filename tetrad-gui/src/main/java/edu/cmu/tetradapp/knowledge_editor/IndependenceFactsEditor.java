@@ -116,8 +116,7 @@ public class IndependenceFactsEditor extends JPanel {
                     String text = getTextArea().getText();
                     facts.setFacts(IndependenceFactsModel.loadFacts(new CharArrayReader(text.toCharArray())).getFacts());
                     getTextArea().setText(facts.toString());
-                }
-                catch (Exception e1) {
+                } catch (Exception e1) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             e1.getMessage());
                 }

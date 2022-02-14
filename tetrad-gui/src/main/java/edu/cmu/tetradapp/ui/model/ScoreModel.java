@@ -25,7 +25,6 @@ import edu.cmu.tetrad.util.ScoreDescriptions;
 import java.io.Serializable;
 
 /**
- *
  * Dec 1, 2017 11:37:56 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

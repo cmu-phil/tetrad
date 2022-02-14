@@ -84,7 +84,7 @@ public class TestLingamPattern {
 
         double[] pvals = lingam.getPValues();
 
-        double[] expectedPVals = {0.18,0.29,0.88,0.00,0.01,0.57};
+        double[] expectedPVals = {0.18, 0.29, 0.88, 0.00, 0.01, 0.57};
 
         for (int i = 0; i < pvals.length; i++) {
             assertEquals(expectedPVals[i], pvals[i], 0.01);
@@ -95,7 +95,7 @@ public class TestLingamPattern {
      * This simulates data by picking random values for the exogenous terms and percolating this information down
      * through the SEM, assuming it is acyclic. Fast for large simulations but hangs for cyclic models.
      *
-     * @param sampleSize    > 0.
+     * @param sampleSize > 0.
      * @return the simulated data set.
      */
     private DataSet simulateDataNonNormal(SemIm semIm, int sampleSize,
@@ -126,7 +126,7 @@ public class TestLingamPattern {
             Node node = variableNodes.get(i);
             List<Node> parents = graph.getParents(node);
 
-            for (Iterator<Node> j = parents.iterator(); j.hasNext();) {
+            for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
                 Node _node = j.next();
 
                 if (_node.getNodeType() == NodeType.ERROR) {

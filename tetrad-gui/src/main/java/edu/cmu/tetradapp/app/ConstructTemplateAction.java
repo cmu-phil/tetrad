@@ -48,11 +48,11 @@ final class ConstructTemplateAction extends AbstractAction {
      * The names of the templates supported by this action.
      */
     private static final String[] TEMPLATE_NAMES = new String[]{
-        "Simulate from a given graph, then search",
-        "Simulate, search, then compare",
-        "Load data and search",
-        "Search then estimate",
-        "Search, estimate, then update",
+            "Simulate from a given graph, then search",
+            "Simulate, search, then compare",
+            "Load data and search",
+            "Search then estimate",
+            "Search, estimate, then update",
 //        "MIMBuild" // Removed 4/9/2019 Folded into FOFC
     };
 
@@ -72,6 +72,7 @@ final class ConstructTemplateAction extends AbstractAction {
     private SessionEditorWorkbench sessionWorkbench;
 
     //============================CONSTUCTORS============================//
+
     /**
      * Constucts an action for adding a new template to the frontmost session.
      */
@@ -87,6 +88,7 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     //==========================PUBLIC METHODS===========================//
+
     /**
      * @return a copy of the template names. Must be public.
      */
@@ -462,7 +464,7 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private Node addNode(String nodeType, String nodeName, int centerX,
-            int centerY) {
+                         int centerY) {
         SessionNodeWrapper node = getNewModelNode(nodeType, nodeName);
         node.setCenter(centerX, centerY);
         getSessionWrapper().addNode(node);
@@ -479,13 +481,13 @@ final class ConstructTemplateAction extends AbstractAction {
         if (node1 == null) {
             throw new RuntimeException(
                     "There was no node by name nodeName1 in "
-                    + "the session wrapper: " + nodeName1);
+                            + "the session wrapper: " + nodeName1);
         }
 
         if (node2 == null) {
             throw new RuntimeException(
                     "There was no node by name nodeName2 in "
-                    + "the session wrapper: " + nodeName2);
+                            + "the session wrapper: " + nodeName2);
         }
 
         // Construct an edge.
@@ -501,7 +503,7 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private static SessionNodeWrapper getNewModelNode(String nextButtonType,
-            String name) {
+                                                      String name) {
         if (nextButtonType == null) {
             throw new NullPointerException(
                     "Next button type must be a " + "non-null string.");

@@ -74,11 +74,10 @@ class EvidenceEditorObs extends JPanel {
         buttons = new JToggleButton[evidence.getNumNodes()][];
 
         for (int i = 0; i < evidence.getNumNodes(); i++) {
-			// skip latent variables
-			if (evidence.getNode(i).getNodeType() == NodeType.LATENT)
-			{
-				continue;
-			}
+            // skip latent variables
+            if (evidence.getNode(i).getNodeType() == NodeType.LATENT) {
+                continue;
+            }
             Box c = Box.createHorizontalBox();
             c.add(new JLabel(evidence.getNode(i).getName() + ":  ") {
                 public Dimension getMaximumSize() {
@@ -121,32 +120,28 @@ class EvidenceEditorObs extends JPanel {
                         if (proposition.getNumAllowed(i) ==
                                 getEvidence().getNumCategories(i)) {
                             proposition.setCategory(i, j);
-							// for now, all evidence is assumed to be manipulated
-							// (for identifiability)
-							getEvidence().setManipulated(i, true);
-							JCheckBox checkbox = variablesToCheckboxes.get(i);
-							checkbox.setSelected(true);
-                        }
-                        else if (proposition.getNumAllowed(i) == 1) {
+                            // for now, all evidence is assumed to be manipulated
+                            // (for identifiability)
+                            getEvidence().setManipulated(i, true);
+                            JCheckBox checkbox = variablesToCheckboxes.get(i);
+                            checkbox.setSelected(true);
+                        } else if (proposition.getNumAllowed(i) == 1) {
                             if (proposition.getSingleCategory(i) == j) {
                                 proposition.removeCategory(i, j);
-                            }
-                            else { 
-								// disallow selecting more than one category 
-								// in a variable
+                            } else {
+                                // disallow selecting more than one category
+                                // in a variable
                                 if ((ActionEvent.SHIFT_MASK &
                                         e.getModifiers()) != 1) {
                                     proposition.setVariable(i, false);
                                 }
                                 //proposition.addCategory(i, j);
-								proposition.setCategory(i, j);
+                                proposition.setCategory(i, j);
                             }
-                        }
-                        else { // toggle
+                        } else { // toggle
                             if (proposition.isAllowed(i, j)) {
                                 proposition.removeCategory(i, j);
-                            }
-                            else {
+                            } else {
                                 proposition.addCategory(i, j);
                             }
                         }
@@ -185,12 +180,11 @@ class EvidenceEditorObs extends JPanel {
                                 "Please choose a single category to manipulate on.");
                         checkbox.setSelected(false);
                         getEvidence().setManipulated(variable, false);
-                    }
-                    else {
-						// for now, always check the manipulated checkbox
-						// (for identifiability) whenever some variable value
-						// is selected
-						getEvidence().setManipulated(variable, true);
+                    } else {
+                        // for now, always check the manipulated checkbox
+                        // (for identifiability) whenever some variable value
+                        // is selected
+                        getEvidence().setManipulated(variable, true);
                         checkbox.setSelected(true);
                     }
                 }
@@ -212,8 +206,7 @@ class EvidenceEditorObs extends JPanel {
 
             if (!proposition.isUnconditioned(_i) && proposition.isAllowed(_i, _j)) {
                 _button.setBackground(Color.LIGHT_GRAY);
-            }
-            else {
+            } else {
                 _button.setBackground(Color.WHITE);
             }
         }
@@ -228,8 +221,7 @@ class EvidenceEditorObs extends JPanel {
             for (int j = 0; j < buttons[variable].length; j++) {
                 buttons[variable][j].setSelected(false);
             }
-        }
-        else {
+        } else {
             for (int j = 0; j < buttons[variable].length; j++) {
                 buttons[variable][j].setSelected(
                         evidence.getProposition().isAllowed(variable, j));
@@ -241,7 +233,7 @@ class EvidenceEditorObs extends JPanel {
             checkbox.setSelected(false);
             getEvidence().setManipulated(variable, false);
         }
-        
+
 
         highlightCorrectly(evidence.getProposition());
     }

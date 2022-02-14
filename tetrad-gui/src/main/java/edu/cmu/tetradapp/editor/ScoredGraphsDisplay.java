@@ -105,8 +105,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
                     dags.add(dag);
                 }
             }
-        }
-        else {
+        } else {
             for (Graph dag : dagsToScores.keySet()) {
                 dags.add(dag);
             }
@@ -208,8 +207,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
 
         if (Double.isNaN(score)) {
             text = "Not provided";
-        }
-        else {
+        } else {
             text = nf.format(score);
         }
 
@@ -225,8 +223,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
             if (comp instanceof DisplayNode) {
                 selectedModelComponents.add(
                         ((DisplayNode) comp).getModelNode());
-            }
-            else if (comp instanceof DisplayEdge) {
+            } else if (comp instanceof DisplayEdge) {
                 selectedModelComponents.add(
                         ((DisplayEdge) comp).getModelEdge());
             }

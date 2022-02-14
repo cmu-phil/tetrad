@@ -49,7 +49,8 @@ public class RegressionCovariance implements Regression {
      */
     private CorrelationMatrix correlations;
 
-    /**2
+    /**
+     * 2
      * The standard deviations for the variable in <code>correlations</code>.
      */
     private Vector sd;

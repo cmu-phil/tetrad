@@ -115,7 +115,7 @@ public class TsFciRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        if(this.knowledge == null) {
+        if (this.knowledge == null) {
             knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
         } /*else {knowledge = this.knowledge;}*/
         Parameters searchParams = getParams();

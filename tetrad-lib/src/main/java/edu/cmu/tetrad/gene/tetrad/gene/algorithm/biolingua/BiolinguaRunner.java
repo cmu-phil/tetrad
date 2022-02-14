@@ -83,7 +83,7 @@ public class BiolinguaRunner {
         System.exit(exitCode);
     }
 
-    public static void main(String args []) {
+    public static void main(String args[]) {
         if ((args.length > 0) && (args[0].equals("/?"))) {
             // Help invoked, or no arguments -> show usage info
             usageInfo(true);
@@ -118,8 +118,7 @@ public class BiolinguaRunner {
                     continue;
                 }
                 bailout("Unrecognized parameter  " + arg, true, 2);
-            }
-            catch (Exception xcp) {
+            } catch (Exception xcp) {
                 bailout("Unable to parse value from parameter  " + arg, true,
                         1);
             }
@@ -143,8 +142,7 @@ public class BiolinguaRunner {
                     Biolingua.BiolinguaAlgorithm(cm, g, ka, ke, kl, kp);
 
             System.out.println("\nFinal Graph:\n" + result);
-        }
-        catch (Exception xcp) {
+        } catch (Exception xcp) {
             System.out.println("Watch out!!!!  There was an exception:");
             xcp.printStackTrace();
         }

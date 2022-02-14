@@ -41,6 +41,7 @@ public class TestIndexedConnectivity extends TestCase {
     }
 
     /**
+     *
      */
     public void testConstruction() {
         LagGraph lagGraph = new BasicLagGraph();

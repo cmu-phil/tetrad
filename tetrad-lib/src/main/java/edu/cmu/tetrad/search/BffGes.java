@@ -370,9 +370,9 @@ public final class BffGes implements Bff {
 
 
     /*
-    * Do an actual insertion
-    * (Definition 12 from Chickering, 2002).
-    **/
+     * Do an actual insertion
+     * (Definition 12 from Chickering, 2002).
+     **/
 
     private void tryInsert(Node x, Node y, Set<Node> subset, Graph graph, boolean log) {
         graph.addDirectedEdge(x, y);
@@ -489,9 +489,9 @@ public final class BffGes implements Bff {
     }
 
     /*
-    * Test if the candidate insertion is a valid operation
-    * (Theorem 15 from Chickering, 2002).
-    **/
+     * Test if the candidate insertion is a valid operation
+     * (Theorem 15 from Chickering, 2002).
+     **/
 
     private boolean validInsert(Node x, Node y, Set<Node> subset, Graph graph) {
         List<Node> naYXT = new LinkedList<>(subset);
@@ -766,7 +766,7 @@ public final class BffGes implements Bff {
         private double fml;
         private double chisq;
         private double bic;
-//        private double aic;
+        //        private double aic;
         private int dof;
 
         public Score(Scorer scorer) {

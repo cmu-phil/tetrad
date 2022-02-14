@@ -21,7 +21,6 @@ package edu.cmu.tetrad.annotation;
 import java.lang.annotation.*;
 
 /**
- *
  * Sep 19, 2017 1:56:20 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

@@ -73,8 +73,7 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
                 try {
                     params.set("tolerance", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }

@@ -30,7 +30,7 @@ public class FgsApiExample {
 
         // Read in the data
         // set path to data
-        Path dataFile = Paths.get("./tetrad-lib/src/test/resources/","iq_brain_size.tetrad.txt");
+        Path dataFile = Paths.get("./tetrad-lib/src/test/resources/", "iq_brain_size.tetrad.txt");
 
         // data file settings
         Delimiter delimiter = Delimiter.WHITESPACE;
@@ -56,9 +56,8 @@ public class FgsApiExample {
         dataReader.determineDiscreteDataColumns(dataColumns, numberOfCategories, hasHeader);
 
         // actually read in the data
-        Data data = dataReader.read(dataColumns, hasHeader, null)  ;
+        Data data = dataReader.read(dataColumns, hasHeader, null);
         DataModel dataModel = DataConvertUtils.toDataModel(data);
-
 
 
         // Select search algorithm
@@ -72,9 +71,7 @@ public class FgsApiExample {
         //Algorithm fges = AlgorithmFactory.create(Fges.class, null, BdeuScore.class);
 
         // for mixed data can use Conditional Gaussian
-        Algorithm fges = AlgorithmFactory.create(Fges.class, null , ConditionalGaussianBicScore.class);
-
-
+        Algorithm fges = AlgorithmFactory.create(Fges.class, null, ConditionalGaussianBicScore.class);
 
 
         // Set algorithm parameters

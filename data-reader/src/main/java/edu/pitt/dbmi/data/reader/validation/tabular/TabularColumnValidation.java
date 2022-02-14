@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 /**
- *
  * Dec 12, 2018 2:34:56 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

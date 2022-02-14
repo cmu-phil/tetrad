@@ -43,7 +43,6 @@ import java.util.stream.Stream;
 import static java.lang.System.out;
 
 /**
- *
  * Nov 14, 2017 5:24:51 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

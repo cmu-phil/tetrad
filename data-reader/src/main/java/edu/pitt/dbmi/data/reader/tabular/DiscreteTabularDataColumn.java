@@ -24,7 +24,6 @@ import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
 import java.util.*;
 
 /**
- *
  * Dec 31, 2018 1:20:24 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

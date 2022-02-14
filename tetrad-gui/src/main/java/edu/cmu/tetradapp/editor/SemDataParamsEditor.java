@@ -71,8 +71,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
                 try {
                     getParams().set("sampleSize", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -85,8 +84,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
                 try {
                     getParams().set("numDataSets", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -97,9 +95,9 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
         JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
                 getParams().getBoolean("latentDataSaved", false));
         latentDataSaved.setHorizontalTextPosition(SwingConstants.LEFT);
-        latentDataSaved.addActionListener(new ActionListener(){
+        latentDataSaved.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JCheckBox b = (JCheckBox)e.getSource();
+                JCheckBox b = (JCheckBox) e.getSource();
                 getParams().set("includeLatents", b.isSelected());
             }
         });

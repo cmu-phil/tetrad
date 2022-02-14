@@ -69,8 +69,8 @@ final class PossibleDsepCfci {
     private int maxReachablePathLength = -1;
 
     /**
-     * @param graph             The GaSearchGraph on which to work
-     * @param test              The IndependenceChecker to use as an oracle
+     * @param graph The GaSearchGraph on which to work
+     * @param test  The IndependenceChecker to use as an oracle
      */
     public PossibleDsepCfci(Graph graph, IndependenceTest test,
                             Set<Triple> unfaithfulTriples) {

@@ -119,8 +119,7 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
 
         if (dataModel1 != null) {
             varNames = new ArrayList(dataModel1.getVariableNames());
-        }
-        else if (graph != null) {
+        } else if (graph != null) {
             Iterator it = graph.getNodes().iterator();
             varNames = new ArrayList();
 
@@ -133,8 +132,7 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
                     varNames.add(temp.getName());
                 }
             }
-        }
-        else {
+        } else {
             throw new NullPointerException(
                     "Null model (no graph or data model " +
                             "passed to the search).");
@@ -149,8 +147,7 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
                     params.set("depth", value);
                     Preferences.userRoot().putInt("depth", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -167,8 +164,7 @@ public final class SearchParamEditor extends JPanel implements ParameterEditor {
                         params.set("alpha", 0.001);
                         Preferences.userRoot().putDouble("alpha", value);
                         return value;
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         return oldValue;
                     }
                 }

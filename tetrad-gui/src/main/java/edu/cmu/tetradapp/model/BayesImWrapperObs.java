@@ -191,6 +191,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
 //
 //        log(bayesIm);
 //    }
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      *

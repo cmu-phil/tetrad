@@ -53,6 +53,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
     public TsFciRunner2(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
+
     /**
      * Constructs a wrapper for the given DataWrapper. The DataWrapper must
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
@@ -114,12 +115,11 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
         IndependenceTest independenceTest = getIndependenceTest();
         Score score = new ScoredIndTest(independenceTest);
 
-        if (independenceTest instanceof  IndTestDSep) {
+        if (independenceTest instanceof IndTestDSep) {
             final DagToPag2 dagToPag = new DagToPag2(((IndTestDSep) independenceTest).getGraph());
             dagToPag.setCompleteRuleSetUsed(params.getBoolean("completeRuleSetUsed", false));
             graph = dagToPag.convert();
-        }
-        else {
+        } else {
             GFci fci = new GFci(independenceTest, score);
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(params.getBoolean("completeRuleSetUsed", false));
@@ -132,11 +132,9 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else if (knowledge.isDefaultToKnowledgeLayout()) {
+        } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
@@ -156,8 +154,7 @@ public class TsFciRunner2 extends AbstractAlgorithmRunner
         if (getParams() instanceof Parameters) {
             Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
-        }
-        else {
+        } else {
             Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }

@@ -43,7 +43,7 @@ public class ExampleNonlinearSave {
         parameters.set("percentDiscrete", 0);
         parameters.set("minCategories", 2);
         parameters.set("maxCategories", 5);
-        parameters.set("differentGraphs",true);
+        parameters.set("differentGraphs", true);
 
         parameters.set("interceptLow", 0);
         parameters.set("interceptHigh", 1);

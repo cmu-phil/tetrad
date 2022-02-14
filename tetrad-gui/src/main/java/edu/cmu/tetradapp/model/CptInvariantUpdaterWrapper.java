@@ -128,8 +128,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
             bayesUpdater = new CptInvariantUpdater(bayesIm);
-        }
-        else {
+        } else {
             bayesUpdater = new CptInvariantUpdater(bayesIm,
                     (Evidence) params.get("evidence", null));
         }

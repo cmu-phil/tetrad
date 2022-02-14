@@ -76,6 +76,7 @@ final class SessionEditorToolbar extends JPanel {
     private SessionEditorWorkbench workbench;
 
     //=============================CONSTRUCTORS==========================//
+
     /**
      * Constructs a new session toolbar.
      *
@@ -98,39 +99,39 @@ final class SessionEditorToolbar extends JPanel {
       Node infos for all of the nodes.
          */
         ButtonInfo[] buttonInfos = new ButtonInfo[]{
-            new ButtonInfo("Select", "Select and Move", "move",
-            "<html>Select and move nodes or groups of nodes "
-            + "<br>on the workbench.</html>"),
-            new ButtonInfo("Edge", "Draw Edge", "flow",
-            "<html>Add an edge from one node to another to declare"
-            + "<br>that the object in the first node should be used "
-            + "<br>to construct the object in the second node."
-            + "<br>As a shortcut, hold down the Control key."
-            + "</html>"),
-            new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
-            new ButtonInfo("Compare", "Compare", "compare",
-            "<html>Add a node to compare graphs or SEM IM's.</html>"),
-            new ButtonInfo("PM", "Parametric Model", "pm",
-            "<html>Add a node for a parametric model.</html>"),
-            new ButtonInfo("IM", "Instantiated Model", "im",
-            "<html>Add a node for an instantiated model.</html>"),
-            new ButtonInfo("Estimator", "Estimator", "estimator",
-            "<html>Add a node for an estimator.</html>"),
-            new ButtonInfo("Data", "Data", "data",
-            "<html>Add a node for a data object.</html>"),
-            new ButtonInfo("Simulation", "Simulation", "simulation",
-            "<html>Add a node for a simulation object.</html>"),
-            new ButtonInfo("Search", "Search", "search",
-            "<html>Add a node for a search algorithm.</html>"),
-            new ButtonInfo("Updater", "Updater", "updater",
-            "<html>Add a node for an updater.</html>"),
-            //new ButtonInfo("Classify", "Classify", "search",
-            //"<html>Add a node for a classifier.</html>"),
-            new ButtonInfo("Regression", "Regression", "regression",
-            "<html>Add a node for a regression.</html>"),
-            new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
-            new ButtonInfo("Note", "Note", "note",
-            "<html>Add a note to the session.</html>")
+                new ButtonInfo("Select", "Select and Move", "move",
+                        "<html>Select and move nodes or groups of nodes "
+                                + "<br>on the workbench.</html>"),
+                new ButtonInfo("Edge", "Draw Edge", "flow",
+                        "<html>Add an edge from one node to another to declare"
+                                + "<br>that the object in the first node should be used "
+                                + "<br>to construct the object in the second node."
+                                + "<br>As a shortcut, hold down the Control key."
+                                + "</html>"),
+                new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
+                new ButtonInfo("Compare", "Compare", "compare",
+                        "<html>Add a node to compare graphs or SEM IM's.</html>"),
+                new ButtonInfo("PM", "Parametric Model", "pm",
+                        "<html>Add a node for a parametric model.</html>"),
+                new ButtonInfo("IM", "Instantiated Model", "im",
+                        "<html>Add a node for an instantiated model.</html>"),
+                new ButtonInfo("Estimator", "Estimator", "estimator",
+                        "<html>Add a node for an estimator.</html>"),
+                new ButtonInfo("Data", "Data", "data",
+                        "<html>Add a node for a data object.</html>"),
+                new ButtonInfo("Simulation", "Simulation", "simulation",
+                        "<html>Add a node for a simulation object.</html>"),
+                new ButtonInfo("Search", "Search", "search",
+                        "<html>Add a node for a search algorithm.</html>"),
+                new ButtonInfo("Updater", "Updater", "updater",
+                        "<html>Add a node for an updater.</html>"),
+                //new ButtonInfo("Classify", "Classify", "search",
+                //"<html>Add a node for a classifier.</html>"),
+                new ButtonInfo("Regression", "Regression", "regression",
+                        "<html>Add a node for a regression.</html>"),
+                new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
+                new ButtonInfo("Note", "Note", "note",
+                        "<html>Add a note to the session.</html>")
         };
         JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
 
@@ -257,6 +258,7 @@ final class SessionEditorToolbar extends JPanel {
 //        edgeButton.doClick();
 //        edgeButton.requestFocus();
 //    }
+
     /**
      * True iff the toolbar is responding to events. This may need to be turned
      * off temporarily.
@@ -279,6 +281,7 @@ final class SessionEditorToolbar extends JPanel {
     }
 
     //===========================PRIVATE METHODS=========================//
+
     /**
      * Constructs the button with the given node type and image prefix. If the
      * node type is "Select", constructs a button that allows nodes to be
@@ -405,6 +408,7 @@ final class SessionEditorToolbar extends JPanel {
 //    private void setControlDown(boolean shiftDown) {
 //        this.shiftDown = shiftDown;
 //    }
+
     /**
      * Holds info for constructing a single button.
      */
@@ -435,7 +439,7 @@ final class SessionEditorToolbar extends JPanel {
         private final String toolTipText;
 
         public ButtonInfo(String nodeTypeName, String displayName,
-                String imagePrefix, String toolTipText) {
+                          String imagePrefix, String toolTipText) {
             this.nodeTypeName = nodeTypeName;
             this.displayName = displayName;
             this.imagePrefix = imagePrefix;

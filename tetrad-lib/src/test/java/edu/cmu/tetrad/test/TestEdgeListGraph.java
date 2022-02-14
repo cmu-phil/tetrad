@@ -108,8 +108,7 @@ public final class TestEdgeListGraph {
 
         try {
             graph.addDirectedEdge(x1, x3);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             fail("This should have been ignored.");
         }
 

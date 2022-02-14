@@ -59,9 +59,9 @@ public class GlassoRunner extends AbstractAlgorithmRunner
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-//     * @see edu.cmu.TestSerialization
-//     * @see TetradSerializableUtils
+     * <p>
+     * //     * @see edu.cmu.TestSerialization
+     * //     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -160,9 +160,9 @@ public class GlassoRunner extends AbstractAlgorithmRunner
 
     //========================== Private Methods ===============================//
 
-    private boolean isAggressivelyPreventCycles(){
+    private boolean isAggressivelyPreventCycles() {
         Parameters params = getParams();
-        if(params instanceof Parameters){
+        if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;

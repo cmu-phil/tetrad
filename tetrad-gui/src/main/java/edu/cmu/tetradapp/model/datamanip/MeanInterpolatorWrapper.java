@@ -36,7 +36,6 @@ public class MeanInterpolatorWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-
     public MeanInterpolatorWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
@@ -46,7 +45,7 @@ public class MeanInterpolatorWrapper extends DataWrapper {
             throw new IllegalArgumentException("Data must be tabular");
         }
         DataFilter interpolator = new MeanInterpolator();
-        this.setDataModel(interpolator.filter((DataSet)model));
+        this.setDataModel(interpolator.filter((DataSet) model));
         this.setSourceGraph(data.getSourceGraph());
 
         LogDataUtils.logDataModelList("Replaces missing values in parent data by means of columns.", getDataModelList());

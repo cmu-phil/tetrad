@@ -37,6 +37,7 @@ public interface GraphEditable {
 
     /**
      * Sets the name of the editor.
+     *
      * @param name The name to be set.
      */
     void setName(String name);
@@ -50,8 +51,9 @@ public interface GraphEditable {
     /**
      * Pastes a list of components (display nodes and display edges) into the
      * workbench of the editor.
+     *
      * @param sessionElements The session elements.
-     * @param upperLeft the upper left point of the paste area.
+     * @param upperLeft       the upper left point of the paste area.
      */
     void pasteSubsession(List sessionElements, Point upperLeft);
 
@@ -67,6 +69,7 @@ public interface GraphEditable {
 
     /**
      * Sets the graph.
+     *
      * @param graph The graph to be set.
      */
     void setGraph(Graph graph);

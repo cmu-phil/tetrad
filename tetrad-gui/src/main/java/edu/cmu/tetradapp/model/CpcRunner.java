@@ -59,14 +59,14 @@ public class CpcRunner extends AbstractAlgorithmRunner
     public CpcRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
-    
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
     public CpcRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
-    
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
@@ -80,14 +80,14 @@ public class CpcRunner extends AbstractAlgorithmRunner
     public CpcRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
-    
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
     public CpcRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
-    
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
@@ -95,14 +95,14 @@ public class CpcRunner extends AbstractAlgorithmRunner
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
     public CpcRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
-    
+
     public CpcRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
@@ -110,7 +110,7 @@ public class CpcRunner extends AbstractAlgorithmRunner
     public CpcRunner(DagWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
-    
+
     public CpcRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
@@ -118,12 +118,12 @@ public class CpcRunner extends AbstractAlgorithmRunner
     public CpcRunner(SemGraphWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
-    
+
     public CpcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.trueGraph = graphWrapper.getGraph();
     }
-    
+
     public CpcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.trueGraph = graphWrapper.getGraph();
@@ -159,18 +159,15 @@ public class CpcRunner extends AbstractAlgorithmRunner
 
             if (getSourceGraph() != null) {
                 GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-            }
-            else if (knowledge.isDefaultToKnowledgeLayout()) {
+            } else if (knowledge.isDefaultToKnowledgeLayout()) {
                 SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-            }
-            else {
+            } else {
                 GraphUtils.circleLayout(graph, 200, 200, 150);
             }
 
             setResultGraph(graph);
 
-        }
-        else {
+        } else {
             Cpc cpc = new Cpc(getIndependenceTest());
             cpc.setKnowledge(knowledge);
             cpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
@@ -179,11 +176,9 @@ public class CpcRunner extends AbstractAlgorithmRunner
 
             if (getSourceGraph() != null) {
                 GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-            }
-            else if (knowledge.isDefaultToKnowledgeLayout()) {
+            } else if (knowledge.isDefaultToKnowledgeLayout()) {
                 SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-            }
-            else {
+            } else {
                 GraphUtils.circleLayout(graph, 200, 200, 150);
             }
 

@@ -172,7 +172,7 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     }
 
     //============================= Private Methods ================================//
-   
+
 
     /**
      * Basic wrapper class.

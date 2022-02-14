@@ -112,12 +112,12 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         for (int i = 0; i < this.tree.getRowCount(); i++) {
             this.tree.expandRow(i);
         }
-        this.tree.addTreeSelectionListener(new TreeSelectionListener(){
+        this.tree.addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
                 TreePath path = e.getPath();
                 Object selected = path.getLastPathComponent();
-                if(selected instanceof ModelWrapper){
-                    String name = ((ModelWrapper)selected).name;
+                if (selected instanceof ModelWrapper) {
+                    String name = ((ModelWrapper) selected).name;
                     Preferences.userRoot().put(nodeId, name);
                 }
             }
@@ -135,8 +135,8 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
         if (storedModelType.length() != 0) {
             for (Map.Entry<String, List<ModelWrapper>> entry : model.map.entrySet()) {
-                for(ModelWrapper wrapper : entry.getValue()){
-                    if(storedModelType.equals(wrapper.name)){
+                for (ModelWrapper wrapper : entry.getValue()) {
+                    if (storedModelType.equals(wrapper.name)) {
                         Object[] path = new Object[]{ChooserTreeModel.ROOT, entry.getKey(), wrapper};
                         this.tree.setSelectionPath(new TreePath(path));
                         break;
@@ -288,7 +288,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
                 if (!this.categories.contains(category)) {
                     this.categories.add(category);
                 }
-                
+
                 List<ModelWrapper> models = map.get(category);
                 if (models == null) {
                     models = new LinkedList<>();

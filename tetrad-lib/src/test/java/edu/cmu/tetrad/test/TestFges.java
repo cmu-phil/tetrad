@@ -294,7 +294,7 @@ public class TestFges {
         assertEquals(mb1, mb2);
     }
 
-//    @Test
+    //    @Test
     public void testFgesMbFromGraph() {
         RandomUtil.getInstance().setSeed(1450184147770L);
 
@@ -814,7 +814,7 @@ public class TestFges {
         }
     }
 
-//    @Test
+    //    @Test
     public void testFromGraphWithRequiredKnowledge() {
         int numNodes = 20;
         int numIterations = 20;
@@ -1559,7 +1559,7 @@ public class TestFges {
 
     }
 
-//    @Test
+    //    @Test
     public void test7() {
         for (int i = 0; i < 10; i++) {
 

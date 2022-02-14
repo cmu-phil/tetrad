@@ -58,8 +58,8 @@ public class GraphWithParameters {
 //	public Dag patDag = null; //only non-null when graph is a pattern
 
     /*
-      * estimate the weights for the nodes that have all parents determined.
-      */
+     * estimate the weights for the nodes that have all parents determined.
+     */
     //it would have been more efficient to only regression on the nodes that matter
 
     public GraphWithParameters(SemIm semIm, Graph truePattern) {
@@ -298,7 +298,7 @@ public class GraphWithParameters {
     /**
      * evalute coefficients for some node pairs
      *
-     * @param edges         edges from the pattern returned by PC-search
+     * @param edges edges from the pattern returned by PC-search
      */
     public CoefficientEvaluationResult evalCoeffsForNodePairs(GraphWithParameters standardGraph, List<Edge> edges) {
 

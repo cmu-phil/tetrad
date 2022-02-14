@@ -46,7 +46,7 @@ public class MVPScore implements Score {
 
     public MVPScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
-            if (dataSet == null) {
+        if (dataSet == null) {
             throw new NullPointerException();
         }
 

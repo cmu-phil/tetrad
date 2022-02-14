@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package edu.cmu.tetradapp.editor;
 
@@ -25,28 +25,28 @@ import java.util.List;
  */
 public class HideShowNoConnectionNodesAction extends AbstractAction implements ClipboardOwner {
 
-	private static final long serialVersionUID = 1843073951524699538L;
+    private static final long serialVersionUID = 1843073951524699538L;
 
-	/**
+    /**
      * The desktop containing the target session editor.
      */
     private GraphWorkbench workbench;
-    
-	public HideShowNoConnectionNodesAction(GraphWorkbench workbench) {
-		super("Hide/Show No Connections Node");
+
+    public HideShowNoConnectionNodesAction(GraphWorkbench workbench) {
+        super("Hide/Show No Connections Node");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
         }
-        
-		this.workbench = workbench;
-	}
-    
-    
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		Graph graph = workbench.getGraph();
-		for (Component comp : workbench.getComponents()) {
+
+        this.workbench = workbench;
+    }
+
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Graph graph = workbench.getGraph();
+        for (Component comp : workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
                 Node node = ((DisplayNode) comp).getModelNode();
                 List<Edge> edges = graph.getEdges(node);
@@ -54,12 +54,12 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
                     comp.setVisible(!comp.isVisible());
                 }
             }
-        }	
-	}
+        }
+    }
 
-	@Override
-	public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    @Override
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
 
-	}
+    }
 
 }

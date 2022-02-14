@@ -101,8 +101,7 @@ final class MissingDataInjectorAction extends AbstractAction {
             list.add(newDataSet);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
-        }
-        else {
+        } else {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Must be a tabular data set.");
         }
@@ -118,8 +117,7 @@ final class MissingDataInjectorAction extends AbstractAction {
                 try {
                     setProb(value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }

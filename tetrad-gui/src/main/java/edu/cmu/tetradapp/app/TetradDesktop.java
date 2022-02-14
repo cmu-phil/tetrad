@@ -239,7 +239,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             frames[0].dispose();
             Map<SessionEditor, JInternalFrame> framesMap = this.framesMap;
             for (Iterator<SessionEditor> i = framesMap.keySet().iterator(); i
-                    .hasNext();) {
+                    .hasNext(); ) {
                 SessionEditor sessionEditor = i.next();
                 JInternalFrame frame = framesMap.get(sessionEditor);
                 if (frame == frames[0]) {
@@ -262,7 +262,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         if (frames.length > 0) {
             Map<SessionEditor, JInternalFrame> framesMap = this.framesMap;
             for (Iterator<SessionEditor> i = framesMap.keySet().iterator(); i
-                    .hasNext();) {
+                    .hasNext(); ) {
                 SessionEditor sessionEditor = i.next();
                 if (sessionEditor.getName().equals(name)) {
 //		    JInternalFrame frame = framesMap.get(sessionEditor);
@@ -422,7 +422,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             int ret = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(),
                     "Would you like to save the changes you made to " + name
-                    + "?", "Advise needed...",
+                            + "?", "Advise needed...",
                     JOptionPane.YES_NO_CANCEL_OPTION);
 
             if (ret == JOptionPane.NO_OPTION) {
@@ -456,7 +456,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     public void putMetadata(SessionWrapperIndirectRef sessionWrapperRef,
-            TetradMetadataIndirectRef metadataRef) {
+                            TetradMetadataIndirectRef metadataRef) {
         SessionWrapper sessionWrapper = (SessionWrapper) sessionWrapperRef;
         TetradMetadata metadata = (TetradMetadata) metadataRef;
 
@@ -511,6 +511,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     // ===========================PRIVATE METHODS==========================//
+
     /**
      * @return a reasonable divider location for the log output.
      */
@@ -568,11 +569,11 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      * on the screen.
      *
      * @param desktopPane the desktop pane that the frame is being added to.
-     * @param frame the JInternalFrame which is being added.
+     * @param frame       the JInternalFrame which is being added.
      * @param desiredSize the desired dimensions of the frame.
      */
     public static void setGoodBounds(JInternalFrame frame,
-            JDesktopPane desktopPane, Dimension desiredSize) {
+                                     JDesktopPane desktopPane, Dimension desiredSize) {
         RandomUtil randomUtil = RandomUtil.getInstance();
         Dimension desktopSize = desktopPane.getSize();
 
@@ -666,6 +667,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
     // ================================ Inner class
     // =======================================//
+
     /**
      * Listener for the logger that will open the display log if not already
      * open.

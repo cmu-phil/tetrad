@@ -36,8 +36,6 @@ import edu.cmu.tetrad.util.Params;
 public class TestFgesFa {
 
 
-
-
     public void test1() {
 
         Graph graph = GraphUtils.randomGraph(10, 0, 10,

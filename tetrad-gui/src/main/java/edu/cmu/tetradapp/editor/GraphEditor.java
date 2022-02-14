@@ -104,6 +104,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     }
 
     //===========================PUBLIC METHODS======================//
+
     /**
      * Sets the name of this editor.
      */

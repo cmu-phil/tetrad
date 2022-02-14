@@ -28,8 +28,8 @@ public interface Simulation extends HasParameters, TetradSerializable {
     int getNumDataModels();
 
     /**
-     * @return That graph.
      * @param index The index of the desired true graph.
+     * @return That graph.
      */
     Graph getTrueGraph(int index);
 

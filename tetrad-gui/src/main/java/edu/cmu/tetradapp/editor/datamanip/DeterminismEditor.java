@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.*;
 
 /**
- *
  * Feb 11, 2019 4:17:17 PM
  *
  * @author Zhou Yuan <zhy19@pitt.edu>
@@ -36,10 +35,11 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     private DataSet mergedDataSet;
 
     private Parameters parameters;
-    
+
     private final String fullyDeterminisedDomainVar = "fullyDeterminisedDomainVar";
 
     //==========================CONSTUCTORS===============================//
+
     /**
      * Constructs a new editor that will allow the user to merge determistic
      * interventional variables. The editor will return the merged dataset
@@ -48,6 +48,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     //============================= Public Methods ===================================//
+
     /**
      * Sets up the GUI.
      */
@@ -153,11 +154,11 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
                 dataWrapper = (DataWrapper) parent;
             }
         }
-        
+
         if (dataWrapper == null) {
             throw new IllegalArgumentException("Should have have a data wrapper as a parent");
         }
-        
+
         DataModel model = dataWrapper.getSelectedDataModel();
         if (!(model instanceof DataSet)) {
             throw new IllegalArgumentException("The dataset must be a rectangular dataset");
@@ -166,7 +167,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         if (!containsInterventionalVariables(model)) {
             throw new IllegalArgumentException("The dataset must contain interventional variables");
         }
-        
+
         // Get the source dataset, keep it untouched
         DataSet dataSet = (DataSet) model;
 
@@ -182,10 +183,11 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     //=============================== Private Methods ================================//
+
     /**
      * Determinism detection among interventional variables
-     * 
-     * @return 
+     *
+     * @return
      */
     private List<Set<Integer>> detectDeterministicVars() {
         List<Set<Integer>> deterministicList = new ArrayList<>();
@@ -251,8 +253,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * Merge the deterministic interventional variables and create new dataset
-     * 
-     * @param mergedList 
+     *
+     * @param mergedList
      */
     private void mergeDeterministicVars(List<Set<Integer>> mergedList) {
         List<Integer> toBeRemovedColumns = new LinkedList<>();
@@ -312,21 +314,22 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * Check to see if the dataset has interventional variables
+     *
      * @param model
-     * @return 
+     * @return
      */
     private boolean containsInterventionalVariables(DataModel model) {
         List<String> interventionalVars = new LinkedList<>();
-        
-        model.getVariables().forEach(e->{ 
+
+        model.getVariables().forEach(e -> {
             if (e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
                 interventionalVars.add(e.getName());
             }
         });
-        
+
         return interventionalVars.size() > 0;
     }
-    
+
     /**
      * Determine if discrete variable x and discrete variable y are deterministic
      *
@@ -365,10 +368,10 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * Create BoxDataSet from the target nodes
-     * 
+     *
      * @param nodeList
      * @param origIndexMap
-     * @return 
+     * @return
      */
     private BoxDataSet createDataBoxData(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         // Now scan all the coloumns and create the data box
@@ -420,10 +423,11 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     /**
-     * The data can only be mixed or discrete. This won't be used for now 
+     * The data can only be mixed or discrete. This won't be used for now
+     *
      * @param nodeList
      * @param origIndexMap
-     * @return 
+     * @return
      */
     private BoxDataSet createContinuousDataBox(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         int numOfCols = nodeList.size();
@@ -444,7 +448,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         int numOfCols = nodeList.size();
         int numOfRows = sourceDataSetCopy.getNumRows();
         int[][] data = new int[numOfCols][numOfRows];
-        
+
         for (int i = 0; i < numOfCols; i++) {
             for (int j = 0; j < numOfRows; j++) {
                 Node node = nodeList.get(i);

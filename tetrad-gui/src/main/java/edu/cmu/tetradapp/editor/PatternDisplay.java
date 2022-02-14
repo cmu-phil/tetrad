@@ -104,8 +104,7 @@ public class PatternDisplay extends JPanel implements GraphEditable {
                     spinner.setModel(model);
                     totalLabel.setText(" of " + dags.size());
                     workbench.setGraph((Graph) dags.get(0));
-                }
-                else if ("Orient ---, <->".equals(option)) {
+                } else if ("Orient ---, <->".equals(option)) {
                     List _dags = SearchGraphUtils.generatePatternDags(graph, true);
                     dags.clear();
                     dags.addAll(_dags);
@@ -168,8 +167,7 @@ public class PatternDisplay extends JPanel implements GraphEditable {
             if (comp instanceof DisplayNode) {
                 selectedModelComponents.add(
                         ((DisplayNode) comp).getModelNode());
-            }
-            else if (comp instanceof DisplayEdge) {
+            } else if (comp instanceof DisplayEdge) {
                 selectedModelComponents.add(
                         ((DisplayEdge) comp).getModelEdge());
             }

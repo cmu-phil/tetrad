@@ -57,10 +57,11 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
 
     /**
      * Constructs an abstract expression descriptor.
-     * @param name          - The name of the descriptor.
-     * @param token         The token of the descriptor, also used for the signature.
-     * @param position      The position that the expression can occur in.
-     * @param unlimited     States whether an unlimited number of arguments is allowed.
+     *
+     * @param name      - The name of the descriptor.
+     * @param token     The token of the descriptor, also used for the signature.
+     * @param position  The position that the expression can occur in.
+     * @param unlimited States whether an unlimited number of arguments is allowed.
      */
     public AbstractExpressionDescriptor(String name, String token, Position position, boolean unlimited) {
         if (name == null) {

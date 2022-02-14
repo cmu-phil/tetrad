@@ -110,8 +110,7 @@ public class ScatterPlot {
 
         if (Double.isInfinite(fisherZ)) {
             pValue = 0;
-        }
-        else {
+        } else {
             pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
         }
 

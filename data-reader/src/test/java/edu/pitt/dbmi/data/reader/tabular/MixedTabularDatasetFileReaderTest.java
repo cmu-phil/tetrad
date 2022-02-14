@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- *
  * Jan 2, 2019 4:03:44 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -47,10 +46,10 @@ public class MixedTabularDatasetFileReaderTest {
     private final int numberOfDiscreteCategories = 4;
 
     private final Path[] dataFiles = {
-        Paths.get(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile())
+            Paths.get(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile())
     };
 
     public MixedTabularDatasetFileReaderTest() {

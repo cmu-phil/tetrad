@@ -115,8 +115,7 @@ class LoadTimeSeriesDataAction extends AbstractAction {
             editor.getDataWrapper().setDataModel(dataSet3);
             firePropertyChange("modelChanged", null, null);
             editor.reset();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

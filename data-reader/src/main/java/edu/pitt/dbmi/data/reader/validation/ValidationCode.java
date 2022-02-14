@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.data.reader.validation;
 
 /**
- *
  * Feb 16, 2017 1:47:01 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

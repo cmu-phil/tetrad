@@ -29,7 +29,7 @@ import java.io.ObjectStreamClass;
 /**
  * This class was embedded in the LoadSessionAction class. Had to make it its
  * own class for reusability.
- *
+ * <p>
  * Dec 6, 2017 11:10:24 AM
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu

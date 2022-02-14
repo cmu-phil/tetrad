@@ -47,7 +47,7 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
             throw new NullPointerException("Data was not provided.");
         }
 
-        if (dataSet instanceof BoxDataSet && ((BoxDataSet) dataSet).getDataBox() instanceof  VerticalIntDataBox) {
+        if (dataSet instanceof BoxDataSet && ((BoxDataSet) dataSet).getDataBox() instanceof VerticalIntDataBox) {
             DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
             this.variables = dataSet.getVariables();
             VerticalIntDataBox box = (VerticalIntDataBox) dataBox;

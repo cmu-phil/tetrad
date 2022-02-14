@@ -84,7 +84,7 @@ public class TestKunMeasurementError {
 
         algorithms.add(new Pc(test));
         algorithms.add(new Fges(score));
-        algorithms.add(new Pcd( ));
+        algorithms.add(new Pcd());
 
         Comparison comparison = new Comparison();
 

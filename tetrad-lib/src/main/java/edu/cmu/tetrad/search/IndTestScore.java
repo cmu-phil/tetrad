@@ -48,11 +48,11 @@ public class IndTestScore implements IndependenceTest {
     private DataModel data = null;
     private boolean verbose = false;
 
-    public  IndTestScore(Score score) {
+    public IndTestScore(Score score) {
         this(score, null);
     }
 
-    public  IndTestScore(Score score, DataModel data) {
+    public IndTestScore(Score score, DataModel data) {
         if (score == null) throw new NullPointerException();
         this.score = score;
         this.variables = score.getVariables();
@@ -89,7 +89,7 @@ public class IndTestScore implements IndependenceTest {
 
         double v = this.score.localScoreDiff(variables.indexOf(x), variables.indexOf(y), varIndices(z));
         this.bump = v;
-        return  v <= 0;
+        return v <= 0;
     }
 
     private int[] varIndices(List<Node> z) {

@@ -51,6 +51,7 @@ public final class SimulationGraphEditor extends JPanel {
     private JTabbedPane tabbedPane = new JTabbedPane();
 
     //==========================CONSTUCTORS===============================//
+
     /**
      * Constructs the editor. Edited by Zhou on 8/20/18
      */
@@ -63,6 +64,7 @@ public final class SimulationGraphEditor extends JPanel {
     }
 
     //==========================PUBLIC METHODS=============================//
+
     /**
      * 2
      * Replaces the getModel Datamodels with the given one. Note, that by

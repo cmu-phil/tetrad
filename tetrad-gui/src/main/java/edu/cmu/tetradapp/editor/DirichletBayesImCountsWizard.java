@@ -55,7 +55,7 @@ final class DirichletBayesImCountsWizard extends JPanel {
     private boolean showProbs = true;
 
     public DirichletBayesImCountsWizard(DirichletBayesIm bayesIm,
-            GraphWorkbench workbench) {
+                                        GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }

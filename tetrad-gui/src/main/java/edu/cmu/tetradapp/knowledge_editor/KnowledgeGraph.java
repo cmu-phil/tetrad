@@ -54,7 +54,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     private boolean pag;
     private boolean pattern;
 
-    private Map<String,Object> attributes = new HashMap<>();
+    private Map<String, Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS=============================//
 
@@ -302,7 +302,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     public boolean addEdge(Edge edge) {
-        if(!(edge instanceof KnowledgeModelEdge)){
+        if (!(edge instanceof KnowledgeModelEdge)) {
             return false;
         }
         KnowledgeModelEdge _edge = (KnowledgeModelEdge) edge;
@@ -313,22 +313,20 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
         if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_EXPLICITLY) {
             this.knowledge.setForbidden(from, to);
-        }
-        else if (_edge.getType() == KnowledgeModelEdge.REQUIRED) {
+        } else if (_edge.getType() == KnowledgeModelEdge.REQUIRED) {
             knowledge.setRequired(from, to);
-        }
-        else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
+        } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
             if (!knowledge.isForbiddenByTiers(from, to)) {
                 throw new IllegalArgumentException("Edge " + from + "-->" + to +
                         " is not forbidden by tiers.");
             }
-        } else if(_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS){
-            if(!this.knowledge.isForbiddenByGroups(from, to)){
+        } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS) {
+            if (!this.knowledge.isForbiddenByGroups(from, to)) {
                 throw new IllegalArgumentException("Edge " + from + "-->" + to +
                         " is not forbidden by groups.");
             }
-        } else if(_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS){
-            if(!this.knowledge.isRequiredByGroups(from, to)){
+        } else if (_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS) {
+            if (!this.knowledge.isRequiredByGroups(from, to)) {
                 throw new IllegalArgumentException("Edge " + from + "-->" + to +
                         " is not required by groups.");
             }
@@ -394,18 +392,16 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
         if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_EXPLICITLY) {
             getKnowledge().removeForbidden(from, to);
-        }
-        else if (_edge.getType() == KnowledgeModelEdge.REQUIRED) {
+        } else if (_edge.getType() == KnowledgeModelEdge.REQUIRED) {
             getKnowledge().removeRequired(from, to);
-        }
-        else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
+        } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
             throw new IllegalArgumentException(
                     "Please use the tiers interface " +
                             "to remove edges forbidden by tiers.");
-        } else if(_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS){
+        } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS) {
             throw new IllegalArgumentException("Please use the Other Groups interface to " +
                     "remove edges forbidden by groups.");
-        } else if(_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS){
+        } else if (_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS) {
             throw new IllegalArgumentException("Please use the Other Groups interface to " +
                     "remove edges required by groups.");
         }

@@ -121,7 +121,7 @@ public class Comparison {
             test = new IndTestFisherZ(dataSet, params.getAlpha());
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
-        }  else if (params.getIndependenceTest() == ComparisonParameters.IndependenceTestType.ChiSquare) {
+        } else if (params.getIndependenceTest() == ComparisonParameters.IndependenceTestType.ChiSquare) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Discrete) {
                 throw new IllegalArgumentException("Data type previously set to something other than discrete.");
             }
@@ -149,8 +149,7 @@ public class Comparison {
             score = semBicScore;
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
-        }
-        else if (params.getScore() == ScoreType.BDeu) {
+        } else if (params.getScore() == ScoreType.BDeu) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Discrete) {
                 throw new IllegalArgumentException("Data type previously set to something other than discrete.");
             }
@@ -363,6 +362,8 @@ public class Comparison {
         return table;
     }
 
-    public enum TableColumn {AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
-        AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed}
+    public enum TableColumn {
+        AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
+        AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed
+    }
 }

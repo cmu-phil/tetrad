@@ -124,7 +124,6 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
         List<Node> _z = getVariableList(z);
 
 
-
         double r;
         int p;
         int N;
@@ -320,6 +319,7 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
         }
         return variables;
     }
+
     private double partialCorrelation(Node x, Node y, List<Node> z, SemBicScore score) throws SingularMatrixException {
         int[] indices = new int[z.size() + 2];
         indices[0] = indexMap.get(x.getName());
@@ -339,11 +339,11 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
         return indexMap;
     }
 
-    private Map<Score, ICovarianceMatrix> covMap(List<SemBicScore> scores){
+    private Map<Score, ICovarianceMatrix> covMap(List<SemBicScore> scores) {
         Map<Score, ICovarianceMatrix> covMap = new HashMap<>();
         SemBicScore score;
 
-        for (int i = 0; i < scores.size(); i++){
+        for (int i = 0; i < scores.size(); i++) {
             score = scores.get(i);
             covMap.put(score, score.getCovariances());
         }

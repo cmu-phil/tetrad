@@ -73,7 +73,7 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -87,7 +87,7 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -148,7 +148,7 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
-    
+
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return test;

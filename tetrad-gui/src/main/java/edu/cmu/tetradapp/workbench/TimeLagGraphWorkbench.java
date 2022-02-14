@@ -124,8 +124,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
                     _node.setCenterY(y);
                 }
             }
-        }
-        else {
+        } else {
             for (int lag = 0; lag <= graph.getMaxLag(); lag++) {
                 for (Node node : lag0Nodes) {
                     if (!rememberedNodes.contains(node)) {
@@ -464,9 +463,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * @return the next string in the sequence.
-     *
      * @param base the string base of the name--for example, "Graph".
+     * @return the next string in the sequence.
      */
     private String nextUniqueName(String base) {
         if (base == null) {

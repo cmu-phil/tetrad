@@ -113,8 +113,7 @@ public class RevealEvaluator {
         double hjoint = 0.0;
         if (parents.length == 1) {
             hjoint = jointEntropy(c, p1);
-        }
-        else {
+        } else {
             int[][] p1pm = new int[parents.length][ntimes - lag];
             for (int i = 0; i < ntimes - lag; i++) {
                 p1pm[0][i] = p1[i];
@@ -150,8 +149,7 @@ public class RevealEvaluator {
         double p;
         if (n0 == 0 || n0 == n) {
             return h;
-        }
-        else {
+        } else {
             p = (double) n0 / (double) n;
             h = -(p * Math.log(p) + (1.0 - p) * Math.log(1.0 - p)) / ln2;
         }
@@ -181,8 +179,7 @@ public class RevealEvaluator {
         double p;
         if (n0 == 0 || n0 == n) {
             return h;
-        }
-        else {
+        } else {
             p = (double) n0 / (double) n;
             h = -(p * Math.log(p) + (1.0 - p) * Math.log(1.0 - p)) / ln2;
         }
@@ -221,26 +218,22 @@ public class RevealEvaluator {
 
         if (p[0][0] == 0.0) {
             lp00 = 0.0;
-        }
-        else {
+        } else {
             lp00 = -p[0][0] * Math.log(p[0][0]);
         }
         if (p[0][1] == 0.0) {
             lp01 = 0.0;
-        }
-        else {
+        } else {
             lp01 = -p[0][1] * Math.log(p[0][1]);
         }
         if (p[1][0] == 0.0) {
             lp10 = 0.0;
-        }
-        else {
+        } else {
             lp10 = -p[1][0] * Math.log(p[1][0]);
         }
         if (p[1][1] == 0.0) {
             lp11 = 0.0;
-        }
-        else {
+        } else {
             lp11 = -p[1][1] * Math.log(p[1][1]);
         }
 

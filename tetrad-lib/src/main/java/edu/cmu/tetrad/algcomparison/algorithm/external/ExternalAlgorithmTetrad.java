@@ -43,13 +43,13 @@ import java.io.IOException;
  *
  * @author jdramsey
  */
-public class ExternalAlgorithmTetrad extends ExternalAlgorithm  {
+public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
     private String shortDescription = null;
 
 
-    public  ExternalAlgorithmTetrad(String extDir) {
+    public ExternalAlgorithmTetrad(String extDir) {
         this.extDir = extDir;
         this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
@@ -93,7 +93,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm  {
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);
 
-        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex +  1) + "/graph." + index + ".txt");
+        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
 
         System.out.println(file.getAbsolutePath());
 

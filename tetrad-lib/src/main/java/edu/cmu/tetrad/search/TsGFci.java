@@ -546,7 +546,7 @@ public final class TsGFci implements GraphSearch {
     }
 
     private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
-        if(x.getName().equals("time") || y.getName().equals("time")){
+        if (x.getName().equals("time") || y.getName().equals("time")) {
             return;
         }
         System.out.println("Entering orient similar pairs method for x and y: " + x + ", " + y);
@@ -562,15 +562,15 @@ public final class TsGFci implements GraphSearch {
 //        Collections.sort(tier_y);
 
         int i;
-        for(i = 0; i < tier_x.size(); ++i) {
-            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+        for (i = 0; i < tier_x.size(); ++i) {
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
                 indx_comp = i;
                 break;
             }
         }
 
-        for(i = 0; i < tier_y.size(); ++i) {
-            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+        for (i = 0; i < tier_y.size(); ++i) {
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
                 indy_comp = i;
                 break;
             }
@@ -579,8 +579,8 @@ public final class TsGFci implements GraphSearch {
         if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
         if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
 
-        for(i = 0; i < ntiers - tier_diff; ++i) {
-            if(knowledge.getTier(i).size()==1) continue;
+        for (i = 0; i < ntiers - tier_diff; ++i) {
+            if (knowledge.getTier(i).size() == 1) continue;
             String A;
             Node x1;
             String B;
@@ -603,7 +603,7 @@ public final class TsGFci implements GraphSearch {
 //                    continue;
 //                } // added 05.01.2016
 
-                if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
+                if (graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
                     System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
                     graph.setEndpoint(x1, y1, mark);
                     System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
@@ -617,7 +617,7 @@ public final class TsGFci implements GraphSearch {
 
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
-        if(tempS.indexOf(':')== -1) {
+        if (tempS.indexOf(':') == -1) {
             return tempS;
         } else return tempS.substring(0, tempS.indexOf(':'));
     }
@@ -625,7 +625,7 @@ public final class TsGFci implements GraphSearch {
     // returnSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
-        if(x.getName().equals("time") || y.getName().equals("time")){
+        if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
 //        System.out.println("Knowledge within returnSimilar : " + knowledge);
@@ -641,15 +641,15 @@ public final class TsGFci implements GraphSearch {
 //        Collections.sort(tier_y);
 
         int i;
-        for(i = 0; i < tier_x.size(); ++i) {
-            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+        for (i = 0; i < tier_x.size(); ++i) {
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
                 indx_comp = i;
                 break;
             }
         }
 
-        for(i = 0; i < tier_y.size(); ++i) {
-            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+        for (i = 0; i < tier_y.size(); ++i) {
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
                 indy_comp = i;
                 break;
             }
@@ -664,8 +664,8 @@ public final class TsGFci implements GraphSearch {
         List<Node> simListX = new ArrayList<>();
         List<Node> simListY = new ArrayList<>();
 
-        for(i = 0; i < ntiers - tier_diff; ++i) {
-            if(knowledge.getTier(i).size()==1) continue;
+        for (i = 0; i < ntiers - tier_diff; ++i) {
+            if (knowledge.getTier(i).size() == 1) continue;
             String A;
             Node x1;
             String B;
@@ -708,19 +708,19 @@ public final class TsGFci implements GraphSearch {
         List<List<Node>> pairList = new ArrayList<>();
         pairList.add(simListX);
         pairList.add(simListY);
-        return(pairList);
+        return (pairList);
     }
 
-    public void removeSimilarEdges(Node x, Node y){
-        List<List<Node>> simList = returnSimilarPairs(x,y);
-        if(simList.isEmpty()) return;
+    public void removeSimilarEdges(Node x, Node y) {
+        List<List<Node>> simList = returnSimilarPairs(x, y);
+        if (simList.isEmpty()) return;
         List<Node> x1List = simList.get(0);
         List<Node> y1List = simList.get(1);
         Iterator itx = x1List.iterator();
         Iterator ity = y1List.iterator();
-        while(itx.hasNext() && ity.hasNext()){
-            Node x1 = (Node)itx.next();
-            Node y1 = (Node)ity.next();
+        while (itx.hasNext() && ity.hasNext()) {
+            Node x1 = (Node) itx.next();
+            Node y1 = (Node) ity.next();
             System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
             System.out.println("removing edge between x = " + x1 + " and y = " + y1);
             Edge oldxy = graph.getEdge(x1, y1);

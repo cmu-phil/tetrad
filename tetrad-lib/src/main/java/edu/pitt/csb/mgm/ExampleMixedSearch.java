@@ -33,7 +33,7 @@ import java.io.IOException;
  * Created by ajsedgewick on 8/18/15.
  */
 public class ExampleMixedSearch {
-    public static void main(String[] args){
+    public static void main(String[] args) {
         try {
             String path = args[0];
             //String path = ExampleMixedSearch.class.getResource("test_data").getPath();
@@ -50,7 +50,7 @@ public class ExampleMixedSearch {
             int iterLimit = 1000; //iteration limit
 
             MGM model = new MGM(data, lambda);
-            model.learn(tolerance,iterLimit);
+            model.learn(tolerance, iterLimit);
             Graph mgmGraph = model.graphFromMGM();
 
             //Graph class can't deal with edge weights, so we put them in a matrix
@@ -69,7 +69,7 @@ public class ExampleMixedSearch {
             System.out.println(MixedUtils.stringFrom2dArray(MixedUtils.allEdgeStats(trueGraph, mgmGraph)));
 
 
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

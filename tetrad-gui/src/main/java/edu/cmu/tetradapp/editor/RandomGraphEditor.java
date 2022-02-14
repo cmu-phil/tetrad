@@ -128,8 +128,7 @@ class RandomGraphEditor extends JPanel {
 
                 try {
                     setNumMeasuredNodes(value);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     // Ignore.
                 }
 
@@ -146,8 +145,7 @@ class RandomGraphEditor extends JPanel {
 
                 try {
                     setNumLatents(value);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     // Ignore.
                 }
 
@@ -164,8 +162,7 @@ class RandomGraphEditor extends JPanel {
 
                 try {
                     setMaxEdges(value);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     // Ignore.
                 }
 
@@ -181,8 +178,7 @@ class RandomGraphEditor extends JPanel {
 
                 try {
                     setMaxIndegree(value);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     // Ignore.
                 }
 
@@ -199,8 +195,7 @@ class RandomGraphEditor extends JPanel {
 
                 try {
                     setMaxOutdegree(value);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     // Ignore.
                 }
 
@@ -218,8 +213,7 @@ class RandomGraphEditor extends JPanel {
 
                 try {
                     setMaxDegree(value);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     // Ignore.
                 }
 
@@ -367,8 +361,7 @@ class RandomGraphEditor extends JPanel {
 
                 try {
                     setMinCycleLength(value);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     // Ignore.
                 }
 

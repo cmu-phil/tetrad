@@ -172,9 +172,10 @@ public final class SepsetMap implements TetradSerializable {
     }
 
     /**
-//     * ( Sets the set of node pairs that are correlated. These are returned by the depth zero search of PC. This set
-//     * must be complete; it will be assumed that the sepset for any node pair not in this set is the empty set.
-//     */
+     * //     * ( Sets the set of node pairs that are correlated. These are returned by the depth zero search of PC. This set
+     * //     * must be complete; it will be assumed that the sepset for any node pair not in this set is the empty set.
+     * //
+     */
 //    public void setCorrelations(Set<Set<Node>> pairs) {
 //        this.correlations = pairs;
 //    }
@@ -186,7 +187,6 @@ public final class SepsetMap implements TetradSerializable {
 //    public void setReturnEmptyIfNotSet(boolean returnEmptyIfNotSet) {
 //        this.returnEmptyIfNotSet = returnEmptyIfNotSet;
 //    }
-
     public void addAll(SepsetMap newSepsets) {
         sepsets.putAll(newSepsets.sepsets);
     }

@@ -21,7 +21,6 @@ package edu.pitt.dbmi.data.reader.util;
 import java.util.Arrays;
 
 /**
- *
  * Dec 11, 2018 2:08:19 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -55,10 +54,10 @@ public final class Columns {
         return (columns == null || columns.length == 0)
                 ? new int[0]
                 : Arrays.stream(columns)
-                        .filter(e -> e > 0 && e <= numberOfColumns)
-                        .sorted()
-                        .distinct()
-                        .toArray();
+                .filter(e -> e > 0 && e <= numberOfColumns)
+                .sorted()
+                .distinct()
+                .toArray();
     }
 
 }

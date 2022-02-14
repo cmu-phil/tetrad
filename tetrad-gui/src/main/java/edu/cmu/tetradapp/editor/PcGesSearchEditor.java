@@ -59,7 +59,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class PcGesSearchEditor extends AbstractSearchEditor
-        implements KnowledgeEditable, LayoutEditable, IndTestTypeSetter, DoNotScroll     {
+        implements KnowledgeEditable, LayoutEditable, IndTestTypeSetter, DoNotScroll {
 
     private JTextArea modelStatsText;
     private JTabbedPane tabbedPane;
@@ -180,6 +180,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
+
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }
@@ -781,7 +782,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
         if (params instanceof Parameters) {
             return new TimeSeriesIndTestParamsEditor(
-                     params);
+                    params);
         }
 
         if (params instanceof Parameters) {

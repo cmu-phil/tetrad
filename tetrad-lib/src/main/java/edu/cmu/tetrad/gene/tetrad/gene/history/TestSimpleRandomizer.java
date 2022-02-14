@@ -82,7 +82,7 @@ public class TestSimpleRandomizer extends TestCase {
         // Make sure all nonhousekeeping genes have indegree edges.
         SortedSet factors = lagGraph.getFactors();
 
-        for (Iterator it = factors.iterator(); it.hasNext();) {
+        for (Iterator it = factors.iterator(); it.hasNext(); ) {
             String factor = (String) it.next();
             SortedSet parents = lagGraph.getParents(factor);
 
@@ -121,7 +121,7 @@ public class TestSimpleRandomizer extends TestCase {
         int numNonHousekeeping = 0;
         SortedSet factors = lagGraph.getFactors();
 
-        for (Iterator it = factors.iterator(); it.hasNext();) {
+        for (Iterator it = factors.iterator(); it.hasNext(); ) {
             String factor = (String) it.next();
             SortedSet parents = lagGraph.getParents(factor);
 
@@ -171,7 +171,7 @@ public class TestSimpleRandomizer extends TestCase {
         int max = 0;
         SortedSet factors = lagGraph.getFactors();
 
-        for (Iterator it = factors.iterator(); it.hasNext();) {
+        for (Iterator it = factors.iterator(); it.hasNext(); ) {
             String factor = (String) it.next();
             SortedSet parents = lagGraph.getParents(factor);
 

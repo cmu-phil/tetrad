@@ -50,7 +50,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestDM {
 
-//    @Test
+    //    @Test
     public void test1() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
@@ -99,7 +99,7 @@ public class TestDM {
         assertEquals(trueGraph, foundGraph);
     }
 
-//    @Test
+    //    @Test
     public void test2() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
@@ -171,7 +171,7 @@ public class TestDM {
         assertTrue(foundGraph.equals(trueGraph));
     }
 
-//    @Test
+    //    @Test
     public void test3() {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
@@ -464,7 +464,7 @@ public class TestDM {
         assertTrue(foundGraph.equals(trueGraph));
     }
 
-//    Test cases after here serve as examples and/or were used to diagnose a no longer applicable problem.
+    //    Test cases after here serve as examples and/or were used to diagnose a no longer applicable problem.
 //    Still have to clean up.
     @Ignore
     public void rtest7() {
@@ -472,7 +472,7 @@ public class TestDM {
         print("test 7");
         DMSearch result
                 = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/testcase7.txt",
-                        new int[]{0, 1}, new int[]{2, 3}, true, new int[]{0, 1});
+                new int[]{0, 1}, new int[]{2, 3}, true, new int[]{0, 1});
 
         File file = new File("src/edu/cmu/tetradproj/amurrayw/output_test7.txt");
         try {
@@ -568,7 +568,7 @@ public class TestDM {
 
         result
                 = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/final_joined_data_no_par.txt",
-                        inputs, outputs, true, inputs);
+                inputs, outputs, true, inputs);
 
         print("Finished search, now writing output to file.");
 
@@ -606,7 +606,7 @@ public class TestDM {
         return (1);
     }
 
-//
+    //
     @Test
     public void test10() {
         //setting seed for debug.
@@ -875,7 +875,7 @@ public class TestDM {
         print("test PC");
         DMSearch result
                 = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/testcase7_fixed.txt",
-                        new int[]{0, 1}, new int[]{2, 3}, false, new int[]{0, 1});
+                new int[]{0, 1}, new int[]{2, 3}, false, new int[]{0, 1});
 
         File file = new File("src/edu/cmu/tetradproj/amurrayw/output_test7_fixed.txt");
         try {
@@ -908,9 +908,9 @@ public class TestDM {
         int[] outputs = new int[nOutputs];
 
         int[] trueInputs = new int[]{2761, 2762, 4450, 2247, 16137, 13108, 12530, 231, 1223, 1379, 5379, 12745,
-            14913, 16066, 16197, 16199, 17353, 17392, 4397, 3009, 3143, 5478, 5479, 5480,
-            5481, 5482, 7474, 12884, 12885, 12489, 9112, 1943, 9114, 1950, 9644, 9645,
-            9647};
+                14913, 16066, 16197, 16199, 17353, 17392, 4397, 3009, 3143, 5478, 5479, 5480,
+                5481, 5482, 7474, 12884, 12885, 12489, 9112, 1943, 9114, 1950, 9644, 9645,
+                9647};
 
         for (int i = 0; i < nInputs; i++) {
             inputs[i] = i;
@@ -935,7 +935,7 @@ public class TestDM {
 
         result
                 = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/final_joined_data_no_par_fixed.txt",
-                        inputs, outputs, false, trueInputs);
+                inputs, outputs, false, trueInputs);
 
         print("Finished search, now writing output to file.");
 

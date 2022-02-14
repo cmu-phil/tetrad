@@ -296,17 +296,13 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 //            this.algorithm = generalAlgorithmRunner.getAlgorithm();
 //        }
 
-        if (algorithm != null)
-
-        {
+        if (algorithm != null) {
             for (int i = 0; i < referenceGraphs.size(); i++) {
                 referenceGraphs.set(i, algorithm.getComparisonGraph(referenceGraphs.get(i)));
             }
         }
 
-        if (referenceGraphs.size() != targetGraphs.size())
-
-        {
+        if (referenceGraphs.size() != targetGraphs.size()) {
             throw new IllegalArgumentException("I was expecting the same number of graphs in each parent.");
         }
 
@@ -316,9 +312,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
         for (
                 int i = 0;
-                i < referenceGraphs.size(); i++)
-
-        {
+                i < referenceGraphs.size(); i++) {
             TetradLogger.getInstance().log("comparison", "\nModel " + (i + 1));
             TetradLogger.getInstance().log("comparison", getComparisonString(i));
         }

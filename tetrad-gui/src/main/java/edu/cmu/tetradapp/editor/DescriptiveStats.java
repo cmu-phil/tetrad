@@ -43,11 +43,10 @@ class DescriptiveStats {
 
     /**
      * Constructs a readable table of normality test results
-     *
      */
 
     public static String generateDescriptiveStats(DataSet dataSet, Node variable) {
-        NumberFormat nf =  NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         int col = dataSet.getColumn(variable);
 
@@ -60,8 +59,7 @@ class DescriptiveStats {
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 data[i] = dataSet.getDouble(i, col);
             }
-        }
-        else {
+        } else {
             try {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     DiscreteVariable var = (DiscreteVariable) variable;
@@ -132,8 +130,7 @@ class DescriptiveStats {
     /*
         Returns the median in index 0, but also returns the min and max in 1 and 2 respectively.
      */
-    private static double[] median(double[] data)
-    {
+    private static double[] median(double[] data) {
         Arrays.sort(data);
 
         double result[] = new double[3];
@@ -141,13 +138,11 @@ class DescriptiveStats {
         result[1] = data[0];
         result[2] = data[data.length - 1];
 
-        if(data.length % 2 == 1) //dataset is odd, finding middle value is easy
+        if (data.length % 2 == 1) //dataset is odd, finding middle value is easy
         {
             result[0] = data[data.length / 2];
             return result;
-        }
-        else
-        {
+        } else {
             //average the two middle values
             double firstValue = data[data.length / 2];
             double secondValue = data[data.length / 2 - 1];
@@ -162,8 +157,7 @@ class DescriptiveStats {
      * @return Ideal Normal distribution for a variable.
      */
 
-    public static Normal getNormal(double[] data)
-    {
+    public static Normal getNormal(double[] data) {
         double[] paramsForNormal = normalParams(data);
         double mean = paramsForNormal[0];
         double sd = paramsForNormal[1];
@@ -171,8 +165,7 @@ class DescriptiveStats {
         return new Normal(mean, sd, new MersenneTwister());
     }
 
-    private static double standardErrorMean(double stdDev, double sampleSize)
-    {
+    private static double standardErrorMean(double stdDev, double sampleSize) {
         return stdDev / (Math.sqrt(sampleSize));
     }
 
@@ -182,22 +175,19 @@ class DescriptiveStats {
      * @return [0] -&gt; mean, [1] -&gt; standard deviation, [2] -&gt; variance
      */
 
-    private static double[] normalParams(double[] data)
-    {
+    private static double[] normalParams(double[] data) {
         double mean = 0.0;
         double sd = 0.0;
 
         //calculate the mean
-        for (int i = 0; i < data.length; i++)
-        {
+        for (int i = 0; i < data.length; i++) {
             mean += data[i];
         }
 
         mean /= data.length;
 
         //calculate the standard deviation
-        for (int i = 0; i < data.length; i++)
-        {
+        for (int i = 0; i < data.length; i++) {
             sd += (data[i] - mean) * (data[i] - mean);
         }
 

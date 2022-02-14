@@ -360,7 +360,6 @@ public class TestFisherZCalibration {
             StandardizedSemIm sem = new StandardizedSemIm(semIm, parameters);
 
 
-
 //            assertTrue(sem.setEdgeCoefficient(x1, x2, d1));
 //            assertTrue(sem.setEdgeCoefficient(x2, x3, d2));
 //            assertTrue(sem.setEdgeCoefficient(x3, x4, d3));

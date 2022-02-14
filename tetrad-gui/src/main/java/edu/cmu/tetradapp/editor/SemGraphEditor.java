@@ -93,6 +93,7 @@ public final class SemGraphEditor extends JPanel
     }
 
     //===========================PUBLIC METHODS======================//
+
     /**
      * Sets the name of this editor.
      */

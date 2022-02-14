@@ -84,6 +84,7 @@ public final class DagEditor extends JPanel
     }
 
     //===========================PUBLIC METHODS======================//
+
     /**
      * Sets the name of this editor.
      */

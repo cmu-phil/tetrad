@@ -70,7 +70,7 @@ public final class Tetrad implements PropertyChangeListener {
      */
     private final String mainTitle
             = "Tetrad " + Version.currentViewableVersion()
-                    .toString();
+            .toString();
 
     public static boolean enableExperimental;
 
@@ -79,6 +79,7 @@ public final class Tetrad implements PropertyChangeListener {
     }
 
     //==============================PUBLIC METHODS=========================//
+
     /**
      * Responds to "exitProgram" property change events by disposing of the
      * Tetrad IV frame and exiting if possible.

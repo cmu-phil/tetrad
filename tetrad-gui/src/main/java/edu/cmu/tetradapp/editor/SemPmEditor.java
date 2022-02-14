@@ -68,6 +68,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
     private JMenuItem errorTerms;
 
     //========================CONSTRUCTORS===========================//
+
     /**
      * Constructs an editor for the given SemIm.
      */
@@ -118,7 +119,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
             public void actionPerformed(ActionEvent e) {
                 int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                         "This will fix one measurement for each latent to 1.0 "
-                        + "and cannot be undone. Proceed?", "Confirm",
+                                + "and cannot be undone. Proceed?", "Confirm",
                         JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
                 if (ret == JOptionPane.YES_OPTION) {
@@ -150,7 +151,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
             public void actionPerformed(ActionEvent e) {
                 int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                         "This will start all factor loadings at 1.0 "
-                        + "for purposes of estimation. Proceed?", "Confirm",
+                                + "for purposes of estimation. Proceed?", "Confirm",
                         JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
                 if (ret == JOptionPane.YES_OPTION) {
@@ -393,7 +394,7 @@ class SemPmGraphicalEditor extends JPanel {
         if (parameter == null) {
             throw new IllegalStateException(
                     "There is no variance parameter in " + "model for node "
-                    + node + ".");
+                            + node + ".");
         }
 
         ParameterEditor paramEditor = new ParameterEditor(parameter, semPm());
@@ -522,9 +523,8 @@ class SemPmGraphicalEditor extends JPanel {
      * directed edges, this method automatically adjusts if the user has changed
      * the endpoints of an edge X1 --> X2 to X1 <-- X2 and returns the correct
      * parameter.
-     *
      * @throws IllegalArgumentException if the edge is neither directed nor
-     * bidirected.
+     *                                  bidirected.
      */
     private Parameter getEdgeParameter(Edge edge) {
         if (Edges.isDirectedEdge(edge)) {
@@ -712,7 +712,7 @@ class SemPmGraphicalEditor extends JPanel {
 
             final DoubleTextField startingValueField
                     = new DoubleTextField(getStartingValue(), length,
-                            NumberFormatUtil.getInstance().getNumberFormat());
+                    NumberFormatUtil.getInstance().getNumberFormat());
 
             startingValueField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {

@@ -37,12 +37,14 @@ public interface IDataReader {
 
     /**
      * True if case IDs are provided in the first column of the data.
+     *
      * @deprecated
      */
     void setIdsSupplied(boolean caseIdsPresent);
 
     /**
      * The String identifier of the case ID column.
+     *
      * @deprecated
      */
     void setIdLabel(String caseIdsLabel);
@@ -66,6 +68,7 @@ public interface IDataReader {
 
     /**
      * Parses a tabular data set from the given file, whether it be continuous, discrete, or mixed.
+     *
      * @param file The file to parse.
      * @return The parsed dataset.
      * @throws IOException If the file cannot be read.
@@ -74,6 +77,7 @@ public interface IDataReader {
 
     /**
      * Parses a tabular data set from a char array, whether it be continuous, discrete, or mixed.
+     *
      * @param chars The chars array to parse
      * @return The parsed dataset.
      */
@@ -81,6 +85,7 @@ public interface IDataReader {
 
     /**
      * Parses a covariance matrix from the given file.
+     *
      * @param file The file containing the (text) covariance matrix.
      * @return The parsed covariance matrix.
      * @throws IOException If the file cannot be read.
@@ -89,6 +94,7 @@ public interface IDataReader {
 
     /**
      * Parses knowledge from the given char array.
+     *
      * @param chars The file containing the (text) covariance matrix.
      * @return The parsed covariance matrix.
      */
@@ -96,6 +102,7 @@ public interface IDataReader {
 
     /**
      * Parses knowledge from the given file.
+     *
      * @param file The file containing the (text) covariance matrix.
      * @return The parsed covariance matrix.
      * @throws IOException If the file cannot be read.
@@ -104,6 +111,7 @@ public interface IDataReader {
 
     /**
      * Parses knowledge from the given char array.
+     *
      * @param chars The file containing the (text) covariance matrix.
      * @return The parsed covariance matrix.
      */

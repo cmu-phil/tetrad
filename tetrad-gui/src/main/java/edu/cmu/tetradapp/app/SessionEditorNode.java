@@ -91,6 +91,7 @@ public final class SessionEditorNode extends DisplayNode {
     private SessionEditorWorkbench sessionWorkbench;
 
     //===========================CONSTRUCTORS==============================//
+
     /**
      * Wraps the given SessionNodeWrapper as a SessionEditorNode.
      *
@@ -346,7 +347,7 @@ public final class SessionEditorNode extends DisplayNode {
         getSessionDisplayComp().setSelected(selected);
     }
 
-//===========================PRIVATE METHODS===========================//
+    //===========================PRIVATE METHODS===========================//
     private SessionEditorWorkbench getSessionWorkbench() {
         if (sessionWorkbench == null) {
             SessionEditorIndirectRef sessionEditorRef
@@ -366,7 +367,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void addListeners(final SessionEditorNode sessionEditorNode,
-            final SessionNodeWrapper modelNode) {
+                              final SessionNodeWrapper modelNode) {
         // Add a mouse listener for popups.
         sessionEditorNode.addMouseListener(new MouseAdapter() {
             @Override
@@ -537,8 +538,8 @@ public final class SessionEditorNode extends DisplayNode {
                 Component centeringComp = SessionEditorNode.this;
                 int ret = JOptionPane.showConfirmDialog(centeringComp,
                         "<html>"
-                        + "Really delete note? Any information it contains will<br>"
-                        + "be destroyed." + "</html>");
+                                + "Really delete note? Any information it contains will<br>"
+                                + "be destroyed." + "</html>");
 
                 if (ret != JOptionPane.YES_OPTION) {
                     return;
@@ -646,7 +647,7 @@ public final class SessionEditorNode extends DisplayNode {
             if (found) {
                 int ret = JOptionPane.showConfirmDialog(centeringComp,
                         "Destroying the model in this box will also destroy models in any boxes\n"
-                        + "downstream. Is that OK?", null,
+                                + "downstream. Is that OK?", null,
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.WARNING_MESSAGE);
 
@@ -766,7 +767,7 @@ public final class SessionEditorNode extends DisplayNode {
                             editParameters(modelClass, param, arguments);
                             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                                     "Should I overwrite the contents of this box and all delete the contents\n"
-                                    + "of all boxes downstream?",
+                                            + "of all boxes downstream?",
                                     "Double check...", JOptionPane.YES_NO_OPTION);
                             if (ret == JOptionPane.YES_OPTION) {
                                 getSessionNode().destroyModel();
@@ -909,6 +910,7 @@ public final class SessionEditorNode extends DisplayNode {
 //
 //        return consistentParentBoxes;
 //    }
+
     /**
      * Adds the "Edit logger" option if applicable.
      */
@@ -950,7 +952,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void executeSessionNode(final SessionNode sessionNode,
-            final boolean overwrite) {
+                                    final boolean overwrite) {
         Window owner = (Window) getTopLevelAncestor();
 
         new WatchedProcess(owner) {
@@ -1011,8 +1013,8 @@ public final class SessionEditorNode extends DisplayNode {
         Component centeringComp = SessionEditorNode.this;
         int selection = JOptionPane.showOptionDialog(centeringComp,
                 "Changing this node will affect its children.\n"
-                + "Click on \"Execute\" to percolate changes down.\n"
-                + "Click on \"Break Edges\" to leave the children the same.",
+                        + "Click on \"Execute\" to percolate changes down.\n"
+                        + "Click on \"Break Edges\" to leave the children the same.",
                 "Warning", JOptionPane.DEFAULT_OPTION,
                 JOptionPane.WARNING_MESSAGE, null, options, options[0]);
 
@@ -1048,7 +1050,7 @@ public final class SessionEditorNode extends DisplayNode {
      * parent models.
      *
      * @throws IllegalStateException if the model cannot be created. The reason
-     * why the model cannot be created is in the message of the exception.
+     *                               why the model cannot be created is in the message of the exception.
      */
     public boolean createModel(boolean simulation) throws Exception {
         if (getSessionNode().getModel() != null) {
@@ -1115,7 +1117,7 @@ public final class SessionEditorNode extends DisplayNode {
      * @return the selected model class, or null if no model class was selected.
      */
     private Class getModelClassFromUser(Class[] modelClasses,
-            boolean cancelable) {
+                                        boolean cancelable) {
 
         // Count the number of model classes that can be listed for the user;
         // if there's only one, don't ask the user for input.
@@ -1224,7 +1226,7 @@ public final class SessionEditorNode extends DisplayNode {
      * false is returned
      */
     public boolean editParameters(final Class modelClass, Parameters params,
-            Object[] parentModels) {
+                                  Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException("Parent models array is null.");
         }

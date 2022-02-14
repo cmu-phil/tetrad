@@ -91,7 +91,7 @@ public class EndpointMatrixGraph implements Graph {
     private boolean pag;
     private boolean pattern;
 
-    private Map<String,Object> attributes = new HashMap<>();
+    private Map<String, Object> attributes = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
 

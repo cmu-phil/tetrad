@@ -73,11 +73,11 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                             double _value = Double.parseDouble(value);
                             parameters.set(key, _value);
                         } catch (NumberFormatException e) {
-                        	if(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")){
+                            if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                                 parameters.set(key, Boolean.valueOf(value));
-                        	}else{
+                            } else {
                                 parameters.set(key, value);
-                        	}
+                            }
                         }
                         System.out.println(key + " : " + value);
                     }

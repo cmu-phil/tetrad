@@ -87,7 +87,7 @@ public abstract class WatchedProcess {
      * Constructs a new watched process.
      *
      * @param owner The ancestor window in front of which the stop dialog is
-     * being displayed.
+     *              being displayed.
      */
     public WatchedProcess(Window owner) {
         this(owner, JOptionUtils.centeringComp());
@@ -97,7 +97,7 @@ public abstract class WatchedProcess {
      * Constructs a new watched process.
      *
      * @param owner The ancestor window in front of which the stop dialog is
-     * being displayed.
+     *              being displayed.
      */
     private WatchedProcess(Window owner, Component centeringComp) {
         if (owner == null) {
@@ -111,6 +111,7 @@ public abstract class WatchedProcess {
     }
 
     //=============================PUBLIC METHODS========================//
+
     /**
      * To watch a process, override this method, as follows:
      * <pre>
@@ -278,7 +279,7 @@ public abstract class WatchedProcess {
                             JOptionPane.showMessageDialog(
                                     centeringComp,
                                     "Stopped with error:\n"
-                                    + getErrorMessage());
+                                            + getErrorMessage());
                         }
                     }
                 }

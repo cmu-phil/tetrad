@@ -84,12 +84,14 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     public FciCcdSearchEditor(TsGFciRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
+
     /**
      * Opens up an editor to let the user view the given CcdRunner.
      */
     public FciCcdSearchEditor(CcdRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
+
     public FciCcdSearchEditor(CcdRunner2 runner) {
         super(runner, "Result allow_latent_common_causes");
     }
@@ -102,6 +104,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
+
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }

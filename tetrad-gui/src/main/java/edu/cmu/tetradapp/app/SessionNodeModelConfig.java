@@ -63,10 +63,8 @@ public interface SessionNodeModelConfig {
     String getAcronym();
 
 
-
     /**
      * @return an instance of the editor to use for the model.
-     *
      * @throws IllegalArgumentException - Throws an exception of the arguments aren't of the right sort.
      */
     JPanel getEditorInstance(Object[] arguments);

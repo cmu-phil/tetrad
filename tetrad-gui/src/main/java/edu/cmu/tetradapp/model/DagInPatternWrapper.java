@@ -36,12 +36,12 @@ import edu.cmu.tetrad.util.TetradLogger;
 public class DagInPatternWrapper extends GraphWrapper implements DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
-    public DagInPatternWrapper(GraphSource source, Parameters parameters){
+    public DagInPatternWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
-    public DagInPatternWrapper(final Graph graph){
+    public DagInPatternWrapper(final Graph graph) {
         super(getGraph(graph), "Choose DAG in pattern.");
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
@@ -51,7 +51,7 @@ public class DagInPatternWrapper extends GraphWrapper implements DoNotAddOldMode
     }
 
 
-    public static DagInPatternWrapper serializableInstance(){
+    public static DagInPatternWrapper serializableInstance() {
         return new DagInPatternWrapper(EdgeListGraph.serializableInstance());
     }
 

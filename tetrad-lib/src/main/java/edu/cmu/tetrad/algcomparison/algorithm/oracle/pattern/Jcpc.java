@@ -45,7 +45,7 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet continuousDataSet = DataUtils.getContinuousDataSet(dataSet);
             edu.cmu.tetrad.search.Jcpc search = new edu.cmu.tetrad.search.Jcpc(
                     test.getTest(continuousDataSet, parameters),
@@ -53,19 +53,19 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
             search.setKnowledge(knowledge);
 
             return search.search();
-    	}else{
-    		Jcpc jcpc = new Jcpc(test, score);
-    		
-			if (initialGraph != null) {
-				jcpc.setInitialGraph(initialGraph);
-			}
-			DataSet data = (DataSet) dataSet;
-			GeneralResamplingTest search = new GeneralResamplingTest(data, jcpc, parameters.getInt(Params.NUMBER_RESAMPLING));
+        } else {
+            Jcpc jcpc = new Jcpc(test, score);
+
+            if (initialGraph != null) {
+                jcpc.setInitialGraph(initialGraph);
+            }
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, jcpc, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -77,13 +77,13 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
             }
-			search.setEdgeEnsemble(edgeEnsemble);
-			search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-			
-			search.setParameters(parameters);
-			search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-			return search.search();
-    	}
+            search.setEdgeEnsemble(edgeEnsemble);
+            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            return search.search();
+        }
 
     }
 
@@ -95,7 +95,7 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
     @Override
     public String getDescription() {
         return "JCPC (Joe's CPC) using " + test.getDescription() + (algorithm != null ? " with initial graph from " +
-        		algorithm.getDescription() : "");
+                algorithm.getDescription() : "");
     }
 
     @Override
@@ -122,15 +122,15 @@ public class Jcpc implements Algorithm, TakesInitialGraph, HasKnowledge {
         this.knowledge = knowledge;
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		return initialGraph;
-	}
+    @Override
+    public Graph getInitialGraph() {
+        return initialGraph;
+    }
 
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		this.initialGraph = initialGraph;
-	}
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {

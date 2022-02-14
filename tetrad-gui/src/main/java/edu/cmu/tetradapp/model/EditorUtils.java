@@ -107,15 +107,15 @@ public class EditorUtils {
     }
 
     public static File getSaveFileWithPath(String prefix, String suffix,
-            Component parent, boolean overwrite, String dialogName, String saveLocation){
+                                           Component parent, boolean overwrite, String dialogName, String saveLocation) {
         JFileChooser chooser = createJFileChooser(dialogName, saveLocation);
-        
+
         String fileSaveLocation = null;
-        if(saveLocation == null){
-        	fileSaveLocation = Preferences.userRoot().get(
+        if (saveLocation == null) {
+            fileSaveLocation = Preferences.userRoot().get(
                     "fileSaveLocation", Preferences.userRoot().absolutePath());
-        }else{
-        	fileSaveLocation = saveLocation;
+        } else {
+            fileSaveLocation = saveLocation;
         }
         File dir = new File(fileSaveLocation);
         chooser.setCurrentDirectory(dir);
@@ -153,31 +153,31 @@ public class EditorUtils {
         }
 
         outfile = ensureSuffix(outfile, suffix);
-        if(saveLocation == null){
+        if (saveLocation == null) {
             Preferences.userRoot().put("fileSaveLocation", outfile.getParent());
-        }else{
+        } else {
             Preferences.userRoot().put("sessionSaveLocation", outfile.getParent());
         }
 
         return outfile;
     }
-    
+
     /**
      * Displays a save dialog in the getModel save directory and returns the
      * selected file. The file is of form prefix.suffix.
      *
-     * @param prefix     The prefix of the file.
-     * @param suffix     The suffix of the file.
-     * @param parent     The parent that the save dialog should be centered on
-     *                   and in front of.
-     * @param overwrite  True iff the file prefix.suffix should be overwritten.
-     *                   If false, the next avialable filename in the series
-     *                   prefix{n}.suffix will be suggested.
+     * @param prefix    The prefix of the file.
+     * @param suffix    The suffix of the file.
+     * @param parent    The parent that the save dialog should be centered on
+     *                  and in front of.
+     * @param overwrite True iff the file prefix.suffix should be overwritten.
+     *                  If false, the next avialable filename in the series
+     *                  prefix{n}.suffix will be suggested.
      * @return null, if the selection was cancelled or there was an error.
      */
     public static File getSaveFile(String prefix, String suffix,
                                    Component parent, boolean overwrite, String dialogName) {
-    	return getSaveFileWithPath(prefix, suffix, parent, overwrite, dialogName, null);
+        return getSaveFileWithPath(prefix, suffix, parent, overwrite, dialogName, null);
     }
 
     /**
@@ -191,8 +191,8 @@ public class EditorUtils {
         JFileChooser chooser = new JFileChooser();
         String fileSaveLocation =
                 Preferences.userRoot().get("fileSaveLocation", "");
-        if(path != null){
-        	fileSaveLocation = path;
+        if (path != null) {
+            fileSaveLocation = path;
         }
         chooser.setCurrentDirectory(new File(fileSaveLocation));
         chooser.resetChoosableFileFilters();

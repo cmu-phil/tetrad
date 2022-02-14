@@ -222,8 +222,7 @@ final class LogisticRegressionParamsPanel extends JPanel
                     Preferences.userRoot().putDouble("alpha",
                             params().getDouble("alpha", 0.001));
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -418,9 +417,9 @@ final class LogisticRegressionParamsPanel extends JPanel
                         }
                     }
                 } else {
-                    for(int i = 0; i<nrows; i++){
+                    for (int i = 0; i < nrows; i++) {
                         double value = cds.getDouble(i, varIndex);
-                        if(value != 0.0d && value != 1.0d){
+                        if (value != 0.0d && value != 1.0d) {
                             JOptionPane.showMessageDialog(this, "Target must be a dictotomous variable");
                             return;
                         }

@@ -21,7 +21,6 @@ package edu.pitt.dbmi.data.reader.metadata;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- *
  * Dec 18, 2018 11:21:23 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

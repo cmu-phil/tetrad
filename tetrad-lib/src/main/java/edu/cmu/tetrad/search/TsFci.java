@@ -275,7 +275,7 @@ public final class TsFci implements GraphSearch {
         long time6 = System.currentTimeMillis();
         logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
 
-        final TsFciOrient fciOrient = new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest),independenceTest);
+        final TsFciOrient fciOrient = new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest);
 
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
@@ -459,7 +459,7 @@ public final class TsFci implements GraphSearch {
     private void removeSimilarPairs(final IndependenceTest test, Node x, Node y, List<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
         System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
-        if(x.getName().equals("time") || y.getName().equals("time")){
+        if (x.getName().equals("time") || y.getName().equals("time")) {
             System.out.println("Not removing similar pairs b/c variable pair includes time.");
             return;
         }
@@ -482,15 +482,15 @@ public final class TsFci implements GraphSearch {
 //            Collections.sort(tier_y);
 
         int i;
-        for(i = 0; i < tier_x.size(); ++i) {
-            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+        for (i = 0; i < tier_x.size(); ++i) {
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
                 indx_comp = i;
                 break;
             }
         }
 
-        for(i = 0; i < tier_y.size(); ++i) {
-            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+        for (i = 0; i < tier_y.size(); ++i) {
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
                 indy_comp = i;
                 break;
             }
@@ -498,12 +498,12 @@ public final class TsFci implements GraphSearch {
         if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
         if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
 
-        for(i = 0; i < ntiers - tier_diff; ++i) {
+        for (i = 0; i < ntiers - tier_diff; ++i) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            if(knowledge.getTier(i).size()==1) continue;
+            if (knowledge.getTier(i).size() == 1) continue;
             String A;
             Node x1;
             String B;
@@ -522,7 +522,7 @@ public final class TsFci implements GraphSearch {
                 y1 = test.getVariable(B);
                 //adjacencies.get(x1).remove(y1);
                 //adjacencies.get(y1).remove(x1);
-                graph.removeEdge(x1,y1);
+                graph.removeEdge(x1, y1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
                 List<Node> condSetAB = new ArrayList<>();
                 for (Node tempNode : condSet) {
@@ -553,8 +553,8 @@ public final class TsFci implements GraphSearch {
 //                    System.out.println("condAB_tier = " + condAB_tier);
 //                    System.out.println("max_tier = " + max_tier);
 //                    System.out.println("ntiers = " + ntiers);
-                    if(condAB_tier < 0 || condAB_tier > (ntiers-1)
-                            || knowledge.getTier(condAB_tier).size()==1) { // added condition for time tier 05.29.2016
+                    if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
+                            || knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
 //                        List<Node> empty = Collections.emptyList();
 //                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
@@ -585,7 +585,7 @@ public final class TsFci implements GraphSearch {
                 y1 = test.getVariable(B);
                 //adjacencies.get(x1).remove(y1);
                 //adjacencies.get(y1).remove(x1);
-                graph.removeEdge(x1,y1);
+                graph.removeEdge(x1, y1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
                 List<Node> condSetAB = new ArrayList<>();
                 for (Node tempNode : condSet) {
@@ -613,8 +613,8 @@ public final class TsFci implements GraphSearch {
 //                   System.out.println("condAB_tier = " + condAB_tier);
 //                   System.out.println("max_tier = " + max_tier);
 //                   System.out.println("ntiers = " + ntiers);
-                    if(condAB_tier < 0 || condAB_tier > (ntiers-1)
-                            || knowledge.getTier(condAB_tier).size()==1) { // added condition for time tier 05.29.2016
+                    if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
+                            || knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
 //                        List<Node> empty = Collections.emptyList();
 //                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
@@ -635,7 +635,7 @@ public final class TsFci implements GraphSearch {
 
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
-        if(tempS.indexOf(':')== -1) {
+        if (tempS.indexOf(':') == -1) {
             return tempS;
         } else return tempS.substring(0, tempS.indexOf(':'));
     }

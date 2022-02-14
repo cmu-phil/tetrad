@@ -7,6 +7,8 @@ import edu.cmu.tetrad.util.TetradSerializable;
  */
 public interface Simulator extends TetradSerializable {
     long serialVersionUID = 23L;
+
     DataSet simulateData(int sampleSize, boolean latentDataSaved);
+
     DataSet simulateData(int sampleSize, long sampleSeed, boolean latentDataSaved);
 }

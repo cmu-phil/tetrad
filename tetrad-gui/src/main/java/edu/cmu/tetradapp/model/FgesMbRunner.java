@@ -190,8 +190,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
             gesScore.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
             target = gesScore.getVariable(targetName);
             fges = new FgesMb(gesScore);
-        }
-        else if (model instanceof DataModelList) {
+        } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
             for (DataModel dataModel : list) {
@@ -237,7 +236,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
             }
-        }        else {
+        } else {
             System.out.println("No viable input.");
         }
 

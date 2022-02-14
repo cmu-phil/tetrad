@@ -96,7 +96,6 @@ public class ADTreeTest {
         System.out.println(String.format("Query in %s ms", System.currentTimeMillis() - start));
 
 
-
     }
 
     private static Node node(BayesPm pm, String x1) {

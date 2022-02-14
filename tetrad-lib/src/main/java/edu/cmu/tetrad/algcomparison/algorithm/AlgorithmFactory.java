@@ -27,7 +27,6 @@ import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- *
  * Aug 30, 2017 3:14:40 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

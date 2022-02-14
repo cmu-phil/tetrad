@@ -59,20 +59,20 @@ public class FofcRunner extends AbstractMimRunner
     //============================CONSTRUCTORS============================//
 
     public FofcRunner(DataWrapper dataWrapper,
-                                   Parameters pureClustersParams) {
+                      Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
 
     }
 
     public FofcRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
-                                   Parameters pureClustersParams) {
+                      Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = semIm.getSemPm().getGraph();
     }
 
     public FofcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
-                                   Parameters pureClustersParams) {
+                      Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }

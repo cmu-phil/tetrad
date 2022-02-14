@@ -71,7 +71,7 @@ public class TestGenerateMixedData {
         comparison.saveToFiles("mixed.lee.hastie.avg.degree.4", simulation, parameters);
     }
 
-    public static void main(String...args) {
+    public static void main(String... args) {
         new TestGenerateMixedData().test1();
     }
 }

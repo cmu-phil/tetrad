@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- *
  * Dec 6, 2017 11:53:16 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

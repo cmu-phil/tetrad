@@ -228,19 +228,16 @@ public class BooleanFunction implements TetradSerializable {
 
                     // The pattern's already been broken for this
                     // value.
-                }
-                else if (value == lastValues[parentValue]) {
+                } else if (value == lastValues[parentValue]) {
 
                     // We're in the middle of a pattern for this
                     // value; keep going.
-                }
-                else if (-1 == lastValues[parentValue]) {
+                } else if (-1 == lastValues[parentValue]) {
 
                     // We're encountering this parent value for the
                     // first time.
                     lastValues[parentValue] = value;
-                }
-                else {
+                } else {
 
                     // The pattern has just been broken.
                     lastValues[parentValue] = -2;
@@ -266,7 +263,7 @@ public class BooleanFunction implements TetradSerializable {
      * the given parent were true as opposed to false.
      *
      * @return true if each input parent has an influence on the outcome, false
-     *         if not.
+     * if not.
      */
     public boolean isEffective() {
 

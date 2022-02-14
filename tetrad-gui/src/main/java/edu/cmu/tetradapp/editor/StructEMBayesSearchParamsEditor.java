@@ -68,8 +68,7 @@ public class StructEMBayesSearchParamsEditor extends JPanel implements Parameter
                 try {
                     params.set("tolerance", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }

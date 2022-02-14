@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- *
  * Dec 18, 2018 2:39:39 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

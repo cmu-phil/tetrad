@@ -182,14 +182,11 @@ final class FontSelectionAction extends AbstractAction
 
         if ("Plain".equals(styleString)) {
             style = Font.PLAIN;
-        }
-        else if ("Italic".equals(styleString)) {
+        } else if ("Italic".equals(styleString)) {
             style = Font.ITALIC;
-        }
-        else if ("Bold".equals(styleString)) {
+        } else if ("Bold".equals(styleString)) {
             style = Font.BOLD;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException(
                     "Unrecognized styleString: " + styleString);
         }

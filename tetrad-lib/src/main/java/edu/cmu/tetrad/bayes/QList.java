@@ -283,7 +283,7 @@ final class QList {
             // compose next variable value configuration
             if ((sumOverVariables[curVar] == 1) &&
                     (loopVarValues[curVar] < bayesIm.getNumColumns(curVar) - 1)
-                    ) {
+            ) {
                 loopVarValues[curVar]++;
             } else {
                 while ((curVar >= 0)
@@ -292,7 +292,7 @@ final class QList {
                                 ||
                                 (loopVarValues[curVar] ==
                                         bayesIm.getNumColumns(curVar) - 1))
-                        ) {
+                ) {
                     curVar--;
                 }
 

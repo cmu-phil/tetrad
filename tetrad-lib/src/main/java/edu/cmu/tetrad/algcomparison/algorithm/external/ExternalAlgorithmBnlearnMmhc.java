@@ -77,8 +77,8 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
             while ((line = r.readLine()) != null) {
                 if (line.isEmpty()) continue;
                 String[] tokens = line.split("\t");
-                String name1 = tokens[0].replace(" ", "").replace("\"","");
-                String name2 = tokens[1].replace(" ", "").replace("\"","");
+                String name1 = tokens[0].replace(" ", "").replace("\"", "");
+                String name2 = tokens[1].replace(" ", "").replace("\"", "");
 
                 if (graph.getNode(name1) == null) {
                     graph.addNode(new GraphNode(name1));

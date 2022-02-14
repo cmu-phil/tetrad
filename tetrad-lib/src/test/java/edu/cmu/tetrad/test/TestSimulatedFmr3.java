@@ -189,7 +189,7 @@ public class TestSimulatedFmr3 {
         statistics.setWeight("2CFP", 1.0);
 
 
-        String dir =  "/Users/user/Downloads/SimulatedData_2/";
+        String dir = "/Users/user/Downloads/SimulatedData_2/";
 
         String[] dirs = new String[]{"AllNegative", "AllPositive", "TwoCycleNegative", "XYNegative", "XYPositive",
                 "XZNegative", "XZPositive", "YZNegative", "YZPositive"};

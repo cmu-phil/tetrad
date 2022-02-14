@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.AlgorithmDescriptions;
 import java.io.Serializable;
 
 /**
- *
  * Nov 30, 2017 4:41:37 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

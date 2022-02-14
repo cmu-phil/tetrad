@@ -41,6 +41,7 @@ public interface ImpliedOrientation {
 
     /**
      * Adds implied orientations.
+     *
      * @return Affected nodes.
      */
     Set<Node> orientImplied(Graph graph);

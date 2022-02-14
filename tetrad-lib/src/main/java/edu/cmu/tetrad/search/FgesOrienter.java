@@ -46,9 +46,9 @@ import java.util.concurrent.*;
  *
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
- *         <p>
- *         This Orients a given undirected graph such that the edges in the graph are a superset
- *         of the edges in the oriented graph
+ * <p>
+ * This Orients a given undirected graph such that the edges in the graph are a superset
+ * of the edges in the oriented graph
  * @author AJ Sedgewick, 5/2015
  */
 public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter {

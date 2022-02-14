@@ -85,7 +85,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     //==============================CONSTRUCTORS===========================//
     protected DataWrapper() {
-        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0 , 0), new LinkedList<Node>()));
+        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<Node>()));
         this.parameters = new Parameters();
     }
 

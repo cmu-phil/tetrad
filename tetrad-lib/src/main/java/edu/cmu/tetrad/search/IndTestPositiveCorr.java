@@ -168,7 +168,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         int nc2 = StatUtils.getRows(y, 0, +1).size();
 
         double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
-        double z1 = 0.5 *  (log(1.0 + pc1) - log(1.0 - pc1));
+        double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
         double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
 
         double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));

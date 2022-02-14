@@ -82,6 +82,7 @@ public final class TimeLagGraphEditor extends JPanel
     }
 
     //===========================PUBLIC METHODS========================//
+
     /**
      * Sets the name of this editor.
      */

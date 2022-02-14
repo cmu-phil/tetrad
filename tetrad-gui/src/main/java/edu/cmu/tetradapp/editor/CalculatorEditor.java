@@ -107,13 +107,14 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     /**
      * @return the data set that the editor is working with.
      */
-    public DataSet getDataSet(){
+    public DataSet getDataSet() {
         return this.dataSet;
     }
 
 
     /**
      * Sets the calculator's params.
+     *
      * @param params
      */
     public void setParams(Parameters params) {
@@ -413,8 +414,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
             List<String> equations = (List<String>) params.get("equations", new ArrayList<String>());
             int size = equations.size();
             displayEquations = equations.toArray(new String[size]);
-        }
-        else {
+        } else {
             String _displayEquations = (String) params.get("calculator_equations", "");
             displayEquations = _displayEquations.split("///");
         }
@@ -486,14 +486,14 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         for (Node node : nodes) {
             model.addElement(node);
         }
-        this.variableList.addMouseListener(new MouseAdapter(){
-            public void mouseClicked(MouseEvent evt){
-                if(evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() % 2 == 0){
+        this.variableList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() % 2 == 0) {
                     int index = variableList.locationToIndex(evt.getPoint());
-                    if(0 <= index){
+                    if (0 <= index) {
                         ListModel model = variableList.getModel();
-                        Node node = (Node)model.getElementAt(index);
-                        if(node != null){
+                        Node node = (Node) model.getElementAt(index);
+                        if (node != null) {
                             insertSymbol(node.getName());
                         }
                     }
@@ -621,7 +621,6 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     }
 
 
-
     /**
      * Creates the list of functions.
      */
@@ -631,13 +630,13 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         final JList list = new JList(descriptors);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setCellRenderer(new Renderer());
-        list.addMouseListener(new MouseAdapter(){
-            public void mouseClicked(MouseEvent evt){
-                if(evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() % 2 == 0){
+        list.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() % 2 == 0) {
                     int index = list.locationToIndex(evt.getPoint());
-                    if(0 <= index){
+                    if (0 <= index) {
                         ListModel model = list.getModel();
-                        ExpressionDescriptor des = (ExpressionDescriptor)model.getElementAt(index);
+                        ExpressionDescriptor des = (ExpressionDescriptor) model.getElementAt(index);
                         insertExpression(des.getSignature());
                     }
                 }
@@ -673,8 +672,6 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     }
 
     //=================================== Inner Classes =================================//
-
-
 
 
     /**

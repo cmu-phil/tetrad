@@ -138,7 +138,7 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
         private DiscreteVariable oldVariable;
 
         public RemapEditor(DiscreteVariable variable,
-                DiscreteDiscretizationSpec spec) {
+                           DiscreteDiscretizationSpec spec) {
             this.variable = variable;
 
             if (variable == null) {
@@ -181,28 +181,26 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
 
             setFocusTraversalPolicy(new FocusTraversalPolicy() {
                 public Component getComponentAfter(Container focusCycleRoot,
-                        Component aComponent) {
+                                                   Component aComponent) {
                     int index = focusTraveralOrder.indexOf(aComponent);
                     int size = focusTraveralOrder.size();
 
                     if (index != -1) {
                         return focusTraveralOrder.get(
                                 (index + 1) % size);
-                    }
-                    else {
+                    } else {
                         return getFirstComponent(focusCycleRoot);
                     }
                 }
 
                 public Component getComponentBefore(Container focusCycleRoot,
-                        Component aComponent) {
+                                                    Component aComponent) {
                     int index = focusTraveralOrder.indexOf(aComponent);
                     int size = focusTraveralOrder.size();
 
                     if (index != -1) {
                         return focusTraveralOrder.get((index - 1) % size);
-                    }
-                    else {
+                    } else {
                         return getFirstComponent(focusCycleRoot);
                     }
                 }

@@ -224,7 +224,7 @@ public class Parameters implements TetradSerializable {
      * Sets the value(s) of the given parameter to a list of strings.
      *
      * @param name The name of the parameter.
-     * @param n A list of values for the parameter.
+     * @param n    A list of values for the parameter.
      */
     public void set(String name, Object... n) {
         parameters.put(name, n);
@@ -234,7 +234,7 @@ public class Parameters implements TetradSerializable {
      * Sets the value(s) of the given parameter to a list of values.
      *
      * @param name The name of the parameter.
-     * @param s A list of strings for the parameter.
+     * @param s    A list of strings for the parameter.
      */
     public void set(String name, String... s) {
         parameters.put(name, s);
@@ -257,7 +257,7 @@ public class Parameters implements TetradSerializable {
     /**
      * Sets the given parameter to the given value.
      *
-     * @param name The name of the parameter.
+     * @param name  The name of the parameter.
      * @param value The value of the parameter (a single value).
      */
     public void set(String name, Object value) {
@@ -272,7 +272,7 @@ public class Parameters implements TetradSerializable {
     /**
      * Sets the given parameter to the given value.
      *
-     * @param name The name of the parameter.
+     * @param name  The name of the parameter.
      * @param value The value of the parameter (a single value).
      */
     public void set(String name, String value) {

@@ -53,7 +53,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
     private JComboBox variableDropdown;
     private JTabbedPane tabbedPane;
     private JComboBox categoryDropdown;
-//    private double binaryCutoff = 0.5;
+    //    private double binaryCutoff = 0.5;
 //    private DoubleTextField binaryCutoffField;
     private GraphWorkbench workbench;
     private RocPlot rocPlot;
@@ -314,8 +314,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
 
         if (tabIndex == -1) {
             getTabbedPane().add("Classification", scroll);
-        }
-        else {
+        } else {
             getTabbedPane().add(scroll, tabIndex);
             getTabbedPane().setTitleAt(tabIndex, "Classification");
         }
@@ -376,8 +375,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
 
         if (tabIndex == -1) {
             getTabbedPane().add("ROC Plot", plot);
-        }
-        else {
+        } else {
             getTabbedPane().add(plot, tabIndex);
             getTabbedPane().setTitleAt(tabIndex, "ROC Plot");
         }
@@ -463,8 +461,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
 
         if (tabIndex == -1) {
             getTabbedPane().add("Confusion Matrix", scroll);
-        }
-        else {
+        } else {
             getTabbedPane().add(scroll, tabIndex);
             getTabbedPane().setTitleAt(tabIndex, "Confusion Matrix");
         }

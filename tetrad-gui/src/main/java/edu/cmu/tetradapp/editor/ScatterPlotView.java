@@ -880,9 +880,7 @@ public class ScatterPlotView extends JPanel {
             }
 
             /* draws best-fit line */
-            if (scatterPlot.isIncludeLine())
-
-            {
+            if (scatterPlot.isIncludeLine()) {
                 double a = scatterPlot.getRegressionCoeff();
                 double b = scatterPlot.getRegressionIntercept();
 
@@ -915,9 +913,7 @@ public class ScatterPlotView extends JPanel {
             }
 
             /* draws statistical values */
-            if (scatterPlot.isIncludeLine())
-
-            {
+            if (scatterPlot.isIncludeLine()) {
                 g.setColor(Color.black);
                 nf.setMinimumFractionDigits(3);
                 nf.setMaximumFractionDigits(3);

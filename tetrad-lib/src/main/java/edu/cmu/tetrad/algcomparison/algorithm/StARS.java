@@ -149,7 +149,7 @@ public class StARS implements Algorithm, TakesInitialGraph {
     }
 
     private static double getD(Parameters params, String paramName, double paramValue, final List<DataSet> samples,
-            Algorithm algorithm) {
+                               Algorithm algorithm) {
         params.set(paramName, paramValue);
 
         List<Graph> graphs = new ArrayList<>();
@@ -266,19 +266,19 @@ public class StARS implements Algorithm, TakesInitialGraph {
         return parameters;
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		// TODO Auto-generated method stub
-		return initialGraph;
-	}
+    @Override
+    public Graph getInitialGraph() {
+        // TODO Auto-generated method stub
+        return initialGraph;
+    }
 
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		// TODO Auto-generated method stub
-		this.initialGraph = initialGraph;
-	}
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        // TODO Auto-generated method stub
+        this.initialGraph = initialGraph;
+    }
 
-	@Override
+    @Override
     public void setInitialGraph(Algorithm algorithm) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

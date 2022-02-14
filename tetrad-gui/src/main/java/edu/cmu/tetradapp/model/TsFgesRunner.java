@@ -159,8 +159,7 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 fges = new TsFges2(gesScore);
-            }
-            else if (model instanceof DataModelList) {
+            } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
 
                 for (DataModel dataModel : list) {

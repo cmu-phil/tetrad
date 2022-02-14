@@ -59,7 +59,7 @@ public class EmBayesEstimatorEditor extends JPanel {
      * Constructs a new instanted model editor from a Bayes IM.
      */
     private EmBayesEstimatorEditor(BayesIm bayesIm,
-            DataSet dataSet) {
+                                   DataSet dataSet) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }

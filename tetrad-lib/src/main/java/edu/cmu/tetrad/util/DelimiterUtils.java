@@ -21,7 +21,6 @@ package edu.cmu.tetrad.util;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
 /**
- *
  * Jun 20, 2017 12:09:05 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

@@ -60,8 +60,7 @@ class TextAreaFifo extends JTextArea implements DocumentListener {
 
             try {
                 getDocument().remove(0, firstLine.getEndOffset());
-            }
-            catch (BadLocationException ble) {
+            } catch (BadLocationException ble) {
                 ble.printStackTrace();
             }
         }

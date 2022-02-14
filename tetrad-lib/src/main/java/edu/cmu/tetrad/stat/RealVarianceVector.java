@@ -19,7 +19,6 @@
 package edu.cmu.tetrad.stat;
 
 /**
- *
  * Feb 9, 2016 3:14:08 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

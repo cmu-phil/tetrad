@@ -51,6 +51,7 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * Sets the parameters.
+     *
      * @param params
      */
     public void setParams(Parameters params) {
@@ -75,8 +76,7 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
                 if (value >= 0) {
                     params.set("lambda", value);
                     return value;
-                }
-                else {
+                } else {
                     return oldValue;
                 }
             }

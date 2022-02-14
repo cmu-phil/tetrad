@@ -93,7 +93,7 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();
         b1.add(Box.createHorizontalGlue());
-        b1.add(new JLabel(" Score = " ));
+        b1.add(new JLabel(" Score = "));
         b1.add(scoreLabel);
         b1.add(new JLabel(" forbid_latent_common_causes "));
         b1.add(spinner);
@@ -123,8 +123,7 @@ public class FgesDisplay extends JPanel implements GraphEditable {
 
         if (topGraphs.size() == 0) {
             workbench.setGraph(new EdgeListGraph());
-        }
-        else {
+        } else {
             ScoredGraph scoredGraph = topGraphs.get(index);
             workbench.setGraph(scoredGraph.getGraph());
         }
@@ -133,14 +132,12 @@ public class FgesDisplay extends JPanel implements GraphEditable {
     private void setDisplayScore() {
         if (topGraphs.isEmpty()) {
             scoreLabel.setText("*");
-        }
-        else {
+        } else {
             final double score = topGraphs.get(getIndexable().getIndex()).getScore();
 
             if (Double.isNaN(score)) {
                 scoreLabel.setText("*");
-            }
-            else {
+            } else {
                 scoreLabel.setText(nf.format(score));
             }
         }

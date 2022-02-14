@@ -55,7 +55,6 @@ public class SimulationParamsEditor extends JPanel implements ParameterEditor {
     public void setup() {
 
 
-
 //        ParameterPanel parameterPanel = new ParameterPanel(params, );
     }
 

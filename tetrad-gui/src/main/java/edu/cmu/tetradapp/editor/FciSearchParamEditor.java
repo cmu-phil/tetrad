@@ -123,8 +123,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
 
         if (dataModel1 != null) {
             varNames = new ArrayList(dataModel1.getVariableNames());
-        }
-        else if (graph != null) {
+        } else if (graph != null) {
             Iterator<Node> it = graph.getNodes().iterator();
             varNames = new ArrayList();
 
@@ -137,8 +136,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
                     varNames.add(temp.getName());
                 }
             }
-        }
-        else {
+        } else {
             throw new NullPointerException(
                     "Null model (no graph or data model " +
                             "passed to the search).");
@@ -153,8 +151,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
                 try {
                     params.set("depth", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -171,8 +168,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
                         params.set("alpha", 0.001);
                         Preferences.userRoot().putDouble("alpha", value);
                         return value;
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         return oldValue;
                     }
                 }
@@ -208,6 +204,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
     public boolean mustBeShown() {
         return false;
     }
+
     private Parameters getParams() {
         return params;
     }

@@ -166,8 +166,8 @@ public class GraphNodeMeasured extends DisplayNode {
                             !newName.equals(super.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
-                                newName + "' is already being used." +
-                                "\nPlease choose another name.");
+                                        newName + "' is already being used." +
+                                        "\nPlease choose another name.");
                         continue LOOP;
                     }
                 }

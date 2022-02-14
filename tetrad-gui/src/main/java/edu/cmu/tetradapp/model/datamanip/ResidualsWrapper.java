@@ -40,7 +40,7 @@ public class ResidualsWrapper extends DataWrapper {
     /**
      * Constructs a new time series dataset.
      *
-     * @param data   - Previous data (from the parent node)
+     * @param data - Previous data (from the parent node)
      */
     public ResidualsWrapper(DataWrapper data, DagWrapper dagWrapper, Parameters params) {
         DataModelList list = data.getDataModelList();

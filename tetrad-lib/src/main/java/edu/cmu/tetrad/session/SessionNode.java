@@ -190,6 +190,7 @@ public class SessionNode implements Node, TetradSerializable {
     private Map<String, Object> attributes = new HashMap<>();
 
     //==========================CONSTRUCTORS===========================//
+
     /**
      * Creates a new session node capable of implementing the given model class.
      */
@@ -201,10 +202,10 @@ public class SessionNode implements Node, TetradSerializable {
      * Creates a new session node with the given name, capable of implementing
      * the given model class.
      *
-     * @param boxType The name of the box type--for instance, "Graph."
+     * @param boxType     The name of the box type--for instance, "Graph."
      * @param displayName The name of this particular session node. Any non-null
-     * string.
-     * @param modelClass A single model class associated with this session node.
+     *                    string.
+     * @param modelClass  A single model class associated with this session node.
      */
     public SessionNode(String boxType, String displayName, Class modelClass) {
         this(boxType, displayName, new Class[]{modelClass});
@@ -226,14 +227,14 @@ public class SessionNode implements Node, TetradSerializable {
      * class given as argument to the <code>createModel</code> method, which
      * must itself be one of these model classes.
      *
-     * @param boxType The name of the box type--for instance, "Graph."
-     * @param displayName The name of this particular session node. Any non-null
-     * string.
+     * @param boxType      The name of the box type--for instance, "Graph."
+     * @param displayName  The name of this particular session node. Any non-null
+     *                     string.
      * @param modelClasses An array of model classes associated with this
-     * session node.
+     *                     session node.
      */
     public SessionNode(String boxType, String displayName,
-            Class[] modelClasses) {
+                       Class[] modelClasses) {
         setBoxType(boxType);
         setDisplayName(displayName);
 
@@ -250,7 +251,7 @@ public class SessionNode implements Node, TetradSerializable {
             if (!(SessionModel.class.isAssignableFrom(modelClasses[i]))) {
                 throw new ClassCastException(
                         "Model class must implement SessionModel: "
-                        + modelClasses[i]);
+                                + modelClasses[i]);
             }
         }
 
@@ -268,6 +269,7 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     //==========================PUBLIC METHODS============================//
+
     /**
      * Adds a parent to this node provided the resulting set of parents taken
      * together provides some combination of possible model classes that can be
@@ -561,9 +563,9 @@ public class SessionNode implements Node, TetradSerializable {
      * printed to System.err and an IllegalArgumentException is thrown. t
      *
      * @throws RuntimeException if the attempt to construct the model throws
-     * either an IllegalAccessException, an InstantiationException, or an
-     * InvocationTargetException. In this case, a stack trace is printed to
-     * System.err.
+     *                          either an IllegalAccessException, an InstantiationException, or an
+     *                          InvocationTargetException. In this case, a stack trace is printed to
+     *                          System.err.
      */
     public void createModel(Class modelClass, boolean simulation)
             throws Exception {
@@ -1186,6 +1188,7 @@ public class SessionNode implements Node, TetradSerializable {
     //===================================================================//
     // Note: Leave these method package protected for unit testing.      //
     //===================================================================//
+
     /**
      * Determines whether a given model class is consistent with the models
      * contained in the given List of nodes, in the sense that the model class
@@ -1271,9 +1274,9 @@ public class SessionNode implements Node, TetradSerializable {
      * RuntimeException with an appropriate message. </p>
      *
      * @param parameterTypes a list of classes; if any of them is null, a
-     * NullPointerException will be thrown.
-     * @param objects a List of objects. (The nulls will be automatically thrown
-     * out for this one.)
+     *                       NullPointerException will be thrown.
+     * @param objects        a List of objects. (The nulls will be automatically thrown
+     *                       out for this one.)
      */
     public Object[] assignParameters(Class[] parameterTypes, List objects)
             throws RuntimeException {
@@ -1468,6 +1471,7 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     //==============================PRIVATE METHODS=======================//
+
     /**
      * @return true iff the given node is parent of this node.
      */
@@ -1624,7 +1628,7 @@ public class SessionNode implements Node, TetradSerializable {
                     } else {
                         throw new InvocationTargetException(e,
                                 "Could not construct node; root cause: " + e.getCause().getMessage()
-                                + " " + packagePath + " " + begin + " " + name
+                                        + " " + packagePath + " " + begin + " " + name
                         );
                     }
                 }
@@ -1643,7 +1647,7 @@ public class SessionNode implements Node, TetradSerializable {
      * New version 2015901.
      */
     private boolean isConsistentModelClass(Class modelClass, Class[][] parentClasses, boolean exact,
-            List<SessionNode> existingNodes) {
+                                           List<SessionNode> existingNodes) {
         Constructor[] constructors = modelClass.getConstructors();
 
         // If the constructor takes the special form of an array followed by Parameters,
@@ -1753,7 +1757,7 @@ public class SessionNode implements Node, TetradSerializable {
     }
 
     private Class findMatchingType(List<Class> parameterTypes,
-            Class argumentType) {
+                                   Class argumentType) {
         for (Class type : parameterTypes) {
             if (type.isAssignableFrom(argumentType)) {
                 return type;

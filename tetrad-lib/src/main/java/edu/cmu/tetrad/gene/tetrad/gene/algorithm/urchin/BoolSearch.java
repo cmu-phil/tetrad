@@ -111,8 +111,7 @@ public class BoolSearch {
 
                         //for(int parent = 0; parent < k; parent++)
                         //  System.out.println("Parent " + parent + " = " + pars[parent]);
-                    }
-                    else {
+                    } else {
                         //System.out.println("Not k bits for " + input);
                         continue;
                     }
@@ -120,7 +119,7 @@ public class BoolSearch {
                     //System.out.println("pars " + pars[0] + " " + pars[1] + " " + pars[2]);
                     //For every boolean function with k inputs do...
                     for (int function = 0;
-                            function < numberBooleanFunctions; function++) {
+                         function < numberBooleanFunctions; function++) {
                         byte[] fi = booleanRepresentation(function,
                                 numberInputCombinations);
                         int mismatch = 0;
@@ -163,8 +162,7 @@ public class BoolSearch {
                             "Regulators not identified count = " + count);
                     parents[gchild] = new int[0];
                     lags[gchild] = new int[0];
-                }
-                else {
+                } else {
                     System.out.println("Regulators are:  ");
                     for (int i = 0; i < parents[gchild].length; i++) {
                         System.out.println(

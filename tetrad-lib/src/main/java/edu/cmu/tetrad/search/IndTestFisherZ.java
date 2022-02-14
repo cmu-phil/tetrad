@@ -507,7 +507,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         List<Integer> rows = new ArrayList<>();
 
         K:
-        for (int k = 0; k <  dataSet.getNumRows(); k++) {
+        for (int k = 0; k < dataSet.getNumRows(); k++) {
             for (Node node : allVars) {
                 if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
             }

@@ -51,6 +51,7 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
     /**
      * Sets the parameter-storing object. This is a separate method because
      * a blank constructor is needed.
+     *
      * @param params
      */
     public void setParams(Parameters params) {
@@ -75,8 +76,7 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
                 try {
                     getParams().set("sampleSize", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -89,13 +89,11 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
                 try {
                     getParams().set("numDataSets", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
         });
-
 
 
 //        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",

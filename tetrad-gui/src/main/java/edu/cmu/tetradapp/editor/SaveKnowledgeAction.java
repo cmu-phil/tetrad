@@ -77,8 +77,7 @@ final class SaveKnowledgeAction extends AbstractAction {
                 writer.close();
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Saved knowledge as " + file.getAbsoluteFile() + ".");
-            }
-            catch (IOException e1) {
+            } catch (IOException e1) {
                 String message = e1.getMessage() ==
                         null ? e1.getClass().getName() : e1.getMessage();
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),

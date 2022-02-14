@@ -62,7 +62,6 @@ public class BayesPmEditor extends JPanel
     /**
      * Constructs a new editor for parameterized models (for now only for Bayes
      * net parameterized models).
-     *
      */
     public BayesPmEditor(final BayesPmWrapper wrapper) {
         this.wrapper = wrapper;

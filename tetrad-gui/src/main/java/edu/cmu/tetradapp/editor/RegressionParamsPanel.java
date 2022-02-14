@@ -83,7 +83,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
      * Opens up an editor to let the user view the given RegressionRunner.
      */
     public RegressionParamsPanel(Parameters params,
-            Object[] parentModels) {
+                                 Object[] parentModels) {
 
         if (params == null) {
             throw new NullPointerException(
@@ -203,8 +203,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
                     Preferences.userRoot().putDouble("alpha",
                             params().getDouble("alpha", 0.001));
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -301,8 +300,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
 
         if (dataModel == null) {
             return null;
-        }
-        else {
+        } else {
             return new ArrayList<>(dataModel.getVariableNames());
         }
     }
@@ -313,22 +311,19 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         for (Object parentModel : parentModels) {
             if (parentModel instanceof GraphWrapper) {
                 graphWrapper = parentModel;
-            }
-            else if (parentModel instanceof DagWrapper) {
+            } else if (parentModel instanceof DagWrapper) {
                 graphWrapper = parentModel;
             }
         }
 
         if (graphWrapper == null) {
             return null;
-        }
-        else {
+        } else {
             Graph graph = null;
 
             if (graphWrapper instanceof GraphWrapper) {
                 graph = ((GraphWrapper) graphWrapper).getGraph();
-            }
-            else if (graphWrapper instanceof DagWrapper) {
+            } else if (graphWrapper instanceof DagWrapper) {
                 graph = ((DagWrapper) graphWrapper).getDag();
             }
 
@@ -378,15 +373,13 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         //if (varsList.size()!=0)
         if (varsModel.size() != 0) {
             varName = (String) availableVarsList.getSelectedValue();
-        }
-        else {
+        } else {
             varName = "";
         }
 
         if (predsModel.size() != 0) {
             predictorName = (String) predictorVarListbox.getSelectedValue();
-        }
-        else {
+        } else {
             predictorName = "";
         }
 
@@ -402,8 +395,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
                 //varsList.remove(varName);  ORIG
 
                 varsModel.removeElement(varName);
-            }
-            else {
+            } else {
                 //varsList.add(responseVar.getText());   ORIG
                 varsModel.addElement(responseVar.getText());
                 responseVar.setText("");
@@ -426,16 +418,14 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             predsModel.addElement(varName);
 
             /* exclude predictor variable */
-        }
-        else if (e.getActionCommand().equals(EXCLUDE_PREDICTOR)) {
+        } else if (e.getActionCommand().equals(EXCLUDE_PREDICTOR)) {
             if (predictorVarListbox.isSelectionEmpty()) {
                 return;
             }
             predsModel.removeElement(predictorName);
             //varsList.add(predictorName);   ORIG
             varsModel.addElement(predictorName);
-        }
-        else {
+        } else {
             return;
         }
 
@@ -497,14 +487,13 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         }
 
         public ArrowButton(RegressionParamsPanel listener, String command,
-                boolean isInclude) {
+                           boolean isInclude) {
             this.isInclude = isInclude;
             addActionListener(listener);
             setActionCommand(command);
             if (isInclude) {
                 setText(">");
-            }
-            else {
+            } else {
                 setText("<");
             }
         }
@@ -513,8 +502,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             if (isInclude) {
                 setText("<");
                 isInclude = false;
-            }
-            else {
+            } else {
                 setText(">");
                 isInclude = true;
             }

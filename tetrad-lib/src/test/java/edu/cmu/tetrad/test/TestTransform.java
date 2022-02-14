@@ -39,7 +39,7 @@ import static org.junit.Assert.fail;
 public final class TestTransform {
 
     @Test
-    public void testTransformWithNewColumnVariable(){
+    public void testTransformWithNewColumnVariable() {
         List<Node> list = Arrays.asList((Node) new ContinuousVariable("x"),
                 new ContinuousVariable("y"));
         BoxDataSet data = new BoxDataSet(new VerticalDoubleDataBox(2, list.size()), list);
@@ -55,7 +55,7 @@ public final class TestTransform {
             Transformation.transform(data, eq);
             assertTrue(data.getDouble(0, 2) == 2.0);
             assertTrue(data.getDouble(0, 2) == 2.0);
-        } catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
             fail(ex.getMessage());
         }

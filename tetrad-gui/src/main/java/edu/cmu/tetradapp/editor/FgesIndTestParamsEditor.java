@@ -62,15 +62,14 @@ class FgesIndTestParamsEditor extends JComponent {
 
         if (type == FgesRunner.Type.DISCRETE) {
             this.cellPriorField = new DoubleTextField(
-                    getFgesIndTestParams().getDouble("samplePrior", 1),  5, nf, smallNf, 1e-4);
+                    getFgesIndTestParams().getDouble("samplePrior", 1), 5, nf, smallNf, 1e-4);
 
             this.cellPriorField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
                     try {
                         getFgesIndTestParams().set("samplePrior", value);
                         return value;
-                    }
-                    catch (IllegalArgumentException e) {
+                    } catch (IllegalArgumentException e) {
                         return oldValue;
                     }
                 }
@@ -83,8 +82,7 @@ class FgesIndTestParamsEditor extends JComponent {
                     try {
                         getFgesIndTestParams().set("structurePrior", value);
                         return value;
-                    }
-                    catch (IllegalArgumentException e) {
+                    } catch (IllegalArgumentException e) {
                         return oldValue;
                     }
                 }
@@ -118,8 +116,7 @@ class FgesIndTestParamsEditor extends JComponent {
                     try {
                         getFgesIndTestParams().set("penaltyDiscount", value);
                         return value;
-                    }
-                    catch (IllegalArgumentException e) {
+                    } catch (IllegalArgumentException e) {
                         return oldValue;
                     }
                 }
@@ -133,8 +130,7 @@ class FgesIndTestParamsEditor extends JComponent {
                 try {
                     getFgesIndTestParams().set("numPatternsToSave", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -146,8 +142,7 @@ class FgesIndTestParamsEditor extends JComponent {
                 try {
                     getFgesIndTestParams().set("depth", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -213,7 +208,7 @@ class FgesIndTestParamsEditor extends JComponent {
             b4b.add(Box.createHorizontalGlue());
             b4b.add(depth);
             add(b4b);
-        } else if (type == FgesRunner.Type.CONTINUOUS || type == FgesRunner.Type.MIXED){
+        } else if (type == FgesRunner.Type.CONTINUOUS || type == FgesRunner.Type.MIXED) {
             Box b7 = Box.createHorizontalBox();
             b7.add(new JLabel("Penalty Discount"));
             b7.add(Box.createHorizontalGlue());

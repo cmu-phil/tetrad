@@ -84,8 +84,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
                     getParams().set("coefLow", value);
                     getParams().set("coefHigh", params.getDouble("coefHigh"));
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -101,8 +100,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
                     getParams().set("coefLow", params.getDouble("coefLow"));
                     getParams().set("coefHigh", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -117,8 +115,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
                     params.set("covLow", value);
                     params.set("covHigh", params.getDouble("covHigh"));
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -133,8 +130,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
                     params.set("covLow", params.getDouble("covLow"));
                     params.set("covHigh", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -149,8 +145,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
                     params.set("varLow", value);
                     params.set("varHigh", params.getDouble("varHigh"));
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -165,8 +160,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
                     params.set("varLow", params.getDouble("varLow"));
                     params.set("varHigh", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -258,7 +252,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
 
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
-        setBorder(new EmptyBorder(5, 5, 5, 5));        
+        setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
     public boolean mustBeShown() {

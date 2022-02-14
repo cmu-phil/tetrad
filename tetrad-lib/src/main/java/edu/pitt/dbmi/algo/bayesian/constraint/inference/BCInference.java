@@ -33,12 +33,12 @@ import static java.lang.Math.log;
 public class BCInference {
 
 
-
     public enum OP {
 
         independent, dependent
 
     }
+
     private static final int MININUM_EXPONENT = -1022;
 
     private double priorEquivalentSampleSize = 1;
@@ -102,9 +102,9 @@ public class BCInference {
      * nodeDimension array contains values denote the number of discrete values
      * that Node can have (e.g., 2 for a binary variable).
      *
-     * @param cases is a two-dimensional integer array containing the data
+     * @param cases         is a two-dimensional integer array containing the data
      * @param nodeDimension one-dimensional integer array containing the
-     * dimension of each variable
+     *                      dimension of each variable
      */
     public BCInference(int[][] cases, int[] nodeDimension) {
         this.cases = cases;
@@ -129,7 +129,7 @@ public class BCInference {
 
 
 //            maxCells = maxParents * maxValues * maxCases ;
-        maxCells = maxParents * g1*g2 * maxCases ;
+        maxCells = maxParents * g1 * g2 * maxCases;
 
         this.parents = new int[maxNodes + 2][maxParents + 1];
         this.countsTree = new int[maxCells + 1];
@@ -157,9 +157,9 @@ public class BCInference {
      * Empty set: Z = &lcub;&rcub; Z&lsqb;0&rsqb; = 0
      *
      * @param constraint has the value OP.independent or OP.dependent
-     * @param x node x
-     * @param y node y
-     * @param z set of nodes
+     * @param x          node x
+     * @param y          node y
+     * @param z          set of nodes
      * @return P&lpar; x dependent y given z &vert; data &rpar; or P&lpar;x independent y given z &vert;
      * data&rpar;
      */
@@ -185,7 +185,7 @@ public class BCInference {
 
 
 //            maxCells = maxParents * maxValues * maxCases ;
-            maxCells = maxParents * g1*g2 * maxCases ;
+            maxCells = maxParents * g1 * g2 * maxCases;
 
             parents = new int[maxNodes + 2][maxParents + 1];
             countsTree = new int[maxCells + 1];
@@ -214,13 +214,13 @@ public class BCInference {
             int xValue = cases[casei][x];
             int yValue = cases[casei][y];
 //            cases[casei][xy] = (xValue - 1) * nodeDimension[x] + yValue;  // a value in the Cartesian product of X and Y
-            if(y >= nodeDimension.length) {
+            if (y >= nodeDimension.length) {
                 System.out.println("y:" + y + " nodeDimension:" + nodeDimension.length);
             }
-            if(casei >= cases.length) {
+            if (casei >= cases.length) {
                 System.out.println("casei:" + casei + " cases:" + cases.length);
             }
-            if(xy >= cases[casei].length) {
+            if (xy >= cases[casei].length) {
                 System.out.println("xy:" + xy + " cases[casei]:" + cases[casei].length);
             }
             cases[casei][xy] = (xValue - 1) * nodeDimension[y] + yValue;  // a value in the Cartesian product of X and Y
@@ -363,8 +363,8 @@ public class BCInference {
     }
 
     /**
-     * @param q is the number of possible joint instantiation of the parents of
-     * the parents of the node.
+     * @param q    is the number of possible joint instantiation of the parents of
+     *             the parents of the node.
      * @param pess is the prior equivalent sample size
      */
     private double scoringFn1(int node, int instancePtr, double q, double pess) {
@@ -403,13 +403,13 @@ public class BCInference {
         double one = 1.0;
         double fpf = 5.5;
         double[] cof = {
-            0,
-            76.18009173,
-            -86.50532033,
-            24.01409822,
-            -1.231739516,
-            0.120858003E-2,
-            -0.536382E-5
+                0,
+                76.18009173,
+                -86.50532033,
+                24.01409822,
+                -1.231739516,
+                0.120858003E-2,
+                -0.536382E-5
         };
 
         double x = xx - one;
@@ -504,7 +504,7 @@ public class BCInference {
                         System.out.println(countsTreePtr);
                         System.out.println(ctPtr);
                         System.out.println(countsPtr);
-                        System.out.println(nodeDimension[parents[node][i+1]]);
+                        System.out.println(nodeDimension[parents[node][i + 1]]);
                         throw new IllegalArgumentException();
                     }
                 }

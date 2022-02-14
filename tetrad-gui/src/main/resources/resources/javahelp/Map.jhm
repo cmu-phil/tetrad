@@ -147,7 +147,7 @@
     <mapID target="editing_node_properties" url="manual/common_tasks/editing_node_properties.html"/>
     <mapID target="exiting_tetrad" url="manual/common_tasks/exiting_tetrad.html"/>
     <mapID target="generating_random_dags" url="manual/common_tasks/generating_random_dags.html"/>
-    <mapID target="handling_missing_data" url="manual/common_tasks/handling_missing_data.html"/>    
+    <mapID target="handling_missing_data" url="manual/common_tasks/handling_missing_data.html"/>
     <mapID target="opening_sessions" url="manual/common_tasks/opening_sessions.html"/>
     <mapID target="saving_screenshots" url="manual/common_tasks/saving_screenshots.html"/>
     <mapID target="saving_sessions" url="manual/common_tasks/saving_sessions.html"/>

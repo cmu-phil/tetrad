@@ -63,6 +63,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     private final Parameters parameters;
 
     //==========================CONSTUCTORS===============================//
+
     /**
      * Constructs the data editor with an empty list of data displays.
      */
@@ -160,6 +161,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     }
 
     //==========================PUBLIC METHODS=============================//
+
     /**
      * Replaces the getModel Datamodels with the given one. Note, that by
      * calling this you are removing ALL the getModel data-models, they will be

@@ -39,7 +39,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- *
  * Dec 12, 2018 11:11:32 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

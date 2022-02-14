@@ -62,7 +62,7 @@ import java.util.Map;
 public class LingSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable, DoNotScroll {
 
-//    private JTabbedPane tabbedPane;
+    //    private JTabbedPane tabbedPane;
     private LingDisplay lingDisplay;
 
     //=========================CONSTRUCTORS============================//
@@ -280,8 +280,7 @@ public class LingSearchEditor extends AbstractSearchEditor
                             getExecuteButton().setEnabled(true);
                             return;
                         }
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
@@ -381,7 +380,6 @@ public class LingSearchEditor extends AbstractSearchEditor
     protected void doPostExecutionSteps() {
 //        calcStats();
         System.out.println("Post execution.");
-
 
 
 //        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {

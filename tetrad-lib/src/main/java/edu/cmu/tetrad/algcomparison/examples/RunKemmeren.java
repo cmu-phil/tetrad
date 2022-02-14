@@ -37,7 +37,7 @@ public class RunKemmeren {
         try {
             ContinuousTabularData data = ((ContinuousTabularData) reader.readInData());
             List<Node> variables = new ArrayList<>();
-            for(DataColumn column: data.getDataColumns()) {
+            for (DataColumn column : data.getDataColumns()) {
                 Node node = new ContinuousVariable(column.getName());
                 variables.add(node);
             }

@@ -33,23 +33,22 @@ import edu.cmu.tetrad.util.TetradLogger;
  *
  * @author Tyler Gibson
  */
-public class GenerateCompleteGraphWrapper extends GraphWrapper  implements DoNotAddOldModel {
+public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
 
-
-    public GenerateCompleteGraphWrapper(GraphSource source, Parameters parameters){
+    public GenerateCompleteGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
-    public GenerateCompleteGraphWrapper(Graph graph){
+    public GenerateCompleteGraphWrapper(Graph graph) {
         super(generateCompleteGraph(graph), "Generate Complete Graph");
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 
 
-    public static GenerateCompleteGraphWrapper serializableInstance(){
+    public static GenerateCompleteGraphWrapper serializableInstance() {
         return new GenerateCompleteGraphWrapper(EdgeListGraph.serializableInstance());
     }
 
@@ -57,7 +56,7 @@ public class GenerateCompleteGraphWrapper extends GraphWrapper  implements DoNot
     //======================== Private Methods ================================//
 
 
-    private static Graph generateCompleteGraph(Graph graph){
+    private static Graph generateCompleteGraph(Graph graph) {
         return GraphUtils.completeGraph(graph);
     }
 

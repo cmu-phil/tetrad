@@ -54,7 +54,7 @@ public class DirichletEstimatorWrapper implements SessionModel {
 
     //============================CONSTRUCTORS============================//
     public DirichletEstimatorWrapper(DataWrapper dataWrapper,
-            DirichletBayesImWrapper dirichletPriorWrapper) {
+                                     DirichletBayesImWrapper dirichletPriorWrapper) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -83,7 +83,7 @@ public class DirichletEstimatorWrapper implements SessionModel {
         log(dirichletBayesIm);
     }
 
-//    public DirichletEstimatorWrapper(DataWrapper dataWrapper,
+    //    public DirichletEstimatorWrapper(DataWrapper dataWrapper,
 //            DirichletEstimatorWrapper dirichletPriorWrapper) {
 //        if (dataWrapper == null) {
 //            throw new NullPointerException();
@@ -114,7 +114,7 @@ public class DirichletEstimatorWrapper implements SessionModel {
 //        log(dirichletBayesIm);
 //    }
     public DirichletEstimatorWrapper(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper, Parameters params) {
+                                     BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -136,8 +136,8 @@ public class DirichletEstimatorWrapper implements SessionModel {
 
         DirichletBayesIm dirichletBayesIm
                 = DirichletBayesIm.symmetricDirichletIm(
-                        bayesPmWrapper.getBayesPm(),
-                        params.getDouble("symmetricAlpha", 1.0));
+                bayesPmWrapper.getBayesPm(),
+                params.getDouble("symmetricAlpha", 1.0));
 
         if (DataUtils.containsMissingValue(dataSet)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
@@ -176,7 +176,7 @@ public class DirichletEstimatorWrapper implements SessionModel {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
+     * <p>
      * LogUtils.getInstance().finer("Estimated Bayes IM:");
      *
      * @throws java.io.IOException

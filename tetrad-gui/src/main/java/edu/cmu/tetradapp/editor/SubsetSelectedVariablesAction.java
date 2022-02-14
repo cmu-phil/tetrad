@@ -67,7 +67,7 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
                         "No columns have been selected.");
                 return;
             }
-                                                     
+
             DataSet selection =
                     dataSet.subsetColumns(selectedIndices);
 
@@ -75,8 +75,7 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
             list.add(selection);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
-        }
-        else if (dataModel instanceof CorrelationMatrix) {
+        } else if (dataModel instanceof CorrelationMatrix) {
             CorrelationMatrix corrMatrix = (CorrelationMatrix) dataModel;
             List<String> selectedNames = corrMatrix.getSelectedVariableNames();
 
@@ -93,8 +92,7 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
             list.add(submatrix);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
-        }
-        else if (dataModel instanceof ICovarianceMatrix) {
+        } else if (dataModel instanceof ICovarianceMatrix) {
             ICovarianceMatrix corrMatrix = (ICovarianceMatrix) dataModel;
             List<String> selectedNames = corrMatrix.getSelectedVariableNames();
 
@@ -111,8 +109,7 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
             list.add(submatrix);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
-        }
-        else {
+        } else {
             throw new IllegalArgumentException(
                     "Data subsetting requires a tabular " +
                             "data set or a covariance (correlation) matrix.");

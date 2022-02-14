@@ -279,6 +279,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
     public List<Graph> getTargetGraphs() {
         return targetGraphs;
     }
+
     public List<Graph> getReferenceGraphs() {
         return referenceGraphs;
     }

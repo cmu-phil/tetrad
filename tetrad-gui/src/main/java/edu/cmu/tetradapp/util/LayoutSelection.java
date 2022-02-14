@@ -58,8 +58,7 @@ public class LayoutSelection implements Transferable {
         Object result;
         try {
             result = new MarshalledObject(layoutGraph).get();
-        }
-        catch (Exception e1) {
+        } catch (Exception e1) {
             e1.printStackTrace();
             throw new IllegalStateException("Could not clone.");
         }
@@ -67,16 +66,14 @@ public class LayoutSelection implements Transferable {
     }
 
     /**
+     * @param flavor the requested flavor for the data
      * @return an object which represents the data to be transferred.  The class
      * of the object returned is defined by the representation class of the
      * flavor.
-     *
-     * @param flavor the requested flavor for the data
-     * @throws java.io.IOException if the data is no longer available in the
-     *                             requested flavor.
-     * @throws java.awt.datatransfer.UnsupportedFlavorException
-     *                             if the requested data flavor is not
-     *                             supported.
+     * @throws java.io.IOException                              if the data is no longer available in the
+     *                                                          requested flavor.
+     * @throws java.awt.datatransfer.UnsupportedFlavorException if the requested data flavor is not
+     *                                                          supported.
      * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
      */
     public Object getTransferData(DataFlavor flavor)
@@ -89,10 +86,9 @@ public class LayoutSelection implements Transferable {
     }
 
     /**
+     * @param flavor the requested flavor for the data
      * @return whether or not the specified data flavor is supported for this
      * object.
-     *
-     * @param flavor the requested flavor for the data
      */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);

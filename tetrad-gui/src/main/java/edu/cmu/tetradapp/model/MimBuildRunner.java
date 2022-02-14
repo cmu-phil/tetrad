@@ -220,8 +220,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
         if (getParams().getBoolean("includeThreeClusters", true)) {
             mimbuild.setMinClusterSize(3);
-        }
-        else {
+        } else {
             mimbuild.setMinClusterSize(4);
         }
 

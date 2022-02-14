@@ -62,7 +62,6 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     void setNodeType(NodeType nodeType);
 
     /**
-     *
      * @return the intervention type
      */
     NodeVariableType getNodeVariableType();

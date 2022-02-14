@@ -37,7 +37,7 @@ import java.awt.event.ActionEvent;
 public class TetradInternalFrame extends JInternalFrame {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 907395289049591825L;
 

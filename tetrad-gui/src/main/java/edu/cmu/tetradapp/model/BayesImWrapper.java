@@ -195,14 +195,14 @@ public class BayesImWrapper implements SessionModel, Memorable {
 //        log(bayesIm);
     }
 
-    
+
     public BayesImWrapper(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
-    	setBayesIm(new MlBayesIm(bayesIm));
+        setBayesIm(new MlBayesIm(bayesIm));
     }
-    
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -266,7 +266,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
-    
+
     //============================== private methods ============================//
 //    private void log(BayesIm im) {
 //        TetradLogger.getInstance().log("info", "Maximum likelihood Bayes IM");

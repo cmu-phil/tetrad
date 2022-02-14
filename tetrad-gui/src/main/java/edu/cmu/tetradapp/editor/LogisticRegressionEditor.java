@@ -154,6 +154,7 @@ public class LogisticRegressionEditor extends JPanel {
     }
 
     //============================== Private Methods =====================================//
+
     /**
      * Prints the info in the result to the text area (doesn't use the results
      * representation).

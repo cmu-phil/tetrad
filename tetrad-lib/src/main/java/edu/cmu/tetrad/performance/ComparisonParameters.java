@@ -293,9 +293,13 @@ public class ComparisonParameters {
         this.noData = noData;
     }
 
-    public boolean isNoData() { return noData; }
+    public boolean isNoData() {
+        return noData;
+    }
 
-    public boolean isDataFromFile() { return dataFromFile; }
+    public boolean isDataFromFile() {
+        return dataFromFile;
+    }
 
     public void setDataFromFile(boolean dataFromFile) {
         this.dataFromFile = dataFromFile;
@@ -322,7 +326,10 @@ public class ComparisonParameters {
     }
 
     public enum DataType {Continuous, Discrete}
+
     public enum ResultType {Pattern, PAG}
+
     public enum IndependenceTestType {FisherZ, ChiSquare}
+
     public enum Algorithm {PC, CPC, FGES, FGES2, PCLocal, PCStableMax, FCI, GFCI, TsFCI}
 }

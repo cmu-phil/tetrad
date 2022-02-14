@@ -83,7 +83,7 @@ public class DesktopController implements DesktopControllable {
     }
 
     public void putMetadata(SessionWrapperIndirectRef sessionWrapper,
-            TetradMetadataIndirectRef metadata) {
+                            TetradMetadataIndirectRef metadata) {
         getInstance().putMetadata(sessionWrapper, metadata);
     }
 
@@ -95,7 +95,7 @@ public class DesktopController implements DesktopControllable {
     public void addEditorWindow(EditorWindowIndirectRef editorWindow, int layer) {
         getInstance().addEditorWindow(editorWindow, layer);
     }
-  
+
 
     public void closeFrontmostSession() {
         getInstance().closeFrontmostSession();

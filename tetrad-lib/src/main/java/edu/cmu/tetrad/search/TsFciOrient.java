@@ -47,11 +47,10 @@ import java.util.*;
  * @author Joseph Ramsey
  * @author Choh-Man Teng
  * @author Daniel Malinsky
- *
+ * <p>
  * This is a copy of FciOrient.java for the tsFCI algorithm. The main difference is that if an edge is orient, it will
  * also orient all homologous edges to preserve the time-repeating structure assumed by tsFCI. Based on (but not
  * identicial to) code by Entner and Hoyer for their 2010 paper. Modified by DMalinsky 4/20/2016.
- *
  */
 public final class TsFciOrient {
 
@@ -192,7 +191,7 @@ public final class TsFciOrient {
             while ((combination = cg.next()) != null) {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
-                if(knowledge.isInWhichTier(a)==0 && knowledge.isInWhichTier(b)==0 && knowledge.isInWhichTier(c)==0){
+                if (knowledge.isInWhichTier(a) == 0 && knowledge.isInWhichTier(b) == 0 && knowledge.isInWhichTier(c) == 0) {
                     System.out.println("Skipping triple a,b,c : " + a + " , " + b + " , " + c);
                     continue; // This is added as a temporary measure. Sepsets for lagged vars may be out of window, leading to incorrect collider orientations
                 }
@@ -1363,7 +1362,7 @@ public final class TsFciOrient {
     }
 
     private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
-        if(x.getName().equals("time") || y.getName().equals("time")){
+        if (x.getName().equals("time") || y.getName().equals("time")) {
             return;
         }
         System.out.println("Entering orient similar pairs method for x and y: " + x + ", " + y);
@@ -1379,15 +1378,15 @@ public final class TsFciOrient {
 //        Collections.sort(tier_y);
 
         int i;
-        for(i = 0; i < tier_x.size(); ++i) {
-            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+        for (i = 0; i < tier_x.size(); ++i) {
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
                 indx_comp = i;
                 break;
             }
         }
 
-        for(i = 0; i < tier_y.size(); ++i) {
-            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+        for (i = 0; i < tier_y.size(); ++i) {
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
                 indy_comp = i;
                 break;
             }
@@ -1396,8 +1395,8 @@ public final class TsFciOrient {
         if (indx_comp == -1) System.out.println("WARNING: indx_comp = -1!!!! ");
         if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
 
-        for(i = 0; i < ntiers - tier_diff; ++i) {
-            if(knowledge.getTier(i).size()==1) continue;
+        for (i = 0; i < ntiers - tier_diff; ++i) {
+            if (knowledge.getTier(i).size() == 1) continue;
             String A;
             Node x1;
             String B;
@@ -1420,7 +1419,7 @@ public final class TsFciOrient {
 //                    continue;
 //                } // added 05.01.2016
 
-                if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
+                if (graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
                     System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
                     graph.setEndpoint(x1, y1, mark);
                     System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
@@ -1435,11 +1434,10 @@ public final class TsFciOrient {
 
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
-        if(tempS.indexOf(':')== -1) {
+        if (tempS.indexOf(':') == -1) {
             return tempS;
         } else return tempS.substring(0, tempS.indexOf(':'));
     }
-
 
 
 //    private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {

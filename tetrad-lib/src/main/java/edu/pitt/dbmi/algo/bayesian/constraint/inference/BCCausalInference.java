@@ -22,7 +22,7 @@ import java.util.Arrays;
 
 /**
  * This is a thread-safe version of BCInference.
- *
+ * <p>
  * Jan 30, 2019 5:42:50 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -56,7 +56,8 @@ public class BCCausalInference {
         this.numberOfNodes = nodeDimension.length - 2;
         this.numberOfCases = cases.length - 1;
         this.maximumNodes = numberOfNodes;
-        this.maximumCases = cases.length - 1;;
+        this.maximumCases = cases.length - 1;
+        ;
         this.maximumValues = Arrays.stream(nodeDimension).max().getAsInt();
         this.maximumParents = maximumNodes - 2;
         this.maximumCells = maximumParents * maximumValues * maximumValues * maximumCases;
@@ -84,9 +85,9 @@ public class BCCausalInference {
      * Empty set: Z = {} Z[0] = 0
      *
      * @param constraint has the value OP.independent or OP.dependent
-     * @param x node x
-     * @param y node y
-     * @param z set of nodes
+     * @param x          node x
+     * @param y          node y
+     * @param z          set of nodes
      * @return P(x dependent y given z | data) or P(x independent y given z |
      * data)
      */
@@ -202,12 +203,11 @@ public class BCCausalInference {
     }
 
     /**
-     *
      * @param node
      * @param instancePtr
-     * @param q is the number of possible joint instantiation of the parents of
-     * the parents of the node.
-     * @param pess is the prior equivalent sample size
+     * @param q           is the number of possible joint instantiation of the parents of
+     *                    the parents of the node.
+     * @param pess        is the prior equivalent sample size
      * @return
      */
     private double scoringFn1(int node, int instancePtr, double q, double pess, CountsTracker countsTracker) {
@@ -429,13 +429,13 @@ public class BCCausalInference {
         double one = 1.0;
         double fpf = 5.5;
         double[] cof = {
-            0,
-            76.18009173,
-            -86.50532033,
-            24.01409822,
-            -1.231739516,
-            0.120858003E-2,
-            -0.536382E-5
+                0,
+                76.18009173,
+                -86.50532033,
+                24.01409822,
+                -1.231739516,
+                0.120858003E-2,
+                -0.536382E-5
         };
 
         double x = xx - one;

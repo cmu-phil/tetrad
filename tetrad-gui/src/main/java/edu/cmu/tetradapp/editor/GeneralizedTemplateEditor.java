@@ -837,19 +837,16 @@ class GeneralizedTemplateEditor extends JComponent {
                 if (!"".equals(expressionString.trim())) {
 //                    getSemPm().setVariablesTemplate(expressionString);
                 }
-            }
-            else if ("Errors".equals(combo.getSelectedItem())) {
+            } else if ("Errors".equals(combo.getSelectedItem())) {
                 if (!"".equals(expressionString.trim())) {
 //                    getSemPm().setErrorsTemplate(expressionString);
                 }
-            }
-            else if ("Parameter Initializations".equals(combo.getSelectedItem())) {
+            } else if ("Parameter Initializations".equals(combo.getSelectedItem())) {
                 if (!"".equals(startsWithText.trim())) {
                     getSemPm().setStartsWithParametersTemplate(startsWithText, expressionString);
                 }
 //                getSemPm().setParametersTemplate(expressionString);
-            }
-            else if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
+            } else if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
                 if (!"".equals(startsWithText.trim())) {
                     getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWithText, expressionString);
                 }

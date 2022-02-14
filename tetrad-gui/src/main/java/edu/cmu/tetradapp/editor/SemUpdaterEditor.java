@@ -213,7 +213,7 @@ public class SemUpdaterEditor extends JPanel {
         setFocusTraversalPolicy(new FocusTraversalPolicy() {
             @Override
             public Component getComponentAfter(Container focusCycleRoot,
-                    Component aComponent) {
+                                               Component aComponent) {
                 int index = focusTraversalOrder.indexOf(aComponent);
                 int size = focusTraversalOrder.size();
 
@@ -226,7 +226,7 @@ public class SemUpdaterEditor extends JPanel {
 
             @Override
             public Component getComponentBefore(Container focusCycleRoot,
-                    Component aComponent) {
+                                                Component aComponent) {
                 int index = focusTraversalOrder.indexOf(aComponent);
                 int size = focusTraversalOrder.size();
 
@@ -268,6 +268,7 @@ public class SemUpdaterEditor extends JPanel {
     }
 
     //================================PUBLIC METHODS========================//
+
     /**
      * Sets the name of this editor.
      */

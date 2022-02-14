@@ -1,4 +1,5 @@
 package edu.cmu.tetrad.simulation;
+
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Node;
@@ -9,7 +10,7 @@ import java.util.*;
 /**
  * This version of Vicinity finds nearby nodes by searching with an expanding cube
  * Prior to Vicinity4, versions of Vicinity looked at the 3 axis independently instead of collectively.
- *
+ * <p>
  * Vicinity5 improves on Vicinity4 by allowing for the nodes to not be distributed evenly throughout
  * the location space. This is needed for fMRI data when the voxels are not perfect cubes.
  *
@@ -57,11 +58,11 @@ public class Vicinity {
 
         //make the edge accessible via the map from either of its endpoints
         for (Edge edge : edges) {
-            add(Coords1, edge, Arrays.asList(getX(edge.getNode1(), locationMap),getY(edge.getNode1(), locationMap),
-                    getZ(edge.getNode1(), locationMap)) );
+            add(Coords1, edge, Arrays.asList(getX(edge.getNode1(), locationMap), getY(edge.getNode1(), locationMap),
+                    getZ(edge.getNode1(), locationMap)));
 
-            add(Coords2, edge, Arrays.asList(getX(edge.getNode2(), locationMap),getY(edge.getNode2(), locationMap),
-                    getZ(edge.getNode2(), locationMap)) );
+            add(Coords2, edge, Arrays.asList(getX(edge.getNode2(), locationMap), getY(edge.getNode2(), locationMap),
+                    getZ(edge.getNode2(), locationMap)));
         }
     }
 
@@ -73,28 +74,28 @@ public class Vicinity {
         //we start the range at 0, and increase it by chunk until another edge is found
         //we're looking for any edge that has one node close to node1 and the other node close to node2
         int baserange;
-        if (edge.isDirected()){
-            baserange = findRangeD(edge,chunk);
+        if (edge.isDirected()) {
+            baserange = findRangeD(edge, chunk);
         } else {
-            baserange = findRangeU(edge,chunk);
+            baserange = findRangeU(edge, chunk);
         }
 
         //System.out.println("baserange: " +baserange);
         //since I'm searching in a cube but distance is usually measured euclidian, I increase range by sqrt(3)
         int range = (int) Math.ceil(Math.sqrt((double) 3) * (double) baserange);
         //System.out.println(findEdges(edge,range));
-        return findEdges(edge,range);
+        return findEdges(edge, range);
     }
 
     //======%====%=======Private methods===========%==========%=========
     //******************* This finds the range when edge is Undirected **********
-    private int findRangeU(Edge edge, int chunksize){
+    private int findRangeU(Edge edge, int chunksize) {
         Set<Edge> edges = new HashSet<>();
         //System.out.println("edges is empty?"+edges.isEmpty());
         //System.out.println("edges is null?"+edges == null);
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
-        int range = 0-chunksize;
-        while (edges.isEmpty()){
+        int range = 0 - chunksize;
+        while (edges.isEmpty()) {
             //increment range by chunk
             range += chunksize;
             //initialize the edge sets
@@ -102,20 +103,22 @@ public class Vicinity {
             Set<Edge> node1edges2 = new HashSet<>();
 
             /*for Vicinity5 the first and second arguments of the for loop need to be modified so that
-            * they respect that a single increment of the x/y/z grid scales with that dimension of the voxel
+             * they respect that a single increment of the x/y/z grid scales with that dimension of the voxel
              */
             //create separate range values for x y and z, scaled by xdist ydist zdist
-            int xrange = (int) Math.ceil(range/xDist);
-            int yrange = (int) Math.ceil(range/yDist);
-            int zrange = (int) Math.ceil(range/zDist);
+            int xrange = (int) Math.ceil(range / xDist);
+            int yrange = (int) Math.ceil(range / yDist);
+            int zrange = (int) Math.ceil(range / zDist);
 
             //list edges with either endpoint near node1
             for (int x = getX(edge.getNode1(), locationMap) - xrange; x <= getX(edge.getNode1(), locationMap) + xrange; x++) {
                 for (int y = getY(edge.getNode1(), locationMap) - yrange; y <= getY(edge.getNode1(), locationMap) + yrange; y++) {
                     for (int z = getZ(edge.getNode1(), locationMap) - zrange; z <= getZ(edge.getNode1(), locationMap) + zrange; z++) {
                         if (x < xLow || x > xHigh || y < yLow || y > yHigh || z < zLow || z > zHigh) continue;
-                        if (Coords1.get(Arrays.asList(x,y,z)) != null) node1edges1.addAll(Coords1.get(Arrays.asList(x,y,z)));
-                        if (Coords2.get(Arrays.asList(x,y,z)) != null) node1edges2.addAll(Coords2.get(Arrays.asList(x,y,z)));
+                        if (Coords1.get(Arrays.asList(x, y, z)) != null)
+                            node1edges1.addAll(Coords1.get(Arrays.asList(x, y, z)));
+                        if (Coords2.get(Arrays.asList(x, y, z)) != null)
+                            node1edges2.addAll(Coords2.get(Arrays.asList(x, y, z)));
                     }
                 }
             }
@@ -127,21 +130,21 @@ public class Vicinity {
             int y2 = getY(edge.getNode2(), locationMap);
             int z2 = getZ(edge.getNode2(), locationMap);
             //if one or both of the above lists is nonempty, find edges where the other endpoint is near node2!
-            if (!node1edges1.isEmpty()){
-                for (Edge edge11 : node1edges1){
+            if (!node1edges1.isEmpty()) {
+                for (Edge edge11 : node1edges1) {
                     int x = getX(edge11.getNode2(), locationMap);
                     int y = getY(edge11.getNode2(), locationMap);
                     int z = getZ(edge11.getNode2(), locationMap);
                     /*for Vicinity5 the first and second arguments of the for loop need to be modified so that
-            * they respect that a single increment of the x/y/z grid scales with that dimension of the voxel
-             */
-                    if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange){
+                     * they respect that a single increment of the x/y/z grid scales with that dimension of the voxel
+                     */
+                    if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange) {
                         edges.add(edge11);
                     }
                 }
             }
-            if (!node1edges2.isEmpty()){
-                for (Edge edge12 : node1edges2){
+            if (!node1edges2.isEmpty()) {
+                for (Edge edge12 : node1edges2) {
                     int x = getX(edge12.getNode1(), locationMap);
                     int y = getY(edge12.getNode1(), locationMap);
                     int z = getZ(edge12.getNode1(), locationMap);
@@ -150,7 +153,7 @@ public class Vicinity {
                      *  Any time that xyz indexes are compared using range, then some rescaling needs to be done to
                      *  account for how much distance is covered by one increment of that index dimension
                      *  */
-                    if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange){
+                    if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange) {
                         edges.add(edge12);
                     }
                 }
@@ -161,21 +164,22 @@ public class Vicinity {
 
         return range;
     }
+
     //**********====== This finds the range when Edge is Directed ============*********************
-    private int findRangeD(Edge edge, int chunksize){
+    private int findRangeD(Edge edge, int chunksize) {
         Set<Edge> edges = new HashSet<>();
         //It matters whether Node1 is the tail or the head of the arrow
         //Because of how the Edge class works, it looks like Node1 is ALWAYS the TAIL
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
-        int range = 0-chunksize;
-        while (edges.isEmpty()){
+        int range = 0 - chunksize;
+        while (edges.isEmpty()) {
             //increment range by chunk
             range += chunksize;
 
             //create separate range values for x y and z, scaled by xdist ydist zdist
-            int xrange = (int) Math.ceil(range/xDist);
-            int yrange = (int) Math.ceil(range/yDist);
-            int zrange = (int) Math.ceil(range/zDist);
+            int xrange = (int) Math.ceil(range / xDist);
+            int yrange = (int) Math.ceil(range / yDist);
+            int zrange = (int) Math.ceil(range / zDist);
 
             //initialize the edge sets
             Set<Edge> node1edges1 = new HashSet<>();
@@ -185,17 +189,19 @@ public class Vicinity {
                 for (int y = getY(edge.getNode1(), locationMap) - yrange; y <= getY(edge.getNode1(), locationMap) + yrange; y++) {
                     for (int z = getZ(edge.getNode1(), locationMap) - zrange; z <= getZ(edge.getNode1(), locationMap) + zrange; z++) {
                         if (x < xLow || x > xHigh || y < yLow || y > yHigh || z < zLow || z > zHigh) continue;
-                        if (Coords1.get(Arrays.asList(x,y,z)) != null) node1edges1.addAll(Coords1.get(Arrays.asList(x,y,z)));
-                        if (Coords2.get(Arrays.asList(x,y,z)) != null) node1edges2.addAll(Coords2.get(Arrays.asList(x,y,z)));
+                        if (Coords1.get(Arrays.asList(x, y, z)) != null)
+                            node1edges1.addAll(Coords1.get(Arrays.asList(x, y, z)));
+                        if (Coords2.get(Arrays.asList(x, y, z)) != null)
+                            node1edges2.addAll(Coords2.get(Arrays.asList(x, y, z)));
                     }
                 }
             }
 
             //** Since edge is directed, node1edges2 is NOT allowed to contain directed edges
             //it's okay if the edges in node1edges2 are unidrected, though
-            if (!node1edges2.isEmpty()){
+            if (!node1edges2.isEmpty()) {
                 List<Edge> edges12 = new ArrayList<>(node1edges2);
-                for (Edge thisedge : edges12){
+                for (Edge thisedge : edges12) {
                     if (thisedge.isDirected()) node1edges2.remove(thisedge);
                 }
 
@@ -205,22 +211,22 @@ public class Vicinity {
             int y2 = getY(edge.getNode2(), locationMap);
             int z2 = getZ(edge.getNode2(), locationMap);
             //if one or both of the above lists is nonempty, find edges where the other endpoint is near node2!
-            if (!node1edges1.isEmpty()){
-                for (Edge edge11 : node1edges1){
+            if (!node1edges1.isEmpty()) {
+                for (Edge edge11 : node1edges1) {
                     int x = getX(edge11.getNode2(), locationMap);
                     int y = getY(edge11.getNode2(), locationMap);
                     int z = getZ(edge11.getNode2(), locationMap);
-                    if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange){
+                    if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange) {
                         edges.add(edge11);
                     }
                 }
             }
-            if (!node1edges2.isEmpty()){
-                for (Edge edge12 : node1edges2){
+            if (!node1edges2.isEmpty()) {
+                for (Edge edge12 : node1edges2) {
                     int x = getX(edge12.getNode1(), locationMap);
                     int y = getY(edge12.getNode1(), locationMap);
                     int z = getZ(edge12.getNode1(), locationMap);
-                    if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange){
+                    if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange) {
                         edges.add(edge12);
                     }
                 }
@@ -231,15 +237,16 @@ public class Vicinity {
 
         return range;
     }
+
     //***********()(*&(*%^#$%^&*^&%^%^%******
     //this is like findRange, but it returns the edges within the range in one step, without iterating chunksize
-    private List<Edge> findEdges(Edge edge, int range){
+    private List<Edge> findEdges(Edge edge, int range) {
         Set<Edge> edges = new HashSet<>();
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
         //create separate range values for x y and z, scaled by xdist ydist zdist
-        int xrange = (int) Math.ceil(range/xDist);
-        int yrange = (int) Math.ceil(range/yDist);
-        int zrange = (int) Math.ceil(range/zDist);
+        int xrange = (int) Math.ceil(range / xDist);
+        int yrange = (int) Math.ceil(range / yDist);
+        int zrange = (int) Math.ceil(range / zDist);
 
         //initialize the edge sets
         Set<Edge> node1edges1 = new HashSet<>();
@@ -250,8 +257,10 @@ public class Vicinity {
                 for (int z = getZ(edge.getNode1(), locationMap) - zrange; z <= getZ(edge.getNode1(), locationMap) + zrange; z++) {
                     if (x < xLow || x > xHigh || y < yLow || y > yHigh || z < zLow || z > zHigh) continue;
                     //if (Coords1.get(new Integer[] {x,y,z}) == null) continue;
-                    if (Coords1.get(Arrays.asList(x,y,z)) != null) node1edges1.addAll(Coords1.get(Arrays.asList(x,y,z)));
-                    if (Coords2.get(Arrays.asList(x,y,z)) != null) node1edges2.addAll(Coords2.get(Arrays.asList(x,y,z)));
+                    if (Coords1.get(Arrays.asList(x, y, z)) != null)
+                        node1edges1.addAll(Coords1.get(Arrays.asList(x, y, z)));
+                    if (Coords2.get(Arrays.asList(x, y, z)) != null)
+                        node1edges2.addAll(Coords2.get(Arrays.asList(x, y, z)));
                 }
             }
         }
@@ -259,22 +268,22 @@ public class Vicinity {
         int y2 = getY(edge.getNode2(), locationMap);
         int z2 = getZ(edge.getNode2(), locationMap);
         //if one or both of the above lists is nonempty, find edges where the other endpoint is near node2!
-        if (!node1edges1.isEmpty()){
-            for (Edge edge11 : node1edges1){
+        if (!node1edges1.isEmpty()) {
+            for (Edge edge11 : node1edges1) {
                 int x = getX(edge11.getNode2(), locationMap);
                 int y = getY(edge11.getNode2(), locationMap);
                 int z = getZ(edge11.getNode2(), locationMap);
-                if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange){
+                if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange) {
                     edges.add(edge11);
                 }
             }
         }
-        if (!node1edges2.isEmpty()){
-            for (Edge edge12 : node1edges2){
+        if (!node1edges2.isEmpty()) {
+            for (Edge edge12 : node1edges2) {
                 int x = getX(edge12.getNode1(), locationMap);
                 int y = getY(edge12.getNode1(), locationMap);
                 int z = getZ(edge12.getNode1(), locationMap);
-                if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange){
+                if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange) {
                     edges.add(edge12);
                 }
             }
@@ -282,6 +291,7 @@ public class Vicinity {
 
         return new ArrayList<>(edges);
     }
+
     //this is just the private method for adding entries to a map
     private void add(Map<List<Integer>, Set<Edge>> Coords, Edge edge, List<Integer> x) {
         Set<Edge> edges = Coords.get(x);

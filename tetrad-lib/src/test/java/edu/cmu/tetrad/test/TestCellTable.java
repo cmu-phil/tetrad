@@ -387,8 +387,7 @@ public final class TestCellTable {
                 for (int j = 0; j < data[0].length; j++) {
                     if (testCell[j] == -1) {
                         // Do nothing.
-                    }
-                    else if (aData[j] != testCell[j]) {
+                    } else if (aData[j] != testCell[j]) {
                         inMargin = false;
                     }
                 }

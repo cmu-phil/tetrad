@@ -41,7 +41,7 @@ public class LagGraph implements Graph {
     private boolean pag;
     private boolean pattern;
 
-    private Map<String,Object> attributes = new HashMap<>();
+    private Map<String, Object> attributes = new HashMap<>();
 
     // New methods.
     public boolean addVariable(String variable) {

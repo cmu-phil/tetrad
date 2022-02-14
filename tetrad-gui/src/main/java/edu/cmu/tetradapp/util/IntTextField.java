@@ -56,9 +56,9 @@ public final class IntTextField extends JTextField {
      * Constructs a new int text field displaying the given default value,
      * restricting the value to [lowerBound, upperBound].
      *
-     * @param value      The initial value. Must be between lowerBound and
-     *                   upperBound.
-     * @param size       the number of columns in the textfield.
+     * @param value The initial value. Must be between lowerBound and
+     *              upperBound.
+     * @param size  the number of columns in the textfield.
      */
     public IntTextField(int value, int size) {
         super(size);
@@ -78,8 +78,7 @@ public final class IntTextField extends JTextField {
                 try {
                     int n = Integer.parseInt(e.getActionCommand());
                     setValue(n);
-                }
-                catch (NumberFormatException e1) {
+                } catch (NumberFormatException e1) {
                     setText(Integer.toString(getValue()));
                 }
             }
@@ -106,8 +105,7 @@ public final class IntTextField extends JTextField {
                 try {
                     int n = Integer.parseInt(getText());
                     setValue(n);
-                }
-                catch (NumberFormatException e1) {
+                } catch (NumberFormatException e1) {
                     setText(Integer.toString(getValue()));
                 }
             }
@@ -116,10 +114,9 @@ public final class IntTextField extends JTextField {
 
     //=============================PUBLIC METHODS=======================//
 
-    public void setUnfilteredValue(int value){
+    public void setUnfilteredValue(int value) {
         setText(String.valueOf(value));
     }
-
 
 
     /**
@@ -134,8 +131,7 @@ public final class IntTextField extends JTextField {
 
         if (newValue == this.value) {
             setText(Integer.toString(this.value));
-        }
-        else {
+        } else {
             this.value = newValue;
             setText(Integer.toString(this.value));
             firePropertyChange("newValue", null, this.value);
@@ -210,9 +206,9 @@ public final class IntTextField extends JTextField {
          * Filters the given value, returning the new value that should be
          * displayed.
          *
-         * @param value The value entered by the user.
+         * @param value    The value entered by the user.
          * @param oldValue The value previously displayed, in case it needs
-         * to be reverted to.
+         *                 to be reverted to.
          */
         int filter(int value, int oldValue);
     }

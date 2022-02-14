@@ -62,8 +62,7 @@ public class TestIndTestGSquare {
             test.setDeterminationP(0.99);
             assertFalse(test.determines(z, x));
             assertFalse(test.determines(z, y));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
@@ -80,8 +79,7 @@ public class TestIndTestGSquare {
 
             test.setDeterminationP(0.99);
             assertFalse(test.determines(z, x));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }

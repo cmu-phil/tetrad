@@ -201,7 +201,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                         JOptionPane.showMessageDialog(
                                 (Window) getTopLevelAncestor(),
                                 "Stopped with error:\n"
-                                + exception.getMessage());
+                                        + exception.getMessage());
                     }
 
                     paramBkBtn.setEnabled(true);

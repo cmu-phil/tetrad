@@ -99,7 +99,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
             return isIndependentMultinomialLogisticRegression(x, y, z);
-        } else if (!preferLinear){
+        } else if (!preferLinear) {
             if (x instanceof DiscreteVariable)
                 return isIndependentMultinomialLogisticRegression(x, y, z);
             else if (y instanceof DiscreteVariable)
@@ -215,23 +215,23 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 //            pValues.add(p);
             //double[] wald = new double[variablesPerNode.get(y).size()];
             int n = originalData.getNumRows();
-            int k = regressors1.size()+1;
+            int k = regressors1.size() + 1;
 
-            for(int i = 0; i < variablesPerNode.get(y).size(); i++){
-                double wald = Math.abs(result1.getCoefs()[i+1] / result1.getStdErrs()[i+1]);
+            for (int i = 0; i < variablesPerNode.get(y).size(); i++) {
+                double wald = Math.abs(result1.getCoefs()[i + 1] / result1.getStdErrs()[i + 1]);
                 //double val = (1.0 - new NormalDistribution(0,1).cumulativeProbability(wald))*2;//two-tailed test
                 //double val = 1-result1.getProbs()[i+1];
 
                 //this is exactly the same test as the linear case
-                double val = (1.0 - ProbUtils.tCdf(wald, n - k))*2;
+                double val = (1.0 - ProbUtils.tCdf(wald, n - k)) * 2;
 
                 //System.out.println("My p: " + val + " Their p: " + otherVal + "1-their p:" + (1-otherVal));
-                if(val < p){
+                if (val < p) {
                     p = val;
                 }
 
                 //faster but won't find min p
-                if(p <= alpha){
+                if (p <= alpha) {
                     indep = false;
                     this.lastP = p;
 
@@ -336,7 +336,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         }
 
         List<Node> regressors = new ArrayList<>();
-        if(y instanceof ContinuousVariable) {
+        if (y instanceof ContinuousVariable) {
             regressors.add(internalData.getVariable(y.getName()));
         } else {
             regressors.addAll(variablesPerNode.get(y));
@@ -358,12 +358,12 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         }
 
         double p = 1;
-        if(y instanceof ContinuousVariable) {
+        if (y instanceof ContinuousVariable) {
             p = result.getP()[1];
-        } else{
-            for(int i = 0; i < variablesPerNode.get(y).size(); i++){
-                double val = result.getP()[1+i];
-                if(val < p)
+        } else {
+            for (int i = 0; i < variablesPerNode.get(y).size(); i++) {
+                double val = result.getP()[1 + i];
+                if (val < p)
                     p = val;
             }
         }
@@ -448,7 +448,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
     /**
      * @return the significance level of the independence test.
-     *
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {

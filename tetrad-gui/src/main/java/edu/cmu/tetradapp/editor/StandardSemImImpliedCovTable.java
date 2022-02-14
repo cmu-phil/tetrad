@@ -69,7 +69,7 @@ final class StandardSemImImpliedCovTable extends AbstractTableModel {
      * which are as specified (in the order they appear in the matrix).
      */
     public StandardSemImImpliedCovTable(StandardizedSemIm semIm, boolean measured,
-                           boolean correlations) {
+                                        boolean correlations) {
         this.semIm = semIm;
         this.measured = measured;
         this.correlations = correlations;

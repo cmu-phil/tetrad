@@ -22,7 +22,7 @@ import java.lang.annotation.*;
 
 /**
  * Indicate algorithm can do bootstrapping.
- *
+ * <p>
  * May 7, 2019 12:10:24 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

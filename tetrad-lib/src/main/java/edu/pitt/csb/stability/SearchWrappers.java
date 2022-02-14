@@ -41,7 +41,9 @@ public class SearchWrappers {
             super(params);
         }
 
-        public PcStableWrapper copy(){return new PcStableWrapper(searchParams);}
+        public PcStableWrapper copy() {
+            return new PcStableWrapper(searchParams);
+        }
 
         public Graph search(DataSet ds) {
             IndTestMultinomialLogisticRegression indTest = new IndTestMultinomialLogisticRegression(ds, searchParams[0]);
@@ -56,7 +58,11 @@ public class SearchWrappers {
             super(params);
         }
 
-        public MGMWrapper copy() {return new MGMWrapper(searchParams);};
+        public MGMWrapper copy() {
+            return new MGMWrapper(searchParams);
+        }
+
+        ;
 
         public Graph search(DataSet ds) {
             MGM m = new MGM(ds, searchParams);
@@ -64,14 +70,16 @@ public class SearchWrappers {
         }
     }
 
-    public static class FgesWrapper extends DataGraphSearch{
-        public FgesWrapper(double...params){
+    public static class FgesWrapper extends DataGraphSearch {
+        public FgesWrapper(double... params) {
             super(params);
         }
 
-        public FgesWrapper copy() {return new FgesWrapper(searchParams);}
+        public FgesWrapper copy() {
+            return new FgesWrapper(searchParams);
+        }
 
-        public Graph search(DataSet ds){
+        public Graph search(DataSet ds) {
             SemBicScore score = new SemBicScore(new CovarianceMatrix(MixedUtils.makeContinuousData(ds)));
             score.setPenaltyDiscount(searchParams[0]);
             Fges fg = new Fges(score);

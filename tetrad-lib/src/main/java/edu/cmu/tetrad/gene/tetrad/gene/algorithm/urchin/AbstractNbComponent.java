@@ -40,7 +40,7 @@ public abstract class AbstractNbComponent implements NbComponent {
     private double sd;
 
     public AbstractNbComponent(double factor, double power,
-            NbComponent[] parents, int[] inhibitExcite, String name) {
+                               NbComponent[] parents, int[] inhibitExcite, String name) {
         setFactor(factor);
         setPower(power);
         setParents(parents);
@@ -48,8 +48,7 @@ public abstract class AbstractNbComponent implements NbComponent {
         setName(name);
         if (parents == null) {
             setNparents(0);
-        }
-        else {
+        } else {
             setNparents(parents.length);
         }
         setValue(0.0);
@@ -75,8 +74,7 @@ public abstract class AbstractNbComponent implements NbComponent {
             this.setInhibitExcite(new int[1]);
             this.getInhibitExcite()[0] = ie;
             this.setNparents(1);
-        }
-        else {
+        } else {
             NbComponent[] newParents = new NbComponent[getParents().length + 1];
             int[] newInhibitExcite = new int[getParents().length + 1];
             newParents[getParents().length] = component;

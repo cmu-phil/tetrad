@@ -109,7 +109,7 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
         return algorithm.search(dataSet, _parameters);
     }
 
-//    static class FittingFunction implements MultivariateFunction {
+    //    static class FittingFunction implements MultivariateFunction {
 //
 //        private final List<DataSet> samples;
 //        private final int numSamples;
@@ -164,7 +164,7 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
 //        }
 //    }
     private static double getD(Parameters params, String paramName, double paramValue, List<DataSet> boostraps,
-            int numBootstraps, Algorithm algorithm, Map<Double, Double> archive) {
+                               int numBootstraps, Algorithm algorithm, Map<Double, Double> archive) {
         params.set(paramName, paramValue);
 
         List<Graph> graphs = new ArrayList<>();
@@ -237,17 +237,17 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
         return parameters;
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		return null;
-	}
+    @Override
+    public Graph getInitialGraph() {
+        return null;
+    }
 
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		
-	}
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
 
-	@Override
+    }
+
+    @Override
     public void setInitialGraph(Algorithm algorithm) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

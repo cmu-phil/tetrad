@@ -266,7 +266,7 @@ public class IndTestDSep implements IndependenceTest {
     public Graph getGraph() {
         return this.graph;
     }
-    
+
     public void setGraph(Graph graph) {
         this.graph = graph;
     }
@@ -320,7 +320,7 @@ public class IndTestDSep implements IndependenceTest {
         this.verbose = verbose;
     }
 
-    
+
 }
 
 

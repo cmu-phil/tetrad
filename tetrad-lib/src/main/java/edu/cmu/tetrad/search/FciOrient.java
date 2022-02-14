@@ -95,6 +95,7 @@ public final class FciOrient {
     private boolean skipDiscriminatingPathRule;
 
     //============================CONSTRUCTORS============================//
+
     /**
      * Constructs a new FCI search for the given independence test and
      * background knowledge.
@@ -163,8 +164,8 @@ public final class FciOrient {
 
     /**
      * @param completeRuleSetUsed set to true if Zhang's complete rule set
-     * should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
+     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
+     *                            should be used. False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
@@ -917,9 +918,9 @@ public final class FciOrient {
      * <p>
      * Probably extremely slow.
      *
-     * @param curr The getModel node to test for addition.
-     * @param soFar The getModel partially built-up path.
-     * @param end The node to finish the undirectedPaths at.
+     * @param curr      The getModel node to test for addition.
+     * @param soFar     The getModel partially built-up path.
+     * @param end       The node to finish the undirectedPaths at.
      * @param ucPdPaths The getModel list of uncovered p.d. undirectedPaths.
      */
     private void getUcPdPsHelper(Node curr, List<Node> soFar, Node end,
@@ -1164,7 +1165,7 @@ public final class FciOrient {
         logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it
-             = bk.forbiddenEdgesIterator(); it.hasNext();) {
+             = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
@@ -1191,7 +1192,7 @@ public final class FciOrient {
         }
 
         for (Iterator<KnowledgeEdge> it
-             = bk.requiredEdgesIterator(); it.hasNext();) {
+             = bk.requiredEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
@@ -1273,7 +1274,7 @@ public final class FciOrient {
 
     /**
      * @param maxPathLength the maximum length of any discriminating path, or -1
-     * if unlimited.
+     *                      if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {

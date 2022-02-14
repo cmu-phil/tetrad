@@ -35,7 +35,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 public class PatternFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
-    
+
     public PatternFromDagGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }

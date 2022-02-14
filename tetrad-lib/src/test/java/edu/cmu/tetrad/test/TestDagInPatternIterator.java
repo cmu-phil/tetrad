@@ -40,7 +40,7 @@ import static org.junit.Assert.fail;
  */
 public class TestDagInPatternIterator {
 
-//    @Test
+    //    @Test
     public void test1() {
         List<Node> nodes = new ArrayList<>();
 
@@ -54,7 +54,6 @@ public class TestDagInPatternIterator {
         Graph p = new EdgeListGraph(graph);
 
         Dag dag = new Dag(graph);
-
 
 
         Graph pattern = SearchGraphUtils.patternFromDag(graph);
@@ -73,7 +72,7 @@ public class TestDagInPatternIterator {
         assertEquals(6, count);
     }
 
-//    @Test
+    //    @Test
     public void test2() {
         Graph pattern = new EdgeListGraph();
         Node x = new GraphNode("X");
@@ -93,7 +92,7 @@ public class TestDagInPatternIterator {
         assertEquals(1, count);
     }
 
-//    @Test
+    //    @Test
     public void test3() {
         Graph pattern = new EdgeListGraph();
 
@@ -129,7 +128,7 @@ public class TestDagInPatternIterator {
         assertEquals(1, count);
     }
 
-//    @Test
+    //    @Test
     public void test4() {
         Graph pattern = new EdgeListGraph();
 
@@ -165,7 +164,7 @@ public class TestDagInPatternIterator {
         assertEquals(1, count);
     }
 
-//    @Test
+    //    @Test
     public void test5() {
         RandomUtil.getInstance().setSeed(34828384L);
 

@@ -160,7 +160,7 @@ class OtherGroupsEditor extends JPanel {
         } else {
             forbiddenButton.setEnabled(true);
         }
-        
+
         // Add skinny hand
         forbiddenButton.addActionListener((e) -> {
             Set<String> toForbiddenGroup = new HashSet<>();
@@ -174,7 +174,7 @@ class OtherGroupsEditor extends JPanel {
             KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, fromGroup, toForbiddenGroup);
 
             knowledge.addKnowledgeGroup(targetKnowledgeGroup);
-            
+
             rebuild();
         });
 
@@ -270,6 +270,7 @@ class OtherGroupsEditor extends JPanel {
     }
 
     //========================== Inner classes =====================================//
+
     /**
      * Renders an arrow from the left to right.
      */
@@ -314,7 +315,7 @@ class OtherGroupsEditor extends JPanel {
         }
 
         public Component getListCellRendererComponent(JList list, Object value, int index,
-                boolean isSelected, boolean cellHasFocus) {
+                                                      boolean isSelected, boolean cellHasFocus) {
 
             setText(" " + value + " ");
             if (isSelected) {
@@ -392,7 +393,7 @@ class OtherGroupsEditor extends JPanel {
                 try {
                     knowledge.setKnowledgeGroup(index, g);
                     dtde.getDropTargetContext().dropComplete(true);
-                    
+
                     rebuild(); // Zhou added this to reflect the update
                 } catch (IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(OtherGroupsEditor.this, ex.getMessage());
@@ -424,7 +425,7 @@ class OtherGroupsEditor extends JPanel {
                     }
                     try {
                         knowledge.setKnowledgeGroup(index, g);
-                        
+
                         rebuild(); // Zhou added this to reflect the update
                     } catch (IllegalArgumentException ex) {
                         JOptionPane.showMessageDialog(OtherGroupsEditor.this, ex.getMessage());

@@ -259,7 +259,7 @@ public class TestPc {
         }
     }
 
-//    @Test
+    //    @Test
     public void testPcFci() {
 
         String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI"};
@@ -636,7 +636,7 @@ public class TestPc {
         System.out.println(table.toString());
     }
 
-//    @Test
+    //    @Test
     public void testPcRegression() {
 
         String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI", "Regression"};

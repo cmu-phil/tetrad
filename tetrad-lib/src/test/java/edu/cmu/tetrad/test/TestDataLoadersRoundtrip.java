@@ -87,8 +87,7 @@ public class TestDataLoadersRoundtrip {
             DataSet _dataSet = reader.parseTabular(file);
 
             assertTrue(dataSet.equals(_dataSet));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             fail();
         }
@@ -128,8 +127,7 @@ public class TestDataLoadersRoundtrip {
 
                 assertTrue(dataSet.equals(_dataSet));
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             fail(e.getMessage());
         }

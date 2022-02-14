@@ -44,7 +44,7 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-    	if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
             search.setKnowledge(knowledge);
             search.setDepth(parameters.getInt(Params.DEPTH));
@@ -64,7 +64,7 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
+
             ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -78,7 +78,7 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             }
             search.setEdgeEnsemble(edgeEnsemble);
             search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -102,7 +102,7 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        
+
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
@@ -125,7 +125,7 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
-    
+
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return test;

@@ -53,7 +53,7 @@ class EvidenceWizardSingle extends JPanel {
      * are probabilities ranging from 0.0 to 1.0.
      */
     public EvidenceWizardSingle(final UpdaterWrapper updaterWrapper,
-            GraphWorkbench workbench) {
+                                GraphWorkbench workbench) {
         if (updaterWrapper == null) {
             throw new NullPointerException();
         }

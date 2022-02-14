@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- *
  * Dec 15, 2018 11:10:30 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -97,8 +96,8 @@ public class DataConvertUtils {
 
         Node[] nodes = Arrays.stream(columns)
                 .map(e -> e.getDataColumn().isDiscrete()
-                ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
-                : new ContinuousVariable(e.getDataColumn().getName()))
+                        ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
+                        : new ContinuousVariable(e.getDataColumn().getName()))
                 .toArray(Node[]::new);
 
         metadata.getInterventionalColumns().forEach(e -> {
@@ -125,8 +124,8 @@ public class DataConvertUtils {
 
         List<Node> nodes = Arrays.stream(columns)
                 .map(e -> e.getDataColumn().isDiscrete()
-                ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
-                : new ContinuousVariable(e.getDataColumn().getName()))
+                        ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
+                        : new ContinuousVariable(e.getDataColumn().getName()))
                 .collect(Collectors.toList());
 
         return new BoxDataSet(new MixedDataBox(nodes, numOfRows, continuousData, discreteData), nodes);

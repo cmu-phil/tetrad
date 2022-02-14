@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- *
  * Dec 9, 2018 2:07:46 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -44,10 +43,10 @@ public class TabularColumnFileReaderTest {
     private final String commentMarker = "//";
 
     private final Path[] dataFiles = {
-        Paths.get(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile())
+            Paths.get(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile())
     };
 
     public TabularColumnFileReaderTest() {

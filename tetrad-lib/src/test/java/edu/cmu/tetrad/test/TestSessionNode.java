@@ -155,8 +155,7 @@ public class TestSessionNode {
             node.assignParameters(parameterTypes3, objects);
             fail("Should not have been able to assign parameters with a null " +
                     "parameter in the list.");
-        }
-        catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             // What we wanted.
         }
 
@@ -310,8 +309,7 @@ public class TestSessionNode {
         try {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             fail("Model not created.");
         }
 
@@ -340,8 +338,7 @@ public class TestSessionNode {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
             node1.createModel(Type1.class, simulation);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             fail("Model not created.");
         }
@@ -471,8 +468,7 @@ public class TestSessionNode {
             assertNotNull(node1.getModel());
             node2.destroyModel();
             assertNull(node1.getModel());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }
@@ -505,8 +501,7 @@ public class TestSessionNode {
             node1.createModel(Type1.class, simulation);
             assertTrue(node1.isStructurallyIdentical(node1));
             assertTrue(!node1.isStructurallyIdentical(node2));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }
@@ -535,8 +530,7 @@ public class TestSessionNode {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
             node1.createModel(Type1.class, simulation);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail("Model not created.");
         }
 
@@ -544,8 +538,7 @@ public class TestSessionNode {
 
         try {
             node1Copy = (SessionNode) new MarshalledObject(node1).get();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail("Serialization failed.");
         }
 
@@ -572,8 +565,7 @@ public class TestSessionNode {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
 //            node1.createModel(Type1.class, simulation);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             fail("Model not created.");
         }
@@ -582,8 +574,7 @@ public class TestSessionNode {
 
         try {
             node1.createModel(simulation);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail("Model not created.");
         }
     }

@@ -1,6 +1,6 @@
 /* This file is part of the jgpml Project.
  * http://github.com/renzodenardi/jgpml
- * 
+ *
  * Copyright (c) 2011 Renzo De Nardi and Hugo Gravato-Marques
  *
  * Permission is hereby granted, free of charge, to any person
@@ -47,11 +47,12 @@ public class CovNoise implements CovarianceFunction {
     /**
      * Creates a new <code>CovNoise CovarianceFunction<code>
      */
-    public CovNoise(){
+    public CovNoise() {
     }
 
     /**
      * Returns the number of hyperparameters of <code>CovSEard</code>
+     *
      * @return number of hyperparameters
      */
     public int numParameters() {
@@ -60,18 +61,19 @@ public class CovNoise implements CovarianceFunction {
 
     /**
      * Compute covariance matrix of a dataset X
+     *
      * @param loghyper column <code>Matrix</code> of hyperparameters
-     * @param X  input dataset
-     * @return  K covariance <code>Matrix</code>
+     * @param X        input dataset
+     * @return K covariance <code>Matrix</code>
      */
     public Matrix compute(Matrix loghyper, Matrix X) {
 
-        if(loghyper.getColumnDimension()!=1 || loghyper.getRowDimension()!=numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, "+loghyper.getRowDimension()+" instead of "+numParameters());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        final double s2 = Math.exp(2*loghyper.get(0,0));                             // noise variance
+        final double s2 = Math.exp(2 * loghyper.get(0, 0));                             // noise variance
 
-        Matrix K = Matrix.identity(X.getRowDimension(),X.getRowDimension()).times(s2);
+        Matrix K = Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(s2);
 
         return K;
 
@@ -79,25 +81,26 @@ public class CovNoise implements CovarianceFunction {
 
     /**
      * Compute compute test set covariances
+     *
      * @param loghyper column <code>Matrix</code> of hyperparameters
-     * @param X  input dataset
-     * @param Xstar  test set
-     * @return  [K(Xstar,Xstar) K(X,Xstar)]
+     * @param X        input dataset
+     * @param Xstar    test set
+     * @return [K(Xstar, Xstar) K(X,Xstar)]
      */
     public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
 
-        if(loghyper.getColumnDimension()!=1 || loghyper.getRowDimension()!=numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, "+loghyper.getRowDimension()+" instead of "+numParameters());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        final double s2 = Math.exp(2*loghyper.get(0,0));                             // noise variance
+        final double s2 = Math.exp(2 * loghyper.get(0, 0));                             // noise variance
 
-        double[]a = new double[Xstar.getRowDimension()];
-        Arrays.fill(a,s2);
-        Matrix A =new Matrix(a,Xstar.getRowDimension());   // adding Gaussian
+        double[] a = new double[Xstar.getRowDimension()];
+        Arrays.fill(a, s2);
+        Matrix A = new Matrix(a, Xstar.getRowDimension());   // adding Gaussian
 
-        Matrix B = new Matrix(X.getRowDimension(),Xstar.getRowDimension());
+        Matrix B = new Matrix(X.getRowDimension(), Xstar.getRowDimension());
 
-        return new Matrix[]{A,B};
+        return new Matrix[]{A, B};
     }
 
     /**
@@ -105,20 +108,20 @@ public class CovNoise implements CovarianceFunction {
      * to the hyperparameter with index <code>idx</code>
      *
      * @param loghyper hyperparameters
-     * @param X input dataset
-     * @param index hyperparameter index
-     * @return  <code>Matrix</code> of derivatives
+     * @param X        input dataset
+     * @param index    hyperparameter index
+     * @return <code>Matrix</code> of derivatives
      */
-    public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index){
+    public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index) {
 
-        if(loghyper.getColumnDimension()!=1 || loghyper.getRowDimension()!=numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, "+loghyper.getRowDimension()+" instead of "+numParameters());
-        if(index>numParameters()-1)
-            throw new IllegalArgumentException("Wrong hyperparameters index "+index+" it should be smaller or equal to "+(numParameters()-1));
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
+        if (index > numParameters() - 1)
+            throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
         //noise parameter
-        final double s2 = Math.exp(2*loghyper.get(0,0));
-        Matrix A = Matrix.identity(X.getRowDimension(),X.getRowDimension()).times(2*s2);
+        final double s2 = Math.exp(2 * loghyper.get(0, 0));
+        Matrix A = Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(2 * s2);
 
         return A;
     }

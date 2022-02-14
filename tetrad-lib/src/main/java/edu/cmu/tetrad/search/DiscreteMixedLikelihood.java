@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-        package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
@@ -79,12 +79,12 @@ public class DiscreteMixedLikelihood {
     private List<List<Integer>> partition(List<DiscreteVariable> discrete_parents) {
         List<List<Integer>> cells = new ArrayList<>();
         HashMap<String, Integer> keys = new HashMap<>();
-        for(int i = 0; i < dataSet.getNumRows(); i++) {
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
             String key = "";
             for (int j = 0; j < discrete_parents.size(); j++) {
                 key += ((Integer) dataSet.getInt(i, dataSet.getColumn(discrete_parents.get(j)))).toString();
             }
-            if(!keys.containsKey(key)) {
+            if (!keys.containsKey(key)) {
                 keys.put(key, cells.size());
                 cells.add(keys.get(key), new ArrayList<Integer>());
             }

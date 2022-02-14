@@ -34,7 +34,7 @@ import java.io.File;
  * Created by ajsedgewick on 9/10/15.
  */
 public class ExploreIndepTests {
-    public static void main(String[] args){
+    public static void main(String[] args) {
 //        Graph g = new EdgeListGraph();
 //        g.addNode(new ContinuousVariable("X1"));
 //        g.addNode(new ContinuousVariable("X2"));
@@ -73,15 +73,15 @@ public class ExploreIndepTests {
 
             long time = System.currentTimeMillis();
             Graph g1 = SearchGraphUtils.patternFromDag(s1.search());
-            System.out.println("Mix Time " + ((System.currentTimeMillis() - time)/1000.0));
+            System.out.println("Mix Time " + ((System.currentTimeMillis() - time) / 1000.0));
 
-             time = System.currentTimeMillis();
+            time = System.currentTimeMillis();
             Graph g2 = SearchGraphUtils.patternFromDag(s2.search());
-            System.out.println("Wald lin Time " + ((System.currentTimeMillis() - time)/1000.0));
+            System.out.println("Wald lin Time " + ((System.currentTimeMillis() - time) / 1000.0));
 
-             time = System.currentTimeMillis();
+            time = System.currentTimeMillis();
             Graph g3 = SearchGraphUtils.patternFromDag(s3.search());
-            System.out.println("Wald log Time " + ((System.currentTimeMillis() - time)/1000.0));
+            System.out.println("Wald log Time " + ((System.currentTimeMillis() - time) / 1000.0));
 
 //            System.out.println(g);
 //            System.out.println("IndMix: " + s1.search());
@@ -89,10 +89,10 @@ public class ExploreIndepTests {
 //            System.out.println("IndWalLog: " + s3.search());
 
             System.out.println(MixedUtils.EdgeStatHeader);
-            System.out.println(MixedUtils.stringFrom2dArray(MixedUtils.allEdgeStats( trueGraph, g1)));
-            System.out.println(MixedUtils.stringFrom2dArray(MixedUtils.allEdgeStats( trueGraph, g2)));
-            System.out.println(MixedUtils.stringFrom2dArray(MixedUtils.allEdgeStats( trueGraph, g3)));
-        } catch (Throwable t){
+            System.out.println(MixedUtils.stringFrom2dArray(MixedUtils.allEdgeStats(trueGraph, g1)));
+            System.out.println(MixedUtils.stringFrom2dArray(MixedUtils.allEdgeStats(trueGraph, g2)));
+            System.out.println(MixedUtils.stringFrom2dArray(MixedUtils.allEdgeStats(trueGraph, g3)));
+        } catch (Throwable t) {
             t.printStackTrace();
         }
     }

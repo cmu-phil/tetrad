@@ -80,7 +80,7 @@ final class SaveSessionAsAction extends AbstractAction {
             this.saved = false;
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Another session by that name is currently open. Please "
-                    + "\nclose that session first.");
+                            + "\nclose that session first.");
             return;
         }
 

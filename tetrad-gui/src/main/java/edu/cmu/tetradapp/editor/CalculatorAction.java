@@ -61,7 +61,7 @@ class CalculatorAction extends AbstractAction {
      */
     private CalculatorAction(DataWrapper wrapper) {
         super("Calculator ...");
-        if(wrapper == null){
+        if (wrapper == null) {
             throw new NullPointerException("DataWrapper was null.");
         }
         this.wrapper = wrapper;
@@ -71,7 +71,7 @@ class CalculatorAction extends AbstractAction {
     /**
      * Constructs the calculator given the data editor its attached to.
      */
-    public CalculatorAction(DataEditor editor){
+    public CalculatorAction(DataEditor editor) {
         this(editor.getDataWrapper());
         this.dataEditor = editor;
 
@@ -86,7 +86,7 @@ class CalculatorAction extends AbstractAction {
         Parameters params = wrapper.getParams();
 
         if (params instanceof HasCalculatorParams) {
-            params = ((HasCalculatorParams)params).getCalculatorParams();
+            params = ((HasCalculatorParams) params).getCalculatorParams();
         }
 
         editor.setParams(params);
@@ -109,7 +109,7 @@ class CalculatorAction extends AbstractAction {
                     return;
                 }
 
-                if(editor.finalizeEdit()) {
+                if (editor.finalizeEdit()) {
                     List<String> equations = new ArrayList<>();
                     String _displayEquations = Preferences.userRoot().get("calculator_equations", "");
                     String[] displayEquations = _displayEquations.split("///");
@@ -119,8 +119,7 @@ class CalculatorAction extends AbstractAction {
                             for (Node node : editor.getDataSet().getVariables()) {
                                 equations.add(equation.replace("$", node.getName()));
                             }
-                        }
-                        else {
+                        } else {
                             equations.add(equation);
                         }
                     }

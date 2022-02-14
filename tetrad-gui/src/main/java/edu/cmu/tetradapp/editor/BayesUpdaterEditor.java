@@ -95,6 +95,7 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     private int mode = SINGLE_VALUE;
 
     //===============================CONSTRUCTORS=========================//
+
     /**
      * Constructs a new instanted model editor from a Bayes Updater.
      */
@@ -152,6 +153,7 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     }
 
     //================================PUBLIC METHODS========================//
+
     /**
      * Sets the name of this editor.
      */
@@ -248,13 +250,13 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
                 = new EvidenceWizardSingle(updaterWrapper, getWorkbench());
         getEvidenceWizardSingle().addPropertyChangeListener(
                 new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if ("updateButtonPressed".equals(e.getPropertyName())) {
-                    resetSingleResultPanel();
-                    show("viewSingleResult");
-                }
-            }
-        });
+                    public void propertyChange(PropertyChangeEvent e) {
+                        if ("updateButtonPressed".equals(e.getPropertyName())) {
+                            resetSingleResultPanel();
+                            show("viewSingleResult");
+                        }
+                    }
+                });
         cardPanel.add(new JScrollPane(getEvidenceWizardSingle()),
                 "editEvidenceSingle");
 
@@ -262,13 +264,13 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
                 = new EvidenceWizardMultiple(updaterWrapper, getWorkbench());
         getEvidenceWizardMultiple().addPropertyChangeListener(
                 new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if ("updateButtonPressed".equals(e.getPropertyName())) {
-                    resetMultipleResultPanel();
-                    show("viewMultiResult");
-                }
-            }
-        });
+                    public void propertyChange(PropertyChangeEvent e) {
+                        if ("updateButtonPressed".equals(e.getPropertyName())) {
+                            resetMultipleResultPanel();
+                            show("viewMultiResult");
+                        }
+                    }
+                });
         cardPanel.add(new JScrollPane(getEvidenceWizardMultiple()),
                 "editEvidenceMultiple");
 

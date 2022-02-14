@@ -60,7 +60,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
      * Constructs a new editing table from a given editing table model.
      */
     public DirichletBayesImNodeProbsTable(final Node node,
-            final DirichletBayesIm dirichletBayesIm) {
+                                          final DirichletBayesIm dirichletBayesIm) {
         if (node == null) {
             throw new NullPointerException();
         }
@@ -261,8 +261,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
 //                requestRowTotal(dirichletBayesIm, -1, -1);
 
                 for (int nodeIndex = 0;
-                        nodeIndex < dirichletBayesIm.getNumNodes(); nodeIndex++)
-                {
+                     nodeIndex < dirichletBayesIm.getNumNodes(); nodeIndex++) {
 
                     DirichletBayesImNodeProbsTable editingTable =
                             DirichletBayesImNodeProbsTable.this;
@@ -362,11 +361,11 @@ class DirichletBayesImNodeProbsTable extends JTable {
 //    }
 
     private boolean existsCompleteRow(DirichletBayesIm dirichletBayesIm,
-            int nodeIndex) {
+                                      int nodeIndex) {
         boolean existsCompleteRow = false;
 
         for (int rowIndex = 0;
-                rowIndex < dirichletBayesIm.getNumRows(nodeIndex); rowIndex++) {
+             rowIndex < dirichletBayesIm.getNumRows(nodeIndex); rowIndex++) {
             if (!dirichletBayesIm.isIncomplete(nodeIndex, rowIndex)) {
                 existsCompleteRow = true;
                 break;
@@ -376,11 +375,11 @@ class DirichletBayesImNodeProbsTable extends JTable {
     }
 
     private boolean existsIncompleteRow(DirichletBayesIm dirichletBayesIm,
-            int nodeIndex) {
+                                        int nodeIndex) {
         boolean existsCompleteRow = false;
 
         for (int rowIndex = 0;
-                rowIndex < dirichletBayesIm.getNumRows(nodeIndex); rowIndex++) {
+             rowIndex < dirichletBayesIm.getNumRows(nodeIndex); rowIndex++) {
             if (dirichletBayesIm.isIncomplete(nodeIndex, rowIndex)) {
                 existsCompleteRow = true;
                 break;
@@ -508,7 +507,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
          * bayesIm.
          */
         public Model(Node node, DirichletBayesIm bayesIm,
-                JComponent messageAnchor) {
+                     JComponent messageAnchor) {
             if (node == null) {
                 throw new NullPointerException("Node must not be null.");
             }
@@ -542,17 +541,14 @@ class DirichletBayesImNodeProbsTable extends JTable {
                 int parent =
                         getDirichletBayesIm().getParent(getNodeIndex(), col);
                 return getDirichletBayesIm().getNode(parent).getName();
-            }
-            else if (col < numParents + numColumns) {
+            } else if (col < numParents + numColumns) {
                 int valIndex = col - numParents;
                 String value = getDirichletBayesIm().getBayesPm().getCategory(
                         node, valIndex);
                 return node.getName() + "=" + value;
-            }
-            else if (col == totalsColumn) {
+            } else if (col == totalsColumn) {
                 return "TOTAL COUNT";
-            }
-            else {
+            } else {
                 return null;
             }
         }
@@ -606,15 +602,12 @@ class DirichletBayesImNodeProbsTable extends JTable {
                 Node columnNode = getDirichletBayesIm().getNode(parent);
                 BayesPm bayesPm = getDirichletBayesIm().getBayesPm();
                 return bayesPm.getCategory(columnNode, parentVals[tableCol]);
-            }
-            else if (tableCol < numParents + numColumns) {
+            } else if (tableCol < numParents + numColumns) {
                 int colIndex = tableCol - numParents;
 
-                if (this.currentRowProbs != null && this.currentRow == tableRow)
-                {
+                if (this.currentRowProbs != null && this.currentRow == tableRow) {
                     return this.currentRowProbs[colIndex];
-                }
-                else {
+                } else {
                     double value = getDirichletBayesIm().getPseudocount(
                             getNodeIndex(), tableRow, colIndex);
                     double prob = getDirichletBayesIm().getProbability(
@@ -622,22 +615,18 @@ class DirichletBayesImNodeProbsTable extends JTable {
 
                     if (value == -1) {
                         return null;
-                    }
-                    else {
+                    } else {
                         return prob;
                     }
                 }
-            }
-            else if (tableCol == totalsColumn) {
+            } else if (tableCol == totalsColumn) {
                 if (this.currentRowProbs == null) {
                     return getDirichletBayesIm().getRowPseudocount(
                             getNodeIndex(), tableRow);
-                }
-                else {
+                } else {
                     return this.currentRowTotal;
                 }
-            }
-            else {
+            } else {
                 return null;
             }
         }
@@ -666,8 +655,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
 
             if (col == numParents + numColumns) {
                 setTotal(row, aValue);
-            }
-            else {
+            } else {
                 setProbability(row, col, aValue);
             }
         }
@@ -689,16 +677,14 @@ class DirichletBayesImNodeProbsTable extends JTable {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Total must be nonnegative.");
                     failedRow = row;
-                }
-                else {
+                } else {
                     this.currentRowTotal = total;
                     fireTableRowsUpdated(row, row);
                     getPcs().firePropertyChange("editorValueChanged", null,
                             null);
                     saveCurrentRow();
                 }
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Could not interpret '" + aValue + "'");
                 failedRow = row;
@@ -743,8 +729,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
                             "Probabilities must be in range [0.0, 1.0].");
                     failedRow = row;
                     failedCol = col;
-                }
-                else if (rowIsFull()) {
+                } else if (rowIsFull()) {
                     if (sumInRow < 0.99995 || sumInRow > 1.00005) {
                         emptyRow();
                         this.currentRowProbs[colIndex] = probability;
@@ -756,14 +741,12 @@ class DirichletBayesImNodeProbsTable extends JTable {
                         getPcs().firePropertyChange("editorValueChanged", null,
                                 null);
                     }
-                }
-                else if (sumInRow > 1.00005) {
+                } else if (sumInRow > 1.00005) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Sum of probabilities in row must not exceed 1.0.");
                     failedRow = row;
                     failedCol = col;
-                }
-                else {
+                } else {
                     this.currentRowProbs[colIndex] = probability;
                     fillInSingleRemainingColumn();
                     fixZeroRowTotalProblem();
@@ -771,8 +754,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
                     getPcs().firePropertyChange("editorValueChanged", null,
                             null);
                 }
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Could not interpret '" + aValue + "'");
                 failedRow = row;

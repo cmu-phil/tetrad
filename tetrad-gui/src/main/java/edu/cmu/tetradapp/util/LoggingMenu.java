@@ -71,7 +71,7 @@ class LoggingMenu extends JMenu {
      * Constructs the logging menu, given the parent component that should be used
      * to center dialogs on.
      */
-    public LoggingMenu(TetradLoggerConfig config, Component parent){
+    public LoggingMenu(TetradLoggerConfig config, Component parent) {
         this(config);
         this.parent = parent;
     }
@@ -85,7 +85,7 @@ class LoggingMenu extends JMenu {
     private void buildMenu() {
         this.removeAll();
         JMenuItem setup = new JMenuItem("Setup Log Events...");
-        setup.addActionListener(new ActionListener(){
+        setup.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showLogSetupDialog();
             }

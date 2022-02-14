@@ -74,6 +74,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
+
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }
@@ -136,8 +137,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
 
         if (!searchParams.getBoolean("orientStrongerDirection", true)) {
             A.setSelected(true);
-        }
-        else {
+        } else {
             B.setSelected(true);
         }
 
@@ -192,17 +192,13 @@ public class LofsSearchEditor extends AbstractSearchEditor
 
         if (_score == Lofs.Score.andersonDarling) {
             scoreBox.setSelectedItem("Anderson Darling");
-        }
-        else if (_score == Lofs.Score.skew) {
+        } else if (_score == Lofs.Score.skew) {
             scoreBox.setSelectedItem("Skew");
-        }
-        else if (_score == Lofs.Score.kurtosis) {
+        } else if (_score == Lofs.Score.kurtosis) {
             scoreBox.setSelectedItem("Kurtosis");
-        }
-        else if (_score == Lofs.Score.fifthMoment) {
+        } else if (_score == Lofs.Score.fifthMoment) {
             scoreBox.setSelectedItem("Fifth Moment");
-        }
-        else if (_score == Lofs.Score.absoluteValue) {
+        } else if (_score == Lofs.Score.absoluteValue) {
             scoreBox.setSelectedItem("Mean Absolute");
         }
 
@@ -214,20 +210,15 @@ public class LofsSearchEditor extends AbstractSearchEditor
 
                 if ("Anderson Darling".equals(item)) {
                     searchParams.set("score", Lofs.Score.andersonDarling);
-                }
-                else if ("Skew".equals(item)) {
+                } else if ("Skew".equals(item)) {
                     searchParams.set("score", Lofs.Score.skew);
-                }
-                else if ("Kurtosis".equals(item)) {
+                } else if ("Kurtosis".equals(item)) {
                     searchParams.set("score", Lofs.Score.kurtosis);
-                }
-                else if ("Fifth Moment".equals(item)) {
+                } else if ("Fifth Moment".equals(item)) {
                     searchParams.set("score", Lofs.Score.fifthMoment);
-                }
-                else if ("Mean Absolute".equals(item)) {
+                } else if ("Mean Absolute".equals(item)) {
                     searchParams.set("score", Lofs.Score.absoluteValue);
-                }
-                else {
+                } else {
                     throw new IllegalStateException();
                 }
             }
@@ -389,14 +380,14 @@ public class LofsSearchEditor extends AbstractSearchEditor
 //                            editorWindow.setVisible(true);
 //                        }
 //                        else {
-                            PatternDisplay display = new PatternDisplay(graph);
-                            GraphWorkbench workbench = getWorkbench();
+                        PatternDisplay display = new PatternDisplay(graph);
+                        GraphWorkbench workbench = getWorkbench();
 
-                            EditorWindow editorWindow =
-                                    new EditorWindow(display, "Independence Facts",
-                                            "Close", false, workbench);
-                            DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                            editorWindow.setVisible(true);
+                        EditorWindow editorWindow =
+                                new EditorWindow(display, "Independence Facts",
+                                        "Close", false, workbench);
+                        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+                        editorWindow.setVisible(true);
 //                        }
                     }
                 };

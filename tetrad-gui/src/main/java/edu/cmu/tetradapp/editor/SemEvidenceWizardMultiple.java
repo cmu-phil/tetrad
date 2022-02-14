@@ -59,7 +59,7 @@ class SemEvidenceWizardMultiple extends JPanel {
      * are probabilities ranging from 0.0 to 1.0.
      */
     public SemEvidenceWizardMultiple(SemUpdater semUpdater,
-            GraphWorkbench workbench) {
+                                     GraphWorkbench workbench) {
         if (semUpdater == null) {
             throw new NullPointerException();
         }
@@ -139,8 +139,7 @@ class SemEvidenceWizardMultiple extends JPanel {
 
                 if (selectedNodes.size() == 0) {
                     marginalsArea.append("\nNo nodes selected.");
-                }
-                else {
+                } else {
 //                    appendMarginals(selectedNodes, marginalsArea,
 //                            manipulatedIm, nf);
 //                    appendJoint(selectedNodes, marginalsArea,

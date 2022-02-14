@@ -126,7 +126,7 @@ public class Version implements TetradSerializable {
             throw new IllegalArgumentException("Version should be either of the " +
                     "form a.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e " + spec);
         }
-        
+
     }
 
     private Version(int majorVersion, int minorVersion, int minorSubversion,
@@ -187,11 +187,11 @@ public class Version implements TetradSerializable {
 
             if (url == null) {
                 throw new RuntimeException(
-                    "Please correct the file project/resources/version " +
-                            "\nso that it contains a version number of the form " +
-                            "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
-                            "\nNormally this is set automatically by the Maven build " +
-                            "\nsystem.");
+                        "Please correct the file project/resources/version " +
+                                "\nso that it contains a version number of the form " +
+                                "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
+                                "\nNormally this is set automatically by the Maven build " +
+                                "\nsystem.");
             }
 
             InputStream inStream = url.openStream();
@@ -207,11 +207,11 @@ public class Version implements TetradSerializable {
         }
 
         throw new RuntimeException(
-                    "Please correct the file project/resources/version " +
-                            "\nso that it contains a version number of the form " +
-                            "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
-                            "\nNormally this is set automatically by the Maven build " +
-                            "\nsystem.");
+                "Please correct the file project/resources/version " +
+                        "\nso that it contains a version number of the form " +
+                        "\na.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e. " +
+                        "\nNormally this is set automatically by the Maven build " +
+                        "\nsystem.");
     }
 
     /**

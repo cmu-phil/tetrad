@@ -45,7 +45,7 @@ class TierList extends JScrollPane {
     private Tier[] tiers;
 
     public TierList(IKnowledge know, List<String> varNames,
-            TemporalTierEditor tierListEditor) {
+                    TemporalTierEditor tierListEditor) {
 
         super(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -75,8 +75,7 @@ class TierList extends JScrollPane {
         //the same kowledge
         if (know != null) {
             this.knowledge = know;
-        }
-        else {
+        } else {
             throw new NullPointerException();
         }
 

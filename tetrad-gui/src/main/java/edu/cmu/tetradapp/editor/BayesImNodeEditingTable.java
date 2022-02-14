@@ -253,7 +253,7 @@ class BayesImNodeEditingTable extends JTable {
                 BayesIm bayesIm = getBayesIm();
 
                 for (int nodeIndex = 0;
-                        nodeIndex < getBayesIm().getNumNodes(); nodeIndex++) {
+                     nodeIndex < getBayesIm().getNumNodes(); nodeIndex++) {
 
                     BayesImNodeEditingTable editingTable =
                             BayesImNodeEditingTable.this;
@@ -344,7 +344,7 @@ class BayesImNodeEditingTable extends JTable {
         boolean existsCompleteRow = false;
 
         for (int rowIndex = 0;
-                rowIndex < bayesIm.getNumRows(nodeIndex); rowIndex++) {
+             rowIndex < bayesIm.getNumRows(nodeIndex); rowIndex++) {
             if (!bayesIm.isIncomplete(nodeIndex, rowIndex)) {
                 existsCompleteRow = true;
                 break;
@@ -357,7 +357,7 @@ class BayesImNodeEditingTable extends JTable {
         boolean existsCompleteRow = false;
 
         for (int rowIndex = 0;
-                rowIndex < bayesIm.getNumRows(nodeIndex); rowIndex++) {
+             rowIndex < bayesIm.getNumRows(nodeIndex); rowIndex++) {
             if (bayesIm.isIncomplete(nodeIndex, rowIndex)) {
                 existsCompleteRow = true;
                 break;
@@ -511,8 +511,7 @@ class BayesImNodeEditingTable extends JTable {
             if (col < getBayesIm().getNumParents(getNodeIndex())) {
                 int parent = getBayesIm().getParent(getNodeIndex(), col);
                 return getBayesIm().getNode(parent).getName();
-            }
-            else {
+            } else {
                 int numNodeVals = getBayesIm().getNumColumns(getNodeIndex());
                 int valIndex = col - getBayesIm().getNumParents(getNodeIndex());
 
@@ -562,8 +561,7 @@ class BayesImNodeEditingTable extends JTable {
                         getBayesIm().getParent(getNodeIndex(), tableCol));
                 BayesPm bayesPm = getBayesIm().getBayesPm();
                 return bayesPm.getCategory(columnNode, parentVals[tableCol]);
-            }
-            else {
+            } else {
                 int colIndex = tableCol - parentVals.length;
 
                 if (colIndex < getBayesIm().getNumColumns(getNodeIndex())) {
@@ -619,8 +617,7 @@ class BayesImNodeEditingTable extends JTable {
                             "Probabilities must be in range [0.0, 1.0].");
                     failedRow = row;
                     failedCol = col;
-                }
-                else if (numNanCols(row) == 0) {
+                } else if (numNanCols(row) == 0) {
                     if (sumInRow < 0.99995 || sumInRow > 1.00005) {
                         emptyRow(row);
                         getBayesIm().setProbability(getNodeIndex(), row,
@@ -632,14 +629,12 @@ class BayesImNodeEditingTable extends JTable {
                         getPcs().firePropertyChange("modelChanged", null,
                                 null);
                     }
-                }
-                else if (sumInRow > 1.00005) {
+                } else if (sumInRow > 1.00005) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Sum of probabilities in row must not exceed 1.0.");
                     failedRow = row;
                     failedCol = col;
-                }
-                else {
+                } else {
                     getBayesIm().setProbability(getNodeIndex(), row, colIndex,
                             probability);
                     fillInSingleRemainingColumn(row);
@@ -648,8 +643,7 @@ class BayesImNodeEditingTable extends JTable {
                     getPcs().firePropertyChange("modelChanged", null,
                             null);
                 }
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Could not interpret '" + aValue + "'");
@@ -705,8 +699,7 @@ class BayesImNodeEditingTable extends JTable {
             int numNanCols = 0;
             int lastNanCol = -1;
 
-            for (int i = 0; i < getBayesIm().getNumColumns(getNodeIndex()); i++)
-            {
+            for (int i = 0; i < getBayesIm().getNumColumns(getNodeIndex()); i++) {
                 double probability = getBayesIm().getProbability(getNodeIndex(),
                         rowIndex, i);
                 if (Double.isNaN(probability)) {
@@ -721,8 +714,7 @@ class BayesImNodeEditingTable extends JTable {
         private int numNanCols(int rowIndex) {
             int numNanCols = 0;
 
-            for (int i = 0; i < getBayesIm().getNumColumns(getNodeIndex()); i++)
-            {
+            for (int i = 0; i < getBayesIm().getNumColumns(getNodeIndex()); i++) {
                 double probability = getBayesIm().getProbability(getNodeIndex(),
                         rowIndex, i);
                 if (Double.isNaN(probability)) {
@@ -734,8 +726,7 @@ class BayesImNodeEditingTable extends JTable {
         }
 
         private void emptyRow(int rowIndex) {
-            for (int i = 0; i < getBayesIm().getNumColumns(getNodeIndex()); i++)
-            {
+            for (int i = 0; i < getBayesIm().getNumColumns(getNodeIndex()); i++) {
                 getBayesIm().setProbability(getNodeIndex(), rowIndex, i,
                         Double.NaN);
             }

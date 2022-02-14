@@ -67,8 +67,7 @@ public final class StringTextField extends JTextField {
             public void actionPerformed(ActionEvent e) {
                 try {
                     setValue(e.getActionCommand());
-                }
-                catch (NumberFormatException e1) {
+                } catch (NumberFormatException e1) {
                     setValue(StringTextField.this.value);
                 }
             }
@@ -170,9 +169,9 @@ public final class StringTextField extends JTextField {
          * Filters the given value, returning the new value that should be
          * displayed.
          *
-         * @param value The value entered by the user.
+         * @param value    The value entered by the user.
          * @param oldValue The value previously displayed, in case it needs
-         * to be reverted to.
+         *                 to be reverted to.
          */
         String filter(String value, String oldValue);
     }

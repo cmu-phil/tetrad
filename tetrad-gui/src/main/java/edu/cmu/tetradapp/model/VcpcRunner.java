@@ -47,10 +47,10 @@ public class VcpcRunner extends AbstractAlgorithmRunner
 //    private Vcpc vcpc = null;
 
 
-    private Set<Edge>vcpcAdjacent;
-    private Set<Edge>vcpcApparent;
-    private Set<Edge>vcpcDefinite;
-    private List<Node>vcpcNodes;
+    private Set<Edge> vcpcAdjacent;
+    private Set<Edge> vcpcApparent;
+    private Set<Edge> vcpcDefinite;
+    private List<Node> vcpcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -74,10 +74,9 @@ public class VcpcRunner extends AbstractAlgorithmRunner
     }
 
 
-
     /**
      * Constucts a wrapper for the given
-    /**
+     * /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
     public VcpcRunner(Graph graph, Parameters params) {
@@ -189,11 +188,9 @@ public class VcpcRunner extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else if (knowledge.isDefaultToKnowledgeLayout()) {
+        } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 

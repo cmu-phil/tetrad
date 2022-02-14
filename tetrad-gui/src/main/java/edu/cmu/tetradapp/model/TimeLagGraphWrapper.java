@@ -114,11 +114,11 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -127,11 +127,11 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -162,7 +162,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
 
     private void log() {
         TetradLogger.getInstance().log("info", "Directed Acyclic Graph (DAG)");
-        TetradLogger.getInstance().log("graph",  graph + "");
+        TetradLogger.getInstance().log("graph", graph + "");
     }
 
     /**
@@ -199,21 +199,21 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         this.name = name;
     }
 
-	public Graph getSourceGraph() {
-		return getGraph();
-	}
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
 
     public Graph getResultGraph() {
         return getGraph();
     }
 
     public List<String> getVariableNames() {
-		return getGraph().getNodeNames();
-	}
+        return getGraph().getNodeNames();
+    }
 
-	public List<Node> getVariables() {
-		return getGraph().getNodes();
-	}
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
 
     public void setGraph(TimeLagGraph graph) {
         this.graph = graph;
@@ -228,11 +228,11 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -241,11 +241,11 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }

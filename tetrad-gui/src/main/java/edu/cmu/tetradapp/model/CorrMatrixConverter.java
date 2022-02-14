@@ -50,12 +50,10 @@ public class CorrMatrixConverter extends DataWrapper {
             }
 
             covMatrix = new CorrelationMatrix(dataSet);
-        }
-        else if (wrapper.getSelectedDataModel() instanceof ICovarianceMatrix) {
+        } else if (wrapper.getSelectedDataModel() instanceof ICovarianceMatrix) {
             ICovarianceMatrix covOrig = (ICovarianceMatrix) wrapper.getSelectedDataModel();
             covMatrix = new CorrelationMatrix(covOrig);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Expecting a continuous data set or a covariance matrix.");
         }
 

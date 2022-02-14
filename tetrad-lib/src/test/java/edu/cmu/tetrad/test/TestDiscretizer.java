@@ -47,7 +47,7 @@ import static org.junit.Assert.assertTrue;
 public final class TestDiscretizer {
 
     @Test
-    public void testBreakpointCalculation(){
+    public void testBreakpointCalculation() {
         double[] data = {13, 1.2, 2.2, 4.5, 12.005, 5.5, 10.1, 7.5, 3.4};
         double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(data, 3);
 
@@ -67,7 +67,7 @@ public final class TestDiscretizer {
     }
 
     @Test
-    public void testManualDiscretize(){
+    public void testManualDiscretize() {
         Node x = new ContinuousVariable("X");
         List<Node> nodes = Collections.singletonList(x);
         DataSet data = new BoxDataSet(new DoubleDataBox(9, nodes.size()), nodes);
@@ -184,7 +184,7 @@ public final class TestDiscretizer {
     public void testContinuous() {
         final double[] data = {1, 2, 2.5, 3, 4, 5};
 
-        double[] cutoffs = new double[] {2.5, 3.2};
+        double[] cutoffs = new double[]{2.5, 3.2};
         List<String> categories = Arrays.asList("lo", "med", "hi");
 
         Discretizer.Discretization discretization = Discretizer.discretize(data, cutoffs, "after", categories);

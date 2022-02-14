@@ -70,7 +70,7 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * matrix matrix is internally converted to a correlation matrix.
      */
     public CorrelationMatrix(List<Node> variables, Matrix matrix,
-                              int sampleSize) {
+                             int sampleSize) {
         super(variables, MatrixUtils.convertCovToCorr(matrix).copy(), sampleSize);
     }
 

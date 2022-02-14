@@ -46,7 +46,7 @@ public class ExampleCompareFromFiles {
 
         parameters.set("numRuns", 1);
 //        parameters.set("numMeasures", 20,100,1000);
-        parameters.set("numMeasures",1000);
+        parameters.set("numMeasures", 1000);
         parameters.set("numLatents", 200);
         parameters.set("avgDegree", 2);
         parameters.set("sampleSize", 1000);

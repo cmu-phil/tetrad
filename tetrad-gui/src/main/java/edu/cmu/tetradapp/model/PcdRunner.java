@@ -61,6 +61,7 @@ public class PcdRunner extends AbstractAlgorithmRunner
     public PcdRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
@@ -74,6 +75,7 @@ public class PcdRunner extends AbstractAlgorithmRunner
     public PcdRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
@@ -87,7 +89,7 @@ public class PcdRunner extends AbstractAlgorithmRunner
     public PcdRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
-    
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
@@ -101,7 +103,7 @@ public class PcdRunner extends AbstractAlgorithmRunner
     public PcdRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
-    
+
     public PcdRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
@@ -118,7 +120,7 @@ public class PcdRunner extends AbstractAlgorithmRunner
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    
+
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
@@ -165,11 +167,9 @@ public class PcdRunner extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else if (knowledge.isDefaultToKnowledgeLayout()) {
+        } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 

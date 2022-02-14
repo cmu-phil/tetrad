@@ -71,8 +71,7 @@ public class FileLoadingUtils {
             bufReader.close();
 
             return spec;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

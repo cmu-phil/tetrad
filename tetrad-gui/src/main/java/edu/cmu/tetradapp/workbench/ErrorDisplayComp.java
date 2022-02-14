@@ -28,7 +28,7 @@ import java.awt.geom.Rectangle2D;
 /**
  * The display component for error nodes, which is a transparent ellipse.
  *
- * @author  Joseph Ramsmey
+ * @author Joseph Ramsmey
  */
 public class ErrorDisplayComp extends JComponent
         implements DisplayComp {

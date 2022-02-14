@@ -54,7 +54,7 @@ public class RecursivePartialCorrelation {
     }
 
     public double corr(Node x, Node y, List<Node> z) {
-        if (z.isEmpty()) return  this.corr.getValue(nodesMap.get(x), nodesMap.get(y));
+        if (z.isEmpty()) return this.corr.getValue(nodesMap.get(x), nodesMap.get(y));
         Node z0 = z.get(0);
         List<Node> _z = new ArrayList<>(z);
         _z.remove(z0);

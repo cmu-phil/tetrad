@@ -104,7 +104,7 @@ final class LoadKnowledgeAction extends AbstractAction {
             ret = JOptionPane.showOptionDialog(null, wizard,
                     "Knowledge Import Wizard", JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, new String[]{"Cancel",
-                    "Select Another File", "Import Data"}, "Import Data");
+                            "Select Another File", "Import Data"}, "Import Data");
 
             this.delimiters = wizard.getDelimiters();
             this.commentIndicator = wizard.getCommentIndicator();
@@ -115,8 +115,7 @@ final class LoadKnowledgeAction extends AbstractAction {
                     DataReader reader = new DataReader();
                     IKnowledge knowledge = reader.parseKnowledge(file);
                     this.knowledgeEditable.setKnowledge(knowledge);
-                }
-                catch (Exception e1) {
+                } catch (Exception e1) {
                     String message = e1.getMessage() ==
                             null ? e1.getClass().getName() : e1.getMessage();
 
@@ -152,7 +151,7 @@ final class KnowledgeLoaderWizard extends JPanel {
     private String commentIndicator = "//";
 
     public KnowledgeLoaderWizard(File file,
-            KnowledgeEditable knowledgeEditable) {
+                                 KnowledgeEditable knowledgeEditable) {
         if (file == null) {
             throw new NullPointerException();
         }
@@ -193,11 +192,9 @@ final class KnowledgeLoaderWizard extends JPanel {
 
                 if ("Whitespace".equals(choice)) {
                     delimiters = " \t";
-                }
-                else if ("Tab".equals(choice)) {
+                } else if ("Tab".equals(choice)) {
                     delimiters = "\t";
-                }
-                else if ("Comma".equals(choice)) {
+                } else if ("Comma".equals(choice)) {
                     delimiters = "\t";
                 }
             }
@@ -252,12 +249,10 @@ final class KnowledgeLoaderWizard extends JPanel {
             String line;
             int lineNumber = 0;
 
-            while ((line = in.readLine()) != null && (++lineNumber < numLines))
-            {
+            while ((line = in.readLine()) != null && (++lineNumber < numLines)) {
                 if (line.length() < numCols) {
                     textArea.append(line.substring(0, line.length()) + "\n");
-                }
-                else {
+                } else {
                     textArea.append(line.substring(0, numCols) + "...\n");
                 }
             }
@@ -266,8 +261,7 @@ final class KnowledgeLoaderWizard extends JPanel {
             textArea.setCaretPosition(0);
 
             in.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
