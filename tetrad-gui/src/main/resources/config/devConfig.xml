@@ -1345,7 +1345,7 @@
             <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="tsFCI" acronym="tsFCI" help="tsFCI"-->
+            <!--<model name="SvarFCI" acronym="svarFCI" help="svarFCI"-->
             <!--category="allow_latent_common_causes searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->
@@ -1356,11 +1356,11 @@
             <!--<event id="tripleClassifications" description="Triple Classifications" default="on"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->
             <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.TsFciRunner</model-class>-->
+            <!--<model-class>edu.cmu.tetradapp.model.SvarFciRunner</model-class>-->
             <!--<editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor-->
             <!--</editor-class>-->
             <!--</model>-->
-            <!--<model name="tsGFCI" acronym="tsGFCI" help="tsGFCI"-->
+            <!--<model name="svarGFCI" acronym="svarGFCI" help="svarGFCI"-->
             <!--category="allow_latent_common_causes searches">-->
             <!--<logger>-->
             <!--<event id="info" description="Information" default="on"/>-->

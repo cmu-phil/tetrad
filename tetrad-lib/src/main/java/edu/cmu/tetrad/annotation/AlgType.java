@@ -5,7 +5,7 @@ package edu.cmu.tetrad.annotation;
  */
 public enum AlgType {
     forbid_latent_common_causes, // PC_All, PcStableMax, FGES, IMaGES_Discrete, IMaGES_Continuous, TsIMaGES, FANG, EFANG
-    allow_latent_common_causes, // FCI, RFCI, GFCI, TsFCI, TsGFCI
+    allow_latent_common_causes, // FCI, RFCI, GFCI, SVARFCI, SvarGFCI
     /*DAG, */
     search_for_Markov_blankets, // FGES-MB, MBFS
     produce_undirected_graphs, // FAS, MGM, GLASSO

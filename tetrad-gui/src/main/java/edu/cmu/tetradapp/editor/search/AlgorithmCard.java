@@ -20,7 +20,6 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsImages;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -83,15 +82,13 @@ public class AlgorithmCard extends JPanel {
     private final JTextArea algoDescTextArea = new JTextArea();
     private final JTextArea scoreDescTextArea = new JTextArea();
     private final JTextArea testDescTextArea = new JTextArea();
-
-    private boolean updatingTestModels;
-    private boolean updatingScoreModels;
-
     private final GeneralAlgorithmRunner algorithmRunner;
     private final DataType dataType;
     private final TetradDesktop desktop;
     private final boolean multiDataAlgo;
     private final boolean hasMissingValues;
+    private boolean updatingTestModels;
+    private boolean updatingScoreModels;
 
     public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
@@ -486,7 +483,7 @@ public class AlgorithmCard extends JPanel {
                 }
             }
 
-            // Time-series (TsFci, TsGfci, TsImages) algorithms need lagged data
+            // SVAR (SvarFci, SvarGfci, TsImages) algorithms need lagged data
             String cmd = algoModel.getAlgorithm().getAnnotation().command();
             if (cmd.equalsIgnoreCase("ts-fci")
                     || cmd.equalsIgnoreCase("ts-gfci")
@@ -624,24 +621,7 @@ public class AlgorithmCard extends JPanel {
                 models.forEach(e -> scoreModels.add(e));
             }
 
-            // TsIMaGES can only take SEM BIC score for continuous data
-            // or BDeu score for discrete data
-            if (TsImages.class.equals(algoModel.getAlgorithm().getClazz())) {
-                switch (dataType) {
-                    case Continuous:
-                        scoreModels.stream()
-                                .filter(e -> e.getScore().getClazz().equals(SemBicScore.class))
-                                .forEach(e -> scoreComboBox.addItem(e));
-                        break;
-                    case Discrete:
-                        scoreModels.stream()
-                                .filter(e -> e.getScore().getClazz().equals(BdeuScore.class))
-                                .forEach(e -> scoreComboBox.addItem(e));
-                        break;
-                }
-            } else {
-                scoreModels.forEach(e -> scoreComboBox.addItem(e));
-            }
+            scoreModels.forEach(e -> scoreComboBox.addItem(e));
         }
         updatingScoreModels = false;
         if (scoreComboBox.getItemCount() > 0) {

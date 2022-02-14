@@ -54,7 +54,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Choh-Man Teng
  * @author Daniel Malinsky
  */
-public final class TsGFci implements GraphSearch {
+public final class SvarGFci implements GraphSearch {
 
     // If a graph is provided.
     private Graph dag = null;
@@ -126,7 +126,7 @@ public final class TsGFci implements GraphSearch {
     /**
      * Constructs a new GFCI search for the given independence test and background knowledge.
      */
-    public TsGFci(IndependenceTest test, Score score) {
+    public SvarGFci(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -143,7 +143,7 @@ public final class TsGFci implements GraphSearch {
 
         List<Node> nodes = getIndependenceTest().getVariables();
 
-        logger.log("info", "Starting tsGFCI algorithm.");
+        logger.log("info", "Starting svarGFCI algorithm.");
         logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
         this.graph = new EdgeListGraph(nodes);
@@ -241,7 +241,7 @@ public final class TsGFci implements GraphSearch {
 
 //        System.out.println("GFCI: R0 done");
 
-        TsFciOrient fciOrient = new TsFciOrient(sepsets, independenceTest);
+        SvarFciOrient fciOrient = new SvarFciOrient(sepsets, independenceTest);
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
@@ -622,7 +622,7 @@ public final class TsGFci implements GraphSearch {
         } else return tempS.substring(0, tempS.indexOf(':'));
     }
 
-    // returnSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
+    // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {

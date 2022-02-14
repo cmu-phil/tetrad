@@ -1961,7 +1961,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         return builder.toString();
     }
 
-    // returnSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
+    // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {

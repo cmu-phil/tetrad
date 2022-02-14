@@ -37,14 +37,14 @@ import java.util.List;
  * @author Joseph Ramsey
  * @author Daniel Malinsky
  */
-public class TsGFciRunner extends AbstractAlgorithmRunner
+public class SvarGFciRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
 
     private transient List<PropertyChangeListener> listeners;
     //    private List<ScoredGraph> topGraphs;
 //    private int index;
-    private transient TsGFci gfci;
+    private transient SvarGFci gfci;
 //    private transient Graph initialGraph;
 
 
@@ -66,40 +66,40 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public TsGFciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SvarGFciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public TsGFciRunner(Graph graph, Parameters params) {
+    public SvarGFciRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
 
-    public TsGFciRunner(GraphWrapper graphWrapper, Parameters params) {
+    public SvarGFciRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public TsGFciRunner(DagWrapper dagWrapper, Parameters params) {
+    public SvarGFciRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public TsGFciRunner(SemGraphWrapper dagWrapper, Parameters params) {
+    public SvarGFciRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public TsGFciRunner(IndependenceFactsModel model, Parameters params) {
+    public SvarGFciRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public TsGFciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SvarGFciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
-    public TsGFciRunner(DataWrapper[] dataWrappers, Parameters params) {
+    public SvarGFciRunner(DataWrapper[] dataWrappers, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
-    public TsGFciRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SvarGFciRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
@@ -108,8 +108,8 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
      *
      * @see TetradSerializableUtils
      */
-    public static TsGFciRunner serializableInstance() {
-        return new TsGFciRunner(Dag.serializableInstance(), new Parameters());
+    public static SvarGFciRunner serializableInstance() {
+        return new SvarGFciRunner(Dag.serializableInstance(), new Parameters());
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
@@ -180,7 +180,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             IndependenceTest test = new IndTestDSep((Graph) model);
-            gfci = new TsGFci(test, gesScore);
+            gfci = new SvarGFci(test, gesScore);
             gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             gfci.setVerbose(true);
         } else {
@@ -196,7 +196,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
                     IndependenceTest test = new IndTestDSep((Graph) model);
-                    gfci = new TsGFci(test, gesScore);
+                    gfci = new SvarGFci(test, gesScore);
                     gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
                 }
 //                else if (dataSet.isDiscrete()) {
@@ -215,7 +215,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 IndependenceTest test = new IndTestDSep((Graph) model);
-                gfci = new TsGFci(test, gesScore);
+                gfci = new SvarGFci(test, gesScore);
                 gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
@@ -241,7 +241,7 @@ public class TsGFciRunner extends AbstractAlgorithmRunner
                     SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                     fgesScore.setPenaltyDiscount(penalty);
                     IndependenceTest test = new IndTestDSep((Graph) model);
-                    gfci = new TsGFci(test, fgesScore);
+                    gfci = new SvarGFci(test, fgesScore);
                     gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
                 }
 //                else if (allDiscrete(list)) {

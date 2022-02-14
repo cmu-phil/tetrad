@@ -23,19 +23,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * tsFCI.
+ * SvarFCI.
  *
  * @author jdramsey
  * @author Daniel Malinsky
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "TsGFCI",
-        command = "ts-gfci",
+        name = "SvarGFCI",
+        command = "svar-gfci",
         algoType = AlgType.allow_latent_common_causes
 )
 @TimeSeries
 @Bootstrapping
-public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper, UsesScoreWrapper {
+public class SvarGfci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
@@ -44,10 +44,10 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     private Graph initialGraph = null;
     private IKnowledge knowledge = null;
 
-    public TsGfci() {
+    public SvarGfci() {
     }
 
-    public TsGfci(IndependenceWrapper type, ScoreWrapper score) {
+    public SvarGfci(IndependenceWrapper type, ScoreWrapper score) {
         this.test = type;
         this.score = score;
     }
@@ -55,14 +55,14 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
 //    	if (!(dataSet instanceof TimeSeriesData)) {
-//            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsGFCI.");
+//            throw new IllegalArgumentException("You need a (labeled) time series data set to run SvarGFCI.");
 //        }
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (knowledge != null) {
                 dataSet.setKnowledge(knowledge);
             }
-            edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(test.getTest(dataSet, parameters),
+            edu.cmu.tetrad.search.SvarGFci search = new edu.cmu.tetrad.search.SvarGFci(test.getTest(dataSet, parameters),
                     score.getScore(dataSet, parameters));
             IKnowledge _knowledge = dataSet.getKnowledge() != null ? dataSet.getKnowledge() : new Knowledge2();
             search.setKnowledge(dataSet.getKnowledge());
@@ -71,7 +71,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
 
             return search.search();
         } else {
-            TsGfci algorithm = new TsGfci(test, score);
+            SvarGfci algorithm = new SvarGfci(test, score);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -106,7 +106,7 @@ public class TsGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     }
 
     public String getDescription() {
-        return "tsGFCI (Time Series GFCI) using " + test.getDescription() + " and " + score.getDescription()
+        return "SavrGFCI (SVAR GFCI) using " + test.getDescription() + " and " + score.getDescription()
                 + (algorithm != null ? " with initial graph from "
                 + algorithm.getDescription() : "");
     }

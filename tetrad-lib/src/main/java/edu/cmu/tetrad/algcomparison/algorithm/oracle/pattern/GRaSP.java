@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
+package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;

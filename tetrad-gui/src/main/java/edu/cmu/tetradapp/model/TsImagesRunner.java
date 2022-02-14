@@ -54,7 +54,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgesRunn
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs = new LinkedList<>();
     private int index;
-    private transient TsGFci fges;
+    private transient SvarGFci fges;
     private Graph graph;
     private FgesRunner.Type type;
 
@@ -121,7 +121,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgesRunn
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             IndependenceTest test = new IndTestScore(gesScore);
-            fges = new TsGFci(test, gesScore);
+            fges = new SvarGFci(test, gesScore);
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
 
@@ -129,7 +129,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgesRunn
                 SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 IndependenceTest test = new IndTestScore(gesScore);
-                fges = new TsGFci(test, gesScore);
+                fges = new SvarGFci(test, gesScore);
             } else if (dataSet.isDiscrete()) {
                 double samplePrior = getParams().getDouble("samplePrior", 1);
                 double structurePrior = getParams().getDouble("structurePrior", 1);
@@ -137,7 +137,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgesRunn
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
                 IndependenceTest test = new IndTestScore(score);
-                fges = new TsGFci(test, score);
+                fges = new SvarGFci(test, score);
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
@@ -145,7 +145,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgesRunn
             SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
             gesScore.setPenaltyDiscount(penaltyDiscount);
             IndependenceTest test = new IndTestScore(gesScore);
-            fges = new TsGFci(test, gesScore);
+            fges = new SvarGFci(test, gesScore);
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
@@ -169,7 +169,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgesRunn
                 SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                 fgesScore.setPenaltyDiscount(penalty);
                 IndependenceTest test = new IndTestScore(fgesScore);
-                fges = new TsGFci(test, fgesScore);
+                fges = new SvarGFci(test, fgesScore);
 
             } else if (allDiscrete(list)) {
                 double structurePrior = getParams().getDouble("structurePrior", 1);
@@ -179,7 +179,7 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgesRunn
                 fgesScore.setSamplePrior(samplePrior);
                 fgesScore.setStructurePrior(structurePrior);
                 IndependenceTest test = new IndTestScore(fgesScore);
-                fges = new TsGFci(test, fgesScore);
+                fges = new SvarGFci(test, fgesScore);
 
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
@@ -189,8 +189,8 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgesRunn
         }
 
         fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-//        fges.setNumPatternsToStore(params.getNumPatternsToSave()); // removed for TsGFci
-//        fges.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed()); // removed for TsGFci
+//        fges.setNumPatternsToStore(params.getNumPatternsToSave()); // removed for SvarGFci
+//        fges.setHeuristicSpeedup(((Parameters) params.getIndTestParams()).isFaithfulnessAssumed()); // removed for SvarGFci
         fges.setVerbose(true);
         Graph graph = fges.search();
 
@@ -373,9 +373,9 @@ public class TsImagesRunner extends AbstractAlgorithmRunner implements IFgesRunn
     //    public GraphScorer getGraphScorer() {
 //        return fges;
 //    }
-    public TsGFci getGraphScorer() {
+    public SvarGFci getGraphScorer() {
         return fges;
-    } // changed return type for TsGFci
+    } // changed return type for SvarGFci
 
     public void setGraph(Graph graph) {
         this.graph = graph;

@@ -77,11 +77,11 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         super(runner, "Result allow_latent_common_causes");
     }
 
-    public FciCcdSearchEditor(TsFciRunner runner) {
+    public FciCcdSearchEditor(SvarFciRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
 
-    public FciCcdSearchEditor(TsGFciRunner runner) {
+    public FciCcdSearchEditor(SvarGFciRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
 

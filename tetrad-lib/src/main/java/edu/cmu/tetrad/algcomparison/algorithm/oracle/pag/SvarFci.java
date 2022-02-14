@@ -24,19 +24,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * tsFCI.
+ * SvarFCI.
  *
  * @author jdramsey
  * @author dmalinsky
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "TsFCI",
-        command = "ts-fci",
+        name = "SvarFCI",
+        command = "svar-fci",
         algoType = AlgType.allow_latent_common_causes
 )
 @TimeSeries
 @Bootstrapping
-public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class SvarFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
@@ -44,14 +44,14 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     private Graph initialGraph = null;
     private IKnowledge knowledge = null;
 
-    public TsFci() {
+    public SvarFci() {
     }
 
-    public TsFci(IndependenceWrapper test) {
+    public SvarFci(IndependenceWrapper test) {
         this.test = test;
     }
 
-    public TsFci(IndependenceWrapper type, Algorithm algorithm) {
+    public SvarFci(IndependenceWrapper type, Algorithm algorithm) {
         this.test = type;
         this.algorithm = algorithm;
     }
@@ -59,24 +59,24 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
 //    	if (!(dataSet instanceof TimeSeriesData)) {
-//            throw new IllegalArgumentException("You need a (labeled) time series data set to run TsFCI.");
+//            throw new IllegalArgumentException("You need a (labeled) time series data set to run SvarFCI.");
 //        }
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (knowledge != null) {
                 dataSet.setKnowledge(knowledge);
             }
-            edu.cmu.tetrad.search.TsFci search = new edu.cmu.tetrad.search.TsFci(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.SvarFci search = new edu.cmu.tetrad.search.SvarFci(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(dataSet.getKnowledge());
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
         } else {
-            TsFci tsFci = new TsFci(test, algorithm);
+            SvarFci svarFci = new SvarFci(test, algorithm);
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, tsFci, parameters.getInt(Params.NUMBER_RESAMPLING));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, svarFci, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -108,7 +108,7 @@ public class TsFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     }
 
     public String getDescription() {
-        return "tsFCI (Time Series Fast Causal Inference) using " + test.getDescription()
+        return "SvarFCI (SVAR Fast Causal Inference) using " + test.getDescription()
                 + (algorithm != null ? " with initial graph from "
                 + algorithm.getDescription() : "");
     }

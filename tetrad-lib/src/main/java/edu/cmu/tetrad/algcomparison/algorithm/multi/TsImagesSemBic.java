@@ -51,7 +51,7 @@ public class TsImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
                 dataSets.add((DataSet) dataModel);
             }
 
-            edu.cmu.tetrad.search.TsGFci search = new edu.cmu.tetrad.search.TsGFci(new IndTestScore(
+            edu.cmu.tetrad.search.SvarGFci search = new edu.cmu.tetrad.search.SvarGFci(new IndTestScore(
                     new SemBicScoreImages(dataModels)), new SemBicScoreImages(dataModels));
             search.setFaithfulnessAssumed(true);
             search.setKnowledge(knowledge);

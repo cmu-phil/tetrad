@@ -823,7 +823,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         }
 
         return -1;
-    } // added by DMalinsky for tsFCI on 4/20/16
+    } // added by DMalinsky for SvarFCI on 4/20/16
 
     @Override
     public List<KnowledgeEdge> getListOfRequiredEdges() {

@@ -115,7 +115,7 @@ public interface IKnowledge extends TetradSerializable {
 
     IKnowledge copy();
 
-    int isInWhichTier(Node node); // added by DMalinsky for tsFCI 4/20/16
+    int isInWhichTier(Node node); // added by DMalinsky for SvarFCI 4/20/16
 
     public List<KnowledgeEdge> getListOfRequiredEdges();
 

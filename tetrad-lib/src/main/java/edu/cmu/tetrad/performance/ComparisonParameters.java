@@ -145,7 +145,7 @@ public class ComparisonParameters {
             resultType = ResultType.PAG;
         } else if (algorithm == Algorithm.GFCI) {
             resultType = ResultType.PAG;
-        } else if (algorithm == Algorithm.TsFCI) {
+        } else if (algorithm == Algorithm.SVARFCI) {
             resultType = ResultType.PAG;
         } else {
             throw new IllegalArgumentException("Result type of algorithm not set.");
@@ -331,5 +331,5 @@ public class ComparisonParameters {
 
     public enum IndependenceTestType {FisherZ, ChiSquare}
 
-    public enum Algorithm {PC, CPC, FGES, FGES2, PCLocal, PCStableMax, FCI, GFCI, TsFCI}
+    public enum Algorithm {PC, CPC, FGES, FGES2, PCLocal, PCStableMax, FCI, GFCI, SVARFCI}
 }

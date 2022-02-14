@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Choh-Man Teng
  * @author Daniel Malinsky
  */
-public final class TsFci implements GraphSearch {
+public final class SvarFci implements GraphSearch {
 
     /**
      * The PAG being constructed.
@@ -121,7 +121,7 @@ public final class TsFci implements GraphSearch {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public TsFci(IndependenceTest independenceTest) {
+    public SvarFci(IndependenceTest independenceTest) {
         if (independenceTest == null || knowledge == null) {
             throw new NullPointerException();
         }
@@ -138,7 +138,7 @@ public final class TsFci implements GraphSearch {
      * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
      * search over.
      */
-    public TsFci(IndependenceTest independenceTest, List<Node> searchVars) {
+    public SvarFci(IndependenceTest independenceTest, List<Node> searchVars) {
         if (independenceTest == null || knowledge == null) {
             throw new NullPointerException();
         }
@@ -222,10 +222,10 @@ public final class TsFci implements GraphSearch {
         //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
         if (isPossibleDsepSearchDone()) {
 //            long time1 = System.currentTimeMillis();
-            TsFciOrient tsFciOrient = new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest);
-            tsFciOrient.setKnowledge(knowledge);
-            tsFciOrient.ruleR0(graph);
-//            new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest).ruleR0(graph);
+            SvarFciOrient svarFciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest);
+            svarFciOrient.setKnowledge(knowledge);
+            svarFciOrient.ruleR0(graph);
+//            new SvarFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest).ruleR0(graph);
 
             for (Edge edge : new ArrayList<>(graph.getEdges())) {
                 Node x = edge.getNode1();
@@ -275,7 +275,7 @@ public final class TsFci implements GraphSearch {
         long time6 = System.currentTimeMillis();
         logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
 
-        final TsFciOrient fciOrient = new TsFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest);
+        final SvarFciOrient fciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest);
 
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
@@ -454,7 +454,7 @@ public final class TsFci implements GraphSearch {
         this.possibleDsepDepth = possibleDsepDepth;
     }
 
-    // removeSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
+    // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     // this version removes edges from graph instead of list of adjacencies
     private void removeSimilarPairs(final IndependenceTest test, Node x, Node y, List<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");

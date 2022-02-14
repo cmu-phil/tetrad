@@ -54,7 +54,7 @@ public class ComparisonScript {
         //algList.add(ComparisonParameters.Algorithm.PC);
         //algList.add(ComparisonParameters.Algorithm.FGES);
         //algList.add(ComparisonParameters.Algorithm.FCI);
-        algList.add(ComparisonParameters.Algorithm.TsFCI);
+        algList.add(ComparisonParameters.Algorithm.SVARFCI);
 
         /** User shouldn't need to change anything below this line **/
         /***********************************************************/

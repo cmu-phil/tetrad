@@ -81,8 +81,8 @@
                 <tocitem text="Skew" target="skew"/>
                 <tocitem text="SkewE" target="skewe"/>
                 <tocitem text="PC-Local" target="pclocal"/>
-                <tocitem text="tsFCI" target="tsfci"/>
-                <tocitem text="tsGFCI" target="tsgfci"/>
+                <tocitem text="svarFCI" target="svarfci"/>
+                <tocitem text="svarGFCI" target="svargfci"/>
                 <tocitem text="tsIMAGES" target="tsimages"/>
                 <tocitem text="WFGES" target="wfges"/>
 
