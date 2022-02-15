@@ -83,7 +83,6 @@
                 <tocitem text="PC-Local" target="pclocal"/>
                 <tocitem text="svarFCI" target="svarfci"/>
                 <tocitem text="svarGFCI" target="svargfci"/>
-                <tocitem text="tsIMAGES" target="tsimages"/>
                 <tocitem text="WFGES" target="wfges"/>
 
                 <tocitem text="BDeu Score" target="bdeu"/>

@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.search.Lofs;
-import edu.cmu.tetrad.search.CPDAGToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -416,8 +415,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
                     }
                 }
 
-                CPDAGToDag search = new CPDAGToDag(new EdgeListGraph(graph));
-                Graph dag = search.cpdagToDagMeek();
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);

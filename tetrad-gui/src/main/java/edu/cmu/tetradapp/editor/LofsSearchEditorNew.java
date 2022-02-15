@@ -538,8 +538,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                     }
                 }
 
-                CPDAGToDag search = new CPDAGToDag(new EdgeListGraph(graph));
-                Graph dag = search.cpdagToDagMeek();
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);

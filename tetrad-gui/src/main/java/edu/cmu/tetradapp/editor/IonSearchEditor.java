@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestType;
-import edu.cmu.tetrad.search.CPDAGToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -503,8 +502,7 @@ public class IonSearchEditor extends AbstractSearchEditor
                     }
                 }
 
-                CPDAGToDag search = new CPDAGToDag(new EdgeListGraph(graph));
-                Graph dag = search.cpdagToDagMeek();
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);
@@ -566,20 +564,12 @@ public class IonSearchEditor extends AbstractSearchEditor
         return (List<String>) params.get("varNames", null);
     }
 
-    public void setTestType(IndTestType testType) {
-        super.setTestType(testType);
-    }
-
     public IndTestType getTestType() {
         return super.getTestType();
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        Parameters searchParams = getAlgorithmRunner().getParams();
-
-        if (searchParams != null) {
-            searchParams.set("knowledge", knowledge);
-        }
+    public void setTestType(IndTestType testType) {
+        super.setTestType(testType);
     }
 
     public IKnowledge getKnowledge() {
@@ -590,6 +580,14 @@ public class IonSearchEditor extends AbstractSearchEditor
         }
 
         return (IKnowledge) searchParams.get("knowledge", new Knowledge2());
+    }
+
+    public void setKnowledge(IKnowledge knowledge) {
+        Parameters searchParams = getAlgorithmRunner().getParams();
+
+        if (searchParams != null) {
+            searchParams.set("knowledge", knowledge);
+        }
     }
 
     //================================PRIVATE METHODS====================//

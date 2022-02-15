@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.CPDAGToDag;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
@@ -89,8 +89,7 @@ public class HsimEvalFromData {
                 for (whichFrepeat = 0; whichFrepeat < fsimRepeat.size(); whichFrepeat++) {
                     ArrayList<PRAOerrors> errorsList = new ArrayList<PRAOerrors>();
                     for (int r = 0; r < fsimRepeat.get(whichFrepeat); r++) {
-                        CPDAGToDag pickdag = new CPDAGToDag(oFGSGraph);
-                        Graph fgsDag = pickdag.cpdagToDagMeek();
+                        Graph fgsDag = SearchGraphUtils.dagFromCPDAG(oFGSGraph);
                         Dag fgsdag2 = new Dag(fgsDag);
                         //then fit an IM to this dag and the data. GeneralizedSemEstimator seems to bug out
                         //GeneralizedSemPm simSemPm = new GeneralizedSemPm(fgsdag2);

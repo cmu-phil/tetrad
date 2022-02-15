@@ -2221,8 +2221,7 @@ public final class SearchGraphUtils {
             }
         }
 
-        CPDAGToDag search = new CPDAGToDag(new EdgeListGraph(newGraph));
-        Graph dag = search.cpdagToDagMeek();
+        Graph dag = SearchGraphUtils.dagFromCPDAG(newGraph);
         GraphUtils.arrangeBySourceGraph(dag, graph);
         return dag;
     }

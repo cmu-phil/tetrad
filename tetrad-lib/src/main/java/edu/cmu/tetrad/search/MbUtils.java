@@ -307,8 +307,7 @@ public class MbUtils {
     }
 
     public static Graph getOneMbDag(Graph mbCPDAG) {
-        CPDAGToDag search = new CPDAGToDag(new EdgeListGraph(mbCPDAG));
-        return search.cpdagToDagMeek();
+        return SearchGraphUtils.dagFromCPDAG(mbCPDAG);
     }
 
     /**

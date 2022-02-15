@@ -7,7 +7,7 @@ import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.CPDAGToDag;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
@@ -87,8 +87,7 @@ public class HsimAutoRun {
             //if (verbose) System.out.println(estGraph);
 
             Graph estCPDAG = new EdgeListGraph(estGraph);
-            CPDAGToDag CPDAGToDag = new CPDAGToDag(estCPDAG);
-            Graph estGraphDAG = CPDAGToDag.cpdagToDagMeek();
+            Graph estGraphDAG = SearchGraphUtils.dagFromCPDAG(estCPDAG);
             Dag estDAG = new Dag(estGraphDAG);
 
             //===========Identify the nodes to be resimulated===========

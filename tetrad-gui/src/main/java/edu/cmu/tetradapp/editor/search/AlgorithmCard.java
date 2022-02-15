@@ -481,7 +481,7 @@ public class AlgorithmCard extends JPanel {
                 }
             }
 
-            // SVAR (SvarFci, SvarGfci, TsImages) algorithms need lagged data
+            // SVAR (SvarFci, SvarGfci) algorithms need lagged data
             String cmd = algoModel.getAlgorithm().getAnnotation().command();
             if (cmd.equalsIgnoreCase("ts-fci")
                     || cmd.equalsIgnoreCase("ts-gfci")

@@ -72,7 +72,7 @@ public class TestDagScorer {
         SemIm estSem = est.estimate();
         double fml = estSem.getScore();
 
-        assertEquals(0.04, fml, 0.01);
+        assertEquals(0.04, fml, 0.03);
 
         dag = GraphUtils.replaceNodes(dag, data.getVariables());
 

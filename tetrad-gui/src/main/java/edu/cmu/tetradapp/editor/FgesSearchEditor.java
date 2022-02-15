@@ -89,10 +89,6 @@ public class FgesSearchEditor extends AbstractSearchEditor
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(TsImagesRunner runner) {
-        super(runner, "Result forbid_latent_common_causes");
-    }
-
     //=============================== Public Methods ==================================//
 
     public Graph getGraph() {
@@ -480,8 +476,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
                     }
                 }
 
-                CPDAGToDag search = new CPDAGToDag(new EdgeListGraph(graph));
-                Graph dag = search.cpdagToDagMeek();
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);

@@ -26,7 +26,6 @@ import edu.cmu.tetrad.bayes.BayesProperties;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestType;
-import edu.cmu.tetrad.search.CPDAGToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
@@ -383,8 +382,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             }
 
             Graph CPDAG = new EdgeListGraph(resultGraph);
-            CPDAGToDag ptd = new CPDAGToDag(CPDAG);
-            Graph dag = ptd.cpdagToDagMeek();
+            Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
 
             ICovarianceMatrix dataSet = (ICovarianceMatrix) getAlgorithmRunner().getDataModel();
             String report = reportIfCovMatrix(dag, dataSet);
