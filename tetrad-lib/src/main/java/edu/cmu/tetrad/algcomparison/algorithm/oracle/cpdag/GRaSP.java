@@ -122,6 +122,7 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         ArrayList<String> params = new ArrayList<>();
 
         // Flags
+        params.add(Params.GRASP_DEPTH);
         params.add(Params.GRASP_UNCOVERED_DEPTH);
         params.add(Params.GRASP_NONSINGULAR_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
@@ -133,7 +134,6 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
         // Parameters
         params.add(Params.NUM_STARTS);
-        params.add(Params.GRASP_DEPTH);
 
         return params;
     }

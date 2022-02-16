@@ -2664,7 +2664,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Description</h4>
 
-    <div id="fas">
+    <div id="grasp">
 
         <p>
             GRaSP (Greedy Relations of Sparsest Permutation) is an algorithm that generalizes and extends the GSP
@@ -2722,6 +2722,31 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>The CPDAG equivalence class of DAGs representing estimated possible causal structures over the set of
         variables.</p>
 
+    <h4>Parameters</h4>
+
+    <p>
+        <a href="#graspDepth">graspDepth</a>,
+        <a href="#graspNonSingularDepth">graspNonSingularDepth</a>
+        <a href="#graspUncoveredDepth">graspUncoveredDepth</a>
+        <a href="#graspOrderedAlg">graspOrderedAlg</a>
+        <a href="#graspUsePearl">graspUsePearl</a>
+        <a href="#verbose">verbose</a>
+        <a href="#numStarts">numStarts</a>
+
+    </p>
+
+    params.add(Params.GRASP_UNCOVERED_DEPTH);
+    params.add(Params.GRASP_NONSINGULAR_DEPTH);
+    params.add(Params.GRASP_ORDERED_ALG);
+    //        params.add(Params.GRASP_USE_SCORE);
+    params.add(Params.GRASP_USE_PEARL);
+    //        params.add(Params.CACHE_SCORES);
+    //        params.add(Params.OUTPUT_CPDAG);
+    params.add(Params.VERBOSE);
+
+    // Parameters
+    params.add(Params.NUM_STARTS);
+    params.add(Params.GRASP_DEPTH);
 
     <h3>The GLASSO Algorithm</h3>
 
@@ -4984,7 +5009,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="penaltyDiscount_short_desc">Penalty discount (min = 0.0)</span></li>
             <li>Long Description: <span id="penaltyDiscount_long_desc">A BIC score is of the form 2L – k ln N, where L is the likelihood, k the number of degrees of freedom, and N the sample size. Tests based on this statistic can often yield too dense a graph; to compensate for this, we add a factor c, as follows: 2L – c k ln N, where usually c >= 1. If c is chosen to be greater than 1, say 2, the output graph will be sparser. We call this c the “penalty discount”; similar mechanisms have been proposed elsewhere.</span>
             </li>
-            <li>Default Value: <span id="penaltyDiscount_default_value">1.0</span></li>
+            <li>Default Value: <span id="penaltyDiscount_default_value">2.0</span></li>
             <li>Lower Bound: <span id="penaltyDiscount_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="penaltyDiscount_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="penaltyDiscount_value_type">Double</span></li>
@@ -4995,7 +5020,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="ebicGamma_short_desc">EBIC Gamma (0-1)</span></li>
             <li>Long Description: <span id="ebicGamma_long_desc">The gamma parameter for Extended BIC (Chen and Chen). In [0, 1].</span>
             </li>
-            <li>Default Value: <span id="ebicGamma_default_value">1.0</span></li>
+            <li>Default Value: <span id="ebicGamma_default_value">0.8</span></li>
             <li>Lower Bound: <span id="ebicGamma_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="ebicGamma_upper_bound">1.0</span></li>
             <li>Value Type: <span id="ebicGamma_value_type">Double</span></li>
