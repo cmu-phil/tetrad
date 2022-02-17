@@ -63,7 +63,7 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             grasp.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
             grasp.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             grasp.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            grasp.setUsePearl(parameters.getBoolean(Params.GRASP_USE_PEARL));
+            grasp.setUsePearl(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
             grasp.setVerbose(parameters.getBoolean(Params.VERBOSE));
             grasp.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
@@ -127,7 +127,7 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         params.add(Params.GRASP_NONSINGULAR_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
 //        params.add(Params.GRASP_USE_SCORE);
-        params.add(Params.GRASP_USE_PEARL);
+        params.add(Params.GRASP_USE_VERMA_PEARL);
 //        params.add(Params.CACHE_SCORES);
 //        params.add(Params.OUTPUT_CPDAG);
         params.add(Params.VERBOSE);

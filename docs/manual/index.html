@@ -2729,20 +2729,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <a href="#graspNonSingularDepth">graspNonSingularDepth</a>
         <a href="#graspUncoveredDepth">graspUncoveredDepth</a>
         <a href="#graspOrderedAlg">graspOrderedAlg</a>
-        <a href="#graspUsePearl">graspUsePearl</a>
+        <a href="#graspUseVermaPearl">graspUseVermaPearl</a>
         <a href="#verbose">verbose</a>
         <a href="#numStarts">numStarts</a>
 
     </p>
-
-    params.add(Params.GRASP_UNCOVERED_DEPTH);
-    params.add(Params.GRASP_NONSINGULAR_DEPTH);
-    params.add(Params.GRASP_ORDERED_ALG);
-    //        params.add(Params.GRASP_USE_SCORE);
-    params.add(Params.GRASP_USE_PEARL);
-    //        params.add(Params.CACHE_SCORES);
-    //        params.add(Params.OUTPUT_CPDAG);
-    params.add(Params.VERBOSE);
 
     // Parameters
     params.add(Params.NUM_STARTS);
@@ -4784,13 +4775,11 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 id="graspOrderedAlg" class="parameter_description">graspOrderedAlg</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="graspOrderedAlg_short_desc">
-                Yes if ordered search should be done, No if not
+                Yes if earlier GRaSP stages should be performed before later stages
             </span>
             </li>
             <li>Long Description: <span id="graspOrderedAlg_long_desc">
-				Exploring all covered edges first ensures that when exploring the
-				uncovered edges a graph with few edges will be obtained.
-                Note this option forces a depth first search with the breaking option.
+				GRaSP has three stages; these can be performed separately or in order; by default Yes.
             </span>
             </li>
             <li>Default Value: <span id="graspOrderedAlg_default_value">true</span></li>
@@ -4817,21 +4806,21 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="graspUseScore_value_type">Boolean</span></li>
         </ul>
 
-        <h3 id="graspUsePearl" class="parameter_description">graspUsePearl</h3>
+        <h3 id="graspUseVermaPearl" class="parameter_description">graspUseVermaPearl</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="graspUsePearl_short_desc">
-                Yes if Pearl's DAG-building method should be used (test), No if Grow-Shrink MB should be used (score).</span>
+            <li>Short Description: <span id="graspUseVermaPearl_short_desc">
+                Yes to use Verma-Pearl's DAG-building method (test), No to use Grow-Shrink (score).</span>
             </li>
-            <li>Long Description: <span id="graspUsePearl_long_desc">
-				Pearl's method adds and edge X->Y if Y ~_||_ X | Prefix(Y, pi) \ {X}. Grow-Shink
+            <li>Long Description: <span id="graspUseVermaPearl_long_desc">
+				Verma and Pearl's method adds and edge X->Y if Y ~_||_ X | Prefix(Y, pi) \ {X}. Grow-Shink
 				adds an edge X->Y if X is in the Markov blanket of Y where the variable
 				set is restricted to Prefix(Y, pi).
             </span>
             </li>
-            <li>Default Value: <span id="graspUsePearl_default_value">false</span></li>
-            <li>Lower Bound: <span id="graspUsePearl_lower_bound"></span></li>
-            <li>Upper Bound: <span id="graspUsePearl_upper_bound"></span></li>
-            <li>Value Type: <span id="graspUsePearl_value_type">Boolean</span></li>
+            <li>Default Value: <span id="graspUseVermaPearl_default_value">false</span></li>
+            <li>Lower Bound: <span id="graspUseVermaPearl_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspUseVermaPearl_upper_bound"></span></li>
+            <li>Value Type: <span id="graspUseVermaPearl_value_type">Boolean</span></li>
         </ul>
 
         <h3 id="graspUseDataOrder" class="parameter_description">graspUseDataOrder</h3>
@@ -4916,7 +4905,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="graspNonSingularDepth" class="parameter_description">graspNonSingularDepth</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="graspNonSingularDepth_short_desc">Recursion depth at which to consider nonsingular tuck operations</span>
+            <li>Short Description: <span id="graspNonSingularDepth_short_desc">Recursion depth for nonsingular tucks</span>
             </li>
             <li>Long Description: <span id="graspNonSingularDepth_long_desc">
             	This is the depth of recursion at which multiple tucks may be consdidered

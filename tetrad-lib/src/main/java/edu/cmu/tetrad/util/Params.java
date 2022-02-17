@@ -203,7 +203,7 @@ public final class Params {
     public static final String GRASP_BREAK_AFTER_IMPROVEMENT = "graspBreakAFterImprovement";
     public static final String GRASP_ORDERED_ALG = "graspOrderedAlg";
     public static final String GRASP_USE_SCORE = "graspUseScore";
-    public static final String GRASP_USE_PEARL = "graspUsePearl";
+    public static final String GRASP_USE_VERMA_PEARL = "graspUseVermaPearl";
     public static final String GRASP_USE_DATA_ORDER = "graspUseDataOrder";
     public static final String GRASP_DEPTH = "graspDepth";
     public static final String GRASP_UNCOVERED_DEPTH = "graspUncoveredDepth";
