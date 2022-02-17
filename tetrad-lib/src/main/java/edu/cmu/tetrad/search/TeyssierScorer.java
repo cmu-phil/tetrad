@@ -108,7 +108,6 @@ public class TeyssierScorer {
     /**
      * Scores the given permutation. This needs to be done initially before any move or tuck
      * operations are performed.
-     *
      * @param order The permutation to score.
      * @return The score of it.
      */
@@ -146,7 +145,6 @@ public class TeyssierScorer {
 
     /**
      * Performs a tuck operation. If pi[x] < pi[y], moves y to index of x; otherwise moves x to index of y.
-     *
      * @param x The first variable.
      * @param y The second variable.
      */
@@ -160,8 +158,7 @@ public class TeyssierScorer {
 
     /**
      * Moves v to a new index.
-     *
-     * @param v       The variable to move.
+     * @param v The variable to move.
      * @param toIndex The index to move v to.
      */
     public void moveTo(Node v, int toIndex) {
@@ -185,7 +182,6 @@ public class TeyssierScorer {
 
     /**
      * Swaps m and n in the permutation.
-     *
      * @param m The first variable.
      * @param n The second variable.
      * @return True iff the swap was done.
@@ -215,7 +211,6 @@ public class TeyssierScorer {
     /**
      * Returns true iff x->y or y->x is a covered edge. x->y is a covered edge if
      * parents(x) = parents(y) \ {x}
-     *
      * @param x The first variable.
      * @param y The second variable.
      * @return True iff x->y or y->x is a covered edge.
@@ -238,7 +233,6 @@ public class TeyssierScorer {
 
     /**
      * Returns the current permutation without making a copy. Could be dangerous!
-     *
      * @return the current permutation.
      */
     public List<Node> getOrderShallow() {
@@ -247,7 +241,6 @@ public class TeyssierScorer {
 
     /**
      * Return the index of v in the current permutation.
-     *
      * @param v The variable.
      * @return Its index.
      */
@@ -267,7 +260,6 @@ public class TeyssierScorer {
 
     /**
      * Returns the parents of the node at index p.
-     *
      * @param p The index of the node.
      * @return Its parents.
      */
@@ -277,7 +269,6 @@ public class TeyssierScorer {
 
     /**
      * Returns the parents of a node v.
-     *
      * @param v The variable.
      * @return Its parents.
      */
@@ -287,7 +278,6 @@ public class TeyssierScorer {
 
     /**
      * Returns the nodes adjacent to v.
-     *
      * @param v The variable.
      * @return Its adjacent nodes.
      */
@@ -305,7 +295,6 @@ public class TeyssierScorer {
 
     /**
      * Returns the DAG build for the current permutation, or its CPDAG.
-     *
      * @param cpDag True iff the CPDAG should be returned, False if the DAG.
      * @return This graph.
      */
@@ -330,7 +319,6 @@ public class TeyssierScorer {
 
     /**
      * Returns a list of adjacent node pairs in the current graph.
-     *
      * @return This list.
      */
     public List<NodePair> getAdjacencies() {
@@ -406,7 +394,6 @@ public class TeyssierScorer {
 
     /**
      * Returns a list of edges for the current graph as a list of ordered pairs.
-     *
      * @return This list.
      */
     public List<OrderedPair<Node>> getEdges() {
@@ -437,7 +424,6 @@ public class TeyssierScorer {
 
     /**
      * Returns the node at index j in pi.
-     *
      * @param j The index.
      * @return The node at that index.
      */
@@ -447,7 +433,6 @@ public class TeyssierScorer {
 
     /**
      * Bookmarks the current pi as index key.
-     *
      * @param key This bookmark may be retrieved using the index 'key', an integer.
      *            This bookmark will be stored until it is retrieved and then removed.
      */
@@ -466,7 +451,6 @@ public class TeyssierScorer {
 
     /**
      * Retrieves the bookmarked state for index 'key' and removes that bookmark.
-     *
      * @param key The integer key for this bookmark.
      */
     public void goToBookmark(int key) {
@@ -519,7 +503,6 @@ public class TeyssierScorer {
 
     /**
      * Returns True iff a is adjacent to b in the current graph.
-     *
      * @param a The first node.
      * @param b The second node.
      * @return True iff adj(a, b).
@@ -531,7 +514,6 @@ public class TeyssierScorer {
 
     /**
      * Returns true iff [a, b, c] is a collider.
-     *
      * @param a The first node.
      * @param b The second node.
      * @param c The third node.
@@ -543,7 +525,6 @@ public class TeyssierScorer {
 
     /**
      * Returns true iff [a, b, c] is a triangle.
-     *
      * @param a The first node.
      * @param b The second node.
      * @param c The third node.
@@ -555,7 +536,6 @@ public class TeyssierScorer {
 
     /**
      * True iff the nodes in W form a clique in the current DAG.
-     *
      * @param W The nodes.
      * @return True iff these nodes form a clique.
      */
@@ -574,7 +554,6 @@ public class TeyssierScorer {
     /**
      * A convenience method to reset the score cache if it becomes larger than a certain
      * size.
-     *
      * @param maxSize The maximum size of the score cache; it the if the score cache is
      *                larger than this it will be cleared.
      */
@@ -609,7 +588,7 @@ public class TeyssierScorer {
         updateScores(0, pi.size() - 1);
     }
 
-    private void updateScores(int i1, int i2) {
+    public void updateScores(int i1, int i2) {
         for (int i = i1; i <= i2; i++) {
             recalculate(i);
             orderHash.put(pi.get(i), i);
@@ -818,7 +797,6 @@ public class TeyssierScorer {
 
     /**
      * Returns the parents of the node at index p, calculated using Pearl's method.
-     *
      * @param p The index.
      * @return The parents, as a Pair object (parents + score).
      */
@@ -855,6 +833,21 @@ public class TeyssierScorer {
         }
 
         return skeleton;
+    }
+
+
+    public void moveToNoUpdate(Node v, int toIndex) {
+        if (!pi.contains(v)) return;
+
+        int vIndex = index(v);
+
+        if (vIndex == toIndex) return;
+
+        if (lastMoveSame(vIndex, toIndex)) return;
+
+        pi.remove(v);
+        pi.add(toIndex, v);
+
     }
 
     private static class Pair {

@@ -142,17 +142,17 @@ public class Grasp {
 
         // GRaSP-TSP
         if (ordered && uncoveredDepth != 0 && nonSingularDepth != 0) {
-            depths.add(new int[]{depth < 1 ? Integer.MAX_VALUE : depth, 0, 0});
+            depths.add(new int[] {depth < 1 ? Integer.MAX_VALUE : depth, 0, 0});
         }
 
         // GRaSP-ESP
         if (ordered && nonSingularDepth != 0) {
-            depths.add(new int[]{depth < 1 ? Integer.MAX_VALUE : depth,
+            depths.add(new int[] {depth < 1 ? Integer.MAX_VALUE : depth,
                     uncoveredDepth < 0 ? Integer.MAX_VALUE : uncoveredDepth, 0});
         }
 
         // GRaSP
-        depths.add(new int[]{depth < 1 ? Integer.MAX_VALUE : depth,
+        depths.add(new int[] {depth < 1 ? Integer.MAX_VALUE : depth,
                 uncoveredDepth < 0 ? Integer.MAX_VALUE : uncoveredDepth,
                 nonSingularDepth < 0 ? Integer.MAX_VALUE : nonSingularDepth});
 
@@ -177,6 +177,7 @@ public class Grasp {
         return scorer.getPi();
     }
 
+
     private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
                           Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
         for (Node y : scorer.getShuffledVariables()) {
@@ -194,15 +195,18 @@ public class Grasp {
                 if (covered && tucks.contains(tuck)) continue;
                 if (currentDepth > depth[1] && !covered) continue;
 
-                int i = scorer.index(x);
+                int[] idcs = new int[] {scorer.index(x), scorer.index(y)};
+
+                int i = idcs[0];
                 scorer.bookmark(currentDepth);
 
                 boolean first = true;
-                List<Node> Z = new ArrayList<>(scorer.getOrderShallow().subList(i + 1, scorer.index(y)));
+                List<Node> Z = new ArrayList<>(scorer.getOrderShallow().subList(i + 1, idcs[1]));
                 Iterator<Node> zItr = Z.iterator();
                 do {
                     if (first) {
-                        scorer.moveTo(y, i);
+//                        scorer.moveTo(y, i);
+                        scorer.moveToNoUpdate(y, i);
                         first = false;
                     } else {
                         Node z = zItr.next();
@@ -210,10 +214,13 @@ public class Grasp {
                             if (scorer.getParents(z).contains(x)) {
                                 singular = false;
                             }
-                            scorer.moveTo(z, i++);
+//                            scorer.moveTo(z, i++);
+                            scorer.moveToNoUpdate(z, i++);
                         }
                     }
                 } while (zItr.hasNext());
+                scorer.updateScores(idcs[0], idcs[1]);
+
 
                 if (currentDepth > depth[2] && !singular) {
                     scorer.goToBookmark(currentDepth);
@@ -225,9 +232,8 @@ public class Grasp {
                 sNew = scorer.score();
                 if (sNew > sOld) {
                     if (verbose) {
-                        String msg = String.format("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s",
+                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
                                 scorer.getNumEdges(), sNew - sOld, tucks, tuck);
-                        TetradLogger.getInstance().forceLogMessage(msg);
                     }
                     return;
                 }
@@ -318,7 +324,7 @@ public class Grasp {
     }
 
     public void setOrdered(boolean ordered) {
-        this.ordered = ordered;
+        this.ordered = ordered  ;
     }
 
     public void setUsePearl(boolean usePearl) {
