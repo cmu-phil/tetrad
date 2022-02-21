@@ -807,7 +807,7 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     private void notifyKnowledge() {
-        firePropertyChange("modelChanged", null, null);
+//        firePropertyChange("modelChanged", null, null);
     }
 
     private void resetTextDisplay() {
