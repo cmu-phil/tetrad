@@ -624,6 +624,20 @@ public class KnowledgeBoxEditor extends JPanel {
                 String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
+//                list.forEach(e -> {
+//                    String from = e.getFrom();
+//                    String to = e.getTo();
+//                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph
+//                            .getNode(from);
+//                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph
+//                            .getNode(to);
+//
+//                    if (!(fromNode == null || toNode == null)) {
+//                        graph.addEdge(new KnowledgeModelEdge(fromNode, toNode,
+//                                KnowledgeModelEdge.REQUIRED));
+//                    }
+//                });
+
                 list.forEach(e -> {
                     String from = e.getFrom();
                     String to = e.getTo();
@@ -632,9 +646,10 @@ public class KnowledgeBoxEditor extends JPanel {
                     KnowledgeModelNode toNode = (KnowledgeModelNode) graph
                             .getNode(to);
 
-                    if (!(fromNode == null || toNode == null)) {
-                        graph.addEdge(new KnowledgeModelEdge(fromNode, toNode,
-                                KnowledgeModelEdge.REQUIRED));
+                    KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode,
+                            toNode, KnowledgeModelEdge.REQUIRED);
+                    if (!graph.containsEdge(edge)) {
+                        graph.addEdge(edge);
                     }
                 });
             }
@@ -807,7 +822,7 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     private void notifyKnowledge() {
-//        firePropertyChange("modelChanged", null, null);
+        firePropertyChange("modelChanged", null, null);
     }
 
     private void resetTextDisplay() {
