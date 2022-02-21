@@ -2702,6 +2702,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             We recommend that the user turn on logging to watch the progress of the algorithm; this helps with larger
             searches especially.
         <p>
+            Knowledge of forbidden edges may be used with GRaSP; currently knowledge of required edges is not
+            implemented.
+        <p>
             Dimitris Margaritis and Sebastian Thrun. Bayesian network induction via local neighborhoods. Advances in
             neural information processing systems, 12, 1999.
         <p>
@@ -4906,7 +4909,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="graspNonSingularDepth" class="parameter_description">graspNonSingularDepth</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="graspNonSingularDepth_short_desc">Recursion depth for nonsingular tucks</span>
+            <li>Short Description: <span
+                    id="graspNonSingularDepth_short_desc">Recursion depth for nonsingular tucks</span>
             </li>
             <li>Long Description: <span id="graspNonSingularDepth_long_desc">
             	This is the depth of recursion at which multiple tucks may be consdidered
@@ -6023,6 +6027,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
 
 
 
