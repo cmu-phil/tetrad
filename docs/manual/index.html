@@ -4809,10 +4809,11 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 id="graspUseVermaPearl" class="parameter_description">graspUseVermaPearl</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="graspUseVermaPearl_short_desc">
-                Yes to use Verma-Pearl's DAG-building method (test), No to use Grow-Shrink (score).</span>
+                Yes to use Raskutti and Uhler's DAG-building method (test), No to use Grow-Shrink (score).</span>
             </li>
             <li>Long Description: <span id="graspUseVermaPearl_long_desc">
-				Verma and Pearl's method adds and edge X->Y if Y ~_||_ X | Prefix(Y, pi) \ {X}. Grow-Shink
+				Raskutti and Uhler's method adds and edge X->Y if
+                Y ~_||_ X | Prefix(Y, pi) \ {X}. Grow-Shrink
 				adds an edge X->Y if X is in the Markov blanket of Y where the variable
 				set is restricted to Prefix(Y, pi).
             </span>
