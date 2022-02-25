@@ -53,9 +53,9 @@ class QQPlotDisplayPanel extends JPanel {
      * Variables that control the size of the drawing area.
      */
     private final static int PADDING = 50;
-    private final static int HEIGHT = 600 + PADDING;
+    private final static int HEIGHT = 400 + PADDING;
     private final static int DISPLAYED_HEIGHT = HEIGHT;
-    private final static int WIDTH = 600 + PADDING;
+    private final static int WIDTH = 400 + PADDING;
     private final static int SPACE = 2;
     private final static int DASH = 10;
 
