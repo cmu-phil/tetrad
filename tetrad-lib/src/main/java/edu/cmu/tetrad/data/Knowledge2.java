@@ -746,7 +746,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
     @Override
     public List<KnowledgeEdge> getListOfRequiredEdges() {
-        List<KnowledgeEdge> edges = new LinkedList<>();
+        Set<KnowledgeEdge> edges = new LinkedHashSet<>();
 
         requiredRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
             if (!e1.equals(e2)) {
@@ -754,7 +754,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             }
         })));
 
-        return edges;
+        return new ArrayList<>(edges);
     }
 
     @Override
@@ -764,7 +764,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
     @Override
     public List<KnowledgeEdge> getListOfForbiddenEdges() {
-        List<KnowledgeEdge> edges = new LinkedList<>();
+        Set<KnowledgeEdge> edges = new LinkedHashSet<>();
 
         forbiddenRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
             if (!e1.equals(e2)) {
@@ -772,7 +772,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             }
         })));
 
-        return edges;
+        return new ArrayList<>(edges);
     }
 
     @Override
@@ -782,11 +782,11 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         knowledgeGroups.forEach(e -> copy.remove(knowledgeGroupRules.get(e)));
 
-        List<KnowledgeEdge> edges = new LinkedList<>();
+        Set<KnowledgeEdge> edges = new HashSet<>();
         for (OrderedPair<Set<String>> e : copy)
             e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> edges.add(new KnowledgeEdge(e1, e2))));
 
-        return edges;
+        return new ArrayList<>(edges);
     }
 
     @Override

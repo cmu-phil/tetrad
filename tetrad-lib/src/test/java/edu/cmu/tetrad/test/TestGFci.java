@@ -170,7 +170,7 @@ public class TestGFci {
 
         int numNodes = 15;
         int numLatents = 5;
-        int numIterations = 10;
+        int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
             Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,

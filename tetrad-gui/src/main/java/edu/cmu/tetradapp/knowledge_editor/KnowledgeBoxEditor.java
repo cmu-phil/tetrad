@@ -564,6 +564,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showRequiredByGroups) {
             List<KnowledgeEdge> list = knowledge.getListOfRequiredEdges();
+
             if (list.size() > EDGE_LIMIT) {
                 showRequiredByGroups = false;
                 if (checkBox != null) {
@@ -581,8 +582,12 @@ public class KnowledgeBoxEditor extends JPanel {
                         KnowledgeModelNode toNode = (KnowledgeModelNode) graph
                                 .getNode(to);
 
-                        graph.addEdge(new KnowledgeModelEdge(fromNode, toNode,
-                                KnowledgeModelEdge.REQUIRED_BY_GROUPS));
+                        KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode, toNode,
+                                KnowledgeModelEdge.REQUIRED_BY_GROUPS);
+
+                        if (!graph.containsEdge(edge)) {
+                            graph.addEdge(edge);
+                        }
                     }
                 });
             }
@@ -590,6 +595,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showForbiddenByGroups) {
             List<KnowledgeEdge> list = knowledge.getListOfForbiddenEdges();
+
             if (list.size() > EDGE_LIMIT) {
                 showForbiddenByGroups = false;
                 if (checkBox != null) {
@@ -607,8 +613,12 @@ public class KnowledgeBoxEditor extends JPanel {
                         KnowledgeModelNode toNode = (KnowledgeModelNode) graph
                                 .getNode(to);
 
-                        graph.addEdge(new KnowledgeModelEdge(fromNode, toNode,
-                                KnowledgeModelEdge.FORBIDDEN_BY_GROUPS));
+                        KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode, toNode,
+                                KnowledgeModelEdge.FORBIDDEN_BY_GROUPS);
+
+                        if (!graph.containsEdge(edge)) {
+                            graph.addEdge(edge);
+                        }
                     }
                 });
             }
@@ -616,6 +626,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (showRequired) {
             List<KnowledgeEdge> list = knowledge.getListOfExplicitlyRequiredEdges();
+
             if (list.size() > EDGE_LIMIT) {
                 showRequired = false;
                 if (checkBox != null) {
@@ -624,20 +635,6 @@ public class KnowledgeBoxEditor extends JPanel {
                 String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
-//                list.forEach(e -> {
-//                    String from = e.getFrom();
-//                    String to = e.getTo();
-//                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph
-//                            .getNode(from);
-//                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph
-//                            .getNode(to);
-//
-//                    if (!(fromNode == null || toNode == null)) {
-//                        graph.addEdge(new KnowledgeModelEdge(fromNode, toNode,
-//                                KnowledgeModelEdge.REQUIRED));
-//                    }
-//                });
-
                 list.forEach(e -> {
                     String from = e.getFrom();
                     String to = e.getTo();
@@ -648,6 +645,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
                     KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode,
                             toNode, KnowledgeModelEdge.REQUIRED);
+
                     if (!graph.containsEdge(edge)) {
                         graph.addEdge(edge);
                     }
@@ -657,6 +655,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (showForbiddenByTiers) {
             List<KnowledgeEdge> list = knowledge.getListOfForbiddenEdges();
+
             if (list.size() > EDGE_LIMIT) {
                 showForbiddenByTiers = false;
                 if (checkBox != null) {
@@ -684,10 +683,12 @@ public class KnowledgeBoxEditor extends JPanel {
                             toNode = (KnowledgeModelNode) graph.getNode(to);
                         }
 
-                        KnowledgeModelEdge knowledgeModelEdge = new KnowledgeModelEdge(
+                        KnowledgeModelEdge edge = new KnowledgeModelEdge(
                                 fromNode, toNode, KnowledgeModelEdge.FORBIDDEN_BY_TIERS);
 
-                        graph.addEdge(knowledgeModelEdge);
+                        if (!graph.containsEdge(edge)) {
+                            graph.addEdge(edge);
+                        }
                     }
                 });
             }
@@ -695,6 +696,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (showForbiddenExplicitly) {
             List<KnowledgeEdge> list = knowledge.getListOfExplicitlyForbiddenEdges();
+
             if (list.size() > EDGE_LIMIT) {
                 showForbiddenExplicitly = false;
                 if (checkBox != null) {
@@ -713,6 +715,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
                     KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode,
                             toNode, KnowledgeModelEdge.FORBIDDEN_EXPLICITLY);
+
                     if (!graph.containsEdge(edge)) {
                         graph.addEdge(edge);
                     }

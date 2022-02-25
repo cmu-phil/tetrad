@@ -228,37 +228,6 @@ public class TestPc {
         }
     }
 
-    @Test
-    public void testPcStable2() {
-        RandomUtil.getInstance().setSeed(1450030184196L);
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < 10; i++) {
-            nodes.add(new ContinuousVariable("X" + (i + 1)));
-        }
-
-        Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false);
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(200, false);
-
-        TetradLogger.getInstance().setForceLog(false);
-        IndependenceTest test = new IndTestFisherZ(data, 0.05);
-
-        PcStableMax pc = new PcStableMax(test);
-        pc.setVerbose(false);
-        Graph CPDAG = pc.search();
-
-        for (int i = 0; i < 1; i++) {
-            DataSet data2 = DataUtils.shuffleColumns(data);
-            IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
-            PcStableMax pc2 = new PcStableMax(test2);
-            pc2.setVerbose(false);
-            Graph CPDAG2 = pc2.search();
-            assertTrue(CPDAG.equals(CPDAG2));
-        }
-    }
-
     //    @Test
     public void testPcFci() {
 
