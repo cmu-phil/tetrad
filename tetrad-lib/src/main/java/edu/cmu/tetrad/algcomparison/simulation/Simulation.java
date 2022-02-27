@@ -2,9 +2,9 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
@@ -28,8 +28,8 @@ public interface Simulation extends HasParameters, TetradSerializable {
     int getNumDataModels();
 
     /**
-     * @return That graph.
      * @param index The index of the desired true graph.
+     * @return That graph.
      */
     Graph getTrueGraph(int index);
 

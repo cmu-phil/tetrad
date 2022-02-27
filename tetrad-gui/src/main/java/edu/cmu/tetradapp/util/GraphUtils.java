@@ -163,9 +163,8 @@ public class GraphUtils {
                     numLatentMeasuredImpureParents,
                     numMeasuredMeasuredImpureParents,
                     numMeasuredMeasuredImpureAssociations);
-        }
-        else {
-            throw new  IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
+        } else {
+            throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
                     "sorry dude.");
         }
 

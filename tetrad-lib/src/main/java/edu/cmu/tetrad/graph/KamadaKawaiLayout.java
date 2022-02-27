@@ -21,10 +21,10 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradAlgebra;
-import edu.cmu.tetrad.util.Matrix;
 
 import javax.swing.*;
 import java.text.NumberFormat;

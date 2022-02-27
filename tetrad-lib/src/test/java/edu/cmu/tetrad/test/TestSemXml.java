@@ -109,8 +109,7 @@ public final class TestSemXml extends TestCase {
 
         try {
             serializer.write(document);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

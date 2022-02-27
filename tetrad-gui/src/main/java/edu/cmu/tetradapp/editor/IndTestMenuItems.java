@@ -296,7 +296,7 @@ class IndTestMenuItems {
         if (testType != IndTestType.FISHER_Z
 //                &&
 //                testType != IndTestType.CORRELATION_T
-                ) {
+        ) {
             setter.setTestType(IndTestType.FISHER_Z);
         }
 

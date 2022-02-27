@@ -31,7 +31,6 @@ package edu.cmu.tetradapp.editor;
  * editor is a Dialog then <code>finalizeEdit()</code> will be called right after <code>setup()</code>
  * assuming that the Dialog is modal and is handling matters on the users behalf.
  *
- *
  * @author Tyler Gibson
  */
 public interface FinalizingParameterEditor extends ParameterEditor {
@@ -44,8 +43,6 @@ public interface FinalizingParameterEditor extends ParameterEditor {
      * @return - true iff the edit was committed.
      */
     boolean finalizeEdit();
-
-
 
 
 }

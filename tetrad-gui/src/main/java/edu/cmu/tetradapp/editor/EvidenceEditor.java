@@ -115,12 +115,10 @@ class EvidenceEditor extends JPanel {
                         if (proposition.getNumAllowed(i) ==
                                 getEvidence().getNumCategories(i)) {
                             proposition.setCategory(i, j);
-                        }
-                        else if (proposition.getNumAllowed(i) == 1) {
+                        } else if (proposition.getNumAllowed(i) == 1) {
                             if (proposition.getSingleCategory(i) == j) {
                                 proposition.removeCategory(i, j);
-                            }
-                            else {
+                            } else {
                                 if ((ActionEvent.SHIFT_MASK &
                                         e.getModifiers()) != 1) {
                                     proposition.setVariable(i, false);
@@ -128,12 +126,10 @@ class EvidenceEditor extends JPanel {
 
                                 proposition.addCategory(i, j);
                             }
-                        }
-                        else {
+                        } else {
                             if (proposition.isAllowed(i, j)) {
                                 proposition.removeCategory(i, j);
-                            }
-                            else {
+                            } else {
                                 proposition.addCategory(i, j);
                             }
                         }
@@ -172,8 +168,7 @@ class EvidenceEditor extends JPanel {
                                 "Please choose a single category to manipulate on.");
                         checkbox.setSelected(false);
                         getEvidence().setManipulated(variable, false);
-                    }
-                    else {
+                    } else {
                         getEvidence().setManipulated(variable, selected);
                     }
                 }
@@ -195,8 +190,7 @@ class EvidenceEditor extends JPanel {
 
             if (!proposition.isUnconditioned(_i) && proposition.isAllowed(_i, _j)) {
                 _button.setBackground(Color.LIGHT_GRAY);
-            }
-            else {
+            } else {
                 _button.setBackground(Color.WHITE);
             }
         }
@@ -211,8 +205,7 @@ class EvidenceEditor extends JPanel {
             for (int j = 0; j < buttons[variable].length; j++) {
                 buttons[variable][j].setSelected(false);
             }
-        }
-        else {
+        } else {
             for (int j = 0; j < buttons[variable].length; j++) {
                 buttons[variable][j].setSelected(
                         evidence.getProposition().isAllowed(variable, j));
@@ -224,7 +217,7 @@ class EvidenceEditor extends JPanel {
             checkbox.setSelected(false);
             getEvidence().setManipulated(variable, false);
         }
-        
+
 
         highlightCorrectly(evidence.getProposition());
     }

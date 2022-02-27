@@ -21,22 +21,27 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.data.Clusters;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataGraphUtils;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.search.Mimbuild2;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.rmi.MarshalledObject;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -57,8 +62,8 @@ public class TestMimbuild2 {
             Graph mimStructure = structure(mim);
 
             Parameters params = new Parameters();
-            params.set("coefLow", .5);
-            params.set("coefHigh", 1.5);
+            params.set("coefLow", 0.0);
+            params.set("coefHigh", 1.0);
 
             SemPm pm = new SemPm(mim);
             SemIm im = new SemIm(pm, params);
@@ -173,7 +178,7 @@ public class TestMimbuild2 {
 //
 //        SemPm pm = new SemPm(mim);
 //        Parameters params = new Parameters();
-//        params.setCoefRange(0.5, 1.5);
+//        params.setCoefRange(0.0, 1.0);
 //
 //        NumberFormat nf = new DecimalFormat("0.0000");
 //
@@ -190,7 +195,7 @@ public class TestMimbuild2 {
 //
 //            CovarianceMatrix _cov = new CovarianceMatrix(data);
 //
-//            ICovarianceMatrix cov = DataUtils.reorderColumns(_cov);
+//            ICovarianceMatrix cov = DataUtils.shuffleColumns(_cov);
 //
 //            String algorithm = "FOFC";
 //            Graph searchGraph;
@@ -375,7 +380,7 @@ public class TestMimbuild2 {
 //        System.out.println(mimStructure);
 //
 //        Parameters params = new Parameters();
-//        params.setCoefRange(0.5, 1.5);
+//        params.setCoefRange(0.0, 1.0);
 //
 //        SemIm im = new SemIm(pm, params);
 //
@@ -387,7 +392,7 @@ public class TestMimbuild2 {
 //
 //        for (int i = 0; i < 1; i++) {
 //
-//            ICovarianceMatrix _cov = DataUtils.reorderColumns(cov);
+//            ICovarianceMatrix _cov = DataUtils.shuffleColumns(cov);
 //            List<List<Node>> partition;
 //
 //            FindOneFactorClusters fofc = new FindOneFactorClusters(_cov, TestType.TETRAD_WISHART, .001);
@@ -441,7 +446,7 @@ public class TestMimbuild2 {
 //
 //        SemPm pm = new SemPm(mim);
 //        Parameters params = new Parameters();
-//        params.setCoefRange(0.5, 1.5);
+//        params.setCoefRange(0.0, 1.0);
 //
 //        NumberFormat nf = new DecimalFormat("0.0000");
 //
@@ -462,7 +467,7 @@ public class TestMimbuild2 {
 //
 //            CovarianceMatrix _cov = new CovarianceMatrix(data);
 //
-//            ICovarianceMatrix cov = DataUtils.reorderColumns(_cov);
+//            ICovarianceMatrix cov = DataUtils.shuffleColumns(_cov);
 //
 //            String algorithm = "FOFC";
 //            Graph searchGraph;

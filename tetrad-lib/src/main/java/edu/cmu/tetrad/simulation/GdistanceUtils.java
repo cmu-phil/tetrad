@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.simulation;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,20 +13,20 @@ public class GdistanceUtils {
     //fall into the various buckets determined by the array of thresholds (ordered from least to greatest)
     public static double[] histogram(List<Double> input, double[] thresholds) {
         double[] output;
-        output = new double[Array.getLength(thresholds)+1];
+        output = new double[Array.getLength(thresholds) + 1];
         //will use length of input list when calcing percents
         double total = (double) input.size();
 
         //init output to be all 0s
-        for (int i=0; i<Array.getLength(output); i++){
-            output[i]=0;
+        for (int i = 0; i < Array.getLength(output); i++) {
+            output[i] = 0;
         }
 
         //go through input, iterate whichever box it falls into
-        for (Double i : input){
+        for (Double i : input) {
             boolean nobinfound = true;
-            for (int j=0;j<Array.getLength(thresholds);j++){
-                if (i <= thresholds[j]){
+            for (int j = 0; j < Array.getLength(thresholds); j++) {
+                if (i <= thresholds[j]) {
                     output[j]++;
                     nobinfound = false;
                     break;
@@ -44,8 +43,8 @@ public class GdistanceUtils {
         }
 
         //turn all the output values into percents
-        for (int i=0;i<Array.getLength(output);i++){
-            output[i]=output[i]/total;
+        for (int i = 0; i < Array.getLength(output); i++) {
+            output[i] = output[i] / total;
         }
 
         return output;

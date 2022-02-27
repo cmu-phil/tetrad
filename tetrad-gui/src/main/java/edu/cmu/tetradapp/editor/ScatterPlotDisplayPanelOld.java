@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
@@ -40,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A panel that is responsible for drawing a scatter plot.
- *
+ * <p>
  * Borrows heavily from HistogramDisplayPanel
  *
  * @author Michael Freenor
@@ -187,23 +186,21 @@ class ScatterPlotDisplayPanelOld extends JPanel {
         g2d.drawLine(PADDINGLEFT - DASH, height, PADDINGOTHER, height);
 
         //draw the origin lines if they should go on the screen -- first find out where they exist
-        if(this.scatterPlot.getMinSample() < 0 && this.scatterPlot.getMaxSample() > 0)
-        {
+        if (this.scatterPlot.getMinSample() < 0 && this.scatterPlot.getMaxSample() > 0) {
             double originLeft[] = plotPoint(least, 0, least, greatest);
             double originRight[] = plotPoint(greatest, 0, least, greatest);
             double originTop[] = plotPoint(0, least, least, greatest);
             double originBottom[] = plotPoint(0, greatest, least, greatest);
 
-            g2d.drawLine((int)originLeft[0] + 2, (int)originLeft[1] + 2, (int)originRight[0] + 2, (int)originRight[1] + 2);
-            g2d.drawLine((int)originTop[0] + 2, (int)originTop[1] + 2, (int)originBottom[0] + 2, (int)originBottom[1] + 2);
+            g2d.drawLine((int) originLeft[0] + 2, (int) originLeft[1] + 2, (int) originRight[0] + 2, (int) originRight[1] + 2);
+            g2d.drawLine((int) originTop[0] + 2, (int) originTop[1] + 2, (int) originBottom[0] + 2, (int) originBottom[1] + 2);
         }
 
         g2d.setColor(new Color(255, 0, 0));
-        
+
         //draw each point in the indexSet from our ScatterPlot
-        for (Object o : scatterPlot.getIndexSet())
-        {
-            int i = (Integer)o;
+        for (Object o : scatterPlot.getIndexSet()) {
+            int i = (Integer) o;
             double x = this.scatterPlot.getxData()[i];
             double y = this.scatterPlot.getyData()[i];
 
@@ -212,8 +209,7 @@ class ScatterPlotDisplayPanelOld extends JPanel {
         }
 
         //draw the regression line
-        if(scatterPlot.isDrawRegLine())
-        {
+        if (scatterPlot.isDrawRegLine()) {
             //RegressionRunner regRunner;
             RegressionDataset regData;
 
@@ -228,22 +224,18 @@ class ScatterPlotDisplayPanelOld extends JPanel {
             regressors.add(scatterPlot.getXVariable().getName());
             params.set("targetName", scatterPlot.getYVariable().getName());
 
-            if(scatterPlot.getIndexSet().size() != scatterPlot.getDataSet().getNumRows())
-            {
+            if (scatterPlot.getIndexSet().size() != scatterPlot.getDataSet().getNumRows()) {
                 DataSet newDataSet = scatterPlot.getDataSet().copy();
 
                 int throwAway[] = new int[scatterPlot.getComplementIndexSet().size()];
-                for(int j = 0; j < throwAway.length; j++)
-                {
+                for (int j = 0; j < throwAway.length; j++) {
                     throwAway[j] = (Integer) scatterPlot.getComplementIndexSet().get(j);
                 }
 
                 newDataSet.removeRows(throwAway);
                 regData = new RegressionDataset(newDataSet);
                 //regRunner = new RegressionRunner(new DataWrapper(newDataSet), params);
-            }
-            else
-            {
+            } else {
                 regData = new RegressionDataset(scatterPlot.getDataSet());
                 //regRunner = new RegressionRunner(new DataWrapper(scatterPlot.dataSet), params);
             }
@@ -255,7 +247,7 @@ class ScatterPlotDisplayPanelOld extends JPanel {
             double[] regLeft = plotPoint(least, coef[0] + coef[1] * least, least, greatest);
             double[] regRight = plotPoint(greatest, coef[0] + coef[1] * greatest, least, greatest);
             g2d.setColor(LINE_COLOR);
-            g2d.drawLine((int)regLeft[0] + 2, (int)regLeft[1] + 2, (int)regRight[0] + 2, (int)regRight[1] + 2);
+            g2d.drawLine((int) regLeft[0] + 2, (int) regLeft[1] + 2, (int) regRight[0] + 2, (int) regRight[1] + 2);
         }
 
         // draw the display string.
@@ -271,19 +263,18 @@ class ScatterPlotDisplayPanelOld extends JPanel {
 //    }
 
     /**
-     *
-     * @param x Location along the X axis.
-     * @param y Location along the Y axis (Cartesian coordinates, not Java2D).
+     * @param x        Location along the X axis.
+     * @param y        Location along the Y axis (Cartesian coordinates, not Java2D).
      * @param minRange The value at the origin.
      * @param maxRange The value at the extremity (determined by the largest value encountered in either variable).
-     * @return An ordered pair determining the proper location on the screen in Java2D coordinates. 
+     * @return An ordered pair determining the proper location on the screen in Java2D coordinates.
      */
     private double[] plotPoint(double x, double y, double minRange, double maxRange) {
         double[] result = new double[2];
         double range = maxRange - minRange;
         result[0] = (WIDTH - PADDINGLEFT) * ((x - minRange) / range) + 4 + PADDINGLEFT;
         result[1] = HEIGHT - (HEIGHT - PADDINGOTHER) * ((y - minRange) / range) - 8 - PADDINGOTHER;
-        
+
         return result;
     }
 

@@ -55,20 +55,21 @@ public class CfciRunner extends AbstractAlgorithmRunner
     public CfciRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
+
     /**
      * Constructs a wrapper for the given DataWrapper. The DataWrapper must
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CfciRunner(DataWrapper dataWrapper,Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CfciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
-    
+
     public CfciRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
-    
+
     public CfciRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
@@ -117,11 +118,9 @@ public class CfciRunner extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else if (knowledge.isDefaultToKnowledgeLayout()) {
+        } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
@@ -141,8 +140,7 @@ public class CfciRunner extends AbstractAlgorithmRunner
         if (getParams() instanceof Parameters) {
             Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
-        }
-        else {
+        } else {
             Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }

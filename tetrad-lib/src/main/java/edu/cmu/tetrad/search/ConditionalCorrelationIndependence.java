@@ -53,6 +53,7 @@ import static java.lang.Math.*;
  */
 public final class ConditionalCorrelationIndependence {
     public enum Kernel {Epinechnikov, Gaussian}
+
     public enum Basis {Polynomial, Cosine}
 
     /**

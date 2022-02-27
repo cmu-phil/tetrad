@@ -22,8 +22,8 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
@@ -34,7 +34,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler Gibson
  */
 public class InverseMatrixWrapper extends DataWrapper {
-     static final long serialVersionUID = 23L;
+    static final long serialVersionUID = 23L;
 
     /**
      * Splits the given data set by collinear columns.
@@ -47,7 +47,7 @@ public class InverseMatrixWrapper extends DataWrapper {
         if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
             if (!(dataSet.isContinuous())) {
-               throw new IllegalArgumentException("The data must be continuous");
+                throw new IllegalArgumentException("The data must be continuous");
             }
 
             Matrix _data = dataSet.getDoubleData();

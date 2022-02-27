@@ -74,17 +74,14 @@ class NumberCellEditor extends DefaultCellEditor {
             public void setValue(Object value) {
                 if (value == null) {
                     textField.setText(emptyString);
-                }
-                else if (value instanceof Integer) {
+                } else if (value instanceof Integer) {
                     textField.setText(value.toString());
-                }
-                else if (value instanceof Double) {
+                } else if (value instanceof Double) {
                     double doubleValue = (Double) value;
 
                     if (Double.isNaN(doubleValue)) {
                         textField.setText(emptyString);
-                    }
-                    else {
+                    } else {
                         textField.setText(nf.format(doubleValue));
                     }
                 }

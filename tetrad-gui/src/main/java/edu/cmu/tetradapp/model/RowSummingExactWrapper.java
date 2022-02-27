@@ -129,8 +129,7 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
             bayesUpdater = new RowSummingExactUpdater(bayesIm);
-        }
-        else {
+        } else {
             bayesUpdater = new RowSummingExactUpdater(bayesIm,
                     (Evidence) params.get("evidence", null));
         }
@@ -166,7 +165,7 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
 
             for (int i = 0; i < priors.length; i++) {
                 TetradLogger.getInstance().log("details", category(evidence, nodeName, i) + "\t"
-                                + nf.format(priors[i]) + "\t" + nf.format(marginals[i]));
+                        + nf.format(priors[i]) + "\t" + nf.format(marginals[i]));
             }
         }
         TetradLogger.getInstance().reset();

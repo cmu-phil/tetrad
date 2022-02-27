@@ -148,8 +148,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
                     Preferences.userRoot().putDouble("alpha",
                             params().getDouble("alpha", 0.001));
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -163,8 +162,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
                     Preferences.userRoot().putInt("pcDepth",
                             params().getInt("depth", -1));
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -238,8 +236,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
             if (parentModel instanceof DataWrapper) {
                 DataWrapper dataWrapper = (DataWrapper) parentModel;
                 dataModel = dataWrapper.getSelectedDataModel();
-            }
-            else if (parentModel instanceof IndependenceFactsModel) {
+            } else if (parentModel instanceof IndependenceFactsModel) {
                 dataModel = ((IndependenceFactsModel) parentModel).getFacts();
             }
         }

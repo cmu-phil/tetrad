@@ -18,13 +18,13 @@
  */
 package edu.cmu.tetrad.annotation;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
- *
  * Dec 6, 2017 12:07:04 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

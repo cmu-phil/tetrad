@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.Memorable;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
@@ -190,6 +191,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
 //
 //        log(bayesIm);
 //    }
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      *

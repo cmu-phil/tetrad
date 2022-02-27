@@ -78,8 +78,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
                 try {
                     params.set("symmetricAlpha", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }

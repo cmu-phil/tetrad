@@ -13,8 +13,12 @@ import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.csb.mgm.MixedUtils;
-import java.util.*;
 import org.apache.commons.lang3.RandomUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * A version of the Lee & Hastic simulation which is guaranteed ot generate a
@@ -77,7 +81,7 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
             dataSet.setName("" + (i + 1));
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.reorderColumns(dataSet);
+                dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
             dataSets.add(dataSet);
@@ -152,7 +156,7 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
         Graph graph = MixedUtils.makeMixedGraph(dag, nd);
 
-        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
+        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.0,-.0,.0,1.0)");
         GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);

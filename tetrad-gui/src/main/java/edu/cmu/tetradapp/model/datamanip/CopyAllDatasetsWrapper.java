@@ -36,8 +36,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler Gibson
  */
 public class CopyAllDatasetsWrapper extends DataWrapper {
-       static final long serialVersionUID = 23L;
-
+    static final long serialVersionUID = 23L;
 
 
     public CopyAllDatasetsWrapper(DataWrapper wrapper, Parameters params) {
@@ -69,9 +68,6 @@ public class CopyAllDatasetsWrapper extends DataWrapper {
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
-
-
-
 
 
 }

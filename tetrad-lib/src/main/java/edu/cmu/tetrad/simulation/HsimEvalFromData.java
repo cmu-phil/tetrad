@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.PatternToDag;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
@@ -15,6 +15,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Path;
@@ -88,8 +89,7 @@ public class HsimEvalFromData {
                 for (whichFrepeat = 0; whichFrepeat < fsimRepeat.size(); whichFrepeat++) {
                     ArrayList<PRAOerrors> errorsList = new ArrayList<PRAOerrors>();
                     for (int r = 0; r < fsimRepeat.get(whichFrepeat); r++) {
-                        PatternToDag pickdag = new PatternToDag(oFGSGraph);
-                        Graph fgsDag = pickdag.patternToDagMeek();
+                        Graph fgsDag = SearchGraphUtils.dagFromCPDAG(oFGSGraph);
                         Dag fgsdag2 = new Dag(fgsDag);
                         //then fit an IM to this dag and the data. GeneralizedSemEstimator seems to bug out
                         //GeneralizedSemPm simSemPm = new GeneralizedSemPm(fgsdag2);

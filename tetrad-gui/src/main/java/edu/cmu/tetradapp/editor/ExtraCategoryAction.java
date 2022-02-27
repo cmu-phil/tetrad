@@ -69,8 +69,7 @@ final class ExtraCategoryAction extends AbstractAction {
             list.add(newDataSet);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
-        }
-        else if (dataModel instanceof ICovarianceMatrix) {
+        } else if (dataModel instanceof ICovarianceMatrix) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Must be a tabular data set.");
         }

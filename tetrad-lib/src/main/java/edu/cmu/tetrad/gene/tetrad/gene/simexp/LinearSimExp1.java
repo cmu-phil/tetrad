@@ -61,8 +61,7 @@ public class LinearSimExp1 {
                     new PrintStream(new FileOutputStream(stub + "raw.dat"));
             printRawData(out2);
             out2.close();
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }

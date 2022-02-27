@@ -22,10 +22,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+
 import java.util.List;
 
 /**
- *
  * Sep 26, 2017 12:19:41 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

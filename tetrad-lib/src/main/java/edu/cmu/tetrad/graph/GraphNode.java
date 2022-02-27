@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -82,6 +83,7 @@ public class GraphNode implements Node, TetradSerializable {
     private Map<String, Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS==========================//
+
     /**
      * Constructs a new Tetrad node with the given (non-null) string.
      */
@@ -107,6 +109,7 @@ public class GraphNode implements Node, TetradSerializable {
     }
 
     //============================PUBLIC METHODS========================//
+
     /**
      * @return the name of the variable.
      */

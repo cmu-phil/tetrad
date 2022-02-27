@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.test;
+
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import junit.framework.TestCase;
 import org.junit.Test;
 
 import static junit.framework.TestCase.fail;
@@ -115,7 +115,7 @@ import static junit.framework.TestCase.fail;
  * <p>Or Joshua Block, Effective Java.</p>                                                                                     fd
  *
  * @author Joseph Ramsey
-// * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+ * // * @see edu.cmu.tetradapp.util.TetradSerializableUtils
  */
 public class TestSerialization {
 
@@ -138,8 +138,7 @@ public class TestSerialization {
             utils.serializeCurrentDirectory();
             utils.deserializeCurrentDirectory();
             utils.deserializeArchivedVersions();
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             System.out.println();
             e.printStackTrace();
             fail("TestSerialization.testLoadability() failed! Please fix " +

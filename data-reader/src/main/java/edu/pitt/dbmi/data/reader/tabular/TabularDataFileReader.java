@@ -18,16 +18,12 @@
  */
 package edu.pitt.dbmi.data.reader.tabular;
 
-import edu.pitt.dbmi.data.reader.ContinuousData;
-import edu.pitt.dbmi.data.reader.Data;
-import edu.pitt.dbmi.data.reader.DataColumn;
-import edu.pitt.dbmi.data.reader.DataReaderException;
-import edu.pitt.dbmi.data.reader.DatasetFileReader;
-import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.DiscreteData;
-import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
+import edu.pitt.dbmi.data.reader.*;
 import edu.pitt.dbmi.data.reader.metadata.ColumnMetadata;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -36,11 +32,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- *
  * Nov 15, 2018 5:22:50 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

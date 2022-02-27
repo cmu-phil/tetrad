@@ -83,7 +83,7 @@ public class GraphNodeLocked extends DisplayNode {
     }
 
     private String chooseNewVariableName(JCheckBox latentCheckBox,
-            List<Node> nodes) {
+                                         List<Node> nodes) {
         String newName;
 
         LOOP:
@@ -137,8 +137,8 @@ public class GraphNodeLocked extends DisplayNode {
                             !newName.equals(super.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
-                                newName + "' is already being used." +
-                                "\nPlease choose another name.");
+                                        newName + "' is already being used." +
+                                        "\nPlease choose another name.");
                         continue LOOP;
                     }
                 }

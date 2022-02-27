@@ -76,7 +76,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
     }
 
     public HitonRunner(SemGraphWrapper dagWrapper,
-                             Parameters params) {
+                       Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
@@ -118,8 +118,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
     }
@@ -166,10 +165,10 @@ public class HitonRunner extends AbstractAlgorithmRunner
     }
 
     /**
+     * @param node The node that the classifications are for. All triple from adjacencies to this
+     *             node to adjacencies to this node through the given node will be considered.
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
-     * @param node The node that the classifications are for. All triple from adjacencies to this
-     * node to adjacencies to this node through the given node will be considered.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<>();

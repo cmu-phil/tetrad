@@ -88,7 +88,7 @@ public final class TestAndersonDarling {
         double[] x = new double[n];
 
         for (int i = 0; i < x.length; i++) {
-            x[i] = RandomUtil.getInstance().nextBeta(2,5);
+            x[i] = RandomUtil.getInstance().nextBeta(2, 5);
         }
         return x;
     }

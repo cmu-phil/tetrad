@@ -21,55 +21,20 @@
 package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.EdgeTypeProbability;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.prefs.Preferences;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 
 /**
  * The functionality of the workbench which is shared between the workbench
@@ -273,6 +238,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private boolean enableEditing = true;
 
     // ==============================CONSTRUCTOR============================//
+
     /**
      * Constructs a new workbench workbench.
      *
@@ -295,6 +261,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     // ============================PUBLIC METHODS==========================//
+
     /**
      * Deletes all selected nodes in the workbench plus any edges that have had
      * one of their nodes deleted in the process.
@@ -567,7 +534,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * displayed halfway along the edge slightly off to the side.
      *
      * @param modelEdge the edge for the label.
-     * @param label the label for the component.
+     * @param label     the label for the component.
      */
     public final void setEdgeLabel(Edge modelEdge, JComponent label) {
         if (modelEdge == null) {
@@ -671,9 +638,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     /**
      * Sets the stoke width for an edge.
      *
-     * @param edge The edge in question.
+     * @param edge  The edge in question.
      * @param width The stroke width. By detault this is 1.0f. 5.0f is pretty
-     * thick.
+     *              thick.
      */
     public final void setStrokeWidth(Edge edge, float width) {
         IDisplayEdge displayEdge = (IDisplayEdge) getModelEdgesToDisplay().get(edge);
@@ -1017,6 +984,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     abstract public IDisplayEdge getNewTrackingEdge(DisplayNode displayNode, Point mouseLoc);
 
     // ============================PRIVATE METHODS=========================//
+
     /**
      * Sets the display workbench model to the indicated model. (Called when the
      * workbench is first constructed as well as whenever the workbench model is
@@ -1744,7 +1712,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * selected nodes.
      *
      * @param rubberband The rubberband shape appearing in the GUI.
-     * @param edgesOnly Whether the shift key is down.
+     * @param edgesOnly  Whether the shift key is down.
      */
     private void selectAllInRubberband(Rubberband rubberband, boolean edgesOnly) {
         if (!isAllowNodeEdgeSelection()) {
@@ -1794,7 +1762,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Starts a tracked edge by anchoring it to one node and specifying the
      * initial mouse track point.
      *
-     * @param node the initial anchored node.
+     * @param node     the initial anchored node.
      * @param mouseLoc the initial tracking mouse location.
      */
     private void startEdge(DisplayNode node, Point mouseLoc) {
@@ -2581,7 +2549,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         /**
          * Constructs a new label wrapper for the given JComponent and edge.
          *
-         * @param edge the edge with which the label is associated.
+         * @param edge  the edge with which the label is associated.
          * @param label the JComponent which serves as the label.
          */
         public GraphEdgeLabel(IDisplayEdge edge, JComponent label) {
@@ -2695,7 +2663,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         /**
          * Constructs a new label wrapper for the given JComponent and node.
          *
-         * @param node the node with which the label is associated.
+         * @param node  the node with which the label is associated.
          * @param label the JComponent which serves as the label.
          */
         public GraphNodeLabel(DisplayNode node, JComponent label, int xOffset, int yOffset) {
@@ -2733,6 +2701,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     //
     // Event handler classes
     //
+
     /**
      * Handles <code>ComponentEvent</code>s. We use an inner class instead of
      * the workbench itself since we don't want to expose the handler methods on

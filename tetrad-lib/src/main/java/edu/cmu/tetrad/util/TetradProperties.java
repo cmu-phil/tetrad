@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- *
  * Nov 10, 2017 4:14:31 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

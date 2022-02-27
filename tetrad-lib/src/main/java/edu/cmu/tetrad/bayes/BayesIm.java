@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.VariableSource;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.IM;
+
 import java.util.List;
 
 /**
@@ -159,7 +160,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
 
     /**
      * @param nodeIndex the index of the node.
-     * @param rowIndex the index of the row in question.
+     * @param rowIndex  the index of the row in question.
      * @return an array containing the combination of parent values for a given
      * node and given row in the probability table for that node. To get the
      * combination of parent values from the row number, the row number is
@@ -185,10 +186,10 @@ public interface BayesIm extends VariableSource, IM, Simulator {
 
     /**
      * @param nodeIndex the index of the node in question.
-     * @param rowIndex the row in the table for this for node which represents
-     * the combination of parent values in question.
-     * @param colIndex the column in the table for this node which represents
-     * the value of the node in question.
+     * @param rowIndex  the row in the table for this for node which represents
+     *                  the combination of parent values in question.
+     * @param colIndex  the column in the table for this node which represents
+     *                  the value of the node in question.
      * @return the probability for the given node at the given row and column in
      * the table for that node. To get the node index, use getNodeIndex(). To
      * get the row index, use getRowIndex(). To get the column index, use
@@ -242,15 +243,15 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * indicated is the combination indicated by rowIndex.
      *
      * @param nodeIndex the index of the node in question.
-     * @param rowIndex the row in the table for this for node which represents
-     * the combination of parent values in question.
-     * @param colIndex the column in the table for this node which represents
-     * the value of the node in question.
-     * @param value the desired probability to be set.
+     * @param rowIndex  the row in the table for this for node which represents
+     *                  the combination of parent values in question.
+     * @param colIndex  the column in the table for this node which represents
+     *                  the value of the node in question.
+     * @param value     the desired probability to be set.
      * @see #getProbability
      */
     void setProbability(int nodeIndex, int rowIndex, int colIndex,
-            double value);
+                        double value);
 
     /**
      * Sets the probability for the given node. The matrix row represent row
@@ -259,9 +260,9 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * represent column index, the column in the table for this node which
      * represents the value of the node in question.
      *
-     * @param nodeIndex the index of the node in question.
+     * @param nodeIndex  the index of the node in question.
      * @param probMatrix a matrix containing probabilities of a node along with
-     * its parents
+     *                   its parents
      */
     public void setProbability(int nodeIndex, double[][] probMatrix);
 
@@ -276,7 +277,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * add to 1.
      *
      * @param nodeIndex the node for the table that this row belongs to.
-     * @param rowIndex the index of the row.
+     * @param rowIndex  the index of the row.
      */
     void clearRow(int nodeIndex, int rowIndex);
 
@@ -285,7 +286,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * add to 1.
      *
      * @param nodeIndex the node for the table that this row belongs to.
-     * @param rowIndex the index of the row.
+     * @param rowIndex  the index of the row.
      */
     void randomizeRow(int nodeIndex, int rowIndex);
 
@@ -294,7 +295,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * Double.NaN value in it.
      *
      * @param nodeIndex the node for the table whose incomplete rows are to be
-     * randomized.
+     *                  randomized.
      */
     void randomizeIncompleteRows(int nodeIndex);
 

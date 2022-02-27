@@ -16,7 +16,9 @@ import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
-import java.io.*;
+
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -121,9 +123,9 @@ public class Comparison2 {
                     nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
             /**
-             * added 5.25.16 for tsFCI *
+             * added 5.25.16 for SvarFCI *
              */
-            if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+            if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                 trueDag = GraphUtils.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                 trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
@@ -148,28 +150,28 @@ public class Comparison2 {
                 }
                 Pc search = new Pc(test);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+                result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
                 Cpc search = new Cpc(test);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+                result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCLocal) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
                 PcLocal search = new PcLocal(test);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+                result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCStableMax) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
                 PcStableMax search = new PcStableMax(test);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+                result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
                 if (score == null) {
                     throw new IllegalArgumentException("Score not set.");
@@ -177,7 +179,7 @@ public class Comparison2 {
                 Fges search = new Fges(score);
                 //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
                 result.setResultGraph(search.search());
-                result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+                result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
@@ -192,11 +194,11 @@ public class Comparison2 {
                 GFci search = new GFci(test, score);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(new DagToPag2(trueDag).convert());
-            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
-                TsFci search = new TsFci(test);
+                SvarFci search = new SvarFci(test);
                 IKnowledge knowledge = getKnowledge(trueDag);
                 search.setKnowledge(knowledge);
                 result.setResultGraph(search.search());
@@ -247,9 +249,9 @@ public class Comparison2 {
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
                 /**
-                 * added 6.08.16 for tsFCI *
+                 * added 6.08.16 for SvarFCI *
                  */
-                if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+                if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                     trueDag = GraphUtils.randomGraphRandomForwardEdges(
                             nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                     trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
@@ -270,9 +272,9 @@ public class Comparison2 {
                 LargeScaleSimulation sim = new LargeScaleSimulation(trueDag);
 
                 /**
-                 * added 6.08.16 for tsFCI *
+                 * added 6.08.16 for SvarFCI *
                  */
-                if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+                if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                     sim.setCoefRange(0.20, 0.50);
                 }
                 /**
@@ -281,9 +283,9 @@ public class Comparison2 {
 
 //                dataSet = sim.simulateDataAcyclic(params.getSampleSize());
                 /**
-                 * added 6.08.16 for tsFCI *
+                 * added 6.08.16 for SvarFCI *
                  */
-                if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+                if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
 ////                    System.out.println("Coefs matrix : " + sim.getCoefs());
 //                    System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
 ////                    System.out.println("dim = " + sim.getCoefs()[1][1]);
@@ -445,28 +447,28 @@ public class Comparison2 {
             }
             Pc search = new Pc(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
             Cpc search = new Cpc(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCLocal) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
             PcLocal search = new PcLocal(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCStableMax) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
             PcStableMax search = new PcStableMax(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
             if (score == null) {
                 throw new IllegalArgumentException("Score not set.");
@@ -474,7 +476,7 @@ public class Comparison2 {
             Fges search = new Fges(score);
             //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
@@ -489,11 +491,11 @@ public class Comparison2 {
             GFci search = new GFci(test, score);
             result.setResultGraph(search.search());
             result.setCorrectResult(new DagToPag2(trueDag).convert());
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.TsFCI) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            TsFci search = new TsFci(test);
+            SvarFci search = new SvarFci(test);
             IKnowledge knowledge = getKnowledge(trueDag);
             search.setKnowledge(knowledge);
             result.setResultGraph(search.search());
@@ -512,7 +514,7 @@ public class Comparison2 {
         return result;
     }
 
-//    private static Graph loadGraphFile(String graphFile) {
+    //    private static Graph loadGraphFile(String graphFile) {
 //        return null;
 //    }
 //

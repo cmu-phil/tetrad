@@ -44,7 +44,7 @@ final class GraphFileMenu extends JMenu {
         load.add(new LoadGraph(editable, "XML..."));
         load.add(new LoadGraphTxt(editable, "Text..."));
         load.add(new LoadGraphJson(editable, "Json..."));
-        
+
         JMenu save = new JMenu("Save...");
         add(save);
 

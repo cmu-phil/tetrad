@@ -66,7 +66,7 @@ import java.util.List;
 // They are for displaying the conditional probability tables
 // after updating an MlBayesIm.
 /////////////////////////////////////////////////////////////////////
-public class  UpdatedBayesImWizardObs extends JPanel {
+public class UpdatedBayesImWizardObs extends JPanel {
     private Evidence evidence;
     private GraphWorkbench workbench;
     private UpdaterWrapper updaterWrapper;

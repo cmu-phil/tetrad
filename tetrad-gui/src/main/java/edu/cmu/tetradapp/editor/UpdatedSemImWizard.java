@@ -64,7 +64,7 @@ final class UpdatedSemImWizard extends JPanel {
     private JPanel marginalsPanel;
 
     public UpdatedSemImWizard(SemUpdater semUpdater, GraphWorkbench workbench,
-            int tab, Node selectedNode) {
+                              int tab, Node selectedNode) {
         if (semUpdater == null) {
             throw new NullPointerException();
         }
@@ -161,8 +161,7 @@ final class UpdatedSemImWizard extends JPanel {
 
         if (selectedNode != null) {
             varNamesComboBox.setSelectedItem(selectedNode);
-        }
-        else {
+        } else {
             varNamesComboBox.setSelectedIndex(0);
             this.selectedNode = (Node) varNamesComboBox.getSelectedItem();
         }
@@ -334,8 +333,7 @@ final class UpdatedSemImWizard extends JPanel {
 
         if (owner == null) {
             setCurrentNodeSub(node);
-        }
-        else {
+        } else {
             new WatchedProcess(owner) {
                 public void watch() {
                     setCurrentNodeSub(node);

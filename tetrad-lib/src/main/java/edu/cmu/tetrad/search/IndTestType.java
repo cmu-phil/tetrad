@@ -65,7 +65,7 @@ public final class IndTestType implements TetradSerializable {
     public static final IndTestType FISHER = new IndTestType("Fisher (Fisher Z)", DataType.Continuous);
     public static final IndTestType TIPPETT = new IndTestType("Tippett (Fisher Z)", DataType.Continuous);
     public static final IndTestType MIXED_REGR_LRT = new IndTestType("Mixed Regression Likelihood Ratio Test",
-                DataType.Mixed);
+            DataType.Mixed);
     public static final IndTestType MIXED_CG_LRT
             = new IndTestType("Mixed Conditional Gaussian Likelihood Ratio Test", DataType.Mixed);
 

@@ -46,8 +46,8 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
     //============================CONSTRUCTORS============================//
 
     public PurifyRunner(DataWrapper dataWrapper,
-                          MeasurementModelWrapper mmWrapper,
-                          Parameters params) {
+                        MeasurementModelWrapper mmWrapper,
+                        Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         setClusters(mmWrapper.getClusters());
         params.set("clusters", mmWrapper.getClusters());
@@ -72,7 +72,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
 //    public PurifyRunner(BuildPureClustersRunner bpc, Parameters params) {
 //        super(bpc, params);
 //    }
-    
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -120,15 +120,13 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
             TestType sigTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
             test = new ContinuousTetradTest(covMatrix, sigTestType, alpha);
 //            sextadTest = new DeltaSextadTest(covMatrix);
-        }
-        else if (source instanceof DataSet) {
+        } else if (source instanceof DataSet) {
             DataSet data = (DataSet) source;
             double alpha = getParams().getDouble("alpha", 0.001);
             TestType sigTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
             test = new ContinuousTetradTest(data, sigTestType, alpha);
 //            sextadTest = new DeltaSextadTest(data);
-        }
-        else {
+        } else {
             throw new RuntimeException(
                     "Data source for Purify of invalid type!");
         }

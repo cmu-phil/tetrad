@@ -117,7 +117,6 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
                 "<br> Can also 'unlog' the data i.e., apply g(x) = exp(x) - a, or override the base"));
 
 
-
         Box b9 = Box.createHorizontalBox();
         b9.add(Box.createHorizontalGlue());
         b9.add(new JLabel("<html> base (use 0 for natural log and base <i>e</i>): </html>"));

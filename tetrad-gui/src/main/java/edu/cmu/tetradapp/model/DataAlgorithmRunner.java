@@ -46,7 +46,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
 
     /**
      * @param dataWrapper One or more data sets.
-     * @param params Parameters for doing the search.
+     * @param params      Parameters for doing the search.
      */
     public DataAlgorithmRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -54,7 +54,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
 
     /**
      * @param dataWrapper One or more data sets.
-     * @param params Parameters for doing the search.
+     * @param params      Parameters for doing the search.
      */
     public DataAlgorithmRunner(Simulation dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -62,7 +62,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
 
     /**
      * @param dataWrapper One or more data sets.
-     * @param params Parameters for doing the search.
+     * @param params      Parameters for doing the search.
      */
     public DataAlgorithmRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
@@ -70,7 +70,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
 
     /**
      * @param dataWrapper One or more data sets.
-     * @param params Parameters for doing the search.
+     * @param params      Parameters for doing the search.
      */
     public DataAlgorithmRunner(Simulation dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
@@ -78,7 +78,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
 
     /**
      * @param dataWrapper One or more data sets.
-     * @param params Parameters for doing the search.
+     * @param params      Parameters for doing the search.
      */
     public DataAlgorithmRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -87,7 +87,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
 
     /**
      * @param dataWrapper One or more data sets.
-     * @param params Parameters for doing the search.
+     * @param params      Parameters for doing the search.
      */
     public DataAlgorithmRunner(Simulation dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -96,7 +96,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
 
     /**
      * @param dataWrapper One or more data sets.
-     * @param params Parameters for doing the search.
+     * @param params      Parameters for doing the search.
      */
     public DataAlgorithmRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
@@ -105,7 +105,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
 
     /**
      * @param dataWrapper One or more data sets.
-     * @param params Parameters for doing the search.
+     * @param params      Parameters for doing the search.
      */
     public DataAlgorithmRunner(Simulation dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);

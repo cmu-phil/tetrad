@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.regression.RegressionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -41,7 +40,7 @@ public class ResidualsWrapper extends DataWrapper {
     /**
      * Constructs a new time series dataset.
      *
-     * @param data   - Previous data (from the parent node)
+     * @param data - Previous data (from the parent node)
      */
     public ResidualsWrapper(DataWrapper data, DagWrapper dagWrapper, Parameters params) {
         DataModelList list = data.getDataModelList();

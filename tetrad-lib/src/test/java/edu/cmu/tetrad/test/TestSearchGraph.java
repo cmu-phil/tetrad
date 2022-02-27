@@ -55,7 +55,7 @@ public final class TestSearchGraph {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(new Dag(GraphUtils.randomGraph(nodes1, 0, 7,
+        EdgeListGraph graph = new EdgeListGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 7,
                 30, 15, 15, true)));
 
         List<Node> nodes = graph.getNodes();
@@ -102,7 +102,7 @@ public final class TestSearchGraph {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(new Dag(GraphUtils.randomGraph(nodes1, 0, 14,
+        EdgeListGraph graph = new EdgeListGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 14,
                 30, 15, 15, true)));
 
         List<Node> nodes = graph.getNodes();
@@ -211,7 +211,7 @@ public final class TestSearchGraph {
         System.out.println("Per " + fas.getNumIndependenceTests() / (double) (stop - start));
     }
 
-    private boolean dConnected(Graph graph, String x, String y, String...z) {
+    private boolean dConnected(Graph graph, String x, String y, String... z) {
         Node _x = graph.getNode(x);
         Node _y = graph.getNode(y);
 
@@ -339,8 +339,7 @@ public final class TestSearchGraph {
             if (!graph.isAncestorOf(n2, n1)) {
                 graph.removeEdge(edge);
                 graph.addDirectedEdge(n1, n2);
-            }
-            else {
+            } else {
                 graph.removeEdge(edge);
                 graph.addDirectedEdge(n2, n1);
             }
@@ -405,7 +404,10 @@ public final class TestSearchGraph {
 
         for (int b = 0; b < n; b++) {
             count = weight(nodes, graph, count, b);
-            if (r <= count) {index = b; break;}
+            if (r <= count) {
+                index = b;
+                break;
+            }
         }
 
         return index;

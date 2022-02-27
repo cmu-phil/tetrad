@@ -208,7 +208,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
             Vector covxy = cov.getSelection(parents, new int[]{i}).getColumn(0);
             Vector b = covxxInv.times(covxy);
             residualVariance -= covxy.dotProduct(b);
-            lik += - (a / 2.0) * log(residualVariance) - (a / 2.0) - (a / 2.0) * log(2 * PI);
+            lik += -(a / 2.0) * log(residualVariance) - (a / 2.0) - (a / 2.0) * log(2 * PI);
         }
 
 //        System.out.println(lik);

@@ -121,7 +121,8 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
 
     /**
      * Constructs a new standardized SEM IM from the freeParameters in the given SEM IM.
-     *  @param im             Stop asking me for these things! The given SEM IM!!!
+     *
+     * @param im             Stop asking me for these things! The given SEM IM!!!
      * @param initialization CALCULATE_FROM_SEM if the initial values will be calculated from the given SEM IM;
      */
     public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) {

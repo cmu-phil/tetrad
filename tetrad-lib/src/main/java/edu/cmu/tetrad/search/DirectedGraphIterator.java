@@ -43,7 +43,7 @@ public class DirectedGraphIterator {
 
 
     /**
-     * The given graphs must be a pattern. If it does not consist entirely of directed and
+     * The given graphs must be a CPDAG. If it does not consist entirely of directed and
      * undirected edges and if it is not acyclic, it is rejected.
      *
      * @throws IllegalArgumentException if the graphs is not a graphs.
@@ -89,13 +89,13 @@ public class DirectedGraphIterator {
     }
 
     /**
-     * Successive calls to this method return successive DAGs in the pattern, in a more or less natural enumeration of
+     * Successive calls to this method return successive DAGs in the CPDAG, in a more or less natural enumeration of
      * them in which an arbitrary undirected edge is picked, oriented one way, Meek rules applied, then a remaining
      * unoriented edge is picked, oriented one way, and so on, until a DAG is obtained, and then by backtracking the
      * other orientation of each chosen edge is tried. Nonrecursive, obviously.
      * <p>
      *
-     * @return a Graph instead of a DAG because sometimes, due to faulty patterns, a cyclic graphs is produced, and the
+     * @return a Graph instead of a DAG because sometimes, due to faulty CPDAGs, a cyclic graphs is produced, and the
      * end-user may need to decide what to do with it. The simplest thing is to construct a DAG (Dag(graphs)) and catch
      * an exception.
      */
@@ -110,7 +110,7 @@ public class DirectedGraphIterator {
     }
 
     /**
-     * @return true just in case there is still a DAG remaining in the enumeration of DAGs for this pattern.
+     * @return true just in case there is still a DAG remaining in the enumeration of DAGs for this CPDAG.
      */
     public boolean hasNext() {
         return index + 1 < graphs.size();

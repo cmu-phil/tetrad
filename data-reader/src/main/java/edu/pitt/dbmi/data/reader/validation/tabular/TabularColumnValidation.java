@@ -21,11 +21,11 @@ package edu.pitt.dbmi.data.reader.validation.tabular;
 import edu.pitt.dbmi.data.reader.DataReader;
 import edu.pitt.dbmi.data.reader.validation.Validation;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+
 import java.util.List;
 import java.util.Set;
 
 /**
- *
  * Dec 12, 2018 2:34:56 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

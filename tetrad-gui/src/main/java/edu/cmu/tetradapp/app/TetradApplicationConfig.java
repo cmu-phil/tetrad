@@ -25,15 +25,16 @@ import edu.cmu.tetrad.util.DefaultTetradLoggerConfig;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradLoggerConfig;
 import edu.cmu.tetradapp.editor.ParameterEditor;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.util.*;
-import javax.swing.*;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
+
+import javax.swing.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.util.*;
 
 /**
  * Represents the configuration details for the Tetrad application.
@@ -100,6 +101,7 @@ public class TetradApplicationConfig {
     }
 
     //============================== Public Methods =====================================//
+
     /**
      * @return an instance of the session configuration.
      */
@@ -108,10 +110,9 @@ public class TetradApplicationConfig {
     }
 
     /**
+     * @param id - The id of the session config (e.g., "Graph" etc)
      * @return the <code>SessionNodeConfig</code> to be used for the given id,
      * or null if there isn't one defined for the given id.
-     *
-     * @param id - The id of the session config (e.g., "Graph" etc)
      */
     public SessionNodeConfig getSessionNodeConfig(String id) {
         return this.configs.get(id);
@@ -126,6 +127,7 @@ public class TetradApplicationConfig {
     }
 
     //============================== Private Methods ====================================//
+
     /**
      * Loads the configuration from the root element of the configuratin.xml
      * file. It is assumed that the document has been validated against its dtd
@@ -341,6 +343,7 @@ public class TetradApplicationConfig {
     }
 
     //============================== Inner classes =======================================//
+
     /**
      * Default implementation of the session config. Most functionality is
      * implemented by static methods from the outer-class.
@@ -479,7 +482,7 @@ public class TetradApplicationConfig {
         private String category;
 
         public DefaultModelConfig(Class model, Class params, Class paramsEditor, Class editor,
-                String name, String acronym, String help, String category
+                                  String name, String acronym, String help, String category
         ) {
             if (model == null || editor == null || name == null || acronym == null) {
                 throw new NullPointerException("Values must not be null");
@@ -552,7 +555,7 @@ public class TetradApplicationConfig {
             }
         }
 
-//        public Parameters getParametersInstance() {
+        //        public Parameters getParametersInstance() {
 //            if (this.params != null) {
 //                try {
 //                    return (Parameters) this.params.newInstance();

@@ -159,10 +159,10 @@ public class MVPLikelihood {
         double sigma2 = r.dotProduct(r) / n;
         double lik;
 
-        if(sigma2 < 0) {
+        if (sigma2 < 0) {
             Vector ones = new Vector(n);
-            for (int i = 0; i < n; i++) ones.set(i,1);
-            r = ones.scalarMult(ones.dotProduct(Y)/(double)Math.max(n,2)).minus(Y);
+            for (int i = 0; i < n; i++) ones.set(i, 1);
+            r = ones.scalarMult(ones.dotProduct(Y) / (double) Math.max(n, 2)).minus(Y);
             sigma2 = r.dotProduct(r) / n;
             lik = -(n / 2) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
         } else if (sigma2 == 0) {
@@ -172,7 +172,7 @@ public class MVPLikelihood {
         }
 
 
-        if(Double.isInfinite(lik) || Double.isNaN(lik)) {
+        if (Double.isInfinite(lik) || Double.isNaN(lik)) {
             System.out.println(lik);
         }
 
@@ -187,7 +187,7 @@ public class MVPLikelihood {
         Matrix P;
 
 
-        if(d >= n || X.columns() >= n) {
+        if (d >= n || X.columns() >= n) {
             Matrix ones = new Matrix(n, 1);
             for (int i = 0; i < n; i++) ones.set(i, 0, 1);
             P = ones.times(ones.transpose().times(Y).scalarMult(1 / (double) n));
@@ -222,7 +222,7 @@ public class MVPLikelihood {
             lik += Math.log(P.getRow(i).dotProduct(Y.getRow(i)));
         }
 
-        if(Double.isInfinite(lik) || Double.isNaN(lik)) {
+        if (Double.isInfinite(lik) || Double.isNaN(lik)) {
             System.out.println(lik);
         }
 
@@ -262,9 +262,9 @@ public class MVPLikelihood {
 
         for (List<Integer> cell : cells) {
 //            for (int[] cell : cells) {
-                int r = cell.size();
+            int r = cell.size();
 //                int r = cell.length;
-                if (r > 1) {
+            if (r > 1) {
 
                 double[] mean = new double[p];
                 double[] var = new double[p];
@@ -284,7 +284,9 @@ public class MVPLikelihood {
                 }
 
                 int degree = fDegree;
-                if (fDegree < 1) { degree = (int) Math.floor(Math.log(r)); }
+                if (fDegree < 1) {
+                    degree = (int) Math.floor(Math.log(r));
+                }
                 Matrix subset = new Matrix(r, p * degree + 1);
                 for (int i = 0; i < r; i++) {
                     subset.set(i, p * degree, 1);
@@ -346,11 +348,13 @@ public class MVPLikelihood {
         for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
 
         for (List<Integer> cell : cells) {
-                int r = cell.size();
-                if (r > 0) {
+            int r = cell.size();
+            if (r > 0) {
 
                 int degree = fDegree;
-                if (fDegree < 1) { degree = (int) Math.floor(Math.log(r)); }
+                if (fDegree < 1) {
+                    degree = (int) Math.floor(Math.log(r));
+                }
                 if (c instanceof ContinuousVariable) {
                     dof += degree * continuous_parents.size() + 1;
                 } else {
@@ -364,21 +368,25 @@ public class MVPLikelihood {
 
     public double getStructurePrior(int k) {
 
-        if (structurePrior < 0) { return getEBICprior(); }
+        if (structurePrior < 0) {
+            return getEBICprior();
+        }
 
         double n = dataSet.getNumColumns() - 1;
-        double p = structurePrior/n;
+        double p = structurePrior / n;
 
-        if (structurePrior == 0) { return 0; }
-        return k*Math.log(p) + (n - k)*Math.log(1 - p);
+        if (structurePrior == 0) {
+            return 0;
+        }
+        return k * Math.log(p) + (n - k) * Math.log(1 - p);
 
     }
 
     public double getEBICprior() {
 
-            double n = dataSet.getNumColumns();
-            double gamma = -structurePrior;
-            return gamma * Math.log(n);
+        double n = dataSet.getNumColumns();
+        double gamma = -structurePrior;
+        return gamma * Math.log(n);
 
     }
 

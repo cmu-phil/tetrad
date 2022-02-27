@@ -45,7 +45,7 @@ import java.text.NumberFormat;
  * @author Aaron Powers
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
- *         Bayes estimator
+ * Bayes estimator
  */
 class StructEmBayesSearchEditor extends JPanel {
 
@@ -58,7 +58,7 @@ class StructEmBayesSearchEditor extends JPanel {
      * Constructs a new instanted model editor from a Bayes IM.
      */
     private StructEmBayesSearchEditor(BayesIm bayesIm,
-            DataSet dataSet) {
+                                      DataSet dataSet) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }

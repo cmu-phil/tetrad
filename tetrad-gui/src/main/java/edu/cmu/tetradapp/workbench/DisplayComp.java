@@ -27,7 +27,9 @@ package edu.cmu.tetradapp.workbench;
  */
 public interface DisplayComp {
     void setName(String name);
+
     boolean contains(int x, int y);
+
     void setSelected(boolean selected);
 }
 

@@ -26,14 +26,14 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.util.prefs.Preferences;
-import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
 
 /**
  * Saves a session from a file.
@@ -80,7 +80,7 @@ final class SaveSessionAsAction extends AbstractAction {
             this.saved = false;
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Another session by that name is currently open. Please "
-                    + "\nclose that session first.");
+                            + "\nclose that session first.");
             return;
         }
 

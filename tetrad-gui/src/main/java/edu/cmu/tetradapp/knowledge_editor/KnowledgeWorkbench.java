@@ -90,8 +90,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("resetGraph".equals(evt.getPropertyName())) {
                     setGraph(getGraph());
-                }
-                else if ("editingValueChanged".equals(evt.getPropertyName())) {
+                } else if ("editingValueChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
@@ -119,7 +118,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
             case REQUIRED_EDGE:
                 return new KnowledgeModelEdge(_node1, _node2,
                         KnowledgeModelEdge.REQUIRED);
-            default :
+            default:
                 throw new IllegalStateException();
         }
     }
@@ -166,7 +165,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
             case REQUIRED_EDGE:
                 return new KnowledgeDisplayEdge(node, mouseLoc,
                         KnowledgeDisplayEdge.REQUIRED);
-            default :
+            default:
                 throw new IllegalStateException();
         }
     }
@@ -210,7 +209,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
             case REQUIRED_EDGE:
                 this.edgeMode = edgeMode;
                 break;
-            default :
+            default:
                 throw new IllegalArgumentException();
         }
     }

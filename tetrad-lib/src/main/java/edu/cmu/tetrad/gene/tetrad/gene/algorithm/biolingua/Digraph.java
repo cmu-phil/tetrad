@@ -24,13 +24,11 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 /**
  * Simple implementation of a directed Graph.  edges are just represented by
  * float values (a zero == no edge) stored in a matrix.
- *
+ * <p>
  * Two edges of different orientation can exist between two nodes, but no more than
  * one edge of a given orientation can exist between two nodes.
  *
- *
- * @author
- * <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
+ * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
 
@@ -109,8 +107,7 @@ public class Digraph extends BasicGraph {
         if ((e == 0.0) && (value != 0.0)) {
             this.nEdges++;
             this.nParents[j]++;
-        }
-        else {
+        } else {
             if ((e != 0.0) && (value == 0.0)) {
                 this.nEdges--;
                 this.nParents[j]--;

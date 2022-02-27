@@ -1,9 +1,11 @@
 package edu.pitt.csb.mgm;
-import java.util.Arrays;
+
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.NonSquareMatrixException;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
+
+import java.util.Arrays;
 
 
 /**
@@ -18,20 +20,33 @@ import org.apache.commons.math3.util.FastMath;
  * EigenDecomposition eigen decomposition}. This class is therefore intended for internal
  * use by the library and is not public. As a consequence of this explicitly limited scope,
  * many methods directly returns references to internal arrays, not copies.</p>
+ *
  * @since 2.0
  */
 class TriDiagonalTransformer {
-    /** Householder vectors. */
+    /**
+     * Householder vectors.
+     */
     private final double householderVectors[][];
-    /** Main diagonal. */
+    /**
+     * Main diagonal.
+     */
     private final double[] main;
-    /** Secondary diagonal. */
+    /**
+     * Secondary diagonal.
+     */
     private final double[] secondary;
-    /** Cached value of Q. */
+    /**
+     * Cached value of Q.
+     */
     private RealMatrix cachedQ;
-    /** Cached value of Qt. */
+    /**
+     * Cached value of Qt.
+     */
     private RealMatrix cachedQt;
-    /** Cached value of T. */
+    /**
+     * Cached value of T.
+     */
     private RealMatrix cachedT;
 
     /**
@@ -50,11 +65,11 @@ class TriDiagonalTransformer {
 
         final int m = matrix.getRowDimension();
         householderVectors = matrix.getData();
-        main      = new double[m];
+        main = new double[m];
         secondary = new double[m - 1];
-        cachedQ   = null;
-        cachedQt  = null;
-        cachedT   = null;
+        cachedQ = null;
+        cachedQt = null;
+        cachedT = null;
 
         // transform matrix
         transform();
@@ -63,6 +78,7 @@ class TriDiagonalTransformer {
     /**
      * Returns the matrix Q of the transform.
      * <p>Q is an orthogonal matrix, i.e. its transpose is also its inverse.</p>
+     *
      * @return the Q matrix
      */
     public RealMatrix getQ() {
@@ -75,6 +91,7 @@ class TriDiagonalTransformer {
     /**
      * Returns the transpose of the matrix Q of the transform.
      * <p>Q is an orthogonal matrix, i.e. its transpose is also its inverse.</p>
+     *
      * @return the Q matrix
      */
     public RealMatrix getQT() {
@@ -116,6 +133,7 @@ class TriDiagonalTransformer {
 
     /**
      * Returns the tridiagonal matrix T of the transform.
+     *
      * @return the T matrix
      */
     public RealMatrix getT() {
@@ -142,6 +160,7 @@ class TriDiagonalTransformer {
      * Get the Householder vectors of the transform.
      * <p>Note that since this class is only intended for internal use,
      * it returns directly a reference to its internal arrays, not a copy.</p>
+     *
      * @return the main diagonal elements of the B matrix
      */
     double[][] getHouseholderVectorsRef() {
@@ -152,6 +171,7 @@ class TriDiagonalTransformer {
      * Get the main diagonal elements of the matrix T of the transform.
      * <p>Note that since this class is only intended for internal use,
      * it returns directly a reference to its internal arrays, not a copy.</p>
+     *
      * @return the main diagonal elements of the T matrix
      */
     double[] getMainDiagonalRef() {
@@ -162,6 +182,7 @@ class TriDiagonalTransformer {
      * Get the secondary diagonal elements of the matrix T of the transform.
      * <p>Note that since this class is only intended for internal use,
      * it returns directly a reference to its internal arrays, not a copy.</p>
+     *
      * @return the secondary diagonal elements of the T matrix
      */
     double[] getSecondaryDiagonalRef() {
@@ -204,7 +225,7 @@ class TriDiagonalTransformer {
                     double zI = hI[i] * hKI;
                     for (int j = i + 1; j < m; ++j) {
                         final double hIJ = hI[j];
-                        zI   += hIJ * hK[j];
+                        zI += hIJ * hK[j];
                         z[j] += hIJ * hKI;
                     }
                     z[i] = beta * (z[i] + zI);

@@ -46,7 +46,7 @@ public class MNLRScore implements Score {
 
     public MNLRScore(DataSet dataSet, double structurePrior, int fDegree) {
 
-            if (dataSet == null) {
+        if (dataSet == null) {
             throw new NullPointerException();
         }
 

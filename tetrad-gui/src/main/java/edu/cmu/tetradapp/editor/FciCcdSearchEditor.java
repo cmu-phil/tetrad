@@ -25,9 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.IndTestType;
-import edu.cmu.tetrad.search.PatternToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -47,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Edits some algorithm to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket CPDAGs.
  *
  * @author Joseph Ramsey
  */
@@ -78,19 +76,21 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         super(runner, "Result allow_latent_common_causes");
     }
 
-    public FciCcdSearchEditor(TsFciRunner runner) {
+    public FciCcdSearchEditor(SvarFciRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
 
-    public FciCcdSearchEditor(TsGFciRunner runner) {
+    public FciCcdSearchEditor(SvarGFciRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
+
     /**
      * Opens up an editor to let the user view the given CcdRunner.
      */
     public FciCcdSearchEditor(CcdRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
+
     public FciCcdSearchEditor(CcdRunner2 runner) {
         super(runner, "Result allow_latent_common_causes");
     }
@@ -103,6 +103,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
+
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }
@@ -184,7 +185,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         JMenu graph = new JMenu("Graph");
         JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");
@@ -200,7 +201,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         graph.addSeparator();
 
 //        graph.add(meekOrient);
-        graph.add(dagInPattern);
+        graph.add(dagInCPDAG);
         graph.add(gesOrient);
         graph.addSeparator();
 
@@ -223,7 +224,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
                 new WatchedProcess(owner) {
                     public void watch() {
 
-                        // Needs to be a pattern search; this isn't checked
+                        // Needs to be a CPDAG search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
                         AlgorithmRunner runner = getAlgorithmRunner();
@@ -251,7 +252,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
 //                            editorWindow.setVisible(true);
 //                        }
 //                        else {
-                        PatternDisplay display = new PatternDisplay(graph);
+                        CPDAGDisplay display = new CPDAGDisplay(graph);
                         GraphWorkbench workbench = getWorkbench();
 
                         EditorWindow editorWindow =
@@ -276,19 +277,18 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
 //            }
 //        });
 
-        dagInPattern.addActionListener(new ActionListener() {
+        dagInCPDAG.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Graph graph = new EdgeListGraph(getGraph());
 
-                // Removing bidirected edges from the pattern before selecting a DAG.                                   4
+                // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
                 for (Edge edge : graph.getEdges()) {
                     if (Edges.isBidirectedEdge(edge)) {
                         graph.removeEdge(edge);
                     }
                 }
 
-                PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(graph));
-                Graph dag = search.patternToDagMeek();
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);

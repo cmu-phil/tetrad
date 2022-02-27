@@ -66,7 +66,7 @@ public class ShiftSearch {
         List<Node> nodes = dataSets.get(0).getVariables();
         int[] shifts;
         int[] bestshifts = new int[numVars];
-        int maxNumRows = ((DataSet)dataSets.get(0)).getNumRows() - maxShift;
+        int maxNumRows = ((DataSet) dataSets.get(0)).getNumRows() - maxShift;
 
         double b = getAvgBic(dataSets);
 
@@ -80,7 +80,7 @@ public class ShiftSearch {
             shifts = new int[nodes.size()];
 
             double zSize = Math.pow(getMaxShift(), choice.length);
-            int iIndex = dataSets.get(0).getVariables().indexOf(((DataSet)dataSets.get(0)).getVariable("I"));
+            int iIndex = dataSets.get(0).getVariables().indexOf(((DataSet) dataSets.get(0)).getVariable("I"));
 
             Z:
             for (int z = 0; z < zSize; z++) {
@@ -88,9 +88,10 @@ public class ShiftSearch {
 
                 int _z = z;
 
-                for (int i = 0; i < choice.length; i++) {                    if (choice[i] == iIndex) {
-                    continue;
-                }
+                for (int i = 0; i < choice.length; i++) {
+                    if (choice[i] == iIndex) {
+                        continue;
+                    }
 
                     shifts[choice[i]] = (_z % (getMaxShift()) + 1);
 
@@ -145,7 +146,7 @@ public class ShiftSearch {
         List<DataModel> shiftedDataSets2 = new ArrayList<>();
 
         for (DataModel dataSet : dataSets) {
-            DataSet shiftedData = TimeSeriesUtils.createShiftedData((DataSet)dataSet, shifts);
+            DataSet shiftedData = TimeSeriesUtils.createShiftedData((DataSet) dataSet, shifts);
             shiftedDataSets2.add(shiftedData);
         }
 

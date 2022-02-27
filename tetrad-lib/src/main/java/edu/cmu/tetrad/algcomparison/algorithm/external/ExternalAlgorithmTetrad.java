@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -13,8 +12,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An API to allow results from external algorithms to be included in a report through the algrorithm
@@ -46,13 +43,13 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ExternalAlgorithmTetrad extends ExternalAlgorithm  {
+public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
     private String shortDescription = null;
 
 
-    public  ExternalAlgorithmTetrad(String extDir) {
+    public ExternalAlgorithmTetrad(String extDir) {
         this.extDir = extDir;
         this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
@@ -75,7 +72,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm  {
     }
 
     /**
-     * Returns the pattern of the supplied DAG.
+     * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
@@ -96,7 +93,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm  {
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);
 
-        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex +  1) + "/graph." + index + ".txt");
+        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
 
         System.out.println(file.getAbsolutePath());
 

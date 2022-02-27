@@ -250,9 +250,9 @@
         <li>Degree (displays the selected nodes and their parents and children)</li>
     </ul>
 
-    <h3>Choose DAG in Pattern</h3>
+    <h3>Choose DAG in CPDAG</h3>
 
-    <p>If given a pattern as input, this chooses a random DAG from the Markov equivalence class of the pattern to
+    <p>If given a CPDAG as input, this chooses a random DAG from the Markov equivalence class of the CPDAG to
         display. The resulting DAG functions as a normal graph box.</p>
 
     <h3>Choose MAG in PAG</h3>
@@ -260,16 +260,16 @@
     <p>If given a partial ancestral graph (PAG) as input, this chooses a random mixed ancestral graph (MAG) from the
         equivalence class of the PAG to display. The resulting MAG functions as a normal graph box.</p>
 
-    <h3>Show DAGs in Pattern</h3>
+    <h3>Show DAGs in CPDAG</h3>
 
-    <p>If given a pattern as input, this displays all DAGs in the pattern’s Markov equivalence class. Each DAG is
+    <p>If given a CPDAG as input, this displays all DAGs in the CPDAG’s Markov equivalence class. Each DAG is
         displayed in its own tab. Most graph box functionality is not available in this type of graph box, but the DAG
         currently on display can be copied by clicking “Copy Selected Graph.”</p>
 
-    <h3>Generate Pattern from DAG</h3>
+    <h3>Generate CPDAG from DAG</h3>
 
-    <p>If given a DAG as input, this displays the pattern of the Markov equivalence class to which the parent graph
-        belongs. The resulting pattern functions as a normal graph box.</p>
+    <p>If given a DAG as input, this displays the CPDAG of the Markov equivalence class to which the parent graph
+        belongs. The resulting CPDAG functions as a normal graph box.</p>
 
     <h3>Generate PAG from DAG</h3>
 
@@ -769,8 +769,8 @@
 
     <p>Using this box, you can specify the ranges of values from which you want coefficients, covariances, and variances
         to be drawn for the parameters in the model. In the above box, for example, all linear coefficients will be
-        between -1.5 and -0.5 or 0.5 and 1.5. If you uncheck “symmetric about zero,” they will only be between 0.5 and
-        1.5.</p>
+        between -1.0 and 1.0. If you uncheck “symmetric about zero,” they will only be between 0.0 and
+        1.0.</p>
 
     <p>Here is an example of a SEM PM and a SEM IM generated from it using the default settings: </p>
 
@@ -1958,7 +1958,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>The search box takes as input a data set (in either a data or simulation box) and optionally a knowledge box, and
         searches for causal explanations represented by directed graphs. The result of a search is not necessarily—and
-        not usually—a unique graph, but an object such as a pattern that represents a set of graphs, usually a Markov
+        not usually—a unique graph, but an object such as a CPDAG that represents a set of graphs, usually a Markov
         Equivalence class. More alternatives can be found by varying the parameters of search algorithms.</p>
 
     <h2>Possible Parent Boxes of the Search Box</h2>
@@ -2002,7 +2002,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>Choosing the correct algorithm for your needs is an important consideration. Tetrad provides over 30 search
         algorithms (and more are added all of the time) each of which makes different assumptions about the input data,
         uses different parameters, and produces different kinds of output. For instance, some algorithms produce Markov
-        blankets or patterns, and some produce full graphs; some algorithms work best with Gaussian or non-Gaussian
+        blankets or CPDAGs, and some produce full graphs; some algorithms work best with Gaussian or non-Gaussian
         data; some algorithms require an alpha value, some require a penalty discount, and some require both or neither.
         You can narrow down the list using the “Algorithm filter" panel, which allows you to limit the provided
         algorithms according to whichever factor is important to you.</p>
@@ -2027,7 +2027,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="pc-all">
 
-        <p>PC algorithm (Spirtes and Glymour, Social Science Computer Review, 1991) is a pattern search which assumes
+        <p>PC algorithm (Spirtes and Glymour, Social Science Computer Review, 1991) is a CPDAG search which assumes
             that the underlying causal structure of the input data is acyclic, and that no two variables are caused by
             the same latent (unmeasured) variable. In addition, it is assumed that the input data set is either entirely
             continuous or entirely discrete; if the data set is continuous, it is assumed that the causal relation
@@ -2040,7 +2040,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
         <p>The PC algorithm is correct whenever decision procedures for independence and conditional independence are
             available. The procedure conducts a sequence of independence and conditional independence tests, and
-            efficiently builds a pattern from the results of those tests. As implemented in TETRAD, PC is intended for
+            efficiently builds a CPDAG from the results of those tests. As implemented in TETRAD, PC is intended for
             multinomial and approximately Normal distributions with i.i.d. data. The tests have an alpha value for
             rejecting the null hypothesis, which is always a hypothesis of independence or conditional independence. For
             continuous variables, PC uses tests of zero correlation or zero partial correlation for independence or
@@ -2061,9 +2061,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>The graph outputs a pattern (or CP-DAG). This is an equivalence class of directed acyclic graphs (DAGs). Each DAG
-        in the equivalence class has all of the adjacencies (and no more) of the pattern. Each oriented edge in the
-        pattern is so oriented in each of the DAG in the equivalence class. Unoriented edges in the equivalence class
+    <p>The graph outputs a CPDAG. This is an equivalence class of directed acyclic graphs (DAGs). Each DAG
+        in the equivalence class has all of the adjacencies (and no more) of the CPDAG. Each oriented edge in the
+        CPDAG is so oriented in each of the DAG in the equivalence class. Unoriented edges in the equivalence class
         cannot be oriented by conditional independence facts. For example, if the model is X->Y->Z, the output will be
         X—Y—Z. There are not collider in this model, so the algorithm will not detect one. Since there are not
         colliders, the Meek cannot orient additional edges. If the model were X<-Y<-Z, the output would also be X—Y—Z;
@@ -2087,13 +2087,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             conditional on S. The CPC algorithm considers all possible such sets and records the set on which X is
             conditionally independent of Z. If all of these sets contain Y, it orients X—Y—Z as a noncollider. If none
             of them contains Z, if orient X—Y—Z as a collider. If some contain Z but other don’t, it marks it as
-            ambiguous, with an underline. Thus, the output is ambiguous between patterns; in order to get a specific
-            pattern out of the output, one needs first to decide whether the underlined triples are colliders or
+            ambiguous, with an underline. Thus, the output is ambiguous between CPDAGs; in order to get a specific
+            CPDAG out of the output, one needs first to decide whether the underlined triples are colliders or
             noncolliders and then to apply the orientation rules in Meek (1997).</p>
 
         <p>The PC algorithm is correct whenever decision procedures for independence and conditional independence are
             available. The procedure conducts a sequence of independence and conditional independence tests, and
-            efficiently builds a pattern from the results of those tests. As implemented in TETRAD, PC is intended for
+            efficiently builds a CPDAG from the results of those tests. As implemented in TETRAD, PC is intended for
             multinomial and approximately Normal distributions with i.i.d. data. The tests have an alpha value for
             rejecting the null hypothesis, which is always a hypothesis of independence or conditional independence. For
             continuous variables, PC uses tests of zero correlation or zero partial correlation for independence or
@@ -2111,7 +2111,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>An e-pattern (extended pattern), consistent of directed and undirected edges where some of the triple may have
+    <p>An e-CPDAG (extended CPDAG), consistent of directed and undirected edges where some of the triple may have
         been marked with underlines to indicate ambiguity, as above. It may be that bidirected edges are oriented as
         X->Y<->X<-W if two adjacent colliders are oriented; this is not ruled out.</p>
 
@@ -2169,7 +2169,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>Same as for CPC (an e-pattern).</p>
+    <p>Same as for CPC (an e-CPDAG).</p>
 
     <h4>Parameters</h4>
 
@@ -2189,7 +2189,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             and pick the set S’ that yields the highest such p-value. Then orient X->Y<-Z if S does not contain Y and
             X—Y—Z otherwise. This orients all unshielded triples. It’s possible (though rare) that adjacent triples both
             be oriented as 2-cycles, X->Y<->Z<-W. If this happens, pick one of the other of these triples or orient
-            as a collider, arbitrarily. This guarantees that the resulting graph will be a pattern.</p>
+            as a collider, arbitrarily. This guarantees that the resulting graph will be a CPDAG.</p>
 
     </div>
 
@@ -2199,7 +2199,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>Same as PC, a pattern.</p>
+    <p>Same as PC, a CPDAG.</p>
 
     <h4>Parameters</h4>
 
@@ -2247,7 +2247,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>A pattern, same as PC.</p>
+    <p>A CPDAG, same as PC.</p>
 
 
     <h4>Parameters</h4>
@@ -2277,7 +2277,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>A pattern, interpreted as a common model for all datasets.</p>
+    <p>A CPDAG, interpreted as a common model for all datasets.</p>
 
     <h4>Parameters</h4>
 
@@ -2305,7 +2305,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>A pattern, interpreted as a common model for all datasets.</p>
+    <p>A CPDAG, interpreted as a common model for all datasets.</p>
 
     <h4>Parameters</h4>
 
@@ -2458,17 +2458,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and FGES (see CCD-FGES et al., 2016).</p>
 
 
-    <h3>The TsFCI Algorithm</h3>
+    <h3>The SvarFCI Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="ts-fci">
+    <div id="svar-fci">
 
-        <p>The tsFCI algorithm is a version of FCI for time series data. See the FCI documentation for a description
+        <p>The SvarFCI algorithm is a version of FCI for time series data. See the FCI documentation for a description
             of the FCI algorithm,
             which allows for unmeasured (hidden, latent) variables in the data-generating process and produces a PAG
             (partial ancestral graph).
-            tsFCI takes as input a “time lag data set,” i.e., a data set which includes time series observations of
+            svarFCI takes as input a “time lag data set,” i.e., a data set which includes time series observations of
             variables X1, X2, X3, ...,
             and their lags X1:1, X2:1, X3:1, ..., X1:2, X2:2,X3:2, ... and so on. X1:n is the nth-lag of the variable
             X1.
@@ -2494,19 +2494,19 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p><a href="#alpha">alpha</a></p>
 
 
-    <h3>The TsGFCI Algorithm</h3>
+    <h3>The SvarGFCI Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="ts-gfci">
+    <div id="svar-gfci">
 
-        <p>tsGFCI uses a BIC score to search for a skeleton. Thus, the only user-specified parameter is an optional
+        <p>SvarGFCI uses a BIC score to search for a skeleton. Thus, the only user-specified parameter is an optional
             “penalty score” to bias the search
             in favor of more sparse models. See the description of the GES algorithm for discussion of the penalty
             score.
             For the traditional definition of the BIC score, set the penalty to 1.0. The orientation rules are the same
             as for FCI.
-            As is the case with tsFCI, tsGFCI will automatically respect the time order of the variables and impose a
+            As is the case with SvarFCI, SvarFCI will automatically respect the time order of the variables and impose a
             repeating structure.
             Firstly, it puts lagged variables in appropriate tiers so, e.g., X3:2 can cause X3:1 and X3 but X3:1 cannot
             cause X3:2 and X3 cannot cause either X3:1 or X3:2.
@@ -2531,27 +2531,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and FGES (see CCD-FGES et al., 2016).</p>
 
-
-    <h3>The TsIMaGES Algorithm</h3>
-
-    <h4>Description</h4>
-
-    <div id="ts-imgs">
-
-        <p>tsIMAGES is a version of tsGFCI which averages BIC scores across multiple data sets. Thus, it is used to
-            search for a PAG (partial ancestral graph)
-            from time series data from multiple units (subjects, countries, etc). tsIMAGES allows both for unmeasured
-            (hidden, latent) variables
-            and the possibility that different subjects have different causal parameters, though they share the
-            same qualitative causal structure. As with IMAGES, the user can specify a “penalty score” to produce more
-            sparse models.
-            For the traditional definition of the BIC score, set the penalty to 1.0.
-            See the documentation for IMAGES and tsGFCI.
-
-        </p>
-
-    </div>
-
     <h4>Input Assumptions</h4>
 
     <p>The (continuous) data has been generated by a time series.</p>
@@ -2575,7 +2554,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             In the interface, just one target may be specified. See Ramsey et al., 2017 for details. In the general
             case,
             finding the graph over the Markov blanket variables of a target (including the target) is far faster than
-            finding the pattern for all of the variables.</p>
+            finding the CPDAG for all of the variables.</p>
 
     </div>
 
@@ -2588,7 +2567,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>A graph over a selected group of nodes that includes the target and each node in the Markov blanket of the
         target.
         This will be the same as if FGES were run and the result restricted to just these variables,
-        so some edges may be oriented in the returned graph that may not have been oriented in a pattern over the
+        so some edges may be oriented in the returned graph that may not have been oriented in a CPDAG over the
         selected nodes.</p>
 
     <h4>Parameters</h4>
@@ -2607,7 +2586,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             of FGES.
             The rules of the PC search are restricted to just the variables in the Markov blanket of a target T,
             including T;
-            the result is a graph that is a pattern over these variables.</p>
+            the result is a graph that is a CPDAG over these variables.</p>
 
     </div>
 
@@ -2617,7 +2596,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Output Format</h4>
 
-    <p>A pattern over a selected group of nodes that includes the target and each node in the Markov blanket of the
+    <p>A CPDAG over a selected group of nodes that includes the target and each node in the Markov blanket of the
         target.</p>
 
     <h4>Parameters</h4>
@@ -2681,6 +2660,87 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#mgmParam1">mgmParam1</a>, <a href="#mgmParam2">mgmParam2</a>, <a href="#mgmParam3">mgmParam3</a></p>
 
+    <h3>The GRaSP Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="grasp">
+
+        <p>
+            GRaSP (Greedy Relations of Sparsest Permutation) is an algorithm that generalizes and extends the GSP
+            (Greedy Sparsest Permutation) algorithm. Is generalizes specifically the algorithms TSP (or which GSP is a
+            bounded and iterated version) and ESP (Solus et al., 2017) by allowing those algorithms to equivalently be
+            run by selecting particular parameterizations of GrASP, where ESP enlarges the search space of GSP. The
+            implementation given for ESP renders that algorithm tractable. By choosing other parameterizations of GRaSP,
+            it is possible to further enlarge the search space even over and above that of ESP to render the algorithm
+            significantly more accurate. In all cases, these algorithms come back quickly enough to analyze accurately
+            sparse problems of up to 300 variables and denser problems with up to about 100 variables.
+        <p>
+            The parameters are as follows:
+        <p>
+            graspDepth - This controls the overall recursion depth for a depth first search.
+        <p>
+            graspUncoveredDepth - This controls the depth to which uncovered edges (that is, edges X->Y such that
+            parents(X) != parents(Y) \ {X}) are explored.
+        <p>
+            graspSingularDepth - This controls the depth at which single tucks sets only (essentially changes of
+            permutation where one variable is placed before another in the permutation order) are considered.
+        <p>
+            numRestarts - By default 1; if > 1, additional random restarts are done, and the best of these results is
+            returned.
+        <p>
+            TSP corresponds to uncovered depth 0, singular depth 0. ESP corresponds to uncovered depth > 0, singular
+            depth = 0. GRaSP corresponds to uncovered depth > 0, singular depth > 0. In each case, an ordering option is
+            available to find best permutations from lower levels before proceeding to higher levels.
+        <p>
+            The algorithms works by building DAGs given permutations in ways similar to those described in Raskutti and
+            Uhler (ref?) and Solus et al. Two ways of building DAGs are considered, one due to Verma and Pearl and
+            another novel method, using the Grow-Shrink (GS) method (Margaritis and Thrun, 1999). If the Pearl method is
+            selected, an independence test will be used; if the GS method is selected, a score will be used, so both a
+            test and a score need to be supplied so that this choice can be made.
+        <p>
+            We recommend that the user turn on logging to watch the progress of the algorithm; this helps with larger
+            searches especially.
+        <p>
+            Knowledge of forbidden edges may be used with GRaSP; currently knowledge of required edges is not
+            implemented.
+        <p>
+            Dimitris Margaritis and Sebastian Thrun. Bayesian network induction via local neighborhoods. Advances in
+            neural information processing systems, 12, 1999.
+        <p>
+            Raskutti, G., & Uhler, C. (2018). Learning directed acyclic graph models based on sparsest permutations.
+            Stat, 7(1), e183.
+        <p>
+            Solus, L., Wang, Y., Matejovicova, L., & Uhler, C. (2017). Consistency guarantees for permutation-based
+            causal inference algorithms. arXiv preprint arXiv:1702.03530. </p>
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Causal sufficiency</p>
+
+    <h4>Output Format</h4>
+
+    <p>The CPDAG equivalence class of DAGs representing estimated possible causal structures over the set of
+        variables.</p>
+
+    <h4>Parameters</h4>
+
+    <p>
+        <a href="#graspDepth">graspDepth</a>,
+        <a href="#graspNonSingularDepth">graspNonSingularDepth</a>
+        <a href="#graspUncoveredDepth">graspUncoveredDepth</a>
+        <a href="#graspOrderedAlg">graspOrderedAlg</a>
+        <a href="#graspUseVermaPearl">graspUseVermaPearl</a>
+        <a href="#verbose">verbose</a>
+        <a href="#numStarts">numStarts</a>
+
+    </p>
+
+    // Parameters
+    params.add(Params.NUM_STARTS);
+    params.add(Params.GRASP_DEPTH);
 
     <h3>The GLASSO Algorithm</h3>
 
@@ -2718,10 +2778,10 @@ The idea is this. There is a set of latent (unmeasured) variables over which a d
 Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is,
 measured variables that are all children of L.
 Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
-There is a theorem to the effect that if certain patterns of these tetrad constraints hold,
+There is a theorem to the effect that if certain CPDAGs of these tetrad constraints hold,
 there must be a latent common cause of all of them (the Tetrad Representation Theorem, see Silva et al., 2003,
 where the BPC (“Build Pure Clusters”) algorithm is defined and discussed.) Moreover, once one has such a “measurement model,”
-once can estimate a covariance matrix over the latent variables that are parents of the measures and use some algorithm such as PC or GES to estimate a pattern over the latents.
+once can estimate a covariance matrix over the latent variables that are parents of the measures and use some algorithm such as PC or GES to estimate a CPDAG over the latents.
 The algorithm to run PC or GES on this covariance matrix is called MimBuild (“MIM” is the the graph, Multiple Indicator Model; “Build” means build).
 In this way, one may recover causal structure over the latents. The more measures one has for each latent, the better the result is, generally.
 The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called “impurities”—that is,
@@ -2737,7 +2797,7 @@ The algorithm will in effect remove one measure in each impure pair from conside
 <h4>Output Format</h4>
 
 <p>For BPC, a measurement model, in the above sense. This is represented as a clustering of variables; it may be inferred that
-there is a single latent for each output cluster. For MimBuild, a pattern over the latent variables, one for each cluster.</p>
+there is a single latent for each output cluster. For MimBuild, a CPDAG over the latent variables, one for each cluster.</p>
 
 <h4>Parameters</h4>
 
@@ -2758,7 +2818,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             variable—that is,
             measured variables that are all children of L.
             Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
-            There is a theorem to the effect that if certain patterns of these tetrad constraints hold,
+            There is a theorem to the effect that if certain CPDAGs of these tetrad constraints hold,
             there must be a latent common cause of all of them (the Tetrad Representation Theorem).
             The FOFC (Find One Factor Clusters) takes advantage of this fact. The basic idea is to build up clusters one
             at a time by adding variables that keep them pure in the sense that all relevant tetrad constraints still
@@ -2771,7 +2831,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             In general, GAP is more accurate. The result is a clustering of variables.
             Once one has such a “measurement model, one can estimate (using the ESTIMATOR box) a covariance matrix over
             the latent variables that are parents of the
-            measures and use some algorithm such as PC or GES to estimate a pattern over the latent variables. The
+            measures and use some algorithm such as PC or GES to estimate a CPDAG over the latent variables. The
             algorithm to run PC or GES on this covariance matrix is
             called MimBuild (“MIM” is the graph, Multiple Indicator Model; “Build” means build). MimBUILD is an optional
             choice inside FOFC
@@ -3458,7 +3518,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Short Description: <span id="coefHigh_short_desc">High end of coefficient range (min = 0.0)</span></li>
             <li>Long Description: <span id="coefHigh_long_desc">When simulating data from linear models, one needs to specify the distribution of the coefficient parameters. Here, we draw coefficients from U(-m2, -m1) U U(m1, m2); m2 is what is being called the “high end of the coefficient range” and must be greater than m1.</span>
             </li>
-            <li>Default Value: <span id="coefHigh_default_value">0.7</span></li>
+            <li>Default Value: <span id="coefHigh_default_value">1.0</span></li>
             <li>Lower Bound: <span id="coefHigh_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="coefHigh_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="coefHigh_value_type">Double</span></li>
@@ -3469,7 +3529,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
             <li>Short Description: <span id="coefLow_short_desc">Low end of coefficient range (min = 0.0)</span></li>
             <li>Long Description: <span id="coefLow_long_desc">When simulating data from linear models, one needs to specify the distribution of the coefficient parameters. Here, we draw coefficients from U(-m2, -m1) U U(m1, m2); m1 is what is being called the “low end of the coefficient range” and has a minimum value of 0.</span>
             </li>
-            <li>Default Value: <span id="coefLow_default_value">0.2</span></li>
+            <li>Default Value: <span id="coefLow_default_value">0.0</span></li>
             <li>Lower Bound: <span id="coefLow_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="coefLow_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="coefLow_value_type">Double</span></li>
@@ -3549,7 +3609,7 @@ there is a single latent for each output cluster. For MimBuild, a pattern over t
         <h3 id="covHigh" class="parameter_description">covHigh</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="covHigh_short_desc">High end of covariance range (min = 0.0)</span></li>
-            <li>Long Description: <span id="covHigh_long_desc">When simulating data from linear models, one needs to specify the distribution of the covariance parameters. Here, we draw coefficients from U(-c2, -c1) U U(c1, c2); c2 is what is being called the “high end of the covariance range” and must be greater  than c1. The default value is 1.5.</span>
+            <li>Long Description: <span id="covHigh_long_desc">When simulating data from linear models, one needs to specify the distribution of the covariance parameters. Here, we draw coefficients from U(-c2, -c1) U U(c1, c2); c2 is what is being called the “high end of the covariance range” and must be greater  than c1. The default value is 1.0.</span>
             </li>
             <li>Default Value: <span id="covHigh_default_value">0.0</span></li>
             <li>Lower Bound: <span id="covHigh_lower_bound">0.0</span></li>
@@ -3708,6 +3768,22 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="doColliderOrientation_value_type">Boolean</span></li>
         </ul>
 
+        <h3 id="doFgesFirst" class="parameter_description">doFgesFirst</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="doFgesFirst_short_desc">
+            Yes if FGES should be done as an initial step</span>
+            </li>
+            <li>Long Description: <span id="doFgesFirst_long_desc">
+                For BOSS, for some cases, doing FGES as an initial step can reduce
+                the maximum permutation size needed to solve a problem.
+            </span>
+            </li>
+            <li>Default Value: <span id="doFgesFirst_default_value">false</span></li>
+            <li>Lower Bound: <span id="doFgesFirst_lower_bound"></span></li>
+            <li>Upper Bound: <span id="doFgesFirst_upper_bound"></span></li>
+            <li>Value Type: <span id="doFgesFirst_value_type">Boolean</span></li>
+        </ul>
+
         <h3 id="errorsNormal" class="parameter_description">errorsNormal</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="errorsNormal_short_desc">Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian)</span>
@@ -3843,7 +3919,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="fasHeuristic" class="parameter_description">fasHeuristic</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="fasHeuristic_short_desc">Test ordering: 1 = PC-1 1, 2 = PC-2, 3 = PC-3</span>
+            <li>Short Description: <span
+                    id="fasHeuristic_short_desc">Test ordering: 1 = PC-1 1, 2 = PC-2, 3 = PC-3</span>
             </li>
             <li>Long Description: <span id="fasHeuristic_long_desc">See Causation, Prediction, and Search (2000).</span>
             </li>
@@ -4338,7 +4415,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="meanHigh_short_desc">High end of mean range (min = 0.0)</span></li>
             <li>Long Description: <span id="meanHigh_long_desc">For a linear model, means of variables may be randomly shifted. The default is for there to be no shift, but shifts from a minimum value to a maximum value may be specified. The minimum must be less than or equal to the maximum.</span>
             </li>
-            <li>Default Value: <span id="meanHigh_default_value">1.5</span></li>
+            <li>Default Value: <span id="meanHigh_default_value">1.0</span></li>
             <li>Lower Bound: <span id="meanHigh_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="meanHigh_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="meanHigh_value_type">Double</span></li>
@@ -4596,6 +4673,296 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Value Type: <span id="numberResampling_value_type">Integer</span></li>
         </ul>
 
+        <h3 id="numStarts" class="parameter_description">numStarts</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="numStarts_short_desc">The number of restarts, random after the first (default 1)</span>
+            </li>
+            <li>Long Description: <span id="numStarts_long_desc">The number of times the algorithm should srarted from different initializations.
+                By default, the algorithm will be run through at least once using the initialized parameters
+                (zero random restarts).</span>
+            </li>
+            <li>Default Value: <span id="numStarts_default_value">1</span></li>
+            <li>Lower Bound: <span id="numStarts_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="numStarts_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="numStarts_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="otherPermMethod" class="parameter_description">otherPermMethod</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="otherPermMethod_short_desc">
+                1 = RCG, 2 = GSP, 3 = ESP, 4 = SP</span>
+            </li>
+            <li>Long Description: <span id="otherPermMethod_long_desc">
+                 RCG (Random Carnival Game);
+                 GSP ("Greedy SP") GSP using tucking
+                 ESP ("Edge SP") is from Solus et al.
+                 SP ("Sparsest Permutation") Raskutti and Uhler
+            </span>
+            </li>
+            <li>Default Value: <span id="otherPermMethod_default_value">1</span></li>
+            <li>Lower Bound: <span id="otherPermMethod_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="otherPermMethod_upper_bound">5</span></li>
+            <li>Value Type: <span id="otherPermMethod_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="bossScoreType" class="parameter_description">bossScoreType</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="bossScoreType_short_desc">
+                Yes if edge count of the model should be minimized, No if BIC should be maximized</span>
+            </li>
+            <li>Long Description: <span id="bossScoreType_long_desc">
+                If Yes, the number of edges in the model will be minimized, following Raskutti
+                and Uhler 2018. If second, the supplied score
+                of the model (preferably a BIC score) will be optimized, a suggestion made
+                in Solus et al. 2017.
+            </span>
+            </li>
+            <li>Default Value: <span id="bossScoreType_default_value">false</span></li>
+            <li>Lower Bound: <span id="bossScoreType_lower_bound"></span></li>
+            <li>Upper Bound: <span id="bossScoreType_upper_bound"></span></li>
+            <li>Value Type: <span id="bossScoreType_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspCheckCovering" class="parameter_description">graspCheckCovering</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspCheckCovering_short_desc">
+                Yes if covering of edges should be checked (GASP), no if not (GRASP)
+            </span>
+            </li>
+            <li>Long Description: <span id="graspCheckCovering_long_desc">
+				An edge X is covered if Parents(X) = Parents(Y) \ {X}. Not checking
+				covering expands the search space.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspCheckCovering_default_value">false</span></li>
+            <li>Lower Bound: <span id="graspCheckCovering_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspCheckCovering_upper_bound"></span></li>
+            <li>Value Type: <span id="graspCheckCovering_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspForwardTuckOnly" class="parameter_description">graspForwardTuckOnly</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspForwardTuckOnly_short_desc">
+                Yes if only forward tucks should be checked, no if also reverse tucks
+                should be checked.</span>
+            </li>
+            <li>Long Description: <span id="graspForwardTuckOnly_long_desc">
+				A forward tuck for X->Y moves Y to the before position of X in the permutation.
+				A reverse tuck moves Y to after the position of X in the permutation.
+				Including reverse tucks expands the search space.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspForwardTuckOnly_default_value">false</span></li>
+            <li>Lower Bound: <span id="graspForwardTuckOnly_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspForwardTuckOnly_upper_bound"></span></li>
+            <li>Value Type: <span id="graspForwardTuckOnly_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspBreakAFterImprovement" class="parameter_description">graspBreakAFterImprovement</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspBreakAFterImprovement_short_desc">
+                Yes if depth first search returns after first improvement, No for depth first traversal.
+            </span>
+            </li>
+            <li>Long Description: <span id="graspBreakAFterImprovement_long_desc">
+				Exploring the full list in every DFS call is equivalent to what we've been
+				calling the Random Carnival Game procedure (RCG).
+            </span>
+            </li>
+            <li>Default Value: <span id="graspBreakAFterImprovement_default_value">true</span></li>
+            <li>Lower Bound: <span id="graspBreakAFterImprovement_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspBreakAFterImprovement_upper_bound"></span></li>
+            <li>Value Type: <span id="graspBreakAFterImprovement_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspOrderedAlg" class="parameter_description">graspOrderedAlg</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspOrderedAlg_short_desc">
+                Yes if earlier GRaSP stages should be performed before later stages
+            </span>
+            </li>
+            <li>Long Description: <span id="graspOrderedAlg_long_desc">
+				GRaSP has three stages; these can be performed separately or in order; by default Yes.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspOrderedAlg_default_value">true</span></li>
+            <li>Lower Bound: <span id="graspOrderedAlg_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspOrderedAlg_upper_bound"></span></li>
+            <li>Value Type: <span id="graspOrderedAlg_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspUseScore" class="parameter_description">graspUseScore</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspUseScore_short_desc">
+                Yes if the score should be used for MB calculations, no if the test
+                should be used instead.
+            </span>
+            </li>
+            <li>Long Description: <span id="graspUseScore_long_desc">
+				In either case, compositional graphoid axioms are assumed by the
+				Grow-Shrink algorithm.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspUseScore_default_value">true</span></li>
+            <li>Lower Bound: <span id="graspUseScore_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspUseScore_upper_bound"></span></li>
+            <li>Value Type: <span id="graspUseScore_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspUseVermaPearl" class="parameter_description">graspUseVermaPearl</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspUseVermaPearl_short_desc">
+                Yes to use Raskutti and Uhler's DAG-building method (test), No to use Grow-Shrink (score).</span>
+            </li>
+            <li>Long Description: <span id="graspUseVermaPearl_long_desc">
+				Raskutti and Uhler's method adds and edge X->Y if
+                Y ~_||_ X | Prefix(Y, pi) \ {X}. Grow-Shrink
+				adds an edge X->Y if X is in the Markov blanket of Y where the variable
+				set is restricted to Prefix(Y, pi).
+            </span>
+            </li>
+            <li>Default Value: <span id="graspUseVermaPearl_default_value">false</span></li>
+            <li>Lower Bound: <span id="graspUseVermaPearl_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspUseVermaPearl_upper_bound"></span></li>
+            <li>Value Type: <span id="graspUseVermaPearl_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspUseDataOrder" class="parameter_description">graspUseDataOrder</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspUseDataOrder_short_desc">
+                Yes just in case data variable order should be used for the first initial
+                permutation.
+            </span>
+            </li>
+            <li>Long Description: <span id="graspUseDataOrder_long_desc">
+				In either case, if multiple starting points are used, taking the best
+				scoring model from among these, subsequent starting points will all be
+				random shuffles.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspUseDataOrder_default_value">true</span></li>
+            <li>Lower Bound: <span id="graspUseDataOrder_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspUseDataOrder_upper_bound"></span></li>
+            <li>Value Type: <span id="graspUseDataOrder_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspUseVpScoring" class="parameter_description">graspUseVpScoring</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspUseVpScoring_short_desc">
+                No sure
+            </span>
+            </li>
+            <li>Long Description: <span id="graspUseVpScoring_long_desc">
+				Not sure
+            </span>
+            </li>
+            <li>Default Value: <span id="graspUseVpScoring_default_value">false</span></li>
+            <li>Lower Bound: <span id="graspUseVpScoring_lower_bound"></span></li>
+            <li>Upper Bound: <span id="graspUseVpScoring_upper_bound"></span></li>
+            <li>Value Type: <span id="graspUseVpScoring_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="graspAlg" class="parameter_description">graspAlg</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspAlg_short_desc">
+                1 = GRaSP1, 2 = GRaSP2, 3 = esp, 4 = GRaSP4, 5 = GRaSP4
+            </span>
+            </li>
+            <li>Long Description: <span id="graspAlg_long_desc">
+				Which version of GRaSP (temp parameter)
+            </span>
+            </li>
+            <li>Default Value: <span id="graspAlg_default_value">1</span></li>
+            <li>Lower Bound: <span id="graspAlg_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="graspAlg_upper_bound">5</span></li>
+            <li>Value Type: <span id="graspAlg_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="graspDepth" class="parameter_description">graspDepth</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspDepth_short_desc">Recursion depth</span>
+            </li>
+            <li>Long Description: <span id="graspDepth_long_desc">
+            	This is the depth of recursion for the depth first search.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspDepth_default_value">4</span></li>
+            <li>Lower Bound: <span id="graspDepth_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="graspDepth_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="graspDepth_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="graspUncoveredDepth" class="parameter_description">graspUncoveredDepth</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="graspUncoveredDepth_short_desc">Recursion depth for uncovered edges</span>
+            </li>
+            <li>Long Description: <span id="graspUncoveredDepth_long_desc">
+            	This is the depth of recursion for the uncovered edges, past the point where there
+            	are not longer any more covered edges to recurse on.
+            </span>
+            </li>
+            <li>Default Value: <span id="graspUncoveredDepth_default_value">1</span></li>
+            <li>Lower Bound: <span id="graspUncoveredDepth_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="graspUncoveredDepth_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="graspUncoveredDepth_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="graspNonSingularDepth" class="parameter_description">graspNonSingularDepth</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="graspNonSingularDepth_short_desc">Recursion depth for nonsingular tucks</span>
+            </li>
+            <li>Long Description: <span id="graspNonSingularDepth_long_desc">
+            	This is the depth of recursion at which multiple tucks may be consdidered
+            	per score improvement
+            </span>
+            </li>
+            <li>Default Value: <span id="graspNonSingularDepth_default_value">1</span></li>
+            <li>Lower Bound: <span id="graspNonSingularDepth_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="graspNonSingularDepth_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="graspNonSingularDepth_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="timeout" class="parameter_description">timeout</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="timeout_short_desc">Timeout (best graph returned, -1 = no timeout)</span>
+            </li>
+            <li>Long Description: <span id="timeout_long_desc">
+            	The algorithm will timeout at approximately this number of seconds from when it started
+            	and return the final graph found at that point.
+            </span>
+            </li>
+            <li>Default Value: <span id="timeout_default_value">-1</span></li>
+            <li>Lower Bound: <span id="timeout_lower_bound">-1</span></li>
+            <li>Upper Bound: <span id="timeout_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="timeout_value_type">Integer</span></li>
+        </ul>
+
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="breakTies_short_desc">Yes if the algorithm should try moving variables pairwise</span>
+            </li>
+            <li>Long Description: <span id="breakTies_long_desc">
+                In some cases, two moves are required simultaneously to get an orientation right in the final step.
+                This is not generally needed when optimizing using BIC or for large models.</span>
+            </li>
+            <li>Default Value: <span id="breakTies_default_value">true</span></li>
+            <li>Lower Bound: <span id="breakTies_lower_bound"></span></li>
+            <li>Upper Bound: <span id="breakTies_upper_bound"></span></li>
+            <li>Value Type: <span id="breakTies_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="recursive" class="parameter_description">recursive</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="recursive_short_desc">Yes if the algorithm should proceed recursively, no if not</span>
+            </li>
+            <li>Long Description: <span id="recursive_long_desc">Where recursive or nonrecursive variants of an algorithm are available, this selects which one to use.</span>
+            </li>
+            <li>Default Value: <span id="recursive_default_value">false</span></li>
+            <li>Lower Bound: <span id="recursive_lower_bound"></span></li>
+            <li>Upper Bound: <span id="recursive_upper_bound"></span></li>
+            <li>Value Type: <span id="recursive_value_type">Boolean</span></li>
+        </ul>
+
         <h3 id="orientTowardDConnections" class="parameter_description">orientTowardDConnections</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="orientTowardDConnections_short_desc">Yes if Richardson's step C (orient toward d-connection) should be used</span>
@@ -4636,7 +5003,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="penaltyDiscount_short_desc">Penalty discount (min = 0.0)</span></li>
             <li>Long Description: <span id="penaltyDiscount_long_desc">A BIC score is of the form 2L – k ln N, where L is the likelihood, k the number of degrees of freedom, and N the sample size. Tests based on this statistic can often yield too dense a graph; to compensate for this, we add a factor c, as follows: 2L – c k ln N, where usually c >= 1. If c is chosen to be greater than 1, say 2, the output graph will be sparser. We call this c the “penalty discount”; similar mechanisms have been proposed elsewhere.</span>
             </li>
-            <li>Default Value: <span id="penaltyDiscount_default_value">1.0</span></li>
+            <li>Default Value: <span id="penaltyDiscount_default_value">2.0</span></li>
             <li>Lower Bound: <span id="penaltyDiscount_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="penaltyDiscount_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="penaltyDiscount_value_type">Double</span></li>
@@ -4647,7 +5014,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="ebicGamma_short_desc">EBIC Gamma (0-1)</span></li>
             <li>Long Description: <span id="ebicGamma_long_desc">The gamma parameter for Extended BIC (Chen and Chen). In [0, 1].</span>
             </li>
-            <li>Default Value: <span id="ebicGamma_default_value">1.0</span></li>
+            <li>Default Value: <span id="ebicGamma_default_value">0.8</span></li>
             <li>Lower Bound: <span id="ebicGamma_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="ebicGamma_upper_bound">1.0</span></li>
             <li>Value Type: <span id="ebicGamma_value_type">Double</span></li>
@@ -4848,7 +5215,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="priorEquivalentSampleSize_short_desc">Prior equivalent sample size (min = 1.0)</span>
             </li>
-            <li>Long Description: <span id="priorEquivalentSampleSize_long_desc">This sets the prior equivalent sample size. This number is added to the sample size for each conditional probability table in the model and is divided equally among the cells in the table. A prior of 15 (default) does well as optimizing the estimate of the output pattern; a prior of 5 will optimize the structural Hamming distance.</span>
+            <li>Long Description: <span id="priorEquivalentSampleSize_long_desc">This sets the prior equivalent sample size. This number is added to the sample size for each conditional probability table in the model and is divided equally among the cells in the table. A prior of 15 (default) does well as optimizing the estimate of the output CPDAG; a prior of 5 will optimize the structural Hamming distance.</span>
             </li>
             <li>Default Value: <span id="priorEquivalentSampleSize_default_value">10.0</span></li>
             <li>Lower Bound: <span id="priorEquivalentSampleSize_lower_bound">1.0</span></li>
@@ -5307,6 +5674,45 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
             <li>Value Type: <span id="meekVerbose_value_type">Boolean</span></li>
         </ul>
 
+        <h3 id="useScore" class="parameter_description">useScore</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="useScore_short_desc">Yes if the score should be used; no if the test should be used</span>
+            </li>
+            <li>Long Description: <span id="useScore_long_desc">BOSS can run either from a score or a test; this lets you choose which.</span>
+            </li>
+            <li>Default Value: <span id="useScore_default_value">true</span></li>
+            <li>Lower Bound: <span id="useScore_lower_bound"></span></li>
+            <li>Upper Bound: <span id="useScore_upper_bound"></span></li>
+            <li>Value Type: <span id="useScore_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="outputCpdag" class="parameter_description">outputCpdag</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="outputCpdag_short_desc">Yes if CPDAG should be ouput, no if a DAG.</span>
+            </li>
+            <li>Long Description: <span id="outputCpdag_long_desc">BOSS can output a DAG or the CPDAG of the DAG.</span>
+            </li>
+            <li>Default Value: <span id="outputCpdag_default_value">true</span></li>
+            <li>Lower Bound: <span id="outputCpdag_lower_bound"></span></li>
+            <li>Upper Bound: <span id="outputCpdag_upper_bound"></span></li>
+            <li>Value Type: <span id="outputCpdag_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 id="cacheScores" class="parameter_description">cacheScores</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="cacheScores_short_desc">Yes score results should be cached, no if not</span>
+            </li>
+            <li>Long Description: <span id="cacheScores_long_desc">Caching scores can use a lot of memory.</span>
+            </li>
+            <li>Default Value: <span id="cacheScores_default_value">true</span></li>
+            <li>Lower Bound: <span id="cacheScores_lower_bound"></span></li>
+            <li>Upper Bound: <span id="cacheScores_upper_bound"></span></li>
+            <li>Value Type: <span id="cacheScores_value_type">Boolean</span></li>
+        </ul>
+
         <h3 id="include_structure_model" class="parameter_description">verbose</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="include_structure_model_short_desc">Yes if the (MimBuild) stucture model should be included in the output graph</span>
@@ -5579,7 +5985,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         graph.</p>
 
     <h5>Meek Orientation Rules</h5>
-    <p>Rules for finding all directions of edges implied by a pattern, consistent with any specified “knowledge”
+    <p>Rules for finding all directions of edges implied by a CPDAG, consistent with any specified “knowledge”
         constraints on directions. See <a
                 href="https://arxiv.org/pdf/1302.4972.pdf">https://arxiv.org/pdf/1302.4972.pdf</a></p>
 
@@ -5599,7 +6005,7 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
     <h5>Partial Ancestral Graph (PAG)</h5>
     <p>See PAG description in this manual.</p>
 
-    <h5>Pattern</h5>
+    <h5>CPDAG</h5>
     <p>A graphical representation of a Markov Equivalence Class or Classes, having both directed and undirected edges,
         with an undirected edge indicating that for each possible direction of the edge, there is a graph in the class
         or classes having that edge direction.</p>
@@ -5621,6 +6027,8 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
+
 
 
 

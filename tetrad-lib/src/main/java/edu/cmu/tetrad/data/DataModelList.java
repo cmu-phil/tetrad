@@ -22,6 +22,7 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.AbstractList;
@@ -96,6 +97,7 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     //===========================PUBLIC METHODS (see AbstractList too)===//
+
     /**
      * @return this model, as an Object.
      */
@@ -144,9 +146,9 @@ public final class DataModelList extends AbstractList<DataModel>
      * Adds the given DataModel to the list at the given index. Required for
      * AbstractList.
      *
-     * @param index the index at which the DataModel is to be added.
+     * @param index   the index at which the DataModel is to be added.
      * @param element the DataModel to be added. (Note that this must be a
-     * DataModel.)
+     *                DataModel.)
      */
     public void add(int index, DataModel element) {
         modelList.add(index, element);

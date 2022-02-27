@@ -25,16 +25,15 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.Matrix;
 
 import java.text.NumberFormat;
-import java.util.*;
-
-import static edu.cmu.tetrad.util.MathUtils.logChoose;
-import static java.lang.Math.exp;
-import static java.lang.Math.log;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Checks conditional independence of variable in a continuous data set using a conditional correlation test

@@ -25,31 +25,16 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.sem.ParamType;
-import edu.cmu.tetrad.sem.Parameter;
-import edu.cmu.tetrad.sem.ScoreType;
-import edu.cmu.tetrad.sem.SemEstimator;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemOptimizer;
-import edu.cmu.tetrad.sem.SemOptimizerEm;
-import edu.cmu.tetrad.sem.SemOptimizerPowell;
-import edu.cmu.tetrad.sem.SemOptimizerRegression;
-import edu.cmu.tetrad.sem.SemOptimizerRicf;
-import edu.cmu.tetrad.sem.SemOptimizerScattershot;
-import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetrad.util.*;
+
+import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 /**
  * Wraps a SemEstimator for use in the Tetrad application.
@@ -77,6 +62,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
     private Parameters params;
 
     //==============================CONSTRUCTORS==========================//
+
     /**
      * Private constructor for serialization only. Problem is, for the real
      * constructors, I'd like to call the degrees of freedom check, which pops
@@ -97,7 +83,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
                 SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
                 estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
                 estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.Fgls));
-                if (!degreesOfFreedomCheck(semPm));
+                if (!degreesOfFreedomCheck(semPm)) ;
                 estimator.estimate();
 
                 getMultipleResultList().add(estimator);
@@ -107,7 +93,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
                 SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
                 estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
                 estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.SemBic));
-                if (!degreesOfFreedomCheck(semPm));
+                if (!degreesOfFreedomCheck(semPm)) ;
                 estimator.estimate();
 
                 getMultipleResultList().add(estimator);
@@ -128,7 +114,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
     }
 
     public SemEstimatorWrapper(DataWrapper dataWrapper,
-            SemPmWrapper semPmWrapper, Parameters params) {
+                               SemPmWrapper semPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException("Data wrapper must not be null.");
         }
@@ -195,15 +181,15 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
 
     public SemEstimatorWrapper(DataWrapper dataWrapper,
                                SemImWrapper semImWrapper, Parameters params) {
-    	this(dataWrapper, new SemPmWrapper(semImWrapper), params);
+        this(dataWrapper, new SemPmWrapper(semImWrapper), params);
     }
-    
+
     private boolean degreesOfFreedomCheck(SemPm semPm) {
         if (semPm.getDof() < 1) {
             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                     "This model has nonpositive degrees of freedom (DOF = "
-                    + semPm.getDof() + "). "
-                    + "\nEstimation will be uninformative. Are you sure you want to proceed?",
+                            + semPm.getDof() + "). "
+                            + "\nEstimation will be uninformative. Are you sure you want to proceed?",
                     "Please confirm", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
             if (ret != JOptionPane.YES_OPTION) {

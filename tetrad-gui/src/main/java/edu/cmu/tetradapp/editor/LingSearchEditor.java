@@ -55,14 +55,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Edits some algorithm to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket CPDAGs.
  *
  * @author Joseph Ramsey
  */
 public class LingSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable, DoNotScroll {
 
-//    private JTabbedPane tabbedPane;
+    //    private JTabbedPane tabbedPane;
     private LingDisplay lingDisplay;
 
     //=========================CONSTRUCTORS============================//
@@ -118,7 +118,7 @@ public class LingSearchEditor extends AbstractSearchEditor
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
             tabbedPane.add("Model Statistics", modelStatsText);
-            tabbedPane.add("DAG in pattern", dagWorkbench);
+            tabbedPane.add("DAG in CPDAG", dagWorkbench);
         }*/
 
         add(lingDisplay, BorderLayout.CENTER);
@@ -280,8 +280,7 @@ public class LingSearchEditor extends AbstractSearchEditor
                             getExecuteButton().setEnabled(true);
                             return;
                         }
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
@@ -381,7 +380,6 @@ public class LingSearchEditor extends AbstractSearchEditor
     protected void doPostExecutionSteps() {
 //        calcStats();
         System.out.println("Post execution.");
-
 
 
 //        getWorkbench().addPropertyChangeListener(new PropertyChangeListener() {

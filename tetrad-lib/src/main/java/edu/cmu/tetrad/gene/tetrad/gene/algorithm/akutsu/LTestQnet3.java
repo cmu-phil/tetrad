@@ -50,8 +50,7 @@ public class LTestQnet3 {
 
         try {
             s = new FileInputStream(fileName);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Cannot open file " + fileName);
             return;
         }
@@ -69,8 +68,7 @@ public class LTestQnet3 {
                 for (int j = 0; j < ntimes * ngenes; j++) {
                     cases[k - 1][j] = Double.parseDouble(st.nextToken("\t"));
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.out.println("Read error in " + fileName);
                 return;
             }
@@ -143,8 +141,7 @@ public class LTestQnet3 {
 
                         System.out.println(g0 + "a0+" + g1 + "a1+" + g2 +
                                 "a2+" + g3 + "a3+" + g4 + "a4+b > 0");
-                    }
-                    else if (deriv[t][g] < -0.3) {
+                    } else if (deriv[t][g] < -0.3) {
                         System.out.println(g0 + "a0+" + g1 + "a1+" + g2 +
                                 "a2+" + g3 + "a3+" + g4 + "a4+b< 0");
                     }

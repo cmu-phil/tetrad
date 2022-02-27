@@ -181,17 +181,16 @@ public class TailConfusion {
         for (Edge edge : this.truth.getEdges()) {
 
 
-
             List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
             List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() == 2 && TwoCycle2.size() == 2) {
-  //              System.out.println("2-cycle correctly inferred " + TwoCycle1);
+                //              System.out.println("2-cycle correctly inferred " + TwoCycle1);
                 TCtp++;
             }
 
             if (TwoCycle1.size() == 2 && TwoCycle2.size() != 2) {
-   //             System.out.println("2-cycle not inferred " + TwoCycle1);
+                //             System.out.println("2-cycle not inferred " + TwoCycle1);
                 TCfn++;
             }
         }
@@ -202,7 +201,7 @@ public class TailConfusion {
             List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() != 2 && TwoCycle2.size() == 2) {
-  //              System.out.println("2-cycle falsely inferred" + TwoCycle2);
+                //              System.out.println("2-cycle falsely inferred" + TwoCycle2);
                 TCfp++;
             }
         }
@@ -216,9 +215,9 @@ public class TailConfusion {
         TCtp = TCtp / 2;
         TCfn = TCfn / 2;
         TCfp = TCfp / 2;
- //       System.out.println(TCtp);
- //       System.out.println(TCfn);
- //       System.out.println(TCfp);
+        //       System.out.println(TCtp);
+        //       System.out.println(TCfn);
+        //       System.out.println(TCfp);
 
     }
 

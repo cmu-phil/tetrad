@@ -128,7 +128,7 @@ public final class DagToPag {
             }
         }
 
-        Graph graph = new EdgeListGraphSingleConnections(measured);
+        Graph graph = new EdgeListGraph(measured);
 
         for (int i = 0; i < measured.size(); i++) {
             addAdjacencies(measured.get(i), dag, graph);

@@ -304,7 +304,7 @@ public class TestExpressionParser {
         formulasToOffsets.put("A / B", -1);
         formulasToOffsets.put("b1*X1 +@**!! b2 * X2", 7);
         formulasToOffsets.put("X7", 0);
-        
+
         List<String> otherNodes = new ArrayList<>();
         otherNodes.add("X7");
 

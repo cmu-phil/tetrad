@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -70,8 +69,8 @@ final class PossibleDsepCfci {
     private int maxReachablePathLength = -1;
 
     /**
-     * @param graph             The GaSearchGraph on which to work
-     * @param test              The IndependenceChecker to use as an oracle
+     * @param graph The GaSearchGraph on which to work
+     * @param test  The IndependenceChecker to use as an oracle
      */
     public PossibleDsepCfci(Graph graph, IndependenceTest test,
                             Set<Triple> unfaithfulTriples) {

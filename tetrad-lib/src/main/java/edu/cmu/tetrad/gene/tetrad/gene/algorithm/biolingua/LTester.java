@@ -24,7 +24,7 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 /**
  * Class that makes some very simple tests
  * on the classes LtMatrix, Graph, and Biolingua<p>
- *
+ * <p>
  * TODO: make it a junit testing class
  *
  * @author Raul Saavedra, rsaavedr@ai.uwf.edu
@@ -33,7 +33,7 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.*;
 
 public class LTester {
-    public static void main(String args []) {
+    public static void main(String args[]) {
         LTMatrix ltm;
         LTMatrixF ltmf;
         SymMatrix sm /*, cm*/;
@@ -69,8 +69,7 @@ public class LTester {
                             (cm, g, (float) 0.01, (float) 3, (float) 0.1, (float) 3);
                         System.out.println (result);
             */
-        }
-        catch (Exception xcp) {
+        } catch (Exception xcp) {
             System.out.println("WATCH OUT!!!  There was an exception:");
             xcp.printStackTrace();
         }

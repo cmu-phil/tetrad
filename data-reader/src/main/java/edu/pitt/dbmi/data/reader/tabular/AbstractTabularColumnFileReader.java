@@ -20,6 +20,7 @@ package edu.pitt.dbmi.data.reader.tabular;
 
 import edu.pitt.dbmi.data.reader.DataFileReader;
 import edu.pitt.dbmi.data.reader.Delimiter;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -30,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 /**
- *
  * Feb 25, 2017 1:36:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

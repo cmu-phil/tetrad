@@ -80,8 +80,7 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
             Point point = EditorUtils.getTopLeftPoint(modelList);
             point.translate(50, 50);
             graphEditor().pasteSubsession(modelList, point);
-        }
-        catch (Exception e1) {
+        } catch (Exception e1) {
             throw new RuntimeException(e1);
         }
     }

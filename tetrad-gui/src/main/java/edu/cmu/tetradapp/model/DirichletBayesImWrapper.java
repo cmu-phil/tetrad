@@ -29,6 +29,7 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
@@ -58,7 +59,7 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
     }
 
     public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
-            Parameters params) {
+                                   Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -80,7 +81,7 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
 
     }
 
-//    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
+    //    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
 //                                   DataWrapper dataWrapper) {
 //        if (bayesPmWrapper == null) {
 //            throw new NullPointerException();

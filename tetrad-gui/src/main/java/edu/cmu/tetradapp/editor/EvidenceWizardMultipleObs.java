@@ -56,10 +56,10 @@ class EvidenceWizardMultipleObs extends JPanel {
 
     /**
      * This is the wizard for the BayesUpdateEditor class.  It allows you to add
-     * and remove evidence, and to updater based on it.  
+     * and remove evidence, and to updater based on it.
      */
     public EvidenceWizardMultipleObs(UpdaterWrapper updaterWrapper,
-            GraphWorkbench workbench) {
+                                     GraphWorkbench workbench) {
         if (updaterWrapper == null) {
             throw new NullPointerException();
         }
@@ -120,11 +120,10 @@ class EvidenceWizardMultipleObs extends JPanel {
                     Node tetradNode = selectedGraphNode.getModelNode();
                     String selectedNodeName = tetradNode.getName();
                     Node selectedNode = updatedGraph.getNode(selectedNodeName);
-					// skip latent variables
-					if (selectedNode.getNodeType() == NodeType.MEASURED)
-					{
-						selectedNodes.add(selectedNode);
-					}
+                    // skip latent variables
+                    if (selectedNode.getNodeType() == NodeType.MEASURED) {
+                        selectedNodes.add(selectedNode);
+                    }
                 }
 
                 for (Node node : selectedNodes) {
@@ -146,8 +145,7 @@ class EvidenceWizardMultipleObs extends JPanel {
 
                 if (selectedNodes.size() == 0) {
                     marginalsArea.append("\nNo nodes selected.");
-                }
-                else {
+                } else {
                     appendMarginals(selectedNodes, marginalsArea, manipulatedIm,
                             nf);
                     appendJoint(selectedNodes, marginalsArea, manipulatedIm,
@@ -161,7 +159,7 @@ class EvidenceWizardMultipleObs extends JPanel {
     }
 
     private void appendMarginals(List<Node> selectedNodes,
-            JTextArea marginalsArea, BayesIm manipulatedIm, NumberFormat nf) {
+                                 JTextArea marginalsArea, BayesIm manipulatedIm, NumberFormat nf) {
         BayesPm bayesPm = manipulatedIm.getBayesPm();
 
         marginalsArea.append("MARGINALS FOR SELECTED VARIABLES:\n");
@@ -174,31 +172,28 @@ class EvidenceWizardMultipleObs extends JPanel {
 
             for (int j = 0; j < bayesPm.getNumCategories(selectedNode); j++) {
                 double prob = getUpdaterWrapper().getBayesUpdater().getMarginal(nodeIndex, j);
-				
-				// identifiability returns -1 if the requested prob is unidentifiable
-				if (prob < 0.0)  
-				{
-					marginalsArea.append("Category " +
-										 bayesPm.getCategory(selectedNode, j) + ": p = " +
-										 "Unidentifiable" + ",  log odds = " +
-										 "*" + "\n");
-				}
-				else 
-				{
-					double logOdds = Math.log(prob / (1. - prob));
-					
-					marginalsArea.append("Category " +
-										 bayesPm.getCategory(selectedNode, j) + ": p = " +
-										 nf.format(prob) + ",  log odds = " +
-										 nf.format(logOdds) + "\n");
-				}
-			}
+
+                // identifiability returns -1 if the requested prob is unidentifiable
+                if (prob < 0.0) {
+                    marginalsArea.append("Category " +
+                            bayesPm.getCategory(selectedNode, j) + ": p = " +
+                            "Unidentifiable" + ",  log odds = " +
+                            "*" + "\n");
+                } else {
+                    double logOdds = Math.log(prob / (1. - prob));
+
+                    marginalsArea.append("Category " +
+                            bayesPm.getCategory(selectedNode, j) + ": p = " +
+                            nf.format(prob) + ",  log odds = " +
+                            nf.format(logOdds) + "\n");
+                }
+            }
 
         }
     }
 
     private void appendJoint(List<Node> selectedNodes, JTextArea marginalsArea,
-            BayesIm manipulatedIm, NumberFormat nf) {
+                             BayesIm manipulatedIm, NumberFormat nf) {
         if (!getUpdaterWrapper().getBayesUpdater().isJointMarginalSupported()) {
             marginalsArea.append("\n\n(Calculation of joint not supported " +
                     "for this updater.)");
@@ -239,17 +234,15 @@ class EvidenceWizardMultipleObs extends JPanel {
                 marginalsArea.append("\t");
             }
 
-			// identifiability returns -1 if the requested prob is unidentifiable
-			if (prob < 0.0)
-			{
-				marginalsArea.append("Unidentifiable" + "\t");
-				marginalsArea.append("*");			}
-			else 
-			{
-				double logOdds = Math.log(prob / (1. - prob));
-				marginalsArea.append(nf.format(prob) + "\t");
-				marginalsArea.append(nf.format(logOdds));
-			}
+            // identifiability returns -1 if the requested prob is unidentifiable
+            if (prob < 0.0) {
+                marginalsArea.append("Unidentifiable" + "\t");
+                marginalsArea.append("*");
+            } else {
+                double logOdds = Math.log(prob / (1. - prob));
+                marginalsArea.append(nf.format(prob) + "\t");
+                marginalsArea.append(nf.format(logOdds));
+            }
         }
     }
 

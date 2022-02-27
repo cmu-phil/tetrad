@@ -22,12 +22,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.SimulationUtils;
-import edu.cmu.tetrad.algcomparison.simulation.StandardizedSemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
@@ -38,6 +33,7 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +49,7 @@ import java.util.Map;
  * @author jdramsey
  */
 public class Simulation extends DataWrapper implements SessionModel,
-        SimulationParamsSource, MultipleGraphSource, MultipleDataSource {
+        SimulationParamsSource, GraphSource, MultipleGraphSource, MultipleDataSource {
 
     static final long serialVersionUID = 23L;
 
@@ -330,5 +326,14 @@ public class Simulation extends DataWrapper implements SessionModel,
 
     public List<DataModel> getInputDataModelList() {
         return inputDataModelList;
+    }
+
+    @Override
+    public Graph getGraph() {
+        if (getGraphs().size() == 1) {
+            return getGraphs().get(0);
+        }
+
+        throw new IllegalArgumentException("Expecting one graph.");
     }
 }

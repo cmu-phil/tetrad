@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 
 import javax.swing.table.AbstractTableModel;
 import java.text.NumberFormat;
@@ -69,7 +69,7 @@ final class StandardSemImImpliedCovTable extends AbstractTableModel {
      * which are as specified (in the order they appear in the matrix).
      */
     public StandardSemImImpliedCovTable(StandardizedSemIm semIm, boolean measured,
-                           boolean correlations) {
+                                        boolean correlations) {
         this.semIm = semIm;
         this.measured = measured;
         this.correlations = correlations;

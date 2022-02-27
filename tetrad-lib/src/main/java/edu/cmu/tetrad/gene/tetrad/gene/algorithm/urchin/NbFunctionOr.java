@@ -24,7 +24,7 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 
 public class NbFunctionOr extends AbstractNbComponent {
     public NbFunctionOr(double factor, double power, NbComponent[] parents,
-            int[] inhibitExcite, String name) {
+                        int[] inhibitExcite, String name) {
 
         super(factor, power, parents, inhibitExcite, name);
         if (parents.length < 2) {
@@ -40,8 +40,7 @@ public class NbFunctionOr extends AbstractNbComponent {
 
         if (getInhibitExcite()[0] > 0) {
             sum = getParents()[0].getValue();
-        }
-        else {
+        } else {
             sum = 1.0 - getParents()[0].getValue();
         }
 
@@ -49,8 +48,7 @@ public class NbFunctionOr extends AbstractNbComponent {
             double v = 0.0;
             if (getInhibitExcite()[i] > 0) {
                 v = getParents()[i].getValue();
-            }
-            else {
+            } else {
                 v = (1.0 - getParents()[i].getValue());
             }
             sum += v * (1.0 - sum);

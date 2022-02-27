@@ -106,8 +106,7 @@ public class DoubleTextField extends JTextField {
 
         if (newValue == this.value) {
             smartSetText(format, this.value);
-        }
-        else {
+        } else {
             this.value = newValue;
             smartSetText(format, this.value);
             firePropertyChange("newValue", null, this.value);
@@ -176,8 +175,7 @@ public class DoubleTextField extends JTextField {
                 try {
                     double value = Double.parseDouble(e.getActionCommand());
                     setValue(value);
-                }
-                catch (NumberFormatException e1) {
+                } catch (NumberFormatException e1) {
                     setText(format.format(getValue()));
 //                    if ("".equals(getText().trim())) {
 //                        setValue(Double.NaN);
@@ -202,12 +200,10 @@ public class DoubleTextField extends JTextField {
                 try {
                     double value = Double.parseDouble(getText());
                     setValue(value);
-                }
-                catch (NumberFormatException e1) {
+                } catch (NumberFormatException e1) {
                     if ("".equals(getText().trim())) {
                         setValue(Double.NaN);
-                    }
-                    else {
+                    } else {
                         setValue(getValue());
                     }
                 }
@@ -219,14 +215,12 @@ public class DoubleTextField extends JTextField {
         if (Double.isNaN(value)) {
             setHorizontalAlignment(JTextField.RIGHT);
             setText("");
-        }
-        else {
+        } else {
             setHorizontalAlignment(JTextField.RIGHT);
 
             if (Math.abs(value) < smallNumberCutoff && value != 0.0) {
                 setText(smallNumberFormat.format(value));
-            }
-            else {
+            } else {
                 setText(nf.format(value));
             }
         }
@@ -247,9 +241,9 @@ public class DoubleTextField extends JTextField {
          * Filters the given value, returning the new value that should be
          * displayed.
          *
-         * @param value The value entered by the user.
+         * @param value    The value entered by the user.
          * @param oldValue The value previously displayed, in case it needs
-         * to be reverted to.
+         *                 to be reverted to.
          */
         double filter(double value, double oldValue);
     }

@@ -22,8 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
 import java.text.DecimalFormat;

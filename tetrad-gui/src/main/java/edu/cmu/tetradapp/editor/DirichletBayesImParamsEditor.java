@@ -93,8 +93,7 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
                 try {
                     params.set("symmetricAlpha", value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -103,12 +102,10 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
         if (getParams().getString("initializationMode", "manualRetain").equals("manualRetain")) {
             manualRetain.setSelected(true);
             symmetricAlphaField.setEnabled(false);
-        }
-        else if (getParams().getString("initializationMode", "manualRetain").equals("symmetricPrior")) {
+        } else if (getParams().getString("initializationMode", "manualRetain").equals("symmetricPrior")) {
             randomRetain.setSelected(true);
             symmetricAlphaField.setEnabled(true);
-        }
-        else {
+        } else {
             throw new IllegalStateException();
         }
 

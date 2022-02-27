@@ -31,6 +31,7 @@ import java.util.List;
 
 /**
  * This class converts a SemIm into xml.
+ *
  * @author Matt Easterday
  */
 public class SemXmlRenderer {

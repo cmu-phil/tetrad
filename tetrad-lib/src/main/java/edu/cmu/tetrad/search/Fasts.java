@@ -44,8 +44,8 @@ import java.util.*;
  * @author Joseph Ramsey.
  * <p>
  * <p>
- * This is a copy of Fas.java for the tsFCI algorithm. The main difference is that if an edge is removed, it will also
- * remove all homologous edges to preserve the time-repeating structure assumed by tsFCI. Based on (but not identicial
+ * This is a copy of Fas.java for the SvarFCI algorithm. The main difference is that if an edge is removed, it will also
+ * remove all homologous edges to preserve the time-repeating structure assumed by SvarFCI. Based on (but not identicial
  * to) code by Entner and Hoyer for their 2010 paper. Modified by DMalinsky 4/21/2016.
  */
 public class Fasts implements IFas {
@@ -135,7 +135,7 @@ public class Fasts implements IFas {
     }
 
     public Fasts(IndependenceTest test) {
-        this.graph = new EdgeListGraphSingleConnections(test.getVariables());
+        this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
     }
 
@@ -515,7 +515,7 @@ public class Fasts implements IFas {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
-    // removeSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
+    // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     private void removeSimilarPairs(Map<Node, Set<Node>> adjacencies, final IndependenceTest test, Node x, Node y, List<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
         System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
@@ -677,7 +677,7 @@ public class Fasts implements IFas {
         }
     }
 
-    // returnSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
+    // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(final IndependenceTest test, Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {

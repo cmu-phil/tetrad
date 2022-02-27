@@ -23,10 +23,15 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Implements a modification of the the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of
@@ -153,14 +158,14 @@ public class PcStableMax implements GraphSearch {
     }
 
     /**
-     * Runs PC search, returning the output pattern.
+     * Runs PC search, returning the output CPDAG.
      */
     public Graph search() {
         return search(independenceTest.getVariables());
     }
 
     /**
-     * Runs PC search, returning the output pattern, over the given nodes.
+     * Runs PC search, returning the output CPDAG, over the given nodes.
      */
     public Graph search(List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");

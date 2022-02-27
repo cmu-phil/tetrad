@@ -347,7 +347,7 @@ public final class Cpc implements GraphSearch {
 //     * constructor.
 //     */
 //    public final Graph orientationForGraph(Dag trueGraph) {
-//        Graph graph = new EdgeListGraphSingleConnections(independenceTest.getVariable());
+//        Graph graph = new EdgeListGraph(independenceTest.getVariable());
 //
 //        for (Edge edge : trueGraph.getEdges()) {
 //            Node nodeA = edge.getNode1();
@@ -567,7 +567,7 @@ public final class Cpc implements GraphSearch {
 //
 //        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 //
-//        Graph graph = new EdgeListGraphSingleConnections(getGraph());
+//        Graph graph = new EdgeListGraph(getGraph());
 //
 ////        System.out.println("orientUnshieldedTriples 1");
 //

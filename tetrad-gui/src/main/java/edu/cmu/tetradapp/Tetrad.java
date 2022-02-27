@@ -28,18 +28,14 @@ import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.SplashScreen;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Image;
-import java.awt.Toolkit;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Locale;
-import javax.swing.JFrame;
-import javax.swing.UIManager;
-import javax.swing.WindowConstants;
 
 /**
  * <p>
@@ -74,7 +70,7 @@ public final class Tetrad implements PropertyChangeListener {
      */
     private final String mainTitle
             = "Tetrad " + Version.currentViewableVersion()
-                    .toString();
+            .toString();
 
     public static boolean enableExperimental;
 
@@ -83,6 +79,7 @@ public final class Tetrad implements PropertyChangeListener {
     }
 
     //==============================PUBLIC METHODS=========================//
+
     /**
      * Responds to "exitProgram" property change events by disposing of the
      * Tetrad IV frame and exiting if possible.

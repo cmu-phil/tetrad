@@ -27,9 +27,9 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Collections;
 
 
 /**
@@ -89,11 +89,11 @@ public final class TsDagToPag {
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -102,11 +102,11 @@ public final class TsDagToPag {
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -164,7 +164,7 @@ public final class TsDagToPag {
             }
         }
 
-        Graph graph = new EdgeListGraphSingleConnections(measured);
+        Graph graph = new EdgeListGraph(measured);
 
         for (int i = 0; i < measured.size(); i++) {
             for (int j = i + 1; j < measured.size(); j++) {
@@ -368,7 +368,7 @@ public final class TsDagToPag {
 
 
     public static boolean existsInducingPathVisitts(Graph graph, Node a, Node b, Node x, Node y,
-                                                  LinkedList<Node> path, IKnowledge knowledge) {
+                                                    LinkedList<Node> path, IKnowledge knowledge) {
         if (path.contains(b)) {
             return false;
         }
@@ -386,8 +386,8 @@ public final class TsDagToPag {
             }
 
             if (graph.isDefCollider(a, b, c)) {
-                if (!((graph.isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(),x.getName())) ||
-                        (graph.isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(),x.getName())))) {
+                if (!((graph.isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(), x.getName())) ||
+                        (graph.isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
                     continue;
                 }
             }

@@ -21,13 +21,13 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.simulation;
 
+import edu.cmu.tetrad.gene.tetrad.gene.history.DishModel;
+import edu.cmu.tetrad.gene.tetrad.gene.history.GeneHistory;
+import edu.cmu.tetrad.gene.tetrad.gene.history.UpdateFunction;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Normal;
-import edu.cmu.tetrad.gene.tetrad.gene.history.DishModel;
-import edu.cmu.tetrad.gene.tetrad.gene.history.GeneHistory;
-import edu.cmu.tetrad.gene.tetrad.gene.history.UpdateFunction;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -190,7 +190,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns the number of dishes that are to be simulated.
      */
     public int getNumDishes() {
@@ -225,7 +226,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns the number of cells per dish.
      */
     public int getNumCellsPerDish() {
@@ -285,7 +287,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns the index of the first step to actually be stored out.
      */
     public int getFirstStepStored() {
@@ -313,7 +316,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Sets the interval (in time steps) between time steps stored out. For
      * instance, if the first step stored is 5 and the interval is 3, then the
      * series 5, 8, 11, 14, ..., will be stored out; this series will be stopped
@@ -337,7 +341,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns true if raw data is being saved in the getModel simulation, false
      * if not.
      *
@@ -360,7 +365,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns 'true' if measured data is being saved out for the getModel
      * simulation, 'false' if not.
      *
@@ -395,7 +401,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns 'true' if cells in the simulation will be synchronized, 'false'
      * if not.
      *
@@ -416,7 +423,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns true iff the antilog of each expression level should be
      * calculated.
      */
@@ -447,7 +455,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns the standard deviation in percent of random dish bump values away
      * from 100%.
      *
@@ -480,7 +489,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns the number of samples generated per dish in the measurement
      * model.
      *
@@ -514,7 +524,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns the sample to sample variability, which is the standard deviation
      * of a normal distribution with mean 0 from which errors in measured
      * expression levels due to the microarray being used for measurement are
@@ -549,7 +560,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns the chip to chip variability.
      *
      * @see #setChipChipVariability
@@ -579,7 +591,8 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * @serial
-     */ /**
+     */
+    /**
      * Returns the pixel digitalization error.
      *
      * @see #setPixelDigitalization
@@ -601,7 +614,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * returns null.</p>
      *
      * @return the three dimensional double array of raw data, if raw data is
-     *         saved, or null, if raw data is not saved.
+     * saved, or null, if raw data is not saved.
      */
     public double[][][] getRawData() {
         return this.rawData;
@@ -619,7 +632,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * method returns null.</p>
      *
      * @return the three dimensional double array of measured data, if measured
-     *         data is saved, or null, if measured data is not saved.
+     * data is saved, or null, if measured data is not saved.
      */
     public double[][][] getMeasuredData() {
         return this.measuredData;

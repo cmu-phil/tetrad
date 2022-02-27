@@ -44,7 +44,7 @@ public class NoteModel implements SessionModel {
     private String name;
 
     public NoteModel(Parameters parameters) {
-        
+
     }
 
     /**

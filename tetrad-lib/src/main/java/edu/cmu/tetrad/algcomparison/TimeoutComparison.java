@@ -26,7 +26,6 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
@@ -38,6 +37,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -54,7 +54,6 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- *
  * Nov 14, 2017 12:00:31 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -64,7 +63,7 @@ public class TimeoutComparison {
     private static final DateFormat DF = new SimpleDateFormat("EEE, MMMM dd, yyyy hh:mm:ss a");
 
     public enum ComparisonGraph {
-        true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG
+        true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
     }
 
     private boolean[] graphTypeUsed;
@@ -79,7 +78,7 @@ public class TimeoutComparison {
     private String dataPath = null;
     private String resultsPath = null;
     private boolean parallelized = true;
-    private boolean savePatterns = false;
+    private boolean saveCPDAGs = false;
     private boolean savePags = false;
     private ArrayList<String> dirs = null;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
@@ -92,13 +91,13 @@ public class TimeoutComparison {
     /**
      * Compares algorithms.
      *
-     * @param dataPath Path to the directory where data and graph files have
-     * been saved.
+     * @param dataPath    Path to the directory where data and graph files have
+     *                    been saved.
      * @param resultsPath Path to the file where the results should be stored.
-     * @param algorithms The list of algorithms to be compared.
-     * @param statistics The list of statistics on which to compare the
-     * algorithm, and their utility weights.
-     * @param parameters The list of parameters and their values.
+     * @param algorithms  The list of algorithms to be compared.
+     * @param statistics  The list of statistics on which to compare the
+     *                    algorithm, and their utility weights.
+     * @param parameters  The list of parameters and their values.
      */
     public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -199,10 +198,10 @@ public class TimeoutComparison {
      *
      * @param resultsPath Path to the file where the output should be printed.
      * @param simulations The list of simulationWrapper that is used to generate
-     * graphs and data for the comparison.
-     * @param algorithms The list of algorithms to be compared.
-     * @param statistics The list of statistics on which to compare the
-     * algorithm, and their utility weights.
+     *                    graphs and data for the comparison.
+     * @param algorithms  The list of algorithms to be compared.
+     * @param statistics  The list of statistics on which to compare the
+     *                    algorithm, and their utility weights.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -455,8 +454,8 @@ public class TimeoutComparison {
     /**
      * Saves simulationWrapper data.
      *
-     * @param dataPath The path to the directory where the simulationWrapper
-     * data should be saved.
+     * @param dataPath   The path to the directory where the simulationWrapper
+     *                   data should be saved.
      * @param simulation The simulate used to generate the graphs and data.
      * @param parameters The parameters to be used in the simulationWrapper.
      */
@@ -502,7 +501,7 @@ public class TimeoutComparison {
 
                 File dir3 = null;
 
-                if (isSavePatterns()) {
+                if (isSaveCPDAGs()) {
                     dir3 = new File(subdir, "patterns");
                     dir3.mkdirs();
                 }
@@ -526,9 +525,9 @@ public class TimeoutComparison {
                     DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
                     out.close();
 
-                    if (isSavePatterns()) {
+                    if (isSaveCPDAGs()) {
                         File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(SearchGraphUtils.patternForDag(graph), file3, false);
+                        GraphUtils.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
@@ -923,7 +922,7 @@ public class TimeoutComparison {
 
     /**
      * @param showUtilities True iff a column of utilities marked "W" should be
-     * shown in the output.
+     *                      shown in the output.
      */
     public void setShowUtilities(boolean showUtilities) {
         this.showUtilities = showUtilities;
@@ -952,17 +951,17 @@ public class TimeoutComparison {
     }
 
     /**
-     * @return True if patterns should be saved out.
+     * @return True if CPDAGs should be saved out.
      */
-    public boolean isSavePatterns() {
-        return savePatterns;
+    public boolean isSaveCPDAGs() {
+        return saveCPDAGs;
     }
 
     /**
-     * @param savePatterns True if patterns should be saved out.
+     * @param saveCPDAGs True if CPDAGs should be saved out.
      */
-    public void setSavePatterns(boolean savePatterns) {
-        this.savePatterns = savePatterns;
+    public void setSaveCPDAGs(boolean saveCPDAGs) {
+        this.saveCPDAGs = saveCPDAGs;
     }
 
     /**
@@ -989,7 +988,7 @@ public class TimeoutComparison {
 
     /**
      * @param tabDelimitedTables True iff tables should be tab delimited (e.g.
-     * for easy pasting into Excel).
+     *                           for easy pasting into Excel).
      */
     public void setTabDelimitedTables(boolean tabDelimitedTables) {
         this.tabDelimitedTables = tabDelimitedTables;
@@ -1205,8 +1204,8 @@ public class TimeoutComparison {
 
         if (this.comparisonGraph == ComparisonGraph.true_DAG) {
             comparisonGraph = new EdgeListGraph(trueGraph);
-        } else if (this.comparisonGraph == ComparisonGraph.Pattern_of_the_true_DAG) {
-            comparisonGraph = SearchGraphUtils.patternForDag(new EdgeListGraph(trueGraph));
+        } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
+            comparisonGraph = SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueGraph));
         } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
             comparisonGraph = new DagToPag2(new EdgeListGraph(trueGraph)).convert();
         } else {

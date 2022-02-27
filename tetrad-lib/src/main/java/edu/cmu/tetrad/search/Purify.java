@@ -23,7 +23,10 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.sem.ParamType;
+import edu.cmu.tetrad.sem.Parameter;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -80,7 +83,6 @@ public class Purify {
     /*
      * Constructor Purify
      */
-
     public Purify(CorrelationMatrix correlationMatrix, double sig, TestType testType,
                   Clusters clusters) {
         if (DataUtils.containsMissingValue(correlationMatrix.getMatrix())) {
@@ -1947,9 +1949,9 @@ public class Purify {
         double iMinusI[][] =
                 MatrixUtils.inverse(MatrixUtils.subtract(identityI, lambdaI));
         double indImpliedCovar[][] = MatrixUtils.product(MatrixUtils.product(
-                iMinusI, MatrixUtils.sum(MatrixUtils.product(
-                        MatrixUtils.product(lambdaL, latentImpliedCovar),
-                        MatrixUtils.transpose(lambdaL)), tau)),
+                        iMinusI, MatrixUtils.sum(MatrixUtils.product(
+                                MatrixUtils.product(lambdaL, latentImpliedCovar),
+                                MatrixUtils.transpose(lambdaL)), tau)),
                 MatrixUtils.transpose(iMinusI));
         double loadingLatentCovar[][] = MatrixUtils.product(iMinusI,
                 MatrixUtils.product(lambdaL, latentImpliedCovar));

@@ -21,22 +21,29 @@ public abstract class ExternalAlgorithm implements Algorithm {
     public void setSimulation(Simulation simulation) {
         this.simulation = simulation;
     }
+
     public void setPath(String path) {
         this.path = path;
     }
+
     public void setSimIndex(int simIndex) {
         this.simIndex = simIndex;
     }
+
     public Simulation getSimulation() {
         return simulation;
     }
+
     public abstract long getElapsedTime(DataModel dataSet, Parameters parameters);
+
     public List<String> getParameters() {
         return usedParameters;
     }
+
     public int getNumDataModels() {
         return simulation.getNumDataModels();
     }
+
     public int getIndex(DataModel dataSet) {
         int index = -1;
 

@@ -212,7 +212,7 @@ final class SaveDataAction extends AbstractAction {
                     PrintWriter out;
 
                     try {
-                        File file1 = new File(file.getParent(),file.getName() + "_" + (i + 1) + ".txt");
+                        File file1 = new File(file.getParent(), file.getName() + "_" + (i + 1) + ".txt");
                         System.out.println(file1);
                         out = new PrintWriter(new FileOutputStream(file1));
                     } catch (IOException e) {

@@ -85,13 +85,12 @@ public class SimpleRandomizer implements GraphInitializer {
     private double percentHousekeeping = 80.0;
 
     public SimpleRandomizer(int indegree, int indegreeType, int mlag,
-            double percentHousekeeping) {
+                            double percentHousekeeping) {
 
         // Set indegree.
         if (indegree >= 2) {
             this.indegree = indegree;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException(
                     "Indegree must be at least 2: " + indegree);
         }
@@ -109,23 +108,21 @@ public class SimpleRandomizer implements GraphInitializer {
                 this.indegreeType = indegreeType;
                 break;
 
-            default :
+            default:
                 throw new IllegalArgumentException();
         }
 
         // Set mlag.
         if (mlag > 0) {
             this.mlag = mlag;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException();
         }
 
         // Set percent housekeeping.
         if ((percentHousekeeping >= 0.0) && (percentHousekeeping <= 100.0)) {
             this.percentHousekeeping = percentHousekeeping;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException();
         }
     }
@@ -139,7 +136,7 @@ public class SimpleRandomizer implements GraphInitializer {
         List factors = new ArrayList(lagGraph.getFactors());
 
         // Add edges one time step back.
-        for (Iterator it = factors.iterator(); it.hasNext();) {
+        for (Iterator it = factors.iterator(); it.hasNext(); ) {
             String factor = (String) it.next();
             LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
 
@@ -149,7 +146,7 @@ public class SimpleRandomizer implements GraphInitializer {
         //        System.out.println("Indegree = " + indegree);
 
         // Add remaining edges for each factor.
-        for (Iterator it = factors.iterator(); it.hasNext();) {
+        for (Iterator it = factors.iterator(); it.hasNext(); ) {
             String factor = (String) it.next();
 
             // Pick an indegree for this variable
@@ -185,7 +182,7 @@ public class SimpleRandomizer implements GraphInitializer {
                     //                            extraEdges);
                     break;
 
-                default :
+                default:
                     throw new IllegalStateException();
             }
 

@@ -88,7 +88,7 @@ public class TestPcStableMax {
                 knowledge);
     }
 
-//    @Test
+    //    @Test
     public void testCites() {
         String citesString = "164\n" +
                 "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
@@ -117,24 +117,24 @@ public class TestPcStableMax {
         PcStableMax pc = new PcStableMax(new IndTestFisherZ(dataSet, 0.11));
         pc.setKnowledge(knowledge);
 
-        Graph pattern = pc.search();
+        Graph CPDAG = pc.search();
 
-        Graph _true = new EdgeListGraph(pattern.getNodes());
+        Graph _true = new EdgeListGraph(CPDAG.getNodes());
 
-        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("GPQ"));
-        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("PREPROD"));
-        _true.addDirectedEdge(pattern.getNode("GPQ"), pattern.getNode("QFJ"));
-        _true.addDirectedEdge(pattern.getNode("PREPROD"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("PREPROD"), pattern.getNode("PUBS"));
-        _true.addDirectedEdge(pattern.getNode("PUBS"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("PUBS"));
-        _true.addDirectedEdge(pattern.getNode("SEX"), pattern.getNode("PUBS"));
+        _true.addDirectedEdge(CPDAG.getNode("ABILITY"), CPDAG.getNode("CITES"));
+        _true.addDirectedEdge(CPDAG.getNode("ABILITY"), CPDAG.getNode("GPQ"));
+        _true.addDirectedEdge(CPDAG.getNode("ABILITY"), CPDAG.getNode("PREPROD"));
+        _true.addDirectedEdge(CPDAG.getNode("GPQ"), CPDAG.getNode("QFJ"));
+        _true.addDirectedEdge(CPDAG.getNode("PREPROD"), CPDAG.getNode("CITES"));
+        _true.addDirectedEdge(CPDAG.getNode("PREPROD"), CPDAG.getNode("PUBS"));
+        _true.addDirectedEdge(CPDAG.getNode("PUBS"), CPDAG.getNode("CITES"));
+        _true.addDirectedEdge(CPDAG.getNode("QFJ"), CPDAG.getNode("CITES"));
+        _true.addDirectedEdge(CPDAG.getNode("QFJ"), CPDAG.getNode("PUBS"));
+        _true.addDirectedEdge(CPDAG.getNode("SEX"), CPDAG.getNode("PUBS"));
 
-        System.out.println(pattern + " " + _true);
+        System.out.println(CPDAG + " " + _true);
 
-        assertEquals(pattern, _true);
+        assertEquals(CPDAG, _true);
     }
 
     /**
@@ -187,37 +187,6 @@ public class TestPcStableMax {
 
         // Do test.
         assertEquals(trueGraph, resultGraph);
-    }
-
-    @Test
-    public void testPcStable2() {
-        RandomUtil.getInstance().setSeed(1450030184196L);
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < 10; i++) {
-            nodes.add(new ContinuousVariable("X" + (i + 1)));
-        }
-
-        Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false);
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(200, false);
-
-        TetradLogger.getInstance().setForceLog(false);
-        IndependenceTest test = new IndTestFisherZ(data, 0.05);
-
-        PcStableMax pc = new PcStableMax(test);
-        pc.setVerbose(false);
-        Graph pattern = pc.search();
-
-        for (int i = 0; i < 1; i++) {
-            DataSet data2 = DataUtils.reorderColumns(data);
-            IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
-            PcStableMax pc2 = new PcStableMax(test2);
-            pc2.setVerbose(false);
-            Graph pattern2 = pc2.search();
-            assertTrue(pattern.equals(pattern2));
-        }
     }
 }
 

@@ -113,7 +113,7 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         textArea.append("\nMax indegree: " + String.valueOf(maxIndegree));
         textArea.append("\nMax outdegree: " + String.valueOf(maxOutdegree));
         textArea.append("\nNumber of latents: " + String.valueOf(numLatents));
-        textArea.append("\n" + (cyclic ? "Cyclic": "Acyclic"));
+        textArea.append("\n" + (cyclic ? "Cyclic" : "Acyclic"));
 
         Box b2 = Box.createHorizontalBox();
         b2.add(scroll);

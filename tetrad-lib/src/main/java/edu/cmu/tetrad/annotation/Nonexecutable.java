@@ -18,16 +18,12 @@
  */
 package edu.cmu.tetrad.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Indicates an algorithm is nonexecutable. This is mainly used to indicate that
  * this algorithm is not run directed from this class.
- *
+ * <p>
  * Jan 18, 2018 2:59:34 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

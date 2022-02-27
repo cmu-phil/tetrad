@@ -34,9 +34,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.text.DecimalFormat;
@@ -85,7 +85,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         this.regression = new RegressionDataset(internalData);
     }
 
-    public void setPreferLinear(boolean preferLinear){
+    public void setPreferLinear(boolean preferLinear) {
         this.preferLinear = preferLinear;
     }
 
@@ -106,7 +106,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             flipLast = false;
             return isIndependentMultinomialLogisticRegression(x, y, z);
         } else if (x instanceof DiscreteVariable) {
-            if(preferLinear) {
+            if (preferLinear) {
                 flipLast = true;
                 return isIndependentRegression(y, x, z);
             } else {
@@ -114,7 +114,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
                 return isIndependentMultinomialLogisticRegression(x, y, z);
             }
         } else {
-            if(y instanceof DiscreteVariable && !preferLinear) {
+            if (y instanceof DiscreteVariable && !preferLinear) {
                 flipLast = true;
                 return isIndependentMultinomialLogisticRegression(y, x, z);
             } else {
@@ -129,7 +129,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             flipLast = false;
             return dependencePvalsLogit(x, y, z);
         } else if (x instanceof DiscreteVariable) {
-            if(preferLinear) {
+            if (preferLinear) {
                 flipLast = true;
                 return dependencePvalsLinear(y, x, z);
             } else {
@@ -137,7 +137,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
                 return dependencePvalsLogit(x, y, z);
             }
         } else {
-            if(y instanceof DiscreteVariable && !preferLinear) {
+            if (y instanceof DiscreteVariable && !preferLinear) {
                 flipLast = true;
                 return dependencePvalsLogit(y, x, z);
             } else {
@@ -147,7 +147,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         }
     }
 
-    public boolean getFlipLast(){
+    public boolean getFlipLast() {
         return flipLast;
     }
 
@@ -235,7 +235,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         //DoubleMatrix2D coeffsNull = DoubleFactory2D.dense.make(zList.size(), variablesPerNode.get(x).size());
         //DoubleMatrix2D coeffsDep = DoubleFactory2D.dense.make(yzDumList.size()+1, variablesPerNode.get(x).size());
         double[] sumLnP = new double[yzList.size()];
-        for(int i = 0; i < sumLnP.length; i++)
+        for (int i = 0; i < sumLnP.length; i++)
             sumLnP[i] = 0.0;
 
         for (int i = 0; i < variablesPerNode.get(x).size(); i++) {
@@ -267,7 +267,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
 
         double[] pVec = new double[sumLnP.length];
         for (int i = 0; i < pVec.length; i++) {
-            if(sumLnP[i]==Double.NEGATIVE_INFINITY) pVec[i] = 0.0;
+            if (sumLnP[i] == Double.NEGATIVE_INFINITY) pVec[i] = 0.0;
             else {
                 int df = 2 * variablesPerNode.get(x).size() * variablesPerNode.get(yzList.get(i)).size();
                 pVec[i] = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(-2 * sumLnP[i]);
@@ -278,7 +278,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     private boolean isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
-        double p = dependencePvalsLogit(x,y,z)[0];
+        double p = dependencePvalsLogit(x, y, z)[0];
         boolean indep = p > alpha;
         //0 corresponds to y
         this.lastP = p;
@@ -350,7 +350,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return false;
     }
 
-    private double multiLL(DoubleMatrix2D coeffs, Node dep, List<Node> indep){
+    private double multiLL(DoubleMatrix2D coeffs, Node dep, List<Node> indep) {
 
         DoubleMatrix2D indepData = factory2D.make(internalData.subsetColumns(indep).getDoubleData().toArray());
         List<Node> depList = new ArrayList<>();
@@ -362,10 +362,10 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
 
         probs = factory2D.appendColumns(factory2D.make(indepData.rows(), 1, 1.0), probs).assign(Functions.exp);
         double ll = 0;
-        for(int i = 0; i < N; i++){
+        for (int i = 0; i < N; i++) {
             DoubleMatrix1D curRow = probs.viewRow(i);
             curRow.assign(Functions.div(curRow.zSum()));
-            ll += Math.log(curRow.get((int)depData.get(i,0)));
+            ll += Math.log(curRow.get((int) depData.get(i, 0)));
         }
         return ll;
     }
@@ -429,7 +429,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
                 coeffInd++;
             }
 
-            if(pVec[i]==Double.NEGATIVE_INFINITY)
+            if (pVec[i] == Double.NEGATIVE_INFINITY)
                 pVec[i] = 0.0;
             else
                 pVec[i] = 1.0 - new ChiSquaredDistribution(2 * curDummy.size()).cumulativeProbability(-2 * pVec[i]);
@@ -439,7 +439,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     private boolean isIndependentRegression(Node x, Node y, List<Node> z) {
-        double p = dependencePvalsLinear(x,y,z)[0];
+        double p = dependencePvalsLinear(x, y, z)[0];
         //result.getP()[1];
         this.lastP = p;
 

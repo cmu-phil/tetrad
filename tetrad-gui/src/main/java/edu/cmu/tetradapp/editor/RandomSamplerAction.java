@@ -91,8 +91,7 @@ final class RandomSamplerAction extends AbstractAction {
                 list.add(newDataSet);
                 getDataEditor().reset(list);
                 getDataEditor().selectFirstTab();
-            }
-            catch (Exception e1) {
+            } catch (Exception e1) {
                 String s = e1.getMessage();
 
                 if (s == null || "".equals(s)) {
@@ -101,8 +100,7 @@ final class RandomSamplerAction extends AbstractAction {
 
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), s);
             }
-        }
-        else {
+        } else {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Must be a tabular data set.");
         }
@@ -118,8 +116,7 @@ final class RandomSamplerAction extends AbstractAction {
                 try {
                     setSampleSize(value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }

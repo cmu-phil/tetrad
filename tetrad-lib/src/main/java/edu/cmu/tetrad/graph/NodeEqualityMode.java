@@ -24,6 +24,7 @@ package edu.cmu.tetrad.graph;
 /**
  * Sets whether nodes are compared by the equals method or by object
  * identity.
+ *
  * @author Joseph Ramsey
  */
 public class NodeEqualityMode {

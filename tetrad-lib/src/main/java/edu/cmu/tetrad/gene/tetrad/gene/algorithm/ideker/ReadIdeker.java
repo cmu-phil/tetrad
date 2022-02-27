@@ -60,8 +60,7 @@ public class ReadIdeker {
 
         try {
             s = new FileInputStream(fileName);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Cannot open file " + fileName);
             return;
         }
@@ -85,8 +84,7 @@ public class ReadIdeker {
                             rawData[j - 1][i + offSet[k]] =
                                     Integer.parseInt(st.nextToken(" "));
                         }
-                    }
-                    else {
+                    } else {
                         //int id = Integer.parseInt(st.nextToken(" "));
                         for (int i = 0; i < nvaluesRecord[k]; i++) {
                             rawData[j - 1][i + offSet[k]] =
@@ -94,8 +92,7 @@ public class ReadIdeker {
                         }
                         //System.out.println("first raw data = " + rawData[j-1][0]);
                     }
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     System.out.println("Read error in " + fileName);
                     return;
                 }
@@ -160,11 +157,9 @@ public class ReadIdeker {
                 //int pp = p - 10;  //Raffinose
                 if (pp - 1 == g) {
                     binaryExpression[pp][g] = -1;
-                }
-                else if (expressions[p][g] > meanExpression[g]) {
+                } else if (expressions[p][g] > meanExpression[g]) {
                     binaryExpression[pp][g] = 1;
-                }
-                else {
+                } else {
                     binaryExpression[pp][g] = 0;
                 }
             }

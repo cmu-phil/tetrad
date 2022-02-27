@@ -22,17 +22,17 @@ import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.DiscreteData;
 import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
- *
  * Jan 2, 2019 2:57:44 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -46,10 +46,10 @@ public class VerticalDiscreteTabularDatasetFileReaderTest {
     private final boolean hasHeader = true;
 
     private final Path[] dataFiles = {
-        Paths.get(getClass().getResource("/data/tabular/discrete/dos_sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/discrete/mac_sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/discrete/sim_test_data.csv").getFile()),
-        Paths.get(getClass().getResource("/data/tabular/discrete/quotes_sim_test_data.csv").getFile())
+            Paths.get(getClass().getResource("/data/tabular/discrete/dos_sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/discrete/mac_sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/discrete/sim_test_data.csv").getFile()),
+            Paths.get(getClass().getResource("/data/tabular/discrete/quotes_sim_test_data.csv").getFile())
     };
 
     public VerticalDiscreteTabularDatasetFileReaderTest() {

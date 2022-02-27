@@ -142,7 +142,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
         this.dataWrapper = dataWrapper;
         this.params2 = params;
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
-   }
+    }
 
     public PValueImproverWrapper(SemGraphWrapper graphWrapper,
                                  DataWrapper dataWrapper,
@@ -229,8 +229,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             } else {
                 throw new IllegalStateException();
             }
-        }
-        else if (dataModel instanceof CovarianceMatrix) {
+        } else if (dataModel instanceof CovarianceMatrix) {
             CovarianceMatrix covarianceMatrix = (CovarianceMatrix) dataModel;
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
@@ -242,8 +241,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             } else {
                 throw new IllegalStateException();
             }
-        }
-        else {
+        } else {
             throw new IllegalStateException();
         }
 
@@ -268,7 +266,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        setResultGraph(SearchGraphUtils.patternForDag(graph, knowledge));
+        setResultGraph(SearchGraphUtils.cpdagForDag(graph));
     }
 
     public boolean supportsKnowledge() {

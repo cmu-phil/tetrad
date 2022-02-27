@@ -33,7 +33,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler Gibson
  */
 public class SimulateFromCovWrapper extends DataWrapper {
-     static final long serialVersionUID = 23L;
+    static final long serialVersionUID = 23L;
 
     /**
      * Splits the given data set by collinear columns.
@@ -46,7 +46,7 @@ public class SimulateFromCovWrapper extends DataWrapper {
         DataModel model = wrapper.getSelectedDataModel();
 
         if (model instanceof ICovarianceMatrix) {
-            CovarianceMatrix covarianceMatrix = new CovarianceMatrix((CovarianceMatrix)model);
+            CovarianceMatrix covarianceMatrix = new CovarianceMatrix((CovarianceMatrix) model);
 
             DataSet dataSet = DataUtils.choleskySimulation(covarianceMatrix);
 

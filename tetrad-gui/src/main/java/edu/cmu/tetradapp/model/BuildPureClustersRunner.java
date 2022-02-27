@@ -275,9 +275,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 //            return;
 //        }
 
-        try
-
-        {
+        try {
             Graph graph = new MarshalledObject<>(searchGraph).get();
             GraphUtils.circleLayout(graph, 200, 200, 150);
             GraphUtils.fruchtermanReingoldLayout(graph);

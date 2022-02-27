@@ -33,7 +33,7 @@ import java.beans.PropertyChangeListener;
 
 /**
  * Displays a Q-Q plot for a random variable.
- *
+ * <p>
  * A lot of the code borrows heavily from HistogramAction
  *
  * @author Michael Freenor
@@ -58,13 +58,9 @@ class QQPlotAction extends AbstractAction {
     }
 
 
-
-
-
-
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
-        if(dataSet == null || dataSet.getNumColumns() == 0){
+        if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot display a Q-Q plot for an empty data set.");
             return;
         }
@@ -80,11 +76,11 @@ class QQPlotAction extends AbstractAction {
         // if more then one column is selected then open up more than one histogram
         if (selected != null && 0 < selected.length) {
             // warn user if they selected more than 10
-            if(10 < selected.length){
+            if (10 < selected.length) {
                 int option = JOptionPane.showConfirmDialog(findOwner(), "You are about to open " + selected.length +
-                " Q-Q plots, are you sure you want to proceed?", "Q-Q Plot Warning", JOptionPane.YES_NO_OPTION);
+                        " Q-Q plots, are you sure you want to proceed?", "Q-Q Plot Warning", JOptionPane.YES_NO_OPTION);
                 // if selected no, return
-                if(option == JOptionPane.NO_OPTION){
+                if (option == JOptionPane.NO_OPTION) {
                     return;
                 }
             }
@@ -97,8 +93,6 @@ class QQPlotAction extends AbstractAction {
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
                 editorWindow.setVisible(true);
-
-
 
 
 //                dialog.pack();
@@ -125,9 +119,6 @@ class QQPlotAction extends AbstractAction {
     //============================== Private methods ============================//
 
 
-
-
-
     /**
      * Sets the location on the given dialog for the given index.
      */
@@ -143,8 +134,8 @@ class QQPlotAction extends AbstractAction {
 
         int x = (int) (150 * Math.cos(index * 15 * (Math.PI / 180)));
         int y = (int) (150 * Math.sin(index * 15 * (Math.PI / 180)));
-        x += (dim.width - bounds.width)/2;
-        y += (dim.height - bounds.height)/2;
+        x += (dim.width - bounds.width) / 2;
+        y += (dim.height - bounds.height) / 2;
         dialog.setLocation(x, y);
     }
 
@@ -174,7 +165,7 @@ class QQPlotAction extends AbstractAction {
 
         Box box = Box.createHorizontalBox();
         box.add(display);
-        
+
         box.add(Box.createHorizontalStrut(3));
         box.add(editorPanel);
         box.add(Box.createHorizontalStrut(5));
@@ -201,7 +192,6 @@ class QQPlotAction extends AbstractAction {
     }
 
     //================================= Inner Class ======================================//
-
 
 
     /**

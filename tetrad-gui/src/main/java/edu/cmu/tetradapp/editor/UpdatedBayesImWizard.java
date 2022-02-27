@@ -77,7 +77,7 @@ public final class UpdatedBayesImWizard extends JPanel {
     private JPanel marginalsPanel;
 
     public UpdatedBayesImWizard(final UpdaterWrapper updaterWrapper,
-            GraphWorkbench workbench, int tab, Node selectedNode) {
+                                GraphWorkbench workbench, int tab, Node selectedNode) {
         if (updaterWrapper == null) {
             throw new NullPointerException();
         }
@@ -171,7 +171,7 @@ public final class UpdatedBayesImWizard extends JPanel {
     }
 
     private void setupConditionalProbabilitiesDisplay(Node selectedNode,
-            UpdaterWrapper updaterWrapper, JTabbedPane probsPane) {
+                                                      UpdaterWrapper updaterWrapper, JTabbedPane probsPane) {
         UpdaterEditingTableModel editingTableModel =
                 new UpdaterEditingTableModel(selectedNode,
                         updaterWrapper.getBayesUpdater().getUpdatedBayesIm(), this);
@@ -204,8 +204,7 @@ public final class UpdatedBayesImWizard extends JPanel {
 
         if (selectedNode != null) {
             varNamesComboBox.setSelectedItem(selectedNode);
-        }
-        else {
+        } else {
             varNamesComboBox.setSelectedIndex(0);
             this.selectedNode = (Node) varNamesComboBox.getSelectedItem();
         }
@@ -224,9 +223,8 @@ public final class UpdatedBayesImWizard extends JPanel {
         conditionalBox.add(b1);
 
         Box b0 = Box.createHorizontalBox();
-        
-        
-        
+
+
         b0.add(new JLabel(
                 "conditional on the following additional evidence:"));
         b0.add(Box.createHorizontalGlue());
@@ -331,7 +329,7 @@ public final class UpdatedBayesImWizard extends JPanel {
         int maxWidth = 0;
 
         for (int i = 0;
-                i < updaterWrapper.getBayesUpdater().getBayesIm().getNumColumns(nodeIndex); i++) {
+             i < updaterWrapper.getBayesUpdater().getBayesIm().getNumColumns(nodeIndex); i++) {
             String value =
                     updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getCategory(node, i);
             String label = node + " = " + value;
@@ -342,7 +340,7 @@ public final class UpdatedBayesImWizard extends JPanel {
         }
 
         for (int i = 0;
-                i < updaterWrapper.getBayesUpdater().getBayesIm().getNumColumns(nodeIndex); i++) {
+             i < updaterWrapper.getBayesUpdater().getBayesIm().getNumColumns(nodeIndex); i++) {
             String value =
                     updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getCategory(node, i);
             Box c = Box.createHorizontalBox();
@@ -361,8 +359,7 @@ public final class UpdatedBayesImWizard extends JPanel {
 
             if (Double.isNaN(priorMarginals[i])) {
                 priorBar = makeBar(150, 3, Color.LIGHT_GRAY);
-            }
-            else {
+            } else {
                 priorBar = makeBar(priorWidth, 6, Color.BLUE.brighter());
             }
 
@@ -370,8 +367,7 @@ public final class UpdatedBayesImWizard extends JPanel {
 
             if (Double.isNaN(updatedMarginals[i])) {
                 updatedBar = makeBar(150, 3, Color.LIGHT_GRAY);
-            }
-            else {
+            } else {
                 updatedBar = makeBar(updatedWidth, 6, Color.RED);
             }
 
@@ -478,8 +474,7 @@ public final class UpdatedBayesImWizard extends JPanel {
 
         if (owner == null) {
             setCurrentNodeSub(node);
-        }
-        else {
+        } else {
             new WatchedProcess(owner) {
                 public void watch() {
                     setCurrentNodeSub(node);
@@ -598,7 +593,7 @@ final class UpdaterEditingTable extends JTable {
     }
 
     public void setDefaultRenderer(Class columnClass,
-            TableCellRenderer renderer) {
+                                   TableCellRenderer renderer) {
         super.setDefaultRenderer(columnClass, renderer);
 
         if (getModel() instanceof UpdaterEditingTableModel) {
@@ -718,7 +713,7 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
      * bayesIm.
      */
     public UpdaterEditingTableModel(Node node, BayesIm bayesIm,
-            UpdatedBayesImWizard wizard) {
+                                    UpdatedBayesImWizard wizard) {
         if (node == null) {
             throw new NullPointerException("Node must not be null.");
         }
@@ -745,8 +740,7 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
         if (col < getBayesIm().getNumParents(getNodeIndex())) {
             int parent = getBayesIm().getParent(getNodeIndex(), col);
             return getBayesIm().getNode(parent).getName();
-        }
-        else {
+        } else {
             int numNodeVals = getBayesIm().getNumColumns(getNodeIndex());
             int valIndex = col - getBayesIm().getNumParents(getNodeIndex());
 
@@ -794,8 +788,7 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
                     getBayesIm().getParent(getNodeIndex(), tableCol));
             BayesPm bayesPm = getBayesIm().getBayesPm();
             return bayesPm.getCategory(columnNode, parentVals[tableCol]);
-        }
-        else {
+        } else {
             int colIndex = tableCol - parentVals.length;
 
             if (colIndex < getBayesIm().getNumColumns(getNodeIndex())) {

@@ -21,12 +21,12 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.graph.Edge.Property;
+import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 
 
 /**
@@ -295,69 +295,69 @@ public final class Edges {
 
                 List<Property> propertiesLeft = edge1.getProperties();
                 List<EdgeTypeProbability> edgeTypePropertiesLeft = edge1.getEdgeTypeProbabilities();
-                
+
                 List<Property> propertiesRight = edge2.getProperties();
                 List<EdgeTypeProbability> edgeTypePropertiesRight = edge2.getEdgeTypeProbabilities();
-                
+
                 // Compare edgeTypeProperty first, if exists
                 int compareEdgeTypeProperty = 0;
-                if(!edgeTypePropertiesLeft.isEmpty() && !edgeTypePropertiesRight.isEmpty()) {
-                	// Max probability on the left - excluding [no edge]
-                	double probLeft = 0;
-                	for(EdgeTypeProbability etp : edgeTypePropertiesLeft) {
-                		if(etp.getEdgeType() != EdgeType.nil && etp.getProbability() > probLeft) {
-                			probLeft = etp.getProbability();
-                		}
-                	}
-                	
-                	// Max probability on the right - excluding [no edge]
-                	double probRight = 0;
-                	for(EdgeTypeProbability etp : edgeTypePropertiesRight) {
-                		if(etp.getEdgeType() != EdgeType.nil && etp.getProbability() > probRight) {
-                			probRight = etp.getProbability();
-                		}
-                	}
-                	
-                	if(probLeft - probRight > 0) {
-                		compareEdgeTypeProperty = -1;
-                	}else if(probLeft - probRight < 0) {
-                		compareEdgeTypeProperty = 1;
-                	}            	
+                if (!edgeTypePropertiesLeft.isEmpty() && !edgeTypePropertiesRight.isEmpty()) {
+                    // Max probability on the left - excluding [no edge]
+                    double probLeft = 0;
+                    for (EdgeTypeProbability etp : edgeTypePropertiesLeft) {
+                        if (etp.getEdgeType() != EdgeType.nil && etp.getProbability() > probLeft) {
+                            probLeft = etp.getProbability();
+                        }
+                    }
+
+                    // Max probability on the right - excluding [no edge]
+                    double probRight = 0;
+                    for (EdgeTypeProbability etp : edgeTypePropertiesRight) {
+                        if (etp.getEdgeType() != EdgeType.nil && etp.getProbability() > probRight) {
+                            probRight = etp.getProbability();
+                        }
+                    }
+
+                    if (probLeft - probRight > 0) {
+                        compareEdgeTypeProperty = -1;
+                    } else if (probLeft - probRight < 0) {
+                        compareEdgeTypeProperty = 1;
+                    }
                 }
                 if (compareEdgeTypeProperty != 0) {
-                	return compareEdgeTypeProperty;
+                    return compareEdgeTypeProperty;
                 }
-                
+
                 // Compare edge's properties
                 int compareProperty = 0;
                 int scorePropertyLeft = 0;
-                for(Property property : propertiesLeft) {
-                	if(property == Property.dd || property == Property.nl) {
-                		scorePropertyLeft += 2;
-                	}
-                	if(property == Property.pd || property == Property.pl) {
-                		scorePropertyLeft += 1;
-                	}
+                for (Property property : propertiesLeft) {
+                    if (property == Property.dd || property == Property.nl) {
+                        scorePropertyLeft += 2;
+                    }
+                    if (property == Property.pd || property == Property.pl) {
+                        scorePropertyLeft += 1;
+                    }
                 }
                 int scorePropertyRight = 0;
-                for(Property property : propertiesRight) {
-                	if(property == Property.dd || property == Property.nl) {
-                		scorePropertyRight += 2;
-                	}
-                	if(property == Property.pd || property == Property.pl) {
-                		scorePropertyRight += 1;
-                	}
+                for (Property property : propertiesRight) {
+                    if (property == Property.dd || property == Property.nl) {
+                        scorePropertyRight += 2;
+                    }
+                    if (property == Property.pd || property == Property.pl) {
+                        scorePropertyRight += 1;
+                    }
                 }
-                
-                if(scorePropertyLeft - scorePropertyRight > 0) {
-                	compareProperty = -1;
-                }else if(scorePropertyLeft - scorePropertyRight < 0) {
-                	compareProperty = 1;
+
+                if (scorePropertyLeft - scorePropertyRight > 0) {
+                    compareProperty = -1;
+                } else if (scorePropertyLeft - scorePropertyRight < 0) {
+                    compareProperty = 1;
                 }
-                if(compareProperty != 0) {	
-                	return compareProperty;
+                if (compareProperty != 0) {
+                    return compareProperty;
                 }
-                
+
                 int compareLeft = left1.toString().compareTo(left2.toString());
                 int compareRight = right1.toString().compareTo(right2.toString());
 

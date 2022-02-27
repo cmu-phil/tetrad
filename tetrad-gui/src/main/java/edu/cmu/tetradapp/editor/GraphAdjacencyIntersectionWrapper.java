@@ -28,8 +28,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphSource;
-import edu.cmu.tetradapp.model.GraphWrapper;
-import edu.cmu.tetradapp.model.PcRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +48,7 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
         construct(data1);
     }
 
-    private void construct(GraphSource...GraphSources) {
+    private void construct(GraphSource... GraphSources) {
         for (GraphSource wrapper : GraphSources) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");

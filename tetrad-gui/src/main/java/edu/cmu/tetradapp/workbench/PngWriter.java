@@ -85,8 +85,7 @@ class PngWriter {
         // Write the image to resultFile.
         try {
             ImageIO.write(image, "PNG", file);
-        }
-        catch (IOException e1) {
+        } catch (IOException e1) {
             throw new RuntimeException("Could not write to " + file, e1);
         }
     }

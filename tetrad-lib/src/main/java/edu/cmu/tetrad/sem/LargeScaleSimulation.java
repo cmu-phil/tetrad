@@ -22,23 +22,23 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
+import org.apache.commons.collections4.map.HashedMap;
+import org.apache.commons.math3.distribution.AbstractRealDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.random.Well1024a;
 
 import java.io.PrintStream;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.sqrt;
-
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
-import org.apache.commons.collections4.map.HashedMap;
-import org.apache.commons.math3.distribution.*;
-import org.apache.commons.math3.random.Well1024a;
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 
 /**
  * Stores a SEM model, pared down, for purposes of simulating data sets with
@@ -57,8 +57,8 @@ public final class LargeScaleSimulation {
     private transient TetradAlgebra algebra;
     private List<Node> variableNodes;
     private Graph graph;
-    private double coefLow = .2;
-    private double coefHigh = 1.5;
+    private double coefLow = 0.0;
+    private double coefHigh = 1.0;
     private double varLow = 1.0;
     private double varHigh = 3.0;
     private double meanLow = 0;
@@ -578,7 +578,7 @@ public final class LargeScaleSimulation {
         return variableNodes;
     }
 
-    // returnSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
+    // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(Node x, Node y, IKnowledge knowledge) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {

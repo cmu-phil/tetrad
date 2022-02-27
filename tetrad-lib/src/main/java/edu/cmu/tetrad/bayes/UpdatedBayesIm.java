@@ -80,6 +80,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
     private boolean[] affectedVars;
 
     //===========================CONSTRUCTORS===========================//
+
     /**
      * Constructs Bayes net in which CPT's updated for the given evidence are
      * calculated on the fly.
@@ -105,7 +106,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         if (evidence.isIncompatibleWith(bayesIm)) {
             throw new IllegalArgumentException(
                     "Variables for this evidence must be compatible with those "
-                    + "of the model Bayes IM");
+                            + "of the model Bayes IM");
         }
 
         this.bayesIm = bayesIm;
@@ -237,7 +238,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
     }
 
     public void setProbability(int nodeIndex, int rowIndex, int colIndex,
-            double value) {
+                               double value) {
         getBayesIm().setProbability(nodeIndex, rowIndex, colIndex, value);
     }
 
@@ -441,11 +442,11 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
     }
 
     private double getConditionalProb(Proposition assertion,
-            Proposition condition, boolean[] relevantVars) {
+                                      Proposition condition, boolean[] relevantVars) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be "
-                    + "for the same Bayes IM.");
+                            + "for the same Bayes IM.");
         }
 
         for (int i = 0; i < relevantVars.length; i++) {
@@ -500,14 +501,14 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
     }
 
     private static boolean hasNextValue(Proposition proposition, int variable,
-            int curIndex) {
+                                        int curIndex) {
         return nextValue(proposition, variable, curIndex) != -1;
     }
 
     private static int nextValue(Proposition proposition, int variable,
-            int curIndex) {
+                                 int curIndex) {
         for (int i = curIndex + 1;
-                i < proposition.getNumCategories(variable); i++) {
+             i < proposition.getNumCategories(variable); i++) {
             if (proposition.isAllowed(variable, i)) {
                 return i;
             }
@@ -529,7 +530,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
             int[] parents = getBayesIm().getParents(node);
             int[] parentValues = new int[parents.length];
             for (int parentIndex = 0;
-                    parentIndex < parentValues.length; parentIndex++) {
+                 parentIndex < parentValues.length; parentIndex++) {
                 parentValues[parentIndex]
                         = variableValues[parents[parentIndex]];
             }

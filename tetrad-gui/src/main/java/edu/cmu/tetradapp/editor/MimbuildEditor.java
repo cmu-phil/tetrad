@@ -135,8 +135,7 @@ public class MimbuildEditor extends JPanel {
                         if (keyCode == KeyEvent.VK_R) {
                             if (id == KeyEvent.KEY_PRESSED) {
                                 Preferences.userRoot().putBoolean("BPCrDown", true);
-                            }
-                            else if (id == KeyEvent.KEY_RELEASED) {
+                            } else if (id == KeyEvent.KEY_RELEASED) {
                                 Preferences.userRoot().putBoolean("BPCrDown", false);
                             }
                         }
@@ -178,8 +177,7 @@ public class MimbuildEditor extends JPanel {
                 if (selected) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Only the graph with the highest P value will be shown, until deselected.");
-                }
-                else if (!selected) {
+                } else if (!selected) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Max P mode turned off and reset.");
                     double maxP = -1;
@@ -268,8 +266,7 @@ public class MimbuildEditor extends JPanel {
                 try {
 //                    mimRunner.getParameters().setClusters(clusterEditor.getClusters());
                     getMimRunner().execute();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     CharArrayWriter writer1 = new CharArrayWriter();
                     PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
@@ -323,8 +320,7 @@ public class MimbuildEditor extends JPanel {
             public void run() {
                 try {
                     sleep(delay);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     return;
                 }
 
@@ -371,8 +367,7 @@ public class MimbuildEditor extends JPanel {
                 while (thread().isAlive()) {
                     try {
                         sleep(200);
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         return;
                     }
                 }
@@ -452,7 +447,7 @@ public class MimbuildEditor extends JPanel {
         }
 
         if (getMimRunner().getClusters() != null) {
-            ClusterEditor editor =  new ClusterEditor(getMimRunner().getClusters(),
+            ClusterEditor editor = new ClusterEditor(getMimRunner().getClusters(),
                     getMimRunner().getData().getVariableNames());
             tabbedPane.add("Measurement Model", editor);
         }
@@ -559,11 +554,9 @@ public class MimbuildEditor extends JPanel {
         try {
             Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
             getMimRunner().getParams().set("sourceGraph", graph);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             getMimRunner().getParams().set("sourceGraph", (Graph) null);
-        }
-        catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             getMimRunner().getParams().set("sourceGraph", (Graph) null);
             e.printStackTrace();
         }
@@ -603,8 +596,7 @@ public class MimbuildEditor extends JPanel {
                 boolean discrete = data.isDiscrete();
                 return new BuildPureClustersIndTestParamsEditor2(params,
                         discrete);
-            }
-            else if (dataModel instanceof ICovarianceMatrix) {
+            } else if (dataModel instanceof ICovarianceMatrix) {
                 return new BuildPureClustersIndTestParamsEditor2(params, false);
             }
         }
@@ -618,7 +610,7 @@ public class MimbuildEditor extends JPanel {
             if (runner.getData() instanceof DataSet) {
                 discreteData = ((DataSet) runner.getData()).isDiscrete();
             }
-            
+
             return new PurifyIndTestParamsEditor(params, discreteData);
         }
 

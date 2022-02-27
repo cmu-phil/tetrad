@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.EdgeListGraphSingleConnections;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -51,7 +51,7 @@ import java.util.List;
  */
 public final class MagToPag {
 
-    private final EdgeListGraphSingleConnections mag;
+    private final EdgeListGraph mag;
     private final IndTestDSep dsep;
     /**
      * The PAG_of_the_true_DAG being constructed.
@@ -99,7 +99,7 @@ public final class MagToPag {
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
     public MagToPag(Graph mag) {
-        this.mag = new EdgeListGraphSingleConnections(mag);
+        this.mag = new EdgeListGraph(mag);
         this.variables.addAll(mag.getNodes());
         this.dsep = new IndTestDSep(mag);
     }
@@ -124,7 +124,7 @@ public final class MagToPag {
 
         setMaxPathLength(maxPathLength);
 
-        Graph graph = new EdgeListGraphSingleConnections(mag);
+        Graph graph = new EdgeListGraph(mag);
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         FciOrient fciOrient = new FciOrient(new DagSepsets(mag));

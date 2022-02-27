@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.NamingProtocol;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;

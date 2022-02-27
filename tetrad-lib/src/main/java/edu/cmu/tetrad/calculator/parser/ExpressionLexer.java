@@ -77,7 +77,7 @@ public class ExpressionLexer {
 
 
     /**
-     * Cached PATTERNS.
+     * Cached CPDAGS.
      */
     private static Map<Token, Pattern> PATTERNS;
 

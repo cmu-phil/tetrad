@@ -66,7 +66,7 @@ class KnowledgeEditorToolbar extends JPanel {
     /**
      * Constructs a new session toolbar.
      *
-     * @param workbench   the workbench this toolbar controls.
+     * @param workbench the workbench this toolbar controls.
      */
     public KnowledgeEditorToolbar(KnowledgeWorkbench workbench,
                                   Graph sourceGraph) {
@@ -138,7 +138,7 @@ class KnowledgeEditorToolbar extends JPanel {
         // Add an action listener to help send messages to the
         // workbench.
         ActionListener changeListener = new ActionListener() {
-            public void  actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 JToggleButton _button = (JToggleButton) e.getSource();
 
                 if (_button.getModel().isSelected()) {

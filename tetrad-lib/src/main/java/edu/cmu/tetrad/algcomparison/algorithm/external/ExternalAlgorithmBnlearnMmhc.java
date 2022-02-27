@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.*;
@@ -11,8 +10,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An API to allow results from external algorithms to be included in a report through the algrorithm
@@ -80,8 +77,8 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
             while ((line = r.readLine()) != null) {
                 if (line.isEmpty()) continue;
                 String[] tokens = line.split("\t");
-                String name1 = tokens[0].replace(" ", "").replace("\"","");
-                String name2 = tokens[1].replace(" ", "").replace("\"","");
+                String name1 = tokens[0].replace(" ", "").replace("\"", "");
+                String name2 = tokens[1].replace(" ", "").replace("\"", "");
 
                 if (graph.getNode(name1) == null) {
                     graph.addNode(new GraphNode(name1));
@@ -111,11 +108,11 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
     }
 
     /**
-     * Returns the pattern of the supplied DAG.
+     * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
-//        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+//        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     public String getDescription() {

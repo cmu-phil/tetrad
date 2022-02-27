@@ -19,11 +19,11 @@
 package edu.pitt.dbmi.data.reader.metadata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- *
  * Dec 18, 2018 11:21:23 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

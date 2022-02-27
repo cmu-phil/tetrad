@@ -21,11 +21,11 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.graph;
 
-import edu.cmu.tetrad.util.NamingProtocol;
-import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.gene.tetrad.gene.history.BasicLagGraph;
 import edu.cmu.tetrad.gene.tetrad.gene.history.LagGraph;
 import edu.cmu.tetrad.gene.tetrad.gene.history.LaggedFactor;
+import edu.cmu.tetrad.util.NamingProtocol;
+import edu.cmu.tetrad.util.PointXy;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -57,7 +57,7 @@ public final class ManualLagGraph implements LagGraph {
         setMaxLagAllowable(params.getMlag());
 
         // Add edges one time step back.
-        for (Iterator it = getFactors().iterator(); it.hasNext();) {
+        for (Iterator it = getFactors().iterator(); it.hasNext(); ) {
             String factor = (String) it.next();
             LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
             addEdge(factor, laggedFactor);

@@ -212,8 +212,8 @@ final class ClusterRenderer extends JPanel {
             setVisibleRowCount(0);
             this.setCellRenderer(new ListCellRenderer() {
                 public Component getListCellRendererComponent(JList list,
-                        Object value, int index, boolean isSelected,
-                        boolean cellHasFocus) {
+                                                              Object value, int index, boolean isSelected,
+                                                              boolean cellHasFocus) {
                     Color fillColor = new Color(153, 204, 204);
                     Color selectedFillColor = new Color(255, 204, 102);
 
@@ -223,8 +223,7 @@ final class ClusterRenderer extends JPanel {
                     if (isSelected) {
                         comp.setForeground(Color.BLACK);
                         comp.setBackground(selectedFillColor);
-                    }
-                    else {
+                    } else {
                         comp.setForeground(Color.BLACK);
                         comp.setBackground(fillColor);
                     }
@@ -267,8 +266,7 @@ final class ClusterRenderer extends JPanel {
 
             if (list == null) {
                 getToolkit().beep();
-            }
-            else {
+            } else {
                 this.movedList = list;
                 ListSelection transferable = new ListSelection(list);
                 dragGestureEvent.startDrag(DragSource.DefaultMoveDrop,
@@ -291,8 +289,7 @@ final class ClusterRenderer extends JPanel {
                             model.addElement(name);
                             sort(model);
                             dropTargetDropEvent.dropComplete(true);
-                        }
-                        catch (IllegalStateException e) {
+                        } catch (IllegalStateException e) {
                             String s = e.getMessage();
 
                             if (!"".equals(s)) {
@@ -303,8 +300,7 @@ final class ClusterRenderer extends JPanel {
                                     JOptionUtils.centeringComp(), s);
                             dropTargetDropEvent.dropComplete(false);
                         }
-                    }
-                    else {
+                    } else {
                         getClusters().removeFromClusters(name);
                         DefaultListModel model = (DefaultListModel) getModel();
                         model.addElement(name);
@@ -312,11 +308,9 @@ final class ClusterRenderer extends JPanel {
                         dropTargetDropEvent.dropComplete(true);
                     }
                 }
-            }
-            catch (UnsupportedFlavorException e) {
+            } catch (UnsupportedFlavorException e) {
                 e.printStackTrace();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -397,16 +391,14 @@ final class ClusterRenderer extends JPanel {
         }
 
         /**
+         * @param flavor the requested flavor for the data
          * @return an object which represents the data to be transferred.  The
          * class of the object returned is defined by the representation class
          * of the flavor.
-         *
-         * @param flavor the requested flavor for the data
-         * @throws java.io.IOException if the data is no longer available in the
-         *                             requested flavor.
-         * @throws java.awt.datatransfer.UnsupportedFlavorException
-         *                             if the requested data flavor is not
-         *                             supported.
+         * @throws java.io.IOException                              if the data is no longer available in the
+         *                                                          requested flavor.
+         * @throws java.awt.datatransfer.UnsupportedFlavorException if the requested data flavor is not
+         *                                                          supported.
          * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
          */
         public Object getTransferData(DataFlavor flavor)
@@ -424,7 +416,7 @@ final class ClusterRenderer extends JPanel {
          *
          * @param flavor the requested flavor for the data
          * @return boolean indicating whether or not the data flavor is
-         *         supported
+         * supported
          */
         public boolean isDataFlavorSupported(DataFlavor flavor) {
             return flavor.equals(getTransferDataFlavors()[0]);
@@ -437,7 +429,7 @@ final class ClusterRenderer extends JPanel {
          * least descriptive).
          *
          * @return an array of data flavors in which this data can be
-         *         transferred
+         * transferred
          */
         public DataFlavor[] getTransferDataFlavors() {
             return this.dataFlavors;

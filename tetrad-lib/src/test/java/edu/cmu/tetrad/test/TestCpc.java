@@ -124,7 +124,7 @@ public class TestCpc {
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
         // Do test.
-        if(!(resultGraph.equals(trueGraph))) {
+        if (!(resultGraph.equals(trueGraph))) {
             fail();
         }
     }

@@ -28,8 +28,6 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Edits the parameters for generating random graphs.
@@ -153,11 +151,9 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
 
                 if (pane.getSelectedIndex() == 0) {
                     params.set("randomGraphType", "Uniform");
-                }
-                else if (pane.getSelectedIndex() == 1) {
+                } else if (pane.getSelectedIndex() == 1) {
                     params.set("randomGraphType", "Mim");
-                }
-                else if (pane.getSelectedIndex() == 2) {
+                } else if (pane.getSelectedIndex() == 2) {
                     params.set("randomGraphType", "ScaleFree");
                 }
             }

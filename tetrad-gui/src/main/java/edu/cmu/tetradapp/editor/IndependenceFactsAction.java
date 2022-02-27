@@ -37,8 +37,8 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.NumberFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 
@@ -539,8 +539,7 @@ public class IndependenceFactsAction extends AbstractAction {
                 if (xIndex < yIndex) {
                     _x = dataVars.get(_i);
                     _y = dataVars.get(_j);
-                }
-                else {
+                } else {
                     _y = dataVars.get(_i);
                     _x = dataVars.get(_j);
                 }

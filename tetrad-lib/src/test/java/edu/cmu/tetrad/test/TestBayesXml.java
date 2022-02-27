@@ -88,14 +88,12 @@ public final class TestBayesXml {
 
             BayesXmlParser parser = new BayesXmlParser();
             parser.getBayesIm(document.getRootElement());
-        }
-        catch (ParsingException e) {
+        } catch (ParsingException e) {
             e.printStackTrace();
             fail("The file referred to cannot be parsed as a Bayes IM." +
                     " The file referred to MUST LOAD!! PLEASE FIX IMMEDIATELY!!!" +
                     " (Ask Joe Ramsey jdramsey@andrew.cmu.edu for details.");
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             fail("The file referred to cannot be opened (or doesn't exist). " +
                     "Maybe the working directory is not set correctly.");
@@ -219,8 +217,7 @@ public final class TestBayesXml {
 
         try {
             serializer.write(document);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

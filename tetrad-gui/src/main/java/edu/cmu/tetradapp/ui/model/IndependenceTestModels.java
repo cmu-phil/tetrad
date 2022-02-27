@@ -24,17 +24,12 @@ import edu.cmu.tetrad.annotation.TestOfIndependenceAnnotations;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.util.TetradProperties;
 import edu.cmu.tetradapp.Tetrad;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- *
  * Dec 1, 2017 11:49:55 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

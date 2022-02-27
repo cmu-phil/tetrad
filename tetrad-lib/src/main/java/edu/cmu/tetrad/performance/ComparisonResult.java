@@ -1,9 +1,10 @@
 package edu.cmu.tetrad.performance;
 
-import edu.cmu.tetrad.graph.EdgeListGraphSingleConnections;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 
-/**.
+/**
+ * .
  * Result of a comparison.
  *
  * @author jdramsey 2016.03.24
@@ -20,7 +21,7 @@ public class ComparisonResult {
     }
 
     public void setResultGraph(Graph graph) {
-        this.resultGraph = new EdgeListGraphSingleConnections(graph);
+        this.resultGraph = new EdgeListGraph(graph);
     }
 
     public void setElapsed(long elapsed) {
@@ -28,7 +29,7 @@ public class ComparisonResult {
     }
 
     public void setTrueDag(Graph trueDag) {
-        this.trueDag = new EdgeListGraphSingleConnections(trueDag);
+        this.trueDag = new EdgeListGraph(trueDag);
     }
 
     public void setCorrectResult(Graph correctResult) {

@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.analysis.MultivariateFunction;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -227,7 +228,7 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
          * Constructs a new CoefFittingFunction for the given Sem.
          */
         public FittingFunction(Parameters params, Algorithm algorithm,
-                double low, double high, String paramName, DataSet dataSet) {
+                               double low, double high, String paramName, DataSet dataSet) {
             this.params = params;
             this.algorithm = algorithm;
             this.low = low;
@@ -374,14 +375,14 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
         return parameters;
     }
 
-	@Override
-	public Graph getInitialGraph() {
-		return intialGraph;
-	}
+    @Override
+    public Graph getInitialGraph() {
+        return intialGraph;
+    }
 
-	@Override
-	public void setInitialGraph(Graph initialGraph) {
-		// TODO Auto-generated method stub
-		this.intialGraph = intialGraph;
-	}
+    @Override
+    public void setInitialGraph(Graph initialGraph) {
+        // TODO Auto-generated method stub
+        this.intialGraph = intialGraph;
+    }
 }

@@ -44,12 +44,12 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
         DoNotAddOldModel {
     static final long serialVersionUID = 23L;
     private transient List<PropertyChangeListener> listeners;
-    private Graph pattern;
+    private Graph CPDAG;
     private Graph trueGraph = null;
 
 // ============================CONSTRUCTORS============================//
 
-    // public LingamPatternRunner(DataWrapper dataWrapper, Parameters
+    // public LingamCPDAGRunner(DataWrapper dataWrapper, Parameters
     // params) {
     // super(dataWrapper, params);
     // }
@@ -57,14 +57,14 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     public LofsRunner(GraphWrapper graphWrapper,
                       DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
-        this.pattern = graphWrapper.getGraph();
+        this.CPDAG = graphWrapper.getGraph();
     }
 
     public LofsRunner(GraphWrapper graphWrapper,
                       DataWrapper dataWrapper, Parameters params,
                       KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.pattern = graphWrapper.getGraph();
+        this.CPDAG = graphWrapper.getGraph();
     }
 
     /**
@@ -85,113 +85,113 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
     public LofsRunner(PcRunner wrapper, DataWrapper dataWrapper,
                       Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(PcStableRunner wrapper, DataWrapper dataWrapper,
                       Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(PcStableRunner wrapper, DataWrapper dataWrapper,
                       Parameters params) {
         super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(PcRunner wrapper, DataWrapper dataWrapper,
                       Parameters params) {
         super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(FasRunner wrapper, DataWrapper dataWrapper,
                       Parameters params) {
         super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(FasRunner wrapper, DataWrapper dataWrapper,
                       Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(CpcRunner wrapper, DataWrapper dataWrapper,
                       Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(CpcRunner wrapper, DataWrapper dataWrapper,
                       Parameters params) {
         super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
                       Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(PcLocalRunner wrapper, DataWrapper dataWrapper,
                       Parameters params) {
         super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(FciRunner wrapper, DataWrapper dataWrapper,
                       Parameters params) {
         super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(FciRunner wrapper, DataWrapper dataWrapper,
                       Parameters params, GraphWrapper graph) {
         super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
         this.trueGraph = graph.getGraph();
     }
 
     public LofsRunner(CcdRunner wrapper, DataWrapper dataWrapper,
                       Parameters params) {
         super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(CcdRunner2 wrapper, DataWrapper dataWrapper,
                       Parameters params) {
         super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
                       Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
                       Parameters params) {
         super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
     }
 
     public LofsRunner(IGesRunner wrapper, DataWrapper dataWrapper,
                       GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
-        this.pattern = wrapper.getGraph();
+        this.CPDAG = wrapper.getGraph();
         this.trueGraph = graphWrapper.getGraph();
     }
 
     public List<Node> getVariables() {
-        return pattern.getNodes();
+        return CPDAG.getNodes();
     }
 
     public List<String> getVariableNames() {
-        return pattern.getNodeNames();
+        return CPDAG.getNodeNames();
     }
 
     /**
@@ -215,17 +215,17 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
 
 
         if (source instanceof DataModelList) {
-//            graph = lingamPatternEdgeVote((DataModelList) source, pattern);
-            graph = applyLofs((DataModelList) source, pattern);
+//            graph = lingamCPDAGEdgeVote((DataModelList) source, CPDAG);
+            graph = applyLofs((DataModelList) source, CPDAG);
         } else {
             DataModelList list = new DataModelList();
             list.add(source);
 
-            if (pattern == null) {
+            if (CPDAG == null) {
                 throw new IllegalArgumentException("Data must be specified.");
             }
 
-            graph = applyLofs(list, pattern);
+            graph = applyLofs(list, CPDAG);
         }
 
         setResultGraph(graph);
@@ -246,27 +246,27 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
         // }
     }
 
-    private Graph lingamPatternEdgeVote(DataModelList dataSets, Graph pattern) {
-        List<Graph> lingamPatternGraphs = new ArrayList<>();
+    private Graph lingamCPDAGEdgeVote(DataModelList dataSets, Graph CPDAG) {
+        List<Graph> lingamCPDAGGraphs = new ArrayList<>();
 
         // Images plus lingam orientation on multiple subjects.
         for (DataModel dataModel : dataSets) {
             DataSet dataSet = (DataSet) dataModel;
-            LingamPattern lingamPattern = new LingamPattern(pattern, dataSet);
-            lingamPattern.setAlpha(getParams().getDouble("alpha", 0.001));
-            Graph _graph = lingamPattern.search();
+            LingamCPDAG lingamCPDAG = new LingamCPDAG(CPDAG, dataSet);
+            lingamCPDAG.setAlpha(getParams().getDouble("alpha", 0.001));
+            Graph _graph = lingamCPDAG.search();
 
             System.out.println(_graph);
 
-            lingamPatternGraphs.add(_graph);
+            lingamCPDAGGraphs.add(_graph);
         }
 
-        Graph lingamizedGraph = new EdgeListGraph(pattern.getNodes());
+        Graph lingamizedGraph = new EdgeListGraph(CPDAG.getNodes());
 
-        for (Edge edge : pattern.getEdges()) {
+        for (Edge edge : CPDAG.getEdges()) {
             int numRight = 0, numLeft = 0;
 
-            for (Graph graph : lingamPatternGraphs) {
+            for (Graph graph : lingamCPDAGGraphs) {
                 if (graph.containsEdge(Edges.directedEdge(edge.getNode1(), edge.getNode2()))) {
                     numRight++;
                 } else if (graph.containsEdge(Edges.directedEdge(edge.getNode2(), edge.getNode1()))) {
@@ -290,7 +290,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
         return lingamizedGraph;
     }
 
-    private Graph applyLofs(DataModelList dataSets, Graph pattern) {
+    private Graph applyLofs(DataModelList dataSets, Graph CPDAG) {
         final Parameters params = getParams();
         List<DataSet> _dataSets = new ArrayList<>();
 
@@ -298,7 +298,7 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
             _dataSets.add((DataSet) dataModel);
         }
 
-        Lofs2 lofs = new Lofs2(pattern, _dataSets);
+        Lofs2 lofs = new Lofs2(CPDAG, _dataSets);
         lofs.setAlpha(getParams().getDouble("alpha", 0.001));
         lofs.setRule((Lofs2.Rule) params.get("rule", Lofs2.Rule.R3));
         lofs.setOrientStrongerDirection(params.getBoolean("orientStrongerDirection", true));

@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public interface RandomGraph extends TetradSerializable {
     /**
      * @param parameters Whatever parameters are need for the given graph. See
      *                   getParameters().
-     * @return  Returns a random graph using the given parameters.
+     * @return Returns a random graph using the given parameters.
      */
     Graph createGraph(Parameters parameters);
 

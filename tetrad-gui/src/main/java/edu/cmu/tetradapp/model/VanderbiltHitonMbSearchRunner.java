@@ -38,7 +38,7 @@ public class VanderbiltHitonMbSearchRunner extends AbstractMBSearchRunner {
 
     public void execute() throws Exception {
         HitonMb search = new HitonMb(getIndependenceTest(),
-                getParams().getInt("depth", -1),true);
+                getParams().getInt("depth", -1), true);
         this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());
     }

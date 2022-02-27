@@ -36,8 +36,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Wraps a Session as a Graph so that an AbstractWorkbench can be used to edit
@@ -83,7 +83,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     private transient SessionHandler sessionHandler;
     private boolean highlighted = false;
     private boolean pag;
-    private boolean pattern;
+    private boolean CPDAG;
 
     //==========================CONSTRUCTORS=======================//
 
@@ -134,8 +134,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
             getPropertyChangeSupport().firePropertyChange("edgeAdded", null,
                     edge);
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -166,8 +165,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
             getPropertyChangeSupport().firePropertyChange("nodeAdded", null,
                     node);
             return true;
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
             return false;
         }
@@ -200,11 +198,9 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
                         deltaY);
                 SessionNode sessionNode = wrapper.getSessionNode();
                 sessionNodes.add(sessionNode);
-            }
-            else if (sessionElement instanceof Edge) {
+            } else if (sessionElement instanceof Edge) {
                 sessionEdges.add((Edge) sessionElement);
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("The list of session " +
                         "elements should contain only SessionNodeWrappers " +
                         "and SessionEdges: " + sessionElement);
@@ -214,8 +210,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         // KEY STEP: Add the session nodes to the session.
         try {
             this.session.addNodeList(sessionNodes);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("There was an error when trying to " +
                     "add session nodes to the session.", e);
         }
@@ -318,7 +313,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
             name = base + i;
 
             Iterator iterator = this.sessionNodeWrappers.iterator();
-            for (Iterator j = iterator; j.hasNext();) {
+            for (Iterator j = iterator; j.hasNext(); ) {
                 SessionNodeWrapper wrapper = (SessionNodeWrapper) j.next();
 
                 if (wrapper.getSessionName().equals(name)) {
@@ -327,7 +322,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
             }
 
             iterator = sessionNodeWrappers.iterator();
-            for (Iterator j = iterator; j.hasNext();) {
+            for (Iterator j = iterator; j.hasNext(); ) {
                 SessionNodeWrapper wrapper = (SessionNodeWrapper) j.next();
 
                 if (wrapper.getSessionName().equals(name)) {
@@ -433,10 +428,9 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
+     * @param node the node in question
      * @return the number of edges in the workbench which are connected to a
      * particular node.
-     *
-     * @param node the node in question
      */
     public int getNumEdges(Node node) {
 
@@ -526,8 +520,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
                         node, null);
 
                 return true;
-            }
-            catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 return false;
             }
         }
@@ -761,13 +754,13 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     @Override
-    public boolean isPattern() {
-        return pattern;
+    public boolean isCPDAG() {
+        return CPDAG;
     }
 
     @Override
-    public void setPattern(boolean pattern) {
-        this.pattern = pattern;
+    public void setCPDAG(boolean CPDAG) {
+        this.CPDAG = CPDAG;
     }
 
     /**
@@ -946,6 +939,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 //        throw new UnsupportedOperationException();
 //    }
 //
+
     /**
      * @return the list of parents for a node.
      */

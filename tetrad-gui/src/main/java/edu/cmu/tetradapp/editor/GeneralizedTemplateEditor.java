@@ -27,16 +27,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetradapp.util.StringTextField;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.AncestorEvent;
@@ -44,6 +35,12 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.util.List;
+import java.util.*;
 
 /**
  * Edits an expression for a node in the generalized SEM PM.
@@ -840,19 +837,16 @@ class GeneralizedTemplateEditor extends JComponent {
                 if (!"".equals(expressionString.trim())) {
 //                    getSemPm().setVariablesTemplate(expressionString);
                 }
-            }
-            else if ("Errors".equals(combo.getSelectedItem())) {
+            } else if ("Errors".equals(combo.getSelectedItem())) {
                 if (!"".equals(expressionString.trim())) {
 //                    getSemPm().setErrorsTemplate(expressionString);
                 }
-            }
-            else if ("Parameter Initializations".equals(combo.getSelectedItem())) {
+            } else if ("Parameter Initializations".equals(combo.getSelectedItem())) {
                 if (!"".equals(startsWithText.trim())) {
                     getSemPm().setStartsWithParametersTemplate(startsWithText, expressionString);
                 }
 //                getSemPm().setParametersTemplate(expressionString);
-            }
-            else if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
+            } else if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
                 if (!"".equals(startsWithText.trim())) {
                     getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWithText, expressionString);
                 }

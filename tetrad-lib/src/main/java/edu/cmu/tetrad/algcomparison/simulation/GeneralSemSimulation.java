@@ -15,6 +15,7 @@ import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +92,7 @@ public class GeneralSemSimulation implements Simulation {
             }
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.reorderColumns(dataSet);
+                dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
             dataSet.setName("" + (i + 1));

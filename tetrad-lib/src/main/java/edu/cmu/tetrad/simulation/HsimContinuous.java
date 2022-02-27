@@ -73,7 +73,7 @@ public class HsimContinuous {
         //Do this step continuous instead of discrete:
         //learn a dirichlet IM for the subgraph using dataSet
         SemPm subgraphPM = new SemPm(subgraph);
-        SemEstimator subgraphEstimator = new SemEstimator(data,subgraphPM);
+        SemEstimator subgraphEstimator = new SemEstimator(data, subgraphPM);
         SemIm subgraphIM = subgraphEstimator.estimate();
 
         //if (verbose) System.out.println(fittedsubgraphIM.getVariable());
@@ -121,13 +121,13 @@ public class HsimContinuous {
             conditionUpdate.setEvidence(evidence);
             SemIm updatedIM = conditionUpdate.getUpdatedSemIm();
             //draw values for the node we're resimming
-            DataSet newValues = updatedIM.simulateData(1,false);
+            DataSet newValues = updatedIM.simulateData(1, false);
             //DataSet newValues = updatedIM.simulateDataRecursive(1,false);
 
             //take these new simnodes values and replace the old values in the data set with them
             for (Node node : simnodes) {
                 //if (verbose) System.out.println(data.getInt(row,data.getColumn(nodeX)) + " old vs new " + newXvalue);
-                data.setDouble(row, data.getColumn(node),newValues.getDouble(0,newValues.getColumn(node)));
+                data.setDouble(row, data.getColumn(node), newValues.getDouble(0, newValues.getColumn(node)));
                 //if (verbose) System.out.println(" and again?: " + data.getInt(row,data.getColumn(nodeX)) + " old vs new " + newXvalue);
             }
         }
@@ -158,13 +158,15 @@ public class HsimContinuous {
         verbose = verbosity;
     }
 
-    private void setDag(Dag thedag){
-        mydag=thedag;
+    private void setDag(Dag thedag) {
+        mydag = thedag;
     }
-    private void setSimnodes(Set<Node> thenodes){
-        simnodes=thenodes;
+
+    private void setSimnodes(Set<Node> thenodes) {
+        simnodes = thenodes;
     }
-    private void setData(DataSet thedata){
-        data=thedata;
+
+    private void setData(DataSet thedata) {
+        data = thedata;
     }
 }

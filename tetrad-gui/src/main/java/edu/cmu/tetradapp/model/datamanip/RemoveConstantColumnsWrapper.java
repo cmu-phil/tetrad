@@ -36,8 +36,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler Gibson
  */
 public class RemoveConstantColumnsWrapper extends DataWrapper {
-       static final long serialVersionUID = 23L;
-
+    static final long serialVersionUID = 23L;
 
 
     public RemoveConstantColumnsWrapper(DataWrapper data, Parameters params) {
@@ -50,9 +49,8 @@ public class RemoveConstantColumnsWrapper extends DataWrapper {
         }
 
 
-
         DataFilter interpolator = new RemoveConstantColumnsDataFilter();
-        this.setDataModel(interpolator.filter((DataSet)model));
+        this.setDataModel(interpolator.filter((DataSet) model));
         this.setSourceGraph(data.getSourceGraph());
 
         LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
@@ -67,9 +65,6 @@ public class RemoveConstantColumnsWrapper extends DataWrapper {
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
-
-
-
 
 
 }

@@ -108,8 +108,7 @@ public final class TestEdgeListGraph {
 
         try {
             graph.addDirectedEdge(x1, x3);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             fail("This should have been ignored.");
         }
 
@@ -165,7 +164,7 @@ public final class TestEdgeListGraph {
 
         int shd = SearchGraphUtils.structuralHammingDistance(graph1, graph2);
 
-        assertEquals(2, shd);
+        assertEquals(3, shd);
     }
 }
 

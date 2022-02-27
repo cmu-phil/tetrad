@@ -23,8 +23,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
+import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -46,9 +46,9 @@ import java.util.concurrent.*;
  *
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
- *         <p>
- *         This Orients a given undirected graph such that the edges in the graph are a superset
- *         of the edges in the oriented graph
+ * <p>
+ * This Orients a given undirected graph such that the edges in the graph are a superset
+ * of the edges in the oriented graph
  * @author AJ Sedgewick, 5/2015
  */
 public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter {
@@ -120,14 +120,14 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     private TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The top n graphs found by the algorithm, where n is numPatternsToStore.
+     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
      */
     private SortedSet<ScoredGraph> topGraphs = new TreeSet<>();
 
     /**
-     * The number of top patterns to store.
+     * The number of top CPDAGs to store.
      */
-    private int numPatternsToStore = 0;
+    private int numCPDAGsToStore = 0;
 
     /**
      * True if logs should be output.
@@ -262,7 +262,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
      * edges till a minimum is achieved.
      *
-     * @return the resulting Pattern.
+     * @return the resulting CPDAG.
      */
     public Graph search() {
         lookupArrows = new ConcurrentHashMap<>();
@@ -276,9 +276,9 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         Graph graph;
 
         if (initialGraph == null) {
-            graph = new EdgeListGraphSingleConnections(getVariables());
+            graph = new EdgeListGraph(getVariables());
         } else {
-            graph = new EdgeListGraphSingleConnections(initialGraph);
+            graph = new EdgeListGraph(initialGraph);
 
             for (Edge edge : initialGraph.getEdges()) {
                 if (!effectEdgesGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
@@ -393,21 +393,21 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     /**
-     * @return the number of patterns to store.
+     * @return the number of CPDAGs to store.
      */
-    public int getNumPatternsToStore() {
-        return numPatternsToStore;
+    public int getnumCPDAGsToStore() {
+        return numCPDAGsToStore;
     }
 
     /**
-     * Sets the number of patterns to store. This should be set to zero for fast search.
+     * Sets the number of CPDAGs to store. This should be set to zero for fast search.
      */
-    public void setNumPatternsToStore(int numPatternsToStore) {
-        if (numPatternsToStore < 0) {
-            throw new IllegalArgumentException("# graphs to store must at least 0: " + numPatternsToStore);
+    public void setnumCPDAGsToStore(int numCPDAGsToStore) {
+        if (numCPDAGsToStore < 0) {
+            throw new IllegalArgumentException("# graphs to store must at least 0: " + numCPDAGsToStore);
         }
 
-        this.numPatternsToStore = numPatternsToStore;
+        this.numCPDAGsToStore = numCPDAGsToStore;
     }
 
     /**
@@ -539,7 +539,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     // not canceled by other undirectedPaths (the "effect edges")
     private Graph getEffectEdges(final List<Node> nodes) {
         long start = System.currentTimeMillis();
-        final Graph effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
+        final Graph effectEdgesGraph = new EdgeListGraph(nodes);
         final Set<Node> emptySet = new HashSet<>(0);
 
         final int[] count = new int[1];
@@ -675,7 +675,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             insert(x, y, t, graph, bump);
             score += bump;
 
-            Set<Node> visited = rebuildPatternRestricted(graph, x, y);
+            Set<Node> visited = rebuildCPDAGRestricted(graph, x, y);
             Set<Node> toProcess = new HashSet<>();
 
             for (Node node : visited) {
@@ -741,7 +741,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             delete(x, y, h, graph, bump);
             score += bump;
 
-            rebuildPatternRestricted(graph, x, y);
+            rebuildCPDAGRestricted(graph, x, y);
 
             storeGraph(graph);
 
@@ -1437,14 +1437,14 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Runs the Meek rules on just the changed nodes.
-    private Set<Node> rebuildPatternRestricted(Graph graph, Node x, Node y) {
+    private Set<Node> rebuildCPDAGRestricted(Graph graph, Node x, Node y) {
         Set<Node> visited = new HashSet<>();
 
         visited.addAll(reorientNode(graph, x));
         visited.addAll(reorientNode(graph, y));
 
-        if (TetradLogger.getInstance().isEventActive("rebuiltPatterns")) {
-            TetradLogger.getInstance().log("rebuiltPatterns", "Rebuilt pattern = " + graph);
+        if (TetradLogger.getInstance().isEventActive("rebuiltCPDAGs")) {
+            TetradLogger.getInstance().log("rebuiltCPDAGs", "Rebuilt CPDAG = " + graph);
         }
 
         return visited;
@@ -1456,7 +1456,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         nodes.add(a);
 
         List<Edge> edges = graph.getEdges(a);
-        SearchGraphUtils.basicPatternRestricted2(graph, a);
+        SearchGraphUtils.basicCpdagRestricted2(graph, a);
         addRequiredEdges(graph);
         Set<Node> visited = meekOrientRestricted(graph, nodes, getKnowledge());
 
@@ -1773,14 +1773,14 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
     // Stores the graph, if its score knocks out one of the top ones.
     private void storeGraph(Graph graph) {
-        if (numPatternsToStore < 1) return;
+        if (numCPDAGsToStore < 1) return;
 
         if (topGraphs.isEmpty() || score > topGraphs.first().getScore()) {
-            Graph graphCopy = new EdgeListGraphSingleConnections(graph);
+            Graph graphCopy = new EdgeListGraph(graph);
 
             topGraphs.add(new ScoredGraph(graphCopy, score));
 
-            if (topGraphs.size() > getNumPatternsToStore()) {
+            if (topGraphs.size() > getnumCPDAGsToStore()) {
                 topGraphs.remove(topGraphs.first());
             }
         }

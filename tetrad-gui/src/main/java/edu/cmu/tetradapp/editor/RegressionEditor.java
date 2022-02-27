@@ -52,7 +52,7 @@ import java.beans.PropertyChangeListener;
  * @author Aaron Powers
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
- *         Bayes estimator
+ * Bayes estimator
  */
 public class RegressionEditor extends JPanel {
 
@@ -97,7 +97,7 @@ public class RegressionEditor extends JPanel {
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 runRegression();
-                TetradLogger.getInstance().log("result", reportText.getText());                
+                TetradLogger.getInstance().log("result", reportText.getText());
             }
         });
 
@@ -123,7 +123,7 @@ public class RegressionEditor extends JPanel {
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();
         RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(runner, runner.getParams(),
-                    this.runner.getDataModel(), false);
+                this.runner.getDataModel(), false);
 
         editorPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -159,7 +159,7 @@ public class RegressionEditor extends JPanel {
             comp.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    runner.setModelIndex(((Integer)comp.getSelectedItem()).intValue() - 1);
+                    runner.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
                 }
             });
 

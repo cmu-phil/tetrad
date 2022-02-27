@@ -23,12 +23,13 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.session.ModificationRegistery;
 import edu.cmu.tetradapp.util.EditorWindowIndirectRef;
 import edu.cmu.tetradapp.util.FinalizingEditor;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+
 import javax.swing.*;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Launches a dialog to display an editor component.
@@ -64,7 +65,7 @@ public class EditorWindow extends JInternalFrame
      * Pops a new editor window up from a dialog.
      */
     public EditorWindow(JPanel editor, String title, String buttonName,
-            boolean cancellable, Component centeringComp) {
+                        boolean cancellable, Component centeringComp) {
         super(title, true, true, true, false);
 
         if (editor == null) {

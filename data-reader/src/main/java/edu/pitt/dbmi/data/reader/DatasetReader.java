@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.data.reader;
 
 /**
- *
  * Dec 3, 2018 2:24:32 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

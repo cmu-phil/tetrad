@@ -28,39 +28,15 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FocusTraversalPolicy;
-import java.awt.Font;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.KeyStroke;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.border.EmptyBorder;
 
 /**
  * A wizard to let the user go through a workbench systematically and set the
@@ -110,7 +86,7 @@ final class BayesPmEditorWizard extends JPanel {
      * The preset strings that will be used.
      */
     private final String[][] presetStrings = new String[][]{{"Low", "High"},
-    {"Low", "Medium", "High"}, {"On", "Off"}, {"Yes", "No"}};
+            {"Low", "Medium", "High"}, {"On", "Off"}, {"Yes", "No"}};
 
     /**
      * ?
@@ -347,9 +323,9 @@ final class BayesPmEditorWizard extends JPanel {
 
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "<html>"
-                    + "The categories for this node have been copied; to transfer "
-                    + "<br>these categories, choose another node and paste. You may"
-                    + "<br>paste multiple times." + "</html>");
+                            + "The categories for this node have been copied; to transfer "
+                            + "<br>these categories, choose another node and paste. You may"
+                            + "<br>paste multiple times." + "</html>");
         });
 
         paste.addActionListener((e) -> {
@@ -535,7 +511,7 @@ final class BayesPmEditorWizard extends JPanel {
             setFocusTraversalPolicy(new FocusTraversalPolicy() {
                 @Override
                 public Component getComponentAfter(Container focusCycleRoot,
-                        Component aComponent) {
+                                                   Component aComponent) {
                     int index = focusTraveralOrder.indexOf(aComponent);
                     int size = focusTraveralOrder.size();
 
@@ -549,7 +525,7 @@ final class BayesPmEditorWizard extends JPanel {
 
                 @Override
                 public Component getComponentBefore(Container focusCycleRoot,
-                        Component aComponent) {
+                                                    Component aComponent) {
                     int index = focusTraveralOrder.indexOf(aComponent);
                     int size = focusTraveralOrder.size();
 
@@ -657,7 +633,7 @@ final class BayesPmEditorWizard extends JPanel {
             if (categories.size() < 2) {
                 throw new IllegalArgumentException(
                         "Number of categories must be" + " >= 2: "
-                        + categories.size());
+                                + categories.size());
             }
 
             for (int i = 0; i < categories.size(); i++) {

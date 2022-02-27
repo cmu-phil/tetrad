@@ -22,18 +22,8 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.CouldNotCreateModelException;
-import edu.cmu.tetrad.session.ModificationRegistery;
-import edu.cmu.tetrad.session.SessionAdapter;
-import edu.cmu.tetrad.session.SessionEvent;
-import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.session.SessionNode;
-import edu.cmu.tetrad.session.SimulationStudy;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.NamingProtocol;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradLoggerConfig;
+import edu.cmu.tetrad.session.*;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.editor.ParameterEditor;
@@ -44,13 +34,13 @@ import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayNode;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridLayout;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import java.awt.Point;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
@@ -61,20 +51,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import javax.swing.AbstractButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLayeredPane;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
 
 /**
  * Wraps a SessionNodeWrapper as a DisplayNode for presentation in a
@@ -115,6 +91,7 @@ public final class SessionEditorNode extends DisplayNode {
     private SessionEditorWorkbench sessionWorkbench;
 
     //===========================CONSTRUCTORS==============================//
+
     /**
      * Wraps the given SessionNodeWrapper as a SessionEditorNode.
      *
@@ -370,7 +347,7 @@ public final class SessionEditorNode extends DisplayNode {
         getSessionDisplayComp().setSelected(selected);
     }
 
-//===========================PRIVATE METHODS===========================//
+    //===========================PRIVATE METHODS===========================//
     private SessionEditorWorkbench getSessionWorkbench() {
         if (sessionWorkbench == null) {
             SessionEditorIndirectRef sessionEditorRef
@@ -390,7 +367,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void addListeners(final SessionEditorNode sessionEditorNode,
-            final SessionNodeWrapper modelNode) {
+                              final SessionNodeWrapper modelNode) {
         // Add a mouse listener for popups.
         sessionEditorNode.addMouseListener(new MouseAdapter() {
             @Override
@@ -561,8 +538,8 @@ public final class SessionEditorNode extends DisplayNode {
                 Component centeringComp = SessionEditorNode.this;
                 int ret = JOptionPane.showConfirmDialog(centeringComp,
                         "<html>"
-                        + "Really delete note? Any information it contains will<br>"
-                        + "be destroyed." + "</html>");
+                                + "Really delete note? Any information it contains will<br>"
+                                + "be destroyed." + "</html>");
 
                 if (ret != JOptionPane.YES_OPTION) {
                     return;
@@ -670,7 +647,7 @@ public final class SessionEditorNode extends DisplayNode {
             if (found) {
                 int ret = JOptionPane.showConfirmDialog(centeringComp,
                         "Destroying the model in this box will also destroy models in any boxes\n"
-                        + "downstream. Is that OK?", null,
+                                + "downstream. Is that OK?", null,
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.WARNING_MESSAGE);
 
@@ -790,7 +767,7 @@ public final class SessionEditorNode extends DisplayNode {
                             editParameters(modelClass, param, arguments);
                             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                                     "Should I overwrite the contents of this box and all delete the contents\n"
-                                    + "of all boxes downstream?",
+                                            + "of all boxes downstream?",
                                     "Double check...", JOptionPane.YES_NO_OPTION);
                             if (ret == JOptionPane.YES_OPTION) {
                                 getSessionNode().destroyModel();
@@ -933,6 +910,7 @@ public final class SessionEditorNode extends DisplayNode {
 //
 //        return consistentParentBoxes;
 //    }
+
     /**
      * Adds the "Edit logger" option if applicable.
      */
@@ -974,7 +952,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void executeSessionNode(final SessionNode sessionNode,
-            final boolean overwrite) {
+                                    final boolean overwrite) {
         Window owner = (Window) getTopLevelAncestor();
 
         new WatchedProcess(owner) {
@@ -1035,8 +1013,8 @@ public final class SessionEditorNode extends DisplayNode {
         Component centeringComp = SessionEditorNode.this;
         int selection = JOptionPane.showOptionDialog(centeringComp,
                 "Changing this node will affect its children.\n"
-                + "Click on \"Execute\" to percolate changes down.\n"
-                + "Click on \"Break Edges\" to leave the children the same.",
+                        + "Click on \"Execute\" to percolate changes down.\n"
+                        + "Click on \"Break Edges\" to leave the children the same.",
                 "Warning", JOptionPane.DEFAULT_OPTION,
                 JOptionPane.WARNING_MESSAGE, null, options, options[0]);
 
@@ -1072,7 +1050,7 @@ public final class SessionEditorNode extends DisplayNode {
      * parent models.
      *
      * @throws IllegalStateException if the model cannot be created. The reason
-     * why the model cannot be created is in the message of the exception.
+     *                               why the model cannot be created is in the message of the exception.
      */
     public boolean createModel(boolean simulation) throws Exception {
         if (getSessionNode().getModel() != null) {
@@ -1139,7 +1117,7 @@ public final class SessionEditorNode extends DisplayNode {
      * @return the selected model class, or null if no model class was selected.
      */
     private Class getModelClassFromUser(Class[] modelClasses,
-            boolean cancelable) {
+                                        boolean cancelable) {
 
         // Count the number of model classes that can be listed for the user;
         // if there's only one, don't ask the user for input.
@@ -1248,7 +1226,7 @@ public final class SessionEditorNode extends DisplayNode {
      * false is returned
      */
     public boolean editParameters(final Class modelClass, Parameters params,
-            Object[] parentModels) {
+                                  Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException("Parent models array is null.");
         }

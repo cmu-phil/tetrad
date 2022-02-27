@@ -29,12 +29,12 @@ package jgpml;
 
 import Jama.Matrix;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 
 /**
@@ -44,12 +44,13 @@ public class CSVtoMatrix {
 
     /**
      * Load data
-     * @param filename  data file
+     *
+     * @param filename      data file
      * @param sizeofInputs
      * @param sizeofOutputs
-     * @return  [X, Y]
+     * @return [X, Y]
      */
-    public static Matrix[] load(String filename,int sizeofInputs, int sizeofOutputs){
+    public static Matrix[] load(String filename, int sizeofInputs, int sizeofOutputs) {
 
         ArrayList<double[]> inputsList = new ArrayList<>();
         ArrayList<double[]> outputsList = new ArrayList<>();
@@ -104,8 +105,7 @@ public class CSVtoMatrix {
 
                     inputsList.add(in);
                     outputsList.add(out);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     System.out.println(e + "\nerror: this line in the logfile does not agree with the configuration provided... it will be skipped");
                     datasize--;
                 }
@@ -123,15 +123,16 @@ public class CSVtoMatrix {
 
     /**
      * Simple example of how to use this class.
+     *
      * @param args
      */
     public static void main(String[] args) {
 
 
-       Matrix[] data = CSVtoMatrix.load("../machinelearning/src/machinelearning/gaussianprocess/armdata.csv",6,1);
+        Matrix[] data = CSVtoMatrix.load("../machinelearning/src/machinelearning/gaussianprocess/armdata.csv", 6, 1);
 
-       
-     }
+
+    }
 
 
 }

@@ -178,7 +178,7 @@ public class Matrix implements TetradSerializable {
             return new Matrix(0, 0);
         }
 
-        return new Matrix(new LUDecomposition(apacheData, 1e-9).getSolver().getInverse().getData());
+        return new Matrix(new LUDecomposition(apacheData, 1e-10).getSolver().getInverse().getData());
     }
 
     public Matrix symmetricInverse() {
@@ -217,7 +217,7 @@ public class Matrix implements TetradSerializable {
     }
 
     public double det() {
-        return new LUDecomposition(apacheData).getDeterminant();
+        return new LUDecomposition(apacheData, 1e-6D).getDeterminant();
     }
 
     public Matrix transpose() {

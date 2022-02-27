@@ -18,33 +18,15 @@
  */
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeTypeProbability;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
+import edu.cmu.tetrad.graph.*;
+
+import javax.swing.*;
+import javax.swing.table.*;
+import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 /**
- *
  * Apr 30, 2019 2:30:18 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -54,28 +36,28 @@ public class EdgeTypeTable extends JPanel {
     private static final long serialVersionUID = -9104061917163909746L;
 
     private static final String[] EDGES = new String[]{
-        "Node 1",
-        "Interaction",
-        "Node 2"
+            "Node 1",
+            "Interaction",
+            "Node 2"
     };
 
     private static final String[] EDGES_AND_EDGE_TYPES = new String[]{
-        "Node 1",
-        "Interaction",
-        "Node 2",
-        "Ensemble",
-        "No edge",
-        "\u2192",
-        "\u2190",
-        "\u2192", // -G> pd nl
-        "\u2190", // <G- pd nl
-        "\u2192", // =G> dd nl
-        "\u2190", // <G= dd nl
-        "o->",
-        "<-o",
-        "o-o",
-        "<->",
-        "---"
+            "Node 1",
+            "Interaction",
+            "Node 2",
+            "Ensemble",
+            "No edge",
+            "\u2192",
+            "\u2190",
+            "\u2192", // -G> pd nl
+            "\u2190", // <G- pd nl
+            "\u2192", // =G> dd nl
+            "\u2190", // <G= dd nl
+            "o->",
+            "<-o",
+            "o-o",
+            "<->",
+            "---"
     };
 
     private final JLabel title = new JLabel();

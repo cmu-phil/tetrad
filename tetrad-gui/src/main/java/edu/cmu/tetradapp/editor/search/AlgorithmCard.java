@@ -20,10 +20,7 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsImages;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.SingleGraphAlg;
-import edu.cmu.tetrad.algcomparison.score.BdeuScore;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -34,52 +31,19 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
-import edu.cmu.tetradapp.ui.model.AlgorithmModel;
-import edu.cmu.tetradapp.ui.model.AlgorithmModels;
-import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
-import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
-import edu.cmu.tetradapp.ui.model.ScoreModel;
-import edu.cmu.tetradapp.ui.model.ScoreModels;
+import edu.cmu.tetradapp.ui.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultListModel;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.LayoutStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
+import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.*;
+
 /**
- *
  * Apr 15, 2019 11:31:10 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -116,15 +80,13 @@ public class AlgorithmCard extends JPanel {
     private final JTextArea algoDescTextArea = new JTextArea();
     private final JTextArea scoreDescTextArea = new JTextArea();
     private final JTextArea testDescTextArea = new JTextArea();
-
-    private boolean updatingTestModels;
-    private boolean updatingScoreModels;
-
     private final GeneralAlgorithmRunner algorithmRunner;
     private final DataType dataType;
     private final TetradDesktop desktop;
     private final boolean multiDataAlgo;
     private final boolean hasMissingValues;
+    private boolean updatingTestModels;
+    private boolean updatingScoreModels;
 
     public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
@@ -519,7 +481,7 @@ public class AlgorithmCard extends JPanel {
                 }
             }
 
-            // Time-series (TsFci, TsGfci, TsImages) algorithms need lagged data
+            // SVAR (SvarFci, SvarGfci) algorithms need lagged data
             String cmd = algoModel.getAlgorithm().getAnnotation().command();
             if (cmd.equalsIgnoreCase("ts-fci")
                     || cmd.equalsIgnoreCase("ts-gfci")
@@ -657,24 +619,7 @@ public class AlgorithmCard extends JPanel {
                 models.forEach(e -> scoreModels.add(e));
             }
 
-            // TsIMaGES can only take SEM BIC score for continuous data
-            // or BDeu score for discrete data
-            if (TsImages.class.equals(algoModel.getAlgorithm().getClazz())) {
-                switch (dataType) {
-                    case Continuous:
-                        scoreModels.stream()
-                                .filter(e -> e.getScore().getClazz().equals(SemBicScore.class))
-                                .forEach(e -> scoreComboBox.addItem(e));
-                        break;
-                    case Discrete:
-                        scoreModels.stream()
-                                .filter(e -> e.getScore().getClazz().equals(BdeuScore.class))
-                                .forEach(e -> scoreComboBox.addItem(e));
-                        break;
-                }
-            } else {
-                scoreModels.forEach(e -> scoreComboBox.addItem(e));
-            }
+            scoreModels.forEach(e -> scoreComboBox.addItem(e));
         }
         updatingScoreModels = false;
         if (scoreComboBox.getItemCount() > 0) {

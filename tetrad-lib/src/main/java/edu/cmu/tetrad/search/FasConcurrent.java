@@ -141,7 +141,7 @@ public class FasConcurrent implements IFas {
 
         // The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
         // x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
-        Graph graph = new EdgeListGraphSingleConnections(test.getVariables());
+        Graph graph = new EdgeListGraph(test.getVariables());
 
         sepsets = new SepsetMap();
 

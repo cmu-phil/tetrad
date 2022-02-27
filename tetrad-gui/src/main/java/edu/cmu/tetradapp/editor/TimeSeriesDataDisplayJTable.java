@@ -107,9 +107,8 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     }
 
     /**
-     * @return the name of the column at position 'col'.
-     *
      * @param col the position of the column whose name is requested.
+     * @return the name of the column at position 'col'.
      */
     public String getColumnName(int col) {
 
@@ -119,8 +118,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
 
         if (col < colCount + 1) {
             return dataSet.getVariableNames().get(col - 1);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -128,7 +126,6 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     /**
      * @return the number of rows in the wrapper table model. Guarantees that
      * this number will be at least 100.
-     *
      */
     public int getRowCount() {
         return (maxRowCount < 100) ? 100 : maxRowCount;
@@ -153,12 +150,10 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     public Object getValueAt(int row, int column) {
         if (column == 0) {
             return row + 1;    // present as 1-indexed.
-        }
-        else if (column < dataSet.getNumVars() + 1 &&
+        } else if (column < dataSet.getNumVars() + 1 &&
                 row < dataSet.getNumTimePoints()) {
             return this.dataSet.getDatum(row, column - 1);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -187,7 +182,7 @@ class RowNumberRenderer2 implements TableCellRenderer {
      * @return a label stylized for presenting row numbers in the 0th column.
      */
     public Component getTableCellRendererComponent(JTable table, Object value,
-            boolean isSelected, boolean hasFocus, int row, int column) {
+                                                   boolean isSelected, boolean hasFocus, int row, int column) {
         JLabel label = new JLabel(Integer.toString(row + 1));
         label.setHorizontalAlignment(SwingConstants.RIGHT);
         return label;

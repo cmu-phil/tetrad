@@ -25,16 +25,17 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
+import org.apache.commons.math3.exception.MaxCountExceededException;
+import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.EigenDecomposition;
 
 /**
  * Contains some utilities for doing autoregression. Should probably be improved
@@ -336,7 +337,7 @@ public class TimeSeriesUtils {
      * is applied to the result of d = 1. And so on.
      *
      * @param data the data to be differenced.
-     * @param d the number of differences to take, >= 0.
+     * @param d    the number of differences to take, >= 0.
      * @return the differenced data.
      */
     public static DataSet difference(DataSet data, int d) {
@@ -614,7 +615,7 @@ public class TimeSeriesUtils {
      */
     public static DataSet createDifferencedData(DataSet data) {
         IKnowledge knowledge;
-        if(data.getKnowledge().isEmpty()){
+        if (data.getKnowledge().isEmpty()) {
             throw new IllegalStateException("Need to input a lagged dataset with knowledge tiers");
         } else {
             knowledge = data.getKnowledge();
@@ -625,7 +626,7 @@ public class TimeSeriesUtils {
         // rename variables?
 
         int numTiers = knowledge.getNumTiers();
-        int numVars = dataSize/numTiers;
+        int numVars = dataSize / numTiers;
 
         final List<Node> nodes = variables.subList(0, numVars);
         DataSet differencedData = new BoxDataSet(new VerticalDoubleDataBox(numRows, nodes.size()), nodes);
@@ -636,7 +637,7 @@ public class TimeSeriesUtils {
                 throw new IllegalStateException("All variables must be continuous");
             }
             for (int row = 0; row < numRows; row++) {
-                double value = data.getDouble(row, (tier-1)*numVars + col);
+                double value = data.getDouble(row, (tier - 1) * numVars + col);
                 double lagvalue = data.getDouble(row, tier * numVars + col);
 
                 differencedData.setDouble(row, col, value - lagvalue);

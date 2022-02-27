@@ -143,8 +143,7 @@ public class RevealSearch {
             System.out.println("For gene " + child);
             for (int p1 = 0; p1 < ngenes; p1++) {
                 for (int p2 = 0; p2 < ngenes && p2 != p1; p2++) {
-                    for (int p3 = 0; p3 < ngenes && p3 != p2 && p3 != p1; p3++)
-                    {
+                    for (int p3 = 0; p3 < ngenes && p3 != p2 && p3 != p1; p3++) {
                         ppp[0] = p1;
                         ppp[1] = p2;
                         ppp[2] = p3;

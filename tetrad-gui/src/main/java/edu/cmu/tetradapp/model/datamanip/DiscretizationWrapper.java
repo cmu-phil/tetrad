@@ -81,7 +81,7 @@ public class DiscretizationWrapper extends DataWrapper {
 
             discretizedDataSets.add(discretizer.discretize());
         }
- 
+
 
         setDataModel(discretizedDataSets);
         setSourceGraph(data.getSourceGraph());

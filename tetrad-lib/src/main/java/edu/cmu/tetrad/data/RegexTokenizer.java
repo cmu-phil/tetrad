@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 /**
  * Tokenizes the given input character sequence using the type of delimiter
- * specified bythe given Pattern. Meant to function just like StringTokenizer,
+ * specified bythe given CPDAG. Meant to function just like StringTokenizer,
  * with more control over what counts as a tokenization delimiter.
  *
  * @author Joseph Ramsey

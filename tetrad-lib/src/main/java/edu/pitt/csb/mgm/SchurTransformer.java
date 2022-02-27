@@ -2,7 +2,6 @@ package edu.pitt.csb.mgm;
 
 
 import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.NonSquareMatrixException;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -29,21 +28,35 @@ import org.apache.commons.math3.util.Precision;
  * @since 3.1
  */
 class SchurTransformer {
-    /** Maximum allowed iterations for convergence of the transformation. */
+    /**
+     * Maximum allowed iterations for convergence of the transformation.
+     */
     private static final int MAX_ITERATIONS = 100;
 
-    /** P matrix. */
+    /**
+     * P matrix.
+     */
     private final double matrixP[][];
-    /** T matrix. */
+    /**
+     * T matrix.
+     */
     private final double matrixT[][];
-    /** Cached value of P. */
+    /**
+     * Cached value of P.
+     */
     private RealMatrix cachedP;
-    /** Cached value of T. */
+    /**
+     * Cached value of T.
+     */
     private RealMatrix cachedT;
-    /** Cached value of PT. */
+    /**
+     * Cached value of PT.
+     */
     private RealMatrix cachedPt;
 
-    /** Epsilon criteria taken from JAMA code (originally was 2^-52). */
+    /**
+     * Epsilon criteria taken from JAMA code (originally was 2^-52).
+     */
     private final double epsilon = Precision.EPSILON;
 
     /**
@@ -113,6 +126,7 @@ class SchurTransformer {
 
     /**
      * Transform original matrix to Schur form.
+     *
      * @throws MaxCountExceededException if the transformation does not converge
      */
     private void transform() {
@@ -223,7 +237,7 @@ class SchurTransformer {
      * Find the first small sub-diagonal element and returns its index.
      *
      * @param startIdx the starting index for the search
-     * @param norm the L1 norm of the matrix
+     * @param norm     the L1 norm of the matrix
      * @return the index of the first small sub-diagonal element
      */
     private int findSmallSubDiagonalElement(final int startIdx, final double norm) {
@@ -244,10 +258,10 @@ class SchurTransformer {
     /**
      * Compute the shift for the current iteration.
      *
-     * @param l the index of the small sub-diagonal element
-     * @param idx the current eigenvalue index
+     * @param l         the index of the small sub-diagonal element
+     * @param idx       the current eigenvalue index
      * @param iteration the current iteration
-     * @param shift holder for shift information
+     * @param shift     holder for shift information
      */
     private void computeShift(final int l, final int idx, final int iteration, final ShiftInfo shift) {
         // Form shift
@@ -292,10 +306,10 @@ class SchurTransformer {
     /**
      * Initialize the householder vectors for the QR step.
      *
-     * @param il the index of the small sub-diagonal element
-     * @param iu the current eigenvalue index
+     * @param il    the index of the small sub-diagonal element
+     * @param iu    the current eigenvalue index
      * @param shift shift information holder
-     * @param hVec the initial houseHolder vector
+     * @param hVec  the initial houseHolder vector
      * @return the start index for the QR step
      */
     private int initQRStep(int il, final int iu, final ShiftInfo shift, double[] hVec) {
@@ -330,11 +344,11 @@ class SchurTransformer {
     /**
      * Perform a double QR step involving rows l:idx and columns m:n
      *
-     * @param il the index of the small sub-diagonal element
-     * @param im the start index for the QR step
-     * @param iu the current eigenvalue index
+     * @param il    the index of the small sub-diagonal element
+     * @param im    the start index for the QR step
+     * @param iu    the current eigenvalue index
      * @param shift shift information holder
-     * @param hVec the initial houseHolder vector
+     * @param hVec  the initial houseHolder vector
      */
     private void performDoubleQRStep(final int il, final int im, final int iu,
                                      final ShiftInfo shift, final double[] hVec) {
@@ -413,9 +427,9 @@ class SchurTransformer {
 
         // clean up pollution due to round-off errors
         for (int i = im + 2; i <= iu; i++) {
-            matrixT[i][i-2] = 0.0;
+            matrixT[i][i - 2] = 0.0;
             if (i > im + 2) {
-                matrixT[i][i-3] = 0.0;
+                matrixT[i][i - 3] = 0.0;
             }
         }
     }
@@ -427,13 +441,21 @@ class SchurTransformer {
     private static class ShiftInfo {
         // CHECKSTYLE: stop all
 
-        /** x shift info */
+        /**
+         * x shift info
+         */
         double x;
-        /** y shift info */
+        /**
+         * y shift info
+         */
         double y;
-        /** w shift info */
+        /**
+         * w shift info
+         */
         double w;
-        /** Indicates an exceptional shift. */
+        /**
+         * Indicates an exceptional shift.
+         */
         double exShift;
 
         // CHECKSTYLE: resume all

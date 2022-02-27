@@ -32,13 +32,13 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * @author Tyler Gibson
  */
 public class MergeDatasetsWrapper extends DataWrapper {
-       static final long serialVersionUID = 23L;
+    static final long serialVersionUID = 23L;
 
     public MergeDatasetsWrapper(DataWrapper[] data, Parameters params) {
         construct(data);
     }
 
-    private void construct(DataWrapper...dataWrappers) {
+    private void construct(DataWrapper... dataWrappers) {
         for (DataWrapper wrapper : dataWrappers) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");
@@ -64,9 +64,6 @@ public class MergeDatasetsWrapper extends DataWrapper {
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
-
-
-
 
 
 }

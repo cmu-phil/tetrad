@@ -20,19 +20,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.workbench;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.graph.TripleClassifier;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetradapp.model.EditorUtils;
-import java.awt.Color;
-import java.awt.Point;
+
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -63,6 +54,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     private int edgeMode = DIRECTED_EDGE;
 
     //========================CONSTRUCTORS===============================//
+
     /**
      * Constructs a new workbench with an empty graph; useful if another graph
      * will be set later.
@@ -80,6 +72,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     //========================PUBLIC METHODS==============================//
+
     /**
      * The type of edge to be drawn next.
      *
@@ -125,7 +118,6 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     /**
      * Creates a new display node for the workbench based on the given model
      * node.
-     *
      *
      * @param modelNode the model node.
      * @return the new display node.
@@ -198,7 +190,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
             case NONDIRECTED_EDGE:
                 return Edges.nondirectedEdge(node1, node2);
-                
+
             case UNDIRECTED_EDGE:
                 return Edges.undirectedEdge(node1, node2);
 
@@ -218,7 +210,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      * to a node but tracks the mouse at the other end. Used for drawing new
      * edges.
      *
-     * @param node the node to anchor to.
+     * @param node     the node to anchor to.
      * @param mouseLoc the location of the mouse.
      * @return the new tracking edge (a display edge).
      */
@@ -231,7 +223,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
             case NONDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.NONDIRECTED, color);
-            
+
             case UNDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.UNDIRECTED, color);
 
@@ -295,13 +287,13 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public void setEdgeMode(int edgeMode) {
         switch (edgeMode) {
             case DIRECTED_EDGE:
-            // Falls through!
+                // Falls through!
             case NONDIRECTED_EDGE:
-            // Falls through!
+                // Falls through!
             case UNDIRECTED_EDGE:
-            // Falls through!
+                // Falls through!
             case PARTIALLY_ORIENTED_EDGE:
-            // Falls through!
+                // Falls through!
             case BIDIRECTED_EDGE:
                 this.edgeMode = edgeMode;
                 break;
@@ -352,16 +344,17 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     //===========================PRIVATE METHODS==========================//
+
     /**
      * Adjusts the name to avoid name conflicts in the new session and, if the
      * name is adjusted, adjusts the position so the user can see the two nodes.
      *
-     * @param node The node which is being adjusted
+     * @param node   The node which is being adjusted
      * @param deltaX the shift in x
      * @param deltaY the shift in y.
      */
     private void adjustNameAndPosition(Node node, int deltaX,
-            int deltaY) {
+                                       int deltaY) {
         String originalName = node.getName();
         //String base = extractBase(originalName);
         String uniqueName = nextUniqueName(originalName);

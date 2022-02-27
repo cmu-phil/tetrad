@@ -27,9 +27,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.Matrix;
 
 import java.awt.geom.Point2D;
 import java.util.*;
@@ -110,8 +110,7 @@ public class ScatterPlot {
 
         if (Double.isInfinite(fisherZ)) {
             pValue = 0;
-        }
-        else {
+        } else {
             pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
         }
 

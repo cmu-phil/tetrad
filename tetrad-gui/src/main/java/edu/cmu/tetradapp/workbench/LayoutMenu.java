@@ -103,22 +103,18 @@ public class LayoutMenu extends JMenu {
             likeLag0.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (LayoutUtils.getLayout() == LayoutUtils.Layout.topToBottom
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0TopToBottom) {
+                            || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0TopToBottom) {
                         LayoutUtils.copyLag0LayoutTopToBottom(getLayoutEditable());
-                    }
-                    else if (LayoutUtils.getLayout() == LayoutUtils.Layout.bottomToTop
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0BottomToTop) {
+                    } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.bottomToTop
+                            || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0BottomToTop) {
                         LayoutUtils.copyLag0LayoutBottomToTop(getLayoutEditable());
-                    }
-                    else if (LayoutUtils.getLayout() == LayoutUtils.Layout.leftToRight
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0LeftToRight) {
+                    } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.leftToRight
+                            || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0LeftToRight) {
                         LayoutUtils.copyLag0LayoutLeftToRight(getLayoutEditable());
-                    }
-                    else if (LayoutUtils.getLayout() == LayoutUtils.Layout.rightToLeft
-                        || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0RightToLeft) {
+                    } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.rightToLeft
+                            || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0RightToLeft) {
                         LayoutUtils.copyLag0LayoutRightToLeft(getLayoutEditable());
-                    }
-                    else {
+                    } else {
 //                        LayoutUtils.topToBottomLayout(getLayoutEditable());
                     }
 

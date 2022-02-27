@@ -20,12 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.graph.TripleClassifier;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.ui.DualListPanel;
@@ -37,29 +32,17 @@ import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Window;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceAdapter;
-import java.awt.dnd.DragSourceDropEvent;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetAdapter;
-import java.awt.dnd.DropTargetDropEvent;
+
+import javax.help.CSH;
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
+import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.awt.datatransfer.*;
+import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -68,42 +51,8 @@ import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
-import javax.swing.AbstractAction;
-import javax.swing.AbstractListModel;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.GroupLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
-import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
+import java.util.*;
 
 /**
  * Lets the user select a subgraph of a possible large graph and display it.
@@ -117,10 +66,11 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
     private final GraphEditorOptionsPanel graphEditorOptionsPanel;
     private JPanel workbenchScrollsPanel = new JPanel();
-    private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo = new JComboBox<>();;
+    private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo = new JComboBox<>();
+    ;
 
     private final HelpSet helpSet;
- 
+
     /**
      * Holds the graphs.
      */
@@ -142,7 +92,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         if (wrapper == null) {
             throw new NullPointerException("The regression wrapper is required.");
         }
- 
+
         this.wrapper = wrapper;
 
         if (layoutGraph == null) {
@@ -163,13 +113,13 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         setLayout(new BorderLayout());
 
-       
+
         // Must before calling setSelectedGraphType()
         graphEditorOptionsPanel = new GraphEditorOptionsPanel(wrapper);
 
         // Select the graph type if graph wrapper has the type info
         setSelectedGraphType(wrapper.getType());
-        
+
         // Graph panel on right
         workbenchScrollsPanel = workbenchScrollsPanel(wrapper);
 
@@ -210,10 +160,10 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         });
 
         workbenchScrollsPanel.validate();
-        
+
         // Add to buttonPanel
         buttonPanel.add(executeButton);
-        
+
         // Info button added by Zhou to show edge types
         JLabel infoLabel = new JLabel("More information on graph edge types");
         infoLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -229,7 +179,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             ActionListener listener = new CSH.DisplayHelpFromSource(broker);
             listener.actionPerformed(e);
         });
-        
+
         // Add to buttonPanel
         buttonPanel.add(infoLabel);
         buttonPanel.add(infoBtn);
@@ -249,14 +199,14 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         // Add the save options - Zhou
         JMenu saveMenu = createSaveMenu(this);
         menuBar.add(saveMenu);
-        
+
         // Add the graph options
         JMenu graphMenu = createGraphMenu();
         menuBar.add(graphMenu);
-        
+
         return menuBar;
     }
-    
+
     // Graph type selection
     private void graphTypeSelection() {
         for (GraphSelectionWrapper.Type type : GraphSelectionWrapper.Type.values()) {
@@ -271,7 +221,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             setSelectedGraphType(selectedItem);
         });
     }
-    
+
     private void setSelectedGraphType(GraphSelectionWrapper.Type type) {
         if (type == GraphSelectionWrapper.Type.Subgraph) {
             graphEditorOptionsPanel.setNLabel("");
@@ -349,7 +299,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         List<JScrollPane> workbenchScrolls = new ArrayList<>();
 
         //workbenchScrolls.clear();
-        
+
         List<Graph> graphs = wrapper.getGraphs();
 
         for (int i = 0; i < graphs.size(); i++) {
@@ -385,16 +335,16 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 triplesAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());
             }
         });
-        
+
         // Show graph in each tabbed pane
         tabbedPaneGraphs(wrapper);
-        
+
         // Make the tabbedPane auto resize - Zhou
         workbenchScrollsPanel.setLayout(new BorderLayout());
         workbenchScrollsPanel.add(tabbedPane, BorderLayout.CENTER);
-        
+
         workbenchScrollsPanel.validate();
-        
+
         return workbenchScrollsPanel;
     }
 
@@ -443,11 +393,12 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
     /**
      * File save menu - Zhou
+     *
      * @param editable
      * @param comp
-     * @return 
+     * @return
      */
-    private JMenu createSaveMenu(GraphEditable editable) { 
+    private JMenu createSaveMenu(GraphEditable editable) {
         JMenu save = new JMenu("Save As");
 
         save.add(new SaveGraph(editable, "Graph XML...", SaveGraph.Type.xml));
@@ -785,9 +736,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             varManupBox.add(Box.createGlue());
 
             Box graphTypeBox = Box.createHorizontalBox();
-            
+
             graphTypeSelection();
-            
+
             graphTypeBox.add(new GraphTypePanel(atMost, equals, nField, nLabel, graphTypeCombo));
             graphTypeBox.add(Box.createGlue());
 
@@ -923,7 +874,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         private JButton createTextButton() {
             GraphSelectionTextInputAction action
                     = new GraphSelectionTextInputAction(GraphEditorOptionsPanel.this,
-                            wrapper, sourceList, selectedList);
+                    wrapper, sourceList, selectedList);
             JButton sort = new JButton(action);
             sort.setFont(sort.getFont().deriveFont(11f));
             sort.setMargin(new Insets(3, 3, 3, 3));
@@ -1254,7 +1205,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
          * @param selectedList
          */
         public GraphSelectionTextInputAction(JComponent component, GraphSelectionWrapper wrapper,
-                JList<Node> sourceList, JList<Node> selectedList) {
+                                             JList<Node> sourceList, JList<Node> selectedList) {
             super("Text Input...");
             this.component = component;
             this.wrapper = wrapper;

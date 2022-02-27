@@ -48,7 +48,7 @@ public final class LogisticRegressionParamsEditor extends JPanel implements Para
     }
 
     public void setParams(Parameters params) {
-       this.params = params;
+        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {

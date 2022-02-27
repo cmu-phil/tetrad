@@ -1214,7 +1214,7 @@ public class IonJoeModifications {
             graph.setEndpoint(a, c, Endpoint.ARROW);
         } else if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.TAIL
                 && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE
-                ) {
+        ) {
             if (!isArrowpointAllowed(graph, a, c)) {
                 return;
             }

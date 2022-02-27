@@ -21,12 +21,12 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.graph;
 
-import edu.cmu.tetrad.util.NamingProtocol;
-import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetrad.gene.tetrad.gene.history.BasicLagGraph;
 import edu.cmu.tetrad.gene.tetrad.gene.history.LagGraph;
 import edu.cmu.tetrad.gene.tetrad.gene.history.LaggedEdge;
 import edu.cmu.tetrad.gene.tetrad.gene.history.LaggedFactor;
+import edu.cmu.tetrad.util.NamingProtocol;
+import edu.cmu.tetrad.util.PointXy;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -124,8 +124,7 @@ public class ActiveLagGraph implements LagGraph {
                 lagGraph.addEdge(factor, laggedFactor);
                 getPropertyChangeManager().firePropertyChange("edgeAdded", null,
                         new LaggedEdge(factor, laggedFactor));
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
             }
         }
     }
@@ -146,8 +145,7 @@ public class ActiveLagGraph implements LagGraph {
                 lagGraph.addFactor(factor);
                 getPropertyChangeManager().firePropertyChange("nodeAdded", null,
                         factor);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
             }
         }
     }
@@ -162,8 +160,7 @@ public class ActiveLagGraph implements LagGraph {
                 lagGraph.removeEdge(factor, laggedFactor);
                 getPropertyChangeManager().firePropertyChange("edgeRemoved",
                         new LaggedEdge(factor, laggedFactor), null);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // Igore.
             }
         }
@@ -206,8 +203,7 @@ public class ActiveLagGraph implements LagGraph {
                 }
                 toDelete.clear();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // Ignore.
         }
     }
@@ -221,8 +217,7 @@ public class ActiveLagGraph implements LagGraph {
             lagGraph.renameFactor(oldName, newName);
             getPropertyChangeManager().firePropertyChange("factorRenamed",
                     oldName, newName);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // ignore
         }
     }

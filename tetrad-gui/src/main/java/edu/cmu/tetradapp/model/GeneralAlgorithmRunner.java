@@ -43,11 +43,7 @@ import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -228,6 +224,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         Algorithm algo = getAlgorithm();
 
+        if (algo instanceof HasKnowledge) {
+            ((HasKnowledge) algo).setKnowledge(knowledge.copy());
+        }
+
         if (getDataModelList().size() == 0 && getSourceGraph() != null) {
             if (algo instanceof UsesScoreWrapper) {
                 // We inject the graph to the score to satisfy the tests like DSeparationScore - Zhou
@@ -262,9 +262,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         sub.add(dataSets.get(j));
                     }
 
-                    if (algo instanceof HasKnowledge) {
-                        ((HasKnowledge) algo).setKnowledge(getKnowledge());
-                    }
                     graphList.add(((MultiDataSetAlgorithm) algo).search(sub, parameters));
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
@@ -272,6 +269,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     getDataModelList().forEach(dataModel -> {
                         if (dataModel instanceof ICovarianceMatrix) {
                             ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
+
+                            if (algorithm instanceof HasKnowledge) {
+                                ((HasKnowledge) algorithm).setKnowledge(knowledge.copy());
+                            }
+
                             graphList.add(algorithm.search(dataSet, parameters));
                         } else if (dataModel instanceof DataSet) {
                             DataSet dataSet = (DataSet) dataModel;
@@ -296,11 +298,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                             this.knowledge = knowledgeFromData;
                         }
 
-                        if (algo instanceof HasKnowledge) {
-                            ((HasKnowledge) algo).setKnowledge(getKnowledge());
-                        }
-
                         DataType algDataType = algo.getDataType();
+
+                        if (algo instanceof HasKnowledge) {
+                            ((HasKnowledge) algo).setKnowledge(knowledge.copy());
+                        }
 
                         if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
                             graphList.add(algo.search(data, parameters));
@@ -543,7 +545,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     public void setAlgorithm(Algorithm algorithm) {
         if (algorithm == null) {
-            return;
+            throw new NullPointerException("Algorithm not specified");
         }
         this.algorithm = algorithm;
     }

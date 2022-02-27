@@ -1,22 +1,18 @@
 package edu.cmu.tetradapp.editor;
 
-import java.awt.Component;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.prefs.Preferences;
 
-import javax.swing.AbstractAction;
-import javax.swing.JFileChooser;
-
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-
 /**
- * 
  * Nov 30, 2016 5:54:33 PM
- * 
+ *
  * @author Chirayu (Kong) Wongchokprasitti, PhD
- * 
  */
 public class LoadGraphJson extends AbstractAction {
 
@@ -28,7 +24,7 @@ public class LoadGraphJson extends AbstractAction {
     private GraphEditable graphEditable;
 
     public LoadGraphJson(GraphEditable graphEditable, String title) {
-	super(title);
+        super(title);
 
         if (graphEditable == null) {
             throw new NullPointerException("Component must not be null.");

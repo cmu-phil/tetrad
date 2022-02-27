@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 
 /**
  * A continuous or discrete discretization spec (see).
+ *
  * @author Joseph Ramsey
  */
 public interface DiscretizationSpec {

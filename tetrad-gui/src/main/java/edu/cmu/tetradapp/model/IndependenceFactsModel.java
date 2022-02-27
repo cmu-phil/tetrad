@@ -54,8 +54,9 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     * <p>
+     * //     * @see edu.cmu.TestSerialization
      *
-//     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static IKnowledge serializableInstance() {

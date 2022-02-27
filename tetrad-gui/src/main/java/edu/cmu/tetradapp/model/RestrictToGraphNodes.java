@@ -21,10 +21,12 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -99,8 +101,7 @@ public class RestrictToGraphNodes extends DataWrapper {
 
             LogDataUtils.logDataModelList("Parent data restricted to variable in the given graph.", getDataModelList());
             return dataSubset;
-        }
-        else {
+        } else {
             throw new IllegalStateException("Unexpected data type.");
         }
 

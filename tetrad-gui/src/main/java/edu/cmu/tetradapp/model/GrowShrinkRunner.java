@@ -33,8 +33,7 @@ public class GrowShrinkRunner extends AbstractMBSearchRunner {
     static final long serialVersionUID = 23L;
 
 
-
-    public GrowShrinkRunner(DataWrapper data, Parameters params){
+    public GrowShrinkRunner(DataWrapper data, Parameters params) {
         super(data.getSelectedDataModel(), params);
     }
 

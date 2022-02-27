@@ -266,11 +266,9 @@ class TabularDataTransferHandler extends TransferHandler {
                 }
 
                 doPaste(s, startRow, startCol, shiftDown, tabularData);
-            }
-            catch (UnsupportedFlavorException e) {
+            } catch (UnsupportedFlavorException e) {
                 e.printStackTrace();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
@@ -317,7 +315,7 @@ class TabularDataTransferHandler extends TransferHandler {
 
         startRow -= getNumLeadingRows();
         startCol -= getNumLeadingCols();
-        
+
         if (startRow < 0) startRow = 0;
         if (startCol < 0) startCol = 0;
 

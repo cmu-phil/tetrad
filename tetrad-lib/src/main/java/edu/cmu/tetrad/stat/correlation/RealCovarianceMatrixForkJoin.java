@@ -21,11 +21,9 @@ package edu.cmu.tetrad.stat.correlation;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
-import static java.util.concurrent.ForkJoinTask.invokeAll;
 import java.util.concurrent.RecursiveAction;
 
 /**
- *
  * Jan 27, 2016 5:37:40 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

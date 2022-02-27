@@ -25,9 +25,7 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.BayesProperties;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.IndTestType;
-import edu.cmu.tetrad.search.PatternToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
@@ -51,16 +49,16 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
- * Edits some algorithm to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket CPDAGs.
  *
  * @author Joseph Ramsey
  */
 public class PcGesSearchEditor extends AbstractSearchEditor
-        implements KnowledgeEditable, LayoutEditable, IndTestTypeSetter, DoNotScroll     {
+        implements KnowledgeEditable, LayoutEditable, IndTestTypeSetter, DoNotScroll {
 
     private JTextArea modelStatsText;
     private JTabbedPane tabbedPane;
@@ -82,7 +80,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(PcPatternRunner runner) {
+    public PcGesSearchEditor(PcCPDAGRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
@@ -110,7 +108,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(MbfsPatternRunner runner) {
+    public PcGesSearchEditor(MbfsCPDAGRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
@@ -143,7 +141,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(LingamPatternRunner runner) {
+    public PcGesSearchEditor(LingamCPDAGRunner runner) {
         super(runner, "Result Graph");
     }
 
@@ -181,6 +179,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
+
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }
@@ -216,7 +215,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
             tabbedPane.add("Model Statistics", modelStatsText);
-            tabbedPane.add("DAG in pattern", dagWorkbench);
+            tabbedPane.add("DAG in CPDAG", dagWorkbench);
         }*/
 
         add(tabbedPane, BorderLayout.CENTER);
@@ -342,7 +341,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Graph dag = SearchGraphUtils.dagFromPattern(resultGraph);
+            Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
 
             DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
             String report;
@@ -361,7 +360,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             modelStatsText.setText(report);
 
             removeStatsTabs();
-            tabbedPane.addTab("DAG in pattern", dagWorkbenchScroll);
+            tabbedPane.addTab("DAG in CPDAG", dagWorkbenchScroll);
             tabbedPane.addTab("DAG Model Statistics", modelStatsText);
         } else if (getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix) {
             //resultGraph may be the output of a PC search.
@@ -382,9 +381,8 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Graph pattern = new EdgeListGraphSingleConnections(resultGraph);
-            PatternToDag ptd = new PatternToDag(pattern);
-            Graph dag = ptd.patternToDagMeek();
+            Graph CPDAG = new EdgeListGraph(resultGraph);
+            Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
 
             ICovarianceMatrix dataSet = (ICovarianceMatrix) getAlgorithmRunner().getDataModel();
             String report = reportIfCovMatrix(dag, dataSet);
@@ -395,7 +393,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             modelStatsText.setText(report);
 
             removeStatsTabs();
-            tabbedPane.addTab("DAG in pattern", dagWorkbenchScroll);
+            tabbedPane.addTab("DAG in CPDAG", dagWorkbenchScroll);
             tabbedPane.addTab("DAG Model Statistics", modelStatsText);
 
         }
@@ -521,7 +519,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
             if (name.equals("Model Statistics")) {
                 tabbedPane.removeTabAt(i);
-            } else if (name.equals("DAG in pattern")) {
+            } else if (name.equals("DAG in CPDAG")) {
                 tabbedPane.removeTabAt(i);
             }
         }
@@ -616,7 +614,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 //                            editorWindow.setVisible(true);
 //                        }
 //                        else {
-                        PatternDisplay display = new PatternDisplay(graph);
+                        CPDAGDisplay display = new CPDAGDisplay(graph);
                         GraphWorkbench workbench = getWorkbench();
 
                         EditorWindow editorWindow =
@@ -652,7 +650,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 //                    }
 //                }
 
-                Graph dag = SearchGraphUtils.dagFromPattern(graph);
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
 //                PatternToDag search = new PatternToDag(new forbid_latent_common_causes(graph));
 //                Graph dag = search.patternToDagMeek();
@@ -782,7 +780,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
         if (params instanceof Parameters) {
             return new TimeSeriesIndTestParamsEditor(
-                     params);
+                    params);
         }
 
         if (params instanceof Parameters) {
@@ -795,7 +793,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         }
 
         if (params instanceof Parameters) {
-            if (getAlgorithmRunner() instanceof LingamPatternRunner) {
+            if (getAlgorithmRunner() instanceof LingamCPDAGRunner) {
                 return new PcLingamIndTestParamsEditor(params);
             }
 

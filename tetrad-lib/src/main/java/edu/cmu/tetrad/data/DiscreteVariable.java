@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.TetradSerializable;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -149,6 +150,7 @@ public final class DiscreteVariable extends AbstractVariable
     private Map<String, Object> attributes = new HashMap<>();
 
     //=========================CONSTRUCTORS=============================//
+
     /**
      * Builds a discrete variable with the given name and an empty list of
      * categories. Use this constructor if a variable is needed to represent
@@ -173,9 +175,9 @@ public final class DiscreteVariable extends AbstractVariable
      * Builds a qualitative variable with the given name and array of possible
      * categories.
      *
-     * @param name The name of the variable.
+     * @param name       The name of the variable.
      * @param categories A String[] array of categories, where the categories[i]
-     * is the category for index i.
+     *                   is the category for index i.
      */
     public DiscreteVariable(String name, List<String> categories) {
         super(name);
@@ -200,6 +202,7 @@ public final class DiscreteVariable extends AbstractVariable
     }
 
     //=============================PUBLIC METHODS========================//
+
     /**
      * Gets the discreteVariableType, NOMINAL or ORDINAL. Default is NOMINAL.
      * (Currently only NOMINAL is supported.)
@@ -492,13 +495,14 @@ public final class DiscreteVariable extends AbstractVariable
 //        return buf.toString();
 //    }
     //==============================PRIVATE METHODS=======================//
+
     /**
      * Sets the category of the category at the given index.
      *
      * @throws IllegalArgumentException if the list of categories is longer than
-     * 100. Usually this happens only for index columns in data sets, in which a
-     * different type of variable that doesn't do all of the complicated things
-     * discrete variables do should be used.
+     *                                  100. Usually this happens only for index columns in data sets, in which a
+     *                                  different type of variable that doesn't do all of the complicated things
+     *                                  discrete variables do should be used.
      */
     private void setCategories(String[] categories) {
         for (String category : categories) {

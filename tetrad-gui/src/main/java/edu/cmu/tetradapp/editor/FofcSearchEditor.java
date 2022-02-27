@@ -177,8 +177,7 @@ public class FofcSearchEditor extends JPanel {
                 try {
 //                    mimRunner.getParameters().setClusters(clusterEditor.getClusters());
                     getMimRunner().execute();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     CharArrayWriter writer1 = new CharArrayWriter();
                     PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
@@ -232,8 +231,7 @@ public class FofcSearchEditor extends JPanel {
             public void run() {
                 try {
                     sleep(delay);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     return;
                 }
 
@@ -280,8 +278,7 @@ public class FofcSearchEditor extends JPanel {
                 while (thread().isAlive()) {
                     try {
                         sleep(200);
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         return;
                     }
                 }
@@ -358,7 +355,7 @@ public class FofcSearchEditor extends JPanel {
         }
 
         if (getMimRunner().getClusters() != null) {
-            ClusterEditor editor =  new ClusterEditor(getMimRunner().getClusters(),
+            ClusterEditor editor = new ClusterEditor(getMimRunner().getClusters(),
                     getMimRunner().getData().getVariableNames());
             tabbedPane.add("Measurement Model", editor);
         }
@@ -463,11 +460,9 @@ public class FofcSearchEditor extends JPanel {
         try {
             Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
             getMimRunner().getParams().set("sourceGraph", graph);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             getMimRunner().getParams().set("sourceGraph", (Graph) null);
-        }
-        catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             getMimRunner().getParams().set("sourceGraph", (Graph) null);
             e.printStackTrace();
         }

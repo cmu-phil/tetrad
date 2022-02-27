@@ -46,7 +46,7 @@ public interface MarkovBlanketSearchRunner extends Executable {
      * Return the source for the search.
      */
     DataSet getSource();
-    
+
 
     /**
      * @return the data model for the variables in the markov blanket.

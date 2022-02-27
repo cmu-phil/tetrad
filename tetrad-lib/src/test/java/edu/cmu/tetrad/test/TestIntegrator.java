@@ -35,6 +35,7 @@ public class TestIntegrator {
             public double valueAt(double x) {
                 return x;
             }
+
             public String toString() {
                 return "y=x.";
             }

@@ -43,7 +43,6 @@
             </plugin>
 
 
-
         </plugins>
         <extensions>
             <extension>
@@ -137,7 +136,6 @@
         </dependency>
 
 
-
         <dependency>
             <groupId>edu.pitt.dbmi</groupId>
             <artifactId>data-reader</artifactId>
@@ -152,11 +150,9 @@
     </dependencies>
 
 
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
 
 
 </project>

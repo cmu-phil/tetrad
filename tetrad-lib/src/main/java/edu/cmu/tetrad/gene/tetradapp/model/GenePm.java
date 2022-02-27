@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.gene.tetradapp.model;
 
-import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.gene.tetrad.gene.history.LagGraph;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

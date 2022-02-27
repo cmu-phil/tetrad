@@ -164,7 +164,7 @@ public final class TestEndpointMatrixGraph {
 
         int shd = SearchGraphUtils.structuralHammingDistance(graph1, graph2);
 
-        assertEquals(2, shd);
+        assertEquals(3, shd);
     }
 }
 

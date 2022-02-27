@@ -249,29 +249,29 @@ public class MbUtils {
     }
 
     /**
-     * Generates the list of MB DAGs consistent with the MB Pattern returned by the previous search.
+     * Generates the list of MB DAGs consistent with the MB CPDAG returned by the previous search.
      *
      * @param orientBidirectedEdges True iff bidirected edges should be oriented as if they were undirected.
      * @return a list of Dag's.
      */
-    public static List<Graph> generateMbDags(Graph mbPattern,
+    public static List<Graph> generateMbDags(Graph mbCPDAG,
                                              boolean orientBidirectedEdges,
                                              IndependenceTest test, int depth,
                                              Node target) {
-        return new LinkedList<>(listMbDags(new EdgeListGraph(mbPattern),
+        return new LinkedList<>(listMbDags(new EdgeListGraph(mbCPDAG),
                 orientBidirectedEdges, test, depth, target));
     }
 
     /**
-     * The recursive method used to list the MB DAGS consistent with an MB Pattern (i.e. with the independence
+     * The recursive method used to list the MB DAGS consistent with an MB CPDAG (i.e. with the independence
      * information available to the search.
      */
-    private static Set<Graph> listMbDags(Graph mbPattern,
+    private static Set<Graph> listMbDags(Graph mbCPDAG,
                                          boolean orientBidirectedEdges,
                                          IndependenceTest test, int depth,
                                          Node target) {
         Set<Graph> dags = new HashSet<>();
-        Graph graph = new EdgeListGraph(mbPattern);
+        Graph graph = new EdgeListGraph(mbCPDAG);
         doAbbreviatedMbOrientation(graph, test, depth, target);
         Set<Edge> edges = graph.getEdges();
         Edge edge = null;
@@ -306,9 +306,8 @@ public class MbUtils {
         return dags;
     }
 
-    public static Graph getOneMbDag(Graph mbPattern) {
-        PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(mbPattern));
-        return search.patternToDagMeek();
+    public static Graph getOneMbDag(Graph mbCPDAG) {
+        return SearchGraphUtils.dagFromCPDAG(mbCPDAG);
     }
 
     /**

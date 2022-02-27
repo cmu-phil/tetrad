@@ -35,6 +35,7 @@ import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.DecimalFormat;
@@ -67,13 +68,14 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 //    public TabularComparison(GeneralAlgorithmRunner model, Parameters params) {
 //        this(model, model.getDataWrapper(), params);
 //    }
+
     /**
      * Compares the results of a PC to a reference workbench by counting errors
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
     public TabularComparison(MultipleGraphSource model1, MultipleGraphSource model2,
-            Parameters params) {
+                             Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }
@@ -164,7 +166,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         } else {
             throw new IllegalArgumentException(
                     "Neither of the supplied session models is named '"
-                    + referenceName + "'.");
+                            + referenceName + "'.");
         }
 
         for (int i = 0; i < targetGraphs.size(); i++) {
@@ -253,6 +255,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     //============================PRIVATE METHODS=========================//
+
     /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of
@@ -271,7 +274,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         s.defaultReadObject();
     }
 
-//    public Graph getTrueGraph() {
+    //    public Graph getTrueGraph() {
 //        return trueGraph;
 //    }
 //

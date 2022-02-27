@@ -39,7 +39,7 @@ import java.io.ObjectInputStream;
  *
  * @author Joseph Ramsey
  * @author Frank Wimberly adapted for EM Bayes estimator and structural EM Bayes
- *         estimator
+ * estimator
  */
 public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;
@@ -90,7 +90,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 //    }
 
     public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper, Parameters params) {
+                                   BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -113,8 +113,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         try {
             estimator.maximization(params.getDouble("tolerance", 0.0001));
             this.estimateBayesIm = estimator.getEstimatedIm();
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
             throw new RuntimeException(
                     "Please specify the search tolerance first.");
@@ -182,8 +181,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
             EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
             this.estimateBayesIm = estimator.maximization(thresh);
             this.dataSet = estimator.getMixedDataSet();
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
                     "and discrete data set do not match.");

@@ -23,7 +23,6 @@ package edu.cmu.tetrad.test;
 
 import jdepend.framework.JDepend;
 import jdepend.framework.JavaPackage;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -48,8 +47,7 @@ public class TestCyclicity {
         try {
             jdepend.addDirectory(new File("target/classes/edu/cmu/tetrad").getAbsolutePath());
 //            jdepend.addDirectory(new File("../../../tetrad/target/classes/edu/cmu/tetradapp").getAbsolutePath());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             fail(e.getMessage());
         }
     }

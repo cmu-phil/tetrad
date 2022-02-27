@@ -21,23 +21,17 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 
 /**
  * A utility class containing graph function from graph theory. These
  * implementations derived from Weka's implementation.
- *
+ * <p>
  * Oct 7, 2019 2:56:07 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
- * @see
- * <a href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
+ * @see <a href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
  */
 public final class GraphTools {
 
@@ -45,9 +39,8 @@ public final class GraphTools {
     }
 
     /**
-     *
-     * @param ordering maximum cardinality ordering
-     * @param cliques set of cliques
+     * @param ordering   maximum cardinality ordering
+     * @param cliques    set of cliques
      * @param separators set of separator sets
      * @return parent cliques
      */
@@ -73,7 +66,7 @@ public final class GraphTools {
      * intersection of two adjacent nodes.
      *
      * @param ordering maximum cardinality ordering of the graph
-     * @param cliques set of cliques
+     * @param cliques  set of cliques
      * @return set of separator sets
      */
     public static Map<Node, Set<Node>> getSeparators(Node[] ordering, Map<Node, Set<Node>> cliques) {
@@ -100,7 +93,7 @@ public final class GraphTools {
      * Get cliques in a decomposable graph. A clique is a fully-connected
      * subgraph.
      *
-     * @param graph decomposable graph
+     * @param graph    decomposable graph
      * @param ordering maximum cardinality ordering
      * @return set of cliques
      */
@@ -133,7 +126,8 @@ public final class GraphTools {
 
         // remove empty sets from map
         while (cliques.values().remove(Collections.EMPTY_SET)) {
-        };
+        }
+        ;
 
         return cliques;
     }
@@ -143,7 +137,7 @@ public final class GraphTools {
      * triangulation. An undirected graph is triangulated if every cycle of
      * length greater than 4 has a chord.
      *
-     * @param graph moral graph
+     * @param graph    moral graph
      * @param ordering maximum cardinality ordering
      */
     public static void fillIn(Graph graph, Node[] ordering) {

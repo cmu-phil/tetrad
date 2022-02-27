@@ -60,7 +60,7 @@ class EvidenceWizardMultiple extends JPanel {
      * are probabilities ranging from 0.0 to 1.0.
      */
     public EvidenceWizardMultiple(UpdaterWrapper updaterWrapper,
-            GraphWorkbench workbench) {
+                                  GraphWorkbench workbench) {
         if (updaterWrapper == null) {
             throw new NullPointerException();
         }
@@ -143,8 +143,7 @@ class EvidenceWizardMultiple extends JPanel {
 
                 if (selectedNodes.size() == 0) {
                     marginalsArea.append("\nNo nodes selected.");
-                }
-                else {
+                } else {
                     appendMarginals(selectedNodes, marginalsArea, manipulatedIm,
                             nf);
                     appendJoint(selectedNodes, marginalsArea, manipulatedIm,
@@ -158,7 +157,7 @@ class EvidenceWizardMultiple extends JPanel {
     }
 
     private void appendMarginals(List<Node> selectedNodes,
-            JTextArea marginalsArea, BayesIm manipulatedIm, NumberFormat nf) {
+                                 JTextArea marginalsArea, BayesIm manipulatedIm, NumberFormat nf) {
         BayesPm bayesPm = manipulatedIm.getBayesPm();
 
         marginalsArea.append("MARGINALS FOR SELECTED VARIABLES:\n");
@@ -183,7 +182,7 @@ class EvidenceWizardMultiple extends JPanel {
     }
 
     private void appendJoint(List<Node> selectedNodes, JTextArea marginalsArea,
-            BayesIm manipulatedIm, NumberFormat nf) {
+                             BayesIm manipulatedIm, NumberFormat nf) {
         if (!getUpdaterWrapper().getBayesUpdater().isJointMarginalSupported()) {
             marginalsArea.append("\n\n(Calculation of joint not supported " +
                     "for this updater.)");

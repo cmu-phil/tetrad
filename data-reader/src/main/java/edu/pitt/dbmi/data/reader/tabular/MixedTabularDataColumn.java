@@ -19,17 +19,13 @@
 package edu.pitt.dbmi.data.reader.tabular;
 
 import edu.pitt.dbmi.data.reader.DataColumn;
-import static edu.pitt.dbmi.data.reader.DatasetReader.DISCRETE_MISSING_VALUE;
 import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+
+import java.util.*;
+
+import static edu.pitt.dbmi.data.reader.DatasetReader.DISCRETE_MISSING_VALUE;
 
 /**
- *
  * Dec 31, 2018 1:50:19 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

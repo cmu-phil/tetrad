@@ -39,7 +39,7 @@ class ADTreeHelper implements Serializable {
     }
 
     protected int count(int[] assignment, CountNode ptr) {
-           if (null == ptr) return 0;
+        if (null == ptr) return 0;
 
         for (int i = ptr.attr - 1; i >= 0 && ptr != null; i--) {
             VaryNode vary = ptr.vary[i];

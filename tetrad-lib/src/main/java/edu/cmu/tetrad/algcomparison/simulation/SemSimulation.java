@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.SemIm;
@@ -13,6 +14,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,16 +45,19 @@ public class SemSimulation implements Simulation {
     public SemSimulation(SemIm im) {
         SemGraph graph = im.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
-        this.randomGraph = new SingleGraph(graph);
-        this.im = im;
-        this.pm = im.getSemPm();
+        Graph graph2 = new EdgeListGraph(graph);
+        this.randomGraph = new SingleGraph(graph2);
+        this.im = new SemIm(im);
+        this.pm = new SemPm(im.getSemPm());
         this.ims = new ArrayList<>();
         ims.add(im);
     }
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (!newModel && !dataSets.isEmpty()) return;
+
+        // This should always create new data
+//        if (!newModel && !dataSets.isEmpty()) return;
 
         Graph graph = randomGraph.createGraph(parameters);
 
@@ -88,7 +93,7 @@ public class SemSimulation implements Simulation {
             }
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.reorderColumns(dataSet);
+                dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
             dataSet.setName("" + (i + 1));

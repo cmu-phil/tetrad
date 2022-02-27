@@ -70,8 +70,7 @@ public class YeastPcCcdSearchWrapper {
         try {
             DataReader reader = new DataReader();
             cds = reader.parseTabular(new File(args[0]));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -85,8 +84,7 @@ public class YeastPcCcdSearchWrapper {
 
         try {
             s1 = new FileOutputStream(outverbosefile);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Cannot open file file " + outverbosefile);
             System.exit(0);
         }
@@ -95,8 +93,7 @@ public class YeastPcCcdSearchWrapper {
 
         try {
             s2 = new FileOutputStream(outsummaryfile);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Cannot open file file " + outsummaryfile);
             System.exit(0);
         }
@@ -248,16 +245,15 @@ public class YeastPcCcdSearchWrapper {
             d2.writeBytes(CCD30Accuracy[1] + "\n");
             //}
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
     private static int[] CcdAccuracy(double alpha, int ngenes,
-            DataSet cds, IKnowledge bk, int[][] yeastReg, List names,
-            DataOutputStream d, boolean v) {
+                                     DataSet cds, IKnowledge bk, int[][] yeastReg, List names,
+                                     DataOutputStream d, boolean v) {
 
         int[] falsePosNeg = new int[2];
 
@@ -339,8 +335,7 @@ public class YeastPcCcdSearchWrapper {
                 d.writeBytes("  false+ " + falsePositives + "\t");
                 d.writeBytes("false- " + falseNegatives + "\n");
                 d.writeBytes("  Adjacency matrix of estimated model:  \n");
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -353,8 +348,8 @@ public class YeastPcCcdSearchWrapper {
     }
 
     private static int[] PCAccuracy(double alpha, int ngenes,
-            DataSet cds, IKnowledge bk, int[][] yeastReg, List names,
-            DataOutputStream d, boolean v) {
+                                    DataSet cds, IKnowledge bk, int[][] yeastReg, List names,
+                                    DataOutputStream d, boolean v) {
 
         int[] falsePosNeg = new int[2];
 
@@ -436,8 +431,7 @@ public class YeastPcCcdSearchWrapper {
                 d.writeBytes("  false+ " + falsePositives + "\t");
                 d.writeBytes("false- " + falseNegatives + "\n");
                 d.writeBytes("  Adjacency matrix of estimated model:  \n");
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -553,7 +547,7 @@ public class YeastPcCcdSearchWrapper {
 //    }
 
     private static void printAdjMatrix(int[][] adjMat, List listOfNames,
-            DataOutputStream d) {
+                                       DataOutputStream d) {
         for (int i = 0; i < adjMat.length; i++) {
             try {
                 d.writeBytes("  " + listOfNames.get(i) + "\t");
@@ -561,8 +555,7 @@ public class YeastPcCcdSearchWrapper {
                     d.writeBytes(adjMat[i][j] + "\t");
                 }
                 d.writeBytes("\n");
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

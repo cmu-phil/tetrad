@@ -54,11 +54,9 @@ public class ItkPredictorSearch {
             int ret;
             if (this.gene < ((Gene) o).getIndex()) {
                 ret = -1;
-            }
-            else if (this.gene == ((Gene) o).getIndex()) {
+            } else if (this.gene == ((Gene) o).getIndex()) {
                 ret = 0;
-            }
-            else {
+            } else {
                 ret = 1;
             }
             return ret;
@@ -125,7 +123,7 @@ public class ItkPredictorSearch {
             }
 
             System.out.print("sem" + rows[0] + rows[1] + " = ");
-            for (Iterator it = S[rows[0]][rows[1]].iterator(); it.hasNext();) {
+            for (Iterator it = S[rows[0]][rows[1]].iterator(); it.hasNext(); ) {
                 System.out.print(((Gene) it.next()).getIndex());
             }
             System.out.println();

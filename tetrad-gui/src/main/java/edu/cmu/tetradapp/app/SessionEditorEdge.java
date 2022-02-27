@@ -55,14 +55,13 @@ final class SessionEditorEdge extends DisplayEdge {
      *                        UNRANDOMIZED or RANDOMIZED.
      */
     public SessionEditorEdge(SessionEditorNode node1, SessionEditorNode node2,
-            int sessionEdgeMode) {
+                             int sessionEdgeMode) {
 
         super(node1, node2, DisplayEdge.SESSION);
 
         if ((sessionEdgeMode >= 0) && (sessionEdgeMode <= 1)) {
             this.sessionEdgeMode = sessionEdgeMode;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException();
         }
     }
@@ -99,7 +98,7 @@ final class SessionEditorEdge extends DisplayEdge {
      * @see #updateTrackPoint
      */
     public SessionEditorEdge(SessionEditorNode node1, Point mouseTrackPoint,
-            int mode) {
+                             int mode) {
         super(node1, mouseTrackPoint, DisplayEdge.SESSION);
         this.sessionEdgeMode = mode;
     }
@@ -134,8 +133,7 @@ final class SessionEditorEdge extends DisplayEdge {
         if (erase) {
             g.setColor(Color.white);
             g.fillPolygon(dice);
-        }
-        else {
+        } else {
             Circle[] dicedot = getDiceDot();
 
             g.setColor(c);
@@ -234,11 +232,9 @@ final class SessionEditorEdge extends DisplayEdge {
 
         if (sessionEdgeMode == RANDOMIZED) {
             return true;
-        }
-        else if (sessionEdgeMode == UNRANDOMIZED) {
+        } else if (sessionEdgeMode == UNRANDOMIZED) {
             return false;
-        }
-        else {
+        } else {
             throw new IllegalStateException();
         }
     }
@@ -308,7 +304,7 @@ final class SessionEditorEdge extends DisplayEdge {
                 }
                 break;
 
-            default :
+            default:
                 throw new IllegalStateException();
         }
 

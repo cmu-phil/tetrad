@@ -24,8 +24,8 @@ package edu.cmu.tetrad.regression;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.Vector;
 
 import java.util.Arrays;
@@ -49,7 +49,8 @@ public class RegressionCovariance implements Regression {
      */
     private CorrelationMatrix correlations;
 
-    /**2
+    /**
+     * 2
      * The standard deviations for the variable in <code>correlations</code>.
      */
     private Vector sd;

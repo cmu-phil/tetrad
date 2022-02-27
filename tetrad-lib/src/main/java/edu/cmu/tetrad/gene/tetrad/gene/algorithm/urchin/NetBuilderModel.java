@@ -254,8 +254,7 @@ public class NetBuilderModel {
             for (int i = 0; i < ngenes; i++) {
                 if (geneData[i][hour] > means[i]) {
                     thresh[i] = 1;
-                }
-                else {
+                } else {
                     thresh[i] = -1;
                 }
             }

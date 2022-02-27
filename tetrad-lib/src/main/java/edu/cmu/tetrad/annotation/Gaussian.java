@@ -18,15 +18,11 @@
  */
 package edu.cmu.tetrad.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Data are normal distributed.
- *
+ * <p>
  * Sep 19, 2017 12:03:36 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

@@ -62,8 +62,7 @@ public class CovMatrixDisplay extends JPanel implements DataModelContainer {
 
         if (covMatrix instanceof CorrelationMatrix) {
             b1.add(new JLabel("Correlation Matrix"));
-        }
-        else {
+        } else {
             b1.add(new JLabel("Covariance Matrix"));
         }
 
@@ -79,8 +78,7 @@ public class CovMatrixDisplay extends JPanel implements DataModelContainer {
         if (!covMatrixJTable.isEditingMatrixPositiveDefinite()) {
             label.setText("Matrix not positive definite.");
             restoreButton.setEnabled(true);
-        }
-        else {
+        } else {
             label.setText(" ");
             restoreButton.setEnabled(false);
         }
@@ -99,8 +97,7 @@ public class CovMatrixDisplay extends JPanel implements DataModelContainer {
                             if (!source.isEditingMatrixPositiveDefinite()) {
                                 label.setText("Matrix not positive definite.");
                                 restoreButton.setEnabled(true);
-                            }
-                            else {
+                            } else {
                                 label.setText(" ");
                                 restoreButton.setEnabled(false);
                             }

@@ -22,10 +22,10 @@ import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.DatasetReader;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
+
 import java.io.IOException;
 
 /**
- *
  * Nov 5, 2018 2:51:35 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -41,7 +41,7 @@ public interface TabularDataReader extends DatasetReader {
      *
      * @param dataColumns
      * @param numberOfCategories maximum number of categories to be considered
-     * discrete
+     *                           discrete
      * @param hasHeader
      * @throws IOException
      */

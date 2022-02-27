@@ -23,22 +23,20 @@ package edu.cmu.tetradapp.knowledge_editor;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.KnowledgeGroup;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.*;
+
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.*;
 
 /**
  * Edits fobiddings or requirings of groups of node to other groups of nodes.
@@ -162,7 +160,7 @@ class OtherGroupsEditor extends JPanel {
         } else {
             forbiddenButton.setEnabled(true);
         }
-        
+
         // Add skinny hand
         forbiddenButton.addActionListener((e) -> {
             Set<String> toForbiddenGroup = new HashSet<>();
@@ -176,7 +174,7 @@ class OtherGroupsEditor extends JPanel {
             KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, fromGroup, toForbiddenGroup);
 
             knowledge.addKnowledgeGroup(targetKnowledgeGroup);
-            
+
             rebuild();
         });
 
@@ -272,6 +270,7 @@ class OtherGroupsEditor extends JPanel {
     }
 
     //========================== Inner classes =====================================//
+
     /**
      * Renders an arrow from the left to right.
      */
@@ -316,7 +315,7 @@ class OtherGroupsEditor extends JPanel {
         }
 
         public Component getListCellRendererComponent(JList list, Object value, int index,
-                boolean isSelected, boolean cellHasFocus) {
+                                                      boolean isSelected, boolean cellHasFocus) {
 
             setText(" " + value + " ");
             if (isSelected) {
@@ -394,7 +393,7 @@ class OtherGroupsEditor extends JPanel {
                 try {
                     knowledge.setKnowledgeGroup(index, g);
                     dtde.getDropTargetContext().dropComplete(true);
-                    
+
                     rebuild(); // Zhou added this to reflect the update
                 } catch (IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(OtherGroupsEditor.this, ex.getMessage());
@@ -426,7 +425,7 @@ class OtherGroupsEditor extends JPanel {
                     }
                     try {
                         knowledge.setKnowledgeGroup(index, g);
-                        
+
                         rebuild(); // Zhou added this to reflect the update
                     } catch (IllegalArgumentException ex) {
                         JOptionPane.showMessageDialog(OtherGroupsEditor.this, ex.getMessage());

@@ -23,9 +23,9 @@ package edu.cmu.tetrad.cluster;
 
 import edu.cmu.tetrad.cluster.metrics.Dissimilarity;
 import edu.cmu.tetrad.cluster.metrics.SquaredErrorLoss;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
 
 import java.text.NumberFormat;

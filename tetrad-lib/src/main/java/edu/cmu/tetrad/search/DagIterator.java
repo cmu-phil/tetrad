@@ -44,14 +44,14 @@ public class DagIterator {
     private Graph storedDag;
 
     /**
-     * The given pattern must be a pattern. If it does not consist entirely of directed and undirected edges and if it
+     * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it
      * is not acyclic, it is rejected.
      *
-     * @throws IllegalArgumentException if the pattern is not a pattern.
+     * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
      */
-    public DagIterator(Graph pattern) {
+    public DagIterator(Graph CPDAG) {
 
-        for (Edge edge : pattern.getEdges()) {
+        for (Edge edge : CPDAG.getEdges()) {
             if (Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge)) {
                 continue;
             }
@@ -60,16 +60,16 @@ public class DagIterator {
                     "directed and undirected edges: " + edge);
         }
 
-//        if (pattern.existsDirectedCycle()) {
+//        if (CPDAG.existsDirectedCycle()) {
 //            throw new IllegalArgumentException("The graph must be acyclic: " +
-//                    DataGraphUtils.directedCycle(pattern));
+//                    DataGraphUtils.directedCycle(CPDAG));
 //        }
 
-        decoratedGraphs.add(new DecoratedGraph(pattern));
+        decoratedGraphs.add(new DecoratedGraph(CPDAG));
     }
 
     /**
-     * Successive calls to this method return successive DAGs in the pattern, in a more or less natural enumeration of
+     * Successive calls to this method return successive DAGs in the CPDAG, in a more or less natural enumeration of
      * them in which an arbitrary undirected edge is picked, oriented one way, Meek rules applied, then a remaining
      * unoriented edge is picked, oriented one way, and so on, until a DAG is obtained, and then by backtracking the
      * other orientation of each chosen edge is tried. Nonrecursive, obviously.

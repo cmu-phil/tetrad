@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -259,7 +260,7 @@ public class MixedDataBox implements DataBox {
 
         int row_num = rows.length;
         int col_num = cols.length;
-        
+
         DataBox _dataBox = new MixedDataBox(newVars, row_num);
 
         for (int i = 0; i < row_num; i++) {
@@ -270,7 +271,7 @@ public class MixedDataBox implements DataBox {
 
         return _dataBox;
     }
-    
+
     public double[][] getContinuousData() {
         return continuousData;
     }

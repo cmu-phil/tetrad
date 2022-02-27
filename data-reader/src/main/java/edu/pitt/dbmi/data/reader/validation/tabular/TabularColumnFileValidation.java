@@ -25,19 +25,15 @@ import edu.pitt.dbmi.data.reader.validation.MessageType;
 import edu.pitt.dbmi.data.reader.validation.ValidationAttribute;
 import edu.pitt.dbmi.data.reader.validation.ValidationCode;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
- *
  * Dec 12, 2018 3:28:26 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

@@ -60,10 +60,12 @@ public interface Expression extends TetradSerializable {
     List<Expression> getExpressions();
 
     /**
+     *
      */
     RealDistribution getRealDistribution(Context context);
 
     /**
+     *
      */
     IntegerDistribution getIntegerDistribution(Context context);
 

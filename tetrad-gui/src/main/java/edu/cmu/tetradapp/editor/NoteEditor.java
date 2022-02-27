@@ -98,7 +98,7 @@ public class NoteEditor extends JPanel {
 
     //============================= Inner Class ============================//
 
-    private class FieldListener extends FocusAdapter  {
+    private class FieldListener extends FocusAdapter {
 
         private String current;
         private final JTextField field;
@@ -109,7 +109,6 @@ public class NoteEditor extends JPanel {
         }
 
 
-
         public void focusLost(FocusEvent evt) {
             doAction();
         }
@@ -117,7 +116,7 @@ public class NoteEditor extends JPanel {
 
         private void doAction() {
             String text = field.getText();
-            if(current.equals(text)){
+            if (current.equals(text)) {
                 return;
             }
             if (isLegal(text)) {
@@ -125,7 +124,7 @@ public class NoteEditor extends JPanel {
                 noteModel.setName(text);
                 NoteEditor.this.firePropertyChange("changeNodeLabel", null, text);
             } else {
-               field.setText(current);
+                field.setText(current);
             }
         }
     }

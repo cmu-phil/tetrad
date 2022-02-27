@@ -113,7 +113,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
     private Shape getShape() {
         return new Rectangle2D.Double(0, 0, getSize().width - 1,
-                    getSize().height - 1);
+                getSize().height - 1);
     }
 
     public boolean contains(int x, int y) {
@@ -123,12 +123,10 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     public void setHasModel(boolean hasModel) {
         if (hasModel) {
             this.unselectedColor = HAS_MODEL_COLOR;
-        }
-        else {
+        } else {
             this.unselectedColor = NO_MODEL_COLOR;
         }
     }
-
 
 
     /**

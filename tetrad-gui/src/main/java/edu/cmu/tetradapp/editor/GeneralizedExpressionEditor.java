@@ -38,8 +38,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.text.ParseException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
@@ -128,8 +128,9 @@ class GeneralizedExpressionEditor extends JComponent {
 
     /**
      * Constructs an editor for a node in a generalized SEM PM.
+     *
      * @param semPm The GeneralizedSemPm that's being edited, containing <code>node</code>.
-     * @param node The node in <code>semPm</code> that's being edited.
+     * @param node  The node in <code>semPm</code> that's being edited.
      */
     public GeneralizedExpressionEditor(final GeneralizedSemPm semPm, final Node node) {
         if (semPm == null) {
@@ -195,10 +196,9 @@ class GeneralizedExpressionEditor extends JComponent {
                 String token = (String) expressionsBox.getSelectedItem();
                 String signature;
 
-                if ("-New Parameter-" .equals(token)) {
+                if ("-New Parameter-".equals(token)) {
                     signature = nextParameterName("b");
-                }
-                else {
+                } else {
                     signature = expressionsMap.get(token);
                 }
 
@@ -306,8 +306,7 @@ class GeneralizedExpressionEditor extends JComponent {
 
                     if (color == Color.RED) {
                         document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
-                    }
-                    else if (color == Color.BLACK) {
+                    } else if (color == Color.BLACK) {
                         document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
                     }
 
@@ -355,7 +354,8 @@ class GeneralizedExpressionEditor extends JComponent {
 
     /**
      * Constructs an editor for a parameter in a generalized SEM PM.
-     * @param semPm The GeneralizedSemPm that's being edited, containing <code>parameter</code>.
+     *
+     * @param semPm     The GeneralizedSemPm that's being edited, containing <code>parameter</code>.
      * @param parameter The parameter in <code>semPm</code> that's being edited.
      */
     public GeneralizedExpressionEditor(final GeneralizedSemPm semPm, final String parameter) {
@@ -420,10 +420,9 @@ class GeneralizedExpressionEditor extends JComponent {
                 String token = (String) expressionsBox.getSelectedItem();
                 String signature;
 
-                if ("-New Parameter-" .equals(token)) {
+                if ("-New Parameter-".equals(token)) {
                     signature = nextParameterName("b");
-                }
-                else {
+                } else {
                     signature = expressionsMap.get(token);
                 }
 
@@ -525,8 +524,7 @@ class GeneralizedExpressionEditor extends JComponent {
 
                     if (color == Color.RED) {
                         document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
-                    }
-                    else if (color == Color.BLACK) {
+                    } else if (color == Color.BLACK) {
                         document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
                     }
 
@@ -553,7 +551,7 @@ class GeneralizedExpressionEditor extends JComponent {
             }
         });
 
-        setFocusCycleRoot(true);        
+        setFocusCycleRoot(true);
         expressionTextPane.grabFocus();
     }
 
@@ -568,8 +566,8 @@ class GeneralizedExpressionEditor extends JComponent {
     }
 
     /**
-     * @return the next parameter in the sequence base1, base2,... that's not already being used by the SEM PM.
      * @param base The base of the paramter name.
+     * @return the next parameter in the sequence base1, base2,... that's not already being used by the SEM PM.
      */
     private String nextParameterName(String base) {
         Set<String> parameters = semPm.getParameters();
@@ -649,7 +647,7 @@ class GeneralizedExpressionEditor extends JComponent {
 
             if (node != null) {
                 if (node.getNodeType() != NodeType.ERROR && !formula.contains(errorNode.getName())
-                       && errorTermCheckBox.isSelected()) {
+                        && errorTermCheckBox.isSelected()) {
                     if (!formula.trim().endsWith("+") && !"".equals(formula)) {
                         formula += " + ";
                     }
@@ -661,12 +659,10 @@ class GeneralizedExpressionEditor extends JComponent {
 
                 if (node.getNodeType() == NodeType.ERROR) {
                     resultTextPane.setText(node + " ~ " + formula);
-                }
-                else {
+                } else {
                     resultTextPane.setText(node + " = " + formula);
                 }
-            }
-            else if (parameter != null) {
+            } else if (parameter != null) {
                 this.expressionString = formula;
                 resultTextPane.setText(parameter + " ~ " + formula);
             }
@@ -724,7 +720,7 @@ class GeneralizedExpressionEditor extends JComponent {
     private Map<String, String> getExpressionMap(GeneralizedSemPm semPm, Node node) {
         // These are the expressions the user can choose from. The display form is on the left, and the template
         // form is on the. Obviously you use a % for a new parameter. In case you want to change it.
-        String[][] expressions = new String[][] {
+        String[][] expressions = new String[][]{
                 {"+", " + "},
                 {"-", " - "},
                 {"*", " * "},

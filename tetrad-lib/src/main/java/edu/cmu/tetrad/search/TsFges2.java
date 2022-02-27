@@ -112,14 +112,14 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     private TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The top n graphs found by the algorithm, where n is numPatternsToStore.
+     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
      */
     private LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
 
     /**
-     * The number of top patterns to store.
+     * The number of top CPDAGs to store.
      */
-    private int numPatternsToStore = 0;
+    private int numCPDAGsToStore = 0;
 
     /**
      * True if verbose output should be printed.
@@ -190,7 +190,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     public TsFges2(Score score) {
         if (score == null) throw new NullPointerException();
         setScore(score);
-        this.graph = new EdgeListGraphSingleConnections(getVariables());
+        this.graph = new EdgeListGraph(getVariables());
     }
 
     //==========================PUBLIC METHODS==========================//
@@ -213,21 +213,21 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
      * edges till a minimum is achieved.
      *
-     * @return the resulting Pattern.
+     * @return the resulting CPDAG.
      */
     public Graph search() {
         topGraphs.clear();
 
         lookupArrows = new ConcurrentHashMap<>();
         final List<Node> nodes = new ArrayList<>(variables);
-        graph = new EdgeListGraphSingleConnections(nodes);
+        graph = new EdgeListGraph(nodes);
 
         if (adjacencies != null) {
             adjacencies = GraphUtils.replaceNodes(adjacencies, nodes);
         }
 
         if (initialGraph != null) {
-            graph = new EdgeListGraphSingleConnections(initialGraph);
+            graph = new EdgeListGraph(initialGraph);
             graph = GraphUtils.replaceNodes(graph, nodes);
         }
 
@@ -320,19 +320,19 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     /**
      * @return the number of patterns to store.
      */
-    public int getNumPatternsToStore() {
-        return numPatternsToStore;
+    public int getnumCPDAGsToStore() {
+        return numCPDAGsToStore;
     }
 
     /**
      * Sets the number of patterns to store. This should be set to zero for fast search.
      */
-    public void setNumPatternsToStore(int numPatternsToStore) {
-        if (numPatternsToStore < 0) {
-            throw new IllegalArgumentException("# graphs to store must at least 0: " + numPatternsToStore);
+    public void setNumCPDAGsToStore(int numCPDAGsToStore) {
+        if (numCPDAGsToStore < 0) {
+            throw new IllegalArgumentException("# graphs to store must at least 0: " + numCPDAGsToStore);
         }
 
-        this.numPatternsToStore = numPatternsToStore;
+        this.numCPDAGsToStore = numCPDAGsToStore;
     }
 
     /**
@@ -477,6 +477,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
     /**
      * The maximum of parents any nodes can have in output pattern.
+     *
      * @return -1 for unlimited.
      */
     public int getMaxIndegree() {
@@ -485,6 +486,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
     /**
      * The maximum of parents any nodes can have in output pattern.
+     *
      * @param maxIndegree -1 for unlimited.
      */
     public void setMaxIndegree(int maxIndegree) {
@@ -595,7 +597,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         final Set<Node> emptySet = new HashSet<>();
 
         long start = System.currentTimeMillis();
-        this.effectEdgesGraph = new EdgeListGraphSingleConnections(nodes);
+        this.effectEdgesGraph = new EdgeListGraph(nodes);
 
         class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
 
@@ -1896,12 +1898,12 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
     // Stores the graph, if its totalScore knocks out one of the top ones.
     private void storeGraph() {
-        if (getNumPatternsToStore() > 0) {
-            Graph graphCopy = new EdgeListGraphSingleConnections(graph);
+        if (getnumCPDAGsToStore() > 0) {
+            Graph graphCopy = new EdgeListGraph(graph);
             topGraphs.addLast(new ScoredGraph(graphCopy, totalScore));
         }
 
-        if (topGraphs.size() == getNumPatternsToStore() + 1) {
+        if (topGraphs.size() == getnumCPDAGsToStore() + 1) {
             topGraphs.removeFirst();
         }
     }
@@ -1959,10 +1961,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         return builder.toString();
     }
 
-    // returnSimilarPairs based on orientSimilarPairs in TsFciOrient.java by Entner and Hoyer
+    // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
-        if(x.getName().equals("time") || y.getName().equals("time")){
+        if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
 //        System.out.println("Knowledge within returnSimilar : " + knowledge);
@@ -1978,15 +1980,15 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 //        Collections.sort(tier_y);
 
         int i;
-        for(i = 0; i < tier_x.size(); ++i) {
-            if(getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
+        for (i = 0; i < tier_x.size(); ++i) {
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
                 indx_comp = i;
                 break;
             }
         }
 
-        for(i = 0; i < tier_y.size(); ++i) {
-            if(getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
+        for (i = 0; i < tier_y.size(); ++i) {
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
                 indy_comp = i;
                 break;
             }
@@ -2001,8 +2003,8 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         List<Node> simListX = new ArrayList<>();
         List<Node> simListY = new ArrayList<>();
 
-        for(i = 0; i < ntiers - tier_diff; ++i) {
-            if(knowledge.getTier(i).size()==1) continue;
+        for (i = 0; i < ntiers - tier_diff; ++i) {
+            if (knowledge.getTier(i).size() == 1) continue;
             String A;
             Node x1;
             String B;
@@ -2045,42 +2047,42 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         List<List<Node>> pairList = new ArrayList<>();
         pairList.add(simListX);
         pairList.add(simListY);
-        return(pairList);
+        return (pairList);
     }
 
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
-        if(tempS.indexOf(':')== -1) {
+        if (tempS.indexOf(':') == -1) {
             return tempS;
         } else return tempS.substring(0, tempS.indexOf(':'));
     }
 
-    public void addSimilarEdges(Node x, Node y){
-        List<List<Node>> simList = returnSimilarPairs(x,y);
-        if(simList.isEmpty()) return;
+    public void addSimilarEdges(Node x, Node y) {
+        List<List<Node>> simList = returnSimilarPairs(x, y);
+        if (simList.isEmpty()) return;
         List<Node> x1List = simList.get(0);
         List<Node> y1List = simList.get(1);
         Iterator itx = x1List.iterator();
         Iterator ity = y1List.iterator();
-        while(itx.hasNext() && ity.hasNext()){
-            Node x1 = (Node)itx.next();
-            Node y1 = (Node)ity.next();
+        while (itx.hasNext() && ity.hasNext()) {
+            Node x1 = (Node) itx.next();
+            Node y1 = (Node) ity.next();
             System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
             System.out.println("adding edge between x = " + x1 + " and y = " + y1);
             graph.addDirectedEdge(x1, y1);
         }
     }
 
-    public void removeSimilarEdges(Node x, Node y){
-        List<List<Node>> simList = returnSimilarPairs(x,y);
-        if(simList.isEmpty()) return;
+    public void removeSimilarEdges(Node x, Node y) {
+        List<List<Node>> simList = returnSimilarPairs(x, y);
+        if (simList.isEmpty()) return;
         List<Node> x1List = simList.get(0);
         List<Node> y1List = simList.get(1);
         Iterator itx = x1List.iterator();
         Iterator ity = y1List.iterator();
-        while(itx.hasNext() && ity.hasNext()){
-            Node x1 = (Node)itx.next();
-            Node y1 = (Node)ity.next();
+        while (itx.hasNext() && ity.hasNext()) {
+            Node x1 = (Node) itx.next();
+            Node y1 = (Node) ity.next();
             System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
             System.out.println("removing edge between x = " + x1 + " and y = " + y1);
             Edge oldxy = graph.getEdge(x1, y1);

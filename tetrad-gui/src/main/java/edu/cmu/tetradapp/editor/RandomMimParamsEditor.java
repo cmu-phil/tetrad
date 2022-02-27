@@ -22,13 +22,11 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
-import java.awt.BorderLayout;
-import javax.swing.Box;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Edits the parameters for generating random graphs.
@@ -89,7 +87,7 @@ class RandomMimParamsEditor extends JPanel {
                 if (value < 1) {
                     throw new IllegalArgumentException(
                             "Number of structural "
-                            + "nodes Must be greater than 0: " + value);
+                                    + "nodes Must be greater than 0: " + value);
                 }
 
                 parameters.set("numStructuralNodes", value);

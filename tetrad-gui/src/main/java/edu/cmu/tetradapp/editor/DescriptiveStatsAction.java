@@ -34,7 +34,6 @@ import java.beans.PropertyChangeListener;
 /**
  * Displays descriptive statistics for a random variable.
  *
- *
  * @author Michael Freenor
  */
 
@@ -58,7 +57,7 @@ class DescriptiveStatsAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
-        if(dataSet == null || dataSet.getNumColumns() == 0){
+        if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot generate descriptive statistics on an empty data set.");
             return;
         }
@@ -136,7 +135,6 @@ class DescriptiveStatsAction extends AbstractAction {
     }
 
     //================================= Inner Class ======================================//
-
 
 
     /**

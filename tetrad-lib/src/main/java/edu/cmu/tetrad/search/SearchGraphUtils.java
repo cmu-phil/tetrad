@@ -20,41 +20,19 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.KnowledgeEdge;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.Triple;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
-import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.collections4.map.MultiKeyMap;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import org.apache.commons.collections4.map.MultiKeyMap;
+import static java.lang.Math.max;
 
 /**
  * Graph utilities for search algorithm. Lots of orientation method, for
@@ -212,7 +190,7 @@ public final class SearchGraphUtils {
         adj.remove(c);
         adj.remove(a);
 
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adj.size(), adj.size())); d++) {
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), max(adj.size(), adj.size())); d++) {
             if (d <= adj.size()) {
                 ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
                 int[] choice;
@@ -300,7 +278,7 @@ public final class SearchGraphUtils {
      * x *-* y *-* z as x *-> y <-* z just in case y is in Sepset({x, z}).
      */
     public static List<Triple> orientCollidersUsingSepsets(SepsetMap set, IKnowledge knowledge, Graph graph, boolean verbose,
-                                                           boolean enforcePattern) {
+                                                           boolean enforceCpdag) {
         TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
         List<Triple> colliders = new ArrayList<>();
 
@@ -335,7 +313,7 @@ public final class SearchGraphUtils {
                         System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
                     }
 
-                    if (enforcePattern) {
+                    if (enforceCpdag) {
                         if (graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW) {
                             continue;
                         }
@@ -1145,7 +1123,7 @@ public final class SearchGraphUtils {
     }
 
     /**
-     * Transforms a maximally directed pattern (PDAG) represented in graph
+     * Transforms a maximally directed cpdag (PDAG) represented in graph
      * <code>g</code> into an arbitrary DAG by modifying <code>g</code> itself.
      * Based on the algorithm described in </p> Chickering (2002) "Optimal
      * structure identification with greedy search" Journal of Machine Learning
@@ -1214,7 +1192,7 @@ public final class SearchGraphUtils {
     /**
      * Get a graph and direct only the unshielded colliders.
      */
-    public static void basicPattern(Graph graph) {
+    public static void basicCPDAG(Graph graph) {
         Set<Edge> undirectedEdges = new HashSet<>();
 
         NEXT_EDGE:
@@ -1246,7 +1224,7 @@ public final class SearchGraphUtils {
         }
     }
 
-    public static void basicPatternRestricted(Graph graph, Set<Edge> edges) {
+    public static void basicCpdagRestricted(Graph graph, Set<Edge> edges) {
         Set<Edge> undirectedEdges = new HashSet<>();
 
         NEXT_EDGE:
@@ -1278,7 +1256,7 @@ public final class SearchGraphUtils {
         }
     }
 
-    public static void basicPatternRestricted2(Graph graph, Node node) {
+    public static void basicCpdagRestricted2(Graph graph, Node node) {
         Set<Edge> undirectedEdges = new HashSet<>();
 
         NEXT_EDGE:
@@ -1312,7 +1290,7 @@ public final class SearchGraphUtils {
 
     /**
      * Transforms a DAG represented in graph <code>graph</code> into a maximally
-     * directed pattern (PDAG) by modifying <code>g</code> itself. Based on the
+     * directed cpdag (PDAG) by modifying <code>g</code> itself. Based on the
      * algorithm described in </p> Chickering (2002) "Optimal structure
      * identification with greedy search" Journal of Machine Learning Research.
      * It works for both BayesNets and SEMs.
@@ -1447,33 +1425,42 @@ public final class SearchGraphUtils {
     }
 
     /**
-     * @return the pattern to which the given DAG belongs.
+     * @return the cpdag to which the given DAG belongs.
      */
-    public static Graph patternFromDag(Graph dag) {
+    public static Graph cpdagFromDag(Graph dag) {
 //        IndTestDSep test = new IndTestDSep(dag);
 //        return new PC(test).search();
 //
         Graph graph = new EdgeListGraph(dag);
-        SearchGraphUtils.basicPattern(graph);
+        SearchGraphUtils.basicCPDAG(graph);
         MeekRules rules = new MeekRules();
         rules.orientImplied(graph);
         return graph;
     }
 
-    public static Graph dagFromPattern(Graph graph) {
+    public static Graph dagFromCPDAG(Graph graph) {
+        return dagFromCPDAG(graph, null);
+    }
+
+    public static Graph dagFromCPDAG(Graph graph, IKnowledge knowledge) {
         Graph dag = new EdgeListGraph(graph);
 
         for (Edge edge : dag.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                throw new IllegalArgumentException("That 'pattern' contains a bidirected edge.");
+                throw new IllegalArgumentException("That 'cpdag' contains a bidirected edge.");
             }
         }
 
         if (graph.existsDirectedCycle()) {
-            throw new IllegalArgumentException("That 'pattern' contains a directed cycle.");
+            throw new IllegalArgumentException("That 'cpdag' contains a directed cycle.");
         }
 
         MeekRules rules = new MeekRules();
+
+        if (knowledge != null) {
+            rules.setKnowledge(knowledge);
+        }
+
         rules.setRevertToUnshieldedColliders(false);
 
         NEXT:
@@ -1495,14 +1482,14 @@ public final class SearchGraphUtils {
         return dag;
     }
 
-    public static Graph patternFromEPattern(Graph ePattern) {
-        ePattern = new EdgeListGraph(ePattern);
+    public static Graph cpdagFromECpdag(Graph eCpdag) {
+        eCpdag = new EdgeListGraph(eCpdag);
 
         MeekRules rules = new MeekRules();
-        rules.orientImplied(ePattern);
+        rules.orientImplied(eCpdag);
 
-        List<Triple> ambiguousTriples = new ArrayList<>(ePattern.getAmbiguousTriples());
-        removeExtraAmbiguousTriples(ePattern, new ArrayList<>(ambiguousTriples));
+        List<Triple> ambiguousTriples = new ArrayList<>(eCpdag.getAmbiguousTriples());
+        removeExtraAmbiguousTriples(eCpdag, new ArrayList<>(ambiguousTriples));
 
         while (!ambiguousTriples.isEmpty()) {
             Triple triple = ambiguousTriples.get(0);
@@ -1511,21 +1498,21 @@ public final class SearchGraphUtils {
             Node y = triple.getY();
             Node z = triple.getZ();
 
-            ePattern.removeAmbiguousTriple(x, y, z);
+            eCpdag.removeAmbiguousTriple(x, y, z);
             ambiguousTriples.remove(triple);
 
-//            if (!ePattern.isDefCollider(x, y, z)) {
-//                ePattern.removeEdge(x, y);
-//                ePattern.removeEdge(z, y);
-//                ePattern.addDirectedEdge(x, y);
-//                ePattern.addDirectedEdge(z, y);
+//            if (!eCpdag.isDefCollider(x, y, z)) {
+//                eCpdag.removeEdge(x, y);
+//                eCpdag.removeEdge(z, y);
+//                eCpdag.addDirectedEdge(x, y);
+//                eCpdag.addDirectedEdge(z, y);
 //            }
 
-            rules.orientImplied(ePattern);
-            removeExtraAmbiguousTriples(ePattern, ambiguousTriples);
+            rules.orientImplied(eCpdag);
+            removeExtraAmbiguousTriples(eCpdag, ambiguousTriples);
         }
 
-        return ePattern;
+        return eCpdag;
     }
 
     private static void removeExtraAmbiguousTriples(Graph graph, List<Triple> ambiguousTriples) {
@@ -1553,18 +1540,18 @@ public final class SearchGraphUtils {
         }
     }
 
-    public static Graph bestPatternFromEPattern(Graph ePattern, DataSet dataSet, int maxCount) {
-        ePattern = new EdgeListGraph(ePattern);
+    public static Graph bestCpdagFromECpdag(Graph eCpdag, DataSet dataSet, int maxCount) {
+        eCpdag = new EdgeListGraph(eCpdag);
         Graph out = new EdgeListGraph();
 
         MeekRules rules = new MeekRules();
-        rules.orientImplied(ePattern);
+        rules.orientImplied(eCpdag);
         double bestBIC = Double.NEGATIVE_INFINITY;
 
-        List<Triple> _ambiguousTriples = new ArrayList<>(ePattern.getAmbiguousTriples());
+        List<Triple> _ambiguousTriples = new ArrayList<>(eCpdag.getAmbiguousTriples());
 
         for (int c = 0; c < maxCount; c++) {
-            Graph _ePattern = new EdgeListGraph(ePattern);
+            Graph _eCpdag = new EdgeListGraph(eCpdag);
 
             List<Triple> ambiguousTriples = new ArrayList<>(_ambiguousTriples);
             Collections.shuffle(ambiguousTriples);
@@ -1576,23 +1563,23 @@ public final class SearchGraphUtils {
                 Node y = triple.getY();
                 Node z = triple.getZ();
 
-                if (!_ePattern.isDefCollider(x, y, z)) {
-                    _ePattern.removeEdge(x, y);
-                    _ePattern.removeEdge(z, y);
-                    _ePattern.addDirectedEdge(x, y);
-                    _ePattern.addDirectedEdge(z, y);
+                if (!_eCpdag.isDefCollider(x, y, z)) {
+                    _eCpdag.removeEdge(x, y);
+                    _eCpdag.removeEdge(z, y);
+                    _eCpdag.addDirectedEdge(x, y);
+                    _eCpdag.addDirectedEdge(z, y);
                 }
 
-                rules.orientImplied(_ePattern);
-                removeExtraAmbiguousTriples(_ePattern, ambiguousTriples);
+                rules.orientImplied(_eCpdag);
+                removeExtraAmbiguousTriples(_eCpdag, ambiguousTriples);
             }
 
-            Graph dag = chooseDagInPattern(_ePattern);
+            Graph dag = chooseDagInCpdag(_eCpdag);
             double bic = SemBicScorer.scoreDag(dag, dataSet);
 
             if (bic > bestBIC) {
                 bestBIC = bic;
-                out = _ePattern;
+                out = _eCpdag;
             }
         }
 
@@ -1660,7 +1647,7 @@ public final class SearchGraphUtils {
 
         List<Node> nodes = graph.getNodes();
         int ySpace = 500 / knowledge.getNumTiers();
-        ySpace = ySpace < 50 ? 50 : ySpace;
+        ySpace = Math.max(ySpace, 50);
 
         List<String> notInTier = knowledge.getVariablesNotInTiers();
         Collections.sort(notInTier);
@@ -1700,23 +1687,84 @@ public final class SearchGraphUtils {
         }
     }
 
+    public static void arrangeByKnowledgeTiers(Graph graph) {
+        int maxLag = 0;
+
+        for (Node node : graph.getNodes()) {
+            String name = node.getName();
+
+            String[] tokens1 = name.split(":");
+
+            int index = tokens1.length > 1 ? Integer.parseInt(tokens1[tokens1.length - 1]) : 0;
+
+            if (index >= maxLag) {
+                maxLag = index;
+            }
+        }
+
+//        if (maxLag == 0) {
+//            GraphUtils.circleLayout(graph, 225, 200, 150);
+//            return;
+//        }
+
+        List<List<Node>> tiers = new ArrayList<>();
+
+        for (int i = 0; i <= maxLag; i++) {
+            tiers.add(new ArrayList<>());
+        }
+
+        for (Node node : graph.getNodes()) {
+            String name = node.getName();
+
+            String[] tokens = name.split(":");
+
+            int index = tokens.length > 1 ? Integer.parseInt(tokens[tokens.length - 1]) : 0;
+
+            if (!tiers.get(index).contains(node)) {
+                tiers.get(index).add(node);
+            }
+        }
+
+        for (int i = 0; i <= maxLag; i++) {
+            Collections.sort(tiers.get(i));
+        }
+
+        int ySpace = maxLag == 0 ? 150 : 150 / maxLag;
+        int y = 60;
+
+        for (int i = maxLag; i >= 0; i--) {
+            List<Node> tier = tiers.get(i);
+            int x = 60;
+
+            for (Node node : tier) {
+                System.out.println(node + " " + x + " " + y);
+                node.setCenterX(x);
+                node.setCenterY(y);
+                x += 90;
+            }
+
+            y += ySpace;
+
+        }
+    }
+
     /**
-     * Double checks a sepset map against a pattern to make sure that X is
-     * adjacent to Y in the pattern iff {X, Y} is not in the domain of the
+     * Double checks a sepset map against a cpdag to make sure that X is
+     * adjacent to Y in the cpdag iff {X, Y} is not in the domain of the
      * sepset map.
      *
-     * @param sepset  a sepset map, over variables v.
-     * @param pattern a pattern over variables W, v subset of W.
-     * @return true if the sepset map is consistent with the pattern.
+     * @param sepset a sepset map, over variables v.
+     * @param cpdag  a cpdag over variables W, v subset of W.
+     * @return true if the sepset map is consistent with the cpdag.
      */
-    public static boolean verifySepsetIntegrity(SepsetMap sepset, Graph pattern) {
-        for (Node x : pattern.getNodes()) {
-            for (Node y : pattern.getNodes()) {
+    public static boolean verifySepsetIntegrity(SepsetMap sepset, Graph cpdag) {
+        for (Node x : cpdag.getNodes()) {
+            for (Node y : cpdag.getNodes()) {
                 if (x == y) {
                     continue;
                 }
 
-                if ((pattern.isAdjacentTo(y, x)) != (sepset.get(x, y) == null)) {
+                if ((cpdag.isAdjacentTo(y, x)) != (sepset.get(x, y) == null)) {
                     System.out.println("Sepset not consistent with graph for {" + x + ", " + y + "}");
                     return false;
                 }
@@ -1857,18 +1905,18 @@ public final class SearchGraphUtils {
     }
 
     /**
-     * Generates the list of DAGs in the given pattern.
+     * Generates the list of DAGs in the given cpdag.
      */
-    public static List<Graph> generatePatternDags(Graph pattern, boolean orientBidirectedEdges) {
+    public static List<Graph> generateCpdagDags(Graph cpdag, boolean orientBidirectedEdges) {
         if (orientBidirectedEdges) {
-            pattern = GraphUtils.removeBidirectedOrientations(pattern);
+            cpdag = GraphUtils.removeBidirectedOrientations(cpdag);
         }
 
-        return getDagsInPatternMeek(pattern, new Knowledge2());
+        return getDagsInCpdagMeek(cpdag, new Knowledge2());
     }
 
-    public static List<Graph> getDagsInPatternMeek(Graph pattern, IKnowledge knowledge) {
-        DagInPatternIterator iterator = new DagInPatternIterator(pattern, knowledge);
+    public static List<Graph> getDagsInCpdagMeek(Graph cpdag, IKnowledge knowledge) {
+        DagInCPDAGIterator iterator = new DagInCPDAGIterator(cpdag, knowledge);
         List<Graph> dags = new ArrayList<>();
 
         while (iterator.hasNext()) {
@@ -1892,26 +1940,6 @@ public final class SearchGraphUtils {
         Graph undirected = GraphUtils.undirectedGraph(graph);
 
         DagIterator iterator = new DagIterator(undirected);
-        List<Dag> dags = new ArrayList<>();
-
-        while (iterator.hasNext()) {
-            Graph _graph = iterator.next();
-
-            try {
-                Dag dag = new Dag(_graph);
-                dags.add(dag);
-            } catch (IllegalArgumentException e) {
-                //
-            }
-        }
-
-        return dags;
-    }
-
-    public static List<Dag> getAllDagsByDirectingUndirectedEdges(Graph graph) {
-//        Graph undirected = undirectedGraph(graph);
-
-        DagIterator iterator = new DagIterator(graph);
         List<Dag> dags = new ArrayList<>();
 
         while (iterator.hasNext()) {
@@ -2051,10 +2079,6 @@ public final class SearchGraphUtils {
                 List<Node> cond = GraphUtils.asList(choice, _nodes);
 
                 if (test.isIndependent(x, z, cond)) {
-                    if (verbose) {
-//                        System.out.println("Indep: " + x + " _||_ " + z + " | " + cond);
-                    }
-
                     if (cond.contains(y)) {
                         numSepsetsContainingY++;
                     } else {
@@ -2174,7 +2198,6 @@ public final class SearchGraphUtils {
             }
         }
 
-//        int factor = 3;
         int factor = 1;
 
         numSepsetsContainingY = withY.size();
@@ -2189,177 +2212,18 @@ public final class SearchGraphUtils {
         }
     }
 
-    public static CpcTripleType getCpcTripleType3(Node x, Node y, Node z,
-                                                  IndependenceTest test, int depth,
-                                                  Graph graph) {
-        int numSepsetsContainingY = 0;
-        int numSepsetsNotContainingY = 0;
+    public static Graph chooseDagInCpdag(Graph graph) {
+        Graph newGraph = new EdgeListGraph(graph);
 
-        Set<Set<Node>> withY = new HashSet<>();
-        Set<Set<Node>> withoutY = new HashSet<>();
-
-        Set<Node> n = new HashSet<>(graph.getAdjacentNodes(x));
-        n.addAll(graph.getAdjacentNodes(z));
-        List<Node> _nodes = new ArrayList<>(n);
-
-//        List<Node> _nodes = graph.getAdjacentNodes(x);
-//        _nodes.addAll(graph.getAdjacentNodes(z));
-        _nodes.remove(x);
-        _nodes.remove(z);
-        TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
-
-        int _depth = depth;
-        if (_depth == -1) {
-            _depth = 1000;
-        }
-        _depth = Math.min(_depth, _nodes.size());
-
-        for (int d = 0; d <= _depth; d++) {
-            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                List<Node> cond = GraphUtils.asList(choice, _nodes);
-
-                if (test.isIndependent(x, z, cond)) {
-                    if (cond.contains(y)) {
-                        numSepsetsContainingY++;
-                        withY.add(new HashSet<>(cond));
-                    } else {
-                        numSepsetsNotContainingY++;
-                        withoutY.add(new HashSet<>(cond));
-                    }
-                }
+        for (Edge edge : newGraph.getEdges()) {
+            if (Edges.isBidirectedEdge(edge)) {
+                newGraph.removeEdge(edge);
             }
         }
 
-//        _nodes = graph.getAdjacentNodes(z);
-//        _nodes.remove(x);
-//        TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
-//
-//        _depth = depth;
-//        if (_depth == -1) {
-//            _depth = 1000;
-//        }
-//        _depth = Math.min(_depth, _nodes.size());
-//        for (int d = 0; d <= _depth; d++) {
-//            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
-//            int[] choice;
-//
-//            while ((choice = cg.next()) != null) {
-//                List<Node> cond = DataGraphUtils.asList(choice, _nodes);
-//
-//                if (test.isIndependent(x, z, cond)) {
-//                    if (cond.contains(y)) {
-//                        numSepsetsContainingY++;
-//                        withY.add(new HashSet<Node>(cond));
-//                    } else {
-//                        numSepsetsNotContainingY++;
-//                        withoutY.add(new HashSet<Node>(cond));
-//                    }
-//                }
-//            }
-//        }
-//        int factor = 3;
-        int factor = 1;
-
-        numSepsetsContainingY = withY.size();
-        numSepsetsNotContainingY = withoutY.size();
-
-        if (numSepsetsContainingY > factor * numSepsetsNotContainingY) {
-            return CpcTripleType.NONCOLLIDER;
-        } else if (numSepsetsNotContainingY > factor * numSepsetsContainingY) {
-            return CpcTripleType.COLLIDER;
-        } else {
-            return CpcTripleType.AMBIGUOUS;
-        }
-    }
-
-    // Just a strong collider check. Not conservative.
-    public static CpcTripleType getCpcTripleType4(Node x, Node y, Node z,
-                                                  IndependenceTest test, int depth,
-                                                  Graph graph) {
-        List<Double> p = new ArrayList<>();
-
-        List<Node> _nodes = graph.getAdjacentNodes(x);
-        _nodes.remove(z);
-        TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
-
-        int _depth = depth;
-        if (_depth == -1) {
-            _depth = 1000;
-        }
-        _depth = Math.min(_depth, _nodes.size());
-
-        for (int d = 0; d <= _depth; d++) {
-            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                List<Node> cond = GraphUtils.asList(choice, _nodes);
-
-                if (!cond.contains(y)) {
-                    continue;
-                }
-
-                if (test.isIndependent(x, z, cond)) {
-                    p.add(test.getPValue());
-//                    return CpcTripleType.NONCOLLIDER;
-                }
-            }
-        }
-
-        _nodes = graph.getAdjacentNodes(z);
-        _nodes.remove(x);
-        TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
-
-        _depth = depth;
-        if (_depth == -1) {
-            _depth = 1000;
-        }
-        _depth = Math.min(_depth, _nodes.size());
-
-        for (int d = 0; d <= _depth; d++) {
-            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                List<Node> cond = GraphUtils.asList(choice, _nodes);
-
-                if (!cond.contains(y)) {
-                    continue;
-                }
-
-                if (test.isIndependent(x, z, cond)) {
-                    p.add(test.getPValue());
-//                    return CpcTripleType.NONCOLLIDER;
-                }
-            }
-        }
-
-        // Sorts p.
-        double cutoff = StatUtils.fdrCutoff(test.getAlpha(), p, false);
-        double min = p.get(0);
-        return min > cutoff ? CpcTripleType.COLLIDER : CpcTripleType.NONCOLLIDER;
-
-//        return CpcTripleType.COLLIDER;
-    }
-
-    public static Graph chooseDagInPattern(Graph graph) {
-        return new DagInPatternIterator(graph).next();
-
-//        Graph newGraph = new EdgeListGraph(graph);
-//
-//        for(Edge edge : newGraph.getEdges()){
-//            if(Edges.isBidirectedEdge(edge)){
-//                newGraph.removeEdge(edge);
-//            }
-//        }
-//
-//        PatternToDag search = new PatternToDag(new EdgeListGraph(newGraph));
-//        Graph dag = search.patternToDagMeek();
-//        GraphUtils.arrangeBySourceGraph(dag, graph);
-//        return dag;
+        Graph dag = SearchGraphUtils.dagFromCPDAG(newGraph);
+        GraphUtils.arrangeBySourceGraph(dag, graph);
+        return dag;
     }
 
     public static Graph chooseMagInPag(Graph graph) {
@@ -2398,191 +2262,96 @@ public final class SearchGraphUtils {
         return false;
     }
 
-    public static Graph patternForDag(final Graph dag) {
-        return patternForDag(dag, new Knowledge2());
-    }
-
-    public static Graph patternForDag(final Graph dag, IKnowledge knowledge) {
-        Graph pattern = new EdgeListGraph(dag);
+    public static Graph cpdagForDag(final Graph dag) {
+        Graph cpdag = new EdgeListGraph(dag);
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(knowledge);
         rules.setRevertToUnshieldedColliders(true);
-        rules.orientImplied(pattern);
-        return pattern;
+        rules.orientImplied(cpdag);
+        return cpdag;
     }
 
-    public static void orientRequired(IKnowledge bk, Graph graph, List<Node> nodes) {
-        TetradLogger.getInstance().log("details", "Staring BK Orientation.");
-        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = translate(edge.getFrom(), nodes);
-            Node to = translate(edge.getTo(), nodes);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to-->from
-            graph.removeEdge(from, to);
-            graph.addDirectedEdge(to, from);
-//            graph.setEndpoint(from, to, Endpoint.TAIL);
-//            graph.setEndpoint(to, from, Endpoint.ARROW);
-
-            TetradLogger.getInstance().log("knowledgeOrientations", SearchLogUtils.edgeOrientedMsg("IKnowledge", graph.getEdge(to, from)));
-        }
-
-        for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = translate(edge.getFrom(), nodes);
-            Node to = translate(edge.getTo(), nodes);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient from-->to
-            graph.removeEdge(from, to);
-            graph.addDirectedEdge(from, to);
-
-//            graph.setEndpoint(to, from, Endpoint.TAIL);
-//            graph.setEndpoint(from, to, Endpoint.ARROW);
-            TetradLogger.getInstance().log("knowledgeOrientations", SearchLogUtils.edgeOrientedMsg("IKnowledge", graph.getEdge(from, to)));
-        }
-
-        TetradLogger.getInstance().log("details", "Finishing BK Orientation.");
-    }
-
-    //    /**
-//     * The recursive method used to list the MB DAGS consistent with an
-//     * Pattern (i.e. with the independence information available to the search.
-//     */
-//    public static Set<Graph> listPatternDags(Graph pattern,
-//                                             boolean orientBidirectedEdges) {
-//        Set<Graph> dags = new HashSet<Graph>();
-//        Graph graph = new EdgeListGraph(pattern);
-//
-//        MeekRules rules = new MeekRules();
-//        rules.orientImplied(graph);
-//
-//        for (Edge edge : rules.getChangedEdges().keySet()) {
-//            graph.setHighlighted(edge, true);
-//        }
-//
-//        List<Edge> edges = graph.getEdges();
-//        Edge edge = null;
-//
-//        for (Edge _edge : edges) {
-//            if (orientBidirectedEdges && Edges.isBidirectedEdge(_edge)) {
-//                edge = _edge;
-//                break;
-//            }
-//
-//            if (Edges.isUndirectedEdge(_edge)) {
-//                edge = _edge;
-//                break;
-//            }
-//        }
-//
-//        if (edge == null) {
-//            dags.add(graph);
-//            return dags;
-//        }
-//
-//        graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.TAIL);
-//        graph.setEndpoint(edge.getNode1(), edge.getNode2(), Endpoint.ARROW);
-//        graph.setHighlighted(graph.getEdge(edge.getNode1(), edge.getNode2()), true);
-//        dags.addAll(listPatternDags(graph, orientBidirectedEdges));
-//
-//        graph.setEndpoint(edge.getNode1(), edge.getNode2(), Endpoint.TAIL);
-//        graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.ARROW);
-//        graph.setHighlighted(graph.getEdge(edge.getNode1(), edge.getNode2()), true);
-//        dags.addAll(listPatternDags(graph, orientBidirectedEdges));
-//
-//        return dags;
-//    }
-    public static Graph dagFromPattern(Graph graph, IKnowledge knowledge) {
-        boolean allowArbitraryOrientations = true;
-        boolean allowNewColliders = true;
-        DagInPatternIterator iterator = new DagInPatternIterator(graph, knowledge, allowArbitraryOrientations,
-                allowNewColliders);
-        Graph dag = iterator.next();
-        return dag;
-    }
-
+    /**
+     * Tsamardinos, I., Brown, L. E., & Aliferis, C. F. (2006). The max-min hill-climbing Bayesian network structure
+     * learning algorithm. Machine learning, 65(1), 31-78.
+     * <p>
+     * Converts each graph (DAG or CPDAG) into its CPDAG before scoring.
+     */
     public static int structuralHammingDistance(Graph trueGraph, Graph estGraph) {
-        int error = 0;
+        int shd = 0;
 
-        estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
+        try {
+            estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
+            trueGraph = SearchGraphUtils.cpdagForDag(trueGraph);
+            estGraph = SearchGraphUtils.cpdagForDag(estGraph);
 
-        Set<Node> _allNodes = new HashSet<>();
-
-        List<Node> trueLatents = trueGraph.getNodes();
-        List<Node> estLatents = estGraph.getNodes();
-
-//        List<Node> trueLatents = GraphUtils.getLatents(trueGraph);
-//        List<Node> estLatents = GraphUtils.getLatents(graph);
-        Graph u = trueGraph.subgraph(trueLatents);
-        Graph t = estGraph.subgraph(estLatents);
-
-        Graph G = u; //patternForDag(u);
-        Graph H = t; //patternForDag(t);
-
-//        System.out.println("Pattern of true graph over latents = " + G);
-        _allNodes.addAll(trueLatents);
-        _allNodes.addAll(estLatents);
-
-        List<Node> allNodes = new ArrayList<>(_allNodes);
-
-        for (int i1 = 0; i1 < allNodes.size(); i1++) {
-            for (int i2 = i1 + 1; i2 < allNodes.size(); i2++) {
-                Node l1 = allNodes.get(i1);
-                Node l2 = allNodes.get(i2);
-
-                Edge e1 = G.getEdge(l1, l2);
-                Edge e2 = H.getEdge(l1, l2);
-
-                int shd = structuralHammingDistanceOneEdge(e1, e2);
-
-                error += shd;
+            // Will check mixedness later.
+            if (trueGraph.existsDirectedCycle()) {
+                TetradLogger.getInstance().forceLogMessage("SHD failed: True graph couldn't be converted to a CPDAG");
             }
+
+            if (estGraph.existsDirectedCycle()) {
+                TetradLogger.getInstance().forceLogMessage("SHD failed: Estimated graph couldn't be converted to a CPDAG");
+                return -99;
+            }
+
+            List<Node> _allNodes = estGraph.getNodes();
+
+            for (int i1 = 0; i1 < _allNodes.size(); i1++) {
+                for (int i2 = i1 + 1; i2 < _allNodes.size(); i2++) {
+                    Node n1 = _allNodes.get(i1);
+                    Node n2 = _allNodes.get(i2);
+
+                    Edge e1 = trueGraph.getEdge(n1, n2);
+                    Edge e2 = estGraph.getEdge(n1, n2);
+
+                    if (e1 != null && !(Edges.isDirectedEdge(e1) || Edges.isUndirectedEdge(e1))) {
+                        TetradLogger.getInstance().forceLogMessage("SHD failed: True graph couldn't be converted to a CPDAG");
+                        return -99;
+                    }
+
+                    if (e2 != null && !(Edges.isDirectedEdge(e2) || Edges.isUndirectedEdge(e2))) {
+                        TetradLogger.getInstance().forceLogMessage("SHD failed: Estimated graph couldn't be converted to a CPDAG");
+                        return -99;
+                    }
+
+                    int error = structuralHammingDistanceOneEdge(e1, e2);
+                    shd += error;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return error;
+
+        return shd;
     }
 
     private static int structuralHammingDistanceOneEdge(Edge e1, Edge e2) {
-        if (noEdge(e1) && undirected(e2)) {
-            return 1;
-        } else if (noEdge(e2) && undirected(e1)) {
-            return 1;
-        } else if (noEdge(e1) && directed(e2)) {
-            return 2;
-        } else if (noEdge(e2) && directed(e1)) {
-            return 2;
-        } else if (undirected(e1) && directed(e2)) {
-            return 1;
-        } else if (undirected(e2) && directed(e1)) {
-            return 1;
-        } else if (directed(e1) && directed(e2)) {
-            if (Edges.getDirectedEdgeHead(e1) == Edges.getDirectedEdgeTail(e2)) {
-                return 1;
+        int error = 0;
+
+        if (!(e1 == null && e2 == null)) {
+            if (e1 != null && e2 != null) {
+                if (!e1.equals(e2)) {
+                    System.out.println("Difference " + e1 + " " + e2);
+                    error++;
+                }
+            } else if (e2 == null) {
+                if (Edges.isUndirectedEdge(e1)) {
+                    error++;
+                } else {
+                    error++;
+                    error++;
+                }
+            } else {
+                if (Edges.isUndirectedEdge(e2)) {
+                    error++;
+                } else {
+                    error++;
+                    error++;
+                }
             }
-        } else if (bidirected(e1) || bidirected(e2)) {
-            return 2;
         }
 
-        return 0;
+        return error;
     }
 
     private static boolean directed(Edge e2) {
@@ -2601,29 +2370,6 @@ public final class SearchGraphUtils {
         return e1 == null;
     }
 
-    public static int structuralHammingDistance3a(Graph trueGraph, Graph estGraph) {
-        int error = 0;
-
-        estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
-
-        List<Node> _allNodes = estGraph.getNodes();
-
-        List<Node> allNodes = new ArrayList<>(_allNodes);
-
-        for (int i1 = 0; i1 < allNodes.size(); i1++) {
-            for (int i2 = i1 + 1; i2 < allNodes.size(); i2++) {
-                Node l1 = allNodes.get(i1);
-                Node l2 = allNodes.get(i2);
-
-                Edge e1 = trueGraph.getEdge(l1, l2);
-                Edge e2 = estGraph.getEdge(l1, l2);
-
-                int shd = structuralHammingDistanceOneEdge(e1, e2);
-                error += shd;
-            }
-        }
-        return error;
-    }
 
     public static GraphUtils.GraphComparison getGraphComparison(Graph graph, Graph trueGraph) {
         graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
@@ -2649,6 +2395,7 @@ public final class SearchGraphUtils {
         List<Edge> edgesRemoved = new ArrayList<>();
         List<Edge> edgesReorientedFrom = new ArrayList<>();
         List<Edge> edgesReorientedTo = new ArrayList<>();
+        List<Edge> correctAdjacency = new ArrayList<>();
 
         for (Edge edge : trueGraph.getEdges()) {
             Node n1 = edge.getNode1();
@@ -2658,9 +2405,6 @@ public final class SearchGraphUtils {
                 Edge graphEdge = graph.getEdge(n1, n2);
                 edgesRemoved.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
-//            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-//                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-//            }
         }
 
         for (Edge edge : graph.getEdges()) {
@@ -2671,9 +2415,6 @@ public final class SearchGraphUtils {
                 Edge graphEdge = graph.getEdge(n1, n2);
                 edgesAdded.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
-//            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-//                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-//            }
         }
 
         for (Edge edge : trueGraph.getEdges()) {
@@ -2685,12 +2426,24 @@ public final class SearchGraphUtils {
             Node node2 = edge.getNode2();
 
             for (Edge _edge : graph.getEdges(node1, node2)) {
-                if (edge.equals(_edge)) {
+                Endpoint e1a = edge.getProximalEndpoint(node1);
+                Endpoint e1b = edge.getProximalEndpoint(node2);
+                Endpoint e2a = _edge.getProximalEndpoint(node1);
+                Endpoint e2b = _edge.getProximalEndpoint(node2);
+
+                if (!((e1a != Endpoint.CIRCLE && e2a != Endpoint.CIRCLE && e1a != e2a)
+                        || (e1b != Endpoint.CIRCLE && e2b != Endpoint.CIRCLE && e1b != e2b))) {
                     continue;
                 }
 
                 edgesReorientedFrom.add(edge);
                 edgesReorientedTo.add(_edge);
+            }
+        }
+
+        for (Edge edge : trueGraph.getEdges()) {
+            if (graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                correctAdjacency.add(edge);
             }
         }
 
@@ -2703,6 +2456,7 @@ public final class SearchGraphUtils {
                 adjPrec, adjRec, arrowptPrec, arrowptRec, shd,
                 twoCycleCorrect, twoCycleFn, twoCycleFp,
                 edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo,
+                correctAdjacency,
                 counts);
     }
 
@@ -2724,6 +2478,7 @@ public final class SearchGraphUtils {
         List<Edge> edgesRemoved = new ArrayList<>();
         List<Edge> edgesReorientedFrom = new ArrayList<>();
         List<Edge> edgesReorientedTo = new ArrayList<>();
+        List<Edge> correctAdjacency = new ArrayList<>();
 
         for (Edge edge : trueGraph.getEdges()) {
             Node n1 = edge.getNode1();
@@ -2733,9 +2488,6 @@ public final class SearchGraphUtils {
                 Edge graphEdge = graph.getEdge(n1, n2);
                 edgesRemoved.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
-//            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-//                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-//            }
         }
 
         for (Edge edge : graph.getEdges()) {
@@ -2746,9 +2498,6 @@ public final class SearchGraphUtils {
                 Edge graphEdge = graph.getEdge(n1, n2);
                 edgesAdded.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
-//            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-//                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-//            }
         }
 
         List<Node> nodes = trueGraph.getNodes();
@@ -2766,8 +2515,6 @@ public final class SearchGraphUtils {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-//                Node _x = graph.getNode(x.getNode());
-//                Node _y = graph.getNode(y.getNode());
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = graph.getEdge(x, y);
 
@@ -2829,12 +2576,24 @@ public final class SearchGraphUtils {
             Node node2 = edge.getNode2();
 
             for (Edge _edge : graph.getEdges(node1, node2)) {
-                if (edge.equals(_edge)) {
+                Endpoint e1a = edge.getProximalEndpoint(node1);
+                Endpoint e1b = edge.getProximalEndpoint(node2);
+                Endpoint e2a = _edge.getProximalEndpoint(node1);
+                Endpoint e2b = _edge.getProximalEndpoint(node2);
+
+                if (!((e1a != Endpoint.CIRCLE && e2a != Endpoint.CIRCLE && e1a != e2a)
+                        || (e1b != Endpoint.CIRCLE && e2b != Endpoint.CIRCLE && e1b != e2b))) {
                     continue;
                 }
 
                 edgesReorientedFrom.add(edge);
                 edgesReorientedTo.add(_edge);
+            }
+        }
+
+        for (Edge edge : trueGraph.getEdges()) {
+            if (graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                correctAdjacency.add(edge);
             }
         }
 
@@ -2855,400 +2614,8 @@ public final class SearchGraphUtils {
                 shd,
                 twoCycleErrors.twoCycCor, twoCycleErrors.twoCycFn, twoCycleErrors.twoCycFp,
                 edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo,
+                correctAdjacency,
                 counts);
-    }
-
-    /**
-     * Just counts arrowpoint errors--for cyclic edges counts an arrowpoint at
-     * each node.
-     */
-    public static GraphUtils.GraphComparison getGraphComparison3a(Graph graph, Graph trueGraph) {
-        graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
-        GraphUtils.TwoCycleErrors twoCycleErrors = GraphUtils.getTwoCycleErrors(trueGraph, graph);
-
-        int adjFn = GraphUtils.countAdjErrors(trueGraph, graph);
-        int adjFp = GraphUtils.countAdjErrors(graph, trueGraph);
-
-        Graph undirectedGraph = GraphUtils.undirectedGraph(graph);
-        int adjCorrect = undirectedGraph.getNumEdges() - adjFp;
-
-        List<Edge> edgesAdded = new ArrayList<>();
-        List<Edge> edgesRemoved = new ArrayList<>();
-        List<Edge> edgesReorientedFrom = new ArrayList<>();
-        List<Edge> edgesReorientedTo = new ArrayList<>();
-
-        for (Edge edge : trueGraph.getEdges()) {
-            Node n1 = edge.getNode1();
-            Node n2 = edge.getNode2();
-            if (!graph.isAdjacentTo(n1, n2)) {
-                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
-                Edge graphEdge = graph.getEdge(n1, n2);
-                edgesRemoved.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
-            }
-//            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-//                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-//            }
-        }
-
-        for (Edge edge : graph.getEdges()) {
-            Node n1 = edge.getNode1();
-            Node n2 = edge.getNode2();
-            if (!trueGraph.isAdjacentTo(n1, n2)) {
-                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
-                Edge graphEdge = graph.getEdge(n1, n2);
-                edgesAdded.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
-            }
-//            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-//                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-//            }
-        }
-
-        List<Node> nodes = trueGraph.getNodes();
-
-        int arrowptFn = 0;
-        int arrowptFp = 0;
-        int arrowptCorrect = 0;
-
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                if (i == j) {
-                    continue;
-                }
-
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
-
-//                Node _x = graph.getNode(x.getNode());
-//                Node _y = graph.getNode(y.getNode());
-                Edge edge = trueGraph.getEdge(x, y);
-                Edge _edge = graph.getEdge(x, y);
-
-                boolean existsArrow = edge != null && edge.getProximalEndpoint(y) == Endpoint.ARROW;
-                boolean _existsArrow = _edge != null && _edge.getProximalEndpoint(y) == Endpoint.ARROW;
-
-                if (existsArrow && !_existsArrow) {
-                    arrowptFn++;
-                }
-
-                if (!existsArrow && _existsArrow) {
-                    arrowptFp++;
-                }
-
-                if (existsArrow && _existsArrow) {
-                    arrowptCorrect++;
-                }
-            }
-        }
-
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                if (i == j) {
-                    continue;
-                }
-
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
-
-                Node _x = graph.getNode(x.getName());
-                Node _y = graph.getNode(y.getName());
-
-                Edge edge = trueGraph.getEdge(x, y);
-                Edge _edge = graph.getEdge(_x, _y);
-
-                boolean existsArrow = edge != null && edge.getDistalEndpoint(y) == Endpoint.ARROW;
-                boolean _existsArrow = _edge != null && _edge.getDistalEndpoint(_y) == Endpoint.ARROW;
-
-                if (existsArrow && !_existsArrow) {
-                    arrowptFn++;
-                }
-
-                if (!existsArrow && _existsArrow) {
-                    arrowptFp++;
-                }
-
-                if (existsArrow && _existsArrow) {
-                    arrowptCorrect++;
-                }
-            }
-        }
-
-        int shd = structuralHammingDistance3a(trueGraph, graph);
-
-        for (Edge edge : trueGraph.getEdges()) {
-            if (graph.containsEdge(edge)) {
-                continue;
-            }
-
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
-
-            for (Edge _edge : graph.getEdges(node1, node2)) {
-                if (edge.equals(_edge)) {
-                    continue;
-                }
-
-                edgesReorientedFrom.add(edge);
-                edgesReorientedTo.add(_edge);
-            }
-        }
-
-        double adjPrec = (double) adjCorrect / (adjCorrect + adjFp);
-        double adjRec = (double) adjCorrect / (adjCorrect + adjFn);
-        double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
-        double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
-
-        int[][] counts = graphComparison(graph, trueGraph, null);
-
-        return new GraphUtils.GraphComparison(
-                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
-                adjPrec, adjRec, arrowptPrec, arrowptRec,
-                shd,
-                twoCycleErrors.twoCycCor, twoCycleErrors.twoCycFn, twoCycleErrors.twoCycFp,
-                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo, counts);
-    }
-
-    /**
-     * Just counts arrowpoint errors--for cyclic edges counts an arrowpoint at
-     * each node.
-     */
-    public static GraphUtils.GraphComparison getGraphComparison3(Graph graph, Graph trueGraph, PrintStream out) {
-        graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
-        GraphUtils.TwoCycleErrors twoCycleErrors = GraphUtils.getTwoCycleErrors(trueGraph, graph);
-
-        int adjFn = GraphUtils.countAdjErrors(trueGraph, graph);
-        int adjFp = GraphUtils.countAdjErrors(graph, trueGraph);
-
-        Graph undirectedGraph = GraphUtils.undirectedGraph(graph);
-        int adjCorrect = undirectedGraph.getNumEdges() - adjFp;
-
-        List<Edge> edgesAdded = new ArrayList<>();
-        List<Edge> edgesRemoved = new ArrayList<>();
-        List<Edge> edgesReorientedFrom = new ArrayList<>();
-        List<Edge> edgesReorientedTo = new ArrayList<>();
-
-        for (Edge edge : trueGraph.getEdges()) {
-            Node n1 = edge.getNode1();
-            Node n2 = edge.getNode2();
-            if (!graph.isAdjacentTo(n1, n2)) {
-                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
-                Edge graphEdge = graph.getEdge(n1, n2);
-                edgesRemoved.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
-            }
-//            if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-//                edgesRemoved.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-//            }
-        }
-
-        for (Edge edge : graph.getEdges()) {
-            Node n1 = edge.getNode1();
-            Node n2 = edge.getNode2();
-            if (!trueGraph.isAdjacentTo(n1, n2)) {
-                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
-                Edge graphEdge = graph.getEdge(n1, n2);
-                edgesAdded.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
-            }
-//            if (!trueGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-//                edgesAdded.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
-//            }
-        }
-
-        List<Node> nodes = trueGraph.getNodes();
-
-        int arrowptFn = 0;
-        int arrowptFp = 0;
-        int arrowptCorrect = 0;
-
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                if (i == j) {
-                    continue;
-                }
-
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
-
-//                Node _x = graph.getNode(x.getNode());
-//                Node _y = graph.getNode(y.getNode());
-                Edge edge = trueGraph.getEdge(x, y);
-                Edge _edge = graph.getEdge(x, y);
-
-                boolean existsArrow = edge != null && edge.getProximalEndpoint(y) == Endpoint.ARROW;
-                boolean _existsArrow = _edge != null && _edge.getProximalEndpoint(y) == Endpoint.ARROW;
-
-                if (existsArrow && !_existsArrow) {
-                    arrowptFn++;
-                }
-
-                if (!existsArrow && _existsArrow) {
-                    arrowptFp++;
-                }
-
-                if (existsArrow && _existsArrow) {
-                    arrowptCorrect++;
-                }
-            }
-        }
-
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                if (i == j) {
-                    continue;
-                }
-
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
-
-                Node _x = graph.getNode(x.getName());
-                Node _y = graph.getNode(y.getName());
-
-                Edge edge = trueGraph.getEdge(x, y);
-                Edge _edge = graph.getEdge(_x, _y);
-
-                boolean existsArrow = edge != null && edge.getDistalEndpoint(y) == Endpoint.ARROW;
-                boolean _existsArrow = _edge != null && _edge.getDistalEndpoint(_y) == Endpoint.ARROW;
-
-                if (existsArrow && !_existsArrow) {
-                    arrowptFn++;
-                }
-
-                if (!existsArrow && _existsArrow) {
-                    arrowptFp++;
-                }
-
-                if (existsArrow && _existsArrow) {
-                    arrowptCorrect++;
-                }
-            }
-        }
-
-        int shd = structuralHammingDistance3(trueGraph, graph);
-
-        for (Edge edge : trueGraph.getEdges()) {
-            if (graph.containsEdge(edge)) {
-                continue;
-            }
-
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
-
-            for (Edge _edge : graph.getEdges(node1, node2)) {
-                if (edge.equals(_edge)) {
-                    continue;
-                }
-
-                edgesReorientedFrom.add(edge);
-                edgesReorientedTo.add(_edge);
-            }
-        }
-
-        double adjPrec = (double) adjCorrect / (adjCorrect + adjFp);
-        double adjRec = (double) adjCorrect / (adjCorrect + adjFn);
-        double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
-        double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
-
-        int[][] counts = graphComparison(graph, trueGraph, null);
-
-        return new GraphUtils.GraphComparison(
-                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
-                adjPrec, adjRec, arrowptPrec, arrowptRec,
-                shd,
-                twoCycleErrors.twoCycCor, twoCycleErrors.twoCycFn, twoCycleErrors.twoCycFp,
-                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo, counts);
-    }
-
-    public static int structuralHammingDistance3(Graph trueGraph, Graph estGraph) {
-        int error = 0;
-
-        estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
-
-        List<Node> _allNodes = estGraph.getNodes();
-
-        List<Node> allNodes = new ArrayList<>(_allNodes);
-
-        for (int i1 = 0; i1 < allNodes.size(); i1++) {
-            for (int i2 = i1 + 1; i2 < allNodes.size(); i2++) {
-                Node l1 = allNodes.get(i1);
-                Node l2 = allNodes.get(i2);
-
-                Edge e1 = trueGraph.getEdge(l1, l2);
-                Edge e2 = estGraph.getEdge(l1, l2);
-
-                int shd = structuralHammingDistanceOneEdge3(e1, e2);
-                error += shd;
-            }
-        }
-        return error;
-    }
-
-    private static class AhdCounts {
-
-        private int ahdFp = 0;
-        private int ahdFn = 0;
-        private int ahdCorrect = 0;
-
-        public void incrementFp() {
-            ahdFp++;
-        }
-
-        public void incrementFn() {
-            ahdFn++;
-        }
-
-        public void incrementCorrect() {
-            ahdCorrect++;
-        }
-
-        public void addAll(AhdCounts ahdCounts2) {
-            ahdFp += ahdCounts2.getAhdFp();
-            ahdFn += ahdCounts2.getAhdFn();
-            ahdCorrect += ahdCounts2.getAhdCorrect();
-        }
-
-        public int getAhdFp() {
-            return ahdFp;
-        }
-
-        public int getAhdFn() {
-            return ahdFn;
-        }
-
-        public int getAhdCorrect() {
-            return ahdCorrect;
-        }
-    }
-
-    private static int structuralHammingDistanceOneEdge3(Edge e1, Edge e2) {
-        if (noEdge3(e1) && nondirected3(e2)) {
-            return 1;
-        } else if (noEdge3(e2) && nondirected3(e1)) {
-            return 1;
-        } else if (noEdge3(e1) && directed3(e2)) {
-            return 2;
-        } else if (noEdge3(e2) && directed3(e1)) {
-            return 2;
-        } else if (nondirected3(e1) && directed3(e2)) {
-            return 1;
-        } else if (nondirected3(e2) && directed3(e1)) {
-            return 1;
-        } else if (directed3(e1) && directed3(e2)) {
-            if (Edges.getDirectedEdgeHead(e1) == Edges.getDirectedEdgeTail(e2)) {
-                return 1;
-            }
-        }
-
-        return 0;
-    }
-
-    private static boolean directed3(Edge e2) {
-        return e2 != null && Edges.isDirectedEdge(e2);
-    }
-
-    private static boolean nondirected3(Edge e2) {
-        return e2 != null && Edges.isNondirectedEdge(e2);
-    }
-
-    private static boolean noEdge3(Edge e1) {
-        return e1 == null;
     }
 
     public static String graphComparisonString(String name1, Graph graph1, String name2, Graph graph2, boolean printStars) {
@@ -3342,11 +2709,24 @@ public final class SearchGraphUtils {
             }
         }
 
+        builder.append("\n\n"
+                + "Edges in true correctly adjacent in estimated");
+
+        List<Edge> correctAdjacies = comparison.getCorrectAdjacencies();
+
+        if (edgesReorientedFrom.isEmpty()) {
+            builder.append("\n  --NONE--");
+        } else {
+            for (int i = 0; i < correctAdjacies.size(); i++) {
+                Edge adj = correctAdjacies.get(i);
+                builder.append("\n").append(i + 1).append(". ").append(adj);
+            }
+        }
         return builder.toString();
     }
 
-    public static int[][] graphComparison(Graph estPattern, Graph truePattern, PrintStream out) {
-        GraphUtils.GraphComparison comparison = getGraphComparison2(estPattern, truePattern);
+    public static int[][] graphComparison(Graph estCpdag, Graph trueCpdag, PrintStream out) {
+        GraphUtils.GraphComparison comparison = getGraphComparison2(estCpdag, trueCpdag);
 
         if (out != null) {
             out.println("Adjacencies:");
@@ -3366,9 +2746,10 @@ public final class SearchGraphUtils {
             out.println("TP " + arrowptTp + " FP = " + arrowptFp + " FN = " + arrowptFn);
         }
 
-        estPattern = GraphUtils.replaceNodes(estPattern, truePattern.getNodes());
+        estCpdag = GraphUtils.replaceNodes(estCpdag, trueCpdag.getNodes());
 
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern, false);
+        assert estCpdag != null;
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(trueCpdag, estCpdag, false);
 
         if (out != null) {
             out.println(GraphUtils.edgeMisclassifications(counts));
@@ -3394,61 +2775,10 @@ public final class SearchGraphUtils {
         return counts;
     }
 
-    /**
-     * Simple class to store edges for the reachability search.
-     *
-     * @author Joseph Ramsey
-     */
-    private static class ReachabilityEdge {
-
-        private Node from;
-        private Node to;
-
-        public ReachabilityEdge(Node from, Node to) {
-            this.from = from;
-            this.to = to;
-        }
-
-        public int hashCode() {
-            int hash = 17;
-            hash += 63 * getFrom().hashCode();
-            hash += 71 * getTo().hashCode();
-            return hash;
-        }
-
-        public boolean equals(Object obj) {
-            ReachabilityEdge edge = (ReachabilityEdge) obj;
-
-            if (!(edge.getFrom().equals(this.getFrom()))) {
-                return false;
-            }
-
-            return edge.getTo().equals(this.getTo());
-        }
-
-        public Node getFrom() {
-            return from;
-        }
-
-        public Node getTo() {
-            return to;
-        }
-    }
-
-    public enum CpcTripleType {
-        COLLIDER, NONCOLLIDER, AMBIGUOUS
-    }
-
     public static Graph reorient(Graph graph, DataModel dataModel, IKnowledge knowledge) {
         if (dataModel instanceof DataModelList) {
             DataModelList list = (DataModelList) dataModel;
-
-            List<DataModel> dataSets = new ArrayList<>();
-
-            for (DataModel _dataModel : list) {
-                dataSets.add(_dataModel);
-            }
-
+            List<DataModel> dataSets = new ArrayList<>(list);
             Fges images = new Fges(new SemBicScoreImages(dataSets));
 
             images.setBoundGraph(graph);
@@ -3459,7 +2789,7 @@ public final class SearchGraphUtils {
 
             Score score;
 
-            if (((DataSet) dataModel).isContinuous()) {
+            if (dataModel.isContinuous()) {
                 score = new SemBicScore(new CovarianceMatrix(dataSet));
             } else if (dataSet.isDiscrete()) {
                 score = new BDeuScore(dataSet);
@@ -3484,5 +2814,52 @@ public final class SearchGraphUtils {
         }
 
         throw new IllegalStateException("Can do that that reorientation.");
+    }
+
+    public enum CpcTripleType {
+        COLLIDER, NONCOLLIDER, AMBIGUOUS
+    }
+
+    /**
+     * Simple class to store edges for the reachability search.
+     *
+     * @author Joseph Ramsey
+     */
+    private static class ReachabilityEdge {
+
+        private final Node from;
+        private final Node to;
+
+        public ReachabilityEdge(Node from, Node to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        public int hashCode() {
+            int hash = 17;
+            hash += 63 * getFrom().hashCode();
+            hash += 71 * getTo().hashCode();
+            return hash;
+        }
+
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ReachabilityEdge)) return false;
+
+            ReachabilityEdge edge = (ReachabilityEdge) obj;
+
+            if (!(edge.getFrom().equals(this.getFrom()))) {
+                return false;
+            }
+
+            return edge.getTo().equals(this.getTo());
+        }
+
+        public Node getFrom() {
+            return from;
+        }
+
+        public Node getTo() {
+            return to;
+        }
     }
 }

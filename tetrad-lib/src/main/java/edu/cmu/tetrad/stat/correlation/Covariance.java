@@ -20,7 +20,7 @@ package edu.cmu.tetrad.stat.correlation;
 
 /**
  * Interface for computing covariances.
- *
+ * <p>
  * Jan 25, 2016 2:11:36 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

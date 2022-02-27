@@ -27,7 +27,11 @@ import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetradapp.model.StandardizedSemImWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
-import java.awt.BorderLayout;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.TableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -36,18 +40,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Map;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.border.TitledBorder;
-import javax.swing.table.TableModel;
 
 /**
  * Edits a standardized SEM model in which (a) all means are zero, (b) all
@@ -77,6 +69,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
     private StandardizedSemImImpliedMatricesPanel impliedMatricesPanel;
 
     //========================CONSTRUCTORS===========================//
+
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
      */
@@ -242,11 +235,11 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
             this.standardizedSemImGraphicalEditor = new StandardizedSemImGraphicalEditor(getSemIm(), this);
             this.standardizedSemImGraphicalEditor.addPropertyChangeListener(
                     new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    firePropertyChange(evt.getPropertyName(), null,
-                            null);
-                }
-            });
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            firePropertyChange(evt.getPropertyName(), null,
+                                    null);
+                        }
+                    });
             this.standardizedSemImGraphicalEditor.enableEditing(false);
         }
 

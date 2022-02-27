@@ -78,8 +78,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
                 try {
                     getParams().set("alpha", 0.001);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -126,8 +125,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
             b3.add(Box.createHorizontalGlue());
             b3.add(testSelector);
             b.add(b3);
-        }
-        else {
+        } else {
             this.params.set("tetradTestType", TestType.DISCRETE_LRT);
         }
 
@@ -153,8 +151,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
 
         if (dataModel instanceof ICovarianceMatrix) {
             discreteModel = false;
-        }
-        else {
+        } else {
             DataSet dataSet = (DataSet) dataModel;
             assert dataSet != null;
             discreteModel = dataSet.isDiscrete();

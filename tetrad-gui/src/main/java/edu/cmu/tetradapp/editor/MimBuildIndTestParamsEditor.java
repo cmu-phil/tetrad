@@ -54,8 +54,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
                 try {
                     getParams().set("alpha", 0.001);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }

@@ -74,7 +74,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public GraphWrapper(GraphSource graphSource, Parameters parameters) {
-        if (graphSource instanceof  Simulation) {
+        if (graphSource instanceof Simulation) {
             Simulation simulation = (Simulation) graphSource;
             this.graphs = simulation.getGraphs();
             this.numModels = graphs.size();

@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A panel that is responsible for drawing a q-q plot.
- *
+ * <p>
  * Borrows heavily from HistogramDisplayPanel
  *
  * @author Michael Freenor
@@ -94,7 +94,7 @@ class QQPlotDisplayPanel extends JPanel {
      */
     public QQPlotDisplayPanel(QQPlot qqPlot) {
         this.qqPlot = qqPlot;
-        
+
         if (qqPlot == null) {
             throw new NullPointerException("Given q-q plot must be null");
         }
@@ -149,7 +149,7 @@ class QQPlotDisplayPanel extends JPanel {
         g2d.setColor(LINE_COLOR);
         g2d.drawString(format.format(Math.floor(this.qqPlot.getMinSample())), PADDING + 5, height + 15);
         g2d.drawLine(PADDING, height + DASH, PADDING, height);
-        String maxStr = format.format((int)Math.ceil(this.qqPlot.getMaxSample()));
+        String maxStr = format.format((int) Math.ceil(this.qqPlot.getMaxSample()));
         g2d.drawString(maxStr, WIDTH - fontMetrics.stringWidth(maxStr), height + 15);
         g2d.drawLine(WIDTH + SPACE, height + DASH, WIDTH + SPACE, height);
         int size = (WIDTH - PADDING) / 4;
@@ -176,13 +176,10 @@ class QQPlotDisplayPanel extends JPanel {
         //draw the data points
         int dataColumn = this.qqPlot.getDataSet().getColumn(this.qqPlot.getSelectedVariable());
         //set selected variable if there is none
-        if (dataColumn == -1)
-        {
-            for (int i = 0; i < this.qqPlot.getDataSet().getNumColumns(); i++)
-            {
-                if (this.qqPlot.getDataSet().getVariable(i) instanceof ContinuousVariable)
-                {
-                    this.qqPlot.setSelectedVariable((ContinuousVariable)this.qqPlot.getDataSet().getVariable(i));
+        if (dataColumn == -1) {
+            for (int i = 0; i < this.qqPlot.getDataSet().getNumColumns(); i++) {
+                if (this.qqPlot.getDataSet().getVariable(i) instanceof ContinuousVariable) {
+                    this.qqPlot.setSelectedVariable((ContinuousVariable) this.qqPlot.getDataSet().getVariable(i));
                     dataColumn = i;
                     break;
                 }
@@ -196,14 +193,12 @@ class QQPlotDisplayPanel extends JPanel {
         double originX = PADDING - 2;
         double originY = height - 2;
 
-        for (int i = 0; i < this.qqPlot.getDataSet().getNumRows(); i++)
-        {
+        for (int i = 0; i < this.qqPlot.getDataSet().getNumRows(); i++) {
             double x = (this.qqPlot.getDataSet().getDouble(i, dataColumn));
             double y = (this.qqPlot.getComparisonVariable()[i]);
 
             if (x >= this.qqPlot.getMinSample() && x <= this.qqPlot.getMaxSample()
-                    && y >= this.qqPlot.getMinSample() && y <= this.qqPlot.getMaxSample())
-            {
+                    && y >= this.qqPlot.getMinSample() && y <= this.qqPlot.getMaxSample()) {
                 double result[] = plotPoint(x, y, Math.floor(this.qqPlot.getMinSample()), Math.ceil(this.qqPlot.getMaxSample()));
 
                 //System.out.println("(" + x + "," + y +  ")");
@@ -273,7 +268,7 @@ class QQPlotDisplayPanel extends JPanel {
             Point point = e.getPoint();
             for (Rectangle rect : rectMap.keySet()) {
                 if (rect.contains(point)) {
-                  //  System.out.println(rectMap.get(rect));
+                    //  System.out.println(rectMap.get(rect));
                     break;
                 }
             }

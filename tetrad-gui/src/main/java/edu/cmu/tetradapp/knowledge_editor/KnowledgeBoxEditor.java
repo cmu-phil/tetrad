@@ -20,7 +20,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.knowledge_editor;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataReader;
+import edu.cmu.tetrad.data.DataWriter;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.NodeVariableType;
@@ -28,34 +31,18 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.ForbiddenGraphModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
+
+import javax.swing.*;
+import javax.swing.border.*;
+import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.io.CharArrayWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.io.*;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.prefs.Preferences;
-import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.border.MatteBorder;
-import javax.swing.border.TitledBorder;
 
 /**
  * Edits knowledge of forbidden and required edges.
@@ -90,8 +77,8 @@ public class KnowledgeBoxEditor extends JPanel {
 
     private final List<String> firstTierVars = new LinkedList<>();
     private final List<String> secondTierVars = new LinkedList<>();
-    
-    
+
+
     public KnowledgeBoxEditor(final KnowledgeBoxModel knowledgeBoxModel) {
         this(knowledgeBoxModel, knowledgeBoxModel.getVarNames());
     }
@@ -331,12 +318,12 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     /**
-     * If the knowledge box sees interventional variables 
-     * it automatically places those variables in the first tier 
+     * If the knowledge box sees interventional variables
+     * it automatically places those variables in the first tier
      * and the rest of domain variables in second tier - Zhou
      */
     private void checkInterventionalVariables() {
-        knowledgeBoxModel.getVariables().forEach(e->{ 
+        knowledgeBoxModel.getVariables().forEach(e -> {
             if ((e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) || (e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)) {
                 firstTierVars.add(e.getName());
             } else {
@@ -351,11 +338,11 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         });
     }
-    
+
     private Box getTierBoxes(int numTiers) {
         // Handling interventional variables
         checkInterventionalVariables();
-        
+
         // Only for dataset with interventional variables and the first time
         // we open the knowledge box - Zhou
         if (getKnowledge().isEmpty() && !firstTierVars.isEmpty()) {
@@ -363,7 +350,7 @@ public class KnowledgeBoxEditor extends JPanel {
             getKnowledge().setTier(0, firstTierVars);
             getKnowledge().setTier(1, secondTierVars);
         }
-        
+
         for (String var : varNames) {
             getKnowledge().addVariable(var);
         }
@@ -380,12 +367,12 @@ public class KnowledgeBoxEditor extends JPanel {
         JScrollPane jScrollPane1 = new JScrollPane(varsNotInTiersList);
         jScrollPane1.setPreferredSize(new Dimension(640, 50));
         varsNotInTiersBox.add(jScrollPane1);
-        
+
         Box tiersBox = Box.createVerticalBox();
 
         // Use this list so we can set the first tier forbidden within tier with interventional variables handling - Zhou
         List<JCheckBox> forbiddenCheckboxes = new LinkedList<>();
-        
+
         for (int tier = 0; tier < numTiers; tier++) {
             Box textRow = Box.createHorizontalBox();
             textRow.add(new JLabel("Tier " + (tier + 1)));
@@ -397,7 +384,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
             JCheckBox forbiddenCheckbox = new JCheckBox("Forbid Within Tier", getKnowledge().isTierForbiddenWithin(_tier));
 
-            JCheckBox causesOnlyNextTierCheckbox =  new JCheckBox("Can Cause Only Next Tier", getKnowledge().isOnlyCanCauseNextTier(_tier));
+            JCheckBox causesOnlyNextTierCheckbox = new JCheckBox("Can Cause Only Next Tier", getKnowledge().isOnlyCanCauseNextTier(_tier));
 
             final JComponent upReference = this;
 
@@ -414,11 +401,11 @@ public class KnowledgeBoxEditor extends JPanel {
             });
 
             forbiddenCheckboxes.add(forbiddenCheckbox);
-            
+
             textRow.add(regexAdd);
 
             regexAdd.addActionListener((e) -> {
-                String regex = JOptionPane.showInputDialog("Search Pattern");
+                String regex = JOptionPane.showInputDialog("Search CPDAG");
                 try {
                     getKnowledge().removeFromTiers(regex);
                     getKnowledge().addToTier(_tier, regex);
@@ -460,25 +447,25 @@ public class KnowledgeBoxEditor extends JPanel {
             JScrollPane jScrollPane = new JScrollPane(tierList);
             jScrollPane.setPreferredSize(new Dimension(600, 50));
             tierBox.add(jScrollPane);
-            
+
             tiersBox.add(tierBox);
         }
-        
+
         // Add all tiers to a scroll pane
         JScrollPane tiersScrollPane = new JScrollPane(tiersBox);
         tiersScrollPane.setPreferredSize(new Dimension(640, 400));
-        
+
         // Also check "Forbin Within Tier" for the first tier variables
         if (!firstTierVars.isEmpty()) {
             forbiddenCheckboxes.get(0).setSelected(true);
             getKnowledge().setTierForbiddenWithin(0, true);
         }
-        
+
         // Finally add to container
         container.add(varsNotInTiersBox);
         container.add(Box.createVerticalStrut(5));
         container.add(tiersScrollPane);
-        
+
         return container;
     }
 
@@ -497,11 +484,11 @@ public class KnowledgeBoxEditor extends JPanel {
         JCheckBox showForbiddenByTiersCheckbox = new JCheckBox("Show Forbidden By Tiers", showForbiddenByTiers);
         JCheckBox showForbiddenGroupsCheckBox = new JCheckBox("Show Forbidden by Groups", this.showForbiddenByGroups);
         JCheckBox showForbiddenExplicitlyCheckbox = new JCheckBox("Show Forbidden Explicitly", showForbiddenExplicitly);
-        
-        
+
+
         JCheckBox showRequiredGroupsCheckBox = new JCheckBox("Show Required by Groups", this.showRequiredByGroups);
         JCheckBox showRequiredExplicitlyCheckbox = new JCheckBox("Show Required Explicitly", showRequired);
-        
+
 
         showRequiredGroupsCheckBox.addActionListener((e) -> {
             JCheckBox box = (JCheckBox) e.getSource();
@@ -553,7 +540,7 @@ public class KnowledgeBoxEditor extends JPanel {
         forbiddenOptionsBox.add(showForbiddenGroupsCheckBox);
         forbiddenOptionsBox.add(showForbiddenExplicitlyCheckbox);
         forbiddenOptionsBox.add(Box.createHorizontalGlue());
-        
+
         Box requiredOptionsBox = Box.createHorizontalBox();
         requiredOptionsBox.add(showRequiredGroupsCheckBox);
         requiredOptionsBox.add(showRequiredExplicitlyCheckbox);
@@ -577,6 +564,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showRequiredByGroups) {
             List<KnowledgeEdge> list = knowledge.getListOfRequiredEdges();
+
             if (list.size() > EDGE_LIMIT) {
                 showRequiredByGroups = false;
                 if (checkBox != null) {
@@ -594,8 +582,12 @@ public class KnowledgeBoxEditor extends JPanel {
                         KnowledgeModelNode toNode = (KnowledgeModelNode) graph
                                 .getNode(to);
 
-                        graph.addEdge(new KnowledgeModelEdge(fromNode, toNode,
-                                KnowledgeModelEdge.REQUIRED_BY_GROUPS));
+                        KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode, toNode,
+                                KnowledgeModelEdge.REQUIRED_BY_GROUPS);
+
+                        if (!graph.containsEdge(edge)) {
+                            graph.addEdge(edge);
+                        }
                     }
                 });
             }
@@ -603,6 +595,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showForbiddenByGroups) {
             List<KnowledgeEdge> list = knowledge.getListOfForbiddenEdges();
+
             if (list.size() > EDGE_LIMIT) {
                 showForbiddenByGroups = false;
                 if (checkBox != null) {
@@ -620,8 +613,12 @@ public class KnowledgeBoxEditor extends JPanel {
                         KnowledgeModelNode toNode = (KnowledgeModelNode) graph
                                 .getNode(to);
 
-                        graph.addEdge(new KnowledgeModelEdge(fromNode, toNode,
-                                KnowledgeModelEdge.FORBIDDEN_BY_GROUPS));
+                        KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode, toNode,
+                                KnowledgeModelEdge.FORBIDDEN_BY_GROUPS);
+
+                        if (!graph.containsEdge(edge)) {
+                            graph.addEdge(edge);
+                        }
                     }
                 });
             }
@@ -629,6 +626,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (showRequired) {
             List<KnowledgeEdge> list = knowledge.getListOfExplicitlyRequiredEdges();
+
             if (list.size() > EDGE_LIMIT) {
                 showRequired = false;
                 if (checkBox != null) {
@@ -645,9 +643,11 @@ public class KnowledgeBoxEditor extends JPanel {
                     KnowledgeModelNode toNode = (KnowledgeModelNode) graph
                             .getNode(to);
 
-                    if (!(fromNode == null || toNode == null)) {
-                        graph.addEdge(new KnowledgeModelEdge(fromNode, toNode,
-                                KnowledgeModelEdge.REQUIRED));
+                    KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode,
+                            toNode, KnowledgeModelEdge.REQUIRED);
+
+                    if (!graph.containsEdge(edge)) {
+                        graph.addEdge(edge);
                     }
                 });
             }
@@ -655,6 +655,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (showForbiddenByTiers) {
             List<KnowledgeEdge> list = knowledge.getListOfForbiddenEdges();
+
             if (list.size() > EDGE_LIMIT) {
                 showForbiddenByTiers = false;
                 if (checkBox != null) {
@@ -682,10 +683,12 @@ public class KnowledgeBoxEditor extends JPanel {
                             toNode = (KnowledgeModelNode) graph.getNode(to);
                         }
 
-                        KnowledgeModelEdge knowledgeModelEdge = new KnowledgeModelEdge(
+                        KnowledgeModelEdge edge = new KnowledgeModelEdge(
                                 fromNode, toNode, KnowledgeModelEdge.FORBIDDEN_BY_TIERS);
 
-                        graph.addEdge(knowledgeModelEdge);
+                        if (!graph.containsEdge(edge)) {
+                            graph.addEdge(edge);
+                        }
                     }
                 });
             }
@@ -693,6 +696,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (showForbiddenExplicitly) {
             List<KnowledgeEdge> list = knowledge.getListOfExplicitlyForbiddenEdges();
+
             if (list.size() > EDGE_LIMIT) {
                 showForbiddenExplicitly = false;
                 if (checkBox != null) {
@@ -711,6 +715,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
                     KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode,
                             toNode, KnowledgeModelEdge.FORBIDDEN_EXPLICITLY);
+
                     if (!graph.containsEdge(edge)) {
                         graph.addEdge(edge);
                     }

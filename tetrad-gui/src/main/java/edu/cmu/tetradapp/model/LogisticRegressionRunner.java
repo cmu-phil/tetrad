@@ -30,13 +30,10 @@ import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the Regression
@@ -65,6 +62,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     private List<String> variableNames;
 
     //=========================CONSTRUCTORS===============================//
+
     /**
      * Constructs a wrapper for the given DataWrapper. The DataWrapper must
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
@@ -129,7 +127,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         variables.add(var1);
         variables.add(var2);
 
-        DataSet dataSet = new BoxDataSet( new VerticalDoubleDataBox(3, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(3, variables.size()), variables);
         double[] col1data = new double[]{0.0, 1.0, 2.0};
         double[] col2data = new double[]{2.3, 4.3, 2.5};
 
@@ -179,6 +177,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
+
     /**
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
@@ -325,8 +324,8 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
 
     /**
      * @param node The node that the classifications are for. All triple from
-     * adjacencies to this node to adjacencies to this node through the given
-     * node will be considered.
+     *             adjacencies to this node to adjacencies to this node through the given
+     *             node will be considered.
      * @return the list of triples corresponding to
      * <code>getTripleClassificationNames</code> for the given node.
      */

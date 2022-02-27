@@ -6,7 +6,6 @@
 package edu.cmu.tetrad.graph;
 
 /**
- *
  * @author Zhou Yuan <zhy19@pitt.edu>
  */
 public enum NodeVariableType {

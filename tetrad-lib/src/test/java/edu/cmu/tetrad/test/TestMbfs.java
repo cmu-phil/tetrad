@@ -42,7 +42,7 @@ import static org.junit.Assert.assertTrue;
 public class TestMbfs {
 
     /**
-     * Tests to make sure the algorithm for generating MB DAGs from an MB Pattern works, at least for one kind of tricky
+     * Tests to make sure the algorithm for generating MB DAGs from an MB CPDAG works, at least for one kind of tricky
      * case.
      */
     @Test

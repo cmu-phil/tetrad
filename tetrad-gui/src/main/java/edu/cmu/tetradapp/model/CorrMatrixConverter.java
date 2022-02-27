@@ -21,7 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -47,12 +50,10 @@ public class CorrMatrixConverter extends DataWrapper {
             }
 
             covMatrix = new CorrelationMatrix(dataSet);
-        }
-        else if (wrapper.getSelectedDataModel() instanceof ICovarianceMatrix) {
+        } else if (wrapper.getSelectedDataModel() instanceof ICovarianceMatrix) {
             ICovarianceMatrix covOrig = (ICovarianceMatrix) wrapper.getSelectedDataModel();
             covMatrix = new CorrelationMatrix(covOrig);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Expecting a continuous data set or a covariance matrix.");
         }
 

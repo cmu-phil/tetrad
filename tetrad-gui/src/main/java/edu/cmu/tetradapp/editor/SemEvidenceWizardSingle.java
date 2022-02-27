@@ -53,7 +53,7 @@ class SemEvidenceWizardSingle extends JPanel {
      * are probabilities ranging from 0.0 to 1.0.
      */
     public SemEvidenceWizardSingle(SemUpdater semUpdater,
-            GraphWorkbench workbench) {
+                                   GraphWorkbench workbench) {
         if (semUpdater == null) {
             throw new NullPointerException();
         }

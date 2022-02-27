@@ -33,7 +33,7 @@ import java.beans.PropertyChangeListener;
 
 /**
  * Displays a Q-Q plot for a random variable.
- *
+ * <p>
  * A lot of the code borrows heavily from HistogramAction
  *
  * @author Michael Freenor
@@ -58,13 +58,9 @@ class ScatterPlotAction extends AbstractAction {
     }
 
 
-
-
-
-
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
-        if(dataSet == null || dataSet.getNumColumns() == 0){
+        if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot display a scatter plot for an empty data set.");
             return;
         }
@@ -83,9 +79,6 @@ class ScatterPlotAction extends AbstractAction {
     //============================== Private methods ============================//
 
 
-
-
-
     /**
      * Sets the location on the given dialog for the given index.
      */
@@ -101,8 +94,8 @@ class ScatterPlotAction extends AbstractAction {
 
         int x = (int) (150 * Math.cos(index * 15 * (Math.PI / 180)));
         int y = (int) (150 * Math.sin(index * 15 * (Math.PI / 180)));
-        x += (dim.width - bounds.width)/2;
-        y += (dim.height - bounds.height)/2;
+        x += (dim.width - bounds.width) / 2;
+        y += (dim.height - bounds.height) / 2;
         dialog.setLocation(x, y);
     }
 
@@ -113,7 +106,7 @@ class ScatterPlotAction extends AbstractAction {
      */
     private JPanel createScatterPlotDialog(ContinuousVariable yVariable, ContinuousVariable xVariable) {
         String dialogTitle = "Scatter Plots";
-        JPanel panel = new JPanel(); 
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
         DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
@@ -157,7 +150,6 @@ class ScatterPlotAction extends AbstractAction {
     }
 
     //================================= Inner Class ======================================//
-
 
 
     /**

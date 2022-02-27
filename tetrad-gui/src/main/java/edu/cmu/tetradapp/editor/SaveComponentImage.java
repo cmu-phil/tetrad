@@ -75,8 +75,7 @@ public class SaveComponentImage extends AbstractAction {
         // Write the image to file.
         try {
             ImageIO.write(image, "png", file);
-        }
-        catch (IOException e1) {
+        } catch (IOException e1) {
             throw new RuntimeException(e1);
         }
     }

@@ -18,17 +18,18 @@
  */
 package edu.cmu.tetradapp.app;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class was embedded in the LoadSessionAction class. Had to make it its
  * own class for reusability.
- *
+ * <p>
  * Dec 6, 2017 11:10:24 AM
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu

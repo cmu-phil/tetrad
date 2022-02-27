@@ -14,6 +14,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -135,7 +136,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
         if (compareToTrue) {
             return new EdgeListGraph(graph);
         } else {
-            return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+            return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
         }
     }
 
@@ -143,7 +144,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     public String getDescription() {
         return "PC-Max (\"Peter and Clark\") on concatenating datasets using " + test.getDescription()
                 + (initialGraph != null ? " with initial graph from "
-                        + initialGraph.getDescription() : "");
+                + initialGraph.getDescription() : "");
     }
 
     @Override

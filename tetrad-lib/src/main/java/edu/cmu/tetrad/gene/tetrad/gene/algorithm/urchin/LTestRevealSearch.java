@@ -46,8 +46,7 @@ public class LTestRevealSearch {
 
         try {
             s = new FileInputStream(fileName);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Cannot open file " + fileName);
             return;
         }
@@ -59,8 +58,7 @@ public class LTestRevealSearch {
                 for (int j = 0; j < ngenes; j++) {
                     cases[k][j] = Integer.parseInt(st.nextToken("\t"));
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.out.println("Read error in " + fileName);
                 return;
             }

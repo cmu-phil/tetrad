@@ -349,7 +349,7 @@ class Tsls {
                             MatrixUtils.product(MatrixUtils.transpose(V), V)),
                     MatrixUtils.product(MatrixUtils.transpose(V), Z)));
             A_hat = MatrixUtils.product(MatrixUtils.inverse(
-                    MatrixUtils.product(MatrixUtils.transpose(Z_hat), Z_hat)),
+                            MatrixUtils.product(MatrixUtils.transpose(Z_hat), Z_hat)),
                     MatrixUtils.product(MatrixUtils.transpose(Z_hat), yi));
             //Set the edge for the fixed measurement
             int position = ly.indexOf(current);

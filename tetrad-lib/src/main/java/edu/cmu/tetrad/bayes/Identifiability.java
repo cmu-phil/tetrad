@@ -628,7 +628,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                 int parentIndex = bayesIm.getParent(nodeIndex, i);
                 if (bayesIm.getNode(parentIndex).getNodeType() ==
                         NodeType.LATENT
-                        ) {
+                ) {
                     int cComponentIndexOld = cComponents1[parentIndex];
                     if (cComponentIndexOld != cComponentIndexNew) {
                         for (int j = 0; j < nNodes; j++) {
@@ -765,7 +765,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                 for (nodeHjTierIndex = 0;
                      nodeHjTierIndex < tierSize;
                      nodeHjTierIndex++
-                        ) {
+                ) {
                     if (tiers[nodeHjTierIndex] == nodeHjIndex) {
                         break;
                     }
@@ -784,7 +784,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                 for (int i = nodeHjTierIndex + 1; i < tierSize; i++) {
                     if (graphWhole.getNode(tiers[i]).getNodeType() ==
                             NodeType.MEASURED
-                            ) {
+                    ) {
                         sumOverVariables[tiers[i]] = 1;
                     }
                 }

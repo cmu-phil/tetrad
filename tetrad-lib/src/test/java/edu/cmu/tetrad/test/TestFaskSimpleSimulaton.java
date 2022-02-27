@@ -25,8 +25,6 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 
-import static java.lang.Math.max;
-
 /**
  * An example script to simulate data and run a comparison analysis on it.
  *

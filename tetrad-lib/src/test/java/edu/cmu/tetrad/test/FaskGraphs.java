@@ -28,10 +28,9 @@ public class FaskGraphs {
     private List<Boolean> types = new ArrayList<>();
 
     /**
-     *
-     * @param path The path to the directory containing the files.
+     * @param path       The path to the directory containing the files.
      * @param parameters Parameters for the FASK search.
-     * @param contains Some string(s) the data filenames must include. May be  blank.
+     * @param contains   Some string(s) the data filenames must include. May be  blank.
      */
     public FaskGraphs(String path, Parameters parameters, String... contains) {
         loadFiles(path, parameters, contains);

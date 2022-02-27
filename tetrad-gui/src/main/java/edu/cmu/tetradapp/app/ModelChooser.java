@@ -30,7 +30,7 @@ import java.util.List;
  * an empty constructor, after construction the chooser's set methods will called in the following order:
  * setId(), setTitle(), setNodeName(), setModelConfigs(). After all set methods have been called the
  * setup() method should be called.
- * 
+ *
  * @author Tyler Gibson
  */
 public interface ModelChooser {

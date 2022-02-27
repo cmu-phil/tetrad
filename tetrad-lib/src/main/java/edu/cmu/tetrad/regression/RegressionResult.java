@@ -23,8 +23,8 @@ package edu.cmu.tetrad.regression;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
-import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.Vector;
 
 import java.text.NumberFormat;
 

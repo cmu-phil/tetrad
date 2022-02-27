@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='ISO-8859-1'  ?>
 
 <!DOCTYPE toc
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
-         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+        PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
+        "http://java.sun.com/products/javahelp/toc_1_0.dtd">
 
 <toc version="1.0">
     <tocitem text="TETRAD Overview" target="tetrad_overview"/>
@@ -81,9 +81,8 @@
                 <tocitem text="Skew" target="skew"/>
                 <tocitem text="SkewE" target="skewe"/>
                 <tocitem text="PC-Local" target="pclocal"/>
-                <tocitem text="tsFCI" target="tsfci"/>
-                <tocitem text="tsGFCI" target="tsgfci"/>
-                <tocitem text="tsIMAGES" target="tsimages"/>
+                <tocitem text="svarFCI" target="svarfci"/>
+                <tocitem text="svarGFCI" target="svargfci"/>
                 <tocitem text="WFGES" target="wfges"/>
 
                 <tocitem text="BDeu Score" target="bdeu"/>
@@ -120,7 +119,7 @@
             <tocitem text="Editing Node Properties" target="editing_node_properties"/>
             <tocitem text="Exiting TETRAD" target="exiting_tetrad"/>
             <tocitem text="Generating Random DAGs" target="generating_random_dags"/>
-            <tocitem text="Handling Missing Data" target="handling_missing_data"/>            
+            <tocitem text="Handling Missing Data" target="handling_missing_data"/>
             <tocitem text="Opening Sessions" target="opening_sessions"/>
             <tocitem text="Saving Screenshots" target="saving_screenshots"/>
             <tocitem text="Saving Sessions" target="saving_sessions"/>

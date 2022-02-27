@@ -22,11 +22,10 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
 /**
- *
  * Sep 5, 2017 11:02:14 AM
  *
- * @author Kevin V. Bui (kvb2@pitt.edu)
  * @param <T> annotation
+ * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class AnnotatedClass<T extends Annotation> implements Serializable {
 

@@ -13,7 +13,6 @@ import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.ParsingException;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,121 +23,51 @@ import java.util.List;
  * Jan 10, 2019 12:23:21 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
- *
  */
 public class TestRfciBsc {
 
-	@Test
-	public void testRandomDiscreteData() {
-		// RFCI
-		int depth = 5;
-		// BSC
-		int numModels = 10;
-		int numBootstrapSamples = 100;
-		int sampleSize = 1000;
-		double lower = 0.3;
-		double upper = 0.7;
-		
-		long seed = 878376L;
-		RandomUtil.getInstance().setSeed(seed);
-		
+    //	@Test
+    public void testRandomDiscreteData() {
+        // RFCI
+        int depth = 5;
+        // BSC
+        int numModels = 10;
+        int numBootstrapSamples = 100;
+        int sampleSize = 1000;
+        double lower = 0.3;
+        double upper = 0.7;
+
+        long seed = 878376L;
+        RandomUtil.getInstance().setSeed(seed);
+
         Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X1-->X5,X2-->X3,X2-->X4,X2-->X6,X3-->X4,X4-->X5,X5-->X6");
         Dag dag = new Dag(g);
-        
-		// set a number of latent variables
-		//int LV = 1;
-		//GraphUtils.fixLatents4(LV, dag);
-		//System.out.println("Variables set to be latent:" + getLatents(dag));
-        
+
+        // set a number of latent variables
+        //int LV = 1;
+        //GraphUtils.fixLatents4(LV, dag);
+        //System.out.println("Variables set to be latent:" + getLatents(dag));
+
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
-        
-		// simulate data from instantiated model
-		DataSet fullData = bayesIm.simulateData(sampleSize, seed, true);
-		refineData(fullData);
-		DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
-		// get the true underlying PAG
-		final DagToPag2 dagToPag = new DagToPag2(dag);
-		dagToPag.setCompleteRuleSetUsed(false);
-		Graph PAG_True = dagToPag.convert();
-		PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
+        // simulate data from instantiated model
+        DataSet fullData = bayesIm.simulateData(sampleSize, seed, true);
+        refineData(fullData);
+        DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
-		IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
-		edu.cmu.tetrad.search.Rfci rfci = new edu.cmu.tetrad.search.Rfci(test);
-		rfci.setVerbose(true);
-		rfci.setCompleteRuleSetUsed(false);
-		rfci.setDepth(depth);
-		
-        edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc rfciBsc = new edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc(rfci);
-        rfciBsc.setNumBscBootstrapSamples(numBootstrapSamples);
-        rfciBsc.setNumRandomizedSearchModels(numModels);
-        rfciBsc.setLowerBound(lower);
-        rfciBsc.setUpperBound(upper);
-        rfciBsc.setOutputRBD(true);
-		rfciBsc.setVerbose(true);
-        
-        long start = System.currentTimeMillis();
-        
-        rfciBsc.search();
-        
-        long stop = System.currentTimeMillis();
+        // get the true underlying PAG
+        final DagToPag2 dagToPag = new DagToPag2(dag);
+        dagToPag.setCompleteRuleSetUsed(false);
+        Graph PAG_True = dagToPag.convert();
+        PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
-        System.out.println("Elapsed " + (stop - start) + " ms");
-		System.out.println("\nBSC-I: " + rfciBsc.getBscI());
-		System.out.println("\nBSC-D: " + rfciBsc.getBscD());
-		System.out.println("------------------------------------------");
-		System.out.println("PAG_True: \n" + PAG_True);
-		System.out.println("------------------------------------------");
-		System.out.println("RB-I: \n" + rfciBsc.getGraphRBI());
-		System.out.println("------------------------------------------");
-		System.out.println("RB-D: \n" + rfciBsc.getGraphRBD());
-	}
-	
-//	@Test
-	public void testDiscreteRealData() {
-		// Dataset
-		String modelName = "Alarm.xdsl";
-		// RFCI
-		int depth = 5;
-		// BSC
-		int numModels = 10;
-		int numBootstrapSamples = 10;
-		int sampleSize = 500;
-		double lower = 0.3;
-		double upper = 0.7;
-		
-		long seed = 878376L;
-		RandomUtil.getInstance().setSeed(seed);
+        IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
+        edu.cmu.tetrad.search.Rfci rfci = new edu.cmu.tetrad.search.Rfci(test);
+        rfci.setVerbose(true);
+        rfci.setCompleteRuleSetUsed(false);
+        rfci.setDepth(depth);
 
-		// get the Bayesian network (graph and parameters) of the given model
-		BayesIm im = loadBayesIm(modelName);
-		BayesPm pm = im.getBayesPm();
-		Graph dag = pm.getDag();
-		
-		// set a number of latent variables
-		int LV = 4;
-		GraphUtils.fixLatents4(LV, dag);
-		System.out.println("Variables set to be latent:" + getLatents(dag));
-
-		// simulate data from instantiated model
-		DataSet fullData = im.simulateData(sampleSize, seed, true);
-		refineData(fullData);
-
-		DataSet dataSet = DataUtils.restrictToMeasured(fullData);
-
-		// get the true underlying PAG
-		final DagToPag2 dagToPag = new DagToPag2(dag);
-		dagToPag.setCompleteRuleSetUsed(false);
-		Graph PAG_True = dagToPag.convert();
-		PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
-
-		IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
-		edu.cmu.tetrad.search.Rfci rfci = new edu.cmu.tetrad.search.Rfci(test);
-		rfci.setVerbose(true);
-		rfci.setCompleteRuleSetUsed(false);
-		rfci.setDepth(depth);
-		
         edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc rfciBsc = new edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc(rfci);
         rfciBsc.setNumBscBootstrapSamples(numBootstrapSamples);
         rfciBsc.setNumRandomizedSearchModels(numModels);
@@ -146,57 +75,126 @@ public class TestRfciBsc {
         rfciBsc.setUpperBound(upper);
         rfciBsc.setOutputRBD(true);
         rfciBsc.setVerbose(true);
-        
+
         long start = System.currentTimeMillis();
-        
+
         rfciBsc.search();
-        
+
         long stop = System.currentTimeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
-		System.out.println("\nBSC-I: " + rfciBsc.getBscI());
-		System.out.println("\nBSC-D: " + rfciBsc.getBscD());
-		System.out.println("------------------------------------------");
-		System.out.println("PAG_True: \n" + PAG_True);
-		System.out.println("------------------------------------------");
-		System.out.println("RB-I: \n" + rfciBsc.getGraphRBI());
-		System.out.println("------------------------------------------");
-		System.out.println("RB-D: \n" + rfciBsc.getGraphRBD());		
-	}
-	
-	private static void refineData(DataSet fullData) {
-		for (int c = 0; c < fullData.getNumColumns(); c++) {
-			for (int r = 0; r < fullData.getNumRows(); r++) {
-				if (fullData.getInt(r, c) < 0) {
-					fullData.setInt(r, c, 0);
-				}
-			}
-		}
+        System.out.println("\nBSC-I: " + rfciBsc.getBscI());
+        System.out.println("\nBSC-D: " + rfciBsc.getBscD());
+        System.out.println("------------------------------------------");
+        System.out.println("PAG_True: \n" + PAG_True);
+        System.out.println("------------------------------------------");
+        System.out.println("RB-I: \n" + rfciBsc.getGraphRBI());
+        System.out.println("------------------------------------------");
+        System.out.println("RB-D: \n" + rfciBsc.getGraphRBD());
+    }
 
-	}
+    //	@Test
+    public void testDiscreteRealData() {
+        // Dataset
+        String modelName = "Alarm.xdsl";
+        // RFCI
+        int depth = 5;
+        // BSC
+        int numModels = 10;
+        int numBootstrapSamples = 10;
+        int sampleSize = 500;
+        double lower = 0.3;
+        double upper = 0.7;
 
-	private static List<Node> getLatents(Graph dag) {
-		List<Node> latents = new ArrayList<>();
-		for (Node n : dag.getNodes()) {
-			if (n.getNodeType() == NodeType.LATENT) {
-				latents.add(n);
-			}
-		}
-		return latents;
-	}
+        long seed = 878376L;
+        RandomUtil.getInstance().setSeed(seed);
 
-	private static BayesIm loadBayesIm(String filename) {
-		try {
-			Builder builder = new Builder();
-			File file = new File("src/test/resources/" + filename);
-			System.out.println(file.getAbsolutePath());
-			Document document = builder.build(file);
-			XdslXmlParser parser = new XdslXmlParser();
-			parser.setUseDisplayNames(true);
-			return parser.getBayesIm(document.getRootElement());
-		} catch (ParsingException | IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        // get the Bayesian network (graph and parameters) of the given model
+        BayesIm im = loadBayesIm(modelName);
+        BayesPm pm = im.getBayesPm();
+        Graph dag = pm.getDag();
+
+        // set a number of latent variables
+        int LV = 4;
+        GraphUtils.fixLatents4(LV, dag);
+        System.out.println("Variables set to be latent:" + getLatents(dag));
+
+        // simulate data from instantiated model
+        DataSet fullData = im.simulateData(sampleSize, seed, true);
+        refineData(fullData);
+
+        DataSet dataSet = DataUtils.restrictToMeasured(fullData);
+
+        // get the true underlying PAG
+        final DagToPag2 dagToPag = new DagToPag2(dag);
+        dagToPag.setCompleteRuleSetUsed(false);
+        Graph PAG_True = dagToPag.convert();
+        PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
+
+        IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
+        edu.cmu.tetrad.search.Rfci rfci = new edu.cmu.tetrad.search.Rfci(test);
+        rfci.setVerbose(true);
+        rfci.setCompleteRuleSetUsed(false);
+        rfci.setDepth(depth);
+
+        edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc rfciBsc = new edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc(rfci);
+        rfciBsc.setNumBscBootstrapSamples(numBootstrapSamples);
+        rfciBsc.setNumRandomizedSearchModels(numModels);
+        rfciBsc.setLowerBound(lower);
+        rfciBsc.setUpperBound(upper);
+        rfciBsc.setOutputRBD(true);
+        rfciBsc.setVerbose(true);
+
+        long start = System.currentTimeMillis();
+
+        rfciBsc.search();
+
+        long stop = System.currentTimeMillis();
+
+        System.out.println("Elapsed " + (stop - start) + " ms");
+        System.out.println("\nBSC-I: " + rfciBsc.getBscI());
+        System.out.println("\nBSC-D: " + rfciBsc.getBscD());
+        System.out.println("------------------------------------------");
+        System.out.println("PAG_True: \n" + PAG_True);
+        System.out.println("------------------------------------------");
+        System.out.println("RB-I: \n" + rfciBsc.getGraphRBI());
+        System.out.println("------------------------------------------");
+        System.out.println("RB-D: \n" + rfciBsc.getGraphRBD());
+    }
+
+    private static void refineData(DataSet fullData) {
+        for (int c = 0; c < fullData.getNumColumns(); c++) {
+            for (int r = 0; r < fullData.getNumRows(); r++) {
+                if (fullData.getInt(r, c) < 0) {
+                    fullData.setInt(r, c, 0);
+                }
+            }
+        }
+
+    }
+
+    private static List<Node> getLatents(Graph dag) {
+        List<Node> latents = new ArrayList<>();
+        for (Node n : dag.getNodes()) {
+            if (n.getNodeType() == NodeType.LATENT) {
+                latents.add(n);
+            }
+        }
+        return latents;
+    }
+
+    private static BayesIm loadBayesIm(String filename) {
+        try {
+            Builder builder = new Builder();
+            File file = new File("src/test/resources/" + filename);
+            System.out.println(file.getAbsolutePath());
+            Document document = builder.build(file);
+            XdslXmlParser parser = new XdslXmlParser();
+            parser.setUseDisplayNames(true);
+            return parser.getBayesIm(document.getRootElement());
+        } catch (ParsingException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

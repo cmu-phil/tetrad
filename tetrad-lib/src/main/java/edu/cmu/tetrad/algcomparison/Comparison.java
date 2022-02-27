@@ -38,53 +38,20 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataWriter;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.util.CombinationGenerator;
-import edu.cmu.tetrad.util.Experimental;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.ParamDescription;
-import edu.cmu.tetrad.util.ParamDescriptions;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
+import org.reflections.Reflections;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.RecursiveTask;
-
-import org.reflections.Reflections;
 
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics
@@ -96,7 +63,7 @@ import org.reflections.Reflections;
 public class Comparison {
 
     public enum ComparisonGraph {
-        true_DAG, Pattern_of_the_true_DAG, PAG_of_the_true_DAG
+        true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
     }
 
     private boolean[] graphTypeUsed;
@@ -111,7 +78,7 @@ public class Comparison {
     private String dataPath = null;
     private String resultsPath = null;
     private boolean parallelized = false;
-    private boolean savePatterns = false;
+    private boolean saveCPDAGs = false;
     private boolean saveData = true;
     private boolean savePags = false;
     //    private boolean saveTrueDags = false;
@@ -562,8 +529,8 @@ public class Comparison {
 
                 File dir3 = null;
 
-                if (isSavePatterns()) {
-                    dir3 = new File(subdir, "patterns");
+                if (isSaveCPDAGs()) {
+                    dir3 = new File(subdir, "cpdags");
                     dir3.mkdirs();
                 }
 
@@ -594,9 +561,9 @@ public class Comparison {
                         out.close();
                     }
 
-                    if (isSavePatterns()) {
-                        File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(SearchGraphUtils.patternForDag(graph), file3, false);
+                    if (isSaveCPDAGs()) {
+                        File file3 = new File(dir3, "cpdag." + (j + 1) + ".txt");
+                        GraphUtils.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
@@ -664,8 +631,8 @@ public class Comparison {
 
             File dir3 = null;
 
-            if (isSavePatterns()) {
-                dir3 = new File(subdir, "patterns");
+            if (isSaveCPDAGs()) {
+                dir3 = new File(subdir, "cpdags");
                 dir3.mkdirs();
             }
 
@@ -688,9 +655,9 @@ public class Comparison {
                 DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
                 out.close();
 
-                if (isSavePatterns()) {
-                    File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
-                    GraphUtils.saveGraph(SearchGraphUtils.patternForDag(graph), file3, false);
+                if (isSaveCPDAGs()) {
+                    File file3 = new File(dir3, "cpdag." + (j + 1) + ".txt");
+                    GraphUtils.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
                 }
 
                 if (isSavePags()) {
@@ -1110,56 +1077,56 @@ public class Comparison {
 //    }
 
     /**
-     * @return True if patterns should be saved out.
+     * @return True if CPDAGs should be saved out.
      */
-    public boolean isSavePatterns() {
-        return savePatterns;
+    public boolean isSaveCPDAGs() {
+        return saveCPDAGs;
     }
 
     /**
-     * @param savePatterns True if patterns should be saved out.
+     * @param saveCPDAGs True if CPDAGs should be saved out.
      */
-    public void setSavePatterns(boolean savePatterns) {
-        this.savePatterns = savePatterns;
+    public void setSaveCPDAGs(boolean saveCPDAGs) {
+        this.saveCPDAGs = saveCPDAGs;
     }
 
     /**
-     * @return True if patterns should be saved out.
+     * @return True if CPDAGs should be saved out.
      */
     public boolean isSavePags() {
         return savePags;
     }
 
     /**
-     * @return True if patterns should be saved out.
+     * @return True if CPDAGs should be saved out.
      */
     public void setSavePags(boolean savePags) {
         this.savePags = savePags;
     }
 
 //    /**
-//     * @return True if patterns should be saved out.
+//     * @return True if CPDAGs should be saved out.
 //     */
 //    public boolean isSaveTrueDags() {
 //        return saveTrueDags;
 //    }
 //
 //    /**
-//     * @param savePags True if patterns should be saved out.
+//     * @param savePags True if CPDAGs should be saved out.
 //     */
 //    public void setSaveTrueDags(boolean saveTrueDags) {
 //        this.saveTrueDags = saveTrueDags;
 //    }
 
     /**
-     * @return True if patterns should be saved out.
+     * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveData() {
         return this.saveData;
     }
 
     /**
-     * @return True if patterns should be saved out.
+     * @return True if CPDAGs should be saved out.
      */
     public void setSaveData(boolean saveData) {
         this.saveData = saveData;
@@ -1396,8 +1363,8 @@ public class Comparison {
 
             if (this.comparisonGraph == ComparisonGraph.true_DAG) {
                 comparisonGraph = new EdgeListGraph(trueGraph);
-            } else if (this.comparisonGraph == ComparisonGraph.Pattern_of_the_true_DAG) {
-                comparisonGraph = SearchGraphUtils.patternForDag(new EdgeListGraph(trueGraph));
+            } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
+                comparisonGraph = SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueGraph));
             } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
                 comparisonGraph = new DagToPag2(new EdgeListGraph(trueGraph)).convert();
             } else {

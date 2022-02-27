@@ -212,8 +212,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
                             getExecuteButton().setEnabled(true);
                             return;
                         }
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
@@ -307,8 +306,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
                     Preferences.userRoot().putDouble("alpha",
                             getParams().getDouble("alpha", 0.001));
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }

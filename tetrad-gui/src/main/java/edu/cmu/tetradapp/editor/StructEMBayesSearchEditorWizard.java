@@ -47,7 +47,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  * @author Frank Wimberly adapted for EM Bayes estimation and Structural EM
- *         bayes estimation.
+ * bayes estimation.
  */
 final class StructEMBayesSearchEditorWizard extends JPanel {
     private BayesIm bayesIm;
@@ -57,7 +57,7 @@ final class StructEMBayesSearchEditorWizard extends JPanel {
     private JPanel tablePanel;
 
     public StructEMBayesSearchEditorWizard(BayesIm bayesIm,
-            GraphWorkbench workbench) {
+                                           GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }

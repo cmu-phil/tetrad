@@ -33,7 +33,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler Gibson
  */
 public class CovMatrixWrapper extends DataWrapper {
-     static final long serialVersionUID = 23L;
+    static final long serialVersionUID = 23L;
 
     /**
      * Splits the given data set by collinear columns.
@@ -57,7 +57,7 @@ public class CovMatrixWrapper extends DataWrapper {
                 ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
                 out.add(covarianceMatrix);
             } else if (model instanceof ICovarianceMatrix) {
-                ICovarianceMatrix covarianceMatrix = new CovarianceMatrix((CovarianceMatrix)model);
+                ICovarianceMatrix covarianceMatrix = new CovarianceMatrix((CovarianceMatrix) model);
                 out.add(covarianceMatrix);
             }
         }

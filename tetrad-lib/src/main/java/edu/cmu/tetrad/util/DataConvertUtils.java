@@ -18,15 +18,7 @@
  */
 package edu.cmu.tetrad.util;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataBox;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.data.DoubleDataBox;
-import edu.cmu.tetrad.data.MixedDataBox;
-import edu.cmu.tetrad.data.VerticalIntDataBox;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.pitt.dbmi.data.reader.ContinuousData;
@@ -38,12 +30,12 @@ import edu.pitt.dbmi.data.reader.metadata.ColumnMetadata;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
 import edu.pitt.dbmi.data.reader.tabular.MixedTabularData;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularData;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- *
  * Dec 15, 2018 11:10:30 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -104,8 +96,8 @@ public class DataConvertUtils {
 
         Node[] nodes = Arrays.stream(columns)
                 .map(e -> e.getDataColumn().isDiscrete()
-                ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
-                : new ContinuousVariable(e.getDataColumn().getName()))
+                        ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
+                        : new ContinuousVariable(e.getDataColumn().getName()))
                 .toArray(Node[]::new);
 
         metadata.getInterventionalColumns().forEach(e -> {
@@ -132,8 +124,8 @@ public class DataConvertUtils {
 
         List<Node> nodes = Arrays.stream(columns)
                 .map(e -> e.getDataColumn().isDiscrete()
-                ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
-                : new ContinuousVariable(e.getDataColumn().getName()))
+                        ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
+                        : new ContinuousVariable(e.getDataColumn().getName()))
                 .collect(Collectors.toList());
 
         return new BoxDataSet(new MixedDataBox(nodes, numOfRows, continuousData, discreteData), nodes);

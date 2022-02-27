@@ -41,10 +41,10 @@ public interface ClusteringAlgorithm {
      *
      * @param data An n x m double matrix with n cases (rows) and m variables
      *             (columns).
-     * Makes an int array c such that c[i] is the cluster that case i is
-     * placed into, or -1 if case i is not placed into a cluster (as a
-     * result of its being eliminated from consideration, for
-     * instance).
+     *             Makes an int array c such that c[i] is the cluster that case i is
+     *             placed into, or -1 if case i is not placed into a cluster (as a
+     *             result of its being eliminated from consideration, for
+     *             instance).
      */
     void cluster(Matrix data);
 

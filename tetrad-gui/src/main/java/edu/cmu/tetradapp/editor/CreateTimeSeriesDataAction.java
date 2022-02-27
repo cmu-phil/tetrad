@@ -116,11 +116,9 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
                 if (!window.isCanceled()) {
                     if (dataSet.isContinuous()) {
                         createContinuousTimeSeriesData();
-                    }
-                    else if (dataSet.isDiscrete()) {
+                    } else if (dataSet.isDiscrete()) {
                         createDiscreteTimeSeriesData();
-                    }
-                    else {
+                    } else {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(),
                                 "Data set must be either continuous or discrete.");

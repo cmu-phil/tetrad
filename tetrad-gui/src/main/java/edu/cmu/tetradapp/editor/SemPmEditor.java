@@ -21,12 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.ParamType;
 import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.sem.SemPm;
@@ -41,36 +36,15 @@ import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphNodeMeasured;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Map;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.ToolTipManager;
-import javax.swing.border.TitledBorder;
 
 /**
  * Edits a SEM PM model.
@@ -94,6 +68,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
     private JMenuItem errorTerms;
 
     //========================CONSTRUCTORS===========================//
+
     /**
      * Constructs an editor for the given SemIm.
      */
@@ -144,7 +119,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
             public void actionPerformed(ActionEvent e) {
                 int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                         "This will fix one measurement for each latent to 1.0 "
-                        + "and cannot be undone. Proceed?", "Confirm",
+                                + "and cannot be undone. Proceed?", "Confirm",
                         JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
                 if (ret == JOptionPane.YES_OPTION) {
@@ -176,7 +151,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
             public void actionPerformed(ActionEvent e) {
                 int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                         "This will start all factor loadings at 1.0 "
-                        + "for purposes of estimation. Proceed?", "Confirm",
+                                + "for purposes of estimation. Proceed?", "Confirm",
                         JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
                 if (ret == JOptionPane.YES_OPTION) {
@@ -419,7 +394,7 @@ class SemPmGraphicalEditor extends JPanel {
         if (parameter == null) {
             throw new IllegalStateException(
                     "There is no variance parameter in " + "model for node "
-                    + node + ".");
+                            + node + ".");
         }
 
         ParameterEditor paramEditor = new ParameterEditor(parameter, semPm());
@@ -548,9 +523,8 @@ class SemPmGraphicalEditor extends JPanel {
      * directed edges, this method automatically adjusts if the user has changed
      * the endpoints of an edge X1 --> X2 to X1 <-- X2 and returns the correct
      * parameter.
-     *
      * @throws IllegalArgumentException if the edge is neither directed nor
-     * bidirected.
+     *                                  bidirected.
      */
     private Parameter getEdgeParameter(Edge edge) {
         if (Edges.isDirectedEdge(edge)) {
@@ -738,7 +712,7 @@ class SemPmGraphicalEditor extends JPanel {
 
             final DoubleTextField startingValueField
                     = new DoubleTextField(getStartingValue(), length,
-                            NumberFormatUtil.getInstance().getNumberFormat());
+                    NumberFormatUtil.getInstance().getNumberFormat());
 
             startingValueField.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {

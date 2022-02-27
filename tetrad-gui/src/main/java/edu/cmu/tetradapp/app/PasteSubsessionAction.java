@@ -83,8 +83,7 @@ final class PasteSubsessionAction extends AbstractAction
 //
                 sessionEditor.pasteSubsession(modelList, point);
             }
-        }
-        catch (Exception e1) {
+        } catch (Exception e1) {
             throw new RuntimeException(e1);
         }
     }

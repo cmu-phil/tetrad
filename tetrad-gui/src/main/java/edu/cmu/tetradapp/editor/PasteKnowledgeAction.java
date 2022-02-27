@@ -80,8 +80,7 @@ class PasteKnowledgeAction extends AbstractAction implements ClipboardOwner {
             if (knowledge != null) {
                 this.knowledgeEditable.setKnowledge(knowledge);
             }
-        }
-        catch (Exception e1) {
+        } catch (Exception e1) {
             throw new RuntimeException(e1);
         }
     }

@@ -29,6 +29,7 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
@@ -113,6 +114,7 @@ public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput
     }
 
     //======================== Private methods =======================//
+
     /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of

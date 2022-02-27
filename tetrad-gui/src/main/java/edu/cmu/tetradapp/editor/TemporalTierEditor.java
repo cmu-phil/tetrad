@@ -50,12 +50,12 @@ class TemporalTierEditor extends JPanel
     private TierList tierList;
 
     public TemporalTierEditor(IKnowledge knowledge, List varNames,
-            String sessionName) {
+                              String sessionName) {
 
         //nameTiers = new JButton("VariableNameImpliedTiers");
         clear = new JButton("Clear All Knowledge");
 
-        
+
         if (knowledge == null) {
             throw new NullPointerException("Knowledge must not be null.");
         }

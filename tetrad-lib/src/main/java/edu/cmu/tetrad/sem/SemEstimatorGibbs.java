@@ -21,10 +21,10 @@
 
 package edu.cmu.tetrad.sem;
 
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.Matrix;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

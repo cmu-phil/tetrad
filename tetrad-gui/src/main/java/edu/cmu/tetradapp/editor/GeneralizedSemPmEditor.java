@@ -31,7 +31,11 @@ import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
-import java.awt.BorderLayout;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -40,23 +44,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
-import javax.swing.Box;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
 
 /**
  * Edits a SEM PM model.
@@ -197,7 +184,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                 } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
                                             "Could not set the expression for " + node + " to "
-                                            + _semPm.getNodeExpressionString(node));
+                                                    + _semPm.getNodeExpressionString(node));
                                 }
                             }
 
@@ -207,7 +194,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                 } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
                                             "Could not set the expression for " + startsWith + " to "
-                                            + _semPm.getParameterExpressionString(_semPm.getStartsWithParameterTemplate(startsWith)));
+                                                    + _semPm.getParameterExpressionString(_semPm.getStartsWithParameterTemplate(startsWith)));
                                 }
                             }
 
@@ -229,7 +216,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                 } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
                                             "Could not set the expression for " + parameter + " to "
-                                            + _semPm.getParameterExpressionString(parameter));
+                                                    + _semPm.getParameterExpressionString(parameter));
                                 }
                             }
 

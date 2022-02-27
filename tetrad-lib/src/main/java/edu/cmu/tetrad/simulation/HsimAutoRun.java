@@ -1,13 +1,17 @@
 package edu.cmu.tetrad.simulation;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataWriter;
+import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.PatternToDag;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
+
 import java.io.FileWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -82,9 +86,8 @@ public class HsimAutoRun {
             Graph estGraph = fges.search();
             //if (verbose) System.out.println(estGraph);
 
-            Graph estPattern = new EdgeListGraphSingleConnections(estGraph);
-            PatternToDag patternToDag = new PatternToDag(estPattern);
-            Graph estGraphDAG = patternToDag.patternToDagMeek();
+            Graph estCPDAG = new EdgeListGraph(estGraph);
+            Graph estGraphDAG = SearchGraphUtils.dagFromCPDAG(estCPDAG);
             Dag estDAG = new Dag(estGraphDAG);
 
             //===========Identify the nodes to be resimulated===========

@@ -36,6 +36,7 @@ public interface ParameterEditor {
 
     /**
      * Sets the parameter object to be edited.
+     *
      * @param params
      */
     void setParams(Parameters params);

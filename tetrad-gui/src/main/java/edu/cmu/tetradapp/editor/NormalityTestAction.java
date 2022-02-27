@@ -34,7 +34,7 @@ import java.beans.PropertyChangeListener;
 
 /**
  * Displays a Q-Q plot for a random variable.
- *
+ * <p>
  * A lot of the code borrows heavily from HistogramAction
  *
  * @author Michael Freenor
@@ -60,7 +60,7 @@ class NormalityTestAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
-        if(dataSet == null || dataSet.getNumColumns() == 0){
+        if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot run normality tests on an empty data set.");
             return;
         }
@@ -84,9 +84,6 @@ class NormalityTestAction extends AbstractAction {
     //============================== Private methods ============================//
 
 
-
-
-
     /**
      * Sets the location on the given dialog for the given index.
      */
@@ -102,8 +99,8 @@ class NormalityTestAction extends AbstractAction {
 
         int x = (int) (150 * Math.cos(index * 15 * (Math.PI / 180)));
         int y = (int) (150 * Math.sin(index * 15 * (Math.PI / 180)));
-        x += (dim.width - bounds.width)/2;
-        y += (dim.height - bounds.height)/2;
+        x += (dim.width - bounds.width) / 2;
+        y += (dim.height - bounds.height) / 2;
         dialog.setLocation(x, y);
     }
 
@@ -118,8 +115,8 @@ class NormalityTestAction extends AbstractAction {
         QQPlot qqPlot = new QQPlot(dataSet, selected);
         NormalityTestEditorPanel editorPanel = new NormalityTestEditorPanel(qqPlot, dataSet);
 
-        JTextArea display = new JTextArea(NormalityTests.runNormalityTests(dataSet, 
-                (ContinuousVariable)qqPlot.getSelectedVariable()), 20, 65);
+        JTextArea display = new JTextArea(NormalityTests.runNormalityTests(dataSet,
+                (ContinuousVariable) qqPlot.getSelectedVariable()), 20, 65);
         display.setEditable(false);
         editorPanel.addPropertyChangeListener(new NormalityTestListener(display));
 
@@ -150,7 +147,6 @@ class NormalityTestAction extends AbstractAction {
     }
 
     //================================= Inner Class ======================================//
-
 
 
     /**

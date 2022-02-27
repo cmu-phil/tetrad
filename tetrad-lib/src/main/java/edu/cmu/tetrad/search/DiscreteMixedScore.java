@@ -82,9 +82,11 @@ public class DiscreteMixedScore implements Score {
     }
 
     private double getStructurePrior(int[] parents) {
-        if (sp < 0) { return getEBICprior(); }
-        else if (sp == 0) { return 0; }
-        else {
+        if (sp < 0) {
+            return getEBICprior();
+        } else if (sp == 0) {
+            return 0;
+        } else {
             int i = parents.length;
             int c = dataSet.getNumColumns() - 1;
             double p = sp / (double) c;

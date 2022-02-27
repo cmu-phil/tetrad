@@ -38,8 +38,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * View for the Histogram class. Shows a histogram and gives controls for conditioning, etc.
@@ -483,7 +483,7 @@ public class HistogramView extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                     Node selected = (Node) newConditioningVariableSelector.getSelectedItem();
 
-                        if (selected == targetSelector.getSelectedItem()) {
+                    if (selected == targetSelector.getSelectedItem()) {
                         JOptionPane.showMessageDialog(HistogramController.this,
                                 "The target variable cannot be conditioned on.");
                         return;
@@ -639,7 +639,7 @@ public class HistogramView extends JPanel {
 
             NODE:
             for (Node node : variables) {
-                if (node ==  targetSelector.getSelectedItem()) continue;
+                if (node == targetSelector.getSelectedItem()) continue;
 
                 for (ConditioningPanel panel : conditioningPanels) {
                     if (node == panel.getVariable()) continue NODE;

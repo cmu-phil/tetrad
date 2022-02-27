@@ -34,7 +34,7 @@ import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.
- *
+ * <p>
  * Borrows from the histogram stuff yet again
  *
  * @author Michael Freenor
@@ -86,9 +86,9 @@ class NormalityTestEditorPanel extends JPanel {
                     Node node = (Node) e.getItem();
                     QQPlot newValue = new QQPlot(NormalityTestEditorPanel.this.dataSet, node);
                     //numBarsSelector.setValue(newValue.getNumberOfCategories());
-                 //   numBarsSelector.setMax(getMaxCategoryValue(newValue));
+                    //   numBarsSelector.setMax(getMaxCategoryValue(newValue));
                     //System.out.println(node.getNode());
-                    changeNormalityTest(NormalityTests.runNormalityTests(NormalityTestEditorPanel.this.dataSet, (ContinuousVariable)node));
+                    changeNormalityTest(NormalityTests.runNormalityTests(NormalityTestEditorPanel.this.dataSet, (ContinuousVariable) node));
                 }
             }
         });

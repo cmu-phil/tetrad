@@ -36,11 +36,11 @@ public class ComparisonScript {
         // note that the number of random graphs will be equal to numTrials, set above
         /** ******************** **/
 
-        if ( params.isDataFromFile() && params.isNoData() ){
+        if (params.isDataFromFile() && params.isNoData()) {
             throw new IllegalArgumentException("Cannot have setDataFromFile and setNoData both be true!");
         }
 
-        ArrayList<Comparison2.TableColumn> tableColumns= new ArrayList<>();
+        ArrayList<Comparison2.TableColumn> tableColumns = new ArrayList<>();
         tableColumns.add(Comparison2.TableColumn.AdjPrec);
         tableColumns.add(Comparison2.TableColumn.AdjRec);
         tableColumns.add(Comparison2.TableColumn.AhdPrec);
@@ -54,12 +54,12 @@ public class ComparisonScript {
         //algList.add(ComparisonParameters.Algorithm.PC);
         //algList.add(ComparisonParameters.Algorithm.FGES);
         //algList.add(ComparisonParameters.Algorithm.FCI);
-        algList.add(ComparisonParameters.Algorithm.TsFCI);
+        algList.add(ComparisonParameters.Algorithm.SVARFCI);
 
         /** User shouldn't need to change anything below this line **/
         /***********************************************************/
 
-        if( params.isDataFromFile() ){
+        if (params.isDataFromFile()) {
             System.out.println("running algorithm on data from input files");
             minSample = 1;
             maxSample = maxGraphs;
@@ -67,7 +67,7 @@ public class ComparisonScript {
             numTrials = dataSetsPerGraph;
         }
 
-        if( params.isNoData() ) {
+        if (params.isNoData()) {
             System.out.println("running algorithm on NO DATA, only true graph");
             minSample = 1;
             maxSample = 1;
@@ -78,7 +78,7 @@ public class ComparisonScript {
         TextTable avgTable = new TextTable((((maxSample - minSample) / increment) + 1) * algList.size() + 2, tableColumns.size() + 1);
         for (int sampleSize = minSample; sampleSize <= maxSample; sampleSize += increment) {
             params.setSampleSize(sampleSize);
-            if(params.isDataFromFile()){
+            if (params.isDataFromFile()) {
                 params.setGraphNum(sampleSize);
                 System.out.println("graph file number = " + sampleSize);
             } else System.out.println("sample size = " + sampleSize);
@@ -105,20 +105,20 @@ public class ComparisonScript {
                     avgTable.setToken(count, k, tempTable.getTokenAt(tempTable.getNumRows() - 1, k));
                 }
 
-                if(params.isDataFromFile()){
+                if (params.isDataFromFile()) {
                     avgTable.setToken(count, 0, "G=" + sampleSize + ", alg = " + alg);
-                } else if(params.isNoData()) {
+                } else if (params.isNoData()) {
                     avgTable.setToken(count, 0, "N=" + 0 + ", alg = " + alg);
-                    } else avgTable.setToken(count, 0, "N=" + sampleSize + ", alg = " + alg);
+                } else avgTable.setToken(count, 0, "N=" + sampleSize + ", alg = " + alg);
 
-                } // loop over algorithm in algList
-            } // loop over sample sizes
+            } // loop over algorithm in algList
+        } // loop over sample sizes
 
-            // add column names, then print table
-            for (int j = 0; j <= tableColumns.size() - 1; j++) {
-                avgTable.setToken(0, j, tableColumns.get(j).toString());
-            }
-            System.out.println(avgTable);
+        // add column names, then print table
+        for (int j = 0; j <= tableColumns.size() - 1; j++) {
+            avgTable.setToken(0, j, tableColumns.get(j).toString());
+        }
+        System.out.println(avgTable);
     }
 
     public static void main(String... args) {

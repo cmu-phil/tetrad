@@ -157,9 +157,7 @@ public class AverageOverClusters extends DataWrapper {
 //            }
 
             return avgData;
-        } else
-
-        {
+        } else {
             throw new IllegalStateException("Unexpected data type.");
         }
 

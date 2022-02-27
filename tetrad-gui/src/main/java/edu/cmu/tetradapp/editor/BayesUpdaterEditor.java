@@ -23,21 +23,18 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.DelegatesEditing;
-import edu.cmu.tetradapp.model.ApproximateUpdaterWrapper;
-import edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper;
-import edu.cmu.tetradapp.model.JunctionTreeWrapper;
-import edu.cmu.tetradapp.model.RowSummingExactWrapper;
-import edu.cmu.tetradapp.model.UpdaterWrapper;
+import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
 
 /**
  * Lets the user calculate updated probabilities for a Bayes net.
@@ -98,6 +95,7 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     private int mode = SINGLE_VALUE;
 
     //===============================CONSTRUCTORS=========================//
+
     /**
      * Constructs a new instanted model editor from a Bayes Updater.
      */
@@ -155,6 +153,7 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     }
 
     //================================PUBLIC METHODS========================//
+
     /**
      * Sets the name of this editor.
      */
@@ -251,13 +250,13 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
                 = new EvidenceWizardSingle(updaterWrapper, getWorkbench());
         getEvidenceWizardSingle().addPropertyChangeListener(
                 new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if ("updateButtonPressed".equals(e.getPropertyName())) {
-                    resetSingleResultPanel();
-                    show("viewSingleResult");
-                }
-            }
-        });
+                    public void propertyChange(PropertyChangeEvent e) {
+                        if ("updateButtonPressed".equals(e.getPropertyName())) {
+                            resetSingleResultPanel();
+                            show("viewSingleResult");
+                        }
+                    }
+                });
         cardPanel.add(new JScrollPane(getEvidenceWizardSingle()),
                 "editEvidenceSingle");
 
@@ -265,13 +264,13 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
                 = new EvidenceWizardMultiple(updaterWrapper, getWorkbench());
         getEvidenceWizardMultiple().addPropertyChangeListener(
                 new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if ("updateButtonPressed".equals(e.getPropertyName())) {
-                    resetMultipleResultPanel();
-                    show("viewMultiResult");
-                }
-            }
-        });
+                    public void propertyChange(PropertyChangeEvent e) {
+                        if ("updateButtonPressed".equals(e.getPropertyName())) {
+                            resetMultipleResultPanel();
+                            show("viewMultiResult");
+                        }
+                    }
+                });
         cardPanel.add(new JScrollPane(getEvidenceWizardMultiple()),
                 "editEvidenceMultiple");
 

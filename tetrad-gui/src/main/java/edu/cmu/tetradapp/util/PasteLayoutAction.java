@@ -78,8 +78,7 @@ public class PasteLayoutAction extends AbstractAction
             if (layoutGraph != null) {
                 this.layoutEditable.layoutByGraph(layoutGraph);
             }
-        }
-        catch (Exception e1) {
+        } catch (Exception e1) {
             throw new RuntimeException(e1);
         }
     }

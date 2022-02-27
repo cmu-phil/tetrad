@@ -23,10 +23,7 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -49,7 +46,7 @@ public class ExampleCompareFromFiles {
 
         parameters.set("numRuns", 1);
 //        parameters.set("numMeasures", 20,100,1000);
-        parameters.set("numMeasures",1000);
+        parameters.set("numMeasures", 1000);
         parameters.set("numLatents", 200);
         parameters.set("avgDegree", 2);
         parameters.set("sampleSize", 1000);

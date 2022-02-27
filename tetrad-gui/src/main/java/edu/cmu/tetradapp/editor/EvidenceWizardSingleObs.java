@@ -53,10 +53,10 @@ class EvidenceWizardSingleObs extends JPanel {
 
     /**
      * This is the wizard for the BayesUpdateEditor class.  It allows you to add
-     * and remove evidence, and to update based on it.  
+     * and remove evidence, and to update based on it.
      */
     public EvidenceWizardSingleObs(final UpdaterWrapper updaterWrapper,
-            GraphWorkbench workbench) {
+                                   GraphWorkbench workbench) {
         if (updaterWrapper == null) {
             throw new NullPointerException();
         }

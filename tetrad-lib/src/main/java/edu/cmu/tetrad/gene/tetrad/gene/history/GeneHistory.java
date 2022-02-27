@@ -260,15 +260,13 @@ public class GeneHistory implements TetradSerializable {
                 for (int j = 0; j < historyArray[0].length; j++) {
                     if (getDishModel() == null) {
                         historyArray[i][j] = syncInitialization[i][j];
-                    }
-                    else {
+                    } else {
                         historyArray[i][j] = getDishModel().bumpInitialization(
                                 syncInitialization[i][j]);
                     }
                 }
             }
-        }
-        else {
+        } else {
             if (historyArray == null) {
                 historyArray = new double[maxLag + 1][numFactors];
             }

@@ -58,8 +58,7 @@ public class LingDisplay extends JPanel implements GraphEditable {
 
         if (storedGraphs.getNumGraphs() == 0) {
             workbench = new GraphWorkbench();
-        }
-        else {
+        } else {
             workbench = new GraphWorkbench(storedGraphs.getGraph(0));
         }
 
@@ -139,12 +138,10 @@ public class LingDisplay extends JPanel implements GraphEditable {
 
             if (subsetIndices.isEmpty()) {
                 workbench.setGraph(new EdgeListGraph());
-            }
-            else {
+            } else {
                 workbench.setGraph(storedGraphs.getGraph(subsetIndices.get(0)));
             }
-        }
-        else if ("Show Stable".equals(option)) {
+        } else if ("Show Stable".equals(option)) {
             final List<Integer> _subsetIndices = getStableIndices(getStoredGraphs());
             subsetIndices.clear();
             subsetIndices.addAll(_subsetIndices);
@@ -163,12 +160,10 @@ public class LingDisplay extends JPanel implements GraphEditable {
 
             if (subsetIndices.isEmpty()) {
                 workbench.setGraph(new EdgeListGraph());
-            }
-            else {
+            } else {
                 workbench.setGraph(storedGraphs.getGraph(subsetIndices.get(0)));
             }
-        }
-        else if ("Show Unstable".equals(option)) {
+        } else if ("Show Unstable".equals(option)) {
             final List<Integer> _subsetIndices = getUnstableIndices(getStoredGraphs());
             subsetIndices.clear();
             subsetIndices.addAll(_subsetIndices);
@@ -187,8 +182,7 @@ public class LingDisplay extends JPanel implements GraphEditable {
 
             if (subsetIndices.isEmpty()) {
                 workbench.setGraph(new EdgeListGraph());
-            }
-            else {
+            } else {
                 workbench.setGraph(storedGraphs.getGraph(subsetIndices.get(0)));
             }
         }
@@ -234,7 +228,6 @@ public class LingDisplay extends JPanel implements GraphEditable {
     }
 
 
-
     public List getSelectedModelComponents() {
         Component[] components = getWorkbench().getComponents();
         List<TetradSerializable> selectedModelComponents =
@@ -244,8 +237,7 @@ public class LingDisplay extends JPanel implements GraphEditable {
             if (comp instanceof DisplayNode) {
                 selectedModelComponents.add(
                         ((DisplayNode) comp).getModelNode());
-            }
-            else if (comp instanceof DisplayEdge) {
+            } else if (comp instanceof DisplayEdge) {
                 selectedModelComponents.add(
                         ((DisplayEdge) comp).getModelEdge());
             }

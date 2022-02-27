@@ -47,10 +47,10 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 //    private Vcpc vcpc = null;
 
 
-    private Set<Edge>fvcpcAdjacent;
-    private Set<Edge>fvcpcApparent;
-    private Set<Edge>fvcpcDefinite;
-    private List<Node>fvcpcNodes;
+    private Set<Edge> fvcpcAdjacent;
+    private Set<Edge> fvcpcApparent;
+    private Set<Edge> fvcpcDefinite;
+    private List<Node> fvcpcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -74,10 +74,9 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
     }
 
 
-
     /**
      * Constucts a wrapper for the given
-    /**
+     * /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
     public VcpcFastRunner(Graph graph, Parameters params) {
@@ -189,11 +188,9 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else if (knowledge.isDefaultToKnowledgeLayout()) {
+        } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 

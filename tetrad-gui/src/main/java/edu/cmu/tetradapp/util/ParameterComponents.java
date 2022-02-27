@@ -21,24 +21,17 @@ package edu.cmu.tetradapp.util;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
+
+import javax.swing.*;
 import java.text.DecimalFormat;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
 
 /**
  * A utility for creating parameter components for GUI.
- *
+ * <p>
  * May 24, 2019 11:37:33 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -78,7 +71,7 @@ public final class ParameterComponents {
     }
 
     public static final DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
-            double defaultValue, final double lowerBound, final double upperBound) {
+                                                       double defaultValue, final double lowerBound, final double upperBound) {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -108,7 +101,7 @@ public final class ParameterComponents {
     }
 
     public static final IntTextField getIntTextField(final String parameter, final Parameters parameters,
-            final int defaultValue, final double lowerBound, final double upperBound) {
+                                                     final int defaultValue, final double lowerBound, final double upperBound) {
         final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {

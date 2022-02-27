@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+
 import java.util.*;
 
 /**
@@ -261,7 +262,7 @@ public class LinearSineSimulation implements Simulation {
         this.interceptHigh = interceptHigh;
     }
 
-    public void setLinearLow(double linearLow){
+    public void setLinearLow(double linearLow) {
         this.linearLow = linearLow;
     }
 
@@ -293,7 +294,9 @@ public class LinearSineSimulation implements Simulation {
         this.gammaHigh = gammaHigh;
     }
 
-    private int randSign() { return RandomUtil.getInstance().nextInt(2)*2-1; }
+    private int randSign() {
+        return RandomUtil.getInstance().nextInt(2) * 2 - 1;
+    }
 
     private static Graph makeMixedGraph(Graph g, Map<String, Integer> m) {
         List<Node> nodes = g.getNodes();

@@ -29,8 +29,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
+import edu.cmu.tetrad.util.*;
 
 import java.util.*;
 
@@ -40,7 +40,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class Lofs {
-    private Graph pattern;
+    private Graph CPDAG;
     private List<DataSet> dataSets;
     private double alpha = 0.05;
     private ArrayList<Regression> regressions;
@@ -61,18 +61,18 @@ public class Lofs {
 
     //===============================CONSTRUCTOR============================//
 
-    public Lofs(Graph pattern, List<DataSet> dataSets)
+    public Lofs(Graph CPDAG, List<DataSet> dataSets)
             throws IllegalArgumentException {
 
-        if (pattern == null) {
-            throw new IllegalArgumentException("Pattern must be specified.");
+        if (CPDAG == null) {
+            throw new IllegalArgumentException("CPDAG must be specified.");
         }
 
         if (dataSets == null) {
             throw new IllegalArgumentException("Data set must be specified.");
         }
 
-        this.pattern = pattern;
+        this.CPDAG = CPDAG;
         this.dataSets = dataSets;
 
         regressions = new ArrayList<>();
@@ -84,7 +84,7 @@ public class Lofs {
     }
 
     public Graph orient() {
-        Graph skeleton = GraphUtils.undirectedGraph(getPattern());
+        Graph skeleton = GraphUtils.undirectedGraph(getCPDAG());
         Graph graph = new EdgeListGraph(skeleton.getNodes());
 
         List<Node> nodes = skeleton.getNodes();
@@ -777,8 +777,8 @@ public class Lofs {
         this.alpha = alpha;
     }
 
-    private Graph getPattern() {
-        return pattern;
+    private Graph getCPDAG() {
+        return CPDAG;
     }
 
     private Node getVariable(List<Node> variables, String name) {

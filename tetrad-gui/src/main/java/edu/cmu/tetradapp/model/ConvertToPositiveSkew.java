@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public class ConvertToPositiveSkew extends DataWrapper {
             List<Node> list = dataSet.getVariables();
             List<Node> list2 = new ArrayList<>();
 
-            for (Node node: list) {
+            for (Node node : list) {
                 list2.add(node);
             }
 

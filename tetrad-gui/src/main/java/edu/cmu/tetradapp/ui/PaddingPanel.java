@@ -18,14 +18,11 @@
  */
 package edu.cmu.tetradapp.ui;
 
-import javax.swing.GroupLayout;
-import javax.swing.JComponent;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 /**
  * This a wrapper panel that puts gaps around the wrapped panel.
- *
+ * <p>
  * Nov 22, 2017 11:35:16 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

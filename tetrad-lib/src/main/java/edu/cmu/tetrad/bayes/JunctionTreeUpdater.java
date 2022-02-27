@@ -21,12 +21,12 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
 
 /**
- *
  * Jan 21, 2020 11:03:09 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

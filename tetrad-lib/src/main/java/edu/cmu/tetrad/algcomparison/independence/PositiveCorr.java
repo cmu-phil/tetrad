@@ -3,8 +3,6 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndTestPositiveCorr;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;

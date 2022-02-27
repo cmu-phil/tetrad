@@ -23,7 +23,8 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.*;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FaskConcatenated;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -188,7 +189,7 @@ public class TestSimulatedFmr3 {
         statistics.setWeight("2CFP", 1.0);
 
 
-        String dir =  "/Users/user/Downloads/SimulatedData_2/";
+        String dir = "/Users/user/Downloads/SimulatedData_2/";
 
         String[] dirs = new String[]{"AllNegative", "AllPositive", "TwoCycleNegative", "XYNegative", "XYPositive",
                 "XZNegative", "XZPositive", "YZNegative", "YZPositive"};

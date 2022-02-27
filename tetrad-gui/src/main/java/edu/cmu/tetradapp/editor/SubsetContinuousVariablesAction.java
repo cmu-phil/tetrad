@@ -95,8 +95,7 @@ final class SubsetContinuousVariablesAction extends AbstractAction {
             list.add(dataSet);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
-        }
-        else {
+        } else {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Requires a tabular data set.");
         }

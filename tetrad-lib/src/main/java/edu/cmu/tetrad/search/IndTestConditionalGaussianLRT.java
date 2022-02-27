@@ -32,11 +32,10 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
-
-import static edu.cmu.tetrad.util.MathUtils.logChoose;
-import static java.lang.Math.exp;
-import static java.lang.Math.log;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
@@ -121,7 +120,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         if (lik0 == Double.POSITIVE_INFINITY) return false;
 
         if (Double.isNaN(lik0)) {
-            this.pValue = 1.0;
+            this.pValue = Double.NaN;
         } else {
             this.pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         }

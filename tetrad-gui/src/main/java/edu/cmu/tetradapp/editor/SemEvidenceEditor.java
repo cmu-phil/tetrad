@@ -78,8 +78,7 @@ class SemEvidenceEditor extends JPanel {
                 try {
                     evidence.getProposition().setValue(_i, value);
                     return value;
-                }
-                catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             });

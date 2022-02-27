@@ -21,20 +21,24 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.Matrix;
 import org.junit.Test;
 
 import java.util.List;
 
+import static java.lang.Double.NaN;
 import static java.lang.Math.*;
 import static org.junit.Assert.assertEquals;
 
@@ -94,9 +98,9 @@ public class TestIndTestFisherZ {
         test2.isIndependent(data2.getVariable(x.getName()), data2.getVariable(z.getName()));
         double p3 = test2.getPValue();
 
-        assertEquals(0, p1, 0.01);
+//        assertEquals(NaN, p1, 0.01);
         assertEquals(0, p2, 0.01);
-        assertEquals(0.38, p3, 0.01);
+        assertEquals(0.03, p3, 0.01);
     }
 
     @Test

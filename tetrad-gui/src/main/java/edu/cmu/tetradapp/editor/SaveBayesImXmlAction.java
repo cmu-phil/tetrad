@@ -62,8 +62,7 @@ class SaveBayesImXmlAction extends AbstractAction {
             serializer.setIndent(2);
             serializer.write(document);
             out.close();
-        }
-        catch (IOException e1) {
+        } catch (IOException e1) {
             throw new RuntimeException(e1);
         }
     }

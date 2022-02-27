@@ -28,21 +28,13 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.SemImWrapper;
 import edu.cmu.tetradapp.model.SemUpdaterWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FocusTraversalPolicy;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 
 /**
  * Lets the user calculate updated probabilities for a SEM.
@@ -221,7 +213,7 @@ public class SemUpdaterEditor extends JPanel {
         setFocusTraversalPolicy(new FocusTraversalPolicy() {
             @Override
             public Component getComponentAfter(Container focusCycleRoot,
-                    Component aComponent) {
+                                               Component aComponent) {
                 int index = focusTraversalOrder.indexOf(aComponent);
                 int size = focusTraversalOrder.size();
 
@@ -234,7 +226,7 @@ public class SemUpdaterEditor extends JPanel {
 
             @Override
             public Component getComponentBefore(Container focusCycleRoot,
-                    Component aComponent) {
+                                                Component aComponent) {
                 int index = focusTraversalOrder.indexOf(aComponent);
                 int size = focusTraversalOrder.size();
 
@@ -276,6 +268,7 @@ public class SemUpdaterEditor extends JPanel {
     }
 
     //================================PUBLIC METHODS========================//
+
     /**
      * Sets the name of this editor.
      */

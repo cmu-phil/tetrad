@@ -32,7 +32,7 @@ import java.util.*;
  * BuildPureClusters is a implementation of the automated clustering and purification methods described on the report
  * "Learning Measurement Models" CMU-CALD-03-100.
  * <p>
- * The output is only the purified model. Future versions may include options to visualize the measurement pattern in
+ * The output is only the purified model. Future versions may include options to visualize the measurement CPDAG in
  * the GUI (it shows up in the console window, though.)
  * <p>
  * No background knowledge is allowed yet. Future versions of this algorithm will include it.
@@ -236,7 +236,7 @@ public final class BuildPureClusters {
 //        print("\n**************Starting BPC search!!!*************\n");
         TetradLogger.getInstance().log("info", "BPC alpha = " + alpha + " test = " + sigTestType);
 
-        List<int[]> clustering = (List<int[]>) findMeasurementPattern();
+        List<int[]> clustering = (List<int[]>) findMeasurementCPDAG();
 
         // Remove clusters of size < 3.
         for (int[] cluster : new ArrayList<>(clustering)) {
@@ -937,7 +937,7 @@ public final class BuildPureClusters {
 
     /**
      * Find components of a graph. Note: naive implementation, but it works. After all, it will still run much faster
-     * than Stage 2 of the FindMeasurementPattern algorithm.
+     * than Stage 2 of the FindMeasurementCPDAG algorithm.
      */
 
     private List<int[]> findComponents(int graph[][], int size, int color) {
@@ -1796,11 +1796,11 @@ public final class BuildPureClusters {
      * *******************************************************
      */
 
-    private List initialMeasurementPattern(int ng[][], int cv[][]) {
+    private List initialMeasurementCPDAG(int ng[][], int cv[][]) {
 
         boolean notYellow[][] = new boolean[numVariables()][numVariables()];
 
-//        print("\n****************\nFIND PATTERN!!!\n****************\n");
+//        print("\n****************\nFIND CPDAG!!!\n****************\n");
 
         /* Stage 1: identify (partially) uncorrelated and impure pairs */
 //        print(">> Stage 0.1");
@@ -2418,7 +2418,7 @@ public final class BuildPureClusters {
      * ****************************************************** MAIN ALGORITHM: CORE *******************************************************
      */
 
-    private List findMeasurementPattern() {
+    private List findMeasurementCPDAG() {
         int ng[][] = new int[numVariables()][numVariables()];
         int cv[][] = new int[numVariables()][numVariables()];
         boolean selected[] = new boolean[numVariables()];
@@ -2427,7 +2427,7 @@ public final class BuildPureClusters {
             selected[i] = false;
         }
 
-        List initialClustering = initialMeasurementPattern(ng, cv);
+        List initialClustering = initialMeasurementCPDAG(ng, cv);
 //        print("Initial mimClustering:");
         printClustering(initialClustering);
         List<Set<String>> forbiddenList = new ArrayList<>();
@@ -2520,7 +2520,7 @@ public final class BuildPureClusters {
 
 //        print(">> Stage 0");
 //        print(
-//                "\n****************\nFIND FINAL PATTERN!!!\n****************\n");
+//                "\n****************\nFIND FINAL CPDAG!!!\n****************\n");
 
         /* Stage 1: identify (partially) uncorrelated and impure pairs */
 //        print(">> Stage 1: reidentify edge colors");

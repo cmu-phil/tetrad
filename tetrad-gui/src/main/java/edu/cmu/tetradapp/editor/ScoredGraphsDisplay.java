@@ -41,11 +41,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.text.NumberFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
- * Assumes that the search method of the pattern search has been run and shows the
+ * Assumes that the search method of the CPDAG search has been run and shows the
  * various options for DAG's consistent with correlation information over the variables.
  *
  * @author Joseph Ramsey
@@ -71,7 +71,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
     }
 
     public ScoredGraphsDisplay(Graph graph, GraphScorer scorer) {
-        final List<Graph> _dags = SearchGraphUtils.generatePatternDags(graph, true);
+        final List<Graph> _dags = SearchGraphUtils.generateCpdagDags(graph, true);
 
         for (Graph _graph : _dags) {
             double score = Double.NaN;
@@ -105,8 +105,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
                     dags.add(dag);
                 }
             }
-        }
-        else {
+        } else {
             for (Graph dag : dagsToScores.keySet()) {
                 dags.add(dag);
             }
@@ -208,8 +207,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
 
         if (Double.isNaN(score)) {
             text = "Not provided";
-        }
-        else {
+        } else {
             text = nf.format(score);
         }
 
@@ -225,8 +223,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
             if (comp instanceof DisplayNode) {
                 selectedModelComponents.add(
                         ((DisplayNode) comp).getModelNode());
-            }
-            else if (comp instanceof DisplayEdge) {
+            } else if (comp instanceof DisplayEdge) {
                 selectedModelComponents.add(
                         ((DisplayEdge) comp).getModelEdge());
             }

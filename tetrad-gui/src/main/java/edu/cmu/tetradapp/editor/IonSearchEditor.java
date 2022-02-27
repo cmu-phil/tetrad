@@ -26,9 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.IndTestType;
-import edu.cmu.tetrad.search.PatternToDag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -56,14 +54,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Edits some algorithm to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket CPDAGs.
  *
  * @author Joseph Ramsey
  */
 public class IonSearchEditor extends AbstractSearchEditor
         implements KnowledgeEditable, LayoutEditable {
 
-//    private JTabbedPane tabbedPane;
+    //    private JTabbedPane tabbedPane;
     private IonDisplay ionDisplay;
 
     //=========================CONSTRUCTORS============================//
@@ -82,6 +80,7 @@ public class IonSearchEditor extends AbstractSearchEditor
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
+
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }
@@ -118,7 +117,7 @@ public class IonSearchEditor extends AbstractSearchEditor
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
             tabbedPane.add("Model Statistics", modelStatsText);
-            tabbedPane.add("DAG in pattern", dagWorkbench);
+            tabbedPane.add("DAG in CPDAG", dagWorkbench);
         }*/
 
         add(ionDisplay, BorderLayout.CENTER);
@@ -272,8 +271,7 @@ public class IonSearchEditor extends AbstractSearchEditor
                             getExecuteButton().setEnabled(true);
                             return;
                         }
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
@@ -401,7 +399,7 @@ public class IonSearchEditor extends AbstractSearchEditor
         JMenu graph = new JMenu("Graph");
         JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");
@@ -417,7 +415,7 @@ public class IonSearchEditor extends AbstractSearchEditor
         graph.addSeparator();
 
 //        graph.add(meekOrient);
-        graph.add(dagInPattern);
+        graph.add(dagInCPDAG);
         graph.add(gesOrient);
         graph.addSeparator();
 
@@ -440,7 +438,7 @@ public class IonSearchEditor extends AbstractSearchEditor
                 new WatchedProcess(owner) {
                     public void watch() {
 
-                        // Needs to be a pattern search; this isn't checked
+                        // Needs to be a CPDAG search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
                         AlgorithmRunner runner = getAlgorithmRunner();
@@ -468,14 +466,14 @@ public class IonSearchEditor extends AbstractSearchEditor
 //                            editorWindow.setVisible(true);
 //                        }
 //                        else {
-                            PatternDisplay display = new PatternDisplay(graph);
-                            GraphWorkbench workbench = getWorkbench();
+                        CPDAGDisplay display = new CPDAGDisplay(graph);
+                        GraphWorkbench workbench = getWorkbench();
 
-                            EditorWindow editorWindow =
-                                    new EditorWindow(display, "Independence Facts",
-                                            "Close", false, workbench);
-                            DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                            editorWindow.setVisible(true);
+                        EditorWindow editorWindow =
+                                new EditorWindow(display, "Independence Facts",
+                                        "Close", false, workbench);
+                        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+                        editorWindow.setVisible(true);
 //                        }
                     }
                 };
@@ -493,19 +491,18 @@ public class IonSearchEditor extends AbstractSearchEditor
 //            }
 //        });
 
-        dagInPattern.addActionListener(new ActionListener() {
+        dagInCPDAG.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Graph graph = new EdgeListGraph(getGraph());
 
-                // Removing bidirected edges from the pattern before selecting a DAG.                                   4
+                // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
                 for (Edge edge : graph.getEdges()) {
                     if (Edges.isBidirectedEdge(edge)) {
                         graph.removeEdge(edge);
                     }
                 }
 
-                PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(graph));
-                Graph dag = search.patternToDagMeek();
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);
@@ -567,20 +564,12 @@ public class IonSearchEditor extends AbstractSearchEditor
         return (List<String>) params.get("varNames", null);
     }
 
-    public void setTestType(IndTestType testType) {
-        super.setTestType(testType);
-    }
-
     public IndTestType getTestType() {
         return super.getTestType();
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        Parameters searchParams = getAlgorithmRunner().getParams();
-
-        if (searchParams != null) {
-            searchParams.set("knowledge", knowledge);
-        }
+    public void setTestType(IndTestType testType) {
+        super.setTestType(testType);
     }
 
     public IKnowledge getKnowledge() {
@@ -591,6 +580,14 @@ public class IonSearchEditor extends AbstractSearchEditor
         }
 
         return (IKnowledge) searchParams.get("knowledge", new Knowledge2());
+    }
+
+    public void setKnowledge(IKnowledge knowledge) {
+        Parameters searchParams = getAlgorithmRunner().getParams();
+
+        if (searchParams != null) {
+            searchParams.set("knowledge", knowledge);
+        }
     }
 
     //================================PRIVATE METHODS====================//

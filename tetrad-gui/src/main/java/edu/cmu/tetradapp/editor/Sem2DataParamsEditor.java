@@ -69,17 +69,16 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
                 try {
                     getParams().set("sampleSize", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
         });
         JCheckBox latentVarsBox = new JCheckBox("Include Latent Variables");
         latentVarsBox.setHorizontalTextPosition(SwingConstants.LEFT);
-        latentVarsBox.addActionListener(new ActionListener(){
+        latentVarsBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JCheckBox b = (JCheckBox)e.getSource();
+                JCheckBox b = (JCheckBox) e.getSource();
                 getParams().set("includeLatents", b.isSelected());
             }
         });
@@ -113,8 +112,8 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
 //        b3.add(Box.createHorizontalGlue());
 
         b6.add(b1);
-    //    b6.add(Box.createVerticalStrut(5));
-     //   b6.add(hBox);
+        //    b6.add(Box.createVerticalStrut(5));
+        //   b6.add(hBox);
         b6.add(Box.createVerticalGlue());
         add(b6, BorderLayout.CENTER);
     }

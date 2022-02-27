@@ -25,13 +25,14 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.*;
 
 /**
  * Edits a list of parameters. Descriptions and defaults are looked up in
@@ -114,7 +115,7 @@ class ParameterPanel extends JPanel {
     }
 
     private DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
-            double defaultValue, final double lowerBound, final double upperBound) {
+                                           double defaultValue, final double lowerBound, final double upperBound) {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -146,7 +147,7 @@ class ParameterPanel extends JPanel {
     }
 
     private IntTextField getIntTextField(final String parameter, final Parameters parameters,
-            final int defaultValue, final double lowerBound, final double upperBound) {
+                                         final int defaultValue, final double lowerBound, final double upperBound) {
         final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter(new IntTextField.Filter() {

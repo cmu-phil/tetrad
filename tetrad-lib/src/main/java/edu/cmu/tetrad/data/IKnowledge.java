@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -114,7 +115,7 @@ public interface IKnowledge extends TetradSerializable {
 
     IKnowledge copy();
 
-    int isInWhichTier(Node node); // added by DMalinsky for tsFCI 4/20/16
+    int isInWhichTier(Node node); // added by DMalinsky for SvarFCI 4/20/16
 
     public List<KnowledgeEdge> getListOfRequiredEdges();
 

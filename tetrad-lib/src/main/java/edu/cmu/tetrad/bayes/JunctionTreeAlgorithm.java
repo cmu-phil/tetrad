@@ -20,32 +20,21 @@ package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializable;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Junction Tree Algorithm.
- *
+ * <p>
  * This implementation follows the Weka's implementation.
- *
+ * <p>
  * Nov 8, 2019 2:22:34 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
- * @see
- * <a href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
+ * @see <a href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
  */
 public class JunctionTreeAlgorithm implements TetradSerializable {
 
@@ -597,7 +586,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
          * Marginalize TreeNode node over all nodes outside the separator set
          *
          * @param node one of the neighboring junction tree nodes of this
-         * separator
+         *             separator
          */
         public void update(TreeNode node, double[] potentials) {
             clear(potentials);

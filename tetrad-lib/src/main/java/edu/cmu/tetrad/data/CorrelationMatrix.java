@@ -22,8 +22,8 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.Collections;
@@ -70,7 +70,7 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * matrix matrix is internally converted to a correlation matrix.
      */
     public CorrelationMatrix(List<Node> variables, Matrix matrix,
-                              int sampleSize) {
+                             int sampleSize) {
         super(variables, MatrixUtils.convertCovToCorr(matrix).copy(), sampleSize);
     }
 

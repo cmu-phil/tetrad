@@ -56,8 +56,7 @@ public class TestBooleanFunction extends TestCase {
         try {
             new BooleanFunction(
                     (IndexedParent[]) parents.toArray(new IndexedParent[0]));
-        }
-        catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             return;
         }
 

@@ -24,7 +24,6 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.AssertionFailedError;
 import nu.xom.Element;
 import nu.xom.ParsingException;
 import org.junit.Test;

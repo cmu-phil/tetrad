@@ -33,7 +33,7 @@ import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.
- *
+ * <p>
  * Borrows from the histogram stuff yet again
  *
  * @author Michael Freenor
@@ -73,10 +73,10 @@ class DescriptiveStatsEditorPanel extends JPanel {
         this.variableBox.setRenderer(renderer);
         for (Node node : dataSet.getVariables()) {
 //            if (node instanceof ContinuousVariable) {
-                this.variableBox.addItem(node);
-                if (node == selected) {
-                    this.variableBox.setSelectedItem(node);
-                }
+            this.variableBox.addItem(node);
+            if (node == selected) {
+                this.variableBox.setSelectedItem(node);
+            }
 //            }
         }
         this.variableBox.addItemListener(new ItemListener() {

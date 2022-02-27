@@ -107,8 +107,7 @@ class FciIndTestParamsEditor extends JComponent {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (RFCI_CheckBox.isSelected()) {
                     params().set("completeRuleSetUsed", true);
-                }
-                else {
+                } else {
                     params().set("completeRuleSetUsed", completeRuleSetCheckBox.isSelected());
                 }
 

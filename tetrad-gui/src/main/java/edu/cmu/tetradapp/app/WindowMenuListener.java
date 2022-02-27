@@ -24,7 +24,6 @@ package edu.cmu.tetradapp.app;
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
@@ -57,7 +56,7 @@ final class WindowMenuListener implements MenuListener, ActionListener {
     private Hashtable<JMenuItem, JInternalFrame> itemsToFrames;
 
     private final TetradDesktop desktop;
-    
+
     /**
      * Constructs the window menu listener.  Requires to be told which object
      * the window menu is and which object the desktop pane is.
@@ -68,8 +67,7 @@ final class WindowMenuListener implements MenuListener, ActionListener {
             throw new NullPointerException("Window menu must not be null.");
         }
 
-        
-        
+
         if (desktop == null) {
             throw new NullPointerException("Desktop pane must not be null.");
         }
@@ -141,7 +139,7 @@ final class WindowMenuListener implements MenuListener, ActionListener {
         Object item = e.getSource();
         JInternalFrame frame = (JInternalFrame) itemsToFrames.get(item);
         frame.moveToFront();
-        if(frame.getContentPane().getComponents().length > 0){
+        if (frame.getContentPane().getComponents().length > 0) {
             desktop.setMainTitle(frame.getContentPane().getComponent(0).getName());
         }
     }

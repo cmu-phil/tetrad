@@ -792,9 +792,9 @@ public class PurifyScoreBased implements IPurify {
         double iMinusI[][] =
                 MatrixUtils.inverse(MatrixUtils.subtract(identityI, lambdaI));
         double indImpliedCovar[][] = MatrixUtils.product(MatrixUtils.product(
-                iMinusI, MatrixUtils.sum(MatrixUtils.product(
-                        MatrixUtils.product(lambdaL, latentImpliedCovar),
-                        MatrixUtils.transpose(lambdaL)), tau)),
+                        iMinusI, MatrixUtils.sum(MatrixUtils.product(
+                                MatrixUtils.product(lambdaL, latentImpliedCovar),
+                                MatrixUtils.transpose(lambdaL)), tau)),
                 MatrixUtils.transpose(iMinusI));
         double loadingLatentCovar[][] = MatrixUtils.product(iMinusI,
                 MatrixUtils.product(lambdaL, latentImpliedCovar));

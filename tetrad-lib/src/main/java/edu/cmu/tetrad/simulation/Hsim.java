@@ -214,13 +214,15 @@ public class Hsim {
         verbose = verbosity;
     }
 
-    private void setDag(Dag thedag){
-        mydag=thedag;
+    private void setDag(Dag thedag) {
+        mydag = thedag;
     }
-    private void setSimnodes(Set<Node> thenodes){
-        simnodes=thenodes;
+
+    private void setSimnodes(Set<Node> thenodes) {
+        simnodes = thenodes;
     }
-    private void setData(DataSet thedata){
-        data=thedata;
+
+    private void setData(DataSet thedata) {
+        data = thedata;
     }
 }

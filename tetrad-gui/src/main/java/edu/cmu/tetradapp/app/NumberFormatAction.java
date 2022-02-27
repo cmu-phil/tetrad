@@ -95,7 +95,7 @@ final class NumberFormatAction extends AbstractAction
         });
 
         SpinnerModel model = new SpinnerNumberModel(
-            Preferences.userRoot().getInt("numDecimals", 4), 0, 300, 1);
+                Preferences.userRoot().getInt("numDecimals", 4), 0, 300, 1);
         JSpinner numDecimals = new JSpinner(model);
 
         numDecimals.addChangeListener(new ChangeListener() {
@@ -283,7 +283,7 @@ final class NumberFormatAction extends AbstractAction
      * @return the most recent number format, whether from the basic or from
      * the advanced tab.
      * @throws RuntimeException if the getModel format string cannot be
-     * accepted by DecimalFormat.
+     *                          accepted by DecimalFormat.
      */
     private NumberFormat getNumberFormat() throws IllegalStateException {
         return new DecimalFormat(getFormatString());
@@ -293,7 +293,7 @@ final class NumberFormatAction extends AbstractAction
      * @return the most recent format string, whether from the basic or from
      * the advanced tab.
      * @throws RuntimeException if the stored format string cannot be
-     * accepted by DecimalFormat.
+     *                          accepted by DecimalFormat.
      */
     private String getFormatString() throws RuntimeException {
         String format = formatField.getText();
@@ -319,8 +319,9 @@ final class NumberFormatAction extends AbstractAction
      * This sets up the behavior in the advanced tab where when you change
      * the format or the example numnber, it updates the rendering. It also
      * sets the color of the format or example to red when it's ill-formatted.
-     * @param sampleFieldAdvanced  The example field.
-     * @param renderFieldAdvanced  The render field.
+     *
+     * @param sampleFieldAdvanced The example field.
+     * @param renderFieldAdvanced The render field.
      */
     private void updateAdvancedFields(JTextField sampleFieldAdvanced, JTextField renderFieldAdvanced) {
         try {

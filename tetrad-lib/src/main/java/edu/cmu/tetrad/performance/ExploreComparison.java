@@ -30,7 +30,7 @@ public class ExploreComparison {
             results.add(Comparison.compare(params));
         }
 
-        ArrayList<Comparison.TableColumn> tableColumns= new ArrayList<>();
+        ArrayList<Comparison.TableColumn> tableColumns = new ArrayList<>();
         tableColumns.add(Comparison.TableColumn.AdjPrec);
         tableColumns.add(Comparison.TableColumn.AdjRec);
         tableColumns.add(Comparison.TableColumn.AhdPrec);

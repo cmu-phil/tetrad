@@ -33,15 +33,17 @@ import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
 /**
  * @author Joseph Ramsey
@@ -105,14 +107,14 @@ public class TestGFci {
         int[][] counts = SearchGraphUtils.graphComparison(outGraph, truePag, null);
 
         int[][] expectedCounts = {
-            {0, 0, 0, 0, 0, 0},
-            {0, 4, 0, 0, 0, 1},
-            {0, 0, 3, 0, 0, 1},
-            {0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0},};
+                {0, 0, 0, 0, 0, 0},
+                {0, 4, 0, 0, 0, 1},
+                {0, 0, 3, 0, 0, 1},
+                {0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0},};
 
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
@@ -168,7 +170,7 @@ public class TestGFci {
 
         int numNodes = 15;
         int numLatents = 5;
-        int numIterations = 10;
+        int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
             Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,

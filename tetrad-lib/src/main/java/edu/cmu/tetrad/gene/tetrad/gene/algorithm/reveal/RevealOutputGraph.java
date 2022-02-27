@@ -31,7 +31,7 @@ public class RevealOutputGraph implements OutputGraph {
     String graphName;
 
     public RevealOutputGraph(int ngenes, int[][] parents, int[][] lags,
-            String[] names, String graphName) {
+                             String[] names, String graphName) {
         this.ngenes = ngenes;
         this.parents = parents;
         this.lags = lags;

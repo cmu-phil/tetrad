@@ -53,8 +53,7 @@ public class ReadControl {
 
         try {
             s = new FileInputStream(fileName);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Cannot open file " + fileName);
             return;
         }
@@ -78,8 +77,7 @@ public class ReadControl {
                             rawData[j - 1][i + offSet[k]] =
                                     Integer.parseInt(st.nextToken(" "));
                         }
-                    }
-                    else {
+                    } else {
                         //int id = Integer.parseInt(st.nextToken(" "));
                         for (int i = 0; i < nvaluesRecord[k]; i++) {
                             rawData[j - 1][i + offSet[k]] =
@@ -87,8 +85,7 @@ public class ReadControl {
                         }
                         //System.out.println("first raw data = " + rawData[j-1][0]);
                     }
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     System.out.println("Read error in " + fileName);
                     return;
                 }

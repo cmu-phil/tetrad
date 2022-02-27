@@ -23,15 +23,11 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.GraphWrapper;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 
 /**
  * Displays a list of graphs with tabs to select among them, similar to the Data
@@ -55,6 +51,7 @@ public final class SimulationGraphEditor extends JPanel {
     private JTabbedPane tabbedPane = new JTabbedPane();
 
     //==========================CONSTUCTORS===============================//
+
     /**
      * Constructs the editor. Edited by Zhou on 8/20/18
      */
@@ -67,6 +64,7 @@ public final class SimulationGraphEditor extends JPanel {
     }
 
     //==========================PUBLIC METHODS=============================//
+
     /**
      * 2
      * Replaces the getModel Datamodels with the given one. Note, that by

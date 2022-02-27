@@ -22,10 +22,10 @@ import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.DatasetReader;
 import edu.pitt.dbmi.data.reader.validation.Validation;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+
 import java.util.List;
 
 /**
- *
  * Dec 12, 2018 10:57:09 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

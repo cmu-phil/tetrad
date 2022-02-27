@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.util.TetradSerializable;
+
 import java.io.ObjectStreamException;
 import java.util.regex.Pattern;
 
@@ -72,7 +73,7 @@ public final class DelimiterType implements TetradSerializable {
     }
 
     /**
-     * @return the pattern representing this delimiter type. This pattern can be
+     * @return the CPDAG representing this delimiter type. This CPDAG can be
      * used to parse, using a matcher.
      */
     public final Pattern getPattern() {

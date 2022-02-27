@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 public final class TestLexer {
 
     @Test
-    public void testLexer(){
+    public void testLexer() {
         String s = "(1 + 2.5)";
         ExpressionLexer lexer = new ExpressionLexer(s);
 

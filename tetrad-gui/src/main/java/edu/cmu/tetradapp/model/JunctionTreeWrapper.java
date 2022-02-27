@@ -18,12 +18,7 @@
  */
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.bayes.DirichletBayesIm;
-import edu.cmu.tetrad.bayes.Evidence;
-import edu.cmu.tetrad.bayes.JunctionTreeUpdater;
-import edu.cmu.tetrad.bayes.ManipulatingBayesUpdater;
-import edu.cmu.tetrad.bayes.Proposition;
+import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
@@ -31,10 +26,10 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Unmarshallable;
+
 import java.text.NumberFormat;
 
 /**
- *
  * Jan 21, 2020 1:27:44 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

@@ -27,7 +27,10 @@ import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Implements a test for simultaneously zero sextads in the style of Bollen, K. (1990).
@@ -162,7 +165,7 @@ public class DeltaSextadTest {
 
                     // General.
                     double rr2 = r(e, f, g, h) + 0.25 * r(e, f) * r(g, h) *
-                            (r(e, e, g, g) * r(f, f, g, g) + r(e                        , e, h, h) + r(f, f, h, h))
+                            (r(e, e, g, g) * r(f, f, g, g) + r(e, e, h, h) + r(f, f, h, h))
                             - 0.5 * r(e, f) * (r(e, e, g, h) + r(f, f, g, h))
                             - 0.5 * r(g, h) * (r(e, f, g, g) + r(e, f, h, h));
 
@@ -225,7 +228,7 @@ public class DeltaSextadTest {
         return chisq;
     }
 
-     /**
+    /**
      * If using a covariance matrix or a correlation matrix, just returns the lookups. Otherwise calculates the
      * covariance.
      */

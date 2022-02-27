@@ -21,7 +21,6 @@ package edu.pitt.dbmi.data.reader.tabular;
 import edu.pitt.dbmi.data.reader.DataColumn;
 
 /**
- *
  * Dec 29, 2018 12:44:43 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

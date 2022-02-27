@@ -25,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.FAS;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FAS;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R3;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.RSkew;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;

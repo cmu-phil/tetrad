@@ -27,8 +27,8 @@ import edu.cmu.tetrad.calculator.parser.ExpressionLexer;
 import edu.cmu.tetrad.calculator.parser.Token;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
@@ -499,7 +499,6 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                 double value = expression.evaluate(context);
                 v[row] = value;
                 variableValues.put(node.getName(), value);
-
 
 
 //                if (isSimulatePositiveDataOnly() && value < 0) {

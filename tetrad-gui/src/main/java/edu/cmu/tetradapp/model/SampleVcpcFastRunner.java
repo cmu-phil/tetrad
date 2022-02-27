@@ -36,10 +36,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
-* Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
-*
-* @author Joseph Ramsey
-*/
+ * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
+ *
+ * @author Joseph Ramsey
+ */
 public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
@@ -52,10 +52,10 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     private SemIm semIm;
 
 
-    private Set<Edge>sfVcpcAdjacent;
-    private Set<Edge>sfVcpcApparent;
-    private Set<Edge>sfVcpcDefinite;
-    private List<Node>sfVcpcNodes;
+    private Set<Edge> sfVcpcAdjacent;
+    private Set<Edge> sfVcpcApparent;
+    private Set<Edge> sfVcpcDefinite;
+    private List<Node> sfVcpcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -162,8 +162,9 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     * <p>
+     * //     * @see edu.cmu.TestSerialization
      *
-//     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static SampleVcpcFastRunner serializableInstance() {
@@ -204,18 +205,17 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else if (knowledge.isDefaultToKnowledgeLayout()) {
+        } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
         setResultGraph(graph);
         setSfvcpcFields(sfvcpc);
     }
-//
+
+    //
     public IndependenceTest getIndependenceTest() {
         Object dataModel = getDataModel();
 
@@ -226,10 +226,6 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
-
-
-
-
 
 
     public Graph getGraph() {
@@ -290,6 +286,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     public SemIm getSemIm() {
         return this.semIm;
     }
+
     public SemPm getSemPm() {
         return this.semPm;
     }

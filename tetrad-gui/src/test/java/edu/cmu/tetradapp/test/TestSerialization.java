@@ -136,8 +136,7 @@ public class TestSerialization {
             utils.serializeCurrentDirectory();
             utils.deserializeCurrentDirectory();
             utils.deserializeArchivedVersions();
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             System.out.println();
             e.printStackTrace();
             fail("TestSerialization.testLoadability() failed! Please fix " +

@@ -23,7 +23,8 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.simulation.LinearSineSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
@@ -42,7 +43,7 @@ public class ExampleNonlinearSave {
         parameters.set("percentDiscrete", 0);
         parameters.set("minCategories", 2);
         parameters.set("maxCategories", 5);
-        parameters.set("differentGraphs",true);
+        parameters.set("differentGraphs", true);
 
         parameters.set("interceptLow", 0);
         parameters.set("interceptHigh", 1);

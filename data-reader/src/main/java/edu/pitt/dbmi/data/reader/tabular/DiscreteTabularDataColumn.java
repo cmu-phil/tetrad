@@ -20,15 +20,10 @@ package edu.pitt.dbmi.data.reader.tabular;
 
 import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+
+import java.util.*;
 
 /**
- *
  * Dec 31, 2018 1:20:24 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

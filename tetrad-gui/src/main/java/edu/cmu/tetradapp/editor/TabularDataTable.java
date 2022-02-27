@@ -26,10 +26,11 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
+
+import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import javax.swing.table.AbstractTableModel;
 
 /**
  * Wraps a dataSet which is possibly smaller than the display window in a larger
@@ -64,7 +65,7 @@ class TabularDataTable extends AbstractTableModel {
     private final String columnHeaderNotationDiscrete = "-D";
     private final String columnHeaderNotationInterventionStatus = "-I_S";
     private final String columnHeaderNotationInterventionValue = "-I_V";
-    
+
     /**
      * Constructs a new DisplayTableModel to wrap the given dataSet.
      *
@@ -129,7 +130,7 @@ class TabularDataTable extends AbstractTableModel {
                 // Append "-D" notation to discrete variables, "-C" for continuous
                 // and append additional "-I" for those added interventional variables - Zhou
                 String columnHeader = columnHeaderNotationDefault + Integer.toString(columnIndex + 1);
-                
+
                 if (variable instanceof DiscreteVariable) {
                     columnHeader += columnHeaderNotationDiscrete;
                 } else if (variable instanceof ContinuousVariable) {
@@ -139,10 +140,10 @@ class TabularDataTable extends AbstractTableModel {
                 // Add header notations for interventional status and value
                 if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) {
                     columnHeader += columnHeaderNotationInterventionStatus;
-                } else  if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
+                } else if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
                     columnHeader += columnHeaderNotationInterventionValue;
                 }
-                
+
                 return columnHeader;
             } else if (row == 1) {
                 return dataSet.getVariable(columnIndex).getName();
@@ -215,7 +216,7 @@ class TabularDataTable extends AbstractTableModel {
      */
     private void addColumnsOutTo(int col) {
         for (int i = dataSet.getNumColumns() + getNumLeadingCols();
-                i <= col; i++) {
+             i <= col; i++) {
             ContinuousVariable var = new ContinuousVariable("");
             dataSet.addVariable(var);
 

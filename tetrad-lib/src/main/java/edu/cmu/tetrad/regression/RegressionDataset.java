@@ -23,8 +23,8 @@ package edu.cmu.tetrad.regression;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.Vector;
 
 import java.util.Arrays;

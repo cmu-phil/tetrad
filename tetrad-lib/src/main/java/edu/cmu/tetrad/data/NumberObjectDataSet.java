@@ -50,9 +50,9 @@ import java.util.*;
  * selection set is stored with the data set and may be manipulated using the
  * <code>select</code> and <code>deselect</code> methods.
  * <p>
-// * A multiplicity m_i may be associated with each case c_i in the dataset, which
-// * is interpreted to mean that that c_i occurs m_i times in the dataset.
-// * <p>
+ * // * A multiplicity m_i may be associated with each case c_i in the dataset, which
+ * // * is interpreted to mean that that c_i occurs m_i times in the dataset.
+ * // * <p>
  * Knowledge may be associated with the data set, using the
  * <code>setKnowledge</code> method. This knowledge is not used internally to
  * the data set, but it may be retrieved by algorithm and used.
@@ -1040,14 +1040,14 @@ public final class NumberObjectDataSet
      * will be represented by ints cast to doubles. Rows in this matrix are
      * cases, and columns are variables. The list of variable, in the order in
      * which they occur in the matrix, is given by getVariable().
-//     * <p>
-//     * If isMultipliersCollapsed() returns false, multipliers in the dataset are
-//     * first expanded before returning the matrix, so the number of rows in the
-//     * returned matrix may not be the same as the number of rows in this
-//     * dataset.
+     * //     * <p>
+     * //     * If isMultipliersCollapsed() returns false, multipliers in the dataset are
+     * //     * first expanded before returning the matrix, so the number of rows in the
+     * //     * returned matrix may not be the same as the number of rows in this
+     * //     * dataset.
      * @throws IllegalStateException if this is not a continuous data set.
      * @see #getVariables
-//     * @see #isMulipliersCollapsed()
+     * //     * @see #isMulipliersCollapsed()
      */
     public final Matrix getDoubleData() {
         Matrix copy = new Matrix(data.length, data[0].length);

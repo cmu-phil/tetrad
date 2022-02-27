@@ -121,7 +121,7 @@ public class Comparison {
             test = new IndTestFisherZ(dataSet, params.getAlpha());
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
-        }  else if (params.getIndependenceTest() == ComparisonParameters.IndependenceTestType.ChiSquare) {
+        } else if (params.getIndependenceTest() == ComparisonParameters.IndependenceTestType.ChiSquare) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Discrete) {
                 throw new IllegalArgumentException("Data type previously set to something other than discrete.");
             }
@@ -149,8 +149,7 @@ public class Comparison {
             score = semBicScore;
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
-        }
-        else if (params.getScore() == ScoreType.BDeu) {
+        } else if (params.getScore() == ScoreType.BDeu) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Discrete) {
                 throw new IllegalArgumentException("Data type previously set to something other than discrete.");
             }
@@ -182,34 +181,34 @@ public class Comparison {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Pc search = new Pc(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Cpc search = new Cpc(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCLocal) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             PcLocal search = new PcLocal(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCStableMax) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             PcStableMax search = new PcStableMax(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
             Fges search = new Fges(score);
             search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES2) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
             Fges search = new Fges(score);
             search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.patternForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Fci search = new Fci(test);
@@ -363,6 +362,8 @@ public class Comparison {
         return table;
     }
 
-    public enum TableColumn {AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
-        AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed}
+    public enum TableColumn {
+        AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
+        AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed
+    }
 }

@@ -96,7 +96,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      *
      * @param o an Object, which should be a LaggedFactor.
      * @return this lag minus the given lag, if the lagged factors have the same
-     *         name; otherwise, 0.
+     * name; otherwise, 0.
      */
     public int compareTo(Object o) {
 
@@ -106,12 +106,10 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
             if (n != 0) {
                 return n;
-            }
-            else {
+            } else {
                 return this.lag - f.getLag();
             }
-        }
-        else {
+        } else {
             return 0;
         }
     }

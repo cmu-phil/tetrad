@@ -104,7 +104,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
     public void setup() {
         SplitCasesSpec spec = (SplitCasesSpec) this.params.get("splitCasesSpec", null);
-        if(spec != null){
+        if (spec != null) {
             spec = getDefaultSpec(this.dataSet.getNumRows(), this.params.getInt("numSplits", 3));
         }
         numSplitsField = new IntTextField(this.params.getInt("numSplits", 3), 2);
@@ -173,7 +173,6 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         setLayout(new BorderLayout());
         add(b1, BorderLayout.CENTER);
     }
-
 
 
     public void setParams(Parameters params) {

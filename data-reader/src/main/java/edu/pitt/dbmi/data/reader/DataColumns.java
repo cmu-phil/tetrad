@@ -22,13 +22,13 @@ import edu.pitt.dbmi.data.reader.metadata.ColumnMetadata;
 import edu.pitt.dbmi.data.reader.metadata.InterventionalColumn;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataColumn;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 /**
- *
  * Jan 2, 2019 10:46:41 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

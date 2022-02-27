@@ -14,12 +14,12 @@ public class HsimRepeatAuto {
         int resimSize = 2;
         int repeat = 100;
 
-        HsimRepeatAutoRun study = new HsimRepeatAutoRun(readfilename,delimiter);
+        HsimRepeatAutoRun study = new HsimRepeatAutoRun(readfilename, delimiter);
         study.setVerbose(false);
         study.setWrite(true);
         study.setFilenameOut(filenameOut);
         study.setDelimiter(delimiter);
-        study.run(resimSize,repeat);
+        study.run(resimSize, repeat);
     }
 }
 

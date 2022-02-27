@@ -24,15 +24,11 @@ import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetradapp.Tetrad;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- *
  * Nov 30, 2017 4:20:43 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -41,14 +37,14 @@ public final class AlgorithmModels {
 
     private static final AlgorithmModels INSTANCE = new AlgorithmModels();
 
-    private  List<AlgorithmModel> models;
-    private  Map<AlgType, List<AlgorithmModel>> modelMap;
+    private List<AlgorithmModel> models;
+    private Map<AlgType, List<AlgorithmModel>> modelMap;
 
     private AlgorithmModels() {
         refreshModels();
     }
 
-    private  void refreshModels() {
+    private void refreshModels() {
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
         List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
                 ? algoAnno.getAnnotatedClasses()
@@ -77,7 +73,7 @@ public final class AlgorithmModels {
     }
 
     public static AlgorithmModels getInstance() {
-        INSTANCE.refreshModels();   // if we had a subscriber pattern for app settings would not have to waste time doing this every time!
+        INSTANCE.refreshModels();   // if we had a subscriber CPDAG for app settings would not have to waste time doing this every time!
         return INSTANCE;
     }
 
@@ -87,20 +83,20 @@ public final class AlgorithmModels {
         return (dataType == DataType.All)
                 ? algorithmModels
                 : algorithmModels.stream()
-                        .filter(e -> {
-                            return multiDataSetAlgorithm
-                                    ? algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz())
-                                    : true;
-                        })
-                        .filter(e -> {
-                            for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
-                                if (dt == DataType.All || dt == dataType) {
-                                    return true;
-                                }
-                            }
-                            return false;
-                        })
-                        .collect(Collectors.toList());
+                .filter(e -> {
+                    return multiDataSetAlgorithm
+                            ? algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz())
+                            : true;
+                })
+                .filter(e -> {
+                    for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
+                        if (dt == DataType.All || dt == dataType) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })
+                .collect(Collectors.toList());
     }
 
     public List<AlgorithmModel> getModels(DataType dataType, boolean multiDataSetAlgorithm) {

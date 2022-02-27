@@ -26,7 +26,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.AbstractAlgorithmRunner;
 
 import javax.swing.*;
-import java.awt.*;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -85,8 +84,8 @@ final class SessionUtils {
             }
         }
 
-        int messageType =  warning ? JOptionPane.INFORMATION_MESSAGE :
-                        JOptionPane.INFORMATION_MESSAGE;
+        int messageType = warning ? JOptionPane.INFORMATION_MESSAGE :
+                JOptionPane.INFORMATION_MESSAGE;
 
         JOptionPane.showMessageDialog(centeringComp, b.toString(),
                 "Information on \"" + modelConfig.getName() + "\"", messageType);

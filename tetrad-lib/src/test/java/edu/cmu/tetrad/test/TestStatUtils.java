@@ -28,9 +28,9 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.junit.Test;
 
@@ -153,7 +153,7 @@ public class TestStatUtils {
         assertEquals(0.05, StatUtils.variance(_x), 0.01);
     }
 
-//    @Test
+    //    @Test
     public void testNongaussianSums() {
         RandomUtil.getInstance().setSeed(3829483L);
         int numTrials = 10;
@@ -234,7 +234,7 @@ public class TestStatUtils {
         assertEquals(0.2, percentFailed, 0.1);
     }
 
-//    @Test
+    //    @Test
     public void testNongaussianSums2() {
         RandomUtil.getInstance().setSeed(3829483L);
         int sampleSize = 1000;
@@ -309,7 +309,7 @@ public class TestStatUtils {
         assertEquals(0.0106, percentFailed, 0.0001);
     }
 
-//    @Test
+    //    @Test
     public void testNongaussianSums3() {
         RandomUtil.getInstance().setSeed(3829483L);
         int n = 1000;
@@ -348,7 +348,7 @@ public class TestStatUtils {
         assertEquals(0.0, percentErrors, 0.01);
     }
 
-//    @Test
+    //    @Test
     public void testNongaussianSums4() {
         RandomUtil.getInstance().setSeed(3829483L);
         int n = 1000;
@@ -397,7 +397,7 @@ public class TestStatUtils {
         assertEquals(0.0, percentErrors, 0.01);
     }
 
-//    @Test
+    //    @Test
     public void testNongaussianSums5() {
         RandomUtil.getInstance().setSeed(3829483L);
         int numTrials = 10;
@@ -647,7 +647,7 @@ public class TestStatUtils {
         System.out.println(sum / (60 * 60));
     }
 
-//    @Test
+    //    @Test
     public void test3() {
         int count = 0;
         int total = 100000;
@@ -673,7 +673,7 @@ public class TestStatUtils {
             if (holds) count++;
 
 //            System.out.println(
-                    //x);// + " v1 = " + v1  + " v2 = " + v2  + " m1 = " + m1  + " m2 = " + m2);
+            //x);// + " v1 = " + v1  + " v2 = " + v2  + " m1 = " + m1  + " m2 = " + m2);
         }
 
         System.out.println(count);

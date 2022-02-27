@@ -30,8 +30,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FactorAnalysis;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -52,7 +52,7 @@ public class FactorAnalysisAction extends AbstractAction {
 
 
     /**
-     * The data edtitor that action is attached to.                        
+     * The data edtitor that action is attached to.
      */
     private final DataEditor dataEditor;
 
@@ -68,7 +68,7 @@ public class FactorAnalysisAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
-        if(dataSet == null || dataSet.getNumColumns() == 0){
+        if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot perform factor analysis on an empty data set.");
             return;
         }
@@ -91,8 +91,7 @@ public class FactorAnalysisAction extends AbstractAction {
         */
     }
 
-    private JPanel createDialog(FactorAnalysis analysis)
-    {
+    private JPanel createDialog(FactorAnalysis analysis) {
         double threshold = .2;
 
         Matrix unrotatedSolution = analysis.successiveResidual();
@@ -108,14 +107,13 @@ public class FactorAnalysisAction extends AbstractAction {
 //        temp = temp.split("\n", 2)[1];
 //        output += temp;
 
-        if(unrotatedSolution.columns() != 1)
-        {
+        if (unrotatedSolution.columns() != 1) {
             output += "\n\nRotated Matrix (using sequential varimax):\n";
 
             output += tableString(rotatedSolution, nf, threshold);
-    //        temp = rotatedSolution.toString();
-    //        temp = temp.split("\n", 2)[1];
-    //        output += temp;
+            //        temp = rotatedSolution.toString();
+            //        temp = temp.split("\n", 2)[1];
+            //        output += temp;
 
         }
 
@@ -131,28 +129,23 @@ public class FactorAnalysisAction extends AbstractAction {
 
         Vector<Node> observedVariables = new Vector<>();
 
-        for(Node a : dataSet.getVariables())
-        {
+        for (Node a : dataSet.getVariables()) {
             graph.addNode(a);
             observedVariables.add(a);
         }
 
         Vector<Node> factors = new Vector<>();
 
-        for(int i = 0; i < rotatedSolution.columns(); i++)
-        {
+        for (int i = 0; i < rotatedSolution.columns(); i++) {
             ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
             factor.setNodeType(NodeType.LATENT);
             graph.addNode(factor);
             factors.add(factor);
         }
 
-        for(int i = 0; i < rotatedSolution.rows(); i++)
-        {
-            for(int j = 0; j < rotatedSolution.columns(); j++)
-            {
-                if(Math.abs(rotatedSolution.get(i, j)) > threshold)
-                {
+        for (int i = 0; i < rotatedSolution.rows(); i++) {
+            for (int j = 0; j < rotatedSolution.columns(); j++) {
+                if (Math.abs(rotatedSolution.get(i, j)) > threshold) {
                     graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
                     //HEY JOE -- rotatedSolution.get(i, j) is the edge coeficient
                 }
@@ -161,7 +154,7 @@ public class FactorAnalysisAction extends AbstractAction {
 
         GraphUtils.circleLayout(graph, 225, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(graph);
-        
+
         GraphWorkbench workbench = new GraphWorkbench(graph);
 
         JScrollPane graphPane = new JScrollPane(workbench);
@@ -195,11 +188,9 @@ public class FactorAnalysisAction extends AbstractAction {
             for (int j = 0; j < matrix.columns() + 1; j++) {
                 if (i > 0 && j == 0) {
                     table.setToken(i, j, "X" + i);
-                }
-                else if (i == 0 && j > 0) {
+                } else if (i == 0 && j > 0) {
                     table.setToken(i, j, "Factor " + j);
-                }
-                else if (i > 0 && j > 0) {
+                } else if (i > 0 && j > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
                     token += Math.abs(coefficient) > threshold ? "*" : " ";

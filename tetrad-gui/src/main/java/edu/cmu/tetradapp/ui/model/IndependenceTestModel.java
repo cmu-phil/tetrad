@@ -21,10 +21,10 @@ package edu.cmu.tetradapp.ui.model;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.util.IndependenceTestDescriptions;
+
 import java.io.Serializable;
 
 /**
- *
  * Dec 1, 2017 11:46:06 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

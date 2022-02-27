@@ -47,11 +47,11 @@ import java.awt.event.MouseEvent;
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
- * Edits some algorithm to search for Markov blanket patterns.
+ * Edits some algorithm to search for Markov blanket CPDAGs.
  *
  * @author Joseph Ramsey
  */
@@ -86,10 +86,6 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     public FgesSearchEditor(TsFgesRunner runner) {
-        super(runner, "Result forbid_latent_common_causes");
-    }
-
-    public FgesSearchEditor(TsImagesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
@@ -379,7 +375,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
         JMenu graph = new JMenu("Graph");
         JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        final JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        final JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
         JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
         JMenuItem nextGraph = new JMenuItem("Next Graph");
         JMenuItem previousGraph = new JMenuItem("Previous Graph");
@@ -394,7 +390,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
         graph.addSeparator();
 
 //        graph.add(meekOrient);
-        graph.add(dagInPattern);
+        graph.add(dagInCPDAG);
         graph.add(gesOrient);
         graph.addSeparator();
 
@@ -417,7 +413,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
                 new WatchedProcess(owner) {
                     public void watch() {
 
-                        // Needs to be a pattern search; this isn't checked
+                        // Needs to be a CPDAG search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
                         AlgorithmRunner runner = getAlgorithmRunner();
@@ -444,7 +440,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
                             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                             editorWindow.setVisible(true);
                         } else {
-                            PatternDisplay display = new PatternDisplay(graph);
+                            CPDAGDisplay display = new CPDAGDisplay(graph);
                             GraphWorkbench workbench = getWorkbench();
 
                             EditorWindow editorWindow =
@@ -469,19 +465,18 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //            }
 //        });
 
-        dagInPattern.addActionListener(new ActionListener() {
+        dagInCPDAG.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Graph graph = new EdgeListGraph(getGraph());
 
-                // Removing bidirected edges from the pattern before selecting a DAG.                                   4
+                // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
                 for (Edge edge : graph.getEdges()) {
                     if (Edges.isBidirectedEdge(edge)) {
                         graph.removeEdge(edge);
                     }
                 }
 
-                PatternToDag search = new PatternToDag(new EdgeListGraphSingleConnections(graph));
-                Graph dag = search.patternToDagMeek();
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);
@@ -601,8 +596,8 @@ public class FgesSearchEditor extends AbstractSearchEditor
         FgesRunner runner = (FgesRunner) getAlgorithmRunner();
 
         if (runner.getTopGraphs().isEmpty()) {
-            throw new IllegalArgumentException("No patterns were recorded. Please adjust the number of " +
-                    "patterns to store.");
+            throw new IllegalArgumentException("No CPDAGs were recorded. Please adjust the number of " +
+                    "CPDAGs to store.");
         }
 
         Graph resultGraph = runner.getTopGraphs().get(runner.getIndex()).getGraph();
@@ -627,7 +622,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Graph dag = SearchGraphUtils.dagFromPattern(resultGraph);
+            Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
 
 //            DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
 //            String report;
@@ -712,7 +707,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //            bootstrapPanel.add(b, BorderLayout.NORTH);
 
             removeStatsTabs();
-            tabbedPane.addTab("DAG in pattern", dagWorkbenchScroll);
+            tabbedPane.addTab("DAG in CPDAG", dagWorkbenchScroll);
 //            tabbedPane.addTab("DAG Model Statistics", new JScrollPane(modelStatsText));
             tabbedPane.addTab("Log Bayes Factors", new JScrollPane(logBayesFactorsScroll));
 //            tabbedPane.addTab("Edge Bootstraps", new JScrollPane(bootstrapPanel));
@@ -777,7 +772,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
             if (name.equals("DAG Model Statistics")) {
                 tabbedPane.removeTabAt(i);
-            } else if (name.equals("DAG in pattern")) {
+            } else if (name.equals("DAG in CPDAG")) {
                 tabbedPane.removeTabAt(i);
             } else if (name.equals("Log Bayes Factors")) {
                 tabbedPane.removeTabAt(i);
@@ -801,7 +796,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
         if (testType != IndTestType.FISHER_Z
 //                &&
 //                testType != IndTestType.CORRELATION_T
-                ) {
+        ) {
             setTestType(IndTestType.FISHER_Z);
         }
 

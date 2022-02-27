@@ -122,7 +122,7 @@ public class TestPc {
         Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.05));
         pc.setKnowledge(knowledge);
 
-        Graph pattern = pc.search();
+        Graph CPDAG = pc.search();
 
         String trueString = "Graph Nodes:\n" +
                 "ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS\n" +
@@ -143,8 +143,8 @@ public class TestPc {
 
         try {
             trueGraph = GraphUtils.readerToGraphTxt(trueString);
-            pattern = GraphUtils.replaceNodes(pattern, trueGraph.getNodes());
-            assertEquals(trueGraph, pattern);
+            CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
+            assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -216,50 +216,19 @@ public class TestPc {
     }
 
     @Test
-    public void checkPattern() {
+    public void checknumCPDAGsToStore() {
         for (int i = 0; i < 2; i++) {
             Graph graph = GraphUtils.randomGraph(100, 0, 100, 100,
                     100, 100, false);
             IndTestDSep test = new IndTestDSep(graph);
             Pc pc = new Pc(test);
-            Graph pattern = pc.search();
-            Graph pattern2 = SearchGraphUtils.patternFromDag(graph);
-            assertEquals(pattern, pattern2);
+            Graph CPDAG = pc.search();
+            Graph CPDAG2 = SearchGraphUtils.cpdagFromDag(graph);
+            assertEquals(CPDAG, CPDAG2);
         }
     }
 
-    @Test
-    public void testPcStable2() {
-        RandomUtil.getInstance().setSeed(1450030184196L);
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < 10; i++) {
-            nodes.add(new ContinuousVariable("X" + (i + 1)));
-        }
-
-        Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false);
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(200, false);
-
-        TetradLogger.getInstance().setForceLog(false);
-        IndependenceTest test = new IndTestFisherZ(data, 0.05);
-
-        PcStableMax pc = new PcStableMax(test);
-        pc.setVerbose(false);
-        Graph pattern = pc.search();
-
-        for (int i = 0; i < 1; i++) {
-            DataSet data2 = DataUtils.reorderColumns(data);
-            IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
-            PcStableMax pc2 = new PcStableMax(test2);
-            pc2.setVerbose(false);
-            Graph pattern2 = pc2.search();
-            assertTrue(pattern.equals(pattern2));
-        }
-    }
-
-//    @Test
+    //    @Test
     public void testPcFci() {
 
         String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI"};
@@ -636,7 +605,7 @@ public class TestPc {
         System.out.println(table.toString());
     }
 
-//    @Test
+    //    @Test
     public void testPcRegression() {
 
         String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI", "Regression"};

@@ -23,8 +23,8 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcAll;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.independence.GSquare;
@@ -56,10 +56,11 @@ public class ExampleCompareSimulationDiscrete {
 
         parameters.set("alpha", 0.05, 0.01, 0.001);
         parameters.set("colliderDiscoveryRule", 1, 2, 3);
-        parameters.set("conflictRule", 3);;
+        parameters.set("conflictRule", 3);
+        ;
 
         parameters.set("maxDegree", 100);
-        parameters.set("samplePrior",  1, 5, 10, 15, 20, 25, 30, 50, 80, 100);
+        parameters.set("samplePrior", 1, 5, 10, 15, 20, 25, 30, 50, 80, 100);
         parameters.set("structurePrior", 1, 2, 3, 4, 5);
 
 //        parameters.set("penaltyDiscount", 1, 2, 3, 4);
@@ -115,7 +116,7 @@ public class ExampleCompareSimulationDiscrete {
         comparison.setSortByUtility(true);
 //        comparison.setShowUtilities(true);
 
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
         comparison.compareFromSimulations("comparison.discrete.study", simulations, "comparison_all_" + sampleSize, algorithms, statistics, parameters);
     }

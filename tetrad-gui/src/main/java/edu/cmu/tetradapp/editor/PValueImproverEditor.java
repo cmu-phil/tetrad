@@ -83,7 +83,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
             SemIm im2 = new SemIm(pm);
-            GraphUtils.circleLayout(graph, 200, 200,150);
+            GraphUtils.circleLayout(graph, 200, 200, 150);
             setGraphWorkbench(new GraphWorkbench(graph));
             setOriginalSemIm(im);
             setNewSemIm(im2);
@@ -205,13 +205,11 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
             beamRadioButton.setSelected(true);
             alphaField.setEnabled(true);
             beamWidthField.setEnabled(true);
-        }
-        else if (getWrapper().getAlgorithmType() == PValueImproverWrapper.AlgorithmType.FGES) {
+        } else if (getWrapper().getAlgorithmType() == PValueImproverWrapper.AlgorithmType.FGES) {
             gesRadioButton.setSelected(true);
             alphaField.setEnabled(false);
             beamWidthField.setEnabled(false);
-        }
-        else {
+        } else {
             throw new IllegalStateException();
         }
 
@@ -269,7 +267,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
 
         add(b, BorderLayout.CENTER);
 
-        setPreferredSize(new Dimension(700,  600));
+        setPreferredSize(new Dimension(700, 600));
 
     }
 

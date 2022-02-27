@@ -72,8 +72,8 @@ public class KnowledgeDisplayNode extends DisplayNode {
      */
     private Shape getShape() {
         return new Rectangle2D.Double(0, 0,
-                    getPreferredSize().width - 1,
-                    getPreferredSize().height - 1);
+                getPreferredSize().width - 1,
+                getPreferredSize().height - 1);
     }
 
     /**
@@ -124,8 +124,8 @@ public class KnowledgeDisplayNode extends DisplayNode {
                             !newName.equals(super.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
-                                newName + "' is already being used." +
-                                "\nPlease choose another name.");
+                                        newName + "' is already being used." +
+                                        "\nPlease choose another name.");
                         continue loop;
                     }
                 }

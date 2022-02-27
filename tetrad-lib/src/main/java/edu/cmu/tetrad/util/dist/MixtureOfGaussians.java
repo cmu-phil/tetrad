@@ -79,17 +79,13 @@ public class MixtureOfGaussians implements Distribution {
     public void setParameter(int index, double value) {
         if (index == 0) {
             a = value;
-        }
-        else if (index == 1) {
+        } else if (index == 1) {
             mean1 = value;
-        }
-        else if (index == 2) {
+        } else if (index == 2) {
             sd1 = value;
-        }
-        else if (index == 3) {
+        } else if (index == 3) {
             mean2 = value;
-        }
-        else if (index == 5) {
+        } else if (index == 5) {
             sd2 = value;
         }
 
@@ -99,17 +95,13 @@ public class MixtureOfGaussians implements Distribution {
     public double getParameter(int index) {
         if (index == 0) {
             return a;
-        }
-        else if (index == 1) {
+        } else if (index == 1) {
             return mean1;
-        }
-        else if (index == 2) {
+        } else if (index == 2) {
             return sd1;
-        }
-        else if (index == 3) {
+        } else if (index == 3) {
             return mean2;
-        }
-        else if (index == 5) {
+        } else if (index == 5) {
             return sd2;
         }
 
@@ -119,17 +111,13 @@ public class MixtureOfGaussians implements Distribution {
     public String getParameterName(int index) {
         if (index == 0) {
             return "Ratio";
-        }
-        else if (index == 1) {
+        } else if (index == 1) {
             return "Mean 1";
-        }
-        else if (index == 2) {
+        } else if (index == 2) {
             return "Standard Deviation 1";
-        }
-        else if (index == 3) {
+        } else if (index == 3) {
             return "Mean 2";
-        }
-        else if (index == 5) {
+        } else if (index == 5) {
             return "Standard Deviation 2";
         }
 

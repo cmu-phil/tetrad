@@ -18,19 +18,19 @@
  */
 package edu.cmu.tetrad.annotation;
 
+import org.reflections.Reflections;
+
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.reflections.Reflections;
 
 /**
- *
  * Sep 20, 2017 10:59:43 AM
  *
- * @author Kevin V. Bui (kvb2@pitt.edu)
  * @param <T> annotation type
+ * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public abstract class AbstractAnnotations<T extends Annotation> {
 

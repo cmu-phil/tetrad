@@ -66,19 +66,16 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
                 DataSet dataSet = (DataSet) dataModel;
                 ICovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
                 corrMatrix = new CorrelationMatrix(covMatrix);
-            }
-            catch (Exception e1) {
+            } catch (Exception e1) {
                 String message = e1.getMessage();
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         message);
                 e1.printStackTrace();
                 throw new RuntimeException(e1);
             }
-        }
-        else if (dataModel instanceof ICovarianceMatrix) {
+        } else if (dataModel instanceof ICovarianceMatrix) {
             corrMatrix = new CorrelationMatrix((ICovarianceMatrix) dataModel);
-        }
-        else {
+        } else {
             String message =
                     "Operation not supported for this kind of data set.";
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -105,7 +102,7 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
     }
 
     private boolean confirmSplit(CorrelationMatrix corrMatrix,
-            DataModel dataModel, double correlation) {
+                                 DataModel dataModel, double correlation) {
         int count = 0;
         for (int i = 0; i < dataModel.getVariableNames().size() - 1; i++) {
             int index1 = getMatrixIndex(corrMatrix,
@@ -113,8 +110,7 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
             for (int j = i + 1; j < dataModel.getVariableNames().size(); j++) {
                 int index2 = getMatrixIndex(corrMatrix,
                         dataModel.getVariableNames().get(j));
-                if (Math.abs(corrMatrix.getValue(index1, index2)) > correlation)
-                {
+                if (Math.abs(corrMatrix.getValue(index1, index2)) > correlation) {
                     count++;
                 }
             }
@@ -125,7 +121,7 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
         int total = (int) Math.pow(2, count);
         int selection = JOptionPane.showConfirmDialog(
                 JOptionUtils.centeringComp(), "This option will generate " +
-                total + " extra data sets. Continue?", "Confirmation",
+                        total + " extra data sets. Continue?", "Confirmation",
                 JOptionPane.YES_NO_OPTION);
         return (selection == javax.swing.JOptionPane.YES_OPTION);
     }
@@ -140,17 +136,17 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
     }
 
     private DataModelList getSplitData(CorrelationMatrix corrMatrix,
-            DataModel dataModel, double correlation, DataModelList modelList) {
+                                       DataModel dataModel, double correlation, DataModelList modelList) {
         int index1 = -1, index2 = -1;
         boolean found = false;
 
         for (int i = 0;
-                i < dataModel.getVariableNames().size() - 1 && !found; i++) {
+             i < dataModel.getVariableNames().size() - 1 && !found; i++) {
             int index_i = getMatrixIndex(corrMatrix,
                     dataModel.getVariableNames().get(i));
             index1 = i;
             for (int j = i + 1;
-                    j < dataModel.getVariableNames().size() && !found; j++) {
+                 j < dataModel.getVariableNames().size() && !found; j++) {
                 int index_j = getMatrixIndex(corrMatrix,
                         dataModel.getVariableNames().get(j));
                 index2 = j;
@@ -166,8 +162,7 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
                 ((DataSet) dataModel).removeColumn(index1);
                 getSplitData(corrMatrix, dataModel, correlation, modelList);
                 getSplitData(corrMatrix, dataModel, correlation, modelList);
-            }
-            else { //CovarianceMatrix
+            } else { //CovarianceMatrix
                 String subVarNames1[] = new String[dataModel.getVariableNames()
                         .size() - 1];
                 String subVarNames2[] = new String[dataModel.getVariableNames()
@@ -192,8 +187,7 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
                 getSplitData(corrMatrix, newDataModel1, correlation, modelList);
                 getSplitData(corrMatrix, newDataModel2, correlation, modelList);
             }
-        }
-        else {
+        } else {
             modelList.add(dataModel);
         }
 

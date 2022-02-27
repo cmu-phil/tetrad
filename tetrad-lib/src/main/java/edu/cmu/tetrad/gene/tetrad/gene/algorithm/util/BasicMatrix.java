@@ -24,8 +24,7 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
 /**
  * Basic functionality of a Matrix
  *
- * @author
- * <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
+ * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
 
@@ -142,8 +141,7 @@ public abstract class BasicMatrix {
         while (true) {
             try {
                 nt = strmTok.nextToken();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 break;
             }
             if (nt == strmTok.TT_EOF) {
@@ -156,8 +154,7 @@ public abstract class BasicMatrix {
                     col = 0;
                     row++;
                 }
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("Error parsing element [" +
                         row + "," + col + "]: " + strmTok.sval);
             }

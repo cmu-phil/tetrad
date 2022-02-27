@@ -9,11 +9,11 @@ import edu.cmu.tetrad.graph.Graph;
  * @author jdramsey
  */
 public interface TakesInitialGraph {
-	
-	public Graph getInitialGraph();
-	
-	public void setInitialGraph(Graph initialGraph);
-	
+
+    public Graph getInitialGraph();
+
+    public void setInitialGraph(Graph initialGraph);
+
     void setInitialGraph(Algorithm algorithm);
 
 }

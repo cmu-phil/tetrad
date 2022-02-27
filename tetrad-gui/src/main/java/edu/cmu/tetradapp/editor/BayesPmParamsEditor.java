@@ -77,8 +77,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
                 try {
                     getParams().set("lowerBoundNumVals", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -90,8 +89,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
                 try {
                     getParams().set("upperBoundNumVals", value);
                     return value;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -170,8 +168,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
             setUpManually.setSelected(true);
             lowerBoundField.setEnabled(false);
             upperBoundField.setEnabled(false);
-        }
-        else {
+        } else {
             automaticallyAssigned.setSelected(true);
             lowerBoundField.setEnabled(true);
             upperBoundField.setEnabled(true);

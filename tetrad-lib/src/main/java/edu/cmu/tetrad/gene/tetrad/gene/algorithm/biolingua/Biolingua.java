@@ -32,7 +32,7 @@ import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.SymMatrixF;
  * PSB-2002
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul
- *         Saavedra</a> (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * Saavedra</a> (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
 
 public class Biolingua {
@@ -327,13 +327,11 @@ public class Biolingua {
 
                     if (correlMSign == predictedSign) {
                         predictions++;
-                    }
-                    else {
+                    } else {
                         errors++;
                     }
 
-                }
-                else {
+                } else {
                     // No path found between those 2 vars in this graph.
                     // If there is a non-zero correlation among those 2
                     // variables, then increment the # of errors in this
@@ -389,12 +387,10 @@ public class Biolingua {
             // whether the whole path ends up positive or negative
             if (negEdges % 2 == 0) {
                 pos++;  // It's a positive path (even # of negative edges)
-            }
-            else {
+            } else {
                 neg++;  // It's a negative path
             }
-        }
-        else {
+        } else {
             // Get parents of this node
             int[] parent = Biolingua.g.getParents(vj);
             visited[vj] = true;

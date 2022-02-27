@@ -143,8 +143,7 @@ public class RevealSearch {
             System.out.println("For gene " + child);
             for (int p1 = 0; p1 < ngenes; p1++) {
                 for (int p2 = 0; p2 < ngenes && p2 != p1; p2++) {
-                    for (int p3 = 0; p3 < ngenes && p3 != p2 && p3 != p1; p3++)
-                    {
+                    for (int p3 = 0; p3 < ngenes && p3 != p2 && p3 != p1; p3++) {
                         ppp[0] = p1;
                         ppp[1] = p2;
                         ppp[2] = p3;
@@ -279,7 +278,7 @@ public class RevealSearch {
                     for (int gparent2 = 0; gparent2 < ngenes; gparent2++) {
                         for (int lagp2 = lag1; lagp2 <= lag2; lagp2++) {
                             for (int gparent3 = 0;
-                                    gparent3 < ngenes; gparent3++) {
+                                 gparent3 < ngenes; gparent3++) {
                                 for (int lagp3 = lag1; lagp3 <= lag2; lagp3++) {
                                     parent3[0] = gparent1;
                                     parent3[1] = gparent2;
@@ -322,8 +321,7 @@ public class RevealSearch {
                         " " + lags1[gchild]);
                 parents[gchild][0] = parents1[gchild];
                 lags[gchild][0] = lags1[gchild];
-            }
-            else if (nparents[gchild] == 2) {
+            } else if (nparents[gchild] == 2) {
                 parents[gchild] = new int[2];
                 lags[gchild] = new int[2];
                 System.out.println("best parents, lags = " +
@@ -333,8 +331,7 @@ public class RevealSearch {
                 parents[gchild][1] = parents2[gchild][1];
                 lags[gchild][0] = lags2[gchild][0];
                 lags[gchild][1] = lags2[gchild][1];
-            }
-            else if (nparents[gchild] == 3) {
+            } else if (nparents[gchild] == 3) {
                 parents[gchild] = new int[3];
                 lags[gchild] = new int[3];
                 System.out.println("best parents, lags = " +

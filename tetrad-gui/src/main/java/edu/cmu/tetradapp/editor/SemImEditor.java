@@ -20,21 +20,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.bayes.BayesXmlRenderer;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.SemEstimatorWrapper;
 import edu.cmu.tetradapp.model.SemImWrapper;
@@ -48,15 +40,17 @@ import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Serializer;
 
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -65,13 +59,6 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableModel;
 
 /**
  * Edits a SEM instantiated model.
@@ -114,7 +101,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
      * @param tabbedPaneDefault
      */
     public SemImEditor(final SemImWrapper wrapper, final String graphicalEditorTitle,
-            final String tabularEditorTitle, final TabbedPaneDefault tabbedPaneDefault) {
+                       final String tabularEditorTitle, final TabbedPaneDefault tabbedPaneDefault) {
 
         if (wrapper == null) {
             throw new NullPointerException("The SEM IM wrapper has not been specified.");
@@ -216,6 +203,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     public enum TabbedPaneDefault {
         GRAPHICAL, TABULAR, COVMATRIX, tabbedPanedDefault, STATS
     }
+
     private SemImWrapper wrapper;
 
     private class OneEditor extends JPanel implements LayoutEditable {
@@ -272,7 +260,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private JMenuItem errorTerms;
 
         public OneEditor(SemImWrapper wrapper, String graphicalEditorTitle, String tabularEditorTitle,
-                final TabbedPaneDefault tabbedPaneDefault) {
+                         final TabbedPaneDefault tabbedPaneDefault) {
             this.semImWrapper = wrapper;
             this.graphicalEditorTitle = graphicalEditorTitle;
             this.tabularEditorTitle = tabularEditorTitle;
@@ -326,7 +314,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             saveSemAsXml.addActionListener(e -> {
                 try {
                     File outfile = EditorUtils.getSaveFile("semIm", "xml", getComp(),
-                    false, "Save SEM IM as XML...");
+                            false, "Save SEM IM as XML...");
 
                     SemIm bayesIm = (SemIm) oneEditorPanel.getSemIm();
                     FileOutputStream out = new FileOutputStream(outfile);
@@ -517,7 +505,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
          * Sets a new SemIm to edit.
          */
         public void displaySemIm(SemIm semIm, int tabSelectionIndex,
-                int matrixSelection) {
+                                 int matrixSelection) {
             if (semIm == null) {
                 throw new NullPointerException();
             }
@@ -711,7 +699,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
          * Constructs a SemIm graphical editor for the given SemIm.
          */
         public SemImGraphicalEditor(SemImWrapper semImWrapper, SemImEditor.OneEditor editor,
-                int maxFreeParamsForStatistics) {
+                                    int maxFreeParamsForStatistics) {
             this.wrapper = semImWrapper;
             this.editor = editor;
             this.maxFreeParamsForStatistics = maxFreeParamsForStatistics;
@@ -1347,7 +1335,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             }
         }
 
-//    private String asString2(double value) {
+        //    private String asString2(double value) {
 //        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 //
 //        if (Double.isNaN(value)) {
@@ -1523,7 +1511,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private boolean editable = true;
 
         public SemImTabularEditor(SemImWrapper wrapper, SemImEditor.OneEditor editor,
-                int maxFreeParamsForStatistics) {
+                                  int maxFreeParamsForStatistics) {
             this.wrapper = wrapper;
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 //        setBorder(new TitledBorder("Click parameter values to edit"));
@@ -1581,7 +1569,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private boolean editable = true;
 
         public ParamTableModel(SemImWrapper wrapper, SemImEditor.OneEditor editor,
-                int maxFreeParamsForStatistics) {
+                               int maxFreeParamsForStatistics) {
             this.wrapper = wrapper;
 
             if (maxFreeParamsForStatistics < 0) {
@@ -2015,7 +2003,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
          * which are as specified (in the order they appear in the matrix).
          */
         public ImpliedCovTable(SemImWrapper wrapper, boolean measured,
-                boolean correlations) {
+                               boolean correlations) {
             this.wrapper = wrapper;
             this.measured = measured;
             this.correlations = correlations;
@@ -2124,9 +2112,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     } else {
                         throw new IllegalArgumentException(
                                 "Off-diagonal element at (" + i + ", " + j
-                                + ") cannot be converted to correlation: "
-                                + d1 + " <= Math.pow(" + d2 + " * " + d3
-                                + ", 0.5)");
+                                        + ") cannot be converted to correlation: "
+                                        + d1 + " <= Math.pow(" + d2 + " * " + d3
+                                        + ", 0.5)");
                     }
                 }
             }
@@ -2268,8 +2256,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
         if (editorWindow != null) {
             return editorWindow.getRootPane().getContentPane();
-        }
-        else {
+        } else {
             return editorWindow;
         }
     }

@@ -1,13 +1,18 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.search.IndTestScore;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Wrapper for Fisher Z test.
@@ -19,7 +24,6 @@ import java.util.*;
         command = "sem-bic-test",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
-@Experimental
 public class SemBicTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;

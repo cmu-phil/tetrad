@@ -42,8 +42,7 @@ public class AdjustCopyrights {
 
         try {
             copyrightNotice = loadCopyrightNotice();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -74,8 +73,7 @@ public class AdjustCopyrights {
                 int from = matcher.start();
                 outStream.println(
                         inContents.substring(from, inContents.length()));
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -101,8 +99,7 @@ public class AdjustCopyrights {
         for (File file : files) {
             if (file.isDirectory()) {
                 javaFiles.addAll(getJavaFiles(file));
-            }
-            else {
+            } else {
                 if (file.getName().endsWith(".java")) {
                     javaFiles.add(file);
                 }

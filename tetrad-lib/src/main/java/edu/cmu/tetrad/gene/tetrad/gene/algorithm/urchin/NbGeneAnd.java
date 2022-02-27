@@ -25,7 +25,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 public class NbGeneAnd extends AbstractNbComponent {
     public NbGeneAnd(double factor, double power, NbComponent[] parents,
-            int[] inhibitExcite, String name, double sd) {
+                     int[] inhibitExcite, String name, double sd) {
         super(factor, power, parents, inhibitExcite, name);
     }
 
@@ -36,8 +36,7 @@ public class NbGeneAnd extends AbstractNbComponent {
             double v = getParents()[i].getValue();
             if (getInhibitExcite()[i] > 0) {
                 product *= v / (v + 1.0);
-            }
-            else {
+            } else {
                 product *= (1.0 - (v / (v + 1.0)));
             }
         }
@@ -45,8 +44,7 @@ public class NbGeneAnd extends AbstractNbComponent {
 
         if (getSd() == 0.0) {
             return;
-        }
-        else {
+        } else {
             double r = 1.0 +
                     RandomUtil.getInstance().nextNormal(0, 1) * getSd();
             setValue(getValue() * r);

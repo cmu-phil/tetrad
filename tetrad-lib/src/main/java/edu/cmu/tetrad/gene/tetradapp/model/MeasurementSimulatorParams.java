@@ -36,7 +36,7 @@ import java.io.ObjectInputStream;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class MeasurementSimulatorParams implements TetradSerializable{
+public class MeasurementSimulatorParams implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**

@@ -27,7 +27,10 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.sqrt;
 
@@ -51,7 +54,7 @@ public class RecursivePartialCorrelation {
     }
 
     public double corr(Node x, Node y, List<Node> z) {
-        if (z.isEmpty()) return  this.corr.getValue(nodesMap.get(x), nodesMap.get(y));
+        if (z.isEmpty()) return this.corr.getValue(nodesMap.get(x), nodesMap.get(y));
         Node z0 = z.get(0);
         List<Node> _z = new ArrayList<>(z);
         _z.remove(z0);

@@ -26,8 +26,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
@@ -45,6 +45,7 @@ import java.util.*;
 import static edu.cmu.tetrad.util.MatrixUtils.transpose;
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Double.isNaN;
+import static java.lang.Math.pow;
 import static java.lang.Math.*;
 
 /**
@@ -61,7 +62,7 @@ public class Lofs2 {
         exp, expUnstandardized, expUnstandardizedInverted, other, logcosh, entropy
     }
 
-    private Graph pattern;
+    private Graph CPDAG;
     private List<DataSet> dataSets;
     private List<Matrix> matrices;
     private double alpha = 1.1;
@@ -82,28 +83,28 @@ public class Lofs2 {
 
     //===============================CONSTRUCTOR============================//
 
-    public Lofs2(Graph pattern, List<DataSet> dataSets)
+    public Lofs2(Graph CPDAG, List<DataSet> dataSets)
             throws IllegalArgumentException {
 
         if (dataSets == null) {
             throw new IllegalArgumentException("Data set must be specified.");
         }
 
-        if (pattern == null) {
-            throw new IllegalArgumentException("Pattern must be specified.");
+        if (CPDAG == null) {
+            throw new IllegalArgumentException("CPDAG must be specified.");
         }
 
-        for (DataSet dataSet : dataSets) {
-            for (int j = 0; j < dataSet.getNumRows(); j++) {
-                for (int i = 0; i < dataSet.getNumColumns(); i++) {
-                    if (isNaN(dataSet.getDouble(i, j))) {
-                        throw new IllegalArgumentException("Please remove or impute missing values.");
-                    }
-                }
-            }
-        }
+//        for (DataSet dataSet : dataSets) {
+//            for (int j = 0; j < dataSet.getNumRows(); j++) {
+//                for (int i = 0; i < dataSet.getNumColumns(); i++) {
+//                    if (isNaN(dataSet.getDouble(j, i))) {
+//                        throw new IllegalArgumentException("Please remove or impute missing values.");
+//                    }
+//                }
+//            }
+//        }
 
-        this.pattern = pattern;
+        this.CPDAG = CPDAG;
         this.variables = dataSets.get(0).getVariables();
         this.varnames = dataSets.get(0).getVariableNames();
 
@@ -147,7 +148,7 @@ public class Lofs2 {
 
     public Graph orient() {
 
-        Graph skeleton = GraphUtils.undirectedGraph(getPattern());
+        Graph skeleton = GraphUtils.undirectedGraph(getCPDAG());
         Graph graph = new EdgeListGraph(skeleton.getNodes());
 
         List<Node> nodes = skeleton.getNodes();
@@ -2404,8 +2405,8 @@ public class Lofs2 {
         return p;
     }
 
-    private Graph getPattern() {
-        return pattern;
+    private Graph getCPDAG() {
+        return CPDAG;
     }
 
     private Node getVariable(List<Node> variables, String name) {

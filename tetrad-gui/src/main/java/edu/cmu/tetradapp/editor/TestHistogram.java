@@ -21,7 +21,10 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import junit.framework.Test;
@@ -83,7 +86,7 @@ public class TestHistogram extends TestCase {
     /**
      * This method uses reflection to collect up all of the test methods from
      * this class and return them to
-     *
+     * <p>
      * the test runner.
      */
     public static Test suite() {

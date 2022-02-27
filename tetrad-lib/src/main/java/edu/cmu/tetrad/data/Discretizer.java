@@ -332,7 +332,7 @@ public class Discretizer {
             if (!(cutoffs[i] <= cutoffs[i + 1])) {
                 System.out.println(
                         "Cutoffs should be in nondecreasing order: "
-                        + Arrays.toString(cutoffs)
+                                + Arrays.toString(cutoffs)
                 );
             }
         }

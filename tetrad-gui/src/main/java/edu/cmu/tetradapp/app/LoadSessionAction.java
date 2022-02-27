@@ -29,13 +29,14 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.prefs.Preferences;
-import javax.swing.*;
 
 
 /**
@@ -141,7 +142,7 @@ final class LoadSessionAction extends AbstractAction {
 
                         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                                 "Could not load this session file into Tetrad " + Version.currentViewableVersion() + "! \n" +
-                                "The session was saved by Tetrad " + version + " on " +  df.format(date));
+                                        "The session was saved by Tetrad " + version + " on " + df.format(date));
 
                         return;
                     }

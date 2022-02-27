@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
@@ -74,11 +74,11 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
 
 
     private static DataModel createRectangularModel(DataSet data) {
-        for (int i = data.getNumColumns() -1; i >= 0; i--) {
+        for (int i = data.getNumColumns() - 1; i >= 0; i--) {
             if (!data.isSelected(data.getVariable(i))) {
                 data.removeColumn(i);
             }
-        }                                    
+        }
         return data;
     }
 

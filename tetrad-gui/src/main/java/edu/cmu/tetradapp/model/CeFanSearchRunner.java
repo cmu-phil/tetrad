@@ -56,8 +56,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
         super(dataWrapper, params, null);
     }
 
-   
-    
+
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
@@ -80,7 +79,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
     }
 
     public CeFanSearchRunner(SemGraphWrapper dagWrapper,
-            Parameters params) {
+                             Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
@@ -113,7 +112,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
         Cefs search =
                 new Cefs(getIndependenceTest(), pcDepth);
         Parameters params = getParams();
-        if(params instanceof Parameters){
+        if (params instanceof Parameters) {
             search.setAggressivelyPreventCycles(params.getBoolean("aggressivelyPreventCycles", false));
         }
         String targetName = getParams().getString("targetName", null);
@@ -122,11 +121,9 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
     }

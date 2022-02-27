@@ -25,33 +25,24 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
-import edu.cmu.tetrad.algcomparison.statistic.AdjacencyPrecision;
-import edu.cmu.tetrad.algcomparison.statistic.AdjacencyRecall;
-import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecision;
-import edu.cmu.tetrad.algcomparison.statistic.ArrowheadRecall;
-import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
-import edu.cmu.tetrad.algcomparison.statistic.F1Adj;
-import edu.cmu.tetrad.algcomparison.statistic.F1Arrow;
-import edu.cmu.tetrad.algcomparison.statistic.MathewsCorrAdj;
-import edu.cmu.tetrad.algcomparison.statistic.MathewsCorrArrow;
-import edu.cmu.tetrad.algcomparison.statistic.SHD;
-import edu.cmu.tetrad.algcomparison.statistic.Statistics;
+import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import java.io.IOException;
-import static java.lang.System.out;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
+import static java.lang.System.out;
+
 /**
- *
  * Nov 14, 2017 5:24:51 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

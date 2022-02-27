@@ -19,10 +19,10 @@
 package edu.pitt.dbmi.data.reader.covariance;
 
 import edu.pitt.dbmi.data.reader.DataReader;
+
 import java.io.IOException;
 
 /**
- *
  * Feb 22, 2017 2:31:13 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

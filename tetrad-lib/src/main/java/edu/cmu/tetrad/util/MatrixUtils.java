@@ -22,19 +22,15 @@ package edu.cmu.tetrad.util;
 
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.linalg.Property;
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
+import org.apache.commons.math3.exception.OutOfRangeException;
+import org.apache.commons.math3.linear.*;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
-import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.linear.AbstractRealMatrix;
-import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.NonPositiveDefiniteMatrixException;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RectangularCholeskyDecomposition;
-import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 import static java.lang.Math.sqrt;
 
@@ -53,8 +49,8 @@ public final class MatrixUtils {
     /**
      * Make a repeat copy of matrix mat.
      *
-     * @param mat matrix to copy
-     * @param nRow number of repeat copy of row
+     * @param mat     matrix to copy
+     * @param nRow    number of repeat copy of row
      * @param mColumn number of repeat copy of column
      * @return
      */
@@ -74,7 +70,7 @@ public final class MatrixUtils {
      * Make a n repeat copy of the rows and columns of the matrix mat.
      *
      * @param mat
-     * @param n number of repeat copy
+     * @param n   number of repeat copy
      * @return
      */
     public static double[][] repmat(double[][] mat, int n) {
@@ -91,10 +87,10 @@ public final class MatrixUtils {
     /**
      * Repeat copy of rows.
      *
-     * @param mat matrix
-     * @param n number of repeat copy
+     * @param mat         matrix
+     * @param n           number of repeat copy
      * @param startRowPos starting row
-     * @param numOfRow number of rows to copy nth times
+     * @param numOfRow    number of rows to copy nth times
      */
     private static void repeatCopyRow(double[][] mat, int n, int startRowPos, int numOfRow) {
         for (int i = 0; i < n; i++) {
@@ -112,7 +108,7 @@ public final class MatrixUtils {
      * Repeat copy of a vector.
      *
      * @param src vector
-     * @param n number of repeat copy
+     * @param n   number of repeat copy
      * @return a new vector of n copy of the vector
      */
     private static double[] repeatCopyVector(double[] src, int n) {
@@ -125,6 +121,7 @@ public final class MatrixUtils {
     }
 
     //=========================PUBLIC METHODS===========================//
+
     /**
      * Tests two matrices for equality.
      *
@@ -163,13 +160,13 @@ public final class MatrixUtils {
      * If any two corresponding elements differ by more than the given
      * tolerance, false is returned.
      *
-     * @param ma The first 2D matrix to check.
-     * @param mb The second 2D matrix to check.
+     * @param ma        The first 2D matrix to check.
+     * @param mb        The second 2D matrix to check.
      * @param tolerance A double >= 0.
      * @return Ibid.
      */
     public static boolean equals(double[][] ma, double[][] mb,
-            double tolerance) {
+                                 double tolerance) {
         return new Matrix(ma).equals(new Matrix(mb), tolerance);
         //new Property(tolerance).equals(TetradMatrix.instance(ma),
         //     TetradMatrix.instance(mb));
@@ -180,8 +177,8 @@ public final class MatrixUtils {
      * any two corresponding elements differ by more than the given tolerance,
      * false is returned.
      *
-     * @param va The first matrix to check.
-     * @param vb The second matrix to check.
+     * @param va        The first matrix to check.
+     * @param vb        The second matrix to check.
      * @param tolerance A double >= 0.
      * @return Ibid.
      */
@@ -200,7 +197,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * @param m The matrix to check.
+     * @param m         The matrix to check.
      * @param tolerance A double >= 0.
      * @return Ibid.
      */
@@ -437,15 +434,15 @@ public final class MatrixUtils {
 
     /**
      * @param edgeCoef The edge covariance matrix. edgeCoef(i, j) is a parameter
-     * in this matrix just in case i-->j is an edge in the model. All other
-     * entries in the matrix are zero.
+     *                 in this matrix just in case i-->j is an edge in the model. All other
+     *                 entries in the matrix are zero.
      * @param errCovar The error covariance matrix. errCovar(i, i) is the
-     * variance of i; off-diagonal errCovar(i, j) are covariance parameters that
-     * are specified in the model. All other matrix entries are zero.
+     *                 variance of i; off-diagonal errCovar(i, j) are covariance parameters that
+     *                 are specified in the model. All other matrix entries are zero.
      * @return The implied covariance matrix, which is the covariance matrix
      * over the measured variables that is implied by all the given information.
      * @throws IllegalArgumentException if edgeCoef or errCovar contains an
-     * undefined value (Double.NaN).
+     *                                  undefined value (Double.NaN).
      */
     public static Matrix impliedCovar2(Matrix edgeCoef, Matrix errCovar) {
         if (containsNaN(edgeCoef)) {
@@ -675,7 +672,7 @@ public final class MatrixUtils {
      */
     public static Matrix convertCovToCorr(Matrix m) {
         if (m.rows() != m.columns()) throw new IllegalArgumentException("Not a square matrix.");
-        if (!MatrixUtils.isSymmetric(m.toArray(),0.001)) {
+        if (!MatrixUtils.isSymmetric(m.toArray(), 0.001)) {
             throw new IllegalArgumentException("Not symmetric with tolerance " + 0.001);
         }
 
@@ -958,7 +955,7 @@ public final class MatrixUtils {
     /**
      * @return the order of the matrix for which this is the vech.
      * @throws IllegalArgumentException in case this matrix does not have
-     * dimension n x 1 for some n = 0 + 1 + 2 + ... + k for some k.
+     *                                  dimension n x 1 for some n = 0 + 1 + 2 + ... + k for some k.
      */
     private static int vechOrder(double[] vech) {
         int difference = vech.length;

@@ -101,7 +101,7 @@ public class TestFci {
     @Test
     public void testSearch7() {
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
-                "H-->M,L-->M,S-->D,I-->S,P-->S",
+                        "H-->M,L-->M,S-->D,I-->S,P-->S",
                 "D<->H,D-->L,D-->M,H<->L,H-->M,Io->S,L-->M,Po->S,S-->D", new Knowledge2());
     }
 
@@ -259,7 +259,7 @@ public class TestFci {
 //        assertTrue(compareGraph.equals(resultGraph));
     }
 
-//    @Test
+    //    @Test
     public void testFciAnc() {
         int numMeasures = 50;
         double edgeFactor = 2.0;

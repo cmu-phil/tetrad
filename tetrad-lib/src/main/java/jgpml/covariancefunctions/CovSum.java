@@ -29,12 +29,13 @@ package jgpml.covariancefunctions;
 
 import Jama.Matrix;
 
-/** Composes a covariance function as the sum of other covariance
+/**
+ * Composes a covariance function as the sum of other covariance
  * functions. This function doesn't actually compute very much on its own, it
  * merely calls other covariance functions with the right parameters.
  */
 
-public class CovSum implements CovarianceFunction{
+public class CovSum implements CovarianceFunction {
 
     CovarianceFunction[] f;
     int[] idx;
@@ -45,21 +46,21 @@ public class CovSum implements CovarianceFunction{
      * <code>CovarianceFunction</code>s passed as input.
      *
      * @param inputDimensions input dimension of the dataset
-     * @param f array of <code>CovarianceFunction</code>
-     *
+     * @param f               array of <code>CovarianceFunction</code>
      * @see CovarianceFunction
      */
-    public CovSum(int inputDimensions, CovarianceFunction... f){
+    public CovSum(int inputDimensions, CovarianceFunction... f) {
         this.D = inputDimensions;
-        this.f=f;
-        idx=new int[f.length+1];
-        for(int i=0; i<f.length; i++){
-            idx[i+1]=idx[i]+f[i].numParameters();
+        this.f = f;
+        idx = new int[f.length + 1];
+        for (int i = 0; i < f.length; i++) {
+            idx[i + 1] = idx[i] + f[i].numParameters();
         }
     }
 
     /**
      * Returns the number of hyperparameters of this<code>CovarianceFunction</code>
+     *
      * @return number of hyperparameters
      */
     public int numParameters() {
@@ -68,40 +69,42 @@ public class CovSum implements CovarianceFunction{
 
     /**
      * Compute covariance matrix of a dataset X
+     *
      * @param loghyper column <code>Matrix</code> of hyperparameters
-     * @param X  input dataset
-     * @return  K covariance <code>Matrix</code>
+     * @param X        input dataset
+     * @return K covariance <code>Matrix</code>
      */
-    public Matrix compute(Matrix loghyper, Matrix X){
+    public Matrix compute(Matrix loghyper, Matrix X) {
 
-        Matrix K = new Matrix(X.getRowDimension(),X.getRowDimension());
+        Matrix K = new Matrix(X.getRowDimension(), X.getRowDimension());
 
-        for(int i=0; i<f.length; i++){
-            Matrix loghyperi = loghyper.getMatrix(idx[i],idx[i+1]-1,0,0);
-            K.plusEquals(f[i].compute(loghyperi,X));
+        for (int i = 0; i < f.length; i++) {
+            Matrix loghyperi = loghyper.getMatrix(idx[i], idx[i + 1] - 1, 0, 0);
+            K.plusEquals(f[i].compute(loghyperi, X));
         }
         return K;
     }
 
     /**
      * Compute compute test set covariances
+     *
      * @param loghyper column <code>Matrix</code> of hyperparameters
-     * @param X  input dataset
-     * @param Xstar  test set
-     * @return  [K(Xstar,Xstar) K(X,Xstar)]
+     * @param X        input dataset
+     * @param Xstar    test set
+     * @return [K(Xstar, Xstar) K(X,Xstar)]
      */
-    public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar){
+    public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
 
-        Matrix A = new Matrix(Xstar.getRowDimension(),1);
-        Matrix B = new Matrix(X.getRowDimension(),Xstar.getRowDimension());
+        Matrix A = new Matrix(Xstar.getRowDimension(), 1);
+        Matrix B = new Matrix(X.getRowDimension(), Xstar.getRowDimension());
 
-        for(int i=0; i<f.length; i++){
-            Matrix loghyperi = loghyper.getMatrix(idx[i],idx[i+1]-1,0,0);
-            Matrix[] K = f[i].compute(loghyperi,X,Xstar);
+        for (int i = 0; i < f.length; i++) {
+            Matrix loghyperi = loghyper.getMatrix(idx[i], idx[i + 1] - 1, 0, 0);
+            Matrix[] K = f[i].compute(loghyperi, X, Xstar);
             A.plusEquals(K[0]);
             B.plusEquals(K[1]);
         }
-        return new Matrix[]{A,B};
+        return new Matrix[]{A, B};
     }
 
     /**
@@ -109,22 +112,22 @@ public class CovSum implements CovarianceFunction{
      * to the hyperparameter with index <code>idx</code>
      *
      * @param loghyper hyperparameters
-     * @param X input dataset
-     * @param index hyperparameter index
-     * @return  <code>Matrix</code> of derivatives
+     * @param X        input dataset
+     * @param index    hyperparameter index
+     * @return <code>Matrix</code> of derivatives
      */
-    public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index){
+    public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index) {
 
 
-        if(index>numParameters()-1)
-            throw new IllegalArgumentException("Wrong hyperparameters index "+index+" it should be smaller or equal to "+(numParameters()-1));
+        if (index > numParameters() - 1)
+            throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
-        int whichf=0;
-        while(index>(idx[whichf+1]-1)) whichf++;  // find in which of the covariance this parameter is
+        int whichf = 0;
+        while (index > (idx[whichf + 1] - 1)) whichf++;  // find in which of the covariance this parameter is
 
-        Matrix loghyperi = loghyper.getMatrix(idx[whichf],idx[whichf+1]-1,0,0);
-        index-=idx[whichf];
-        return f[whichf].computeDerivatives(loghyperi,X, index);
+        Matrix loghyperi = loghyper.getMatrix(idx[whichf], idx[whichf + 1] - 1, 0, 0);
+        index -= idx[whichf];
+        return f[whichf].computeDerivatives(loghyperi, X, index);
     }
 
 

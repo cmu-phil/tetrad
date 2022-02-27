@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
@@ -349,13 +348,13 @@ public class TestSemIm {
         // remove <--> arrows from a copy of the graph so we can use the getParents function to get Nodes with edges into target
         SemGraph removedDoubleArrowEdges = new SemGraph(graph);
         ArrayList<Edge> edgesToRemove = new ArrayList<>();
-        for(Edge e : removedDoubleArrowEdges.getEdges()) {
-            if((e.getEndpoint1().equals(Endpoint.ARROW)) &&
+        for (Edge e : removedDoubleArrowEdges.getEdges()) {
+            if ((e.getEndpoint1().equals(Endpoint.ARROW)) &&
                     (e.getEndpoint2().equals(Endpoint.ARROW))) {
                 edgesToRemove.add(e);
             }
         }
-        for(Edge e : edgesToRemove) {
+        for (Edge e : edgesToRemove) {
             removedDoubleArrowEdges.removeEdge(e);
         }
 
@@ -363,7 +362,7 @@ public class TestSemIm {
                 ArrayList<>(removedDoubleArrowEdges.getParents(removedDoubleArrowEdges.getNode(target.getName())));
 
         SemEvidence semEvidence = new SemEvidence(modifiedSemIm);
-        for(Node n : targetParents) {
+        for (Node n : targetParents) {
             semEvidence.setManipulated(semEvidence.getNodeIndex(n.getName()),
                     true);
         }
@@ -372,7 +371,7 @@ public class TestSemIm {
         SemIm modifiedAndUpdatedSemIm = new
                 SemIm(semUpdater.getUpdatedSemIm());
 
-        for(Node n : targetParents) {
+        for (Node n : targetParents) {
             modifiedAndUpdatedSemIm.setErrVar(modifiedAndUpdatedSemIm.getVariableNode(n.getName()),
                     1.0);
             modifiedAndUpdatedSemIm.setMean(modifiedAndUpdatedSemIm.getVariableNode(n.getName()),
@@ -380,31 +379,29 @@ public class TestSemIm {
         }
 
         double varianceToAddToTargetAfterEdgeRemoval = 0.0;
-        for(Node n : targetParents) {
+        for (Node n : targetParents) {
             ArrayList<Node> nodesIntoTarget = new
                     ArrayList<>(graph.getNodesInTo(graph.getNode(target.getName()),
                     Endpoint.ARROW));
 
-            for(Node nodeIntoTarget : nodesIntoTarget) {
+            for (Node nodeIntoTarget : nodesIntoTarget) {
                 ArrayList<Edge> edgesConnectingParentAndTarget = new
                         ArrayList<>(modifiedAndUpdatedSemIm.getSemPm().getGraph().getEdges(modifiedAndUpdatedSemIm.getVariableNode(nodeIntoTarget.getName()),
                         modifiedAndUpdatedSemIm.getVariableNode(target.getName())));
-                if(edgesConnectingParentAndTarget.size() > 1) {
-                    for(Edge e : edgesConnectingParentAndTarget) {
-                        if((e.getEndpoint1().equals(Endpoint.ARROW)) &&
+                if (edgesConnectingParentAndTarget.size() > 1) {
+                    for (Edge e : edgesConnectingParentAndTarget) {
+                        if ((e.getEndpoint1().equals(Endpoint.ARROW)) &&
                                 (e.getEndpoint2().equals(Endpoint.ARROW))) {
                             Edge directedEdge1 = new
                                     Edge(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
                                     modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
                                     Endpoint.TAIL, Endpoint.ARROW);
                             double directedEdgeCoef = 0.0;
-                            if(edgesConnectingParentAndTarget.contains(directedEdge1))
-                            {
+                            if (edgesConnectingParentAndTarget.contains(directedEdge1)) {
                                 directedEdgeCoef =
                                         modifiedAndUpdatedSemIm.getEdgeCoef(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
                                                 modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()));
-                            }
-                            else {
+                            } else {
                                 directedEdgeCoef =
                                         modifiedAndUpdatedSemIm.getEdgeCoef(modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
                                                 modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()));

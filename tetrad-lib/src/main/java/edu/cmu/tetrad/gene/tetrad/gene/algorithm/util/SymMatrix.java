@@ -26,8 +26,7 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
  * (of elements of type <code>short</code>),
  * storing only the lower triangular portion of it
  *
- * @author
- * <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
+ * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
 
@@ -57,8 +56,7 @@ public class SymMatrix extends LTMatrix {
     public void setValue(int row, int col, int x) {
         if (row >= col) {
             super.setValue(row, col, x);
-        }
-        else {
+        } else {
             super.setValue(col, row, x);
         }
     }
@@ -70,8 +68,7 @@ public class SymMatrix extends LTMatrix {
     public void setValue(int row, int col, short x) {
         if (row >= col) {
             super.setValue(row, col, x);
-        }
-        else {
+        } else {
             super.setValue(col, row, x);
         }
     }

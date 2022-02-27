@@ -30,20 +30,23 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static edu.cmu.tetrad.data.Discretizer.*;
 import static java.lang.Math.log;
 
 /**
  * Implements a conditional Gaussian likelihood. Please note that this this likelihood will be maximal only if the
- <<<<<<< HEAD
+ * <<<<<<< HEAD
  * the continuous mixedVariables are jointly Gaussian conditional on the discrete mixedVariables; in all other cases, it will
  * be less than maximal. For an algorithm like FGS this is fine.
- =======
+ * =======
  * the continuous variables are jointly Gaussian conditional on the discrete variables; in all other cases, it will
  * be less than maximal. For an algorithm like FGES this is fine.
- >>>>>>> 0031bda0387f30996b1180ba17a0aeee69ad44f7
+ * >>>>>>> 0031bda0387f30996b1180ba17a0aeee69ad44f7
  *
  * @author Joseph Ramsey
  */

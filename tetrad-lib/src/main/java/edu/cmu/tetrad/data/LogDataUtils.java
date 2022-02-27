@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.data;
 
-import edu.cmu.tetrad.search.Tetrad;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**

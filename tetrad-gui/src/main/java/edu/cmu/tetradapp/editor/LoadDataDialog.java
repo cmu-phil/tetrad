@@ -26,6 +26,10 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.pitt.dbmi.data.reader.preview.BasicDataPreviewer;
 import edu.pitt.dbmi.data.reader.preview.DataPreviewer;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+
+import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -39,26 +43,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
+
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 /**
@@ -726,9 +711,9 @@ public final class LoadDataDialog extends JPanel {
                 strBuilder.append("<p>Validation result of ");
                 strBuilder.append(loadedFiles.get(i).getName());
                 strBuilder.append(":</p>");
-                
+
                 List<ValidationResult> results = loadDataSettings.validateDataWithSettings(loadedFiles.get(i));
-                
+
                 List<ValidationResult> infos = new LinkedList<>();
                 List<ValidationResult> warnings = new LinkedList<>();
                 List<ValidationResult> errors = new LinkedList<>();
@@ -744,7 +729,7 @@ public final class LoadDataDialog extends JPanel {
                             errors.add(result);
                     }
                 }
-                
+
                 // Show some file info
                 if (!infos.isEmpty()) {
                     strBuilder.append("<p><b>File info:</b><br />");
@@ -754,50 +739,50 @@ public final class LoadDataDialog extends JPanel {
                     });
                     strBuilder.append("</p>");
                 }
-                
+
                 // Show warning messages
                 if (!warnings.isEmpty()) {
                     int warnCount = warnings.size();
-                    
+
                     strBuilder.append("<p style=\"color: orange;\"><b>Warning (total ");
                     strBuilder.append(warnCount);
-                    
+
                     if (warnCount > validationWarnErrMsgThreshold) {
                         strBuilder.append(", showing the first ");
                         strBuilder.append(validationWarnErrMsgThreshold);
                         strBuilder.append("): </b><br />");
-                        
+
                         warnings.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
                             strBuilder.append(e.getMessage());
                             strBuilder.append("<br />");
                         });
                     } else {
                         strBuilder.append("): </b><br />");
-                        
+
                         warnings.forEach(e -> {
                             strBuilder.append(e.getMessage());
                             strBuilder.append("<br />");
                         });
                     }
-                    
+
                     strBuilder.append("</p>");
                 }
-                
+
                 // Show errors if found
                 if (!errors.isEmpty()) {
                     int errorCount = errors.size();
-                    
+
                     String errorCountString = (errorCount > 1) ? " errors" : " error";
-                    
+
                     strBuilder.append("<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following ");
-                    
+
                     if (errorCount > validationWarnErrMsgThreshold) {
                         strBuilder.append(validationWarnErrMsgThreshold);
                         strBuilder.append(errorCountString);
                         strBuilder.append(" (total ");
                         strBuilder.append(errorCount);
                         strBuilder.append(") and validate again:</b><br />");
-                        
+
                         errors.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
                             // Remember to excape the html tags if the data file contains any
                             strBuilder.append(escapeHtml4(e.getMessage()));
@@ -807,16 +792,16 @@ public final class LoadDataDialog extends JPanel {
                         strBuilder.append(errorCount);
                         strBuilder.append(errorCountString);
                         strBuilder.append(" and validate again:</b><br />");
-                        
+
                         errors.forEach(e -> {
                             // Remember to excape the html tags if the data file contains any
                             strBuilder.append(escapeHtml4(e.getMessage()));
                             strBuilder.append("<br />");
                         });
                     }
-                    
+
                     strBuilder.append("</p>");
-                    
+
                     // Also add the file name to failed list
                     // this determines if to show the Load button
                     failedFiles.add(loadedFiles.get(i).getName());
@@ -829,7 +814,7 @@ public final class LoadDataDialog extends JPanel {
                 } else {
                     strBuilder.append("<p style=\"color: green;\"><b>Validation passed with no error!</b></p>");
                 }
-                
+
                 validationResults.add(strBuilder.toString());
             } catch (IOException ex) {
                 Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);

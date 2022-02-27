@@ -28,13 +28,14 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.IDisplayEdge;
+
+import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.rmi.MarshalledObject;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.*;
 
 /**
  * Adds the functionality needed to turn an abstract workbench into a workbench
@@ -56,6 +57,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     private SimulationStudy simulationStudy;
 
     //=========================CONSTRUCTORS==============================//
+
     /**
      * Constructs a new workbench for the given SessionWrapper.
      */
@@ -112,11 +114,11 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     //==========================PUBLIC METHODS===========================//
+
     /**
      * @return a SessionNodeWrapper for a new SessionNode, the type of which is
      * determined by the next button type, and the name of which is the next
      * button type (a String) appended with the next available positive integer.
-     *
      * @see #getNextButtonType
      */
     public Node getNewModelNode() {
@@ -274,6 +276,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     //===========================PRIVATE METHODS========================//
+
     /**
      * Adds a label to the session editor node for the given session node
      * indicating how many times the simulation edu.cmu.tetrad.study will run that node. If the
@@ -325,7 +328,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
 
     /**
      * @return the model classes associated with the given button type.
-     *
      * @throws NullPointerException if no classes are stored for the given type.
      */
     private static Class[] getModelClasses(String nextButtonType) {

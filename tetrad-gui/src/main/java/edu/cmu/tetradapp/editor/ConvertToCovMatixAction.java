@@ -74,8 +74,7 @@ final class ConvertToCovMatixAction extends AbstractAction {
             list.add(corrMatrix);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
-        }
-        else if (dataModel instanceof ICovarianceMatrix) {
+        } else if (dataModel instanceof ICovarianceMatrix) {
             CovarianceMatrix covMatrix1 = (CovarianceMatrix) dataModel;
             CovarianceMatrix covMatrix2 = new CovarianceMatrix(covMatrix1);
 
@@ -83,8 +82,7 @@ final class ConvertToCovMatixAction extends AbstractAction {
             list.add(covMatrix2);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
-        }
-        else {
+        } else {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Must be a continuous data set " +
                             "or a covariance (or correlation) matrix.");

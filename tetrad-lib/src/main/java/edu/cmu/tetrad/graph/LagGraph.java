@@ -39,9 +39,9 @@ public class LagGraph implements Graph {
     private int numLags = 0;
     private Map<String, List<Node>> laggedVariables = new HashMap<>();
     private boolean pag;
-    private boolean pattern;
+    private boolean CPDAG;
 
-    private Map<String,Object> attributes = new HashMap<>();
+    private Map<String, Object> attributes = new HashMap<>();
 
     // New methods.
     public boolean addVariable(String variable) {
@@ -497,13 +497,13 @@ public class LagGraph implements Graph {
     }
 
     @Override
-    public boolean isPattern() {
-        return pattern;
+    public boolean isCPDAG() {
+        return CPDAG;
     }
 
     @Override
-    public void setPattern(boolean pattern) {
-        this.pattern = pattern;
+    public void setCPDAG(boolean CPDAG) {
+        this.CPDAG = CPDAG;
     }
 
     @Override

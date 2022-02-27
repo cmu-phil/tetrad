@@ -63,7 +63,7 @@ public final class Dag implements Graph {
     private Map<Node, Integer> nodesHash = new HashMap<>();
 
     private boolean pag;
-    private boolean pattern;
+    private boolean CPDAG;
 
     private Map<String, Object> attributes = new HashMap<>();
 
@@ -82,7 +82,7 @@ public final class Dag implements Graph {
     }
 
     public Dag(List<Node> nodes) {
-        this.graph = new EdgeListGraphSingleConnections(nodes);
+        this.graph = new EdgeListGraph(nodes);
         reconstituteDpath();
     }
 
@@ -727,13 +727,13 @@ public final class Dag implements Graph {
     }
 
     @Override
-    public boolean isPattern() {
-        return pattern;
+    public boolean isCPDAG() {
+        return CPDAG;
     }
 
     @Override
-    public void setPattern(boolean pattern) {
-        this.pattern = pattern;
+    public void setCPDAG(boolean CPDAG) {
+        this.CPDAG = CPDAG;
     }
 
     @Override

@@ -251,9 +251,7 @@ public class TemplateExpander {
 
         if (error != null) {
             return formula.replaceAll("ERROR", error.getName());
-        }
-
-        else return formula;
+        } else return formula;
     }
 
     private String removeOperatorStrings(String formula) {

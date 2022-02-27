@@ -397,14 +397,11 @@ public class TestStandardizedSem {
         double f;
         if (min != Double.NEGATIVE_INFINITY && max != Double.POSITIVE_INFINITY) {
             f = min + ((double) slider / n) * (max - min);
-        }
-        else if (min != Double.NEGATIVE_INFINITY) {
+        } else if (min != Double.NEGATIVE_INFINITY) {
             f = min + Math.tan(((double) slider / n) * (Math.PI / 2));
-        }
-        else if (max != Double.POSITIVE_INFINITY) {
+        } else if (max != Double.POSITIVE_INFINITY) {
             f = max + Math.tan(-(((double) n - slider) / n) * (Math.PI / 2));
-        }
-        else {
+        } else {
             f = Math.tan(-Math.PI / 2 + ((double) slider / n) * Math.PI);
         }
         return f;
@@ -414,14 +411,11 @@ public class TestStandardizedSem {
         double x;
         if (min != Double.NEGATIVE_INFINITY && max != Double.POSITIVE_INFINITY) {
             x = n * (value - min) / (max - min);
-        }
-        else if (min != Double.NEGATIVE_INFINITY) {
+        } else if (min != Double.NEGATIVE_INFINITY) {
             x = (2. * n) / Math.PI * Math.atan(value - min);
-        }
-        else if (max != Double.POSITIVE_INFINITY) {
+        } else if (max != Double.POSITIVE_INFINITY) {
             x = n + (2. * n) / Math.PI * Math.atan(value - max);
-        }
-        else {
+        } else {
             x = (n / Math.PI) * (Math.atan(value) + Math.PI / 2);
         }
 

@@ -22,7 +22,6 @@ import edu.pitt.dbmi.data.reader.ContinuousData;
 import edu.pitt.dbmi.data.reader.DataColumn;
 
 /**
- *
  * Dec 29, 2018 5:18:32 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

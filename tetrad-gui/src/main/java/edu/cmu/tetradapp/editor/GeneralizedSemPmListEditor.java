@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
@@ -63,7 +62,7 @@ class GeneralizedSemPmListEditor extends JPanel {
     /**
      * The set of launched editors--or rather, the nodes for the launched editors.
      */
-    private Map<Object, EditorWindow> launchedEditors  = new HashMap<>();
+    private Map<Object, EditorWindow> launchedEditors = new HashMap<>();
     private Box formulasBox;
 
     /**
@@ -155,8 +154,7 @@ class GeneralizedSemPmListEditor extends JPanel {
 
                         if (node.getNodeType() == NodeType.ERROR) {
                             label.setText(node + " = " + semPm().getNodeExpressionString(node));
-                        }
-                        else {
+                        } else {
                             label.setText(node + " ~ " + semPm().getNodeExpressionString(node));
                         }
                     } catch (ParseException e) {

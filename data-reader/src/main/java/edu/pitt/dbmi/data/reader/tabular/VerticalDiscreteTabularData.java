@@ -18,11 +18,10 @@
  */
 package edu.pitt.dbmi.data.reader.tabular;
 
-import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
 import edu.pitt.dbmi.data.reader.DiscreteData;
+import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
 
 /**
- *
  * Dec 29, 2018 5:17:39 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

@@ -134,7 +134,7 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     public BayesUpdaterEditorObs(IdentifiabilityWrapper wrapper) {
         this((UpdaterWrapper) wrapper);
     }
-	
+
     //================================PUBLIC METHODS========================//
 
     /**
@@ -172,12 +172,10 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     public void propertyChange(PropertyChangeEvent e) {
         if ("editorClosing".equals(e.getPropertyName())) {
             this.firePropertyChange("editorClosing", null, getName());
-        }
-        else if ("closeFrame".equals(e.getPropertyName())) {
+        } else if ("closeFrame".equals(e.getPropertyName())) {
             this.firePropertyChange("closeFrame", null, null);
             this.firePropertyChange("editorClosing", true, true);
-        }
-        else if ("updatedBayesImWizardTab".equals(e.getPropertyName())) {
+        } else if ("updatedBayesImWizardTab".equals(e.getPropertyName())) {
             this.updatedBayesImWizardTab = ((Integer) (e.getNewValue()));
         }
     }
@@ -301,8 +299,7 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
 
         if (mode == SINGLE_VALUE) {
             singleVariable.setSelected(true);
-        }
-        else if (mode == MULTI_VALUE) {
+        } else if (mode == MULTI_VALUE) {
             multiVariable.setSelected(true);
         }
 
@@ -335,11 +332,9 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
 
         if (mode == SINGLE_VALUE) {
             show("editEvidenceSingle");
-        }
-        else if (mode == MULTI_VALUE) {
+        } else if (mode == MULTI_VALUE) {
             show("editEvidenceMultiple");
-        }
-        else {
+        } else {
             throw new IllegalStateException();
         }
     }
@@ -349,8 +344,7 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
 
         if (owner == null) {
             resetSingleResultPanelSub();
-        }
-        else {
+        } else {
             new WatchedProcess(owner) {
                 public void watch() {
                     resetSingleResultPanelSub();
