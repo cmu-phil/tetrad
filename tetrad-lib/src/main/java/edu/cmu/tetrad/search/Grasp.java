@@ -327,7 +327,7 @@ public class Grasp {
         this.ordered = ordered  ;
     }
 
-    public void setUsePearl(boolean usePearl) {
+    public void setUseRaskuttiUhler(boolean usePearl) {
         this.usePearl = usePearl;
     }
 }
