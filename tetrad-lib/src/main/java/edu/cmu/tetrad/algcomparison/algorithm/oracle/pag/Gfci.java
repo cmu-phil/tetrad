@@ -146,6 +146,11 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
+    public ScoreWrapper getScoreWrapper() {
+        return score;
+    }
+
+    @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
@@ -153,11 +158,6 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return test;
-    }
-
-    @Override
-    public ScoreWrapper getScoreWrapper() {
-        return score;
     }
 
 }

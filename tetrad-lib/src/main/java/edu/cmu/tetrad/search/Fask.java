@@ -86,29 +86,19 @@ import static java.lang.Math.*;
  */
 public final class Fask implements GraphSearch {
 
-    // The method to use for finding the adjacencies.
-    public enum AdjacencyMethod {GRASP, FAS_STABLE, FGES, EXTERNAL_GRAPH}
-
-    // The left-right rule to use. Options include the FASK left-right rule and three left-right rules
-    // from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
-    // paper, "empirical" versions were given in which the variables are multiplied through by the
-    // signs of the skewnesses; we follow this advice here (with good results). These others are provided
-    // for comparison; in general they are quite good.
-    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
-
     // The score to be used for the FAS adjacency search.
     private final IndependenceTest test;
-
-    // An initial graph to constrain the adjacency step.
-    private Graph externalGraph = null;
-
-    // Elapsed time of the search, in milliseconds.
-    private long elapsed = 0;
-
+    private final Score score;
     // The data sets being analyzed. They must all have the same variables and the same
     // number of records.
     private final DataSet dataSet;
-
+    // Used for calculating coefficient values.
+    private final RegressionDataset regressionDataset;
+    double[][] D;
+    // An initial graph to constrain the adjacency step.
+    private Graph externalGraph = null;
+    // Elapsed time of the search, in milliseconds.
+    private long elapsed = 0;
     // For the Fast Adjacency Search, the maximum number of edges in a conditioning set.
     private int depth = -1;
 
@@ -141,7 +131,7 @@ public final class Fask implements GraphSearch {
     private boolean useFasAdjacencies = true;
 
     // By default, FAS Stable will be used for adjacencies, though this can be set.
-    private AdjacencyMethod adjacencyMethod = AdjacencyMethod.GRASP;
+    private AdjacencyMethod adjacencyMethod = AdjacencyMethod.FAS_STABLE;
 
     // The left right rule to use, default FASK.
     private LeftRight leftRight = LeftRight.RSKEW;
@@ -149,16 +139,11 @@ public final class Fask implements GraphSearch {
     // The graph resulting from search.
     private Graph graph;
 
-    // Used for calculating coefficient values.
-    private final RegressionDataset regressionDataset;
-
-    double[][] D;
-
     /**
      * @param dataSet A continuous dataset over variables V.
      * @param test    An independence test over variables V. (Used for FAS.)
      */
-    public Fask(DataSet dataSet, IndependenceTest test) {
+    public Fask(DataSet dataSet, Score score, IndependenceTest test) {
         if (dataSet == null) {
             throw new NullPointerException("Data set not provided.");
         }
@@ -169,13 +154,49 @@ public final class Fask implements GraphSearch {
 
         this.dataSet = dataSet;
         this.test = test;
+        this.score = score;
 
         regressionDataset = new RegressionDataset(dataSet);
         this.orientationCutoff = StatUtils.getZForAlpha(0.01);
         this.orientationAlpha = 0.01;
     }
 
+    private static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
+    private static double correxp(double[] x, double[] y, double[] z) {
+        return E(x, y, z) / sqrt(E(x, x, z) * E(y, y, z));
+    }
+
     //======================================== PUBLIC METHODS ====================================//
+
+    // Returns E(XY | Z > 0); Z is typically either X or Y.
+    private static double E(double[] x, double[] y, double[] z) {
+        double exy = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (z[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
 
     /**
      * Runs the search on the concatenated data, returning a graph, possibly cyclic, possibly with
@@ -211,21 +232,14 @@ public final class Fask implements GraphSearch {
 
         Graph G;
 
-        if (adjacencyMethod == AdjacencyMethod.GRASP) {
-            Grasp search = new Grasp(test);
-            search.setDepth(getDepth());
-            search.setVerbose(false);
-            search.setKnowledge(knowledge);
-            search.bestOrder(test.getVariables());
-            G = search.getGraph(false);
-        } else if (adjacencyMethod == AdjacencyMethod.FAS_STABLE) {
+        if (adjacencyMethod == AdjacencyMethod.FAS_STABLE) {
             Fas fas = new Fas(test);
             fas.setStable(true);
             fas.setVerbose(false);
             fas.setKnowledge(knowledge);
             G = fas.search();
         } else if (adjacencyMethod == AdjacencyMethod.FGES) {
-            Fges fas = new Fges(new ScoredIndTest(test));
+            Fges fas = new Fges(score);
             fas.setVerbose(false);
             fas.setKnowledge(knowledge);
             G = fas.search();
@@ -244,6 +258,8 @@ public final class Fask implements GraphSearch {
             g1 = GraphUtils.replaceNodes(g1, dataSet.getVariables());
 
             G = g1;
+        } else if (adjacencyMethod == AdjacencyMethod.NONE) {
+            G = new EdgeListGraph(variables);
         } else {
             throw new IllegalStateException("That method was not configured: " + adjacencyMethod);
         }
@@ -534,6 +550,9 @@ public final class Fask implements GraphSearch {
         this.empirical = empirical;
     }
 
+
+    //======================================== PRIVATE METHODS ====================================//
+
     public double leftRight(Node X, Node Y) {
         List<Node> variables = dataSet.getVariables();
 
@@ -555,9 +574,6 @@ public final class Fask implements GraphSearch {
         return leftRight(x, y);
 
     }
-
-
-    //======================================== PRIVATE METHODS ====================================//
 
     private double leftRight(double[] x, double[] y) {
         if (leftRight == LeftRight.FASK1) {
@@ -611,21 +627,6 @@ public final class Fask implements GraphSearch {
         if (r < delta) lr *= -1;
 
         return lr;
-    }
-
-    private static double cu(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
     }
 
     private double robustSkew(double[] x, double[] y) {
@@ -686,26 +687,6 @@ public final class Fask implements GraphSearch {
 
     private boolean edgeForbiddenByKnowledge(Node X, Node Y) {
         return knowledge.isForbidden(Y.getName(), X.getName()) && knowledge.isForbidden(X.getName(), Y.getName());
-    }
-
-    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
-    private static double correxp(double[] x, double[] y, double[] z) {
-        return E(x, y, z) / sqrt(E(x, x, z) * E(y, y, z));
-    }
-
-    // Returns E(XY | Z > 0); Z is typically either X or Y.
-    private static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
     }
 
     private double[] correctSkewness(double[] data, double sk) {
@@ -813,6 +794,16 @@ public final class Fask implements GraphSearch {
         Matrix m = new Matrix(cv).transpose();
         return StatUtils.partialCorrelation(m);
     }
+
+    // The method to use for finding the adjacencies.
+    public enum AdjacencyMethod {FAS_STABLE, FGES, EXTERNAL_GRAPH, NONE}
+
+    // The left-right rule to use. Options include the FASK left-right rule and three left-right rules
+    // from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
+    // paper, "empirical" versions were given in which the variables are multiplied through by the
+    // signs of the skewnesses; we follow this advice here (with good results). These others are provided
+    // for comparison; in general they are quite good.
+    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
 }
 
 

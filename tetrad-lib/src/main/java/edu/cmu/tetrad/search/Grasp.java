@@ -34,6 +34,7 @@ public class Grasp {
     private boolean cachingScores = true;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
+    private boolean useDataOrder = false;
     // other params
     private int depth = 4;
     private int numStarts = 1;
@@ -74,19 +75,19 @@ public class Grasp {
 
         scorer.setCachingScores(cachingScores);
 
-        List<Node> bestPerm = new ArrayList<>(order);
-        float best = Float.NEGATIVE_INFINITY;
+        List<Node> bestPerm = null;
+        double best = Double.NEGATIVE_INFINITY;
 
         scorer.score(order);
 
         for (int r = 0; r < numStarts; r++) {
-            if (r > 0) {
+            if ((r == 0 && !useDataOrder) || r > 0) {
                 shuffle(order);
             }
 
             this.start = System.currentTimeMillis();
 
-            makeValidKnowledgeOrder(order);
+//            makeValidKnowledgeOrder(order);
 
             scorer.score(order);
 
@@ -329,5 +330,9 @@ public class Grasp {
 
     public void setUseRaskuttiUhler(boolean usePearl) {
         this.usePearl = usePearl;
+    }
+
+    public void setUseDataOrder(boolean useDataOrder) {
+        this.useDataOrder = useDataOrder;
     }
 }

@@ -3,9 +3,11 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -36,11 +38,12 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 //@Bootstrapping
-public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesInitialGraph, TakesIndependenceWrapper {
+public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper, TakesInitialGraph, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
     private Graph initialGraph = null;
+    private ScoreWrapper score;
     private IndependenceWrapper test;
 
     public FaskVote() {
@@ -60,7 +63,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
                 _dataSets.add((DataSet) d);
             }
 
-            edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, test);
+            edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, score, test);
 
             search.setKnowledge(knowledge);
             return search.search(parameters);
@@ -178,6 +181,16 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesIniti
 
     @Override
     public void setInitialGraph(Algorithm algorithm) {
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
+    }
+
+    @Override
+    public ScoreWrapper getScoreWrapper() {
+        return score;
     }
 
     @Override

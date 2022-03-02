@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FaskConcatenated;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -47,6 +48,10 @@ import java.text.ParseException;
  * @author jdramsey
  */
 public class TestSimulatedFmri {
+
+    public static void main(String... args) {
+        new TestSimulatedFmri().task(false);
+    }
 
     private void task(boolean testing) {
         Parameters parameters = new Parameters();
@@ -175,7 +180,7 @@ public class TestSimulatedFmri {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FaskConcatenated(new FisherZ()));
+        algorithms.add(new FaskConcatenated(new SemBicScore(), new FisherZ()));
 //        algorithms.add(new FaskGfciConcatenated(new SemBicTest()));
 
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
@@ -252,8 +257,10 @@ public class TestSimulatedFmri {
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.SkewE));
 //        algorithms.add(new LofsConcatenated(Lofs2.Rule.Patel));
 
-        algorithms.add(new FaskConcatenated(new FisherZ() {
-        }));
+        algorithms.add(new FaskConcatenated(
+                new SemBicScore(),
+                new FisherZ() {
+                }));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
@@ -332,7 +339,9 @@ public class TestSimulatedFmri {
 //
 //        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
 //        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
-        algorithms.add(new FaskConcatenated(new FisherZ()));
+        algorithms.add(new FaskConcatenated(
+                new SemBicScore(),
+                new FisherZ()));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
@@ -394,7 +403,9 @@ public class TestSimulatedFmri {
                 DataSet data = im.simulateData(N, false);
 
 
-                Fask fask = new Fask(data, new IndTestFisherZ(data, 0.001));
+                Fask fask = new Fask(data,
+                        new edu.cmu.tetrad.search.SemBicScore(data),
+                new IndTestFisherZ(data, 0.001));
                 Graph out = fask.search();
 
                 System.out.println(out);
@@ -432,7 +443,9 @@ public class TestSimulatedFmri {
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
                 DataSet data = im.simulateData(N, false);
 
-                Fask fask = new Fask(data, new IndTestFisherZ(data, 0.001));
+                Fask fask = new Fask(data,
+                        new edu.cmu.tetrad.search.SemBicScore(data),
+                        new IndTestFisherZ(data, 0.001));
                 Graph out = fask.search();
 
                 System.out.println(out);
@@ -440,7 +453,6 @@ public class TestSimulatedFmri {
             }
         }
     }
-
 
     //    @Test
     public void testClark2() {
@@ -477,14 +489,12 @@ public class TestSimulatedFmri {
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
         DataSet data = im.simulateData(1000, false);
 
-        Fask fask = new Fask(data, new IndTestFisherZ(data, 0.001));
+        Fask fask = new Fask(data,
+                new edu.cmu.tetrad.search.SemBicScore(data),
+                new IndTestFisherZ(data, 0.001));
         Graph out = fask.search();
 
         System.out.println(out);
-    }
-
-    public static void main(String... args) {
-        new TestSimulatedFmri().task(false);
     }
 }
 

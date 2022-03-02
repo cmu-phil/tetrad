@@ -27,7 +27,7 @@ public final class ParamDescriptions {
 
     private final Map<String, ParamDescription> map = new TreeMap<>();
 
-    private List<String> paramsWithUnsupportedValueType = new ArrayList<>();
+    private final List<String> paramsWithUnsupportedValueType = new ArrayList<>();
 
     private ParamDescriptions() {
         Document doc = null;
@@ -61,17 +61,17 @@ public final class ParamDescriptions {
 
             for (Element element : elements) {
                 String paramName = element.id();
-                String valueType = doc.getElementById(paramName + "_value_type").text().trim();
+                String valueType = Objects.requireNonNull(doc.getElementById(paramName + "_value_type")).text().trim();
 
                 // Add params that don't have value types for spalsh screen error
                 if (!PARAM_VALUE_TYPES.contains(valueType)) {
                     paramsWithUnsupportedValueType.add(paramName);
                 } else {
-                    String shortDescription = doc.getElementById(paramName + "_short_desc").text().trim();
-                    String longDescription = doc.getElementById(paramName + "_long_desc").text().trim();
-                    String defaultValue = doc.getElementById(paramName + "_default_value").text().trim();
-                    String lowerBound = doc.getElementById(paramName + "_lower_bound").text().trim();
-                    String upperBound = doc.getElementById(paramName + "_upper_bound").text().trim();
+                    String shortDescription = Objects.requireNonNull(doc.getElementById(paramName + "_short_desc")).text().trim();
+                    String longDescription = Objects.requireNonNull(doc.getElementById(paramName + "_long_desc")).text().trim();
+                    String defaultValue = Objects.requireNonNull(doc.getElementById(paramName + "_default_value")).text().trim();
+                    String lowerBound = Objects.requireNonNull(doc.getElementById(paramName + "_lower_bound")).text().trim();
+                    String upperBound = Objects.requireNonNull(doc.getElementById(paramName + "_upper_bound")).text().trim();
 
                     if (shortDescription.equals("")) {
                         shortDescription = String.format("Missing short description for %s", paramName);
@@ -103,8 +103,7 @@ public final class ParamDescriptions {
                         Boolean defaultValueBoolean = defaultValue.equalsIgnoreCase("true");
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueBoolean);
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_STRING)) {
-                        String defaultValueString = defaultValue;
-                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueString);
+                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValue);
                     }
 
                     map.put(paramName, paramDescription);

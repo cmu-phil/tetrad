@@ -3798,7 +3798,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="skewEdgeThreshold" class="parameter_description">skewEdgeThreshold</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="skewEdgeThreshold_short_desc">Threshold for including edges detectable by skewness</span>
+            <li>Short Description: <span id="skewEdgeThreshold_short_desc">Threshold for including additional edges detectable by skewness</span>
             </li>
             <li>Long Description: <span id="skewEdgeThreshold_long_desc">For FASK, this includes an adjacency X—Y in the model if |corr(X, Y | X > 0) – corr(X, Y | Y > 0)| exceeds some threshold. The default for this threshold is 0.3. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
             </li>
@@ -3895,9 +3895,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 id="faskAdjacencyMethod" class="parameter_description">faskAdjacencyMethod</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="faskAdjacencyMethod_short_desc">Adjacency Method: 1 = FAS Stable, 2 = FAS Stable Concurrent, 3 = FGES, 4 = External Graph</span>
+            <li>Short Description: <span id="faskAdjacencyMethod_short_desc">Non-skewness Adjacencies: 1 = FAS Stable, 2 = FGES, 3 = External Graph, 4 = None</span>
             </li>
-            <li>Long Description: <span id="faskAdjacencyMethod_long_desc">This is  the method FASK will use to find adjacencies. For 4 = External graph, an external graph must be supplied.</span>
+            <li>Long Description: <span id="faskAdjacencyMethod_long_desc">This is  the method FASK will use to find non-skewness adjacencies. For External graph, an external graph must be supplied.</span>
             </li>
             <li>Default Value: <span id="faskAdjacencyMethod_default_value">1</span></li>
             <li>Lower Bound: <span id="faskAdjacencyMethod_lower_bound">1</span></li>
@@ -4840,7 +4840,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 				random shuffles.
             </span>
             </li>
-            <li>Default Value: <span id="graspUseDataOrder_default_value">true</span></li>
+            <li>Default Value: <span id="graspUseDataOrder_default_value">false</span></li>
             <li>Lower Bound: <span id="graspUseDataOrder_lower_bound"></span></li>
             <li>Upper Bound: <span id="graspUseDataOrder_upper_bound"></span></li>
             <li>Value Type: <span id="graspUseDataOrder_value_type">Boolean</span></li>

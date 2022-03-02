@@ -80,6 +80,7 @@ public final class GraspFci implements GraphSearch {
     private int depth = 4;
     private int uncoveredDepth = 1;
     private boolean useRaskuttiUhler = false;
+    private boolean useDataOrder = false;
 
     private int nonsingularDepth = 1;
     private boolean ordered = true;
@@ -110,6 +111,7 @@ public final class GraspFci implements GraphSearch {
         grasp.setOrdered(ordered);
         grasp.setUseScore(useScore);
         grasp.setUseRaskuttiUhler(useRaskuttiUhler);
+        grasp.setUseDataOrder(useDataOrder);
         grasp.setVerbose(verbose);
         grasp.setCacheScores(cacheScores);
 
@@ -420,5 +422,9 @@ public final class GraspFci implements GraphSearch {
 
     public void setCacheScores(boolean cacheScores) {
         this.cacheScores = cacheScores;
+    }
+
+    public void setUseDataOrder(boolean useDataOrder) {
+        this.useDataOrder = useDataOrder;
     }
 }

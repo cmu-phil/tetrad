@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
 import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -93,6 +94,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
         this(dataWrapper, graphSource, parameters, null, null);
+    }
+
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource,
+                                  KnowledgeBoxModel knowledgeBoxModel,
+                                  Parameters parameters) {
+        this(dataWrapper, graphSource, parameters, knowledgeBoxModel, null);
     }
 
     /**
@@ -242,6 +249,14 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 }
             }
 
+            if (algo instanceof TakesGraph) {
+                ((TakesGraph) algo).setGraph(sourceGraph);
+            }
+
+            if (algorithm instanceof HasKnowledge) {
+                ((HasKnowledge) algorithm).setKnowledge(knowledge.copy());
+            }
+
             graphList.add(algo.search(null, parameters));
         } else {
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
@@ -262,6 +277,14 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         sub.add(dataSets.get(j));
                     }
 
+                    if (algo instanceof TakesGraph) {
+                        ((TakesGraph) algo).setGraph(sourceGraph);
+                    }
+
+                    if (algorithm instanceof HasKnowledge) {
+                        ((HasKnowledge) algorithm).setKnowledge(knowledge.copy());
+                    }
+
                     graphList.add(((MultiDataSetAlgorithm) algo).search(sub, parameters));
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
@@ -269,6 +292,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     getDataModelList().forEach(dataModel -> {
                         if (dataModel instanceof ICovarianceMatrix) {
                             ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
+
+                            if (algo instanceof TakesGraph) {
+                                ((TakesGraph) algo).setGraph(sourceGraph);
+                            }
 
                             if (algorithm instanceof HasKnowledge) {
                                 ((HasKnowledge) algorithm).setKnowledge(knowledge.copy());
@@ -280,6 +307,14 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                             if (!dataSet.isContinuous()) {
                                 throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
+                            }
+
+                            if (algo instanceof TakesGraph) {
+                                ((TakesGraph) algo).setGraph(sourceGraph);
+                            }
+
+                            if (algorithm instanceof HasKnowledge) {
+                                ((HasKnowledge) algorithm).setKnowledge(knowledge.copy());
                             }
 
                             graphList.add(algorithm.search(dataSet, parameters));
@@ -300,8 +335,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                         DataType algDataType = algo.getDataType();
 
-                        if (algo instanceof HasKnowledge) {
-                            ((HasKnowledge) algo).setKnowledge(knowledge.copy());
+                        if (algo instanceof TakesGraph) {
+                            ((TakesGraph) algo).setGraph(sourceGraph);
+                        }
+
+                        if (algorithm instanceof HasKnowledge) {
+                            ((HasKnowledge) algorithm).setKnowledge(knowledge.copy());
                         }
 
                         if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
