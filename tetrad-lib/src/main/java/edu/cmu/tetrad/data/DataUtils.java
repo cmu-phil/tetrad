@@ -775,7 +775,8 @@ public final class DataUtils {
                     if (catName.equals("*")) {
                         value = Double.NaN;
                     } else {
-                        value = Double.parseDouble(catName);
+//                        value = Double.parseDouble(catName);
+                        value = index;
                     }
 
                     continuousData.setDouble(i, j, value);
