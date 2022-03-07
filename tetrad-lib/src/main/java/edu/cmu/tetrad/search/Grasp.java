@@ -34,7 +34,9 @@ public class Grasp {
     private boolean cachingScores = true;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
-    private boolean useDataOrder = false;
+    private boolean useDataOrder = true;
+    private boolean allowRandomnessInsideAlgorithm = false;
+
     // other params
     private int depth = 4;
     private int numStarts = 1;
@@ -87,7 +89,7 @@ public class Grasp {
 
             this.start = System.currentTimeMillis();
 
-//            makeValidKnowledgeOrder(order);
+            makeValidKnowledgeOrder(order);
 
             scorer.score(order);
 
@@ -127,9 +129,9 @@ public class Grasp {
                 } else if (knowledge.isRequired(o2.getName(), o1.getName())) {
                     return -1;
                 } else if (knowledge.isForbidden(o2.getName(), o1.getName())) {
-                    return -1;
-                } else if (knowledge.isForbidden(o1.getName(), o2.getName())) {
                     return 1;
+                } else if (knowledge.isForbidden(o1.getName(), o2.getName())) {
+                    return -1;
                 } else {
                     return 1;
                 }
@@ -181,10 +183,22 @@ public class Grasp {
 
     private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
                           Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
-        for (Node y : scorer.getShuffledVariables()) {
+        List<Node> variables;
+
+        if (allowRandomnessInsideAlgorithm) {
+             variables = scorer.getShuffledVariables();
+        } else {
+            variables = scorer.getPi();
+        }
+
+        for (Node y : variables) {
             Set<Node> ancestors = scorer.getAncestors(y);
             List<Node> parents = new ArrayList<>(scorer.getParents(y));
-            shuffle(parents);
+
+            if (allowRandomnessInsideAlgorithm) {
+                shuffle(parents);
+            }
+
             for (Node x : parents) {
 
                 boolean covered = scorer.coveredEdge(x, y);
@@ -334,5 +348,9 @@ public class Grasp {
 
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
+    }
+
+    public void setAllowRandomnessInsideAlgorithm(boolean allowRandomnessInsideAlgorithm) {
+        this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithm;
     }
 }

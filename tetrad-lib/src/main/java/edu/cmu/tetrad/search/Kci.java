@@ -660,9 +660,9 @@ public class Kci implements IndependenceTest, ScoreForFact {
     }
 
     private double kernelGaussian(double z, double width) {
-        if (width == 0) {
-            throw new IllegalArgumentException("Width is zero.");
-        }
+//        if (width == 0) {
+//            throw new IllegalArgumentException("Width is zero.");
+//        }
 
         z /= width;
         return Math.exp(-z * z);

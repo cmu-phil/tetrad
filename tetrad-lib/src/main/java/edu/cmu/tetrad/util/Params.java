@@ -205,6 +205,7 @@ public final class Params {
     public static final String GRASP_USE_SCORE = "graspUseScore";
     public static final String GRASP_USE_VERMA_PEARL = "graspUseVermaPearl";
     public static final String GRASP_USE_DATA_ORDER = "graspUseDataOrder";
+    public static final String GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM = "graspAllowRandomnessIndideAlgorithm";
     public static final String GRASP_DEPTH = "graspDepth";
     public static final String GRASP_UNCOVERED_DEPTH = "graspUncoveredDepth";
     public static final String GRASP_NONSINGULAR_DEPTH = "graspNonSingularDepth";

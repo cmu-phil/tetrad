@@ -297,15 +297,15 @@ public class Fas implements IFas {
                 }
             }
 
-            checkSide(scores, test, adjacencies, depth, x, y);
-            checkSide(scores, test, adjacencies, depth, y, x);
+            boolean b = checkSide(scores, test, adjacencies, depth, x, y);
+            if (!b) checkSide(scores, test, adjacencies, depth, y, x);
         }
 
         return freeDegree(adjacencies) > depth;
     }
 
-    private void checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, Node x, Node y) {
-        if (!adjacencies.get(x).contains(y)) return;
+    private boolean checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, Node x, Node y) {
+        if (!adjacencies.get(x).contains(y)) return false;
 
         List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
         _adjx.remove(y);
@@ -360,9 +360,13 @@ public class Fas implements IFas {
                                 " score = " + nf.format(test.getScore()));
                         out.println(SearchLogUtils.independenceFactMsg(x, y, Z, test.getPValue()));
                     }
+
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
