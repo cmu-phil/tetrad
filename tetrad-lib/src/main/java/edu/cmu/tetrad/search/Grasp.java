@@ -129,9 +129,9 @@ public class Grasp {
                 } else if (knowledge.isRequired(o2.getName(), o1.getName())) {
                     return -1;
                 } else if (knowledge.isForbidden(o2.getName(), o1.getName())) {
-                    return 1;
-                } else if (knowledge.isForbidden(o1.getName(), o2.getName())) {
                     return -1;
+                } else if (knowledge.isForbidden(o1.getName(), o2.getName())) {
+                    return 1;
                 } else {
                     return 1;
                 }

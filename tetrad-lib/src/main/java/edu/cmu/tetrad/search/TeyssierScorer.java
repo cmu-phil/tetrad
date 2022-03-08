@@ -859,6 +859,8 @@ public class TeyssierScorer {
 
 
     public void moveToNoUpdate(Node v, int toIndex) {
+        bookmark(-55);
+
         if (!pi.contains(v)) return;
 
         int vIndex = index(v);
@@ -869,6 +871,10 @@ public class TeyssierScorer {
 
         pi.remove(v);
         pi.add(toIndex, v);
+
+        if (!validKnowledgeOrder(pi)) {
+            goToBookmark(-55);
+        }
 
     }
 

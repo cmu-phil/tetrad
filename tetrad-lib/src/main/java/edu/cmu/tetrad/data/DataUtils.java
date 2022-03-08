@@ -767,6 +767,18 @@ public final class DataUtils {
             } else {
                 DiscreteVariable discreteVariable = (DiscreteVariable) variable;
 
+                boolean allNumerical = true;
+
+                for (String cat : discreteVariable.getCategories()) {
+                    try {
+                        Double.parseDouble(cat);
+                    } catch (NumberFormatException e) {
+                        allNumerical = false;
+                        break;
+                    }
+                }
+
+
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     int index = dataSet.getInt(i, j);
                     String catName = discreteVariable.getCategory(index);
@@ -775,8 +787,11 @@ public final class DataUtils {
                     if (catName.equals("*")) {
                         value = Double.NaN;
                     } else {
-//                        value = Double.parseDouble(catName);
-                        value = index;
+                        if (allNumerical) {
+                            value = Double.parseDouble(catName);
+                        } else {
+                            value = index;
+                        }
                     }
 
                     continuousData.setDouble(i, j, value);
