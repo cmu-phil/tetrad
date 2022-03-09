@@ -848,8 +848,6 @@ public class AlgorithmCard extends JPanel {
         /**
          * Create new radio buttons and add them to both the radio button list
          * and radio button group.
-         *
-         * @param radioButtons
          */
         private void populateAlgoTypeOptions() {
             JRadioButton showAllRadBtn = new JRadioButton("show all");
