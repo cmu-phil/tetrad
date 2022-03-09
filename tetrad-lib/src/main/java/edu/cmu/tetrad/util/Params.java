@@ -212,6 +212,9 @@ public final class Params {
     public static final String GRASP_ALG = "graspAlg";
     public static final String TIMEOUT = "timeout";
     public static final String GRASP_USE_VP_SCORING = "graspUseVpScoring";
+    public static final String SIMULATION_ERROR_TYPE = "simulationErrorType";
+    public static final String SIMULATION_PARAM1 = "simulationParam1";
+    public static final String SIMULATION_PARAM2 = "simulationParam2";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

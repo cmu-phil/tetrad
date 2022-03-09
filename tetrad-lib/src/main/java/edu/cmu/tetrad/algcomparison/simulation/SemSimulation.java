@@ -138,6 +138,9 @@ public class SemSimulation implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.STANDARDIZE);
+        parameters.add(Params.SIMULATION_ERROR_TYPE);
+        parameters.add(Params.SIMULATION_PARAM1);
+        parameters.add(Params.SIMULATION_PARAM2);
 
         return parameters;
     }

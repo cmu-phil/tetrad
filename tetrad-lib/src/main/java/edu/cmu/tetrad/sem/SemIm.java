@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
+import javax.lang.model.type.ErrorType;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
@@ -72,7 +73,7 @@ import static java.lang.Math.sqrt;
 public final class SemIm implements IM, ISemIm, TetradSerializable {
 
     static final long serialVersionUID = 23L;
-
+    private static Collection<? extends String> parameterNames;
     /**
      * The Sem PM containing the graph and the freeParameters to be estimated.
      * For now a defensive copy of this is not being constructed, since it is
@@ -83,7 +84,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @serial Cannot be null.
      */
     private final SemPm semPm;
-
     /**
      * The list of measured and latent variableNodes for the semPm.
      * (Unmodifiable.)
@@ -91,36 +91,12 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @serial Cannot be null.
      */
     private final List<Node> variableNodes;
-
     /**
      * The list of measured variableNodes from the semPm. (Unmodifiable.)
      *
      * @serial Cannot be null.
      */
     private final List<Node> measuredNodes;
-
-    /**
-     * The list of free freeParameters (Unmodifiable). This must be in the same
-     * order as this.freeMappings.
-     *
-     * @serial Cannot be null.
-     */
-    private List<Parameter> freeParameters;
-
-    /**
-     * The list of fixed freeParameters (Unmodifiable). This must be in the same
-     * order as this.fixedMappings.
-     *
-     * @serial Cannot be null.
-     */
-    private List<Parameter> fixedParameters;
-
-    /**
-     * The list of mean freeParameters (Unmodifiable). This must be in the same
-     * order as variableMeans.
-     */
-    private List<Parameter> meanParameters;
-
     /**
      * Matrix of edge coefficients. edgeCoefC[i][j] is the coefficient of the
      * edge from getVariableNodes().get(i) to getVariableNodes().get(j), or 0.0
@@ -129,8 +105,32 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Matrix edgeCoef;
-
+    private final Matrix edgeCoef;
+    /**
+     * Standard Deviations of means. Needed to calculate standard errors.
+     *
+     * @serial Cannot be null.
+     */
+    private final double[] variableMeansStdDev;
+    /**
+     * The list of free freeParameters (Unmodifiable). This must be in the same
+     * order as this.freeMappings.
+     *
+     * @serial Cannot be null.
+     */
+    private List<Parameter> freeParameters;
+    /**
+     * The list of fixed freeParameters (Unmodifiable). This must be in the same
+     * order as this.fixedMappings.
+     *
+     * @serial Cannot be null.
+     */
+    private List<Parameter> fixedParameters;
+    /**
+     * The list of mean freeParameters (Unmodifiable). This must be in the same
+     * order as variableMeans.
+     */
+    private List<Parameter> meanParameters;
     /**
      * Matrix of error covariances. errCovar[i][j] is the covariance of the
      * error term of getExoNodes().get(i) and getExoNodes().get(j), with the
@@ -141,7 +141,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @serial Cannot be null.
      */
     private Matrix errCovar;
-
     /**
      * Means of variables. These will not be counted for purposes of calculating
      * degrees of freedom, since the increase in dof is exactly balanced by a
@@ -150,14 +149,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @serial Cannot be null.
      */
     private double[] variableMeans;
-
-    /**
-     * Standard Deviations of means. Needed to calculate standard errors.
-     *
-     * @serial Cannot be null.
-     */
-    private double[] variableMeansStdDev;
-
     /**
      * Replaced by sampleCovar. Please do not delete. Required for serialization
      * backward compatibility.
@@ -165,19 +156,16 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @serial
      */
     private Matrix sampleCovarC;
-
     /**
      * The variable of the sample covariance.
      */
     private List<Node> sampleCovarVariables;
-
     /**
      * The sample size.
      *
      * @serial Range >= 0.
      */
     private int sampleSize;
-
     /**
      * Replaced by implCovarC. Please do not delete. Required for serialization
      * backward compatibility.
@@ -185,7 +173,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @serial
      */
     private Matrix implCovar;
-
     /**
      * The list of freeMappings. This is an unmodifiable list. It is fixed (up
      * to order) by the SemPm. This must be in the same order as
@@ -194,7 +181,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @serial Cannot be null.
      */
     private List<Mapping> freeMappings;
-
     /**
      * The list of fixed freeParameters (Unmodifiable). This must be in the same
      * order as this.fixedParameters.
@@ -202,14 +188,12 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @serial Cannot be null.
      */
     private List<Mapping> fixedMappings;
-
     /**
      * Stores the standard errors for the freeParameters. May be null.
      *
      * @serial Can be null.
      */
     private double[] standardErrors;
-
     /**
      * True iff setting freeParameters to out-of-bound values throws exceptions.
      *
@@ -217,35 +201,29 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      */
     private boolean parameterBoundsEnforced = true;
 
+//    /**
+//     * Used for some linear algebra calculations.
+//     */
+//    private transient TetradAlgebra algebra;
     /**
      * True iff this SemIm is estimated.
      *
      * @serial Any value.
      */
     private boolean estimated = false;
-
-//    /**
-//     * Used for some linear algebra calculations.
-//     */
-//    private transient TetradAlgebra algebra;
     /**
      * True just in case the graph for the SEM is cyclic.
      */
     private boolean cyclic;
-
-    /**
-     * True just in case cyclicity has already been checked.
-     */
-    private boolean cyclicChecked = false;
 
 //    /**
 //     * Caches the log determinant of the sample covariance matrix.
 //     */
 //    private transient double logDetSample;
     /**
-     * Parameters to help guide how values are chosen for freeParameters.
+     * True just in case cyclicity has already been checked.
      */
-    private Parameters params = new Parameters();
+    private boolean cyclicChecked = false;
 
 //    /**
 //     * True if positive definiteness should be checked when optimizing the
@@ -253,44 +231,31 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //     */
 //    private boolean checkPositiveDefinite;
     /**
+     * Parameters to help guide how values are chosen for freeParameters.
+     */
+    private Parameters params = new Parameters();
+    /**
      * Stores a distribution for each variable. Initialized to N(0, 1) for each.
      */
     private Map<Node, Distribution> distributions;
-
     /**
      * Stores the connection functions of specified nodes.
      */
     private Map<Node, ConnectionFunction> functions;
-
     /**
      * True iff only positive data should be simulated.
      */
     private boolean simulatedPositiveDataOnly = false;
-
     private Map<Node, Integer> variablesHash;
     private Matrix sampleCovInv;
-    private static Collection<? extends String> parameterNames;
-
-    public static List<String> getParameterNames() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add("coefLow");
-        parameters.add("coefHigh");
-        parameters.add("covLow");
-        parameters.add("covHigh");
-        parameters.add("varLow");
-        parameters.add("varHigh");
-        parameters.add("coefSymmetric");
-        parameters.add("covSymmetric");
-        return parameters;
-    }
-
     // Types of scores that yield a chi square value when minimized.
 //    public enum ScoreType {
 //        Fml, Fgls
 //    }
     private ScoreType scoreType = ScoreType.Fml;
-
-    //=============================CONSTRUCTORS============================//
+    private int errorType = 1; // 1 = Normal, 2 = Uniform, 3 = Exponential, 4 = Gumbel
+    private double errorParam1 = 0.0;
+    private double errorParam2 = 1.0;
 
     /**
      * Constructs a new SEM IM from a SEM PM.
@@ -298,6 +263,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     public SemIm(SemPm semPm) {
         this(semPm, null, new Parameters());
     }
+
+    //=============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new SEM IM from the given SEM PM, using the given params
@@ -367,6 +334,12 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //        for (Node node : variableNodes) {
 //            this.distributions.put(node, new Uniform(-1, 1));
 //        }
+
+
+        this.errorType = parameters.getInt(Params.SIMULATION_ERROR_TYPE);
+        this.errorParam1 = parameters.getDouble(Params.SIMULATION_PARAM1);
+        this.errorParam2 = parameters.getDouble(Params.SIMULATION_PARAM2);
+
         this.functions = new HashMap<>();
     }
 
@@ -417,14 +390,6 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     /**
-     * @return a variant of the getModel model with the given covariance matrix
-     * and means. Used for updating.
-     */
-    public SemIm updatedIm(Matrix covariances, Vector means) {
-        return new SemIm(this, covariances, means);
-    }
-
-    /**
      * Copy constructor.
      *
      * @throws RuntimeException if the given SemIm cannot be serialized and
@@ -464,6 +429,19 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         }
     }
 
+    public static List<String> getParameterNames() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("coefLow");
+        parameters.add("coefHigh");
+        parameters.add("covLow");
+        parameters.add("covHigh");
+        parameters.add("varLow");
+        parameters.add("varHigh");
+        parameters.add("coefSymmetric");
+        parameters.add("covSymmetric");
+        return parameters;
+    }
+
     /**
      * Constructs a new SEM IM with the given graph, retaining parameter values
      * from <code>semIm</code> for nodes of the same name and edges connecting
@@ -497,6 +475,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      */
     public static SemIm serializableInstance() {
         return new SemIm(SemPm.serializableInstance());
+    }
+
+    /**
+     * @return a variant of the getModel model with the given covariance matrix
+     * and means. Used for updating.
+     */
+    public SemIm updatedIm(Matrix covariances, Vector means) {
+        return new SemIm(this, covariances, means);
     }
 
     //==============================PUBLIC METHODS=========================//
@@ -1457,7 +1443,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            double exoData[] = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.rows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
@@ -1465,7 +1451,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             }
 
             // Step 2. Multiply by cholesky to get correct covariance.
-            double point[] = new double[exoData.length];
+            double[] point = new double[exoData.length];
 
             for (int i = 0; i < exoData.length; i++) {
                 double sum = 0.0;
@@ -1571,14 +1557,24 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            double exoData[] = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.rows()];
 
             for (int i = 0; i < exoData.length; i++) {
-                exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
+                if (errorType == 1) {
+                    exoData[i] = RandomUtil.getInstance().nextNormal(0,
+                            sqrt(errCovar.get(i, i)));
+                } else if (errorType == 2) {
+                    exoData[i] = RandomUtil.getInstance().nextUniform(errorParam1, errorParam2);
+                } else if (errorType == 3) {
+                    exoData[i] = RandomUtil.getInstance().nextExponential(errorParam1);
+                } else if (errorType == 4) {
+                    exoData[i] = RandomUtil.getInstance().nextGumbel(errorParam1,
+                            errorParam2);
+                }
             }
 
             // Step 2. Multiply by cholesky to get correct covariance.
-            double point[] = new double[exoData.length];
+            double[] point = new double[exoData.length];
 
             for (int i = 0; i < exoData.length; i++) {
                 double sum = 0.0;
@@ -1693,7 +1689,18 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             Vector e = new Vector(edgeCoef.columns());
 
             for (int i = 0; i < e.size(); i++) {
-                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar.get(i, i))));
+//                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar.get(i, i))));
+
+                if (errorType == 1) {
+                    e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar.get(i, i))));
+//                    e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errorParam2)));
+                } else if (errorType == 2) {
+                    e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
+                } else if (errorType == 3) {
+                    e.set(i, RandomUtil.getInstance().nextExponential(errorParam1));
+                } else if (errorType == 4) {
+                    e.set(i, RandomUtil.getInstance().nextGumbel(errorParam1, errorParam2));
+                }
             }
 
             // Step 3. Calculate the new rows in the data.
