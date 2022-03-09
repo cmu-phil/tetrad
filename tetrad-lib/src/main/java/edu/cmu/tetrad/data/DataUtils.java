@@ -294,34 +294,45 @@ public final class DataUtils {
     /**
      * Log or unlog data
      *
-     * @param data
+     * @param dataSet
      * @param a
      * @param isUnlog
      * @return
      */
-    public static Matrix logData(Matrix data, double a, boolean isUnlog, int base) {
-        Matrix copy = data.copy();
+    public static DataSet logData(DataSet dataSet, double a, boolean isUnlog, int base) {
+        final Matrix data = dataSet.getDoubleData();
+        final Matrix X = data.like();
+        final double n = dataSet.getNumRows();
 
-        for (int j = 0; j < copy.columns(); j++) {
+        for (int j = 0; j < data.columns(); j++) {
+            final double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
+            final double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
 
-            for (int i = 0; i < copy.rows(); i++) {
+            if (dataSet.getVariable(j) instanceof DiscreteVariable) {
+                X.assignColumn(j, new Vector(x1));
+                continue;
+            }
+
+            for (int i = 0; i < x1.length; i++) {
                 if (isUnlog) {
                     if (base == 0) {
-                        copy.set(i, j, Math.exp(copy.get(i, j)) - a);
+                        x1[i] = Math.exp(x1Orig[i]) - a;
                     } else {
-                        copy.set(i, j, Math.pow(base, (copy.get(i, j))) - a);
+                        x1[i] = Math.pow(base, (x1Orig[i])) - a;
                     }
                 } else {
                     if (base == 0) {
-                        copy.set(i, j, Math.log(a + copy.get(i, j)));
+                        x1[i] = Math.log(a + x1Orig[i]);
                     } else {
-                        copy.set(i, j, Math.log(a + copy.get(i, j)) / Math.log(base));
+                        x1[i] = Math.log(a + x1Orig[i]) / Math.log(base);
                     }
                 }
             }
+
+            X.assignColumn(j, new Vector(x1));
         }
 
-        return copy;
+        return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
     }
 
 
@@ -1860,7 +1871,8 @@ public final class DataUtils {
             final Matrix data = dataSet.getDoubleData();
             final Matrix X = data.like();
             final double n = dataSet.getNumRows();
-            double delta = 1e-8;;// 1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
+            double delta = 1e-8;
+//            delta = 1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
 
             final NormalDistribution normalDistribution = new NormalDistribution();
 
@@ -1884,8 +1896,8 @@ public final class DataUtils {
                 for (int i = 0; i < xTransformed.length; i++) {
                     xTransformed[i] /= n;
 
-                    if (xTransformed[i] < delta) xTransformed[i] = delta;
-                    if (xTransformed[i] > (1. - delta)) xTransformed[i] = 1. - delta;
+//                    if (xTransformed[i] < delta) xTransformed[i] = delta;
+//                    if (xTransformed[i] > (1. - delta)) xTransformed[i] = 1. - delta;
 
 //                    if (xTransformed[i] <= 0) xTransformed[i] = 0;
 //                    if (xTransformed[i] >= 1) xTransformed[i] = 1;
@@ -1960,7 +1972,7 @@ public final class DataUtils {
 
                 if (previous instanceof Double && current instanceof Double) {
                     double _previouw = (Double) previous;
-                    double _current= (Double) current;
+                    double _current = (Double) current;
 
                     if (Double.isNaN(_previouw) && Double.isNaN(_current)) {
                         constant = false;
