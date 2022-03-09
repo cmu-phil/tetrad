@@ -5584,7 +5584,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 id="simulationErrorType" class="parameter_description">simulationErrorType</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="simulationErrorType_short_desc">
-            	1 = Normal, 2 = Uniform, 3 = Exponential, 4 = Gumbel</span></li>
+            	1 = Usual LG SEM, 2 = Indep Uniform, 3 = Indep Exponential, 4 = Indep Gumbel</span></li>
             <li>Long Description: <span id="simulationErrorType_long_desc">Exogenous error type</span></li>
             <li>Default Value: <span id="simulationErrorType_default_value">1</span></li>
             <li>Lower Bound: <span id="simulationErrorType_lower_bound">1</span></li>
@@ -5595,7 +5595,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 id="simulationParam1" class="parameter_description">simulationParam1</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="simulationParam1_short_desc">
-            	First parameter for exogenous error</span></li>
+            	Indep error parameter #1, U(lb, ub), exp(lambda), gumbel(mu, beta)</span></li>
             <li>Long Description: <span id="simulationParam1_long_desc">Exogenous error parameter #1</span></li>
             <li>Default Value: <span id="simulationParam1_default_value">0.0</span></li>
             <li>Lower Bound: <span id="simulationParam1_lower_bound">-1000</span></li>
@@ -5606,7 +5606,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 id="simulationParam2" class="parameter_description">simulationParam2</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="simulationParam2_short_desc">
-            	Second parameter for exogenous error, if used</span></li>
+            	Indep error parameter #2, U(lb, ub), exp(lambda), gumbel(mu, beta), if used</span></li>
             <li>Long Description: <span id="simulationParam2_long_desc">Exogenous error parameter #2</span></li>
             <li>Default Value: <span id="simulationParam2_default_value">1.0</span></li>
             <li>Lower Bound: <span id="simulationParam2_lower_bound">-1000</span></li>
