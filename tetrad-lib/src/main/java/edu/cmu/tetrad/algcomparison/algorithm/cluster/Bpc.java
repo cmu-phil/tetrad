@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -23,11 +24,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "BPC",
-//        command = "bpc",
-//        algoType = AlgType.search_for_structure_over_latents
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "BPC",
+        command = "bpc",
+        algoType = AlgType.search_for_structure_over_latents
+)
 @Bootstrapping
 public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
 
