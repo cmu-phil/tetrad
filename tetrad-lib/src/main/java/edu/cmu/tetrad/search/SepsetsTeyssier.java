@@ -110,9 +110,10 @@ public class SepsetsTeyssier implements SepsetProducer {
 
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
-        List<Node> nodes = new ArrayList<>(c);
+        List<Node> nodes = new ArrayList<>();
         nodes.add(a);
         nodes.add(b);
+        nodes.addAll(c);
         scorer.score(nodes);
         return !scorer.adjacent(a, b);
     }
