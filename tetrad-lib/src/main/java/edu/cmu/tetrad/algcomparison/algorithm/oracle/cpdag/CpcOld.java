@@ -25,7 +25,7 @@ import java.util.List;
  * @author jdramsey
  */
 @Bootstrapping
-public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class CpcOld implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
@@ -33,14 +33,14 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Cpc() {
+    public CpcOld() {
     }
 
-    public Cpc(IndependenceWrapper type) {
+    public CpcOld(IndependenceWrapper type) {
         this.test = type;
     }
 
-    public Cpc(IndependenceWrapper type, Algorithm algorithm) {
+    public CpcOld(IndependenceWrapper type, Algorithm algorithm) {
         this.test = type;
         this.algorithm = algorithm;
     }
@@ -61,7 +61,7 @@ public class Cpc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            Cpc cpc = new Cpc(test, algorithm);
+            CpcOld cpc = new CpcOld(test, algorithm);
             //cpc.setKnowledge(knowledge);
 //          if (initialGraph != null) {
 //      		cpc.setInitialGraph(initialGraph);

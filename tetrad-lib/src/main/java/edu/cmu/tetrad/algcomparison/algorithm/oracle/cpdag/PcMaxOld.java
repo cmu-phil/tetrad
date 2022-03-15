@@ -30,7 +30,7 @@ import java.util.List;
 //        algoType = AlgType.forbid_latent_common_causes
 //)
 @Bootstrapping
-public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class PcMaxOld implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
@@ -39,10 +39,10 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public PcStableMax() {
+    public PcMaxOld() {
     }
 
-    public PcStableMax(IndependenceWrapper test, boolean compareToTrue) {
+    public PcMaxOld(IndependenceWrapper test, boolean compareToTrue) {
         this.test = test;
         this.compareToTrue = compareToTrue;
     }
@@ -67,7 +67,7 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
             search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             return search.search();
         } else {
-            PcStableMax pcStableMax = new PcStableMax(test, compareToTrue);
+            PcMaxOld pcStableMax = new PcMaxOld(test, compareToTrue);
 
             if (initialGraph != null) {
                 pcStableMax.setInitialGraph(initialGraph);

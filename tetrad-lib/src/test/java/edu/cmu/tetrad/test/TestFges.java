@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.CpcOld;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
@@ -1640,7 +1641,7 @@ public class TestFges {
 
             IndependenceWrapper test = new SemBicTest();
 //            IndependenceWrapper test = new FisherZ();
-            Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Cpc(test);
+            Algorithm alg = new CpcOld(test);
 
             Graph out = alg.search(sim.getDataModel(0), parameters);
 //            Graph out = GraphUtils.undirectedGraph(alg.search(sim.getDataModel(0), parameters));

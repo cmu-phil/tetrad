@@ -10,6 +10,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -25,12 +26,12 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "PC",
-        command = "pc",
+        name = "PC-Max",
+        command = "pcmax",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class PC implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class PCMAX implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
@@ -38,14 +39,14 @@ public class PC implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public PC() {
+    public PCMAX() {
     }
 
-    public PC(IndependenceWrapper test) {
+    public PCMAX(IndependenceWrapper test) {
         this.test = test;
     }
 
-    public PC(IndependenceWrapper test, Algorithm algorithm) {
+    public PCMAX(IndependenceWrapper test, Algorithm algorithm) {
         this.test = test;
         this.algorithm = algorithm;
     }
@@ -54,7 +55,7 @@ public class PC implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.PcAll.ColliderDiscovery colliderDiscovery
-                    = edu.cmu.tetrad.search.PcAll.ColliderDiscovery.FAS_SEPSETS;
+                    = PcAll.ColliderDiscovery.MAX_P;
 
             edu.cmu.tetrad.search.PcAll.ConflictRule conflictRule;
 
@@ -97,7 +98,7 @@ public class PC implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
 
             return search.search();
         } else {
-            PC pcAll = new PC(test, algorithm);
+            PCMAX pcAll = new PCMAX(test, algorithm);
 
             if (initialGraph != null) {
                 pcAll.setInitialGraph(initialGraph);

@@ -25,7 +25,7 @@ import java.util.List;
  * @author jdramsey
  */
 @Bootstrapping
-public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class PcOld implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
@@ -33,16 +33,16 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
     private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Pc(IndependenceWrapper test) {
+    public PcOld(IndependenceWrapper test) {
         this.test = test;
     }
 
-    public Pc(IndependenceWrapper test, Algorithm algorithm) {
+    public PcOld(IndependenceWrapper test, Algorithm algorithm) {
         this.test = test;
         this.algorithm = algorithm;
     }
 
-    public Pc() {
+    public PcOld() {
     }
 
     @Override
@@ -66,7 +66,7 @@ public class Pc implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInde
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            Pc algorithm = new Pc(test);
+            PcOld algorithm = new PcOld(test);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
