@@ -957,7 +957,8 @@ public class AlgorithmCard extends JPanel {
                                                 .addComponent(scoreLabel))
                                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
-            } else {
+            } else
+            {
                 GroupLayout layout = new GroupLayout(this);
                 this.setLayout(layout);
                 layout.setHorizontalGroup(
