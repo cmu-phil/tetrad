@@ -126,9 +126,7 @@ public final class GraspFci implements GraphSearch {
         Graph graspGraph = new EdgeListGraph(graph);
 
 
-
         graph.reorientAllWith(Endpoint.CIRCLE);
-
 
 
         fciOrientBk(knowledge, graph, graph.getNodes());
@@ -142,14 +140,15 @@ public final class GraspFci implements GraphSearch {
                     Node a = adj.get(i);
                     Node c = adj.get(j);
 
-                    if (!graph.isAdjacentTo(a, c) && graspGraph.isDefCollider(a, b, c)) {
+                    if (!graph.isAdjacentTo(a, c) && graspGraph.isDefCollider(a, b, c)
+                            && isArrowpointAllowed(a, b, graph)
+                            && isArrowpointAllowed(c, b, graph)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
                 }
             }
         }
-
 
 
         TeyssierScorer scorer;
@@ -196,7 +195,9 @@ public final class GraspFci implements GraphSearch {
             Node c = triple.getY();
             Node d = triple.getZ();
 
-            if (graph.isAdjacentTo(b, c) && graph.isAdjacentTo(d, c)) {
+            if (graph.isAdjacentTo(b, c) && graph.isAdjacentTo(d, c)
+                    && isArrowpointAllowed(b, c, graph)
+                    && isArrowpointAllowed(c, c, graph)) {
                 graph.setEndpoint(b, c, Endpoint.ARROW);
                 graph.setEndpoint(d, c, Endpoint.ARROW);
             }
@@ -433,4 +434,31 @@ public final class GraspFci implements GraphSearch {
     public void setAllowRandomnessInsideAlgorithm(boolean allowRandomnessInsideAlgorithms) {
         this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithms;
     }
+
+    private boolean isArrowpointAllowed(Node x, Node y, Graph graph) {
+        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
+            return true;
+        }
+
+        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
+            return false;
+        }
+
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
+                return false;
+            } else {
+                return true;
+            }
+        } else if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
+    }
+
 }

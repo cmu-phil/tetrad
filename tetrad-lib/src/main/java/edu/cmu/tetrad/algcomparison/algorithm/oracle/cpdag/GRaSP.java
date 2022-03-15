@@ -53,8 +53,8 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             Score score = this.score.getScore(dataSet, parameters);
-
             IndependenceTest test = this.test.getTest(dataSet, parameters);
+
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Grasp grasp = new Grasp(test, score);
 

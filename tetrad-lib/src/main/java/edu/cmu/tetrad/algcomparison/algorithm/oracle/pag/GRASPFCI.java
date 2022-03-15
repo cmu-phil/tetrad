@@ -3,13 +3,12 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.search.GraspFci;
@@ -41,11 +40,12 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper {
+public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
+    private IKnowledge knowledge = new Knowledge2();
 
     public GRASPFCI() {
         // Used for reflection; do not delete.
@@ -60,7 +60,7 @@ public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             GraspFci search = new GraspFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
-            search.setKnowledge(dataSet.getKnowledge());
+            search.setKnowledge(knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
@@ -76,7 +76,7 @@ public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            search.setKnowledge(dataSet.getKnowledge());
+            search.setKnowledge(search.getKnowledge());
 
             Object obj = parameters.get(Params.PRINT_STREAM);
 
@@ -159,6 +159,17 @@ public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.GRASP_DEPTH);
 
         return params;
+    }
+
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
     }
 
     @Override
