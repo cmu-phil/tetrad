@@ -23,7 +23,9 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcOld;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.CPC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcStable;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
@@ -65,10 +67,8 @@ public class ExampleCompareSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new PcOld(new FisherZ()));
-//        algorithms.add(new Cpc(new FisherZ(), new Fges(new SemBicScore(), false)));
-//        algorithms.add(new PcStable(new FisherZ()));
-//        algorithms.add(new CpcStable(new FisherZ()));
+        algorithms.add(new PC(new FisherZ()));
+        algorithms.add(new CPC(new FisherZ()));
 
         Simulations simulations = new Simulations();
 
