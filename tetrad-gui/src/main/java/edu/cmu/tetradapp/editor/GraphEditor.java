@@ -26,7 +26,7 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
@@ -73,14 +73,10 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             "edgeRemoved",
             "nodeRemoved"
     ));
-
-    private GraphWorkbench workbench;
     private final Parameters parameters;
-
     private final JScrollPane graphEditorScroll = new JScrollPane();
-
     private final EdgeTypeTable edgeTypeTable;
-
+    private GraphWorkbench workbench;
     /**
      * Flag to indicate if interventional variables are in the graph - Zhou
      */
@@ -171,6 +167,11 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     }
 
     @Override
+    public void setGraph(Graph graph) {
+        getWorkbench().setGraph(graph);
+    }
+
+    @Override
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
@@ -178,11 +179,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     @Override
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
-    }
-
-    @Override
-    public void setGraph(Graph graph) {
-        getWorkbench().setGraph(graph);
     }
 
     @Override
@@ -300,13 +296,18 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
         edgeTypeTable.setPreferredSize(new Dimension(820, 150));
 
-        // Use JSplitPane to allow resize the bottom box - Zhou
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
-        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
+//        //Use JSplitPane to allow resize the bottom box - Zhou
+//        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
+//        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
+
+        // Switching to tabbed pane because of resizing problems with the split pane... jdramsey 2021.08.25
+        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        tabbedPane.addTab("Graph", new PaddingPanel(topBox));
+        tabbedPane.addTab("Edges", edgeTypeTable);
 
         // Add to parent container
         add(menuBar, BorderLayout.NORTH);
-        add(splitPane, BorderLayout.CENTER);
+        add(tabbedPane, BorderLayout.CENTER);
 
         edgeTypeTable.update(graph);
 
@@ -481,8 +482,16 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                         return;
                     }
 
-                    RandomUtil.getInstance().setSeed(new Date().getTime());
-                    Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
+                    Graph graph1 = GraphUtils.randomGraph(
+                            parameters.getInt(Params.NUM_MEASURES),
+                            parameters.getInt(Params.NUM_LATENTS),
+                            (int)(parameters.getDouble(Params.AVG_DEGREE) * parameters.getInt(Params.NUM_MEASURES) / 2.),
+                            parameters.getInt(Params.MAX_DEGREE),
+                            parameters.getInt(Params.MAX_INDEGREE),
+                            parameters.getInt(Params.MAX_OUTDEGREE),
+                            parameters.getBoolean(Params.CONNECTED)
+                    );
+//                    Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
 
                     boolean addCycles = parameters.getBoolean("randomAddCycles", false);
 
