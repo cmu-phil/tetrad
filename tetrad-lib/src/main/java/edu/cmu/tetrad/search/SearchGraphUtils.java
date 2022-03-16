@@ -2320,6 +2320,7 @@ public final class SearchGraphUtils {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return -99;
         }
 
         return shd;

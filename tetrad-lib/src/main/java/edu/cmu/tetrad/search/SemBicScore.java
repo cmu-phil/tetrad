@@ -132,11 +132,11 @@ public class SemBicScore implements Score {
             Matrix bStar = bStar(b);
             return (bStar.transpose().times(cov).times(bStar).get(0, 0));
         } catch (SingularMatrixException e) {
-//            List<Node> variables = covariances.getVariables();
-//            List<Node> p = new ArrayList<>();
-//            for (int _p : parents) p.add(variables.get(_p));
-//            throw new RuntimeException("Singularity");// + variables.get(i) + " | " + p);
-            return NEGATIVE_INFINITY;
+            List<Node> variables = covariances.getVariables();
+            List<Node> p = new ArrayList<>();
+            for (int _p : parents) p.add(variables.get(_p));
+            throw new RuntimeException("Singularity: " + variables.get(i) + " | " + p);
+//            return NEGATIVE_INFINITY;
         }
     }
 

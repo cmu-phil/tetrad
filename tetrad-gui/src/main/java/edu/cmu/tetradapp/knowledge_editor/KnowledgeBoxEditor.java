@@ -62,6 +62,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private final List<Node> vars;
     private final List<String> firstTierVars = new LinkedList<>();
     private final List<String> secondTierVars = new LinkedList<>();
+    private final KnowledgeBoxModel knowledgeBoxModel;
     private IKnowledge knowledge;
     private KnowledgeWorkbench edgeWorkbench;
     private JPanel tiersPanel;
@@ -70,11 +71,11 @@ public class KnowledgeBoxEditor extends JPanel {
     private boolean showRequired = false;
     private boolean showRequiredByGroups = false;
     private boolean showForbiddenByGroups = false;
-    private final JTabbedPane tabbedPane;
+    private JTabbedPane tabbedPane;
     private int numTiers = 3;
 
     public KnowledgeBoxEditor(final ForbiddenGraphModel knowledgeBoxModel) {
-        this(knowledgeBoxModel, knowledgeBoxModel.getSourceGraph().getNodes());
+        this((KnowledgeBoxModel) knowledgeBoxModel);
     }
 
     /**
@@ -83,17 +84,10 @@ public class KnowledgeBoxEditor extends JPanel {
      * from object to object even for the same knowledge), and possible source
      * graph. The source graph is used only to arrange nodes in the edge panel.
      */
-    public KnowledgeBoxEditor(final KnowledgeBoxModel knowledgeBoxModel, List<Node> vars) {
-        this(knowledgeBoxModel.getKnowledge(), vars);
-    }
-
     public KnowledgeBoxEditor(final KnowledgeBoxModel knowledgeBoxModel) {
-        this(knowledgeBoxModel.getKnowledge(), knowledgeBoxModel.getVariables());
-    }
-
-    public KnowledgeBoxEditor(IKnowledge knowledge, List<Node> vars) {
-        this.vars = vars;
-        this.knowledge = knowledge;
+        this.vars = knowledgeBoxModel.getVariables();
+        this.knowledge = knowledgeBoxModel.getKnowledge();
+        this.knowledgeBoxModel = knowledgeBoxModel;
 
         setLayout(new BorderLayout());
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
@@ -712,6 +706,7 @@ public class KnowledgeBoxEditor extends JPanel {
         }
 
         this.knowledge = knowledge;
+        knowledgeBoxModel.setKnowledge(knowledge);
     }
 
     private List<String> getVarNames() {

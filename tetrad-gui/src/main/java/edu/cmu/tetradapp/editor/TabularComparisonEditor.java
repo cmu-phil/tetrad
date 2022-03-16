@@ -1,7 +1,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.TabularComparison;
@@ -24,26 +23,23 @@ public class TabularComparisonEditor extends JPanel {
     }
 
     private void setup() {
-        java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
         JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
 
         pane.addTab("Comparison", getTableDisplay());
 
         JTabbedPane pane2 = new JTabbedPane(JTabbedPane.LEFT);
 
-        for (int i = 0; i < referenceGraphs.size(); i++) {
-            JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
+        JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
 
-            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i)));
-            graphEditor.enableEditing(false);
-            pane3.add("Target Graph", graphEditor.getWorkbench());
+        GraphEditor graphEditor = new GraphEditor(new GraphWrapper(comparison.getTargetGraph()));
+        graphEditor.enableEditing(false);
+        pane3.add("Target Graph", graphEditor.getWorkbench());
 
-            graphEditor = new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i)));
-            graphEditor.enableEditing(false);
-            pane3.add("True Graph", graphEditor.getWorkbench());
+        graphEditor = new GraphEditor(new GraphWrapper(comparison.getReferenceGraph()));
+        graphEditor.enableEditing(false);
+        pane3.add("True Graph", graphEditor.getWorkbench());
 
-            pane2.add("" + (i + 1), pane3);
-        }
+        pane2.add("Reference Graph", pane3);
 
         pane.addTab("Graphs", pane2);
 
@@ -59,8 +55,8 @@ public class TabularComparisonEditor extends JPanel {
         StringBuilder b0 = new StringBuilder();
         String trueGraphAndTarget = "Target graphs from " + comparison.getTargetName()
                 + "\nTrue graphs from " + comparison.getReferenceName();
-        b0.append(trueGraphAndTarget + "\n\n");
-        b0.append(table.toString());
+        b0.append(trueGraphAndTarget).append("\n\n");
+        b0.append(table);
 
         Map<String, String> allParamsSettings = comparison.getAllParamSettings();
 
