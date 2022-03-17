@@ -104,7 +104,6 @@ public class TestPc {
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
-        DataReader reader = new DataReader();
         ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
         IKnowledge knowledge = new Knowledge2();
