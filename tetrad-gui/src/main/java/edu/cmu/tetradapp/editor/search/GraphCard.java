@@ -92,7 +92,7 @@ public class GraphCard extends JPanel {
     }
 
     private Box createInstructionBox() {
-        JLabel label = new JLabel("More information on graph edge types");
+        JLabel label = new JLabel("More information on graph edge types and colorings");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
