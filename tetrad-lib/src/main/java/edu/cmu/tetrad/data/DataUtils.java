@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Tetrad;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.ContinuousData;
@@ -2460,6 +2461,37 @@ public final class DataUtils {
         TetradLogger.getInstance().log("info", "\nData set loaded!");
         return covarianceMatrix;
     }
+
+    /**
+     * Parses the given files for a tabular data set, returning a
+     * RectangularDataSet if successful.
+     *
+     * @throws IOException if the file cannot be read.
+     */
+    public static ICovarianceMatrix parseCovariance(File file, String commentMarker,
+                                                    DelimiterType delimiterType,
+                                                    char quoteChar,
+                                                    String missingValueMarker) throws IOException {
+        FileReader reader = null;
+
+        try {
+            reader = new FileReader(file);
+            ICovarianceMatrix covarianceMatrix = doCovariancePass(reader, commentMarker,
+                    delimiterType,quoteChar , missingValueMarker);
+
+            TetradLogger.getInstance().log("info", "\nCovariance matrix loaded!");
+            return covarianceMatrix;
+        } catch (FileNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            if (reader != null) {
+                reader.close();
+            }
+
+            throw new RuntimeException("Parsing failed.", e);
+        }
+    }
+
 
     static ICovarianceMatrix doCovariancePass(Reader reader, String commentMarker, DelimiterType delimiterType,
                                               char quoteChar, String missingValueMarker) {
