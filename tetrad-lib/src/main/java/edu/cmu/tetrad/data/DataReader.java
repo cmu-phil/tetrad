@@ -46,6 +46,19 @@ public final class DataReader implements IDataReader {
      */
     private final TetradLogger logger = TetradLogger.getInstance();
     /**
+     * The initial segment of a line that is to be considered a comment line.
+     */
+    private final String commentMarker = "//";
+    /**
+     * A character that sets off quoted strings.
+     */
+    private final char quoteChar = '"';
+    /**
+     * Known variable definitions. These will usurp any guessed variable
+     * definitions by name.
+     */
+    private final List<Node> knownVariables = new LinkedList<>();
+    /**
      * A set of characters that in any combination makes up a delimiter.
      */
     private DelimiterType delimiterType = DelimiterType.WHITESPACE;
@@ -65,14 +78,6 @@ public final class DataReader implements IDataReader {
      */
     private String idLabel = null;
     /**
-     * The initial segment of a line that is to be considered a comment line.
-     */
-    private String commentMarker = "//";
-    /**
-     * A character that sets off quoted strings.
-     */
-    private char quoteChar = '"';
-    /**
      * In parsing data, missing values will be marked either by this string or
      * by an empty string.
      */
@@ -82,15 +87,6 @@ public final class DataReader implements IDataReader {
      * will be parsed as discrete; otherwise, continuous.
      */
     private int maxIntegralDiscrete = 0;
-    /**
-     * Known variable definitions. These will usurp any guessed variable
-     * definitions by name.
-     */
-    private List<Node> knownVariables = new LinkedList<>();
-    /**
-     * True if variable names should be read lowercase.
-     */
-    private boolean readVariablesLowercase = false;
 
     /**
      * Constructs a new data parser.
@@ -129,18 +125,6 @@ public final class DataReader implements IDataReader {
     }
 
     /**
-     * Lines beginning with blanks or this marker will be skipped.
-     */
-    @Override
-    public void setCommentMarker(String commentMarker) {
-        if (commentMarker == null) {
-            throw new NullPointerException("Cannot be null.");
-        }
-
-        this.commentMarker = commentMarker;
-    }
-
-    /**
      * This is the delimiter used to parse the data. Default is whitespace.
      */
     @Override
@@ -150,14 +134,6 @@ public final class DataReader implements IDataReader {
         }
 
         this.delimiterType = delimiterType;
-    }
-
-    /**
-     * Text between matched ones of these will treated as quoted text.
-     */
-    @Override
-    public void setQuoteChar(char quoteChar) {
-        this.quoteChar = quoteChar;
     }
 
     /**
@@ -214,19 +190,6 @@ public final class DataReader implements IDataReader {
     }
 
     /**
-     * The known variables for a given name will usurp guess the variable by
-     * that name.
-     */
-    @Override
-    public void setKnownVariables(List<Node> knownVariables) {
-        if (knownVariables == null) {
-            throw new NullPointerException();
-        }
-
-        this.knownVariables = knownVariables;
-    }
-
-    /**
      * Parses the given files for a tabular data set, returning a
      * RectangularDataSet if successful.
      *
@@ -269,28 +232,6 @@ public final class DataReader implements IDataReader {
 
             throw new RuntimeException("Parsing failed.", e);
         }
-    }
-
-    /**
-     * Parses the given character array for a tabular data set, returning a
-     * RectangularDataSet if successful. Log messages are written to the
-     * LogUtils log; to view them, add System.out to that.
-     */
-    @Override
-    public DataSet parseTabular(char[] chars) {
-
-        // Do first pass to get a description of the file.
-        CharArrayReader reader = new CharArrayReader(chars);
-        DataSetDescription description = doFirstTabularPass(reader);
-
-        // Close the reader and re-open for a second pass to load the data.
-        reader.close();
-        CharArrayReader reader2 = new CharArrayReader(chars);
-        DataSet dataSet = doSecondTabularPass(description, reader2);
-
-        this.logger.log("info", "\nData set loaded!");
-        this.logger.reset();
-        return dataSet;
     }
 
     private DataSetDescription doFirstTabularPass(Reader reader) {
@@ -435,18 +376,7 @@ public final class DataReader implements IDataReader {
                             + ": Duplicate variable name (" + name + ").");
                 }
 
-//               True if variable names should be read uppercase.
-                /*
-                 True if variable names should be read lowercase.
-                 */
-                boolean readVariablesUppercase = false;
-                if (readVariablesLowercase) {
-                    varNames.add(name.toLowerCase());
-                } else if (readVariablesUppercase) {
-                    varNames.add(name.toUpperCase());
-                } else {
-                    varNames.add(name);
-                }
+                varNames.add(name);
             }
 
             dataFirstLine = null;
@@ -537,11 +467,6 @@ public final class DataReader implements IDataReader {
             RegexTokenizer tokenizer1 = new RegexTokenizer(line2, description.getDelimiter(),
                     quoteChar);
 
-//            if (description.isMultColumnIncluded() && tokenizer1.hasMoreTokens()) {
-//                String token = tokenizer1.nextToken().trim();
-//                int multiplier = Integer.parseInt(token);
-//                dataSet.setMultiplier(row, multiplier);
-//            }
             int col = -1;
 
             while (tokenizer1.hasMoreTokens()) {
@@ -571,68 +496,9 @@ public final class DataReader implements IDataReader {
 
         IKnowledge knowledge = parseKnowledge(lineizer, delimiterType.getPattern());
 
-        if (knowledge != null) {
-            dataSet.setKnowledge(knowledge);
-        }
+        dataSet.setKnowledge(knowledge);
 
         return dataSet;
-    }
-
-    /**
-     * Parses the given files for a tabular data set, returning a
-     * RectangularDataSet if successful.
-     *
-     * @throws IOException if the file cannot be read.
-     */
-    public ICovarianceMatrix parseCovariance(File file, String commentMarker,
-                                             DelimiterType delimiterType,
-                                             char quoteChar,
-                                             String missingValueMarker) throws IOException {
-        FileReader reader = null;
-
-        try {
-            reader = new FileReader(file);
-            ICovarianceMatrix covarianceMatrix = DataUtils.doCovariancePass(reader,
-                    commentMarker, delimiterType, quoteChar, missingValueMarker);
-
-            this.logger.log("info", "\nCovariance matrix loaded!");
-            this.logger.reset();
-            return covarianceMatrix;
-        } catch (FileNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            if (reader != null) {
-                reader.close();
-            }
-
-            throw new RuntimeException("Parsing failed.", e);
-        }
-    }
-
-    /**
-     * Loads knowledge from a file. Assumes knowledge is the only thing in the
-     * file. No jokes please. :)
-     */
-    @Override
-    public IKnowledge parseKnowledge(File file) throws IOException {
-        FileReader reader = new FileReader(file);
-        Lineizer lineizer = new Lineizer(reader, commentMarker);
-        IKnowledge knowledge = parseKnowledge(lineizer, delimiterType.getPattern());
-        this.logger.reset();
-        return knowledge;
-    }
-
-    /**
-     * Parses knowledge from the char array, assuming that's all there is in the
-     * char array.
-     */
-    @Override
-    public IKnowledge parseKnowledge(char[] chars) {
-        CharArrayReader reader = new CharArrayReader(chars);
-        Lineizer lineizer = new Lineizer(reader, commentMarker);
-        IKnowledge knowledge = parseKnowledge(lineizer, delimiterType.getPattern());
-        this.logger.reset();
-        return knowledge;
     }
 
     //============================PRIVATE METHODS========================//
@@ -988,14 +854,6 @@ public final class DataReader implements IDataReader {
         return knowledge;
     }
 
-    public void setReadVariablesLowercase(boolean readVariablesLowercase) {
-        this.readVariablesLowercase = readVariablesLowercase;
-    }
-
-    public void setReadVariablesUppercase(boolean readVariablesUppercase) {
-        this.readVariablesLowercase = readVariablesUppercase;
-    }
-
     /**
      * Scans the file for variable definitions and number of cases.
      *
@@ -1016,7 +874,7 @@ public final class DataReader implements IDataReader {
         List<Set<String>> dataStrings = new ArrayList<>();
 
         for (int i = 0; i < varNames.size(); i++) {
-            dataStrings.add(new HashSet<String>(varNames.size()));
+            dataStrings.add(new HashSet<>(varNames.size()));
         }
 
         int row = -1;
@@ -1111,20 +969,7 @@ public final class DataReader implements IDataReader {
                 categories.remove("");
                 categories.remove(missingValueMarker);
 
-                Collections.sort(categories, new Comparator<String>() {
-                    public int compare(String o1, String o2) {
-                        return o1.compareTo(o2);
-//                        try {
-//                            int i1 = Integer.parseInt(o1);
-//                            int i2 = Integer.parseInt(o2);
-//                            return i1 - i2;
-//                            return i2 < i1 ? -1 : i2 == i1 ? 0 : 1;
-//                        }
-//                        catch (NumberFormatException e) {
-//                            return o1.compareTo(o2);
-//                        }
-                    }
-                });
+                categories.sort(Comparator.naturalOrder());
 
                 String name = varNames.get(i);
 
@@ -1142,13 +987,6 @@ public final class DataReader implements IDataReader {
             }
         }
 
-        boolean multColumnIncluded = false;
-
-//        if (variables.get(0).getName().equals("MULT")) {
-//            multColumnIncluded = true;
-//            variables.remove(0);
-//            varNames.remove(0);
-//        }
         // Print out a report of the variable definitions guessed at (or
         // read in through the /variables section or specified as known
         // variables.
@@ -1181,7 +1019,7 @@ public final class DataReader implements IDataReader {
         }
 
         return new DataSetDescription(variables, numRows, idIndex, variableSectionIncluded,
-                delimiter/*, multColumnIncluded*/);
+                delimiter);
     }
 
     private boolean tooManyDiscreteValues(Set<String> strings) {
@@ -1195,7 +1033,6 @@ public final class DataReader implements IDataReader {
         private final int idIndex;
         private final boolean variablesSectionIncluded;
         private final Pattern delimiter;
-//        private final boolean multColumnIncluded;
 
         public DataSetDescription(List<Node> variables, int numRows, int idIndex,
                                   boolean variablesSectionIncluded, Pattern delimiter
@@ -1206,7 +1043,6 @@ public final class DataReader implements IDataReader {
             this.idIndex = idIndex;
             this.variablesSectionIncluded = variablesSectionIncluded;
             this.delimiter = delimiter;
-//            this.multColumnIncluded = multColumnIncluded;
         }
 
         public List<Node> getVariables() {
@@ -1228,24 +1064,5 @@ public final class DataReader implements IDataReader {
         public Pattern getDelimiter() {
             return delimiter;
         }
-
-//        public boolean isMultColumnIncluded() {
-//            return multColumnIncluded;
-//        }
     }
-
-//    /**
-//     * Loads text from the given file in the form of a char[] array.
-//     */
-//    private static char[] loadChars(File file) throws IOException {
-//        FileReader reader = new FileReader(file);
-//        CharArrayWriter writer = new CharArrayWriter();
-//        int c;
-//
-//        while ((c = reader.read()) != -1) {
-//            writer.write(c);
-//        }
-//
-//        return writer.toCharArray();
-//    }
 }
