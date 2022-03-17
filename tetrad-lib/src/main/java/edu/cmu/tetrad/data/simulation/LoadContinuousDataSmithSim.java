@@ -49,11 +49,9 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
             for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
-                DataReader reader = new DataReader();
-                reader.setVariablesSupplied(false);
-                reader.setDelimiter(DelimiterType.COMMA);
                 try {
-                    DataSet dataSet = reader.parseTabular(file);
+                    DataSet dataSet= DataUtils.loadContinuousData(file, "//", '\"' ,
+                            "*", true);
                     dataSets.add(dataSet);
                 } catch (Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());
@@ -135,11 +133,8 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
     public Graph readGraph(File file) {
         try {
-            DataReader reader = new DataReader();
-            reader.setVariablesSupplied(false);
-            reader.setDelimiter(DelimiterType.COMMA);
-
-            DataSet data = reader.parseTabular(file);
+            DataSet data= DataUtils.loadContinuousData(file, "//", '\"' ,
+                    "*", true);
             List<Node> variables = data.getVariables();
             Graph graph = new EdgeListGraph(variables);
 

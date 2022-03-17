@@ -44,6 +44,24 @@ public class ShortTriangularMatrix implements TriangularMatrix {
         create(size);
     }
 
+    //testing sandbox
+    public static void main(String[] args) {
+        ShortTriangularMatrix test = new ShortTriangularMatrix();
+        File file = new File("C:/data1.txt");
+        try {
+            DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
+                    "*", true);
+            test.becomeCorrelationMatrix(data);
+            System.out.println(test.toString());
+            CorrelationMatrix m = new CorrelationMatrix(data);
+            System.out.println(m.toString());
+            System.out.println(test.getDouble(1, 3));
+            System.out.println(test.getDouble(3, 1));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void becomeCorrelationMatrix(DataSet dataSet) {
         for (int i = 0; i < dataSet.getNumColumns(); i++)
             matrix[i][i] = 10000;
@@ -126,25 +144,6 @@ public class ShortTriangularMatrix implements TriangularMatrix {
             out.append("\n");
         }
         return out.toString();
-    }
-
-    //testing sandbox
-    public static void main(String[] args) {
-        ShortTriangularMatrix test = new ShortTriangularMatrix();
-        DataReader reader = new DataReader();
-        File file = new File("C:/data1.txt");
-        DataSet data = null;
-        try {
-            data = reader.parseTabular(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        test.becomeCorrelationMatrix(data);
-        System.out.println(test.toString());
-        CorrelationMatrix m = new CorrelationMatrix(data);
-        System.out.println(m.toString());
-        System.out.println(test.getDouble(1, 3));
-        System.out.println(test.getDouble(3, 1));
     }
 }
 

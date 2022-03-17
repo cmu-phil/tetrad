@@ -24,14 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -102,7 +95,8 @@ public class TestPcStableMax {
 
         char[] citesChars = citesString.toCharArray();
         DataReader reader = new DataReader();
-        ICovarianceMatrix dataSet = reader.parseCovariance(citesChars);
+        ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
+                '\"', "*");
 
         IKnowledge knowledge = new Knowledge2();
 

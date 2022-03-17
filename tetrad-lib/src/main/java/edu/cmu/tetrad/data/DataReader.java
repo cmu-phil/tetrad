@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NamingProtocol;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -43,61 +42,51 @@ import java.util.regex.Pattern;
 public final class DataReader implements IDataReader {
 
     /**
+     * The tetrad logger.
+     */
+    private final TetradLogger logger = TetradLogger.getInstance();
+    /**
      * A set of characters that in any combination makes up a delimiter.
      */
     private DelimiterType delimiterType = DelimiterType.WHITESPACE;
-
     /**
      * True iff variable names in the data section of the file are listed in the
      * first row.
      */
     private boolean varNamesSupplied = true;
-
     /**
      * True iff case IDs are provided in the file.
      */
     private boolean idsSupplied = false;
-
     /**
      * Assuming caseIdsPresent is true, this is null if case IDs are in an
      * unlabeled initial column; otherwise, they are assumed to be in a labeled
      * column by this name.
      */
     private String idLabel = null;
-
     /**
      * The initial segment of a line that is to be considered a comment line.
      */
     private String commentMarker = "//";
-
     /**
      * A character that sets off quoted strings.
      */
     private char quoteChar = '"';
-
     /**
      * In parsing data, missing values will be marked either by this string or
      * by an empty string.
      */
     private String missingValueMarker = "*";
-
     /**
      * In parsing integral columns, columns with up to this many distinct values
      * will be parsed as discrete; otherwise, continuous.
      */
     private int maxIntegralDiscrete = 0;
-
     /**
      * Known variable definitions. These will usurp any guessed variable
      * definitions by name.
      */
     private List<Node> knownVariables = new LinkedList<>();
-
-    /**
-     * The tetrad logger.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-
     /**
      * True if variable names should be read lowercase.
      */
@@ -110,6 +99,34 @@ public final class DataReader implements IDataReader {
     }
 
     //============================PUBLIC METHODS========================//
+
+    private static String substitutePeriodsForSpaces(String s) {
+        return s.replaceAll(" ", ".");
+    }
+
+    private static boolean isIntegral(Set<String> strings) {
+        for (String s : strings) {
+            try {
+                Integer.parseInt(s);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean isDouble(Set<String> strings) {
+        for (String s : strings) {
+            try {
+                Double.parseDouble(s);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Lines beginning with blanks or this marker will be skipped.
@@ -567,13 +584,16 @@ public final class DataReader implements IDataReader {
      *
      * @throws IOException if the file cannot be read.
      */
-    @Override
-    public ICovarianceMatrix parseCovariance(File file) throws IOException {
+    public ICovarianceMatrix parseCovariance(File file, String commentMarker,
+                                             DelimiterType delimiterType,
+                                             char quoteChar,
+                                             String missingValueMarker) throws IOException {
         FileReader reader = null;
 
         try {
             reader = new FileReader(file);
-            ICovarianceMatrix covarianceMatrix = doCovariancePass(reader);
+            ICovarianceMatrix covarianceMatrix = DataUtils.doCovariancePass(reader,
+                    commentMarker, delimiterType, quoteChar, missingValueMarker);
 
             this.logger.log("info", "\nCovariance matrix loaded!");
             this.logger.reset();
@@ -587,157 +607,6 @@ public final class DataReader implements IDataReader {
 
             throw new RuntimeException("Parsing failed.", e);
         }
-    }
-
-    /**
-     * Reads in a covariance matrix. The format is as follows. </p>
-     * <pre>
-     * /covariance
-     * 100
-     * X1   X2   X3   X4
-     * 1.4
-     * 3.2  2.3
-     * 2.5  3.2  5.3
-     * 3.2  2.5  3.2  4.2
-     * </pre>
-     * <pre>
-     * CovarianceMatrix dataSet = DataLoader.loadCovMatrix(
-     *                           new FileReader(file), " \t", "//");
-     * </pre> The initial "/covariance" is optional.
-     */
-    @Override
-    public ICovarianceMatrix parseCovariance(char[] chars) {
-
-        // Do first pass to get a description of the file.
-        CharArrayReader reader = new CharArrayReader(chars);
-
-        // Close the reader and re-open for a second pass to load the data.
-        reader.close();
-        CharArrayReader reader2 = new CharArrayReader(chars);
-        ICovarianceMatrix covarianceMatrix = doCovariancePass(reader2);
-
-        this.logger.log("info", "\nData set loaded!");
-        this.logger.reset();
-        return covarianceMatrix;
-    }
-
-    private ICovarianceMatrix doCovariancePass(Reader reader) {
-        this.logger.log("info", "\nDATA LOADING PARAMETERS:");
-        this.logger.log("info", "File type = COVARIANCE");
-        this.logger.log("info", "Comment marker = " + commentMarker);
-        this.logger.log("info", "Delimiter type = " + delimiterType);
-        this.logger.log("info", "Quote char = " + quoteChar);
-        //        LogUtils.getInstance().info("Var names first row = " + varNamesSupplied);
-//        LogUtils.getInstance().info("IDs supplied = " + idsSupplied);
-//        LogUtils.getInstance().info("ID label = " + idLabel);
-        this.logger.log("info", "Missing value marker = " + missingValueMarker);
-        //        LogUtils.getInstance().info("Max discrete = " + maxIntegralDiscrete);
-        this.logger.log("info", "--------------------");
-
-        Lineizer lineizer = new Lineizer(reader, commentMarker);
-
-        // Skip "/Covariance" if it is there.
-        String line = lineizer.nextLine();
-
-        if ("/Covariance".equalsIgnoreCase(line.trim())) {
-            line = lineizer.nextLine();
-        }
-
-        // Read br sample size.
-        RegexTokenizer st = new RegexTokenizer(line, delimiterType.getPattern(), quoteChar);
-        String token = st.nextToken();
-
-        int n;
-
-        try {
-            n = Integer.parseInt(token);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(
-                    "Expected a sample size here, got \"" + token + "\".");
-        }
-
-        if (st.hasMoreTokens() && !"".equals(st.nextToken())) {
-            throw new IllegalArgumentException(
-                    "Line from file has more tokens than expected: \"" + st.nextToken() + "\"");
-        }
-
-        // Read br variable names and set up DataSet.
-        line = lineizer.nextLine();
-
-        // Variable lists can't have missing values, so we can excuse an extra tab at the end of the line.
-        if (line.subSequence(line.length() - 1, line.length()).equals("\t")) {
-            line = line.substring(0, line.length() - 1);
-        }
-
-        st = new RegexTokenizer(line, delimiterType.getPattern(), quoteChar);
-
-        List<String> vars = new ArrayList<>();
-
-        while (st.hasMoreTokens()) {
-            String _token = st.nextToken();
-
-            if ("".equals(_token)) {
-                TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a variable name--ignoring.");
-                continue;
-            }
-
-            vars.add(_token);
-        }
-
-        String[] varNames = vars.toArray(new String[vars.size()]);
-
-        this.logger.log("info", "Variables:");
-
-        for (String varName : varNames) {
-            this.logger.log("info", varName + " --> Continuous");
-        }
-
-        // Read br covariances.
-        Matrix c = new Matrix(vars.size(), vars.size());
-
-        for (int i = 0; i < vars.size(); i++) {
-            st = new RegexTokenizer(lineizer.nextLine(), delimiterType.getPattern(), quoteChar);
-
-            for (int j = 0; j <= i; j++) {
-                if (!st.hasMoreTokens()) {
-                    throw new IllegalArgumentException("Expecting " + (i + 1)
-                            + " numbers on line " + (i + 1)
-                            + " of the covariance " + "matrix input.");
-                }
-
-                String literal = st.nextToken();
-
-                if ("".equals(literal)) {
-                    TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a "
-                            + "covariance value--ignoring.");
-                    continue;
-                }
-
-                if ("*".equals(literal)) {
-                    c.set(i, j, Double.NaN);
-                    c.set(j, i, Double.NaN);
-                    continue;
-                }
-
-                double r = Double.parseDouble(literal);
-
-                c.set(i, j, r);
-                c.set(j, i, r);
-            }
-        }
-
-        IKnowledge knowledge = parseKnowledge(lineizer, delimiterType.getPattern());
-
-        ICovarianceMatrix covarianceMatrix
-                = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), c, n);
-
-        if (knowledge != null) {
-            covarianceMatrix.setKnowledge(knowledge);
-        }
-
-        this.logger.log("info", "\nData set loaded!");
-        this.logger.reset();
-        return covarianceMatrix;
     }
 
     /**
@@ -1119,62 +988,12 @@ public final class DataReader implements IDataReader {
         return knowledge;
     }
 
-    private static String substitutePeriodsForSpaces(String s) {
-        return s.replaceAll(" ", ".");
-    }
-
     public void setReadVariablesLowercase(boolean readVariablesLowercase) {
         this.readVariablesLowercase = readVariablesLowercase;
     }
 
     public void setReadVariablesUppercase(boolean readVariablesUppercase) {
         this.readVariablesLowercase = readVariablesUppercase;
-    }
-
-    private static class DataSetDescription {
-
-        private final List<Node> variables;
-        private final int numRows;
-        private final int idIndex;
-        private final boolean variablesSectionIncluded;
-        private final Pattern delimiter;
-//        private final boolean multColumnIncluded;
-
-        public DataSetDescription(List<Node> variables, int numRows, int idIndex,
-                                  boolean variablesSectionIncluded, Pattern delimiter
-                                  //                , boolean multColumnIncluded
-        ) {
-            this.variables = variables;
-            this.numRows = numRows;
-            this.idIndex = idIndex;
-            this.variablesSectionIncluded = variablesSectionIncluded;
-            this.delimiter = delimiter;
-//            this.multColumnIncluded = multColumnIncluded;
-        }
-
-        public List<Node> getVariables() {
-            return variables;
-        }
-
-        public int getNumRows() {
-            return numRows;
-        }
-
-        public int getIdIndex() {
-            return idIndex;
-        }
-
-        public boolean isVariablesSectionIncluded() {
-            return variablesSectionIncluded;
-        }
-
-        public Pattern getDelimiter() {
-            return delimiter;
-        }
-
-//        public boolean isMultColumnIncluded() {
-//            return multColumnIncluded;
-//        }
     }
 
     /**
@@ -1369,28 +1188,50 @@ public final class DataReader implements IDataReader {
         return strings.size() > maxIntegralDiscrete;
     }
 
-    private static boolean isIntegral(Set<String> strings) {
-        for (String s : strings) {
-            try {
-                Integer.parseInt(s);
-            } catch (NumberFormatException e) {
-                return false;
-            }
+    private static class DataSetDescription {
+
+        private final List<Node> variables;
+        private final int numRows;
+        private final int idIndex;
+        private final boolean variablesSectionIncluded;
+        private final Pattern delimiter;
+//        private final boolean multColumnIncluded;
+
+        public DataSetDescription(List<Node> variables, int numRows, int idIndex,
+                                  boolean variablesSectionIncluded, Pattern delimiter
+                                  //                , boolean multColumnIncluded
+        ) {
+            this.variables = variables;
+            this.numRows = numRows;
+            this.idIndex = idIndex;
+            this.variablesSectionIncluded = variablesSectionIncluded;
+            this.delimiter = delimiter;
+//            this.multColumnIncluded = multColumnIncluded;
         }
 
-        return true;
-    }
-
-    private static boolean isDouble(Set<String> strings) {
-        for (String s : strings) {
-            try {
-                Double.parseDouble(s);
-            } catch (NumberFormatException e) {
-                return false;
-            }
+        public List<Node> getVariables() {
+            return variables;
         }
 
-        return true;
+        public int getNumRows() {
+            return numRows;
+        }
+
+        public int getIdIndex() {
+            return idIndex;
+        }
+
+        public boolean isVariablesSectionIncluded() {
+            return variablesSectionIncluded;
+        }
+
+        public Pattern getDelimiter() {
+            return delimiter;
+        }
+
+//        public boolean isMultColumnIncluded() {
+//            return multColumnIncluded;
+//        }
     }
 
 //    /**

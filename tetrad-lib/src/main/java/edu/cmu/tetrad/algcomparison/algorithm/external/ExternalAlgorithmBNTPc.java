@@ -1,10 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -71,9 +68,8 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
         System.out.println(file.getAbsolutePath());
 
         try {
-            DataReader reader = new DataReader();
-            reader.setVariablesSupplied(false);
-            DataSet dataSet2 = reader.parseTabular(file);
+            DataSet dataSet2 = DataUtils.loadContinuousData(file, "//", '\"',
+                    "*", true);
             System.out.println("Loading graph from " + file.getAbsolutePath());
             Graph graph = GraphUtils.loadGraphBNTPcMatrix(dataSet.getVariables(), dataSet2);
 

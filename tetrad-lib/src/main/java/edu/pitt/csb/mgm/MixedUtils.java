@@ -832,16 +832,14 @@ public class MixedUtils {
 
     public static DataSet loadDataSet(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
-        DataReader reader = new DataReader();
-        reader.setVariablesSupplied(true);
-        return reader.parseTabular(file);
+        return DataUtils.loadContinuousData(file, "//", '\"' ,
+                "*", true);
     }
 
     public static DataSet loadDelim(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
-        DataReader reader = new DataReader();
-        reader.setVariablesSupplied(false);
-        return reader.parseTabular(file);
+        return DataUtils.loadContinuousData(file, "//", '\"' ,
+                "*", false);
     }
 
     //Gives a map of number of categories of DiscreteVariables in g. ContinuousVariables are mapped to 0
@@ -859,9 +857,8 @@ public class MixedUtils {
 
     public static DataSet loadData(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
-        DataReader reader = new DataReader();
-        reader.setVariablesSupplied(true);
-        return reader.parseTabular(file);
+        return DataUtils.loadContinuousData(file, "//", '\"' ,
+                "*", true);
     }
 
     /**

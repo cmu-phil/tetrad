@@ -1,9 +1,8 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
-import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DelimiterType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -85,10 +84,6 @@ public class FaskGraphs {
     }
 
     private void loadFiles(String path, Parameters parameters, String... contains) {
-        DataReader reader = new DataReader();
-        reader.setVariablesSupplied(true);
-        reader.setDelimiter(DelimiterType.TAB);
-
         File dir = new File(path);
 
         File[] files = dir.listFiles();
@@ -109,7 +104,8 @@ public class FaskGraphs {
                 try {
                     if (name.contains("autistic")) {
                         types.add(true);
-                        DataSet dataSet = reader.parseTabular(new File(path, name));
+                        DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"' ,
+                                "*", true);
                         filenames.add(name);
                         datasets.add(dataSet);
                         Fask fask = new Fask();
@@ -117,7 +113,8 @@ public class FaskGraphs {
                         graphs.add(search);
                     } else if (name.contains("typical")) {
                         types.add(false);
-                        DataSet dataSet = reader.parseTabular(new File(path, name));
+                        DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"' ,
+                                "*", true);
                         filenames.add(name);
                         datasets.add(dataSet);
                         Fask fask = new Fask();

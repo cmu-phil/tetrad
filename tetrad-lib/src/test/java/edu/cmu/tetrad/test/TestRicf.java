@@ -280,10 +280,9 @@ public class TestRicf {
     @Ignore // File not found.
     public void test3() {
         try {
-            DataReader reader = new DataReader();
             final File datapath = new File("/Users/josephramsey/Downloads/data6.txt");
-
-            DataSet dataSet = reader.parseTabular(datapath);
+            DataSet dataSet = DataUtils.loadContinuousData(datapath, "//", '\"' ,
+                    "*", true);
             Graph mag = GraphUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
 
             ICovarianceMatrix cov = new CovarianceMatrix(dataSet);

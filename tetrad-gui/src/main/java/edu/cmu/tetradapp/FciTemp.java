@@ -20,9 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp;
 
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Fci;
@@ -62,7 +60,7 @@ public final class FciTemp {
         IKnowledge knowledge;
 
         try {
-            knowledge = new DataReader().parseKnowledge(new File(args[1]));
+            knowledge = DataUtils.parseKnowledge(new File(args[1]), DelimiterType.WHITESPACE, "//");
         } catch (IOException e) {
             throw new RuntimeException("Expecting properly formatted knowledge file: " + args[1]);
         }

@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DeltaSextadTest;
 import edu.cmu.tetrad.search.IntSextad;
@@ -116,8 +116,8 @@ public class TestDeltaSextadTest {
 
         try {
             String name = "src/test/resources/dataLG.txt";
-            DataReader reader = new DataReader();
-            data = reader.parseTabular(new File(name));
+            data = DataUtils.loadContinuousData(new File(name), "//", '\"' ,
+                    "*", true);
         } catch (IOException e) {
             e.printStackTrace();
         }

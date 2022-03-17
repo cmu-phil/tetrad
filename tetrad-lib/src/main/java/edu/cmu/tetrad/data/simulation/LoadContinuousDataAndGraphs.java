@@ -1,10 +1,7 @@
 package edu.cmu.tetrad.data.simulation;
 
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -51,9 +48,9 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                     File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
-                    DataReader reader = new DataReader();
-                    reader.setVariablesSupplied(true);
-                    dataSets.add(reader.parseTabular(file1));
+                    DataSet data = DataUtils.loadContinuousData(file1, "//", '\"' ,
+                            "*", true);
+                    dataSets.add(data);
                 }
 
                 File paramFile = new File(path, "parameters.txt");

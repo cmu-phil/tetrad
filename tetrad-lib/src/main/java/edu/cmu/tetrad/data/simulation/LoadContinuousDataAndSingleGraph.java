@@ -3,10 +3,7 @@ package edu.cmu.tetrad.data.simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -46,11 +43,10 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
-                DataReader reader = new DataReader();
-                reader.setVariablesSupplied(true);
                 try {
-                    DataSet dataSet = reader.parseTabular(file);
-                    dataSets.add(dataSet);
+                    DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
+                            "*", true);
+                    dataSets.add(data);
                 } catch (Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());
                 }

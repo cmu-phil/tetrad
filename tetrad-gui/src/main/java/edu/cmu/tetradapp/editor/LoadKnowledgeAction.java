@@ -21,7 +21,8 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.DataReader;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DelimiterType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
@@ -76,6 +77,16 @@ final class LoadKnowledgeAction extends AbstractAction {
         this.knowledgeEditable = knowledgeEditable;
     }
 
+    private static JFileChooser getJFileChooser() {
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation = Preferences.userRoot().get(
+                "fileSaveLocation", Preferences.userRoot().absolutePath());
+        chooser.setCurrentDirectory(new File(sessionSaveLocation));
+        chooser.resetChoosableFileFilters();
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        return chooser;
+    }
+
     /**
      * Performs the action of loading a session from a file.
      */
@@ -112,8 +123,8 @@ final class LoadKnowledgeAction extends AbstractAction {
             // Import...
             if (ret == JOptionPane.OK_OPTION) {
                 try {
-                    DataReader reader = new DataReader();
-                    IKnowledge knowledge = reader.parseKnowledge(file);
+                    IKnowledge knowledge = DataUtils.parseKnowledge(file, DelimiterType.WHITESPACE,
+                            "//");
                     this.knowledgeEditable.setKnowledge(knowledge);
                 } catch (Exception e1) {
                     String message = e1.getMessage() ==
@@ -128,16 +139,6 @@ final class LoadKnowledgeAction extends AbstractAction {
                 }
             }
         }
-    }
-
-    private static JFileChooser getJFileChooser() {
-        JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation = Preferences.userRoot().get(
-                "fileSaveLocation", Preferences.userRoot().absolutePath());
-        chooser.setCurrentDirectory(new File(sessionSaveLocation));
-        chooser.resetChoosableFileFilters();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        return chooser;
     }
 
     public String getDelimiters() {
@@ -232,10 +233,6 @@ final class KnowledgeLoaderWizard extends JPanel {
         add(b3, BorderLayout.CENTER);
     }
 
-    public String getText() {
-        return fileTextArea.getText();
-    }
-
     private static String knowledgeSampleText() {
         return "/knowledge" + "\n0 x1 x2" + "\n1 x3 x4" + "\n4 x5";
     }
@@ -264,6 +261,10 @@ final class KnowledgeLoaderWizard extends JPanel {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getText() {
+        return fileTextArea.getText();
     }
 
     public String getCommentIndicator() {

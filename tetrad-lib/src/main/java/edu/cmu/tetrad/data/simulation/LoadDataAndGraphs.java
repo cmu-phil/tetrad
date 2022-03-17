@@ -58,27 +58,9 @@ public class LoadDataAndGraphs implements Simulation {
 
                     stdout.println("Loading data from " + file1.getAbsolutePath());
 
-                    DataReader dataReader = new DataReader();
-                    dataReader.setVariablesSupplied(true);
-                    dataReader.setDelimiter(DelimiterType.TAB);
-                    dataReader.setMaxIntegralDiscrete(parameters.getInt("maxDistinctValuesDiscrete"));
+                    DataSet ds= DataUtils.loadContinuousData(file1, "//", '\"' ,
+                            "*", true);
 
-                    // Header in first row or not
-                    // Set comment marker
-                    dataReader.setCommentMarker("//");
-
-                    dataReader.setMissingValueMarker("*");
-
-                    DataSet ds = dataReader.parseTabular(file1);
-
-//                    DataReader reader = new DataReader();
-//                    reader.setVariablesSupplied(true);
-//                    reader.setMaxIntegralDiscrete(parameters.getInt("maxDistinctValuesDiscrete"));
-//                    ContinuousTabularDataset dataset = (ContinuousTabularDataset) dataReader.readInData();
-//                    DoubleDataBox box = new DoubleDataBox(dataset.getData());
-//                    List<Node> variables = new ArrayList<>();
-//                    for (String s : dataset.getVariables()) variables.add(new ContinuousVariable(s));
-//                    BoxDataSet _dataSet = new BoxDataSet(box, variables);
                     dataSets.add(ds);
                 }
 

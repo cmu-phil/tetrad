@@ -27,8 +27,6 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
@@ -107,7 +105,7 @@ public class TestPc {
 
         char[] citesChars = citesString.toCharArray();
         DataReader reader = new DataReader();
-        ICovarianceMatrix dataSet = reader.parseCovariance(citesChars);
+        ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
         IKnowledge knowledge = new Knowledge2();
 

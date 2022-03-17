@@ -27,7 +27,6 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
@@ -556,8 +555,7 @@ public class TestFges {
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
-        DataReader reader = new DataReader();
-        ICovarianceMatrix cov = reader.parseCovariance(citesChars);
+        ICovarianceMatrix cov = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
         IKnowledge knowledge = new Knowledge2();
 
@@ -945,8 +943,8 @@ public class TestFges {
             for (int i = 0; i < 50; i++) {
                 File dataPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
                         "Simulated_data_for_Madelyn/simulation/data/DAG_" + i + "_data.txt");
-                DataReader reader = new DataReader();
-                DataSet Dk = reader.parseTabular(dataPath);
+                DataSet Dk = DataUtils.loadContinuousData(dataPath, "//", '\"' ,
+                        "*", true);
 
                 File graphPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
                         "Simulated_data_for_Madelyn/simulation/networks/DAG_" + i + "_graph.txt");

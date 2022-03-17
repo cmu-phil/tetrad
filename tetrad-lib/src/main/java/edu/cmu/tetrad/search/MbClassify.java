@@ -22,10 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.bayes.*;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DelimiterType;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
@@ -95,17 +92,10 @@ public class MbClassify implements DiscreteClassifier {
 
             TetradLogger.getInstance().log("info", buf.toString());
 
-            DataReader reader = new DataReader();
-            reader.setDelimiter(DelimiterType.WHITESPACE);
-//            parser.setIdsSupplied(true);
-//            parser.setIdLabel(null);
-//            parser.setVarNamesSupplied(false);
-            reader.setMaxIntegralDiscrete(50);
-
-            DataSet train = reader.parseTabular(new File(trainPath));
-
-            reader.setKnownVariables(train.getVariables());
-            DataSet test = reader.parseTabular(new File(testPath));
+            DataSet train = DataUtils.loadContinuousData(new File(trainPath), "//", '\"' ,
+                    "*", true);
+            DataSet test = DataUtils.loadContinuousData(new File(testPath), "//", '\"' ,
+                    "*", true);
 
             double alpha = Double.parseDouble(alphaString);
             int depth = Integer.parseInt(depthString);
