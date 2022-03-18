@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestGSquare;
 import org.junit.Test;
@@ -88,10 +88,8 @@ public class TestIndTestGSquare {
         String filename = discreteFiles[i];
         System.out.println("Loading " + filename);
 
-        DataReader reader = new DataReader();
-        reader.setMissingValueMarker("-99");
-        reader.setMaxIntegralDiscrete(5);
-        return reader.parseTabular(new File(filename));
+        return DataUtils.loadDiscreteData(new File(filename),
+                "//", '\"', "-99", true);
     }
 }
 

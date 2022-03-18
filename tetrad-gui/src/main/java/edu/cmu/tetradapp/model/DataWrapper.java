@@ -70,12 +70,12 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     private Graph sourceGraph;
 
     /**
-     * A list of known variables. Variables can be looked up in this list and
-     * reused where appropriate.
-     *
-     * @serial Can be null.
-     */
-    private List<Node> knownVariables;
+//     * A list of known variables. Variables can be looked up in this list and
+//     * reused where appropriate.
+//     *
+//     * @serial Can be null.
+//     */
+//    private List<Node> knownVariables;
 
     /**
      * The parameters being edited.
@@ -151,9 +151,9 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
             this.sourceGraph = new EdgeListGraph(wrapper.sourceGraph);
         }
 
-        if (wrapper.knownVariables != null) {
-            this.knownVariables = new ArrayList<>(wrapper.knownVariables);
-        }
+//        if (wrapper.knownVariables != null) {
+//            this.knownVariables = new ArrayList<>(wrapper.knownVariables);
+//        }
 
         this.dataModelList = dataModelList;
 
@@ -394,19 +394,19 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     /**
-     * Sets the source graph.
-     */
-    public void setKnownVariables(List<Node> variables) {
-        this.knownVariables = variables;
-    }
+//     * Sets the source graph.
+//     */
+//    public void setKnownVariables(List<Node> variables) {
+//        this.knownVariables = variables;
+//    }
 
     public Map getDiscretizationSpecs() {
         return discretizationSpecs;
     }
 
-    public List<Node> getKnownVariables() {
-        return knownVariables;
-    }
+//    public List<Node> getKnownVariables() {
+//        return knownVariables;
+//    }
 
     /**
      * Adds semantic checks to the default deserialization method. This method

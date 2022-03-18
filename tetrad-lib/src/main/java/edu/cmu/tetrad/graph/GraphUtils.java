@@ -30,7 +30,7 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.*;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 import nu.xom.*;
 
 import java.io.*;
@@ -38,7 +38,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
 
@@ -1545,15 +1544,6 @@ public final class GraphUtils {
             Node node21 = graph2.getNode(name1);
             Node node22 = graph2.getNode(name2);
 
-//            if (node21 == null) {
-//                continue;
-////                throw new IllegalArgumentException("There was no node by that name in the reference graph: " + name1);
-//            }
-//
-//            if (node22 == null) {
-//                continue;
-////                throw new IllegalArgumentException("There was no node by that name in the reference graph: " + name2);
-//            }
             if (node21 == null || node22 == null || !graph2.isAdjacentTo(node21, node22)) {
                 edges.add(Edges.nondirectedEdge(edge1.getNode1(), edge1.getNode2()));
             }
@@ -1722,12 +1712,6 @@ public final class GraphUtils {
             convertedGraph.addEdge(newEdge);
         }
 
-//        for (Node node : originalGraph.getNodes()) {
-//            if (convertedGraph.getNode(node.getName()) == null) {
-//                convertedGraph.addNode(node);
-//            }
-//        }
-
         for (Triple triple : originalGraph.getUnderLines()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -1819,8 +1803,6 @@ public final class GraphUtils {
         }
 
         graph2 = GraphUtils.replaceNodes(graph2, graph1.getNodes());
-
-        assert graph2 != null;
 
         graph1 = GraphUtils.undirectedGraph(graph1);
         graph2 = GraphUtils.undirectedGraph(graph2);
@@ -2499,12 +2481,25 @@ public final class GraphUtils {
         for (String line = in.readLine(); line != null; line = in.readLine()) {
             line = line.trim();
             if (line.isEmpty()) {
-                break;
+                continue;
             }
 
             String[] tokens = line.split("\\s+");
 
-            String from = tokens[1];
+            String number = tokens[0];
+
+            String[] tokensa = number.split("\\.");
+
+            int fromIndex;
+
+            try {
+                Integer.parseInt(tokensa[0]);
+                fromIndex = 1;
+            } catch (NumberFormatException e) {
+                fromIndex = 0;
+            }
+
+            String from = tokens[fromIndex];
 
             line = line.substring(line.indexOf(from) + from.length()).trim();
             tokens = line.split("\\s+");
@@ -3615,9 +3610,9 @@ public final class GraphUtils {
             private final Graph topGraph;
             private final Counts counts;
             private final int[] count;
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public CountTask(int chunk, int from, int to, List<Edge> edges, Graph leftGraph, Graph topGraph, int[] count) {
                 this.chunk = chunk;
@@ -4136,8 +4131,8 @@ public final class GraphUtils {
     private static boolean isDConnectedTo1(Node x, Node y, List<Node> z, Graph graph) {
         class EdgeNode {
 
-            private Edge edge;
-            private Node node;
+            private final Edge edge;
+            private final Node node;
 
             public EdgeNode(Edge edge, Node node) {
                 this.edge = edge;
@@ -4259,8 +4254,8 @@ public final class GraphUtils {
 
         class EdgeNode {
 
-            private Edge edge;
-            private Node node;
+            private final Edge edge;
+            private final Node node;
 
             public EdgeNode(Edge edge, Node node) {
                 this.edge = edge;
@@ -5206,7 +5201,7 @@ public final class GraphUtils {
 
     private static class Counts {
 
-        private int[][] counts;
+        private final int[][] counts;
 
         public Counts() {
             this.counts = new int[8][6];

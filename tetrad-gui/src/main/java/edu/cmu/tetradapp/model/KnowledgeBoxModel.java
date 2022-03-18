@@ -50,7 +50,6 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     private String name;
     private Parameters params;
     private IKnowledge knowledge = new Knowledge2();
-    private List<String> varNames = new ArrayList<>();
     private List<Node> variables = new ArrayList<>();
     private List<String> variableNames = new ArrayList<>();
     private final Graph sourceGraph = new EdgeListGraph();
@@ -61,6 +60,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         this.numTiers = 3;
         this.variables = new ArrayList<>();
         this.params = params;
+        this.params.set("__myKnowledge", knowledge);
     }
 
     /**
@@ -102,10 +102,8 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         this.params = params;
         this.knowledge = new Knowledge2();
 
-        for (KnowledgeBoxInput input : inputs) {
-            for (Node v : input.getVariables()) {
-                knowledge.addVariable(v.getName());
-            }
+        for (String var : variableNames) {
+            knowledge.addVariable(var);
         }
 
         TetradLogger.getInstance().log("info", "Knowledge");
@@ -138,7 +136,8 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 
     private IKnowledge createKnowledge(IKnowledge knowledge) {
         knowledge.clear();
-        for (String varName : varNames) {
+        variableNames.clear();
+        for (String varName : knowledge.getVariables()) {
             knowledge.addVariable(varName);
         }
         return knowledge;
@@ -161,7 +160,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 
     @Override
     public List<String> getVarNames() {
-        return varNames;
+        return variableNames;
     }
 
     @Override
@@ -171,6 +170,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         }
         this.knowledge = knowledge;
         this.numTiers = knowledge.getNumTiers();
+        this.params.set("__myKnowledge", knowledge);
 
         // printing out is bad for large knowledge input
 //        TetradLogger.getInstance().log("knowledge", knowledge.toString());
@@ -189,7 +189,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     @Override
     public void resetParams(Object params) {
         this.params = (Parameters) params;
-        freshenKnowledgeIfEmpty(varNames);
+        freshenKnowledgeIfEmpty(variableNames);
 
         // printing out is bad for large knowledge input
 //        TetradLogger.getInstance().log("knowledge", knowledge.toString());

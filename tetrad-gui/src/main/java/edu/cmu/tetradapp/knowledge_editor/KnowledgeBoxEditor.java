@@ -159,7 +159,7 @@ public class KnowledgeBoxEditor extends JPanel {
             Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
 
             try {
-                IKnowledge knowledge = DataUtils.parseKnowledge(selectedFile, DelimiterType.TAB, "//");
+                IKnowledge knowledge = DataUtils.loadKnowledge(selectedFile, DelimiterType.TAB, "//");
                 setKnowledge(knowledge);
                 resetTabbedPane();
             } catch (Exception e1) {

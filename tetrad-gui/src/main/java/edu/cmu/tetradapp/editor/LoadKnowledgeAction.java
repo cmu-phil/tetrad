@@ -123,7 +123,7 @@ final class LoadKnowledgeAction extends AbstractAction {
             // Import...
             if (ret == JOptionPane.OK_OPTION) {
                 try {
-                    IKnowledge knowledge = DataUtils.parseKnowledge(file, DelimiterType.WHITESPACE,
+                    IKnowledge knowledge = DataUtils.loadKnowledge(file, DelimiterType.WHITESPACE,
                             "//");
                     this.knowledgeEditable.setKnowledge(knowledge);
                 } catch (Exception e1) {

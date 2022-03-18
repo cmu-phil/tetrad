@@ -23,12 +23,13 @@ package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Tetrad;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.ContinuousData;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
+import edu.pitt.dbmi.data.reader.tabular.MixedTabularData;
+import edu.pitt.dbmi.data.reader.tabular.MixedTabularDatasetFileReader;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.BlockRealMatrix;
@@ -1405,14 +1406,14 @@ public final class DataUtils {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            double exoData[] = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.rows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
             }
 
             // Step 2. Multiply by cholesky to get correct covariance.
-            double point[] = new double[exoData.length];
+            double[] point = new double[exoData.length];
 
             for (int i = 0; i < exoData.length; i++) {
                 double sum = 0.0;
@@ -2052,10 +2053,10 @@ public final class DataUtils {
      * Loads knowledge from a file. Assumes knowledge is the only thing in the
      * file. No jokes please. :)
      */
-    public static IKnowledge parseKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
+    public static IKnowledge loadKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
         FileReader reader = new FileReader(file);
         Lineizer lineizer = new Lineizer(reader, commentMarker);
-        IKnowledge knowledge = parseKnowledge(lineizer, DelimiterType.WHITESPACE.getPattern());
+        IKnowledge knowledge = loadKnowledge(lineizer, delimiterType.getPattern());
         TetradLogger.getInstance().reset();
         return knowledge;
     }
@@ -2071,7 +2072,7 @@ public final class DataUtils {
      * 4 x5
      * </pre>
      */
-    public static IKnowledge parseKnowledge(Lineizer lineizer, Pattern delimiter) {
+    public static IKnowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
         IKnowledge knowledge = new Knowledge2();
 
         String line = lineizer.nextLine();
@@ -2428,6 +2429,21 @@ public final class DataUtils {
         return (DataSet) DataConvertUtils.toContinuousDataModel(data);
     }
 
+    @NotNull
+    public static DataSet loadDiscreteData(File file, String commentMarker, char quoteCharacter,
+                                           String missingValueMarker, boolean hasHeader)
+            throws IOException {
+        MixedTabularDatasetFileReader dataReader
+                = new MixedTabularDatasetFileReader(file.toPath(), Delimiter.COMMA, 1000000);
+        dataReader.setCommentMarker(commentMarker);
+        dataReader.setQuoteCharacter(quoteCharacter);
+        dataReader.setMissingDataMarker(missingValueMarker);
+        dataReader.setHasHeader(hasHeader);
+        MixedTabularData data = (MixedTabularData) dataReader.readInData();
+        return (DataSet) DataConvertUtils.toMixedDataBox(data);
+    }
+
+
     /**
      * Reads in a covariance matrix. The format is as follows. </p>
      * <pre>
@@ -2477,7 +2493,7 @@ public final class DataUtils {
         try {
             reader = new FileReader(file);
             ICovarianceMatrix covarianceMatrix = doCovariancePass(reader, commentMarker,
-                    delimiterType,quoteChar , missingValueMarker);
+                    delimiterType, quoteChar, missingValueMarker);
 
             TetradLogger.getInstance().log("info", "\nCovariance matrix loaded!");
             return covarianceMatrix;
@@ -2595,7 +2611,7 @@ public final class DataUtils {
             }
         }
 
-        IKnowledge knowledge = parseKnowledge(lineizer, delimiterType.getPattern());
+        IKnowledge knowledge = loadKnowledge(lineizer, delimiterType.getPattern());
 
         ICovarianceMatrix covarianceMatrix
                 = new CovarianceMatrix(createContinuousVariables(varNames), c, n);

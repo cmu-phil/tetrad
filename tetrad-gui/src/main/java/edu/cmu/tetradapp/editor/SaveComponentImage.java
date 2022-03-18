@@ -68,7 +68,7 @@ public class SaveComponentImage extends AbstractAction {
         // Create the image.
         Dimension size = getComp().getSize();
         BufferedImage image = new BufferedImage(size.width, size.height,
-                BufferedImage.TYPE_BYTE_INDEXED);
+                BufferedImage.TYPE_INT_ARGB_PRE);
         Graphics graphics = image.getGraphics();
         getComp().paint(graphics);
 

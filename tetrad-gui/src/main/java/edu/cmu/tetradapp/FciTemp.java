@@ -60,7 +60,7 @@ public final class FciTemp {
         IKnowledge knowledge;
 
         try {
-            knowledge = DataUtils.parseKnowledge(new File(args[1]), DelimiterType.WHITESPACE, "//");
+            knowledge = DataUtils.loadKnowledge(new File(args[1]), DelimiterType.WHITESPACE, "//");
         } catch (IOException e) {
             throw new RuntimeException("Expecting properly formatted knowledge file: " + args[1]);
         }

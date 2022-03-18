@@ -281,6 +281,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public void clear() {
+        this.variables.clear();
         this.forbiddenRulesSpecs.clear();
         this.requiredRulesSpecs.clear();
         this.tierSpecs.clear();
