@@ -158,7 +158,7 @@ public class Cstar {
             if (q <= p) {
                 qs.add(q);
             } else {
-                System.out.println("q = " + q + " > p = " + p + "; skipping");
+                TetradLogger.getInstance().forceLogMessage("q = " + q + " > p = " + p + "; skipping");
             }
         }
 
@@ -269,7 +269,7 @@ public class Cstar {
                                     + patternAlgorithm);
                         }
 
-                        System.out.println("# edges = " + pattern.getNumEdges());
+                        TetradLogger.getInstance().forceLogMessage("# edges = " + pattern.getNumEdges());
 
                         edgesTotal[0] += pattern.getNumEdges();
                         edgesCount[0]++;
@@ -292,12 +292,14 @@ public class Cstar {
 
                         if (dir != null) {
                             saveMatrix(effects, new File(dir, "effects." + (k + 1) + ".txt"));
+                        } else {
+                            saveMatrix(effects, null);
                         }
                     }
 
 
                     if (verbose) {
-                        System.out.println("Bootstrap " + (k + 1));
+                        TetradLogger.getInstance().forceLogMessage("Bootstrap " + (k + 1));
                     }
 
                     return effects;
@@ -359,7 +361,7 @@ public class Cstar {
             public Boolean call() {
                 try {
                     if (verbose) {
-                        System.out.println("Examining q = " + q);
+                        TetradLogger.getInstance().forceLogMessage("Examining q = " + q);
                     }
 
                     List<Tuple> tuples = new ArrayList<>();
@@ -441,7 +443,8 @@ public class Cstar {
         try {
             DataSet dataSet = DataUtils.loadContinuousData(new File(dir, s),"//", '*', "*", true);
 
-            System.out.println("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
+            TetradLogger.getInstance().forceLogMessage(
+                    "Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
 
             return dataSet;
         } catch (IOException e) {
@@ -744,8 +747,12 @@ public class Cstar {
             List<Node> vars = new ArrayList<>();
             for (int i = 0; i < effects[0].length; i++) vars.add(new ContinuousVariable("V" + (i + 1)));
             BoxDataSet data = new BoxDataSet(new DoubleDataBox(effects), vars);
-            PrintStream out = new PrintStream(new FileOutputStream(file));
-            out.println(data.toString());
+            if (file != null) {
+                PrintStream out = new PrintStream(new FileOutputStream(file));
+                out.println(data);
+            } else {
+                TetradLogger.getInstance().forceLogMessage(data.toString());
+            }
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -755,7 +762,7 @@ public class Cstar {
         try {
             DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"', "*", true);
 
-            System.out.println("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
+            TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
 
             return dataSet.getDoubleData().toArray();
         } catch (IOException e) {
