@@ -4832,21 +4832,19 @@ public final class GraphUtils {
     }
 
     public static List<Node> possibleDsep(Node x, Node y, Graph graph, int maxPathLength, IndependenceTest test) {
-        List<Node> dsep = new ArrayList<>();
+        Set<Node> dsep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
         Set<OrderedPair<Node>> V = new HashSet<>();
 
-        Map<Node, List<Node>> previous = new HashMap<>();
+        Map<Node, Set<Node>> previous = new HashMap<>();
         previous.put(x, null);
 
         OrderedPair<Node> e = null;
         int distance = 0;
 
         assert graph != null;
-        List<Node> adjacentNodes = graph.getAdjacentNodes(x);
-
-        Collections.sort(adjacentNodes);
+        Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
 
         for (Node b : adjacentNodes) {
             if (b == y) {
@@ -4858,7 +4856,7 @@ public final class GraphUtils {
             }
             Q.offer(edge);
             V.add(edge);
-            addToList(previous, b, x);
+            addToSet(previous, b, x);
             dsep.add(b);
         }
 
@@ -4891,7 +4889,7 @@ public final class GraphUtils {
                     continue;
                 }
 
-                addToList(previous, b, c);
+                addToSet(previous, b, c);
 
                 if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
                     OrderedPair<Node> u = new OrderedPair<>(a, c);
@@ -4916,20 +4914,23 @@ public final class GraphUtils {
             scores.put(node, test.getScore());
         }
 
-        dsep.sort(Comparator.comparing(scores::get));
-        Collections.reverse(dsep);
-
         dsep.remove(x);
         dsep.remove(y);
-        return dsep;
+
+        List<Node> _dsep = new ArrayList<>(dsep);
+
+        Collections.sort(_dsep);
+        Collections.reverse(_dsep);
+
+        return _dsep;
     }
 
-    private static boolean existOnePathWithPossibleParents(Map<Node, List<Node>> previous, Node w, Node x, Node b, Graph graph) {
+    private static boolean existOnePathWithPossibleParents(Map<Node, Set<Node>> previous, Node w, Node x, Node b, Graph graph) {
         if (w == x) {
             return true;
         }
 
-        final List<Node> p = previous.get(w);
+        final Set<Node> p = previous.get(w);
         if (p == null) {
             return false;
         }
@@ -4950,13 +4951,9 @@ public final class GraphUtils {
         return false;
     }
 
-    private static void addToList(Map<Node, List<Node>> previous, Node b, Node c) {
-        List<Node> list = previous.get(c);
-
-        if (list == null) {
-            list = new ArrayList<>();
-        }
-
+    private static void addToSet(Map<Node, Set<Node>> previous, Node b, Node c) {
+        previous.computeIfAbsent(c, k -> new HashSet<>());
+        Set<Node> list = previous.get(c);
         list.add(b);
     }
 

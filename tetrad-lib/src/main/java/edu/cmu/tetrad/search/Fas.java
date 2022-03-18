@@ -138,6 +138,8 @@ public class Fas implements IFas {
     public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
 
+        test.setVerbose(verbose);
+
         int _depth = depth;
 
         if (_depth == -1) {
@@ -193,7 +195,7 @@ public class Fas implements IFas {
             }
         }
 
-        for (int d = 1; d <= _depth; d++) {
+        for (int d = 0; d <= _depth; d++) {
             boolean more;
 
             if (stable) {
