@@ -25,7 +25,9 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.util.CopyLayoutAction;
 import edu.cmu.tetradapp.util.LayoutEditable;
+import edu.cmu.tetradapp.util.PasteLayoutAction;
 
 import javax.swing.*;
 import java.awt.*;
@@ -258,6 +260,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         });
         setEnabled(enableEditing);
+
+        new PasteLayoutAction(this).actionPerformed(null);
     }
 
     // ============================PUBLIC METHODS==========================//
@@ -2776,6 +2780,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (AbstractWorkbench.this.isEnableEditing()) {
                 workbench.handleMouseReleased(e);
             }
+
+            // Copy the laid out graph to the clipboard.
+            new CopyLayoutAction(getWorkbench()).actionPerformed(null);
         }
 
         @Override
