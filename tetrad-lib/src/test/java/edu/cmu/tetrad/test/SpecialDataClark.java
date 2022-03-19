@@ -42,7 +42,7 @@ public class SpecialDataClark implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (!newModel && !dataSets.isEmpty()) return;
+//        if (!newModel && !dataSets.isEmpty()) return;
 
         Graph graph = randomGraph.createGraph(parameters);
 

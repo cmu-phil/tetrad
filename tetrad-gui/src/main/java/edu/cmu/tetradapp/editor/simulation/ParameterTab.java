@@ -91,6 +91,10 @@ public class ParameterTab extends JPanel {
         }
     }
 
+    private Component getPanel() {
+        return null;
+    }
+
     private void initComponents() {
         setLayout(new BorderLayout());
         add(createSimulationOptionBox(), BorderLayout.NORTH);
@@ -231,7 +235,14 @@ public class ParameterTab extends JPanel {
     private Box createSimulationButtonBox() {
         Dimension buttonSize = new Dimension(268, 25);
 
-        JButton button = new JButton("Simulate");
+        JButton button;
+
+        if (simulation.getSimulation().getNumDataModels() == 0) {
+            button = new JButton("Simulate");
+        } else {
+            button = new JButton("Re-simulate");
+        }
+
         button.setMinimumSize(buttonSize);
         button.setMaximumSize(buttonSize);
         button.setPreferredSize(buttonSize);
@@ -281,6 +292,16 @@ public class ParameterTab extends JPanel {
     }
 
     private void simulate() {
+        int ret = JOptionPane.showConfirmDialog(getPanel(), "Simulate new graph(s) and dataset(s)?",
+                "Confirm", JOptionPane.OK_CANCEL_OPTION);
+
+        if (ret == JOptionPane.CANCEL_OPTION) {
+//            JOptionPane.showMessageDialog(getPanel(), "Keeping existing graph(s) and datasets(s)");
+            return;
+        } else {
+            JOptionPane.showMessageDialog(getPanel(), "New graph(s) and datasets(s) were created");
+        }
+
         new WatchedProcess((Window) getTopLevelAncestor()) {
             @Override
             public void watch() {
@@ -305,6 +326,7 @@ public class ParameterTab extends JPanel {
                     }
                 }
             }
+
         };
     }
 

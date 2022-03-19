@@ -374,9 +374,13 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public List<String> getTier(int tier) {
         ensureTiers(tier);
 
-        return tierSpecs.get(tier).stream()
-                .sorted()
-                .collect(Collectors.toList());
+        try {
+            return tierSpecs.get(tier).stream()
+                    .sorted()
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected knowledge configuration.", e);
+        }
     }
 
     /**
