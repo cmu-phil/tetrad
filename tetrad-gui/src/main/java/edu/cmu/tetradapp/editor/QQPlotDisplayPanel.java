@@ -233,7 +233,6 @@ class QQPlotDisplayPanel extends JPanel {
             Point point = e.getPoint();
             for (Rectangle rect : rectMap.keySet()) {
                 if (rect.contains(point)) {
-                    //  System.out.println(rectMap.get(rect));
                     break;
                 }
             }
