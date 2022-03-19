@@ -2023,12 +2023,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h2>Search Algorithms</h2>
 
-    <h3>Variants of PC</h3>
-    <h3>The PC Algorithm</h3>
+    <h3>PC</h3>
 
     <h4>Description</h4>
 
-    <div id="pc-all">
+    <div id="pc">
 
         <p>PC algorithm (Spirtes and Glymour, Social Science Computer Review, 1991) is a CPDAG search which assumes
             that the underlying causal structure of the input data is acyclic, and that no two variables are caused by
@@ -2122,67 +2121,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#alpha">alpha</a>, <a href="#depth">depth</a></p>
 
-    <h3>The PCStable Algorithm</h3>
-
-    <h4>Description</h4>
-
-    <div id="pc-stable">
-
-        <p>See Drton and Maathuis (2017). The idea is to modify the adjacency search of PC so that if the order of the
-            variables is randomized, the adjacency output is not affected.
-            This is done as follows. The order of operations for the step where unconditional independencies are
-            calculated is not affected; these may be done in any order.
-            However, for the step in which one conditions on one variable, the output of that step could be affected by
-            the order in which the operations are done.
-            So instead of removing edges in this step, one simply records which edges one would remove, and then at the
-            end of the step removes them all.
-            Similarly for subsequence steps. In this way, the adjacencies of variables in the output of the adjacency
-            step are fixed no matter the order
-            in which the operations are visited. One them does collider orientation and applies the orientation rules in
-            Meek (1997);
-            there may be orientation differences from one run to the next still, if the order of the variables in the
-            dataset is modified.</p>
-    </div>
-
-    <h4>Input Assumptions</h4>
-
-    <p>Same as for PC.</p>
-
-    <h4>Output Format</h4>
-
-    <p>Same as for PC.</p>
-
-    <h4>Parameters</h4>
-
-    <p><a href="#alpha">alpha</a>, <a href="#depth">depth</a></p>
-
-    <h3>The CPCStable Algorithm</h3>
-
-    <h4>Description</h4>
-
-    <div id="cpc-stable">
-
-        <p>CPC, with the PC-Stable adjacency step substituted for the PC adjacency search.</p>
-
-    </div>
-
-    <h4>Input Assumptions</h4>
-
-    <p>Same as for PC.</p>
-
-    <h4>Output Format</h4>
-
-    <p>Same as for CPC (an e-CPDAG).</p>
-
-    <h4>Parameters</h4>
-
-    <p><a href="#alpha">alpha</a>, <a href="#depth">depth</a></p>
-
     <h3>The PcMax Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="pc-max">
+    <div id="pcmax">
 
         <p>Similar in spirit to CPC but orients all unshielded triples using maximum likelihood conditioning sets. The
             idea is as follows. The adjacency search is the same as for PC, but colliders are oriented differently. Let
@@ -2357,6 +2300,33 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p><a href="#depth">depth</a>, <a href="#maxPathLength">maxPathLength</a>, <a href="#completeRuleSetUsed">completeRuleSetUsed</a>
     </p>
 
+    <h3>The FCI-Max Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="fcimax">
+
+        <p>The FCI-Max algorithm simply changes the first collider orientation rule in FCI to
+            use the PC-Max orientation.</p>
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>The data are continuous, discrete, or mixed.</p>
+
+    <h4>Output Format</h4>
+
+    <p>A partial ancestral graph (see Spirtes et al., 2000).</p>
+
+    <h4>Parameters</h4>
+
+    <p>All of the parameters from FCI are below.</p>
+
+    <p><a href="#depth">depth</a>, <a href="#maxPathLength">maxPathLength</a>, <a href="#completeRuleSetUsed">completeRuleSetUsed</a>
+    </p>
+
+
     <h3>The RFCI Algorithm</h3>
 
     <h4>Description</h4>
@@ -2460,6 +2430,33 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and FGES (see CCD-FGES et al., 2016).</p>
 
+
+    <h3>The GRaSP-FCI Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="graspfci">
+
+        <p>GRaSP-FCI is wrapper around the GRaSP algorithm that replaces the FGES step in GFCI with
+            the more accurate GRaSP algrorithm, which reasons by considering permutations of variables.
+            The second collider orienatation step in GFCI is also done using permutation reasoning,
+            leaving the discriminating path rule as the only rule that requires a "raw" conditional
+            independence judgment. Ultimately this independence judgment can be decided using the
+            same scoring apparatus as the other permutation steps, so ultimatly GRaSP-FCI can be
+            treated as a scoring algorithm.
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and GRaSP.</p>
 
     <h3>The SvarFCI Algorithm</h3>
 
@@ -6131,6 +6128,8 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
+
 
 
 

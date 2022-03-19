@@ -62,7 +62,7 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
 
         textArea = new JTextArea();
         JScrollPane scroll = new JScrollPane(textArea);
-        scroll.setPreferredSize(new Dimension(600, 600));
+        scroll.setPreferredSize(new Dimension(600, 400));
 
         List<Node> allNodes = graph.getNodes();
         Collections.sort(allNodes, new Comparator<Node>() {
