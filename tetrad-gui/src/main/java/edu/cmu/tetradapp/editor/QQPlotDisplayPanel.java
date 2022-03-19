@@ -54,7 +54,6 @@ class QQPlotDisplayPanel extends JPanel {
      */
     private final static int PADDING = 50;
     private final static int HEIGHT = 400 + PADDING;
-    private final static int DISPLAYED_HEIGHT = HEIGHT;
     private final static int WIDTH = 400 + PADDING;
     private final static int SPACE = 2;
     private final static int DASH = 10;
@@ -114,10 +113,6 @@ class QQPlotDisplayPanel extends JPanel {
         }
         this.displayString = null;
         this.qqPlot = qqPlot;
-        /*
-      A cache value that stores the top frequency.
-     */
-        int topFreq = -1;
         this.repaint();
     }
 
@@ -152,7 +147,6 @@ class QQPlotDisplayPanel extends JPanel {
         String maxStr = format.format((int) Math.ceil(this.qqPlot.getMaxSample()));
         g2d.drawString(maxStr, WIDTH - fontMetrics.stringWidth(maxStr), height + 15);
         g2d.drawLine(WIDTH + SPACE, height + DASH, WIDTH + SPACE, height);
-        int size = (WIDTH - PADDING) / 4;
 
         // draw the side line
         g2d.setColor(LINE_COLOR);
@@ -163,18 +157,9 @@ class QQPlotDisplayPanel extends JPanel {
         g2d.drawString(Math.floor(this.qqPlot.getMinSample()) + "", PADDING - fontMetrics.stringWidth(Math.floor(this.qqPlot.getMinIdeal()) + ""), height - 2);
         g2d.drawLine(PADDING - DASH, height, PADDING, height);
 
-        //draw the y=x line
-        double idealRange = this.qqPlot.getMaxIdeal() - this.qqPlot.getMinIdeal();
-        double sampleRange = this.qqPlot.getMaxSample() - this.qqPlot.getMinSample();
-
-        double idealPerSample = idealRange / sampleRange;
-
-        double intersectPoint = this.qqPlot.getMaxSample() * idealPerSample;
-
-//        g2d.drawLine(PADDING, height, WIDTH + SPACE, height - ((height - topY)));
-
         //draw the data points
         int dataColumn = this.qqPlot.getDataSet().getColumn(this.qqPlot.getSelectedVariable());
+
         //set selected variable if there is none
         if (dataColumn == -1) {
             for (int i = 0; i < this.qqPlot.getDataSet().getNumColumns(); i++) {
@@ -185,13 +170,8 @@ class QQPlotDisplayPanel extends JPanel {
                 }
             }
         }
-        //int compColumn = this.qqPlot.getSelectedDataModel().getColumn(this.qqPlot.getComparisonVariable());
-        //System.out.println(compColumn);
-        g2d.setColor(new Color(255, 0, 0));
-        //g2d.fill(new Ellipse2D.Double(0-2 + PADDING, 0-2 + height, 4, 4));
 
-        double originX = PADDING - 2;
-        double originY = height - 2;
+        g2d.setColor(new Color(255, 0, 0));
 
         for (int i = 0; i < this.qqPlot.getDataSet().getNumRows(); i++) {
             double x = (this.qqPlot.getDataSet().getDouble(i, dataColumn));
@@ -199,9 +179,7 @@ class QQPlotDisplayPanel extends JPanel {
 
             if (x >= this.qqPlot.getMinSample() && x <= this.qqPlot.getMaxSample()
                     && y >= this.qqPlot.getMinSample() && y <= this.qqPlot.getMaxSample()) {
-                double result[] = plotPoint(x, y, Math.floor(this.qqPlot.getMinSample()), Math.ceil(this.qqPlot.getMaxSample()));
-
-                //System.out.println("(" + x + "," + y +  ")");
+                double[] result = plotPoint(x, y, Math.floor(this.qqPlot.getMinSample()), Math.ceil(this.qqPlot.getMaxSample()));
 
                 g2d.fill(new Ellipse2D.Double(result[0], result[1], 4, 4));
             }
@@ -241,19 +219,6 @@ class QQPlotDisplayPanel extends JPanel {
 
     public Dimension getMinimumSize() {
         return this.size;
-    }
-
-    //========================== private methods ==========================//
-
-    private static int getMax(int[] freqs) {
-        int max = freqs[0];
-        for (int i = 1; i < freqs.length; i++) {
-            int current = freqs[i];
-            if (max < current) {
-                max = current;
-            }
-        }
-        return max;
     }
 
     //============================ Inner class =====================================//
