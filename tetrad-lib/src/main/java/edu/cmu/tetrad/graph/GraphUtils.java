@@ -4942,9 +4942,7 @@ public final class GraphUtils {
 
             if ((existsSemidirectedPath(r, x, graph))
                     || existsSemidirectedPath(r, b, graph)) {
-                if (existOnePathWithPossibleParents(previous, r, x, b, graph)) {
-                    return true;
-                }
+                return true;
             }
         }
 

@@ -180,8 +180,8 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             public void watch() {
                 AlgorithmModel algoModel = algorithmCard.getSelectedAlgorithm();
                 if (algoModel != null) {
-                    paramBkBtn.setEnabled(false);
-                    paramFwdBtn.setEnabled(false);
+//                    paramBkBtn.setEnabled(false);
+//                    paramFwdBtn.setEnabled(false);
 
                     if (algoModel.getAlgorithm().getAnnotation().algoType() != AlgType.orient_pairwise
                             && algorithmRunner.getDataModelList().getModelList().size() == 1) {
@@ -204,8 +204,8 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                                         + exception.getMessage());
                     }
 
-                    paramBkBtn.setEnabled(true);
-                    paramFwdBtn.setEnabled(true);
+//                    paramBkBtn.setEnabled(true);
+//                    paramFwdBtn.setEnabled(true);
                 }
             }
         };
