@@ -169,8 +169,11 @@ public class StatsListEditor extends JPanel {
         JMenuBar menubar = new JMenuBar();
         JMenu menu = new JMenu("Compare To...");
         JMenuItem graph = new JCheckBoxMenuItem("DAG");
+        graph.setBackground(Color.WHITE);
         JMenuItem cpdag = new JCheckBoxMenuItem("CPDAG");
+        cpdag.setBackground(Color.YELLOW);
         JMenuItem pag = new JCheckBoxMenuItem("PAG");
+        pag.setBackground(Color.GREEN.brighter().brighter());
 
         ButtonGroup group = new ButtonGroup();
         group.add(graph);
@@ -201,6 +204,7 @@ public class StatsListEditor extends JPanel {
         graph.addActionListener(e -> {
             params.set("graphComparisonType", "DAG");
             menu.setText("Compare to DAG...");
+            menu.setBackground(Color.WHITE);
             this.referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
 
             area.setText(tableTextWithHeader());
@@ -215,6 +219,7 @@ public class StatsListEditor extends JPanel {
         cpdag.addActionListener(e -> {
             params.set("graphComparisonType", "CPDAG");
             menu.setText("Compare to CPDAG...");
+            menu.setBackground(Color.YELLOW);
             referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
 
             area.setText(tableTextWithHeader());
@@ -229,6 +234,7 @@ public class StatsListEditor extends JPanel {
         pag.addActionListener(e -> {
             params.set("graphComparisonType", "PAG");
             menu.setText("Compare to PAG...");
+            menu.setBackground(Color.GREEN.brighter().brighter());
             referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
 
             area.setText(tableTextWithHeader());
