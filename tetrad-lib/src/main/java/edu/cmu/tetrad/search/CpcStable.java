@@ -216,7 +216,7 @@ public final class CpcStable implements GraphSearch {
     }
 
     public Graph search(IFas fas, List<Node> nodes) {
-        this.logger.log("info", "Starting CPC algorithm");
+        this.logger.log("info", "Starting CPC Stable algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
         this.allTriples = new HashSet<>();
 

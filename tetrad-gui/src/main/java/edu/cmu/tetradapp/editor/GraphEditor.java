@@ -24,10 +24,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -47,6 +44,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -482,16 +480,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                         return;
                     }
 
-                    Graph graph1 = GraphUtils.randomGraph(
-                            parameters.getInt(Params.NUM_MEASURES),
-                            parameters.getInt(Params.NUM_LATENTS),
-                            (int)(parameters.getDouble(Params.AVG_DEGREE) * parameters.getInt(Params.NUM_MEASURES) / 2.),
-                            parameters.getInt(Params.MAX_DEGREE),
-                            parameters.getInt(Params.MAX_INDEGREE),
-                            parameters.getInt(Params.MAX_OUTDEGREE),
-                            parameters.getBoolean(Params.CONNECTED)
-                    );
-//                    Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
+                    RandomUtil.getInstance().setSeed(new Date().getTime());
+                    Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
 
                     boolean addCycles = parameters.getBoolean("randomAddCycles", false);
 

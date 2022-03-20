@@ -162,7 +162,7 @@ public final class CpcOrienter implements Reorienter {
      * Runs PC on just the given variable, all of which must be in the domain of the independence test.
      */
     public void orient(Graph graph) {
-        TetradLogger.getInstance().log("info", "Starting CPC algorithm.");
+        TetradLogger.getInstance().log("info", "Starting CPC Orienter algorithm.");
         TetradLogger.getInstance().log("info", "Independence test = " + independenceTest + ".");
         long startTime = System.currentTimeMillis();
         this.allTriples = new HashSet<>();
