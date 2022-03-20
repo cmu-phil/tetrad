@@ -2846,6 +2846,10 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             “impurities”—that is,causal edges among the measured variables, or between measured variables and multiple
             latent variables.
             The algorithm will in effect remove one measure in each impure pair from consideration.
+
+            Note that for FOFC, a test is done for each final cluster as to whether the variables in teh cluster
+            are all mutually dependent. In the interface, in order to see teh results of this test, one needs to
+            open the logging window. See the Logging menu.
         </p>
 
     </div>

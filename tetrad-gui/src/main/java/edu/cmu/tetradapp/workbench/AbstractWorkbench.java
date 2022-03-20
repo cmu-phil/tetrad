@@ -81,22 +81,22 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     /**
      * The map from model edges to display elements.
      */
-    private Map modelEdgesToDisplay;
+    private Map<Edge, Object> modelEdgesToDisplay;
 
     /**
      * The map from model nodes to display elements.
      */
-    private Map modelNodesToDisplay;
+    private Map<Node, Object> modelNodesToDisplay;
 
     /**
      * The map from display elements to model elements.
      */
-    private Map displayToModel;
+    private Map<Object, Object> displayToModel;
 
     /**
      * The map from edges to edge labels.
      */
-    private Map displayToLabels;
+    private Map<Object, Object> displayToLabels;
 
     /**
      * The getModel mode of the workbench.
@@ -235,7 +235,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Returns the current displayed mouseover equation label. Returns null if
      * none is displayed. Used for removing the label.
      */
-    private JComponent currentMouseoverLbl = null;
 
     private boolean enableEditing = true;
 
@@ -501,17 +500,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * Sets whether multiple mode selection is allowed. If the value is set to
-     * true, users may select multiple nodes in the workbench by holding down
-     * the shift key. If it is set to false, single node selection is enforced.
-     *
-     * @param allowMultipleSelection Ibid.
-     */
-    public final void setAllowMultipleSelection(boolean allowMultipleSelection) {
-        this.allowMultipleSelection = allowMultipleSelection;
-    }
-
-    /**
      * Sets the display workbench graph to the <code>graph</code> and then
      * notifies listeners of the change. (Called when the workbench is first
      * constructed as well as whenever the workbench model is changed.)
@@ -527,10 +515,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         registerKeys();
         firePropertyChange("graph", null, graph);
         firePropertyChange("modelChanged", null, null);
-    }
-
-    public final void setEdgeTypeDistLabel(JComponent label) {
-
     }
 
     /**
@@ -615,8 +599,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             throw new NullPointerException("Attempt to set a label on a " + "null model node.");
         } else if (!getModelNodesToDisplay().containsKey(modelNode)) {
             return;
-            // throw new IllegalArgumentException("Attempt to set a label on " +
-            // "a model node that's not " + "in the editor.");
         }
 
         // retrieve display node from map, or create one if not
@@ -704,26 +686,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         } else if (workbenchMode == ADD_NODE) {
             if (this.workbenchMode != ADD_NODE) {
                 this.workbenchMode = workbenchMode;
-
-                // Toolkit toolkit = Toolkit.getDefaultToolkit();
-                // Image image = ImageUtils.getImage(this, "cursorImage.png");
-                // Cursor c = toolkit.createCustomCursor(image, new Point(0, 0),
-                // "img");
-                // setCursor(c);
-                // setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
                 deselectAll();
             }
         } else if (workbenchMode == ADD_EDGE) {
             if (this.workbenchMode != ADD_EDGE) {
                 this.workbenchMode = workbenchMode;
-                // setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-
-                // Toolkit toolkit = Toolkit.getDefaultToolkit();
-                // Image image = ImageUtils.getImage(this,
-                // "arrowCursorImage.png");
-                // Cursor c = toolkit.createCustomCursor(image, new Point(10,
-                // 10), "img");
-                // setCursor(c);
                 deselectAll();
             }
         } else {
@@ -731,7 +698,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 
-    public final Map getModelEdgesToDisplay() {
+    public final Map<Edge, Object> getModelEdgesToDisplay() {
         return modelEdgesToDisplay;
     }
 
@@ -887,10 +854,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     public Color getBackground() {
         return super.getBackground();
-    }
-
-    public Point getCurrentMouseLocation() {
-        return currentMouseLocation;
     }
 
     public void layoutByGraph(Graph layoutGraph) {
@@ -1336,7 +1299,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 IDisplayEdge displayEdge = (IDisplayEdge) getModelEdgesToDisplay().get(edge);
 
                 if (displayEdge != null) {
-                    displayEdge.setOffset(calcEdgeOffset(i, edges.size(), 35, awayFrom));
+                    displayEdge.setOffset(calcEdgeOffset(i, edges.size(), awayFrom));
                 }
             }
         } catch (UnsupportedOperationException e) {
@@ -1349,17 +1312,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     /**
      * Calculates the offset in pixels of a given edge - this could use a little
      * tweaking still.
-     *
-     * @param i the index of the given edge
+     *  @param i the index of the given edge
      * @param n the number of edges
-     * @param w the total width to spread edges over
      */
-    private static double calcEdgeOffset(int i, int n, int w, boolean away_from) {
-        double i_d = (double) i;
-        double n_d = (double) n;
-        double w_d = (double) w;
-
-        double offset = w_d * (2.0 * i_d + 1.0 - n_d) / 2.0 / n_d;
+    private static double calcEdgeOffset(int i, int n, boolean away_from) {
+        double offset = (double) 35 * (2.0 * (double) i + 1.0 - (double) n) / 2.0 / (double) n;
 
         double direction = away_from ? 1.0 : -1.0;
         return direction * offset;
@@ -1561,11 +1518,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         getActionMap().put("DELETE", deleteAction);
 
         if (controlDispatcher == null) {
-            controlDispatcher = new KeyEventDispatcher() {
-                public boolean dispatchKeyEvent(KeyEvent e) {
-                    return respondToControlKey(e);
-                }
-            };
+            controlDispatcher = this::respondToControlKey;
         }
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(controlDispatcher);
@@ -1635,10 +1588,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param displayNode the display node.
      */
     private void removeNode(DisplayNode displayNode) {
-        // if (!isAllowDoubleClickActions()) {
-        // return;
-        // }
-
         if (displayNode == null) {
             return;
         }
@@ -1815,20 +1764,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 
-    /**
-     * Unregistered the keyboard actions which are normally registered when the
-     * user is allowed to edit the workbench directly.
-     *
-     * @see #registerKeys
-     */
-    private void unregisterKeys() {
-        unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0));
-        unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(controlDispatcher);
-    }
-
     private void snapNodeToGrid(DisplayNode node) {
-        int gridSize = 15;
+        int gridSize = 20;
 
         int x = node.getCenterPoint().x;
         int y = node.getCenterPoint().y;
@@ -1837,24 +1774,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         y = gridSize * ((y + gridSize / 2) / gridSize);
 
         node.setLocation(x - node.getSize().width / 2, y - node.getSize().height / 2);
-    }
-
-    private void snapNodeToGrid(Node node) {
-        if (!(modelNodesToDisplay.containsKey(node))) {
-            return;
-        }
-
-        DisplayNode display = (DisplayNode) modelNodesToDisplay.get(node);
-
-        int gridSize = 20;
-
-        int x = display.getCenterPoint().x;
-        int y = display.getCenterPoint().y;
-
-        x = gridSize * ((x + gridSize / 2) / gridSize);
-        y = gridSize * ((y + gridSize / 2) / gridSize);
-
-        display.setLocation(x - display.getSize().width / 2, y - display.getSize().height / 2);
     }
 
     private void handleMouseClicked(MouseEvent e) {
@@ -2137,18 +2056,18 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                             break;
                     }
 
-                    String properties = "";
+                    StringBuilder properties = new StringBuilder();
                     if (edge.getProperties() != null && edge.getProperties().size() > 0) {
                         for (Property property : edge.getProperties()) {
-                            properties += " " + property.toString();
+                            properties.append(" ").append(property.toString());
                         }
                     }
 
-                    String text = "<html>" + edge.getNode1().getName()
+                    StringBuilder text = new StringBuilder("<html>" + edge.getNode1().getName()
                             + " " + endpoint1 + "-" + endpoint2 + " "
                             + edge.getNode2().getName()
                             + properties
-                            + "<br>";
+                            + "<br>");
                     String n1 = edge.getNode1().getName();
                     String n2 = edge.getNode2().getName();
                     List<String> nodes = new ArrayList<>();
@@ -2193,14 +2112,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                                 break;
                         }
                         if (edgeTypeProb.getProbability() > 0) {
-                            properties = "";
+                            properties = new StringBuilder();
                             if (edgeTypeProb.getProperties() != null && edgeTypeProb.getProperties().size() > 0) {
                                 for (Property property : edgeTypeProb.getProperties()) {
-                                    properties += " " + property.toString();
+                                    properties.append(" ").append(property.toString());
                                 }
                             }
-                            text += "[" + _type + properties + "]:" + String.format("%.4f", edgeTypeProb.getProbability());
-                            text += "<br>";
+                            text.append("[").append(_type).append(properties).append("]:").append(String.format("%.4f", edgeTypeProb.getProbability()));
+                            text.append("<br>");
                         }
                     }
 
@@ -2210,7 +2129,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 //					edgeTypeDistLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 //					setEdgeLabel(edge, edgeTypeDistLabel);
                     // Use tooltip instead of label - Added by Zhou
-                    setEdgeToolTip(edge, text);
+                    setEdgeToolTip(edge, text.toString());
                 }
             }
         }
@@ -2338,13 +2257,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         int newX = node.getLocation().x + deltaX;
         int newY = node.getLocation().y + deltaY;
 
-        // if (newX > getMaxX()) {
-        // newX = getMaxX();
-        // }
-        //
-        // if (newY > getMaxY()) {
-        // newY = getMaxY();
-        // }
         node.setLocation(newX, newY);
     }
 
@@ -2492,13 +2404,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     boolean isEditExistingMeasuredVarsAllowed() {
         return editExistingMeasuredVarsAllowed;
-    }
-
-    /**
-     * True if the user is allowed to edit existing measured variables.
-     */
-    public void setEditExistingMeasuredVarsAllowed(boolean editExistingMeasuredVarsAllowed) {
-        this.editExistingMeasuredVarsAllowed = editExistingMeasuredVarsAllowed;
     }
 
     /**
@@ -2764,19 +2669,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
 
         @Override
-        public final void mouseClicked(MouseEvent e) {
+        public void mouseClicked(MouseEvent e) {
             if (AbstractWorkbench.this.isEnableEditing()) {
                 workbench.handleMouseClicked(e);
             }
         }
 
         @Override
-        public final void mousePressed(MouseEvent e) {
+        public void mousePressed(MouseEvent e) {
             workbench.handleMousePressed(e);
         }
 
         @Override
-        public final void mouseReleased(MouseEvent e) {
+        public void mouseReleased(MouseEvent e) {
             if (AbstractWorkbench.this.isEnableEditing()) {
                 workbench.handleMouseReleased(e);
             }
@@ -2786,14 +2691,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
 
         @Override
-        public final void mouseEntered(MouseEvent e) {
+        public void mouseEntered(MouseEvent e) {
             if (AbstractWorkbench.this.isEnableEditing()) {
                 workbench.handleMouseEntered(e);
             }
         }
 
         @Override
-        public final void mouseExited(MouseEvent e) {
+        public void mouseExited(MouseEvent e) {
             // Commented out by Zhou
             //workbench.handleMouseExited(e);
         }
@@ -2823,7 +2728,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         node.doDoubleClickAction(getGraph());
     }
 
-    private Map getDisplayToLabels() {
+    private Map<Object, Object> getDisplayToLabels() {
         return displayToLabels;
     }
 

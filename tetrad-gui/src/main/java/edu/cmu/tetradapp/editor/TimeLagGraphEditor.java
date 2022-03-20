@@ -279,13 +279,13 @@ public final class TimeLagGraphEditor extends JPanel
 
         edgeTypeTable.setPreferredSize(new Dimension(820, 150));
 
-        // Use JSplitPane to allow resize the bottom box - Zhou
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
-        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
+        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        tabbedPane.addTab("Graph", new PaddingPanel(topBox));
+        tabbedPane.addTab("Edges", edgeTypeTable);
 
         // Add to parent container
         add(menuBar, BorderLayout.NORTH);
-        add(splitPane, BorderLayout.CENTER);
+        add(tabbedPane, BorderLayout.CENTER);
 
         edgeTypeTable.update(graph);
 
@@ -310,7 +310,7 @@ public final class TimeLagGraphEditor extends JPanel
         JMenuBar menuBar = new JMenuBar();
 
         JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
-        JMenu editMenu = createEditMenu();
+        JMenu editMenu = createNumLagsMenu();
 //        JMenu graphMenu = createGraphMenu();
 
         menuBar.add(fileMenu);
@@ -327,8 +327,9 @@ public final class TimeLagGraphEditor extends JPanel
      *
      * @return this menu.
      */
-    private JMenu createEditMenu() {
-        JMenu edit = new JMenu("Edit");
+    private JMenu createNumLagsMenu() {
+        final TimeLagGraph graph = (TimeLagGraph) getLayoutEditable().getGraph();
+        JMenu edit = new JMenu("Number-of-Lags = " + graph.getMaxLag());
 
 //        JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
 //        JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
@@ -345,7 +346,7 @@ public final class TimeLagGraphEditor extends JPanel
         edit.add(configuration);
 
         configuration.addActionListener(e -> {
-            final TimeLagGraph graph = (TimeLagGraph) getLayoutEditable().getGraph();
+//            final TimeLagGraph graph = (TimeLagGraph) getLayoutEditable().getGraph();
 
             class ConfigurationEditor extends JPanel {
 
@@ -403,6 +404,7 @@ public final class TimeLagGraphEditor extends JPanel
 
                 public void setMaxLag(int maxLag) {
                     this.maxLag = maxLag;
+                    edit.setText("Number-of-Lags = " + maxLag);
                 }
 
                 public int getNumInitialLags() {
