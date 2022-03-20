@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
@@ -21,6 +22,7 @@ import java.util.List;
         command = "dg-bic-score",
         dataType = DataType.Mixed
 )
+@Mixed
 public class DegenerateGaussianBicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;

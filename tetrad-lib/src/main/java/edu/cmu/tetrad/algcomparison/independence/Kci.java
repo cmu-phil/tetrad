@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
@@ -12,7 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
+ * Wrapper for KCI test.
+ * <p>
+ * Note that should work with Linear, Gaussian variables but is general.
  *
  * @author jdramsey
  */
@@ -21,6 +24,7 @@ import java.util.List;
         command = "kci-test",
         dataType = DataType.Continuous
 )
+@General
 public class Kci implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;

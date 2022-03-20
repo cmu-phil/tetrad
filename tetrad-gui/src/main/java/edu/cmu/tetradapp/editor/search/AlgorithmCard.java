@@ -25,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Gaussian;
-import edu.cmu.tetrad.annotation.Linear;
+import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.annotation.Nonexecutable;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetradapp.app.TetradDesktop;
@@ -93,9 +93,7 @@ public class AlgorithmCard extends JPanel {
         this.dataType = getDataType(algorithmRunner);
         this.hasMissingValues = hasMissingValues(algorithmRunner);
         this.desktop = (TetradDesktop) DesktopController.getInstance();
-        this.multiDataAlgo = (algorithmRunner.getSourceGraph() == null)
-                ? algorithmRunner.getDataModelList().size() > 1
-                : false;
+        this.multiDataAlgo = algorithmRunner.getSourceGraph() == null && algorithmRunner.getDataModelList().size() > 1;
 
         initComponents();
         initListeners();
@@ -336,7 +334,7 @@ public class AlgorithmCard extends JPanel {
 
         obj = userAlgoSelections.get(IND_TEST_PARAM);
         if ((obj != null) && (obj instanceof IndependenceTestModel)) {
-            String value = ((IndependenceTestModel) obj).toString();
+            String value = obj.toString();
             ComboBoxModel<IndependenceTestModel> comboBoxModels = indTestComboBox.getModel();
             int size = comboBoxModels.getSize();
             for (int i = 0; i < size; i++) {
@@ -351,7 +349,7 @@ public class AlgorithmCard extends JPanel {
 
         obj = userAlgoSelections.get(SCORE_PARAM);
         if ((obj != null) && (obj instanceof ScoreModel)) {
-            String value = ((ScoreModel) obj).toString();
+            String value = obj.toString();
             ComboBoxModel<ScoreModel> comboBoxModels = scoreComboBox.getModel();
             int size = comboBoxModels.getSize();
             for (int i = 0; i < size; i++) {
@@ -547,17 +545,17 @@ public class AlgorithmCard extends JPanel {
             List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(dataType);
             if (linear && gaussian) {
                 models.stream()
-                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(Linear.class))
+                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(LinearGaussian.class))
                         .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(Gaussian.class))
                         .forEach(e -> indTestComboBox.addItem(e));
             } else if (linear) {
                 models.stream()
-                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(Linear.class))
+                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(LinearGaussian.class))
                         .filter(e -> !e.getIndependenceTest().getClazz().isAnnotationPresent(Gaussian.class))
                         .forEach(e -> indTestComboBox.addItem(e));
             } else if (gaussian) {
                 models.stream()
-                        .filter(e -> !e.getIndependenceTest().getClazz().isAnnotationPresent(Linear.class))
+                        .filter(e -> !e.getIndependenceTest().getClazz().isAnnotationPresent(LinearGaussian.class))
                         .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(Gaussian.class))
                         .forEach(e -> indTestComboBox.addItem(e));
             } else {
@@ -602,17 +600,17 @@ public class AlgorithmCard extends JPanel {
             List<ScoreModel> scoreModels = new LinkedList<>();
             if (linear && gaussian) {
                 models.stream()
-                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(Linear.class))
+                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(LinearGaussian.class))
                         .filter(e -> e.getScore().getClazz().isAnnotationPresent(Gaussian.class))
                         .forEach(e -> scoreModels.add(e));
             } else if (linear) {
                 models.stream()
-                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(Linear.class))
+                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(LinearGaussian.class))
                         .filter(e -> !e.getScore().getClazz().isAnnotationPresent(Gaussian.class))
                         .forEach(e -> scoreModels.add(e));
             } else if (gaussian) {
                 models.stream()
-                        .filter(e -> !e.getScore().getClazz().isAnnotationPresent(Linear.class))
+                        .filter(e -> !e.getScore().getClazz().isAnnotationPresent(LinearGaussian.class))
                         .filter(e -> e.getScore().getClazz().isAnnotationPresent(Gaussian.class))
                         .forEach(e -> scoreModels.add(e));
             } else {
@@ -957,8 +955,7 @@ public class AlgorithmCard extends JPanel {
                                                 .addComponent(scoreLabel))
                                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
-            } else
-            {
+            } else {
                 GroupLayout layout = new GroupLayout(this);
                 this.setLayout(layout);
                 layout.setHorizontalGroup(

@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
@@ -25,6 +26,7 @@ import java.util.List;
         command = "cci-test",
         dataType = DataType.Continuous
 )
+@General
 public class CciTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;

@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.Gaussian;
-import edu.cmu.tetrad.annotation.Linear;
+import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -25,8 +25,7 @@ import java.util.List;
         command = "fisher-z-test",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
-@Gaussian
-@Linear
+@LinearGaussian
 public class FisherZ implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
