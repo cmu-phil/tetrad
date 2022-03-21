@@ -20,11 +20,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.statistic.BicEst;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -1293,7 +1295,8 @@ public final class Fges implements GraphSearch, GraphScorer {
                 final double bic = score.localScore(hashIndices.get(node), parentIndices);
 
                 if (recordScores) {
-                    node.addAttribute("BIC", bic);
+                    NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                    node.addAttribute("BIC", nf.format(bic));
                 }
 
                 _score += bic;
@@ -1301,7 +1304,8 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         if (recordScores) {
-            graph.addAttribute("BIC", _score);
+            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+            graph.addAttribute("BIC", nf.format(_score));
         }
 
         return _score;

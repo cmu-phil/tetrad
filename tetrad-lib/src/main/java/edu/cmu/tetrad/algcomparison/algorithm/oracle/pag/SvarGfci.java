@@ -122,7 +122,7 @@ public class SvarGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
 
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_INDEGREE);
-        parameters.add(Params.PRINT_STREAM);
+//        parameters.add(Params.PRINT_STREAM);
 
         parameters.add(Params.VERBOSE);
         return parameters;

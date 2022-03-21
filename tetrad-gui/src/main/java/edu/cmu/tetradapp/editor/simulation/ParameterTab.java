@@ -235,13 +235,7 @@ public class ParameterTab extends JPanel {
     private Box createSimulationButtonBox() {
         Dimension buttonSize = new Dimension(268, 25);
 
-        JButton button;
-
-        if (simulation.getSimulation().getNumDataModels() == 0) {
-            button = new JButton("Simulate");
-        } else {
-            button = new JButton("Re-simulate");
-        }
+        JButton button = new JButton("Simulate");
 
         button.setMinimumSize(buttonSize);
         button.setMaximumSize(buttonSize);

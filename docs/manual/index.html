@@ -3047,6 +3047,20 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
     </div>
 
+    <div id="fask-pw">
+
+        <p>This is an algorithm that orients an edge X--Y for continuous variables based on non-Gaussian information.
+            This rule in particular uses the FASK pairwise rule to make the orientation. Note that if the variables X
+            and Y are both Gaussian, and the model is linear, it is not possible to orient the edge X--Y pairwise;
+            any attempt to do so would result in random orientation. But if X and Y are non-Gaussian, in particular
+            in this case, if X and Y are skewed, the orientation is relatively straightforward. See Hyvarinen
+            and Smith (2013) for details.
+        </p>
+
+        <p>The FASK-PW rule appeals to skewness in a different way than Skew and RSkew.</p>
+
+    </div>
+
 
     <h4>Input Assumptions</h4>
 
@@ -3445,7 +3459,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="addOriginalDataset_short_desc">Yes, if adding an original dataset as another bootstrapping</span>
             </li>
-            <li>Long Description: <span id="addOriginalDataset_long_desc">It has been shown that adding in the algorithm result one would get using the original data to those found by the bootstrap method can improve accuracy of summary graphs. Select “Yes” here to include an extra run using the original dataset.</span>
+            <li>Long Description: <span id="addOriginalDataset_long_desc">
+                Select “Yes” here to include an extra run using the original dataset for improved accuracy.</span>
             </li>
             <li>Default Value: <span id="addOriginalDataset_default_value">true</span></li>
             <li>Lower Bound: <span id="addOriginalDataset_lower_bound"></span></li>
@@ -3456,7 +3471,9 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="alpha">alpha</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="alpha_short_desc">Cutoff for p values (alpha) (min = 0.0)</span></li>
-            <li>Long Description: <span id="alpha_long_desc">Statistical tests often compare a test statistic to a distribution and make a judgment that the null hypothesis has been rejected based on whether the area in the tails for the distribution for that test statistic is greater than some cutoff alpha. For tests of independence, for instance, a lower alpha level makes it easier to judge independence, and a higher alpha makes it harder to judge independence. Thus, a lower alpha for a search generally results in a sparser graph. The default for this is 0.01, though for discrete searches we recommend using a value of 0.05.</span>
+            <li>Long Description: <span id="alpha_long_desc">
+                The cutoff, beyond which test results are judged as dependent, for a statistical test of independence.
+                Detaulf 0.05. Higher alpha yields a sparser graph.</span>
             </li>
             <li>Default Value: <span id="alpha_default_value">0.01</span></li>
             <li>Lower Bound: <span id="alpha_lower_bound">0.0</span></li>
@@ -3468,7 +3485,10 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="applyR1_short_desc">Yes if the orient away from arrow rule should be applied</span>
             </li>
-            <li>Long Description: <span id="applyR1_long_desc">The Orient Away from Arrow rule is usually applied for PC if there is a structure X->Y—Z to yield X->Y->Z, to avoid the creation of a collider known not to exist. Set this parameter to “No” if a chain of directed edges pointing in the same direction when only the first few such orientations are justified based on the data.</span>
+            <li>Long Description: <span id="applyR1_long_desc">
+                Set this parameter to “No” if a
+                chain of directed edges pointing in the same direction when only the first few such orientations are
+                justified based on the data.</span>
             </li>
             <li>Default Value: <span id="applyR1_default_value">true</span></li>
             <li>Lower Bound: <span id="applyR1_lower_bound"></span></li>
@@ -3479,7 +3499,9 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="avgDegree">avgDegree</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="avgDegree_short_desc">Average degree of graph (min = 1)</span></li>
-            <li>Long Description: <span id="avgDegree_long_desc">The average degree of a graph is equal to 2E / V, where E is the number of edges in the graph and V the number of variables (vertices) in the graph, since each edge has two endpoints. This allows one to have control over the density of randomly generated graphs. The default average degree is 2, which corresponds to a graph in which there are the same number of edges as nodes. For denser graphs, larger average degrees can be specified.</span>
+            <li>Long Description: <span id="avgDegree_long_desc">
+                The average degree of a graph is equal to 2E / V, where E is the number of edges in the graph and
+                V the number of variables (vertices) in the graph, since each edge has two endpoints.</span>
             </li>
             <li>Default Value: <span id="avgDegree_default_value">2</span></li>
             <li>Lower Bound: <span id="avgDegree_lower_bound">1</span></li>
@@ -3490,7 +3512,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="basisType">basisType</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="basisType_short_desc">Basis type (1 = Polynomial, 2 = Cosine)</span></li>
-            <li>Long Description: <span id="basisType_long_desc">For CCI, this determines which basis type will be used (1 = Polynomial, 2 = Cosine)</span>
+            <li>Long Description: <span id="basisType_long_desc">
+                For CCI, this determines which basis type will be used (1 = Polynomial, 2 = Cosine)</span>
             </li>
             <li>Default Value: <span id="basisType_default_value">2</span></li>
             <li>Lower Bound: <span id="basisType_lower_bound">1</span></li>
@@ -3513,7 +3536,9 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="cgExact_short_desc">Yes if the exact algorithm should be used for continuous parents and discrete children</span>
             </li>
-            <li>Long Description: <span id="cgExact_long_desc">For the conditional Gaussian likelihood, if the exact algorithm is desired for discrete children and continuous parents, set this parameter to “Yes”.</span>
+            <li>Long Description: <span id="cgExact_long_desc">
+                For the conditional Gaussian likelihood, if the exact algorithm is desired for discrete children
+                and continuous parents, set this parameter to “Yes”.</span>
             </li>
             <li>Default Value: <span id="cgExact_default_value">false</span></li>
             <li>Lower Bound: <span id="cgExact_lower_bound"></span></li>
@@ -3524,7 +3549,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="coefHigh">coefHigh</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="coefHigh_short_desc">High end of coefficient range (min = 0.0)</span></li>
-            <li>Long Description: <span id="coefHigh_long_desc">When simulating data from linear models, one needs to specify the distribution of the coefficient parameters. Here, we draw coefficients from U(-m2, -m1) U U(m1, m2); m2 is what is being called the “high end of the coefficient range” and must be greater than m1.</span>
+            <li>Long Description: <span id="coefHigh_long_desc">
+                Value m2 for coefficients drawn from U(-m2, -m1) U U(m1, m2).</span>
             </li>
             <li>Default Value: <span id="coefHigh_default_value">1.0</span></li>
             <li>Lower Bound: <span id="coefHigh_lower_bound">0.0</span></li>
@@ -3535,7 +3561,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="coefLow">coefLow</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="coefLow_short_desc">Low end of coefficient range (min = 0.0)</span></li>
-            <li>Long Description: <span id="coefLow_long_desc">When simulating data from linear models, one needs to specify the distribution of the coefficient parameters. Here, we draw coefficients from U(-m2, -m1) U U(m1, m2); m1 is what is being called the “low end of the coefficient range” and has a minimum value of 0.</span>
+            <li>Long Description: <span id="coefLow_long_desc">
+                The parameter m1 for coefficents drawn from U(-m2, -m1) U U(m1, m2).</span>
             </li>
             <li>Default Value: <span id="coefLow_default_value">0.0</span></li>
             <li>Lower Bound: <span id="coefLow_lower_bound">0.0</span></li>
@@ -3547,7 +3574,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="coefSymmetric_short_desc">Yes if negative coefficient values should be considered</span>
             </li>
-            <li>Long Description: <span id="coefSymmetric_long_desc">Usually coefficient values for linear models are chosen from U(-b, -a) U U(a, b) for some a, b; this is called the “symmetric” model (symmetric about zero). If only positive values should be considered, this parameter should be set to false (“No” selected),</span>
+            <li>Long Description: <span id="coefSymmetric_long_desc">
+                Yes if coefficients should be drawn from +/-(a, b); No if from +(a, b).</span>
             </li>
             <li>Default Value: <span id="coefSymmetric_default_value">true</span></li>
             <li>Lower Bound: <span id="coefSymmetric_lower_bound"></span></li>
@@ -3559,7 +3587,9 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="colliderDiscoveryRule_short_desc">Collider discovery: 1 = Lookup from adjacency sepsets, 2 = Conservative (CPC), 3 = Max-P</span>
             </li>
-            <li>Long Description: <span id="colliderDiscoveryRule_long_desc">For variants of PC, one may choose from one of three different ways for orienting colliders. One may look them up from sepsets, as in the original PC, or estimate them conservatively, as from the Conservative PC algorithm, or by choosing the sepsets with the maximum p-value. In simulation, CPC (default = 2) works the best for sample sizes greater than 100; for very small sample sizes, PC-Max generally works better.</span>
+            <li>Long Description: <span id="colliderDiscoveryRule_long_desc">
+                One may look them up from sepsets, as in the original PC, or estimate them conservatively, as
+                from the Conservative PC algorithm, or by choosing the sepsets with the maximum p-value, as in PC-Max.
             </li>
             <li>Default Value: <span id="colliderDiscoveryRule_default_value">1</span></li>
             <li>Lower Bound: <span id="colliderDiscoveryRule_lower_bound">1</span></li>
@@ -3571,7 +3601,11 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="completeRuleSetUsed_short_desc">Yes if the complete FCI rule set should be used</span>
             </li>
-            <li>Long Description: <span id="completeRuleSetUsed_long_desc">For the FCI algorithm, to final orientation rules sets are available, one due to P. Spirtes, guaranteeing arrow completeness, and a second due to J. Zhang, guaranteeing additional tail completeness. If this parameter is set to “Yes,” the tail-complete rule set will be used.</span>
+            <li>Long Description: <span id="completeRuleSetUsed_long_desc">
+                Yes if the (simpler) final orientation rules set due to P. Spirtes,
+                guaranteeing arrow completeness, should be used; no if the (fuller) set
+                due to J. Zhang, should be used guaranteeing additional tail completeness.
+            </span>
             </li>
             <li>Default Value: <span id="completeRuleSetUsed_default_value">false</span></li>
             <li>Lower Bound: <span id="completeRuleSetUsed_lower_bound"></span></li>
@@ -3583,7 +3617,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="concurrentFAS_short_desc">Yes if a concurrent FAS should be done</span>
             </li>
-            <li>Long Description: <span id="concurrentFAS_long_desc">Various versions of the PC adjacency search lend themselves to concurrent processing—that is, doing different independence tests in parallel to speed up the processing. If this parameter is set to ‘Yes’, and this option is available, it will be used.</span>
+            <li>Long Description: <span id="concurrentFAS_long_desc">
+                Yes if the version of the PC adjacency search that uses concurrent processing should be used, no if not.</span>
             </li>
             <li>Default Value: <span id="concurrentFAS_default_value">false</span></li>
             <li>Lower Bound: <span id="concurrentFAS_lower_bound"></span></li>
@@ -3595,7 +3630,10 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="conflictRule_short_desc">Collider conflicts: 1 = Overwrite, 2 = Orient bidirected, 3 = Prioritize existing colliders</span>
             </li>
-            <li>Long Description: <span id="conflictRule_long_desc">It is not possible to avoid collider orientation conflicts in PC entirely. We offer three ways to deal with them. One may use the “overwrite” rule as introduced in the PCALG R package, or one may mark all collider conflicts using bidirected edges, or one may prioritize existing colliders, ignoring subsequent conflicting information.</span>
+            <li>Long Description: <span id="conflictRule_long_desc">
+                1 if the “overwrite” rule as introduced in the PCALG R package, 2 if all
+                collider conflicts using bidirected edges, or 3 if existing colliders should be prioritized,
+                ignoring subsequent conflicting information.</span>
             </li>
             <li>Default Value: <span id="conflictRule_default_value">3</span></li>
             <li>Lower Bound: <span id="conflictRule_lower_bound">1</span></li>
@@ -3606,7 +3644,9 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="connected">connected</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="connected_short_desc">Yes if graph should be connected</span></li>
-            <li>Long Description: <span id="connected_long_desc">It is possible to generate a random graph in which paths exists from every node to every other. This places some constraints on how the graph may be generated, but it is feasible in most cases. Setting this flag to “Yes” generates connected graphs.</span>
+            <li>Long Description: <span id="connected_long_desc">
+                Yes if a random graph should be generated in which paths exists from every node to every other,
+                no if not.</span>
             </li>
             <li>Default Value: <span id="connected_default_value">false</span></li>
             <li>Lower Bound: <span id="connected_lower_bound"></span></li>
@@ -3629,7 +3669,7 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="targetNames">targetNames</h3>
         <ul class="targetNames_list">
             <li>Short Description: <span id="targetNames_short_desc">Target names (comma separated)</span></li>
-            <li>Long Description: <span id="targetNames_long_desc"></span>
+            <li>Long Description: <span id="targetNames_long_desc">Target names (comma separated).</span>
             </li>
             <li>Default Value: <span id="targetNames_default_value"></span></li>
             <li>Lower Bound: <span id="targetNames_lower_bound"></span></li>
@@ -3639,7 +3679,7 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="selectionAlpha">selectionAlpha</h3>
         <ul class="selectionAlpha_list">
-            <li>Short Description: <span id="selectionAlpha_short_desc">Selection alpha</span>
+            <li>Short Description: <span id="selectionAlpha_short_desc">Selection alpha for CStaR</span>
             </li>
             <li>Long Description: <span id="selectionAlpha_long_desc"></span>
             </li>
@@ -3651,7 +3691,7 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="numSubsamples">numSubsamples</h3>
         <ul class="numSubsamples_list">
-            <li>Short Description: <span id="numSubsamples_short_desc">Number of sumbsamples</span>
+            <li>Short Description: <span id="numSubsamples_short_desc">Number of sumbsamples.</span>
             </li>
             <li>Long Description: <span id="numSubsamples_long_desc"></span>
             </li>
@@ -3664,7 +3704,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="covHigh">covHigh</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="covHigh_short_desc">High end of covariance range (min = 0.0)</span></li>
-            <li>Long Description: <span id="covHigh_long_desc">When simulating data from linear models, one needs to specify the distribution of the covariance parameters. Here, we draw coefficients from U(-c2, -c1) U U(c1, c2); c2 is what is being called the “high end of the covariance range” and must be greater  than c1. The default value is 1.0.</span>
+            <li>Long Description: <span id="covHigh_long_desc">
+                The parameter c2 for range +/-U(c1, c2) for covariance values, c1 >= 0.0</span>
             </li>
             <li>Default Value: <span id="covHigh_default_value">0.0</span></li>
             <li>Lower Bound: <span id="covHigh_lower_bound">0.0</span></li>
@@ -3675,7 +3716,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="covLow">covLow</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="covLow_short_desc">Low end of covariance range (min = 0.0)</span></li>
-            <li>Long Description: <span id="covLow_long_desc">When simulating data from linear models, one needs to specify the distribution of the covariance parameters. Here, we draw coefficients from U(-c2, -c1) U U(c1, c2); c1 is what is being called the “low end of the covariance range” and has a minimum value of 0. The default value is 0.5.</span>
+            <li>Long Description: <span id="covLow_long_desc">
+                The parameter c1 for range +/-U(c1, c2) for covariance values, c2 >= c1</span>
             </li>
             <li>Default Value: <span id="covLow_default_value">0.0</span></li>
             <li>Lower Bound: <span id="covLow_lower_bound">0.0</span></li>
@@ -3688,8 +3730,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             <li>Short Description: <span id="covSymmetric_short_desc">Yes if negative covariance values should be considered</span>
             </li>
             <li>Long Description: <span id="covSymmetric_long_desc">
-Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; this is called the “symmetric” model (symmetric about zero). If only positive values should be considered, this parameter should be set to false (“No” selected)
-</span></li>
+                Usually covariance values are chosen from +/-U(a, b) for some a, b, no if from +U(a, b).
+            </span></li>
             <li>Default Value: <span id="covSymmetric_default_value">true</span></li>
             <li>Lower Bound: <span id="covSymmetric_lower_bound"></span></li>
             <li>Upper Bound: <span id="covSymmetric_upper_bound"></span></li>
@@ -3730,7 +3772,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="dataType">dataType</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="dataType_short_desc">"continuous" or "discrete"</span></li>
-            <li>Long Description: <span id="dataType_long_desc">For a mixed data type simulation, if this is set to “continuous” or “discrete”, all variables are taken to be of that sort. This is used as a double-check to make sure the percent discrete is set appropriately.</span>
+            <li>Long Description: <span id="dataType_long_desc">
+                For a mixed data type simulation, if this is set to “continuous” or “discrete”, all variables are
+                taken to be of that sort. This is used as a double-check to make sure the percent discrete is set
+                appropriately.</span>
             </li>
             <li>Default Value: <span id="dataType_default_value">categorical</span></li>
             <li>Lower Bound: <span id="dataType_lower_bound"></span></li>
@@ -3742,7 +3787,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="depth_short_desc">Maximum size of conditioning set (unlimited = -1)</span>
             </li>
-            <li>Long Description: <span id="depth_long_desc">This variable is usually called “depth” for algorithms such as PC in which conditioning sets are considered of increasing size from zero up to some limit, called “depth”. For example, if depth = 3, conditioning sets will be considered of sizes 0, 1, 2, and 3. In order to express that no limit should be imposed, use the value -1.</span>
+            <li>Long Description: <span id="depth_long_desc">
+                The depth of search for algorithms like the PC adjacency search, which is the maximum size of any conditioning set
+                considered. In order to express that no limit should be imposed, use the value -1.</span>
             </li>
             <li>Default Value: <span id="depth_default_value">-1</span></li>
             <li>Lower Bound: <span id="depth_lower_bound">-1</span></li>
@@ -3752,9 +3799,12 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="determinismThreshold">determinismThreshold</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="determinismThreshold_short_desc">Threshold for judging a regression of a variable onto its parents to be deternimistic (min = 0.0)</span>
+            <li>Short Description: <span id="determinismThreshold_short_desc">
+                Threshold for judging a regression of a variable onto its parents to be deternimistic (min = 0.0)</span>
             </li>
-            <li>Long Description: <span id="determinismThreshold_long_desc">When regressing a child variable onto a set of parent variables, one way to test for determinism is to see whether the relevant matrix is singular. We may instead ask how close to singular the matrix is; this gives a threshold for this. The default value is 0.1.</span>
+            <li>Long Description: <span id="determinismThreshold_long_desc">
+                When regressing a child variable onto a set of parent variables, one way to test for determinism is to
+                test how close to singular the data is; this gives a threshold for this. The default value is 0.1.</span>
             </li>
             <li>Default Value: <span id="determinismThreshold_default_value">0.1</span></li>
             <li>Lower Bound: <span id="determinismThreshold_lower_bound">0.0</span></li>
@@ -3766,7 +3816,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="differentGraphs_short_desc">Yes if a different graph should be used for each run</span>
             </li>
-            <li>Long Description: <span id="differentGraphs_long_desc">When doing an analysis where, repeatedly, a random graph is chosen, with some further processing downstream, one may either keep using the same graph (with different simulated random datasets based on that graph) or pick a new graph every time. This parameter determines that behavior; if ‘Yes’ a new graph is chosen every time; if ‘No’, the same graph is always used.</span>
+            <li>Long Description: <span id="differentGraphs_long_desc">
+                If ‘Yes’ a new random graph is chosen for each run; if ‘No’, the same graph is always used.</span>
             </li>
             <li>Default Value: <span id="differentGraphs_default_value">false</span></li>
             <li>Lower Bound: <span id="differentGraphs_lower_bound"></span></li>
@@ -3778,7 +3829,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="discretize_short_desc">Yes if continuous variables should be discretized when child is discrete</span>
             </li>
-            <li>Long Description: <span id="discretize_long_desc">For the conditional Gaussian likelihood, when scoring X->D, where X is continuous and D discrete, it is possible to write out the formula for that longhand, but a fast way to do it (and in fact more accurate usually) is to simply discretize X for just those cases. If this parameter is set to “Yes”, this discretization will be done.</span>
+            <li>Long Description: <span id="discretize_long_desc">
+                Yes if for the conditional Gaussian likelihood, when scoring X->D where X is continuous and D discrete,
+                one shoudl to simply discretize X for just those cases. If no, the integration will be exact.</span>
             </li>
             <li>Default Value: <span id="discretize_default_value">true</span></li>
             <li>Lower Bound: <span id="discretize_lower_bound"></span></li>
@@ -3790,8 +3843,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="calculateEuclidean_short_desc">Yes if the Euclidean norm squared should be calculated (slow), No if not</span>
             </li>
-            <li>Long Description: <span id="calculateEuclidean_long_desc">The generalized information criterion is defined with an information term that
-            take a Euclidean norm squares; the can be calcuted directly.</span>
+            <li>Long Description: <span id="calculateEuclidean_long_desc">
+                The generalized information criterion is defined with an information term that
+                take a Euclidean norm squares; the can be calculated directly.
+            </span>
             </li>
             <li>Default Value: <span id="calculateEuclidean_default_value">false</span></li>
             <li>Lower Bound: <span id="calculateEuclidean_lower_bound"></span></li>
@@ -3803,7 +3858,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="takeLogs_short_desc">Yes logs should be taken, No if not</span>
             </li>
-            <li>Long Description: <span id="takeLogs_long_desc">The formula for the score allows a log to be taken optionally in the information term.</span>
+            <li>Long Description: <span id="takeLogs_long_desc">
+                The formula for the score allows a log to be taken optionally in the information term.</span>
             </li>
             <li>Default Value: <span id="takeLogs_default_value">true</span></li>
             <li>Lower Bound: <span id="takeLogs_lower_bound"></span></li>
@@ -3815,7 +3871,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="doColliderOrientation_short_desc">Yes if unshielded collider orientation should be done</span>
             </li>
-            <li>Long Description: <span id="doColliderOrientation_long_desc">Please see the description of this algorithm in Thomas Richardson and Peter Spirtes in Chapter 7 of Computation, Causation, & Discovery by Glymour and Cooper eds.</span>
+            <li>Long Description: <span id="doColliderOrientation_long_desc">
+                Please see the description of this algorithm in Thomas Richardson and Peter Spirtes in Chapter 7 of
+                Computation, Causation, & Discovery by Glymour and Cooper eds.</span>
             </li>
             <li>Default Value: <span id="doColliderOrientation_default_value">true</span></li>
             <li>Lower Bound: <span id="doColliderOrientation_lower_bound"></span></li>
@@ -3843,7 +3901,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="errorsNormal_short_desc">Yes if errors should be Normal; No if they should be abs(Normal) (i.e., non-Gaussian)</span>
             </li>
-            <li>Long Description: <span id="errorsNormal_long_desc">A “quick and dirty” way to generate linear, non-Gaussian data is to set this parameter to “No”; then the errors will be sampled from a Beta distribution.</span>
+            <li>Long Description: <span id="errorsNormal_long_desc">
+                A “quick and dirty” way to generate linear, non-Gaussian data is to set this parameter to “No”; then
+                the errors will be sampled from a Beta distribution.</span>
             </li>
             <li>Default Value: <span id="errorsNormal_default_value">true</span></li>
             <li>Lower Bound: <span id="errorsNormal_lower_bound"></span></li>
@@ -3855,7 +3915,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="skewEdgeThreshold_short_desc">Threshold for including additional edges detectable by skewness</span>
             </li>
-            <li>Long Description: <span id="skewEdgeThreshold_long_desc">For FASK, this includes an adjacency X—Y in the model if |corr(X, Y | X > 0) – corr(X, Y | Y > 0)| exceeds some threshold. The default for this threshold is 0.3. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
+            <li>Long Description: <span id="skewEdgeThreshold_long_desc">
+                For FASK, this includes an adjacency X—Y in the model if |corr(X, Y | X > 0) – corr(X, Y | Y > 0)|
+                exceeds some threshold. The default for this threshold is 0.3.</span>
             </li>
             <li>Default Value: <span id="skewEdgeThreshold_default_value">0.3</span></li>
             <li>Lower Bound: <span id="skewEdgeThreshold_lower_bound">0.0</span></li>
@@ -3865,9 +3927,12 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="twoCycleScreeningThreshold">twoCycleScreeningThreshold</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="twoCycleScreeningThreshold_short_desc">Upper bound for |left-right| to count as 2-cycle. (Set to zero to turn off pre-screening.)</span>
+            <li>Short Description: <span id="twoCycleScreeningThreshold_short_desc">
+                Upper bound for |left-right| to count as 2-cycle. (Set to zero to turn off pre-screening.)</span>
             </li>
-            <li>Long Description: <span id="twoCycleScreeningThreshold_long_desc">2-cycles are screened by looking to see if the left-right rule returns a difference smaller than this threshold. To turn off the screening, set this to zero.</span>
+            <li>Long Description: <span id="twoCycleScreeningThreshold_long_desc">
+                2-cycles are screened by looking to see if the left-right rule returns a difference smaller than this
+                threshold. To turn off the screening, set this to zero.</span>
             </li>
             <li>Default Value: <span id="twoCycleScreeningThreshold_default_value">0.0</span></li>
             <li>Lower Bound: <span id="twoCycleScreeningThreshold_lower_bound">0.0</span></li>
@@ -3877,7 +3942,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="orientationAlpha">orientationAlpha</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="orientationAlpha_short_desc">Alpha threshold used for orientation (where necessary). (Set to zero to turn use of alpha.)</span>
+            <li>Short Description: <span id="orientationAlpha_short_desc">
+                Alpha threshold used for orientation (where necessary). ('0' turns this off.)</span>
             </li>
             <li>Long Description: <span id="orientationAlpha_long_desc">Used for orienting 2-cycles and testing for zero edges.</span>
             </li>
@@ -3889,7 +3955,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="faskDelta">faskDelta</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="faskDelta_short_desc">For FASK v1 and v2, the bias for orienting with negative coefficients (Set to zero for no bias.)</span>
+            <li>Short Description: <span id="faskDelta_short_desc">
+                For FASK v1 and v2, the bias for orienting with negative coefficients ('0' means no bias.)</span>
             </li>
             <li>Long Description: <span id="faskDelta_long_desc">The bias procedure for v1 is given in the published description.</span>
             </li>
@@ -3903,7 +3970,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="faskLeftRightRule_short_desc">The left right rule: 1 = FASK v1, 2 = FASK v2, 3 = RSkew, 4 = Skew, 5 = Tanh</span>
             </li>
-            <li>Long Description: <span id="faskLeftRightRule_long_desc">The FASK left right rule v2 is default, but two other (related) left-right rules are given for relation to the literature, and the v1 FASK rule is included for backward compatibility.</span>
+            <li>Long Description: <span id="faskLeftRightRule_long_desc">
+                The FASK left right rule v2 is default, but two other (related) left-right rules are given for relation
+                to the literature, and the v1 FASK rule is included for backward compatibility.</span>
             </li>
             <li>Default Value: <span id="faskLeftRightRule_default_value">2</span></li>
             <li>Lower Bound: <span id="faskLeftRightRule_lower_bound">1</span></li>
@@ -3915,7 +3984,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="faskAssumeLinearity_short_desc">Linearity assumed</span>
             </li>
-            <li>Long Description: <span id="faskAssumeLinearity_long_desc">True if a linear, non-Gaussian, additive model is assume; false if a nonlinear, non-Gaussian, additive model is assumed.</span>
+            <li>Long Description: <span id="faskAssumeLinearity_long_desc">
+                True if a linear, non-Gaussian, additive model is assume; false if a nonlinear, non-Gaussian, additive model is assumed.</span>
             </li>
             <li>Default Value: <span id="faskAssumeLinearity_default_value">true</span></li>
             <li>Lower Bound: <span id="faskAssumeLinearity_lower_bound"></span></li>
@@ -3927,7 +3997,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="faskNonempirical_short_desc">Variables should be assumed to have positive skewness</span>
             </li>
-            <li>Long Description: <span id="faskNonempirical_long_desc">If false (default), each variable is multiplied by the sign of its skewness in the left-right rule.</span>
+            <li>Long Description: <span id="faskNonempirical_long_desc">
+                If false (default), each variable is multiplied by the sign of its skewness in the left-right rule.</span>
             </li>
             <li>Default Value: <span id="faskNonempirical_default_value">false</span></li>
             <li>Lower Bound: <span id="faskNonempirical_lower_bound"></span></li>
@@ -3939,7 +4010,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="acceptanceProportion_short_desc">Acceptance Proportion</span>
             </li>
-            <li>Long Description: <span id="acceptanceProportion_long_desc">An edge occurring in this proportion of individual FASK graphs will appear in the final graph.</span>
+            <li>Long Description: <span id="acceptanceProportion_long_desc">
+                An edge occurring in this proportion of individual FASK graphs will appear in the final graph.</span>
             </li>
             <li>Default Value: <span id="acceptanceProportion_default_value">0.5</span></li>
             ,.
@@ -3952,7 +4024,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="faskAdjacencyMethod_short_desc">Non-skewness Adjacencies: 1 = FAS Stable, 2 = FGES, 3 = External Graph, 4 = None</span>
             </li>
-            <li>Long Description: <span id="faskAdjacencyMethod_long_desc">This is  the method FASK will use to find non-skewness adjacencies. For External graph, an external graph must be supplied.</span>
+            <li>Long Description: <span id="faskAdjacencyMethod_long_desc">
+                This is  the method FASK will use to find non-skewness adjacencies. For External graph, an external graph must be supplied.</span>
             </li>
             <li>Default Value: <span id="faskAdjacencyMethod_default_value">1</span></li>
             <li>Lower Bound: <span id="faskAdjacencyMethod_lower_bound">1</span></li>
@@ -3964,7 +4037,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="faithfulnessAssumed_short_desc">Yes if (one edge) faithfulness should be assumed</span>
             </li>
-            <li>Long Description: <span id="faithfulnessAssumed_long_desc">Assumes that if X _||_ Y, by an independence test, then X _||_ Y | Z for nonempty Z.</span>
+            <li>Long Description: <span id="faithfulnessAssumed_long_desc">
+                Assumes that if X _||_ Y, by an independence test, then X _||_ Y | Z for nonempty Z.</span>
             </li>
             <li>Default Value: <span id="faithfulnessAssumed_default_value">false</span></li>
             <li>Lower Bound: <span id="faithfulnessAssumed_lower_bound"></span></li>
@@ -3989,7 +4063,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="fasRule_short_desc">Adjacency search: 1 = PC, 2 = PC-Stable, 3 =f Concurrent PC-Stable</span>
             </li>
-            <li>Long Description: <span id="fasRule_long_desc">For variants of PC, one may select either to use the usual PC adjacency search, or the procedure from the PC-Stable algorithm (Diego and Maathuis), or the latter using a concurrent algorithm (that is, one that runs in parallel on multiple processors).</span>
+            <li>Long Description: <span id="fasRule_long_desc">
+                For variants of PC, one may select either to use the usual PC adjacency search, or the procedure from
+                the PC-Stable algorithm (Diego and Maathuis), or the latter using a concurrent algorithm.</span>
             </li>
             <li>Default Value: <span id="fasRule_default_value">1</span></li>
             <li>Lower Bound: <span id="fasRule_lower_bound">1</span></li>
@@ -4001,7 +4077,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="fastIcaA_short_desc">Fast ICA 'a' parameter. </span>
             </li>
-            <li>Long Description: <span id="fastIcaA_long_desc">This is the 'a' parameter of Fast ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It ranges between 1 and 2; we use a default of 1.1. This scales values evaluated by the tanh function for the log cosh option.</span>
+            <li>Long Description: <span id="fastIcaA_long_desc">
+                This is the 'a' parameter of Fast ICA. (See Hyvarinen, A. (2001); it ranges between 1 and 2; we
+                use a default of 1.1.</span>
             </li>
             <li>Default Value: <span id="fastIcaA_default_value">1.1</span></li>
             <li>Lower Bound: <span id="fastIcaA_lower_bound">1.0</span></li>
@@ -4014,7 +4092,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span
                     id="fastIcaMaxIter_short_desc">The maximum number of optimization iterations. </span>
             </li>
-            <li>Long Description: <span id="fastIcaMaxIter_long_desc">This is the maximum number if iterations of the optimization procedure of ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It's an integer greater than 0; we use a default of 2000.</span>
+            <li>Long Description: <span id="fastIcaMaxIter_long_desc">
+                This is the maximum number if iterations of the optimization procedure of ICA. (See Hyvarinen, A.
+                (2001). It's an integer greater than 0; we use a default of 2000.</span>
             </li>
             <li>Default Value: <span id="fastIcaMaxIter_default_value">2000</span></li>
             <li>Lower Bound: <span id="fastIcaMaxIter_lower_bound">1</span></li>
@@ -4026,7 +4106,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="fastIcaTolerance_short_desc">Fast ICA tolerance parameter. </span>
             </li>
-            <li>Long Description: <span id="fastIcaTolerance_long_desc">This is the tolerance parameter of Fast ICA. (See Hyvarinen, A. (2001). Independent Component Analysis/Hyvarinen A., Karhunen J., Oja E. NY: John Wiley & Sons Inc.) It must be greater than or equal to 0.00; we use a default of 1e-6.</span>
+            <li>Long Description: <span id="fastIcaTolerance_long_desc">
+                This is the tolerance parameter of Fast ICA. (See Hyvarinen, A. (2001); we use a default of 1e-6.</span>
             </li>
             <li>Default Value: <span id="fastIcaTolerance_default_value">1e-6</span></li>
             <li>Lower Bound: <span id="fastIcaTolerance_lower_bound">0.0</span></li>
@@ -4038,7 +4119,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="fisherEpsilon_short_desc">Epsilon where |xi.t - xi.t-1| < epsilon, criterion for convergence</span>
             </li>
-            <li>Long Description: <span id="fisherEpsilon_long_desc">This is a parameter for the linear Fisher option. The idea of Fisher model (for the linear case) is to shock the system every so often and let it converge by applying the rules of transformation (that is, the linear model) repeatedly until convergence. This sets the criterion for convergence—the process continues until the differences from one time step to the next fall below this epsilon.</span>
+            <li>Long Description: <span id="fisherEpsilon_long_desc">
+                This is a parameter for the linear Fisher option. The idea of Fisher model (for the linear case) is
+                to shock the system every so often and let it converge by applying the rules of transformation (that is,
+                the linear model) repeatedly until convergence.</span>
             </li>
             <li>Default Value: <span id="fisherEpsilon_default_value">0.001</span></li>
             <li>Lower Bound: <span id="fisherEpsilon_lower_bound">4.9E-324</span></li>
@@ -4050,7 +4134,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="generalSemErrorTemplate_short_desc">General function for error terms</span>
             </li>
-            <li>Long Description: <span id="generalSemErrorTemplate_long_desc">This template specifies how distributions for error terms are to be generated. For help in constructing such templates, see the Generalized SEM PM model.</span>
+            <li>Long Description: <span id="generalSemErrorTemplate_long_desc">
+                This template specifies how distributions for error terms are to be generated. For help in
+                constructing such templates, see the Generalized SEM PM model.</span>
             </li>
             <li>Default Value: <span id="generalSemErrorTemplate_default_value">Beta(2, 5)</span></li>
             <li>Lower Bound: <span id="generalSemErrorTemplate_lower_bound"></span></li>
@@ -4062,7 +4148,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="generalSemFunctionTemplateLatent_short_desc">General function template for latent variables</span>
             </li>
-            <li>Long Description: <span id="generalSemFunctionTemplateLatent_long_desc">This template specifies how equations for latent variables are to be generated. For help in constructing such templates, see the Generalized SEM PM model.</span>
+            <li>Long Description: <span id="generalSemFunctionTemplateLatent_long_desc">
+                This template specifies how equations for latent variables are to be generated. For help in
+                constructing such templates, see the Generalized SEM PM model.</span>
             </li>
             <li>Default Value: <span id="generalSemFunctionTemplateLatent_default_value">TSUM(NEW(B)*$)</span></li>
             <li>Lower Bound: <span id="generalSemFunctionTemplateLatent_lower_bound"></span></li>
@@ -4075,7 +4163,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="generalSemFunctionTemplateMeasured_short_desc">General function template for measured variables</span>
             </li>
-            <li>Long Description: <span id="generalSemFunctionTemplateMeasured_long_desc">This template specifies how equations for measured variables are to be generated. For help in constructing such templates, see the Generalized SEM PM model.</span>
+            <li>Long Description: <span id="generalSemFunctionTemplateMeasured_long_desc">
+                This template specifies how equations for measured variables are to be generated. For help in
+                constructing such templates, see the Generalized SEM PM model.</span>
             </li>
             <li>Default Value: <span id="generalSemFunctionTemplateMeasured_default_value">TSUM(NEW(B)*$)</span></li>
             <li>Lower Bound: <span id="generalSemFunctionTemplateMeasured_lower_bound"></span></li>
@@ -4087,7 +4177,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="generalSemParameterTemplate_short_desc">General function for parameters</span></li>
-            <li>Long Description: <span id="generalSemParameterTemplate_long_desc">This template specifies how distributions for parameter terms are to be generated. For help in constructing such templates, see the Generalized SEM PM model.</span>
+            <li>Long Description: <span id="generalSemParameterTemplate_long_desc">
+                This template specifies how distributions for parameter terms are to be generated. For help in
+                constructing such templates, see the Generalized SEM PM model.</span>
             </li>
             <li>Default Value: <span id="generalSemParameterTemplate_default_value">Split(-1.0, -0.5, 0.5, 1.0)</span>
             </li>
@@ -4099,7 +4191,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="ia">ia</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="ia_short_desc">IA parameter (GLASSO)</span></li>
-            <li>Long Description: <span id="ia_long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) includes a number of parameters, of which this is one. This is the maximum number of iterations of the optimization loop.</span>
+            <li>Long Description: <span id="ia_long_desc">
+                Sets the maximum number of iterations of the optimization loop.</span>
             </li>
             <li>Default Value: <span id="ia_default_value">true</span></li>
             <li>Lower Bound: <span id="ia_lower_bound"></span></li>
@@ -4111,7 +4204,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="includeNegativeCoefs_short_desc">Yes if negative coefficients should be included in the model</span>
             </li>
-            <li>Long Description: <span id="includeNegativeCoefs_long_desc">One may include positive coefficients, negative coefficients, or both, in the model. To include negative coefficients, set this parameter to “Yes”.</span>
+            <li>Long Description: <span id="includeNegativeCoefs_long_desc">
+                One may include positive coefficients, negative coefficients, or both, in the model. To include
+                negative coefficients, set this parameter to “Yes”.</span>
             </li>
             <li>Default Value: <span id="includeNegativeCoefs_default_value">true</span></li>
             <li>Lower Bound: <span id="includeNegativeCoefs_lower_bound"></span></li>
@@ -4121,9 +4216,11 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="includeNegativeSkewsForBeta">includeNegativeSkewsForBeta</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="includeNegativeSkewsForBeta_short_desc">Yes if negative skew values should be included in the model, if Beta errors are chosen</span>
+            <li>Short Description: <span id="includeNegativeSkewsForBeta_short_desc">
+                Yes if negative skew values should be included in the model, if Beta errors are chosen</span>
             </li>
-            <li>Long Description: <span id="includeNegativeSkewsForBeta_long_desc">Yes if negative skew values should be included in the model, if Beta errors are chosen.</span>
+            <li>Long Description: <span id="includeNegativeSkewsForBeta_long_desc">
+                Yes if negative skew values should be included in the model, if Beta errors are chosen.</span>
             </li>
             <li>Default Value: <span id="includeNegativeSkewsForBeta_default_value">true</span></li>
             <li>Lower Bound: <span id="includeNegativeSkewsForBeta_lower_bound"></span></li>
@@ -4133,9 +4230,11 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="includePositiveCoefs">includePositiveCoefs</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="includePositiveCoefs_short_desc">Yes if positive coefficients should be included in the model</span>
+            <li>Short Description: <span id="includePositiveCoefs_short_desc">
+                Yes if positive coefficients should be included in the model</span>
             </li>
-            <li>Long Description: <span id="includePositiveCoefs_long_desc">e may include positive coefficients, negative coefficients, or both, in the model. To include positive coefficients, set this parameter to “Yes”.</span>
+            <li>Long Description: <span id="includePositiveCoefs_long_desc">Yes if We may include positive coefficients,
+                should be included in the model, no if not.</span>
             </li>
             <li>Default Value: <span id="includePositiveCoefs_default_value">true</span></li>
             <li>Lower Bound: <span id="includePositiveCoefs_lower_bound"></span></li>
@@ -4145,9 +4244,11 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="includePositiveSkewsForBeta">includePositiveSkewsForBeta</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="includePositiveSkewsForBeta_short_desc">Yes if positive skew values should be included in the model, if Beta errors are chosen</span>
+            <li>Short Description: <span id="includePositiveSkewsForBeta_short_desc">
+                Yes if positive skew values should be included in the model, if Beta errors are chosen</span>
             </li>
-            <li>Long Description: <span id="includePositiveSkewsForBeta_long_desc">Yes if positive skew values should be included in the model, if Beta errors are chosen.</span>
+            <li>Long Description: <span id="includePositiveSkewsForBeta_long_desc">
+                Yes if positive skew values should be included in the model, if Beta errors are chosen.</span>
             </li>
             <li>Default Value: <span id="includePositiveSkewsForBeta_default_value">true</span></li>
             <li>Lower Bound: <span id="includePositiveSkewsForBeta_lower_bound"></span></li>
@@ -4157,7 +4258,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="intervalBetweenRecordings">intervalBetweenRecordings</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="intervalBetweenRecordings_short_desc">Interval between data recordings for the linear Fisher model (min = 1)</span>
+            <li>Short Description: <span id="intervalBetweenRecordings_short_desc">
+                Interval between data recordings for the linear Fisher model (min = 1)</span>
             </li>
             <li>Long Description: <span id="intervalBetweenRecordings_long_desc"></span></li>
             <li>Default Value: <span id="intervalBetweenRecordings_default_value">10</span></li>
@@ -4168,9 +4270,11 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="intervalBetweenShocks">intervalBetweenShocks</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="intervalBetweenShocks_short_desc">Interval beween shocks (R. A. Fisher simulation model) (min = 1)</span>
+            <li>Short Description: <span id="intervalBetweenShocks_short_desc">
+                Interval beween shocks (R. A. Fisher simulation model) (min = 1)</span>
             </li>
-            <li>Long Description: <span id="intervalBetweenShocks_long_desc">This is a parameter for the linear Fisher option. The idea of Fisher model (for the linear case) is to shock the system every so often and let it converge by applying the rules of transformation (that is, the linear model) repeatedly until convergence. This sets the number of step between shocks.</span>
+            <li>Long Description: <span id="intervalBetweenShocks_long_desc">
+                This is a parameter for the linear Fisher option. This sets the number of step between shocks.</span>
             </li>
             <li>Default Value: <span id="intervalBetweenShocks_default_value">10</span></li>
             <li>Lower Bound: <span id="intervalBetweenShocks_lower_bound">1</span></li>
@@ -4181,7 +4285,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="ipen">ipen</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="ipen_short_desc">IPEN parameter (GLASSO)</span></li>
-            <li>Long Description: <span id="ipen_long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) includes a number of parameters, of which this is one. This is the maximum number of iterations of the optimization loop.</span>
+            <li>Long Description: <span id="ipen_long_desc">
+                This sets the maximum number of iterations of the optimization loop.</span>
             </li>
             <li>Default Value: <span id="ipen_default_value">false</span></li>
             <li>Lower Bound: <span id="ipen_lower_bound"></span></li>
@@ -4192,7 +4297,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="is">is</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="is_short_desc">IS parameter (GLASSO)</span></li>
-            <li>Long Description: <span id="is_long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) includes a number of parameters, of which this is one. This is the maximum number of iterations of the optimization loop.</span>
+            <li>Long Description: <span id="is_long_desc">
+                Sets the maximum number of iterations of the optimization loop.</span>
             </li>
             <li>Default Value: <span id="is_default_value">false</span></li>
             <li>Lower Bound: <span id="is_lower_bound"></span></li>
@@ -4203,7 +4309,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="itr">itr</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="itr_short_desc">ITR parameter (GLASSO)</span></li>
-            <li>Long Description: <span id="itr_long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) includes a number of parameters, of which this is one. This is the maximum number of iterations of the optimization loop.</span>
+            <li>Long Description: <span id="itr_long_desc">
+                Sets the maximum number of iterations of the optimization loop.</span>
             </li>
             <li>Default Value: <span id="itr_default_value">false</span></li>
             <li>Lower Bound: <span id="itr_lower_bound"></span></li>
@@ -4235,7 +4342,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="kciEpsilon_short_desc">Epsilon for Proposition 5, a small positive number</span></li>
-            <li>Long Description: <span id="kciEpsilon_long_desc">We have a number of parameters here for the Kernel Conditional Independence Test (KCI). In order to understand the parameters, it is necessary to read the paper on which this test is based, here: Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence test and application in causal discovery. arXiv preprint arXiv:1202.3775. This parameter is the epsilon for Proposition 5, a small positive number. The default value is 0.001; it must be a positive real number.</span>
+            <li>Long Description: <span id="kciEpsilon_long_desc">
+                See Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence
+                test and application in causal discovery.. This parameter is the  epsilon for Proposition 5,
+                a small positive number.</span>
             </li>
             <li>Default Value: <span id="kciEpsilon_default_value">0.001</span></li>
             <li>Lower Bound: <span id="kciEpsilon_lower_bound">0.0</span></li>
@@ -4247,7 +4357,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="kciNumBootstraps_short_desc">Number of bootstraps for Theorems 4 and Proposition 5 for KCI</span>
             </li>
-            <li>Long Description: <span id="kciNumBootstraps_long_desc">We have a number of parameters here for the Kernel Conditional Independence Test (KCI). In order to understand the parameters, it is necessary to read the paper on which this test is based, here: Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence test and application in causal discovery. arXiv preprint arXiv:1202.3775. This parameter is the number of bootstraps for Theorems 4 and Proposition 5. The default is 5000; it must be positive integer.</span>
+            <li>Long Description: <span id="kciNumBootstraps_long_desc">
+                This parameter is the number of bootstraps for Theorems 4 from Zhang, K., Peters, J., Janzing, D., &
+                Schölkopf, B. (2012) and Proposition 5, a positive integer.</span>
             </li>
             <li>Default Value: <span id="kciNumBootstraps_default_value">5000</span></li>
             <li>Lower Bound: <span id="kciNumBootstraps_lower_bound">1</span></li>
@@ -4259,7 +4371,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="kciUseAppromation_short_desc">Use the approximate Gamma approximation algorithm</span>
             </li>
-            <li>Long Description: <span id="kciUseAppromation_long_desc">We have a number of parameters here for the Kernel Conditional Independence Test (KCI). In order to understand the parameters, it is necessary to read the paper on which this test is based, here: Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence test and application in causal discovery. arXiv preprint arXiv:1202.3775. If this parameter is set to ‘Yes’, the Gamma approximation algorithm is used, as described in this paper; otherwise, the non-approximate procedure is used.</span>
+            <li>Long Description: <span id="kciUseAppromation_long_desc">
+                Referring to Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012), if this parameter is set to
+                ‘Yes’, the Gamma approximation algorithm is used; if no, the exact procedure is used.</span>
             </li>
             <li>Default Value: <span id="kciUseAppromation_default_value">true</span></li>
             <li>Lower Bound: <span id="kciUseAppromation_lower_bound"></span></li>
@@ -4271,7 +4385,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="kernelMultiplier_short_desc">Bowman and Azzalini (1997) default kernel bandwidhts should be multiplied by...</span>
             </li>
-            <li>Long Description: <span id="kernelMultiplier_long_desc">For the conditional correlation algorithm. Bowman, A. W., & Azzalini, A. (1997, Applied smoothing techniques for data analysis: the kernel approach with S-Plus illustrations (Vol. 18), OUP Oxford), give a formula for default optimal kernel widths. We allow these defaults to be multiplied by some factor, which we call the “kernel multiplier”, to capture more or less than this optimal signal. This multiplier must be a positive real number.</span>
+            <li>Long Description: <span id="kernelMultiplier_long_desc">
+                For the conditional correlation algorithm. Bowman, A. W., & Azzalini, A. (1997),
+                give a formula for default optimal kernel widths. We allow these defaults to be multiplied by this
+                factor, to capture more or less than this optimal signal.</span>
             </li>
             <li>Default Value: <span id="kernelMultiplier_default_value">1.0</span></li>
             <li>Lower Bound: <span id="kernelMultiplier_lower_bound">4.9E-324</span></li>
@@ -4283,7 +4400,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="kernelRegressionSampleSize_short_desc">Minimum sample size to use per conditioning for kernel regression</span>
             </li>
-            <li>Long Description: <span id="kernelRegressionSampleSize_long_desc">Kernel regression for X _||_ Y | Z looks for dependencies between X and Y for Z values near to some particular Z values of interest. One can find the m nearest points to a given Z = z’ by expanding the search radius until you get that many points. This parameter specifies the smallest such set of nearest points on which to allow a judgment to be based.</span>
+            <li>Long Description: <span id="kernelRegressionSampleSize_long_desc">
+                The smallest set of nearest data points on which to allow a judgment to be based
+                for a nonlinear regression.</span>
             </li>
             <li>Default Value: <span id="kernelRegressionSampleSize_default_value">100</span></li>
             <li>Lower Bound: <span id="kernelRegressionSampleSize_lower_bound">-2147483648</span></li>
@@ -4295,7 +4414,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="kernelType_short_desc">Kernel type (1 = Gaussian, 2 = Epinechnikov)</span>
             </li>
-            <li>Long Description: <span id="kernelType_long_desc">For CCI, this determine which kernel type will be used (1 = Gaussian, 2 = Epinechnikov).</span>
+            <li>Long Description: <span id="kernelType_long_desc">
+                For CCI, this determine which kernel type will be used (1 = Gaussian, 2 = Epinechnikov).</span>
             </li>
             <li>Default Value: <span id="kernelType_default_value">2</span></li>
             <li>Lower Bound: <span id="kernelType_lower_bound">1</span></li>
@@ -4306,7 +4426,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="kernelWidth">kernelWidth</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="kernelWidth_short_desc">Kernel width</span></li>
-            <li>Long Description: <span id="kernelWidth_long_desc">A larger kernel width means that more information will be taken into account but possibly less focused information.</span>
+            <li>Long Description: <span id="kernelWidth_long_desc">
+                A larger kernel width means that more information will be taken into account but possibly less focused information.</span>
             </li>
             <li>Default Value: <span id="kernelWidth_default_value">1.0</span></li>
             <li>Lower Bound: <span id="kernelWidth_lower_bound">4.9E-324</span></li>
@@ -4318,7 +4439,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="latentMeasuredImpureParents_short_desc">Number of Latent --> Measured impure edges</span>
             </li>
-            <li>Long Description: <span id="latentMeasuredImpureParents_long_desc">It is possible for structural nodes to have as children measured variables that are children of other structural nodes. These edges in the graph will be considered impure.</span>
+            <li>Long Description: <span id="latentMeasuredImpureParents_long_desc">
+                It is possible for structural nodes to have as children measured variables that are children of
+                other structural nodes. These edges in the graph will be considered impure.</span>
             </li>
             <li>Default Value: <span id="latentMeasuredImpureParents_default_value">0</span></li>
             <li>Lower Bound: <span id="latentMeasuredImpureParents_lower_bound">-2147483648</span></li>
@@ -4340,7 +4463,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="maxCategories_short_desc">Maximum number of categories (min = 2)</span>
             </li>
-            <li>Long Description: <span id="maxCategories_long_desc">The maximum number of categories to be used for randomly generated discrete variables. The default is 2. This needs to be greater or equal to than the minimum number of categories.</span>
+            <li>Long Description: <span id="maxCategories_long_desc">
+                The maximum number of categories to be used for randomly generated discrete variables. The default is 2.
+                This needs to be greater or equal to than the minimum number of categories.</span>
             </li>
             <li>Default Value: <span id="maxCategories_default_value">3</span></li>
             <li>Lower Bound: <span id="maxCategories_lower_bound">2</span></li>
@@ -4364,7 +4489,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="maxDegree_short_desc">The maximum degree of the graph (min = -1)</span>
             </li>
-            <li>Long Description: <span id="maxDegree_long_desc">It is possible for a random graph to have a single node with very high degree—i.e. number of adjacent edges. This parameter places an upper bound on the maximum such degree. If no limit is to be placed on the maximum degree, use the value -1.</span>
+            <li>Long Description: <span id="maxDegree_long_desc">
+                An upper bound on the maximum degree of any node in the graph. If no limit is to be placed on
+                the maximum degree, use the value -1.</span>
             </li>
             <li>Default Value: <span id="maxDegree_default_value">100</span></li>
             <li>Lower Bound: <span id="maxDegree_lower_bound">-1</span></li>
@@ -4374,9 +4501,12 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="maxDistinctValuesDiscrete">maxDistinctValuesDiscrete</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="maxDistinctValuesDiscrete_short_desc">The maximum number of distinct values in a column for discrete variables (min = 0)</span>
+            <li>Short Description: <span id="maxDistinctValuesDiscrete_short_desc">
+                The maximum number of distinct values in a column for discrete variables (min = 0)</span>
             </li>
-            <li>Long Description: <span id="maxDistinctValuesDiscrete_long_desc">Discrete variables will be simulated using any number of categories from 2 up to this maximum. If set to 0 or 1, discrete variables will not be generated.</span>
+            <li>Long Description: <span id="maxDistinctValuesDiscrete_long_desc">
+                Discrete variables will be simulated using any number of categories from 2 up to this maximum.
+                If set to 0 or 1, discrete variables will not be generated.</span>
             </li>
             <li>Default Value: <span id="maxDistinctValuesDiscrete_default_value">0</span></li>
             <li>Lower Bound: <span id="maxDistinctValuesDiscrete_lower_bound">0</span></li>
@@ -4387,7 +4517,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="maxIndegree">maxIndegree</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="maxIndegree_short_desc">Maximum indegree of graph (min = 1)</span></li>
-            <li>Long Description: <span id="maxIndegree_long_desc">It is possible for a random graph to have a node in which there is a very large “indegree”—that is, number of parents, or number of edges into that node. This parameter places a bound on the maximum such indegree.</span>
+            <li>Long Description: <span id="maxIndegree_long_desc">
+                An upper bound on the maximum indegree of any node in the graph. If no limit is to be placed on
+                the maximum degree, use the value -1.</span>
             </li>
             <li>Default Value: <span id="maxIndegree_default_value">100</span></li>
             <li>Lower Bound: <span id="maxIndegree_lower_bound">1</span></li>
@@ -4399,7 +4531,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="zsMaxIndegree_short_desc">Maximum indegree of true graph (min = 0)</span>
             </li>
-            <li>Long Description: <span id="zsMaxIndegree_long_desc">This is the maximum number of parents one expects any node to have in the true model.</span>
+            <li>Long Description: <span id="zsMaxIndegree_long_desc">
+                This is the maximum number of parents one expects any node to have in the true model.</span>
             </li>
             <li>Default Value: <span id="zsMaxIndegree_default_value">4</span></li>
             <li>Lower Bound: <span id="zsMaxIndegree_lower_bound">0</span></li>
@@ -4411,7 +4544,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="maxIterations_short_desc">The maximum number of iterations the algorithm should go through orienting edges</span>
             </li>
-            <li>Long Description: <span id="maxIterations_long_desc">In orienting, this algorith may go through a number of iterations, conditioning on more and more variables until orientations are set. This sets that number.</span>
+            <li>Long Description: <span id="maxIterations_long_desc">
+                In orienting, this algorith may go through a number of iterations, conditioning on more and more variables
+                until orientations are set. This sets that number.</span>
             </li>
             <li>Default Value: <span id="maxIterations_default_value">15</span></li>
             <li>Lower Bound: <span id="maxIterations_lower_bound">0</span></li>
@@ -4422,7 +4557,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="maxOutdegree">maxOutdegree</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="maxOutdegree_short_desc">Maximum outdegree of graph (min = 1)</span></li>
-            <li>Long Description: <span id="maxOutdegree_long_desc">It is possible for a random graph to have a node in which there is a very large “outdegree”—that is, number of children, or number of edges out of that node. This parameter places a bound on the maximum such outdegree. If no limit is to be placed on the max outdegree, use the value -1.</span>
+            <li>Long Description: <span id="maxOutdegree_long_desc">
+                An upper bound on the maximum outdegree of any node in the graph. If no limit is to be placed on
+                the maximum degree, use the value -1.</span>
             </li>
             <li>Default Value: <span id="maxOutdegree_default_value">100</span></li>
             <li>Lower Bound: <span id="maxOutdegree_lower_bound">1</span></li>
@@ -4434,7 +4571,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="maxPOrientationMaxPathLength_short_desc">Maximum path length for the unshielded collider heuristic for max P (min = 0)</span>
             </li>
-            <li>Long Description: <span id="maxPOrientationMaxPathLength_long_desc">For the Max P “heuristic” to work, it must be the case that X and Z are only weakly associated—that is, that paths between them are not too short. This bounds the length of paths for this purpose.</span>
+            <li>Long Description: <span id="maxPOrientationMaxPathLength_long_desc">
+                For the Max P “heuristic” to work, it must be the case that X and Z are only weakly associated—that is,
+                that paths between them are not too short. This bounds the length of paths for this purpose.</span>
             </li>
             <li>Default Value: <span id="maxPOrientationMaxPathLength_default_value">3</span></li>
             <li>Lower Bound: <span id="maxPOrientationMaxPathLength_lower_bound">0</span></li>
@@ -4446,7 +4585,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="maxPathLength_short_desc">The maximum length for any discriminating path. -1 if unlimited (min = -1)</span>
             </li>
-            <li>Long Description: <span id="maxPathLength_long_desc">See Spirtes, Glymour, and Scheines (2000), Causation, Prediction, and Search for the definition of discrimination path. Finding discriminating paths can be expensive. This sets the maximum length of such paths that the algorithm tries to find.</span>
+            <li>Long Description: <span id="maxPathLength_long_desc">
+                See Spirtes, Glymour, and Scheines (2000) for the definition of discrimination path. Finding discriminating
+                paths can be expensive. This sets the maximum length of such paths that the algorithm tries to find.</span>
             </li>
             <li>Default Value: <span id="maxPathLength_default_value">-1</span></li>
             <li>Lower Bound: <span id="maxPathLength_lower_bound">-1</span></li>
@@ -4457,7 +4598,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="maxit">maxit</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="maxit_short_desc">MAXIT parameter (GLASSO) (min = 1)</span></li>
-            <li>Long Description: <span id="maxit_long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) includes a number of parameters, of which this is one. This is the maximum number of iterations of the optimization loop.</span>
+            <li>Long Description: <span id="maxit_long_desc">
+                Sets the maximum number of iterations of the optimization loop.</span>
             </li>
             <li>Default Value: <span id="maxit_default_value">10000</span></li>
             <li>Lower Bound: <span id="maxit_lower_bound">1</span></li>
@@ -4468,7 +4610,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="meanHigh">meanHigh</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="meanHigh_short_desc">High end of mean range (min = 0.0)</span></li>
-            <li>Long Description: <span id="meanHigh_long_desc">For a linear model, means of variables may be randomly shifted. The default is for there to be no shift, but shifts from a minimum value to a maximum value may be specified. The minimum must be less than or equal to the maximum.</span>
+            <li>Long Description: <span id="meanHigh_long_desc">
+                The default is for there to be no shift in mean, but shifts from a minimum value to a maximum value
+                may be specified. The minimum must be less than or equal to this maximum.</span>
             </li>
             <li>Default Value: <span id="meanHigh_default_value">1.0</span></li>
             <li>Lower Bound: <span id="meanHigh_lower_bound">0.0</span></li>
@@ -4479,7 +4623,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="meanLow">meanLow</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="meanLow_short_desc">Low end of mean range (min = 0.0)</span></li>
-            <li>Long Description: <span id="meanLow_long_desc">For a linear model, means of variables may be randomly shifted. The default is for there to be no shift, but shifts from a minimum value to a maximum value may be specified. The minimum must be less than or equal to the maximum.</span>
+            <li>Long Description: <span id="meanLow_long_desc">
+                The default is for there to be no shift in mean, but shifts from a minimum value to a maximum value
+                may be specified. The minimum must be greater than or equal to this minimum.</span>
             </li>
             <li>Default Value: <span id="meanLow_default_value">0.5</span></li>
             <li>Lower Bound: <span id="meanLow_lower_bound">0.0</span></li>
@@ -4492,7 +4638,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="measuredMeasuredImpureAssociations_short_desc">Number of Measured <-> Measured impure edges</span>
             </li>
-            <li>Long Description: <span id="measuredMeasuredImpureAssociations_long_desc">It is possible for measures from two different structural nodes to be confounded. These confounding (bidirected) edges will be considered to be impure.</span>
+            <li>Long Description: <span id="measuredMeasuredImpureAssociations_long_desc">
+                It is possible for measures from two different structural nodes to be confounded. These confounding
+                (bidirected) edges will be considered to be impure.</span>
             </li>
             <li>Default Value: <span id="measuredMeasuredImpureAssociations_default_value">0</span></li>
             <li>Lower Bound: <span id="measuredMeasuredImpureAssociations_lower_bound">-2147483648</span></li>
@@ -4504,7 +4652,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="measuredMeasuredImpureParents_short_desc">Number of Measured --> Measured impure edges</span>
             </li>
-            <li>Long Description: <span id="measuredMeasuredImpureParents_long_desc">It is possible for measures from two different structural nodes to have directed edges between them. These edges will be considered to be impure.</span>
+            <li>Long Description: <span id="measuredMeasuredImpureParents_long_desc">
+                It is possible for measures from two different structural nodes to have directed edges between them.
+                These edges will be considered to be impure.</span>
             </li>
             <li>Default Value: <span id="measuredMeasuredImpureParents_default_value">0</span></li>
             <li>Lower Bound: <span id="measuredMeasuredImpureParents_lower_bound">-2147483648</span></li>
@@ -4516,7 +4666,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="measurementModelDegree_short_desc">Number of measurements per Latent</span>
             </li>
-            <li>Long Description: <span id="measurementModelDegree_long_desc">Each structural node in the MIM will be created to have this many measured children.</span>
+            <li>Long Description: <span id="measurementModelDegree_long_desc">
+                Each structural node in the MIM will be created to have this many measured children.</span>
             </li>
             <li>Default Value: <span id="measurementModelDegree_default_value">5</span></li>
             <li>Lower Bound: <span id="measurementModelDegree_lower_bound">-2147483648</span></li>
@@ -4528,7 +4679,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="measurementVariance_short_desc">Additive measurement noise variance (min = 0.0)</span>
             </li>
-            <li>Long Description: <span id="measurementVariance_long_desc">One difficult problem one encounters for analyzing real data is measurement noise—that is, once the actual values V of a variable are determined, there is some additional noise M added on top of that, so that the effect value is V + M, not V. We will assume here what is often assumed, that this noise is additive and Gaussian, with some variance. If this parameter value is set to zero, no measurement noise is added to the dataset per variable. Otherwise, if the value is greater than zero, independent Gaussian noise will be added with mean zero and the given variance.</span>
+            <li>Long Description: <span id="measurementVariance_long_desc">
+                If the value is greater than zero, independent Gaussian noise will be added with mean zero and the given
+                variance to each variables in the simulated output.</span>
             </li>
             <li>Default Value: <span id="measurementVariance_default_value">0.0</span></li>
             <li>Lower Bound: <span id="measurementVariance_lower_bound">0.0</span></li>
@@ -4573,7 +4726,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="minCategories_short_desc">Minimum number of categories (min = 2)</span>
             </li>
-            <li>Long Description: <span id="minCategories_long_desc">The minimum number of categories to be used for randomly generated discrete variables. The default is 2.</span>
+            <li>Long Description: <span id="minCategories_long_desc">
+                The minimum number of categories to be used for randomly generated discrete variables. The default is 2.</span>
             </li>
             <li>Default Value: <span id="minCategories_default_value">3</span></li>
             <li>Lower Bound: <span id="minCategories_lower_bound">2</span></li>
@@ -4583,7 +4737,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="noRandomlyDeterminedIndependence">noRandomlyDeterminedIndependence</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="noRandomlyDeterminedIndependence_short_desc">Yes, if use the cutoff threshold for the independence test.</span>
+            <li>Short Description: <span id="noRandomlyDeterminedIndependence_short_desc">
+                Yes, if use the cutoff threshold for the independence test.</span>
             </li>
             <li>Long Description: <span id="noRandomlyDeterminedIndependence_long_desc">null</span></li>
             <li>Default Value: <span id="noRandomlyDeterminedIndependence_default_value">false</span></li>
@@ -4596,7 +4751,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numBasisFunctions_short_desc">Number of functions to use in (truncated) basis</span>
             </li>
-            <li>Long Description: <span id="numBasisFunctions_long_desc">The types of bases that we’re using here (Gaussian, Epinechnikov) have an infinite number of functions in them, but we’re only using a finite number of them, the most significant ones. This parameter specifies how many of the most significant basis functions to use. The default is 30.</span>
+            <li>Long Description: <span id="numBasisFunctions_long_desc">
+                This parameter specifies how many of the most significant basis functions to use as a basis.</span>
             </li>
             <li>Default Value: <span id="numBasisFunctions_default_value">30</span></li>
             <li>Lower Bound: <span id="numBasisFunctions_lower_bound">1</span></li>
@@ -4619,7 +4775,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numCategories_short_desc">Number of categories for discrete variables (min = 2)</span>
             </li>
-            <li>Long Description: <span id="numCategories_long_desc">The number of categories to be used for randomly generated discrete variables. The default is 4; the minimum is 2.</span>
+            <li>Long Description: <span id="numCategories_long_desc">
+                The number of categories to be used for randomly generated discrete variables. The default is 4; the minimum is 2.</span>
             </li>
             <li>Default Value: <span id="numCategories_default_value">4</span></li>
             <li>Lower Bound: <span id="numCategories_lower_bound">2</span></li>
@@ -4629,9 +4786,14 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="numCategoriesToDiscretize">numCategoriesToDiscretize</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="numCategoriesToDiscretize_short_desc">The number of categories used to discretize continuous variables, if necessary (min = 2)</span>
+            <li>Short Description: <span id="numCategoriesToDiscretize_short_desc">
+                The number of categories used to discretize continuous variables, if necessary (min = 2)</span>
             </li>
-            <li>Long Description: <span id="numCategoriesToDiscretize_long_desc">If the exact algorithm is desired for discrete children and continuous parents is not used, the conditional Gaussian likelihood needs to keep a copy of all continuous variables on hand, discretized with a certain number of categories. This parameter gives the number of categories to use for this second backup copy of the continuous variables.</span>
+            <li>Long Description: <span id="numCategoriesToDiscretize_long_desc">
+                In case the exact algorithm is not used for discrete children and continuous parents is not used,
+                the This parameter gives the number of categories to use for this second (discretize) backup copy of
+                the continuous variables.
+            </span>
             </li>
             <li>Default Value: <span id="numCategoriesToDiscretize_default_value">3</span></li>
             <li>Lower Bound: <span id="numCategoriesToDiscretize_lower_bound">2</span></li>
@@ -4642,7 +4804,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="numLags">numLags</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numLags_short_desc">The number of lags in the time lag model</span></li>
-            <li>Long Description: <span id="numLags_long_desc">A time lag model may take variables from previous time steps into account. This determines how many steps back these relevant variables might go.</span>
+            <li>Long Description: <span id="numLags_long_desc">
+                A time lag model may take variables from previous time steps into account. This determines how many
+                steps back these relevant variables might go.</span>
             </li>
             <li>Default Value: <span id="numLags_default_value">1</span></li>
             <li>Lower Bound: <span id="numLags_lower_bound">-2147483648</span></li>
@@ -4652,8 +4816,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="numLatents">numLatents</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="numLatents_short_desc">Number of latent variables (min = 0)</span></li>
-            <li>Long Description: <span id="numLatents_long_desc">A latent (or ‘unmeasured’) variable is one for which values are not recorded in the dataset being analyzed. These are variables that affect the measured variables but which are not included in the final dataset. This situation comes up frequently when analyzing real data, so it is important to be able to generate random datasets with this feature, in order to see how the algorithms react to the existence of latent variables. Some algorithms, like FCI, FFCI, FOFC, FTFC, and such, are correct when some variables not measured affect the data.</span>
+            <li>Short Description: <span id="numLatents_short_desc">Number of additional latent variables (min = 0)</span></li>
+            <li>Long Description: <span id="numLatents_long_desc">
+                Thye numbger of additional latent variables to include in the datasets</span>
             </li>
             <li>Default Value: <span id="numLatents_default_value">0</span></li>
             <li>Lower Bound: <span id="numLatents_lower_bound">0</span></li>
@@ -4664,7 +4829,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="numMeasures">numMeasures</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numMeasures_short_desc">Number of measured variables (min = 1)</span></li>
-            <li>Long Description: <span id="numMeasures_long_desc">A measured variable is one for which values are recorded in the dataset being analyzed. This parameter sets the number of measured variables to be randomly simulated; this will be the number of columns in the dataset.</span>
+            <li>Long Description: <span id="numMeasures_long_desc">
+                The number of measured (recorded in data) variables to include in the dataset.
+            </span>
             </li>
             <li>Default Value: <span id="numMeasures_default_value">10</span></li>
             <li>Lower Bound: <span id="numMeasures_lower_bound">1</span></li>
@@ -4676,7 +4843,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numRandomizedSearchModels_short_desc">The number of search probabilistic model (min = 1)</span>
             </li>
-            <li>Long Description: <span id="numRandomizedSearchModels_long_desc">null</span></li>
+            <li>Long Description: <span id="numRandomizedSearchModels_long_desc">The number of search probabilistic model (min = 1)</span></li>
             <li>Default Value: <span id="numRandomizedSearchModels_default_value">10</span></li>
             <li>Lower Bound: <span id="numRandomizedSearchModels_lower_bound">1</span></li>
             <li>Upper Bound: <span id="numRandomizedSearchModels_upper_bound">2147483647</span></li>
@@ -4686,7 +4853,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="numRuns">numRuns</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numRuns_short_desc">Number of runs (min = 1)</span></li>
-            <li>Long Description: <span id="numRuns_long_desc">An analysis(randomly pick graph, randomly simulate a dataset, run an algorithm on it, look at the result) may be run over and over again, repeatedly, and results summarized. This parameter indicates the number of repetitions that should be done for the analysis. The minimum is 1.</span>
+            <li>Long Description: <span id="numRuns_long_desc">
+                An analysis(randomly pick graph, randomly simulate a dataset, run an algorithm on it, look at the
+                result) may be run over and over again this many times.</span>
             </li>
             <li>Default Value: <span id="numRuns_default_value">1</span></li>
             <li>Lower Bound: <span id="numRuns_lower_bound">1</span></li>
@@ -4697,7 +4866,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="numStructuralEdges">numStructuralEdges</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numStructuralEdges_short_desc">Number of structural edges</span></li>
-            <li>Long Description: <span id="numStructuralEdges_long_desc">This is a parameter for generating random multiple indictor models (MIMs). A structural edge is an edge connecting two structural nodes.</span>
+            <li>Long Description: <span id="numStructuralEdges_long_desc">
+                This is a parameter for generating random multiple indictor models (MIMs). A structural edge is an
+                edge connecting two structural nodes.</span>
             </li>
             <li>Default Value: <span id="numStructuralEdges_default_value">3</span></li>
             <li>Lower Bound: <span id="numStructuralEdges_lower_bound">-2147483648</span></li>
@@ -4708,7 +4879,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="numStructuralNodes">numStructuralNodes</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numStructuralNodes_short_desc">Number of structural nodes</span></li>
-            <li>Long Description: <span id="numStructuralNodes_long_desc">This is a parameter for generating random multiple indictor models (MIMs). A structural node is one of the latent variables in the model; each structural node has a number of child measured variables.</span>
+            <li>Long Description: <span id="numStructuralNodes_long_desc">
+                This is a parameter for generating random multiple indictor models (MIMs). A structural node is one of
+                the latent variables in the model; each structural node has a number of child measured variables.</span>
             </li>
             <li>Default Value: <span id="numStructuralNodes_default_value">3</span></li>
             <li>Lower Bound: <span id="numStructuralNodes_lower_bound">-2147483648</span></li>
@@ -4720,7 +4893,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numberResampling_short_desc">The number of bootstraps/resampling iterations (min = 0)</span>
             </li>
-            <li>Long Description: <span id="numberResampling_long_desc">For bootstrapping, the number of bootstrap iterations that should be done by the algorithm, with results summarized.</span>
+            <li>Long Description: <span id="numberResampling_long_desc">
+                For bootstrapping, the number of bootstrap iterations that should be done by the algorithm, with results summarized.</span>
             </li>
             <li>Default Value: <span id="numberResampling_default_value">0</span></li>
             <li>Lower Bound: <span id="numberResampling_lower_bound">0</span></li>
@@ -4870,8 +5044,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
                 Yes to use Raskutti and Uhler's DAG-building method (test), No to use Grow-Shrink (score).</span>
             </li>
             <li>Long Description: <span id="graspUseVermaPearl_long_desc">
-				Raskutti and Uhler's method adds and edge X->Y if
-                Y ~_||_ X | Prefix(Y, pi) \ {X}. Grow-Shrink
+				Raskutti and Uhler's method adds and edge X->Y if Y ~_||_ X | Prefix(Y, pi) \ {X}. Grow-Shrink
 				adds an edge X->Y if X is in the Markov blanket of Y where the variable
 				set is restricted to Prefix(Y, pi).
             </span>
@@ -5027,7 +5200,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="recursive_short_desc">Yes if the algorithm should proceed recursively, no if not</span>
             </li>
-            <li>Long Description: <span id="recursive_long_desc">Where recursive or nonrecursive variants of an algorithm are available, this selects which one to use.</span>
+            <li>Long Description: <span id="recursive_long_desc">
+                Where recursive or nonrecursive variants of an algorithm are available, this selects which one to use.</span>
             </li>
             <li>Default Value: <span id="recursive_default_value">false</span></li>
             <li>Lower Bound: <span id="recursive_lower_bound"></span></li>
@@ -5039,7 +5213,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="orientTowardDConnections_short_desc">Yes if Richardson's step C (orient toward d-connection) should be used</span>
             </li>
-            <li>Long Description: <span id="orientTowardDConnections_long_desc">Please see the description of this algorithm in Thomas Richardson and Peter Spirtes in Chapter 7 of Computation, Causation, & Discovery by Glymour and Cooper eds.</span>
+            <li>Long Description: <span id="orientTowardDConnections_long_desc">
+                Please see the description of this algorithm in Thomas Richardson and Peter Spirtes in Chapter 7 of
+                Computation, Causation, & Discovery by Glymour and Cooper eds.</span>
             </li>
             <li>Default Value: <span id="orientTowardDConnections_default_value">true</span></li>
             <li>Lower Bound: <span id="orientTowardDConnections_lower_bound"></span></li>
@@ -5051,7 +5227,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="orientVisibleFeedbackLoops_short_desc">Yes if visible feedback loops should be oriented</span>
             </li>
-            <li>Long Description: <span id="orientVisibleFeedbackLoops_long_desc">Please see the description of this algorithm in Thomas Richardson and Peter Spirtes in Chapter 7 of Computation, Causation, & Discovery by Glymour and Cooper eds.</span>
+            <li>Long Description: <span id="orientVisibleFeedbackLoops_long_desc">
+                Please see the description of this algorithm in Thomas Richardson and Peter Spirtes in Chapter 7 of
+                Computation, Causation, & Discovery by Glymour and Cooper eds.</span>
             </li>
             <li>Default Value: <span id="orientVisibleFeedbackLoops_default_value">true</span></li>
             <li>Lower Bound: <span id="orientVisibleFeedbackLoops_lower_bound"></span></li>
@@ -5073,8 +5251,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="penaltyDiscount">penaltyDiscount</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="penaltyDiscount_short_desc">Penalty discount (min = 0.0)</span></li>
-            <li>Long Description: <span id="penaltyDiscount_long_desc">A BIC score is of the form 2L – k ln N, where L is the likelihood, k the number of degrees of freedom, and N the sample size. Tests based on this statistic can often yield too dense a graph; to compensate for this, we add a factor c, as follows: 2L – c k ln N, where usually c >= 1. If c is chosen to be greater than 1, say 2, the output graph will be sparser. We call this c the “penalty discount”; similar mechanisms have been proposed elsewhere.</span>
-            </li>
+            <li>Long Description: <span id="penaltyDiscount_long_desc">
+                The parameter c added to a modified BIC score of the form 2L – c k ln N, where L is the likelihood, k the number of degrees of freedom,
+                and N the sample size. Higher c yield sparser graphs.</li>
             <li>Default Value: <span id="penaltyDiscount_default_value">2.0</span></li>
             <li>Lower Bound: <span id="penaltyDiscount_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="penaltyDiscount_upper_bound">1.7976931348623157E308</span></li>
@@ -5155,7 +5334,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="parallelism_short_desc">The number of threads to use in the search</span>
             </li>
-            <li>Long Description: <span id="parallelism_long_desc">If this parameter is offered, it will control the number of threads used in the search for the sections of the search that can be parallelized.</span>
+            <li>Long Description: <span id="parallelism_long_desc">
+                If this parameter is offered, it will control the number of threads used in the search for the sections
+                of the search that can be parallelized.</span>
             </li>
             <li>Default Value: <span id="parallelism_default_value">1</span></li>
             <li>Lower Bound: <span id="parallelism_lower_bound">1</span></li>
@@ -5168,7 +5349,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="percentDiscrete_short_desc">Percentage of discrete variables (0 - 100) for mixed data</span>
             </li>
-            <li>Long Description: <span id="percentDiscrete_long_desc">For a mixed data type simulation, specifies the percentage of variables that should be simulated (randomly) as discrete. The rest will be taken to be continuous. The default is 0—i.e. no discrete variables.</span>
+            <li>Long Description: <span id="percentDiscrete_long_desc">
+                For a mixed data type simulation, specifies the percentage of variables that should be simulated (randomly)
+                as discrete. The rest will be taken to be continuous. The default is 0—i.e. no discrete variables.</span>
             </li>
             <li>Default Value: <span id="percentDiscrete_default_value">50.0</span></li>
             <li>Lower Bound: <span id="percentDiscrete_lower_bound">0.0</span></li>
@@ -5180,7 +5363,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="percentResampleSize_short_desc">The percentage of resample size (min = 0.1)</span></li>
-            <li>Long Description: <span id="percentResampleSize_long_desc">Each bootstrap iteration uses a certain portion of the data drawn randomly either with replacement or without replacement. This parameter specifies the percentage of records in the bootstrap (as a percentage of the total original sample size of the data being bootstrapped), in the range 1 to 100.</span>
+            <li>Long Description: <span id="percentResampleSize_long_desc">
+                This parameter specifies the percentage of records in the bootstrap (as a
+                percentage of the total original sample size of the data being bootstrapped).</span>
             </li>
             <li>Default Value: <span id="percentResampleSize_default_value">90</span></li>
             <li>Lower Bound: <span id="percentResampleSize_lower_bound">-2147483648</span></li>
@@ -5192,7 +5377,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="possibleDsepDone_short_desc">Yes if the possible dsep search should be done</span></li>
-            <li>Long Description: <span id="possibleDsepDone_long_desc">This algorithm has a possible d-sep path search, which can be time-consuming. See Spirtes, Glymour, and Scheines, Causation, Prediction and Search for details.</span>
+            <li>Long Description: <span id="possibleDsepDone_long_desc">
+                This algorithm has a possible d-sep path search, which can be time-consuming. See Spirtes, Glymour, and
+                Scheines (2000) for details.</span>
             </li>
             <li>Default Value: <span id="possibleDsepDone_default_value">true</span></li>
             <li>Lower Bound: <span id="possibleDsepDone_lower_bound"></span></li>
@@ -5204,7 +5391,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="probCycle_short_desc">The probability of adding a cycle to the graph</span>
             </li>
-            <li>Long Description: <span id="probCycle_long_desc">One way to add cycles to a graph is to pick a group of 3, 4, or 5 nodes and create a cycle between those variables. A graph may be constructed in this way consisting entirely of cycles, and this graph may then be used to test algorithms that should be able to handle cycles. This parameter sets the probability that any particular such set of nodes will be used to form a cycle in the graph.</span>
+            <li>Long Description: <span id="probCycle_long_desc">
+                Sets the probability that any particular set of 3, 4, or 5 of nodes will be used to
+                form a cycle in the graph.</span>
             </li>
             <li>Default Value: <span id="probCycle_default_value">1.0</span></li>
             <li>Lower Bound: <span id="probCycle_lower_bound">0.0</span></li>
@@ -5216,7 +5405,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="probTwoCycle_short_desc">The probability of creating a 2-cycles in the graph (0 - 1)</span>
             </li>
-            <li>Long Description: <span id="probTwoCycle_long_desc">The types of bases that we’re using here (Gaussian, Epinechnikov) have an infinite number of functions in them, but we’re only using a finite number of them, the most significant ones. This parameter specifies how many of the most significant basis functions to use. The default is 30.</span>
+            <li>Long Description: <span id="probTwoCycle_long_desc">
+                Any edge X*-*Y may be replaced with a 2-cycle (feedback loop) between X and Y with this probility.</span>
             </li>
             <li>Default Value: <span id="probTwoCycle_default_value">0.0</span></li>
             <li>Lower Bound: <span id="probTwoCycle_lower_bound">0.0</span></li>
@@ -5228,7 +5418,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="randomSelectionSize_short_desc">The number of datasets that should be taken in each random sample</span>
             </li>
-            <li>Long Description: <span id="randomSelectionSize_long_desc">This parameter is for algorithms that take multiple datasets as input, such as IMaGES. The idea is that maybe you have 100 dataset but want to take a random sample of 5 such datasets. This parameter, in this example, is ‘5’. It is the number of dataset that should be taken in each random sample of datasets.</span>
+            <li>Long Description: <span id="randomSelectionSize_long_desc">
+                The number of dataset that should be taken in each random sample of datasets.</span>
             </li>
             <li>Default Value: <span id="randomSelectionSize_default_value">1</span></li>
             <li>Lower Bound: <span id="randomSelectionSize_lower_bound">-2147483648</span></li>
@@ -5240,7 +5431,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="randomizeColumns_short_desc">Yes if the order of the columns in each datasets should be randomized</span>
             </li>
-            <li>Long Description: <span id="randomizeColumns_long_desc">It is usually the case that for graphs that are faithful to the true model the order of the columns in the dataset should not matter; you should always end up with the same model. However, in the real world where unfaithfulness is an issue this may not be true. To test the resilience of methods to random reordering of the columns in the data, set this parameter to “Yes”.</span>
+            <li>Long Description: <span id="randomizeColumns_long_desc">
+                In the real world where unfaithfulness is an issue the order of variables in the data may for some
+                algorithms affect the output. For testing purposes, if Yes, the data columns are randomly re-ordered.</span>
             </li>
             <li>Default Value: <span id="randomizeColumns_default_value">true</span></li>
             <li>Lower Bound: <span id="randomizeColumns_lower_bound"></span></li>
@@ -5263,7 +5456,11 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="resamplingEnsemble_short_desc">Ensemble method: Preserved (0), Highest (1), Majority (2)</span>
             </li>
-            <li>Long Description: <span id="resamplingEnsemble_long_desc">This parameter governs how summary graphs are generated based on graphs learned from individual bootstrap samples. If “Preserved”, an edge is kept and its orientation is chosen based on the highest probability. If “Highest”, an edge is kept the same way the preserved ensemble one does except when [no edge]'s probability is the highest one, then the edge is ignored. If “Majority”, the edge is kept only if its chosen orientations' probability is more than 0.5. </span>
+            <li>Long Description: <span id="resamplingEnsemble_long_desc">
+                Preserved = keep highest frequency edges; Highest = keep highest frequency edges but
+                ignore the no edge case if maximal; Majority = keep edges only if their frequency is
+                greater than 0.5.
+            </span>
             </li>
             <li>Default Value: <span id="resamplingEnsemble_default_value">0</span></li>
             <li>Lower Bound: <span id="resamplingEnsemble_lower_bound">0</span></li>
@@ -5275,7 +5472,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="resamplingWithReplacement_short_desc">Yes, if sampling with replacement (bootstrapping)</span>
             </li>
-            <li>Long Description: <span id="resamplingWithReplacement_long_desc">Resampling can be done with replacement or without replacement. If with replacement, it is possible to have more than one copy of some of the records in the original dataset being included in the bootstrap. This is what is usually meant by “bootstrap”. For this option, select “Yes” here. It is also possible to prevent repetitions and do so-called “random subsampling”; for this option, select “No” here.</span>
+            <li>Long Description: <span id="resamplingWithReplacement_long_desc">
+                Yes if resampling can be done with replacement, No if not. or without replacement. If with replacement, it is
+                possible to have more than one copy of some of the records in the original dataset being included
+                in the bootstrap.</span>
             </li>
             <li>Default Value: <span id="resamplingWithReplacement_default_value">true</span></li>
             <li>Lower Bound: <span id="resamplingWithReplacement_lower_bound"></span></li>
@@ -5287,7 +5487,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="priorEquivalentSampleSize_short_desc">Prior equivalent sample size (min = 1.0)</span>
             </li>
-            <li>Long Description: <span id="priorEquivalentSampleSize_long_desc">This sets the prior equivalent sample size. This number is added to the sample size for each conditional probability table in the model and is divided equally among the cells in the table. A prior of 15 (default) does well as optimizing the estimate of the output CPDAG; a prior of 5 will optimize the structural Hamming distance.</span>
+            <li>Long Description: <span id="priorEquivalentSampleSize_long_desc">
+                This sets the prior equivalent sample size. This number is added to the sample size for each
+                conditional probability table in the model and is divided equally among the cells in the table.
+            </span>
             </li>
             <li>Default Value: <span id="priorEquivalentSampleSize_default_value">10.0</span></li>
             <li>Lower Bound: <span id="priorEquivalentSampleSize_lower_bound">1.0</span></li>
@@ -5298,7 +5501,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="sampleSize">sampleSize</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="sampleSize_short_desc">Sample size (min = 1)</span></li>
-            <li>Long Description: <span id="sampleSize_long_desc">One of the main features of a dataset is the number of records in the data, or sample size, or N. When simulating random data, this parameter determines now many records should be generated for the data. The minimum number of records is 1; the default is set to 1000.</span>
+            <li>Long Description: <span id="sampleSize_long_desc">
+                Ddetermines now many records should be generated for the data.
+                The minimum number of records is 1; the default is set to 1000.</span>
             </li>
             <li>Default Value: <span id="sampleSize_default_value">1000</span></li>
             <li>Lower Bound: <span id="sampleSize_lower_bound">1</span></li>
@@ -5309,7 +5514,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="saveLatentVars">saveLatentVars</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="saveLatentVars_short_desc">Save latent variables.</span></li>
-            <li>Long Description: <span id="saveLatentVars_long_desc">When saving datasets, even though latent variables in simulation are supposed to be left out of the data, if one wishes to see what values those latent variables took on, one may opt to save the latent variables out with the rest of the data.</span>
+            <li>Long Description: <span id="saveLatentVars_long_desc">
+                Yes if one wishes to have values for latent variables saved out with the rest of the data;
+                No if only data for the measured variables should be saved.</span>
             </li>
             <li>Default Value: <span id="saveLatentVars_default_value">false</span></li>
             <li>Lower Bound: <span id="saveLatentVars_lower_bound"></span></li>
@@ -5321,7 +5528,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="scaleFreeAlpha_short_desc">For scale-free graphs, the parameter alpha (min = 0.0)</span>
             </li>
-            <li>Long Description: <span id="scaleFreeAlpha_long_desc">We use the algorithm for generating scale free graphs described in B. Bollobas,C. Borgs, J. Chayes, and O. Riordan, Directed scale-free graphs, Proceedings of the fourteenth annual ACM-SIAM symposium on Discrete algorithms, 132--139, 2003. Please see this article for a description of the parameters.</span>
+            <li>Long Description: <span id="scaleFreeAlpha_long_desc">
+                We use the algorithm for generating scale free graphs described in B. Bollobas,C. Borgs, J. Chayes,
+                and O. Riordan (2003). Please see this article for a description of the parameters.</span>
             </li>
             <li>Default Value: <span id="scaleFreeAlpha_default_value">0.05</span></li>
             <li>Lower Bound: <span id="scaleFreeAlpha_lower_bound">0.0</span></li>
@@ -5333,7 +5542,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="scaleFreeBeta_short_desc">For scale-free graphs, the parameter beta (min = 0.0)</span>
             </li>
-            <li>Long Description: <span id="scaleFreeBeta_long_desc">We use the algorithm for generating scale free graphs described in B. Bollobas,C. Borgs, J. Chayes, and O. Riordan, Directed scale-free graphs, Proceedings of the fourteenth annual ACM-SIAM symposium on Discrete algorithms, 132--139, 2003. Please see this article for a description of the parameters.</span>
+            <li>Long Description: <span id="scaleFreeBeta_long_desc">
+                We use the algorithm for generating scale free graphs described in B. Bollobas,C. Borgs, J. Chayes, and
+                O. Riordan (2003). Please see this article for a description of the parameters.</span>
             </li>
             <li>Default Value: <span id="scaleFreeBeta_default_value">0.9</span></li>
             <li>Lower Bound: <span id="scaleFreeBeta_lower_bound">0.0</span></li>
@@ -5345,7 +5556,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="scaleFreeDeltaIn_short_desc">For scale-free graphs, the parameter delta_in (min = 0.0)</span>
             </li>
-            <li>Long Description: <span id="scaleFreeDeltaIn_long_desc">We use the algorithm for generating scale free graphs described in B. Bollobas,C. Borgs, J. Chayes, and O. Riordan, Directed scale-free graphs, Proceedings of the fourteenth annual ACM-SIAM symposium on Discrete algorithms, 132--139, 2003. Please see this article for a description of the parameters.</span>
+            <li>Long Description: <span id="scaleFreeDeltaIn_long_desc">
+                We use the algorithm for generating scale free graphs described in B. Bollobas,C. Borgs, J. Chayes, and
+                O. Riordan (2003). Please see this article for a description of the parameters.</span>
             </li>
             <li>Default Value: <span id="scaleFreeDeltaIn_default_value">3</span></li>
             <li>Lower Bound: <span id="scaleFreeDeltaIn_lower_bound">-2147483648</span></li>
@@ -5357,7 +5570,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="scaleFreeDeltaOut_short_desc">For scale-free graphs, the parameter delta_out (min = 0.0)</span>
             </li>
-            <li>Long Description: <span id="scaleFreeDeltaOut_long_desc">We use the algorithm for generating scale free graphs described in B. Bollobas,C. Borgs, J. Chayes, and O. Riordan, Directed scale-free graphs, Proceedings of the fourteenth annual ACM-SIAM symposium on Discrete algorithms, 132--139, 2003. Please see this article for a description of the parameters.</span>
+            <li>Long Description: <span id="scaleFreeDeltaOut_long_desc">
+                We use the algorithm for generating scale free graphs described in B. Bollobas,C. Borgs, J. Chayes, and
+                O. Riordan (2003). Please see this article for a description of the parameters.</span>
             </li>
             <li>Default Value: <span id="scaleFreeDeltaOut_default_value">3</span></li>
             <li>Lower Bound: <span id="scaleFreeDeltaOut_lower_bound">-2147483648</span></li>
@@ -5369,7 +5584,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="selfLoopCoef_short_desc">The coefficient for the self-loop (default 0.0)</span></li>
-            <li>Long Description: <span id="selfLoopCoef_long_desc">For simulation time series data, each variable depends on itself one time-step back with a linear edge that has this coefficient.</span>
+            <li>Long Description: <span id="selfLoopCoef_long_desc">
+                For simulating time series data, each variable depends on itself one time-step back with a linear edge that has this coefficient.</span>
             </li>
             <li>Default Value: <span id="selfLoopCoef_default_value">0.0</span></li>
             <li>Lower Bound: <span id="selfLoopCoef_lower_bound">0.0</span></li>
@@ -5382,11 +5598,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="semBicRule_short_desc">
                 Lambda: 1 = Chickering, 2 = Nandy</span>
             </li>
-            <li>Long Description: <span id="semBicRule_long_desc">The Chickering Rule is the local scoring consistency
-                criterion in Chickering's formulation of GES, which is a difference of BIC scores, though we allow a
-                multiplier on the penalty term called "penalty discount".
-                The Nandy et al. rule is a reformulation of the Chickering rule using a single calculation
-                of a partial correlation in place of the likelihood difference.
+            <li>Long Description: <span id="semBicRule_long_desc">The Chickering Rule uses a the difference of BIC
+                scores to add or remove edges. The Nandy et al. rule uses a single calculation of a partial correlation
+                in place of the likelihood difference.
             </span>
             </li>
             <li>Default Value: <span id="semBicRule_default_value">1</span></li>
@@ -5401,10 +5615,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
                 Lambda: 1 = ln n, 2 = pn^1/3, 3 = 2 ln pn, 4 = 2(ln pn + ln ln pn), 5 = ln ln n ln pn, 6 = ln n ln pn, 7 = Manual</span>
             </li>
             <li>Long Description: <span id="semGicRule_long_desc">The rule used for calculating the lambda term
-                of the score. a score. We follow Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection criteria
-                on high dimensions. The Journal of Machine Learning Research, 13(1), 1037-1057 and articles
-                referenced therein. The selling point for these scores is that with large numbers of variables,
-                if the density is not too high, adjacency precision will be kept in check.
+                of the score. We follow Kim, Y., Kwon, S., & Choi, H. (2012) and articles
+                referenced therein. For high-dimensional data.
             </span>
             </li>
             <li>Default Value: <span id="semGicRule_default_value">4</span></li>
@@ -5431,7 +5643,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="skipNumRecords_short_desc">Number of records that should be skipped between recordings (min = 0)</span>
             </li>
-            <li>Long Description: <span id="skipNumRecords_long_desc">This is a parameter for the linear Fisher option. The idea of Fisher model (for the linear case) is to shock the system every so often and let it converge by applying the rules of transformation (that is, the linear model) repeatedly until convergence. Data recordings are made every so many steps. This is an additional parameter indicating how many data recordings are skipped before actually inserting a record into the returned dataset. This is useful to test the reaction of a method to missing time steps.</span>
+            <li>Long Description: <span id="skipNumRecords_long_desc">
+                Data recordings are made every this many steps.</span>
             </li>
             <li>Default Value: <span id="skipNumRecords_default_value">0</span></li>
             <li>Lower Bound: <span id="skipNumRecords_lower_bound">0</span></li>
@@ -5442,7 +5655,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="stableFAS">stableFAS</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="stableFAS_short_desc">Yes if the 'stable' FAS should be done</span></li>
-            <li>Long Description: <span id="stableFAS_long_desc">In Colombo, D., & Maathuis, M. H. (2014, Order-independent constraint-based causal structure learning, The Journal of Machine Learning Research, 15(1), 3741-3782), a modification of the adjacency search of PC was proposed that results in invariance under order permutations of the variables in the data. If this parameter is set to ‘Yes’, this version of the PC adjacency search is used.</span>
+            <li>Long Description: <span id="stableFAS_long_desc">
+                If Yes, the "stable" version of the PC adjacency search is used, which for k > 0
+                fixes the graph for depth k + 1 to that of the previous depth k.
+            </span>
             </li>
             <li>Default Value: <span id="stableFAS_default_value">true</span></li>
             <li>Lower Bound: <span id="stableFAS_lower_bound"></span></li>
@@ -5453,7 +5669,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="standardize">standardize</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="standardize_short_desc">Yes if the data should be standardized</span></li>
-            <li>Long Description: <span id="standardize_long_desc">An operation one often wants to perform on a dataset is to standardize each of its variables by subtracting the mean and dividing the standard deviation. This yields a dataset in which each variable has mean zero and unit variance. If this parameter is set to ‘Yes’, this operation will be performed on the simulated dataset.</span>
+            <li>Long Description: <span id="standardize_long_desc">
+                Yes if each varaibles in the data should be standardized to have mean zero and variance 1.
+            </span>
             </li>
             <li>Default Value: <span id="standardize_default_value">false</span></li>
             <li>Lower Bound: <span id="standardize_lower_bound"></span></li>
@@ -5465,7 +5683,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="structurePrior_short_desc">Structure prior coefficient (min = 0.0)</span>
             </li>
-            <li>Long Description: <span id="structurePrior_long_desc">For Tetrad, we use as a structure prior the default number of parents for any conditional probability table. Higher weight is accorded to tables with about that number of parents. The prior structure weights are distributed according to a binomial distribution.</span>
+            <li>Long Description: <span id="structurePrior_long_desc">
+                For Tetrad, we use as a structure prior the default number of parents for any conditional probability
+                table. Higher weight is accorded to tables with about that number of parents. The prior structure weights
+                are distributed according to a binomial distribution.</span>
             </li>
             <li>Default Value: <span id="structurePrior_default_value">1.0</span></li>
             <li>Lower Bound: <span id="structurePrior_lower_bound">0</span></li>
@@ -5477,7 +5698,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="symmetricFirstStep_short_desc">Yes if the first step step for FGES should do scoring for both X->Y and Y->X</span>
             </li>
-            <li>Long Description: <span id="symmetricFirstStep_long_desc">For discrete searches, and in some other situations, it may make a difference for an edge X—Y whether you score X->Y or X<-Y, even though theoretically they should have the same score. If this parameter is set to “Yes”, both scores will be calculated and the higher score used. (Recall we are calculating BIC as 2L – c k ln N, where c is the penalty discount.)</span>
+            <li>Long Description: <span id="symmetricFirstStep_long_desc">
+                If Yes, scores for both X->Y and X<-Y will be calculated and the higher score used.</span>
             </li>
             <li>Default Value: <span id="symmetricFirstStep_default_value">false</span></li>
             <li>Lower Bound: <span id="symmetricFirstStep_lower_bound"></span></li>
@@ -5488,7 +5710,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="targetName">targetName</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="targetName_short_desc">Target variable name</span></li>
-            <li>Long Description: <span id="targetName_long_desc">This parameter is for searches, such as Markov blanket searches, that require a target variable. In the case of a Markov blanket search, one is searching the graph over the Markov blanket of some target variable named V—this parameter specifies the name ‘V’.</span>
+            <li>Long Description: <span id="targetName_long_desc">
+                The name of the target variables--for Markov blanket searches, this is the name of the variable
+                for which one wants the Markov blanket or Markov blanket graph.
+            </span>
             </li>
             <li>Default Value: <span id="targetName_default_value"></span></li>
             <li>Lower Bound: <span id="targetName_lower_bound"></span></li>
@@ -5512,7 +5737,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="thr">thr</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="thr_short_desc">THR parameter (GLASSO) (min = 0.0)</span></li>
-            <li>Long Description: <span id="thr_long_desc">The R Fortan implementation of GLASSO (https://CRAN.R-project.org/package=glasso) includes a number of parameters, of which this is one. This is the maximum number of iterations of the optimization loop.</span>
+            <li>Long Description: <span id="thr_long_desc">
+                Sets the maximum number of iterations of the optimization loop.</span>
             </li>
             <li>Default Value: <span id="thr_default_value">1.0E-4</span></li>
             <li>Lower Bound: <span id="thr_lower_bound">0.0</span></li>
@@ -5522,9 +5748,12 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="thresholdForNumEigenvalues">thresholdForNumEigenvalues</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="thresholdForNumEigenvalues_short_desc">Threshold to determine how many eigenvalues to use--the lower the more (0 to 1)</span>
+            <li>Short Description: <span id="thresholdForNumEigenvalues_short_desc">
+                Threshold to determine how many eigenvalues to use--the lower the more (0 to 1)</span>
             </li>
-            <li>Long Description: <span id="thresholdForNumEigenvalues_long_desc">We have a number of parameters here for the Kernel Conditional Independence Test (KCI). In order to understand the parameters, it is necessary to read the paper on which this test is based, here: Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence test and application in causal discovery. arXiv preprint arXiv:1202.3775. This parameter is the threshold to determine how many eigenvalues to use--the lower the more (0 to 1). The default value is 0.001; it must be a positive real number.</span>
+            <li>Long Description: <span id="thresholdForNumEigenvalues_long_desc">
+                Referring to Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012), this parameter is the
+                threshold to determine how many eigenvalues to use--the lower the more (0 to 1).</span>
             </li>
             <li>Default Value: <span id="thresholdForNumEigenvalues_default_value">0.001</span></li>
             <li>Lower Bound: <span id="thresholdForNumEigenvalues_lower_bound">0.0</span></li>
@@ -5534,9 +5763,11 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="thresholdNoRandomConstrainSearch">thresholdNoRandomConstrainSearch</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="thresholdNoRandomConstrainSearch_short_desc">Yes, if use the cutoff threshold for the meta-constraints independence test (stage 2).</span>
+            <li>Short Description: <span id="thresholdNoRandomConstrainSearch_short_desc">
+                Yes, if use the cutoff threshold for the meta-constraints independence test (stage 2).</span>
             </li>
-            <li>Long Description: <span id="thresholdNoRandomConstrainSearch_long_desc">null</span></li>
+            <li>Long Description: <span id="thresholdNoRandomConstrainSearch_long_desc">
+                Yes, if use the cutoff threshold for the meta-constraints independence test (stage 2).</span></li>
             <li>Default Value: <span id="thresholdNoRandomConstrainSearch_default_value">true</span></li>
             <li>Lower Bound: <span id="thresholdNoRandomConstrainSearch_lower_bound"></span></li>
             <li>Upper Bound: <span id="thresholdNoRandomConstrainSearch_upper_bound"></span></li>
@@ -5545,7 +5776,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="thresholdNoRandomDataSearch">thresholdNoRandomDataSearch</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="thresholdNoRandomDataSearch_short_desc">Yes, if use the cutoff threshold for the constraints independence test (stage 1).</span>
+            <li>Short Description: <span id="thresholdNoRandomDataSearch_short_desc">
+                Yes, if use the cutoff threshold for the constraints independence test (stage 1).</span>
             </li>
             <li>Long Description: <span id="thresholdNoRandomDataSearch_long_desc">null</span></li>
             <li>Default Value: <span id="thresholdNoRandomDataSearch_default_value">false</span></li>
@@ -5557,7 +5789,9 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <h3 class="parameter_description" id="twoCycleAlpha">twoCycleAlpha</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="twoCycleAlpha_short_desc">Alpha orienting 2-cycles (min = 0.0)</span></li>
-            <li>Long Description: <span id="twoCycleAlpha_long_desc">The alpha level of a T-test used to determine where 2-cycles exist in the graph. A value of zero turns off 2-cycle detection. </span>
+            <li>Long Description: <span id="twoCycleAlpha_long_desc">
+                The alpha level of a T-test used to determine where 2-cycles exist in the graph. A value of zero turns
+                off 2-cycle detection. </span>
             </li>
             <li>Default Value: <span id="twoCycleAlpha_default_value">0.0</span></li>
             <li>Lower Bound: <span id="twoCycleAlpha_lower_bound">0.0</span></li>
@@ -5582,7 +5816,7 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="adjustOrientations_short_desc">Yes, if the orientation adjustment step should be included</span>
             </li>
-            <li>Long Description: <span id="adjustOrientations_long_desc">null</span></li>
+            <li>Long Description: <span id="adjustOrientations_long_desc">Yes, if the orientation adjustment step should be included</span></li>
             <li>Default Value: <span id="adjustOrientations_default_value">false</span></li>
             <li>Lower Bound: <span id="adjustOrientations_lower_bound"></span></li>
             g
@@ -5604,7 +5838,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="useCorrDiffAdjacencies_short_desc">Yes if adjacencies from conditional correlation differences should be used</span>
             </li>
-            <li>Long Description: <span id="useCorrDiffAdjacencies_long_desc">FASK can use adjacencies X—Y where |corr(X,Y|X>0) – corr(X,Y|Y>0)| > threshold. This expression will be nonzero only if there is a path between X and Y; heuristically, if the difference is greater than, say, 0.3, we infer an adjacency. To see adjacencies included for this reason, set this parameter to “Yes”. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
+            <li>Long Description: <span id="useCorrDiffAdjacencies_long_desc">
+                FASK can use adjacencies X—Y where |corr(X,Y|X>0) – corr(X,Y|Y>0)| > threshold. This expression will be
+                nonzero only if there is a path between X and Y; heuristically, if the difference is greater than,
+                say, 0.3, we infer an adjacency.</span>
             </li>
             <li>Default Value: <span id="useCorrDiffAdjacencies_default_value">true</span></li>
             <li>Lower Bound: <span id="useCorrDiffAdjacencies_lower_bound"></span></li>
@@ -5616,7 +5853,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="useFasAdjacencies_short_desc">Yes if adjacencies from the FAS search (correlation) should be used</span>
             </li>
-            <li>Long Description: <span id="useFasAdjacencies_long_desc">Determines whether adjacencies found by conditional correlation should be included in the final model.</span>
+            <li>Long Description: <span id="useFasAdjacencies_long_desc">
+                Determines whether adjacencies found by conditional correlation should be included in the final model.</span>
             </li>
             <li>Default Value: <span id="useFasAdjacencies_default_value">true</span></li>
             <li>Lower Bound: <span id="useFasAdjacencies_lower_bound"></span></li>
@@ -5628,7 +5866,8 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="semImSimulationType_short_desc">Yes if recursive simulation, No if reduced form simulation</span>
             </li>
-            <li>Long Description: <span id="semImSimulationType_long_desc">Determines the type of simulation done. If recursive, the graph must be a DAG in causal order.
+            <li>Long Description: <span id="semImSimulationType_long_desc">
+                Determines the type of simulation done. If recursive, the graph must be a DAG in causal order.
             "Reduced form" means X = (I - B)^-1 e, which requires a possibly large matrix inversion.</span>
             </li>
             <li>Default Value: <span id="semImSimulationType_default_value">true</span></li>
@@ -5687,7 +5926,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
         <ul class="parameter_description_list">
             <li>Short Description: <span id="useGap_short_desc">Yes if the GAP algorithms should be used. No if the SAG algorithm should be used</span>
             </li>
-            <li>Long Description: <span id="useGap_long_desc">This is a parameter for FOFC (Find One Factor Clusters). There are two procedures implemented for growing pure clusters of variables. In principle they give the same answer, but in practice they could give different answers. The first is GAP, “Grow and Pick”, where you specify all the possible initial sets, grown them all to their maximum sizes, and pick a set of non-overlapping such largest sets from these. The second is SAG, “Seed and Grow”, where you grow pure clusters one at a time, excluding variables found in earlier clusters from showing up in later ones. This parameter specifies which of these algorithms should be used, ‘Yes’ for GAP, ‘No’ for SAG.</span>
+            <li>Long Description: <span id="useGap_long_desc">
+                True if one should first find all possible initial sets, grows these out, and then picks a
+                non-overlapping such largest sets from these. No if one should grow pure clusters one at a time,
+                excluding variables found in earlier clusters.</span>
             </li>
             <li>Default Value: <span id="useGap_default_value">false</span></li>
             <li>Lower Bound: <span id="useGap_lower_bound"></span></li>
@@ -5700,8 +5942,10 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Short Description: <span id="useMaxPOrientationHeuristic_short_desc">Yes if the heuristic for orienting unshielded colliders for max P should be used</span>
             </li>
             <li>Long Description: <span id="useMaxPOrientationHeuristic_long_desc">
-The “Max P” method for orienting an unshielded triple X—Y—Z records p-values for X _||_ Z | S for all S in adj(X) or adj(Z), finds the set S0 with the highest p-value, and orients X->Y<-Z just in case Y is not in S0. Another way to do the orientation if X and Z are only weakly dependent, is to simply see whether the p-value for X _||_ Z | Y is greater than the p-value for X _||_ Z. This is the “heuristic” referred to her; the purpose is to speed up the search.
-</span></li>
+                Another way to do the orientation if X and Z are only weakly dependent, is to simply
+                see whether the p-value for X _||_ Z | Y is greater than the p-value for X _||_ Z.
+                The purpose is to speed up the search.
+            </span></li>
             <li>Default Value: <span id="useMaxPOrientationHeuristic_default_value">false</span></li>
             <li>Lower Bound: <span id="useMaxPOrientationHeuristic_lower_bound"></span></li>
             <li>Upper Bound: <span id="useMaxPOrientationHeuristic_upper_bound"></span></li>
@@ -5712,7 +5956,11 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         <ul class="parameter_description_list">
             <li>Short Description: <span id="useSkewAdjacencies_short_desc">Yes if adjacencies based on skewness should be used</span>
             </li>
-            <li>Long Description: <span id="useSkewAdjacencies_long_desc">FASK can use adjacencies X—Y where |corr(X,Y|X>0) – corr(X,Y|Y>0)| > threshold. This expression will be nonzero only if there is a path between X and Y; heuristically, if the difference is greater than, say, 0.3, we infer an adjacency. To see adjacencies included for this reason, set this parameter to “Yes”. Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
+            <li>Long Description: <span id="useSkewAdjacencies_long_desc">
+                FASK can use adjacencies X—Y where |corr(X,Y|X>0) – corr(X,Y|Y>0)| > threshold. This expression will be
+                nonzero only if there is a path between X and Y; heuristically, if the difference is greater than, say,
+                0.3, we infer an adjacency. To see adjacencies included for this reason, set this parameter to “Yes”.
+                Sanchez-Romero, Ramsey et al., (2018) Network Neuroscience.</span>
             </li>
             <li>Default Value: <span id="useSkewAdjacencies_default_value">true</span></li>
             <li>Lower Bound: <span id="useSkewAdjacencies_lower_bound"></span></li>
@@ -5724,7 +5972,10 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         <ul class="parameter_description_list">
             <li>Short Description: <span id="useWishart_short_desc">Yes if the Wishart test shoud be used. No if the Delta test should be used</span>
             </li>
-            <li>Long Description: <span id="useWishart_long_desc">This is a parameter for the FOFC (Find One Factor Clusters) algorithm. There are two tests implemented there for testing for tetrads being zero, Wishart and Delta. This parameter picks which of these tests should be use: ‘Yes’ for Wishart and ‘No’ for Delta.</span>
+            <li>Long Description: <span id="useWishart_long_desc">
+                This is a parameter for the FOFC (Find One Factor Clusters) algorithm. There are two tests implemented
+                there for testing for tetrads being zero, Wishart and Delta. This parameter picks which of these tests
+                should be use: ‘Yes’ for Wishart and ‘No’ for Delta.</span>
             </li>
             <li>Default Value: <span id="useWishart_default_value">false</span></li>
             <li>Lower Bound: <span id="useWishart_lower_bound"></span></li>
@@ -5735,7 +5986,8 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         <h3 class="parameter_description" id="varHigh">varHigh</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="varHigh_short_desc">High end of variance range (min = 0.0)</span></li>
-            <li>Long Description: <span id="varHigh_long_desc">When simulating data from linear models, one needs to specify the distribution of the variance parameters. Here, we draw coefficients from U(v1, v2); v2 is what is being called the “high end of the variance range” and must be greater than v1. The default value is 3.0.</span>
+            <li>Long Description: <span id="varHigh_long_desc">
+                The parameter 'b' for drawing independent variance values, from +U(a, b).
             </li>
             <li>Default Value: <span id="varHigh_default_value">3.0</span></li>
             <li>Lower Bound: <span id="varHigh_lower_bound">0.0</span></li>
@@ -5746,7 +5998,9 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         <h3 class="parameter_description" id="varLow">varLow</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="varLow_short_desc">Low end of variance range (min = 0.0)</span></li>
-            <li>Long Description: <span id="varLow_long_desc">When simulating data from linear models, one needs to specify the distribution of the variance parameters. Here, we draw coefficients from U(v1, v2); v1 is what is being called the “low end of the variance range” and has a minimum 0. The default value is 1.0.</span>
+            <li>Long Description: <span id="varLow_long_desc">
+                The parameter 'a' for drawing independent variance values, from +U(a, b).
+            </span>
             </li>
             <li>Default Value: <span id="varLow_default_value">1.0</span></li>
             <li>Lower Bound: <span id="varLow_lower_bound">0.0</span></li>
@@ -5758,7 +6012,9 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="verbose_short_desc">Yes if verbose output should be printed or logged</span></li>
-            <li>Long Description: <span id="verbose_long_desc">If this parameter is set to ‘Yes’, extra (“verbose”) output will be printed if available giving some details about the step-by-step operation of the algorithm.</span>
+            <li>Long Description: <span id="verbose_long_desc">
+                If this parameter is set to ‘Yes’, extra (“verbose”) output will be printed if available giving some
+                details about the step-by-step operation of the algorithm.</span>
             </li>
             <li>Default Value: <span id="verbose_default_value">true</span></li>
             <li>Lower Bound: <span id="verbose_lower_bound"></span></li>
@@ -5771,7 +6027,8 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
             <li>Short Description: <span
                     id="meekVerbose_short_desc">Yes if verbose output for Meek rule applications should be printed or logged</span>
             </li>
-            <li>Long Description: <span id="meekVerbose_long_desc">If this parameter is set to ‘Yes’, Meek rule appications will be printed out to the log.</span>
+            <li>Long Description: <span id="meekVerbose_long_desc">
+                If this parameter is set to ‘Yes’, Meek rule appications will be printed out to the log.</span>
             </li>
             <li>Default Value: <span id="meekVerbose_default_value">false</span></li>
             <li>Lower Bound: <span id="meekVerbose_lower_bound"></span></li>
@@ -5822,7 +6079,10 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
         <ul class="parameter_description_list">
             <li>Short Description: <span id="include_structure_model_short_desc">Yes if the (MimBuild) stucture model should be included in the output graph</span>
             </li>
-            <li>Long Description: <span id="include_structure_model_long_desc">FOFC proper yields a measurement model--that is, a set of pure children for each of the discovered latents. One can estimate the structure over the latents (the structure model) using Mimbuild. This struture model is included in the output if this parameter is set to Yes.</span>
+            <li>Long Description: <span id="include_structure_model_long_desc">
+                FOFC proper yields a measurement model--that is, a set of pure children for each of the discovered latents.
+                One can estimate the structure over the latents (the structure model) using Mimbuild. This struture model
+                is included in the output if this parameter is set to Yes.</span>
             </li>
             <li>Default Value: <span id="include_structure_model_default_value">true</span></li>
             <li>Lower Bound: <span id="include_structure_model_lower_bound"></span></li>
@@ -6132,6 +6392,8 @@ The “Max P” method for orienting an unshielded triple X—Y—Z records p-va
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
+
 
 
 

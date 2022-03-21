@@ -29,7 +29,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK-PW",
-        command = "faskpw",
+        command = "fask-pw",
         algoType = AlgType.orient_pairwise,
         dataType = DataType.Continuous
 )

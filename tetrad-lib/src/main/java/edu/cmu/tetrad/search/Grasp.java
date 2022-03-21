@@ -4,9 +4,11 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.NumberFormat;
 import java.util.*;
 
 import static java.util.Collections.shuffle;
@@ -277,7 +279,9 @@ public class Grasp {
     public Graph getGraph(boolean cpDag) {
         if (scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
         Graph graph = scorer.getGraph(cpDag);
-        graph.addAttribute("# edges", graph.getNumEdges());
+
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        graph.addAttribute("score ", nf.format(scorer.score()));
         return graph;
     }
 
