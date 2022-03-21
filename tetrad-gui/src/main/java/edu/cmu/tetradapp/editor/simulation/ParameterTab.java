@@ -45,6 +45,7 @@ public class ParameterTab extends JPanel {
 
     private static final String[] GRAPH_ITEMS = new String[]{
             GraphTypes.RANDOM_FOWARD_DAG,
+            GraphTypes.ERDOS_RENYI_DAG,
             GraphTypes.SCALE_FREE_DAG,
             GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS,
             GraphTypes.RANDOM_ONE_FACTOR_MIM,
@@ -124,6 +125,9 @@ public class ParameterTab extends JPanel {
             switch (graphItem) {
                 case GraphTypes.RANDOM_FOWARD_DAG:
                     randomGraph = new RandomForward();
+                    break;
+                case GraphTypes.ERDOS_RENYI_DAG:
+                    randomGraph = new ErdosRenyi();
                     break;
                 case GraphTypes.SCALE_FREE_DAG:
                     randomGraph = new ScaleFree();
@@ -235,13 +239,7 @@ public class ParameterTab extends JPanel {
     private Box createSimulationButtonBox() {
         Dimension buttonSize = new Dimension(268, 25);
 
-        JButton button;
-
-        if (simulation.getSimulation().getNumDataModels() == 0) {
-            button = new JButton("Simulate");
-        } else {
-            button = new JButton("Re-simulate");
-        }
+        JButton button = new JButton("Simulate");
 
         button.setMinimumSize(buttonSize);
         button.setMaximumSize(buttonSize);

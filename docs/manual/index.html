@@ -4652,8 +4652,11 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
 
         <h3 class="parameter_description" id="numLatents">numLatents</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="numLatents_short_desc">Number of latent variables (min = 0)</span></li>
-            <li>Long Description: <span id="numLatents_long_desc">A latent (or ‘unmeasured’) variable is one for which values are not recorded in the dataset being analyzed. These are variables that affect the measured variables but which are not included in the final dataset. This situation comes up frequently when analyzing real data, so it is important to be able to generate random datasets with this feature, in order to see how the algorithms react to the existence of latent variables. Some algorithms, like FCI, FFCI, FOFC, FTFC, and such, are correct when some variables not measured affect the data.</span>
+            <li>Short Description: <span id="numLatents_short_desc">Number of additional latent variables (min = 0)</span></li>
+            <li>Long Description: <span id="numLatents_long_desc">
+                A latent (or ‘unmeasured’) variable is one for which values are not recorded in the dataset being analyzed.
+                These are additional variable in the graph.
+               </span>
             </li>
             <li>Default Value: <span id="numLatents_default_value">0</span></li>
             <li>Lower Bound: <span id="numLatents_lower_bound">0</span></li>
@@ -4670,6 +4673,17 @@ Usually covariance values are chosen from U(-b, -a) U U(a, b) for some a, b; thi
             <li>Lower Bound: <span id="numMeasures_lower_bound">1</span></li>
             <li>Upper Bound: <span id="numMeasures_upper_bound">2147483647</span></li>
             <li>Value Type: <span id="numMeasures_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="probabilityOfEdge">probabilityOfEdge</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="probabilityOfEdge_short_desc">The probability, p, of an edge occurring in the graph</span></li>
+            <li>Long Description: <span id="probabilityOfEdge_long_desc">For and Erdos-Renyi graph, edges are included in the graph out of all possible edges with some fixed probability; the number of edges in the graph is not fixed.</span>
+            </li>
+            <li>Default Value: <span id="probabilityOfEdge_default_value">0.05</span></li>
+            <li>Lower Bound: <span id="probabilityOfEdge_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="probabilityOfEdge_upper_bound">1.0</span></li>
+            <li>Value Type: <span id="probabilityOfEdge_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description" id="numRandomizedSearchModels">numRandomizedSearchModels</h3>

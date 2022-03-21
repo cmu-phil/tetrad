@@ -132,6 +132,7 @@ public final class Params {
     public static final String NUM_LAGS = "numLags";
     public static final String NUM_LATENTS = "numLatents";
     public static final String NUM_MEASURES = "numMeasures";
+    public static final String PROBABILITY_OF_EDGE = "probabilityOfEdge";
     public static final String NUM_RANDOMIZED_SEARCH_MODELS = "numRandomizedSearchModels";
     public static final String NUM_RUNS = "numRuns";
     public static final String NUM_STRUCTURAL_EDGES = "numStructuralEdges";

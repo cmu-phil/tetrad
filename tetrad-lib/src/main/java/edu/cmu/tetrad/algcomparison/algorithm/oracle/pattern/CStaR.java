@@ -69,6 +69,11 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
 
         final LinkedList<LinkedList<Cstar.Record>> allRecords
                 = cStaR.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, test.getTest(dataSet, parameters));
+
+        if (allRecords.isEmpty()) {
+            throw new IllegalStateException("There were no records.");
+        }
+
         this.records = allRecords.getLast();
 
         System.out.println(cStaR.makeTable(this.getRecords(), false));

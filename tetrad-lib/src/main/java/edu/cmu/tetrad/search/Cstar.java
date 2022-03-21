@@ -35,7 +35,7 @@ public class Cstar {
     private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private IndependenceTest test;
 
-    private PatternAlgorithm patternAlgorithm = PatternAlgorithm.FGES;
+    private PatternAlgorithm patternAlgorithm = PatternAlgorithm.PC_STABLE;
     private SampleStyle sampleStyle = SampleStyle.BOOTSTRAP;
 
     private boolean verbose = false;
@@ -197,7 +197,7 @@ public class Cstar {
         } else if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof ConditionalGaussianScore) {
             this.test = test;
         } else {
-            throw new IllegalArgumentException("That test is not configured.");
+            throw new IllegalArgumentException("Expecting Fisher Z, Chi Square, Sem BIC, or Conditional Gaussian Score.");
         }
 
         List<Node> augmented = new ArrayList<>(possibleEffects);
