@@ -31,20 +31,36 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.KnowledgeBoxInput;
+import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.ImpliedOrientation;
+import edu.cmu.tetrad.search.IndTestScore;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -88,7 +104,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
     }
 
@@ -97,8 +113,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource,
-                                  KnowledgeBoxModel knowledgeBoxModel,
-                                  Parameters parameters) {
+            KnowledgeBoxModel knowledgeBoxModel,
+            Parameters parameters) {
         this(dataWrapper, graphSource, parameters, knowledgeBoxModel, null);
     }
 
@@ -108,7 +124,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
+            KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, facts);
     }
 
@@ -123,13 +139,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
     }
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
-                                  Parameters parameters) {
+            Parameters parameters) {
         this(dataWrapper, graphSource, parameters, null, null);
         this.algorithm = runner.algorithm;
     }
@@ -140,8 +156,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
-                                  Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            Parameters parameters,
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, graphSource, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
     }
@@ -155,12 +171,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(null, graphSource, parameters, knowledgeBoxModel, null);
     }
 
     public GeneralAlgorithmRunner(IndependenceFactsModel model,
-                                  Parameters parameters, KnowledgeBoxModel knowledgeBoxModel) {
+            Parameters parameters, KnowledgeBoxModel knowledgeBoxModel) {
         this(null, null, parameters, knowledgeBoxModel, model);
     }
 
@@ -177,7 +193,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
+            KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
         if (parameters == null) {
             throw new NullPointerException();
         }
@@ -265,7 +281,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                             .map(e -> (DataSet) e)
                             .collect(Collectors.toCollection(ArrayList::new));
                     int randomSelectionSize = parameters.getInt("randomSelectionSize");
-                    if (randomSelectionSize == 0) randomSelectionSize = dataSets.size();
+                    if (randomSelectionSize == 0) {
+                        randomSelectionSize = dataSets.size();
+                    }
                     if (dataSets.size() < randomSelectionSize) {
                         throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
                                 + "the number of data sets: " + randomSelectionSize + " > " + dataSets.size());
