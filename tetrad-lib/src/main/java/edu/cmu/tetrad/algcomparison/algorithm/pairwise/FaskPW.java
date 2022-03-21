@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RSkew.
+ * FASK-PW (pairwise).
  *
  * @author jdramsey
  */
@@ -55,7 +55,7 @@ public class FaskPW implements Algorithm, TakesInitialGraph {
             if (graph != null) {
                 initialGraph = graph;
             } else {
-                throw new IllegalArgumentException("This RSkew algorithm needs both data and a graph source as inputs; it \n"
+                throw new IllegalArgumentException("This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
             }
 
@@ -141,7 +141,7 @@ public class FaskPW implements Algorithm, TakesInitialGraph {
     @Override
     public void setInitialGraph(Algorithm algorithm) {
         if (algorithm == null) {
-            throw new IllegalArgumentException("This RSkew algorithm needs both data and a graph source as inputs; it \n"
+            throw new IllegalArgumentException("This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
                     + "will orient the edges in the input graph using the data.");
         }
 
