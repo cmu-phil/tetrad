@@ -27,21 +27,59 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Gaussian;
 import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.annotation.Nonexecutable;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
-import edu.cmu.tetradapp.ui.model.*;
+import edu.cmu.tetradapp.ui.model.AlgorithmModel;
+import edu.cmu.tetradapp.ui.model.AlgorithmModels;
+import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
+import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
+import edu.cmu.tetradapp.ui.model.ScoreModel;
+import edu.cmu.tetradapp.ui.model.ScoreModels;
 import edu.cmu.tetradapp.util.DesktopController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultListModel;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.LayoutStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Apr 15, 2019 11:31:10 AM
@@ -230,7 +268,9 @@ public class AlgorithmCard extends JPanel {
         if (dataModelList.containsEmptyData()) {
             return false;
         } else {
-            if (dataModelList.get(0) instanceof CovarianceMatrix) return false;
+            if (dataModelList.get(0) instanceof CovarianceMatrix) {
+                return false;
+            }
 
             DataSet dataSet = (DataSet) dataModelList.get(0);
 
