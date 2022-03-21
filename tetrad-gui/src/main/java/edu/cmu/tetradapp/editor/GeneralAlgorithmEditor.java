@@ -101,7 +101,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     }
 
     private void initComponents() {
-        setPreferredSize(new Dimension(827, 582));
+        if (algorithmRunner.hasMissingValues()) {
+            setPreferredSize(new Dimension(827, 670));
+        } else {
+            setPreferredSize(new Dimension(827, 620));
+        }
 
         setLayout(new CardLayout());
         add(new SingleButtonCard(algorithmCard, algoFwdBtn));

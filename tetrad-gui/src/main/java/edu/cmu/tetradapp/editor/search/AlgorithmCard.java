@@ -172,7 +172,11 @@ public class AlgorithmCard extends JPanel {
         add(westMainPanel, BorderLayout.WEST);
         add(centerMainPanel, BorderLayout.CENTER);
 
-        setPreferredSize(new Dimension(800, 506));
+        if (algorithmRunner.hasMissingValues()) {
+            setPreferredSize(new Dimension(308, 291));
+        } else {
+            setPreferredSize(new Dimension(308, 241));
+        }
     }
 
     private void initListeners() {
