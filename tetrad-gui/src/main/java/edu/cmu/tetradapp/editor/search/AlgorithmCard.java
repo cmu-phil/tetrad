@@ -828,14 +828,14 @@ public class AlgorithmCard extends JPanel {
             // Algo types label box
             Box algTypesBoxLabelBox = Box.createHorizontalBox();
             algTypesBoxLabelBox.add(new JLabel("Show algorithms that: "));
-            algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+            algTypesBoxLabelBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             // Add label to containing box
             algoTypesBox.add(algTypesBoxLabelBox);
 
             // All option
             Box algoTypeOptionAllBox = Box.createHorizontalBox();
-            algoTypeOptionAllBox.setAlignmentX(LEFT_ALIGNMENT);
+            algoTypeOptionAllBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             // Add all option to containing box
             algoTypesBox.add(algoTypeOptionAllBox);
@@ -845,7 +845,7 @@ public class AlgorithmCard extends JPanel {
                 Dimension indentSize = new Dimension(10, 20);
                 algoTypeOpts.forEach(btn -> {
                     Box box = Box.createHorizontalBox();
-                    box.setAlignmentX(LEFT_ALIGNMENT);
+                    box.setAlignmentX(Component.LEFT_ALIGNMENT);
                     box.add(Box.createRigidArea(indentSize));
                     box.add(btn);
                     algoTypesBox.add(box);
@@ -858,11 +858,11 @@ public class AlgorithmCard extends JPanel {
             // Add label into this label box to size
             Box priorKnowledgeLabelBox = Box.createHorizontalBox();
             priorKnowledgeLabelBox.add(new JLabel("Show only: "));
-            priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+            priorKnowledgeLabelBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             // Checkbox container
             Box priorKnowledgeOptionBox = Box.createHorizontalBox();
-            priorKnowledgeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
+            priorKnowledgeOptionBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             // Add padding and option
             priorKnowledgeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
@@ -873,7 +873,7 @@ public class AlgorithmCard extends JPanel {
             priorKnowledgeBox.add(priorKnowledgeOptionBox);
 
             Box algoFiltersBox = Box.createVerticalBox();
-            algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
+            algoFiltersBox.setAlignmentX(Component.LEFT_ALIGNMENT);
             algoFiltersBox.add(algoTypesBox);
             algoFiltersBox.add(Box.createVerticalStrut(10));
             algoFiltersBox.add(priorKnowledgeBox);
