@@ -28,10 +28,8 @@ import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.Nonexecutable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -124,14 +122,12 @@ public class AlgorithmCard extends JPanel {
     private final DataType dataType;
     private final TetradDesktop desktop;
     private final boolean multiDataAlgo;
-    private final boolean hasMissingValues;
     private boolean updatingTestModels;
     private boolean updatingScoreModels;
 
     public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.dataType = getDataType(algorithmRunner);
-        this.hasMissingValues = hasMissingValues(algorithmRunner);
         this.desktop = (TetradDesktop) DesktopController.getInstance();
         this.multiDataAlgo = algorithmRunner.getSourceGraph() == null && algorithmRunner.getDataModelList().size() > 1;
 
@@ -268,21 +264,6 @@ public class AlgorithmCard extends JPanel {
             } else {
                 return null;
             }
-        }
-    }
-
-    private boolean hasMissingValues(final GeneralAlgorithmRunner algorithmRunner) {
-        DataModelList dataModelList = algorithmRunner.getDataModelList();
-        if (dataModelList.containsEmptyData()) {
-            return false;
-        } else {
-            if (dataModelList.get(0) instanceof CovarianceMatrix) {
-                return false;
-            }
-
-            DataSet dataSet = (DataSet) dataModelList.get(0);
-
-            return dataSet.existsMissingValue();
         }
     }
 
@@ -947,7 +928,7 @@ public class AlgorithmCard extends JPanel {
             testLabel.setText("Test:");
             scoreLabel.setText("Score:");
 
-            if (hasMissingValues) {
+            if (algorithmRunner.hasMissingValues()) {
                 JLabel missingValueAlert = new JLabel();
                 JLabel testwiseDeletionAlert = new JLabel();
 

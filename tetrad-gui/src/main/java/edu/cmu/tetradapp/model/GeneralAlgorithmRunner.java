@@ -32,6 +32,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -387,6 +388,21 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
 
         this.graphList = graphList;
+    }
+
+    public boolean hasMissingValues() {
+        DataModelList dataModelList = getDataModelList();
+        if (dataModelList.containsEmptyData()) {
+            return false;
+        } else {
+            if (dataModelList.get(0) instanceof CovarianceMatrix) {
+                return false;
+            }
+
+            DataSet dataSet = (DataSet) dataModelList.get(0);
+
+            return dataSet.existsMissingValue();
+        }
     }
 
     /**
