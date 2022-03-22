@@ -66,6 +66,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
+
     public EdgewiseComparisonModel(MultipleGraphSource model1, MultipleGraphSource model2,
                                    Parameters params) {
         if (params == null) {
@@ -198,32 +199,6 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
             TetradLogger.getInstance().log("comparison", getComparisonString(i));
         }
     }
-
-//    public EdgewiseComparisonModel(GraphWrapper referenceGraph,
-//                                   AbstractAlgorithmRunner algorithmRunner,
-//                                   Parameters params) {
-//        this(referenceGraph, (SessionModel) algorithmRunner,
-//                params);
-//    }
-//
-//    public EdgewiseComparisonModel(GraphWrapper referenceWrapper,
-//                                   GraphWrapper targetWrapper, Parameters params) {
-//        this(referenceWrapper, (SessionModel) targetWrapper,
-//                params);
-//    }
-//
-//    public EdgewiseComparisonModel(DagWrapper referenceGraph,
-//                                   AbstractAlgorithmRunner algorithmRunner,
-//                                   Parameters params) {
-//        this(referenceGraph, (SessionModel) algorithmRunner,
-//                params);
-//    }
-
-//    public EdgewiseComparisonModel(DagWrapper referenceWrapper,
-//                                   GraphWrapper targetWrapper, Parameters params) {
-//        this(referenceWrapper, (SessionModel) targetWrapper,
-//                params);
-//    }
 
     //==============================PUBLIC METHODS========================//
 

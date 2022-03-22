@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.prefs.Preferences;
 
 /**
  * Compares a target workbench with a reference workbench by counting errors of
@@ -47,9 +48,9 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         DoNotAddOldModel {
 
     static final long serialVersionUID = 23L;
-    private final Parameters params;
     private final Graph targetGraph;
     private final Graph referenceGraph;
+    private final Parameters params;
     private DataModel dataModel = null;
     private String name;
     private Map<String, String> allParamSettings;
@@ -82,38 +83,27 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
         this.params = params;
 
-        if (dataWrapper != null) {
-            this.dataModel = dataWrapper.getDataModelList().get(0);
-        }
-
         this.referenceName = params.getString("referenceGraphName", null);
         this.targetName = params.getString("targetGraphName", null);
 
-//        if (model1 == null) {
-//            this.referenceGraph = model2.getGraph();
-//            this.targetGraph = model2.getGraph();
-//        } else {
+        String model1Name = model1.getName();
+        String model2Name = model2.getName();
 
-        if (referenceName.equals(model2.getName())) {
-            GraphSource g = model1;
-            model1 = model2;
-            model2 = g;
-        }
-
-        if (referenceName.equals(model1.getName())) {
+        if (referenceName.equals(model1Name)) {
             this.referenceGraph = model1.getGraph();
             this.targetGraph = model2.getGraph();
-        } else {
-            throw new IllegalArgumentException(
-                    "Neither of the supplied session models is named '"
-                            + referenceName + "'.");
+        } else if (referenceName.equals(model2Name)) {
+            this.referenceGraph = model2.getGraph();
+            this.targetGraph = model1.getGraph();
+        }  else {
+            this.referenceGraph = model1.getGraph();
+            this.targetGraph = model2.getGraph();
         }
 
         if (targetGraph.isPag() || referenceGraph.isPag()) {
             targetGraph.setPag(true);
             referenceGraph.setPag(true);
         }
-//        }
 
         newExecution();
 
