@@ -290,10 +290,10 @@ public class ParameterTab extends JPanel {
                 "Confirm", JOptionPane.OK_CANCEL_OPTION);
 
         if (ret == JOptionPane.CANCEL_OPTION) {
-//            JOptionPane.showMessageDialog(getPanel(), "Keeping existing graph(s) and datasets(s)");
+            JOptionPane.showMessageDialog(getPanel(), "Keeping existing graph(s) and datasets(s)");
             return;
         } else {
-            JOptionPane.showMessageDialog(getPanel(), "New graph(s) and datasets(s) were created");
+//            JOptionPane.showMessageDialog(getPanel(), "Created new graph(s) and datasets(s)...");
         }
 
         new WatchedProcess((Window) getTopLevelAncestor()) {

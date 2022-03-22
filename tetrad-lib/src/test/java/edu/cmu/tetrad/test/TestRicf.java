@@ -27,6 +27,7 @@ import edu.cmu.tetrad.sem.Ricf;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Matrix;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -282,7 +283,7 @@ public class TestRicf {
         try {
             final File datapath = new File("/Users/josephramsey/Downloads/data6.txt");
             DataSet dataSet = DataUtils.loadContinuousData(datapath, "//", '\"' ,
-                    "*", true);
+                    "*", true, Delimiter.TAB);
             Graph mag = GraphUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
 
             ICovarianceMatrix cov = new CovarianceMatrix(dataSet);

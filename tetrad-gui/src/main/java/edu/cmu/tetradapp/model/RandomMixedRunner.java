@@ -42,7 +42,7 @@ import java.util.Set;
 public class RandomMixedRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
     Set<Edge> pcAdjacent;
     Set<Edge> pcNonadjacent;
     List<Node> pcNodes;
@@ -67,12 +67,12 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
     // Starts PC from the given graph.
     public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
@@ -150,7 +150,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 //        Graph g = fges.search();
 //        IndependenceTest test = new IndTestMixedLrt(ds, .001);
 //        Cpc pc = new Cpc(test);
-//        pc.setInitialGraph(g);
+//        pc.setExternalGraph(g);
 //        Graph graph = pc.search();
 
 //        MGM m = new MGM(ds, new double[]{.1, .1, .1});
@@ -158,7 +158,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 //        IndependenceTest indTest = new IndTestMixedLrt(ds, .001);
 //        Cpc pcs = new Cpc(indTest);
 //        pcs.setMaxIndegree(-1);
-//        pcs.setInitialGraph(gm);
+//        pcs.setExternalGraph(gm);
 //        pcs.setVerbose(false);
 //        Graph graph = pcs.search();
 
@@ -173,7 +173,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 //        Graph g =  fges.search();
 //        IndependenceTest test = new IndTestMixedLrt(ds, .001);
 //        Cpc pc = new Cpc(test);
-//        pc.setInitialGraph(g);
+//        pc.setExternalGraph(g);
 //        Graph graph = pc.search();
 
 //        ConditionalGaussianScore score = new ConditionalGaussianScore(ds);

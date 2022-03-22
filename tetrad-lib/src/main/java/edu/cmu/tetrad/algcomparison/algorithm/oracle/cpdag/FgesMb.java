@@ -3,7 +3,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -34,12 +33,10 @@ import java.util.List;
         algoType = AlgType.search_for_Markov_blankets
 )
 @Bootstrapping
-public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
+public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
     private String targetName;
 
@@ -50,18 +47,9 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
         this.score = score;
     }
 
-    public FgesMb(ScoreWrapper score, Algorithm algorithm) {
-        this.score = score;
-        this.algorithm = algorithm;
-    }
-
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (algorithm != null) {
-//                initialGraph = algorithm.search(dataSet, parameters);
-            }
-
             Score score = this.score.getScore(dataSet, parameters);
             edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
@@ -74,20 +62,13 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
                 search.setOut((PrintStream) obj);
             }
 
-            if (initialGraph != null) {
-                search.setInitialGraph(initialGraph);
-            }
-
             this.targetName = parameters.getString(Params.TARGET_NAME);
             Node target = this.score.getVariable(targetName);
 
             return search.search(Collections.singletonList(target));
         } else {
-            FgesMb fgesMb = new FgesMb(score, algorithm);
+            FgesMb fgesMb = new FgesMb(score);
 
-            if (initialGraph != null) {
-                fgesMb.setInitialGraph(initialGraph);
-            }
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMb, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
@@ -151,28 +132,13 @@ public class FgesMb implements Algorithm, TakesInitialGraph, HasKnowledge, UsesS
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
+    public ScoreWrapper getScoreWrapper() {
+        return score;
     }
 
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
-    }
-
-    @Override
-    public ScoreWrapper getScoreWrapper() {
-        return score;
     }
 
 }

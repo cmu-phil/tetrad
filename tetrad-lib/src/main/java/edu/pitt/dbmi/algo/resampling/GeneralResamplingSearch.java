@@ -63,7 +63,7 @@ public class GeneralResamplingSearch {
     /**
      * An initial graph to start from.
      */
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     public GeneralResamplingSearch(DataSet data) {
         this.data = data;
@@ -135,8 +135,8 @@ public class GeneralResamplingSearch {
         this.knowledge = knowledge;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     /**
@@ -202,8 +202,8 @@ public class GeneralResamplingSearch {
                     }
                 }
 
-                if (initialGraph != null) {
-                    task.setInitialGraph(initialGraph);
+                if (externalGraph != null) {
+                    task.setExternalGraph(externalGraph);
                 }
                 task.setKnowledge(knowledge);
                 task.run();
@@ -224,8 +224,8 @@ public class GeneralResamplingSearch {
                             verbose);
                 }
 
-                if (initialGraph != null) {
-                    task.setInitialGraph(initialGraph);
+                if (externalGraph != null) {
+                    task.setExternalGraph(externalGraph);
                 }
                 task.setKnowledge(knowledge);
                 task.run();
@@ -271,8 +271,8 @@ public class GeneralResamplingSearch {
                     }
                 }
 
-                if (initialGraph != null) {
-                    task.setInitialGraph(initialGraph);
+                if (externalGraph != null) {
+                    task.setExternalGraph(externalGraph);
                 }
                 task.setKnowledge(knowledge);
                 pool.submit(task);
@@ -293,8 +293,8 @@ public class GeneralResamplingSearch {
                             verbose);
                 }
 
-                if (initialGraph != null) {
-                    task.setInitialGraph(initialGraph);
+                if (externalGraph != null) {
+                    task.setExternalGraph(externalGraph);
                 }
                 task.setKnowledge(knowledge);
                 pool.submit(task);
@@ -349,8 +349,8 @@ public class GeneralResamplingSearch {
                     }
                 }
 
-                if (initialGraph != null) {
-                    task.setInitialGraph(initialGraph);
+                if (externalGraph != null) {
+                    task.setExternalGraph(externalGraph);
                 }
                 task.setKnowledge(knowledge);
                 task.run();
@@ -371,8 +371,8 @@ public class GeneralResamplingSearch {
                             verbose);
                 }
 
-                if (initialGraph != null) {
-                    task.setInitialGraph(initialGraph);
+                if (externalGraph != null) {
+                    task.setExternalGraph(externalGraph);
                 }
                 task.setKnowledge(knowledge);
                 task.run();

@@ -41,6 +41,7 @@ import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Test;
 
 import java.io.File;
@@ -944,7 +945,7 @@ public class TestFges {
                 File dataPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
                         "Simulated_data_for_Madelyn/simulation/data/DAG_" + i + "_data.txt");
                 DataSet Dk = DataUtils.loadContinuousData(dataPath, "//", '\"' ,
-                        "*", true);
+                        "*", true, Delimiter.TAB);
 
                 File graphPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
                         "Simulated_data_for_Madelyn/simulation/networks/DAG_" + i + "_graph.txt");

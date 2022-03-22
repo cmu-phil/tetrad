@@ -85,7 +85,7 @@ public class FasStableConcurrentFdr implements IFas {
     /**
      * The depth 0 graph, specified initially.
      */
-    private Graph initialGraph;
+    private Graph externalGraph;
 
     // Number formatter.
     private NumberFormat nf = new DecimalFormat("0.00E0");
@@ -119,9 +119,9 @@ public class FasStableConcurrentFdr implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public FasStableConcurrentFdr(Graph initialGraph, IndependenceTest test) {
+    public FasStableConcurrentFdr(Graph externalGraph, IndependenceTest test) {
         this.test = test;
-        this.initialGraph = initialGraph;
+        this.externalGraph = externalGraph;
     }
 
     //==========================PUBLIC METHODS===========================//
@@ -289,11 +289,11 @@ public class FasStableConcurrentFdr implements IFas {
                         for (int j = 0; j < i; j++) {
                             final Node y = nodes.get(j);
 
-                            if (initialGraph != null) {
-                                Node x2 = initialGraph.getNode(x.getName());
-                                Node y2 = initialGraph.getNode(y.getName());
+                            if (externalGraph != null) {
+                                Node x2 = externalGraph.getNode(x.getName());
+                                Node y2 = externalGraph.getNode(y.getName());
 
-                                if (!initialGraph.isAdjacentTo(x2, y2)) {
+                                if (!externalGraph.isAdjacentTo(x2, y2)) {
                                     continue;
                                 }
                             }
@@ -356,11 +356,11 @@ public class FasStableConcurrentFdr implements IFas {
                         for (int j = 0; j < i; j++) {
                             final Node y = nodes.get(j);
 
-                            if (initialGraph != null) {
-                                Node x2 = initialGraph.getNode(x.getName());
-                                Node y2 = initialGraph.getNode(y.getName());
+                            if (externalGraph != null) {
+                                Node x2 = externalGraph.getNode(x.getName());
+                                Node y2 = externalGraph.getNode(y.getName());
 
-                                if (!initialGraph.isAdjacentTo(x2, y2)) {
+                                if (!externalGraph.isAdjacentTo(x2, y2)) {
                                     continue;
                                 }
                             }
@@ -688,8 +688,8 @@ public class FasStableConcurrentFdr implements IFas {
         return sepsets;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     /**

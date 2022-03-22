@@ -84,7 +84,7 @@ public abstract class AbstractAlgorithmRunner
     /**
      * The initial graph for the algorithm, if feasible.
      */
-    private Graph initialGraph;
+    private Graph externalGraph;
 
     /**
      * A series of graphs that the search algorithm might search over, if
@@ -273,12 +273,12 @@ public abstract class AbstractAlgorithmRunner
         return null;
     }
 
-    public void setInitialGraph(Graph graph) {
-        this.initialGraph = graph;
+    public void setExternalGraph(Graph graph) {
+        this.externalGraph = graph;
     }
 
-    public Graph getInitialGraph() {
-        return this.initialGraph;
+    public Graph getExternalGraph() {
+        return this.externalGraph;
     }
 
     @Override

@@ -3,7 +3,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -26,21 +25,14 @@ import java.util.List;
  * @author jdramsey
  */
 @Bootstrapping
-public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowledge {
+public class FgesMeasurement implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
-    private ScoreWrapper score;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
+    private final ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
     public FgesMeasurement(ScoreWrapper score) {
         this.score = score;
-    }
-
-    public FgesMeasurement(ScoreWrapper score, Algorithm algorithm) {
-        this.score = score;
-        this.algorithm = algorithm;
     }
 
     @Override
@@ -74,11 +66,8 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
 
             return search.search();
         } else {
-            FgesMeasurement fgesMeasurement = new FgesMeasurement(score, algorithm);
+            FgesMeasurement fgesMeasurement = new FgesMeasurement(score);
 
-            if (initialGraph != null) {
-                fgesMeasurement.setInitialGraph(initialGraph);
-            }
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
@@ -140,21 +129,6 @@ public class FgesMeasurement implements Algorithm, TakesInitialGraph, HasKnowled
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
     }
 
 }

@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,7 +73,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
                     DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"' ,
-                            "*", true);
+                            "*", true, Delimiter.TAB);
 
                     if (dataSet.getVariables().size() > graph.getNumNodes()) {
                         List<Node> nodes = new ArrayList<>();
@@ -142,7 +143,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     public Graph readGraph(File file) {
         try {
             DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
-                    "*", true);
+                    "*", true, Delimiter.TAB);
             List<Node> variables = data.getVariables();
 
             List<Node> _variables = new ArrayList<>();

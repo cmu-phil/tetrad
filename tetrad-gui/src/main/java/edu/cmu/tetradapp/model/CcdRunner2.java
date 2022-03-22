@@ -219,12 +219,12 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                 for (DataModel dataModel : list) {
                     if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
                         throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
-                                "covariance matrices, or else all discrete data sets, or else a single initialGraph.");
+                                "covariance matrices, or else all discrete data sets, or else a single externalGraph.");
                     }
                 }
 
                 if (list.size() != 1) {
-                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or initialGraph " +
+                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or externalGraph " +
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
@@ -260,7 +260,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
             }
         }
 
-//        gfci.setInitialGraph(initialGraph);
+//        gfci.setExternalGraph(externalGraph);
 //        gfci.setKnowledge(getParameters().getKnowledge());
 //        gfci.setNumCPDAGsToStore(params.getNumCPDAGsToSave());
 //        gfci.setHeuristicSpeedup(true);

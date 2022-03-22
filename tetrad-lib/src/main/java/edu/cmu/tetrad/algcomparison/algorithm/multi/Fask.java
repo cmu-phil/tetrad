@@ -5,7 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -37,11 +37,11 @@ import static edu.cmu.tetrad.util.Params.*;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesInitialGraph {
+public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test = null;
     private ScoreWrapper score = null;
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
     private IKnowledge knowledge = new Knowledge2();
     private Algorithm algorithm = null;
 
@@ -83,8 +83,8 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             search.setDelta(parameters.getDouble(FASK_DELTA));
             search.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
 
-            if (initialGraph != null) {
-                search.setExternalGraph(initialGraph);
+            if (externalGraph != null) {
+                search.setExternalGraph(externalGraph);
             } else if (algorithm != null) {
                 search.setExternalGraph(algorithm.search(dataSet, parameters));
             }
@@ -213,17 +213,17 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 

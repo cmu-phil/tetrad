@@ -31,7 +31,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
-    private Algorithm initialGraph = null;
+    private Algorithm externalGraph = null;
     private boolean compareToTrue = false;
 
     public FgesConcatenated(ScoreWrapper score) {
@@ -43,9 +43,9 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         this.compareToTrue = compareToTrue;
     }
 
-    public FgesConcatenated(ScoreWrapper score, Algorithm initialGraph) {
+    public FgesConcatenated(ScoreWrapper score, Algorithm externalGraph) {
         this.score = score;
-        this.initialGraph = initialGraph;
+        this.externalGraph = externalGraph;
     }
 
     @Override
@@ -60,9 +60,9 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             DataSet dataSet = DataUtils.concatenate(dataSets);
 
             Graph initial = null;
-            if (initialGraph != null) {
+            if (externalGraph != null) {
 
-                initial = initialGraph.search(dataSet, parameters);
+                initial = externalGraph.search(dataSet, parameters);
             }
 
             edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
@@ -77,12 +77,12 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             }
 
             if (initial != null) {
-                search.setInitialGraph(initial);
+                search.setExternalGraph(initial);
             }
 
             return search.search();
         } else {
-            FgesConcatenated fgesConcatenated = new FgesConcatenated(score, initialGraph);
+            FgesConcatenated fgesConcatenated = new FgesConcatenated(score, externalGraph);
             fgesConcatenated.setCompareToTrue(compareToTrue);
 
             List<DataSet> datasets = new ArrayList<>();
@@ -121,7 +121,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            FgesConcatenated fgesConcatenated = new FgesConcatenated(score, initialGraph);
+            FgesConcatenated fgesConcatenated = new FgesConcatenated(score, externalGraph);
             fgesConcatenated.setCompareToTrue(compareToTrue);
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));

@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +52,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
                     DataSet dataSet= DataUtils.loadContinuousData(file, "//", '\"' ,
-                            "*", true);
+                            "*", true, Delimiter.TAB);
                     dataSets.add(dataSet);
                 } catch (Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());
@@ -134,7 +135,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     public Graph readGraph(File file) {
         try {
             DataSet data= DataUtils.loadContinuousData(file, "//", '\"' ,
-                    "*", true);
+                    "*", true, Delimiter.TAB);
             List<Node> variables = data.getVariables();
             Graph graph = new EdgeListGraph(variables);
 

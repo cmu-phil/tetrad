@@ -108,7 +108,7 @@ public final class Fci implements GraphSearch {
     /**
      * FAS initial graph.
      */
-    private Graph initialGraph;
+    private Graph externalGraph;
 
     /**
      * FAS heuristic
@@ -188,7 +188,7 @@ public final class Fci implements GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        Fas fas = new Fas(initialGraph, getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         logger.log("info", "Starting FCI algorithm.");
         logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
@@ -258,8 +258,8 @@ public final class Fci implements GraphSearch {
     /**
      * Sets the initial graph to use for FAS.
      */
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     /**

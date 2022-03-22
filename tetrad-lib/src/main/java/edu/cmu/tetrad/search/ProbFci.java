@@ -217,7 +217,7 @@ public final class ProbFci implements GraphSearch {
 //        graph.fullyConnect(Endpoint.CIRCLE);
 
 //        // Step FCI B.  (Zhang's step F2.)
-        Fas adj = new Fas(graph, independenceTest);
+        Fas adj = new Fas(independenceTest);
 //        FasStableConcurrent adj = new FasStableConcurrent(graph, independenceTest);
         adj.setKnowledge(getKnowledge());
         adj.setDepth(depth);

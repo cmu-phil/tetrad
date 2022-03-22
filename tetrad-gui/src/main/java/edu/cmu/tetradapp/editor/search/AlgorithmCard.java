@@ -22,7 +22,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.LinearGaussian;
@@ -429,9 +429,9 @@ public class AlgorithmCard extends JPanel {
         }
 
         // Those pairwise algos (R3, RShew, Skew..) require source graph to initialize - Zhou
-        if (algorithm != null && algorithm instanceof TakesInitialGraph && algorithmRunner.getSourceGraph() != null && !algorithmRunner.getDataModelList().isEmpty()) {
-            Algorithm initialGraph = new SingleGraphAlg(algorithmRunner.getSourceGraph());
-            ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
+        if (algorithm != null && algorithm instanceof TakesExternalGraph && algorithmRunner.getSourceGraph() != null && !algorithmRunner.getDataModelList().isEmpty()) {
+            Algorithm externalGraph = new SingleGraphAlg(algorithmRunner.getSourceGraph());
+            ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }
 
         return algorithm;
@@ -496,11 +496,11 @@ public class AlgorithmCard extends JPanel {
             JOptionPane.showMessageDialog(desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
         } else {
             // Check if initial graph is provided for those pairwise algorithms
-            if (TakesInitialGraph.class.isAssignableFrom(algoClass)) {
+            if (TakesExternalGraph.class.isAssignableFrom(algoClass)) {
                 if (algorithmRunner.getSourceGraph() == null || algorithmRunner.getDataModelList().isEmpty()) {
                     try {
                         Object algo = algoClass.newInstance();
-                        Method m = algoClass.getDeclaredMethod("setInitialGraph", Algorithm.class);
+                        Method m = algoClass.getDeclaredMethod("setExternalGraph", Algorithm.class);
                         m.setAccessible(true);
                         try {
                             Algorithm algorithm = null;

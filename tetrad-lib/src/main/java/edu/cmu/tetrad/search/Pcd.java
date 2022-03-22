@@ -109,7 +109,7 @@ public class Pcd implements GraphSearch {
     /**
      * The initial graph for the Fast Adjacency Search, or null if there is none.
      */
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     private boolean verbose = false;
 
@@ -228,7 +228,7 @@ public class Pcd implements GraphSearch {
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
-        return search(new Fas(initialGraph, getIndependenceTest()), nodes);
+        return search(new Fas(getIndependenceTest()), nodes);
     }
 
     public Graph search(IFas fas, List<Node> nodes) {
@@ -393,8 +393,8 @@ public class Pcd implements GraphSearch {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public boolean isVerbose() {

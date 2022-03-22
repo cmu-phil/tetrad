@@ -61,9 +61,9 @@ public class CcdRunner extends AbstractAlgorithmRunner
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public CcdRunner(DataWrapper dataWrapper, GraphWrapper initialGraph, Parameters params) {
+    public CcdRunner(DataWrapper dataWrapper, GraphWrapper externalGraph, Parameters params) {
         super(dataWrapper, params);
-        setInitialGraph(initialGraph.getGraph());
+        setExternalGraph(externalGraph.getGraph());
     }
 
 

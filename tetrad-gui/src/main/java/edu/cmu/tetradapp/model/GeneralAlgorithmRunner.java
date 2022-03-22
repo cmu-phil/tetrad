@@ -80,7 +80,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private Algorithm algorithm;
     private Parameters parameters;
     private Graph sourceGraph;
-    private Graph initialGraph;
+    private Graph externalGraph;
     private List<Graph> graphList = new ArrayList<>();
     private IKnowledge knowledge = new Knowledge2();
     private final Map<String, Object> userAlgoSelections = new HashMap<>();
@@ -420,13 +420,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
-    public void setInitialGraph(Graph graph) {
-        this.initialGraph = graph;
+    public void setExternalGraph(Graph graph) {
+        this.externalGraph = graph;
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return this.initialGraph;
+    public Graph getExternalGraph() {
+        return this.externalGraph;
     }
 
     @Override

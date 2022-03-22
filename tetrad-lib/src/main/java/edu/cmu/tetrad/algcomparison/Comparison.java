@@ -37,7 +37,7 @@ import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
@@ -718,8 +718,8 @@ public class Comparison {
                         if (HasParameters.class.isAssignableFrom(clazz)) {
                             printParameters(algorithm.getParameters(), allParams, out);
                         }
-                        if (TakesInitialGraph.class.isAssignableFrom(clazz)) {
-                            out.println("\t" + clazz.getSimpleName() + " can take an initial graph from some other algorithm as input");
+                        if (TakesExternalGraph.class.isAssignableFrom(clazz)) {
+                            out.println("\t" + clazz.getSimpleName() + " can take an external graph from some other algorithm as input");
                         }
                     }
                 }

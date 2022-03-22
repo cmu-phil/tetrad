@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
@@ -31,12 +30,10 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class CPC implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public CPC() {
@@ -44,11 +41,6 @@ public class CPC implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
 
     public CPC(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    public CPC(IndependenceWrapper test, Algorithm algorithm) {
-        this.test = test;
-        this.algorithm = algorithm;
     }
 
     @Override
@@ -73,7 +65,7 @@ public class CPC implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
                     throw new IllegalArgumentException("Not a choice.");
             }
 
-            PcAll search = new PcAll(test.getTest(dataSet, parameters), initialGraph);
+            PcAll search = new PcAll(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
             search.setKnowledge(knowledge);
@@ -98,11 +90,7 @@ public class CPC implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
 
             return search.search();
         } else {
-            CPC pcAll = new CPC(test, algorithm);
-
-            if (initialGraph != null) {
-                pcAll.setInitialGraph(initialGraph);
-            }
+            CPC pcAll = new CPC(test);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -138,8 +126,7 @@ public class CPC implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
 
     @Override
     public String getDescription() {
-        return "PC using " + test.getDescription() + (algorithm != null ? " with initial graph from "
-                + algorithm.getDescription() : "");
+        return "PC using " + test.getDescription();
     }
 
     @Override
@@ -174,28 +161,13 @@ public class CPC implements Algorithm, TakesInitialGraph, HasKnowledge, TakesInd
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
     }
 
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return test;
     }
 
 }

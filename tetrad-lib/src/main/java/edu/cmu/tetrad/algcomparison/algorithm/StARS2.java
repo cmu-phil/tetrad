@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -18,7 +18,7 @@ import static java.lang.Math.abs;
  *
  * @author jdramsey
  */
-public class StARS2 implements Algorithm, TakesInitialGraph {
+public class StARS2 implements Algorithm, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
     private final double low;
@@ -238,17 +238,17 @@ public class StARS2 implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph getInitialGraph() {
+    public Graph getExternalGraph() {
         return null;
     }
 
     @Override
-    public void setInitialGraph(Graph initialGraph) {
+    public void setExternalGraph(Graph externalGraph) {
 
     }
 
     @Override
-    public void setInitialGraph(Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

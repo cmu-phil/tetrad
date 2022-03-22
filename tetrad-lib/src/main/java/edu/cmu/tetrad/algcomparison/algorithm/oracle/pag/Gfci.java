@@ -70,8 +70,8 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             Gfci algorithm = new Gfci(test, score);
 
             //algorithm.setKnowledge(knowledge);
-//          if (initialGraph != null) {
-//      		algorithm.setInitialGraph(initialGraph);
+//          if (externalGraph != null) {
+//      		algorithm.setExternalGraph(externalGraph);
 //  		}
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));

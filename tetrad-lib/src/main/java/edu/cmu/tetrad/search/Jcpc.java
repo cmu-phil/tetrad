@@ -85,7 +85,7 @@ public class Jcpc implements GraphSearch {
     /**
      * An initial graph, if there is one.
      */
-    private Graph initialGraph;
+    private Graph externalGraph;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -322,7 +322,7 @@ public class Jcpc implements GraphSearch {
 ////
 //        search = new PcStableMaxLocal(test);
 //        search.setKnowledge(getKnowledge());
-//        search.setInitialGraph(new EdgeListGraph(graph));
+//        search.setExternalGraph(new EdgeListGraph(graph));
 //        search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
 //        graph = search.search();
 //
@@ -733,8 +733,8 @@ public class Jcpc implements GraphSearch {
         this.maxIterations = maxIterations;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public Set<Triple> getColliderTriples(Graph graph) {

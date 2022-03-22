@@ -30,6 +30,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Test;
 
 import java.io.File;
@@ -117,7 +118,7 @@ public class TestDeltaSextadTest {
         try {
             String name = "src/test/resources/dataLG.txt";
             data = DataUtils.loadContinuousData(new File(name), "//", '\"' ,
-                    "*", true);
+                    "*", true, Delimiter.TAB);
         } catch (IOException e) {
             e.printStackTrace();
         }

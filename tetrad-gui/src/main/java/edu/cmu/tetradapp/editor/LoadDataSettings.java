@@ -854,8 +854,6 @@ public final class LoadDataSettings extends JPanel {
     /**
      * This works for both validation(column and data) and data reading(column
      * reader and data reader)
-     *
-     * @param datasetReader
      */
     private void setQuoteChar(DataReader dataReader) {
         if (doubleQuoteRadioButton.isSelected()) {

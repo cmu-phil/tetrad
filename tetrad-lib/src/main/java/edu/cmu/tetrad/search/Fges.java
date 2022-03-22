@@ -97,7 +97,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * An initial graph to start from.
      */
-    private Graph initialGraph;
+    private Graph externalGraph;
     /**
      * If non-null, edges not adjacent in this graph will not be added.
      */
@@ -218,8 +218,8 @@ public final class Fges implements GraphSearch, GraphScorer {
             adjacencies = GraphUtils.replaceNodes(adjacencies, getVariables());
         }
 
-        if (initialGraph != null) {
-            graph = new EdgeListGraph(initialGraph);
+        if (externalGraph != null) {
+            graph = new EdgeListGraph(externalGraph);
             graph = GraphUtils.replaceNodes(graph, getVariables());
         }
 
@@ -295,28 +295,28 @@ public final class Fges implements GraphSearch, GraphScorer {
      * @return the initial graph for the search. The search is initialized to
      * this graph and proceeds from there.
      */
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
     /**
      * Sets the initial graph.
      */
-    public void setInitialGraph(Graph initialGraph) {
-        initialGraph = GraphUtils.replaceNodes(initialGraph, variables);
+    public void setExternalGraph(Graph externalGraph) {
+        externalGraph = GraphUtils.replaceNodes(externalGraph, variables);
 
-        if (initialGraph != null) {
+        if (externalGraph != null) {
             if (verbose) {
-                out.println("Initial graph variables: " + initialGraph.getNodes());
+                out.println("Initial graph variables: " + externalGraph.getNodes());
                 out.println("Data set variables: " + variables);
             }
 
-            if (!new HashSet<>(initialGraph.getNodes()).equals(new HashSet<>(variables))) {
+            if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(variables))) {
                 throw new IllegalArgumentException("Variables aren't the same.");
             }
         }
 
-        this.initialGraph = initialGraph;
+        this.externalGraph = externalGraph;
     }
 
     /**

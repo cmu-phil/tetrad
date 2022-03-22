@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.TimeSeries;
@@ -36,12 +35,10 @@ import java.util.List;
 )
 @TimeSeries
 @Bootstrapping
-public class SvarFci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
     private IKnowledge knowledge = null;
 
     public SvarFci() {
@@ -51,29 +48,20 @@ public class SvarFci implements Algorithm, TakesInitialGraph, HasKnowledge, Take
         this.test = test;
     }
 
-    public SvarFci(IndependenceWrapper type, Algorithm algorithm) {
-        this.test = type;
-        this.algorithm = algorithm;
-    }
-
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-//    	if (!(dataSet instanceof TimeSeriesData)) {
-//            throw new IllegalArgumentException("You need a (labeled) time series data set to run SvarFCI.");
-//        }
-
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (knowledge != null) {
                 dataSet.setKnowledge(knowledge);
             }
             edu.cmu.tetrad.search.SvarFci search = new edu.cmu.tetrad.search.SvarFci(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(dataSet.getKnowledge());
+            search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
         } else {
-            SvarFci svarFci = new SvarFci(test, algorithm);
+            SvarFci svarFci = new SvarFci(test);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, svarFci, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -108,9 +96,7 @@ public class SvarFci implements Algorithm, TakesInitialGraph, HasKnowledge, Take
     }
 
     public String getDescription() {
-        return "SvarFCI (SVAR Fast Causal Inference) using " + test.getDescription()
-                + (algorithm != null ? " with initial graph from "
-                + algorithm.getDescription() : "");
+        return "SvarFCI (SVAR Fast Causal Inference) using " + test.getDescription();
     }
 
     @Override
@@ -137,27 +123,12 @@ public class SvarFci implements Algorithm, TakesInitialGraph, HasKnowledge, Take
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
     }
 
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return test;
     }
 }

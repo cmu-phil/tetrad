@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -93,9 +94,9 @@ public class MbClassify implements DiscreteClassifier {
             TetradLogger.getInstance().log("info", buf.toString());
 
             DataSet train = DataUtils.loadContinuousData(new File(trainPath), "//", '\"' ,
-                    "*", true);
+                    "*", true, Delimiter.TAB);
             DataSet test = DataUtils.loadContinuousData(new File(testPath), "//", '\"' ,
-                    "*", true);
+                    "*", true, Delimiter.TAB);
 
             double alpha = Double.parseDouble(alphaString);
             int depth = Integer.parseInt(depthString);

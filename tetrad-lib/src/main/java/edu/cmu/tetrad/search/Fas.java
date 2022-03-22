@@ -93,11 +93,6 @@ public class Fas implements IFas {
     private PrintStream out = System.out;
 
     /**
-     * Initial graph.
-     */
-    private Graph initialGraph = null;
-
-    /**
      * Which heuristic to use to fix variable order (1, 2, 3, or 0 = none).
      */
     private int heuristic = 0;
@@ -112,13 +107,6 @@ public class Fas implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public Fas(Graph initialGraph, IndependenceTest test) {
-        if (initialGraph != null) {
-            this.initialGraph = new EdgeListGraph(initialGraph);
-        }
-        this.test = test;
-    }
-
     public Fas(IndependenceTest test) {
         this.test = test;
     }
@@ -288,15 +276,6 @@ public class Fas implements IFas {
 
             if (Thread.currentThread().isInterrupted()) {
                 break;
-            }
-
-            if (depth == 0 && initialGraph != null) {
-                Node x2 = initialGraph.getNode(x.getName());
-                Node y2 = initialGraph.getNode(y.getName());
-
-                if (!initialGraph.isAdjacentTo(x2, y2)) {
-                    continue;
-                }
             }
 
             boolean b = checkSide(scores, test, adjacencies, depth, x, y);

@@ -21,7 +21,7 @@ package edu.cmu.tetrad.algcomparison.algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.graph.Graph;
@@ -64,11 +64,11 @@ public class AlgorithmFactory {
         return algorithm;
     }
 
-    public static Algorithm create(Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score, Graph initialGraph)
+    public static Algorithm create(Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score, Graph externalGraph)
             throws IllegalAccessException, InstantiationException {
         Algorithm algorithm = create(algoClass, test, score);
-        if (initialGraph != null && algorithm instanceof TakesInitialGraph) {
-            ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
+        if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
+            ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }
 
         return algorithm;
@@ -86,11 +86,11 @@ public class AlgorithmFactory {
         return create(algoClass, test, score);
     }
 
-    public static Algorithm create(Class<? extends Algorithm> algoClass, Class<? extends IndependenceWrapper> indTestClass, Class<? extends ScoreWrapper> scoreClass, Graph initialGraph)
+    public static Algorithm create(Class<? extends Algorithm> algoClass, Class<? extends IndependenceWrapper> indTestClass, Class<? extends ScoreWrapper> scoreClass, Graph externalGraph)
             throws IllegalAccessException, InstantiationException {
         Algorithm algorithm = create(algoClass, indTestClass, scoreClass);
-        if (initialGraph != null && algorithm instanceof TakesInitialGraph) {
-            ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
+        if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
+            ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }
 
         return algorithm;

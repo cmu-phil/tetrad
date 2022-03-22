@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -31,12 +31,12 @@ import java.util.List;
 //        algoType = AlgType.orient_pairwise
 //)
 @Bootstrapping
-public class RSkewE implements Algorithm, TakesInitialGraph {
+public class RSkewE implements Algorithm, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
 
     private Algorithm algorithm = null;
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     public RSkewE() {
 
@@ -52,7 +52,7 @@ public class RSkewE implements Algorithm, TakesInitialGraph {
             Graph graph = algorithm.search(dataSet, parameters);
 
             if (graph != null) {
-                initialGraph = graph;
+                externalGraph = graph;
             } else {
                 throw new IllegalArgumentException("This RSkewE algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
@@ -61,14 +61,14 @@ public class RSkewE implements Algorithm, TakesInitialGraph {
             List<DataSet> dataSets = new ArrayList<>();
             dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
-            Lofs2 lofs = new Lofs2(initialGraph, dataSets);
+            Lofs2 lofs = new Lofs2(externalGraph, dataSets);
             lofs.setRule(Lofs2.Rule.RSkewE);
 
             return lofs.orient();
         } else {
             RSkewE rSkewE = new RSkewE(algorithm);
-            if (initialGraph != null) {
-                rSkewE.setInitialGraph(initialGraph);
+            if (externalGraph != null) {
+                rSkewE.setExternalGraph(externalGraph);
             }
 
             DataSet data = (DataSet) dataSet;
@@ -104,7 +104,7 @@ public class RSkewE implements Algorithm, TakesInitialGraph {
 
     @Override
     public String getDescription() {
-        return "RSkewE" + (initialGraph != null ? " with initial graph from "
+        return "RSkewE" + (externalGraph != null ? " with initial graph from "
                 + algorithm.getDescription() : "");
     }
 
@@ -127,17 +127,17 @@ public class RSkewE implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This RSkewE algorithm needs both data and a graph source as inputs; it \n"
                     + "will orient the edges in the input graph using the data.");

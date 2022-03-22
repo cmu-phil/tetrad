@@ -51,7 +51,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     private AlgorithmType algorithmType = AlgorithmType.BEAM;
 
     private String name;
-    private Graph initialGraph;
+    private Graph externalGraph;
     private Graph graph;
     private transient List<PropertyChangeListener> listeners;
     private final DataWrapper dataWrapper;
@@ -96,7 +96,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     private void setGraph(EdgeListGraph graph) {
         this.graph = new EdgeListGraph(graph);
-        this.initialGraph = new EdgeListGraph(graph);
+        this.externalGraph = new EdgeListGraph(graph);
     }
 
     public PValueImproverWrapper(GraphWrapper graphWrapper,
@@ -209,11 +209,11 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
         IKnowledge knowledge = (IKnowledge) params2.get("knowledge", new Knowledge2());
 
-        if (initialGraph == null) {
-            initialGraph = new EdgeListGraph(dataModel.getVariables());
+        if (externalGraph == null) {
+            externalGraph = new EdgeListGraph(dataModel.getVariables());
         }
 
-        Graph graph2 = new EdgeListGraph(initialGraph);
+        Graph graph2 = new EdgeListGraph(externalGraph);
         graph2 = GraphUtils.replaceNodes(graph2, dataModel.getVariables());
 
         Bff search;
