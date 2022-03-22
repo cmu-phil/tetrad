@@ -1507,6 +1507,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      */
     private DataSet simulateDataRecursive(int sampleSize, DataSet initialValues,
                                           boolean latentDataSaved) {
+        int errorType = params.getInt(Params.SIMULATION_ERROR_TYPE);
+
         List<Node> variables = new LinkedList<>();
         List<Node> variableNodes = getVariableNodes();
 
@@ -1534,13 +1536,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             Node node = variableNodes.get(i);
             List<Node> parents = graph.getParents(node);
 
-            for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
-                Node _node = j.next();
-
-                if (_node.getNodeType() == NodeType.ERROR) {
-                    j.remove();
-                }
-            }
+            parents.removeIf(_node -> _node.getNodeType() == NodeType.ERROR);
 
             _parents[i] = new int[parents.size()];
 
@@ -1673,6 +1669,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
+        int errorType = params.getInt(Params.SIMULATION_ERROR_TYPE);
+
         int numVars = getVariableNodes().size();
 
         // Calculate inv(I - edgeCoefC)

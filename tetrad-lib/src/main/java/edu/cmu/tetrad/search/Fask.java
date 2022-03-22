@@ -363,22 +363,24 @@ public final class Fask implements GraphSearch {
                 graph.addDirectedEdge(Y, X);
                 logTwoCycle(nf, variables, D, X, Y, "2-cycle Pre-screen");
             }
-        } else if (twoCycleScreeningCutoff == 0 && orientationAlpha > 0) {
-            for (Edge edge : graph.getEdges()) {
-                Node X = edge.getNode1();
-                Node Y = edge.getNode2();
-
-                int i = variables.indexOf(X);
-                int j = variables.indexOf(Y);
-
-                if (twoCycleTest(i, j, D, graph, variables)) {
-                    graph.removeEdges(X, Y);
-                    graph.addDirectedEdge(X, Y);
-                    graph.addDirectedEdge(Y, X);
-                    logTwoCycle(nf, variables, D, X, Y, "2-cycle Tested");
-                }
-            }
-        } else if (twoCycleScreeningCutoff > 0 && orientationAlpha > 0) {
+        }
+//        else if (twoCycleScreeningCutoff == 0 && orientationAlpha > 0) {
+//            for (Edge edge : graph.getEdges()) {
+//                Node X = edge.getNode1();
+//                Node Y = edge.getNode2();
+//
+//                int i = variables.indexOf(X);
+//                int j = variables.indexOf(Y);
+//
+//                if (twoCycleTest(i, j, D, graph, variables)) {
+//                    graph.removeEdges(X, Y);
+//                    graph.addDirectedEdge(X, Y);
+//                    graph.addDirectedEdge(Y, X);
+//                    logTwoCycle(nf, variables, D, X, Y, "2-cycle Tested");
+//                }
+//            }
+//        }
+        else if (twoCycleScreeningCutoff > 0 && orientationAlpha > 0) {
             for (NodePair edge : twoCycles) {
                 Node X = edge.getFirst();
                 Node Y = edge.getSecond();
