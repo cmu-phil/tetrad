@@ -50,12 +50,15 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Graph graph = algorithm.search(dataModel, parameters);
+            Graph graph = externalGraph;
 
-            if (graph != null) {
-                externalGraph = graph;
-            } else {
-                throw new IllegalArgumentException("This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
+            if (graph == null) {
+                graph = algorithm.search(dataModel, parameters);
+            }
+
+            if (graph == null) {
+                throw new IllegalArgumentException(
+                        "This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
             }
 
