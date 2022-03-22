@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="utf-8">
     <meta content="ie=edge" http-equiv="X-UA-Compatible">
@@ -3483,7 +3483,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="applyR1">applyR1</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="applyR1_short_desc">Yes if the orient away from arrow rule should be applied</span>
+            <li>Short Description: <span id="applyR1_short_desc">
+                Yes if the orient away from arrow rule should be applied</span>
             </li>
             <li>Long Description: <span id="applyR1_long_desc">
                 Set this parameter to “No” if a
@@ -3511,7 +3512,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="basisType">basisType</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="basisType_short_desc">Basis type (1 = Polynomial, 2 = Cosine)</span></li>
+            <li>Short Description: <span id="basisType_short_desc">
+                Basis type (1 = Polynomial, 2 = Cosine)</span></li>
             <li>Long Description: <span id="basisType_long_desc">
                 For CCI, this determines which basis type will be used (1 = Polynomial, 2 = Cosine)</span>
             </li>
@@ -3534,7 +3536,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="cgExact">cgExact</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="cgExact_short_desc">Yes if the exact algorithm should be used for continuous parents and discrete children</span>
+            <li>Short Description: <span id="cgExact_short_desc">
+                Yes if the exact algorithm should be used for continuous parents and discrete children</span>
             </li>
             <li>Long Description: <span id="cgExact_long_desc">
                 For the conditional Gaussian likelihood, if the exact algorithm is desired for discrete children
@@ -3548,7 +3551,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="coefHigh">coefHigh</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="coefHigh_short_desc">High end of coefficient range (min = 0.0)</span></li>
+            <li>Short Description: <span id="coefHigh_short_desc">
+                High end of coefficient range (min = 0.0)</span></li>
             <li>Long Description: <span id="coefHigh_long_desc">
                 Value m2 for coefficients drawn from U(-m2, -m1) U U(m1, m2).</span>
             </li>
@@ -3560,7 +3564,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="coefLow">coefLow</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="coefLow_short_desc">Low end of coefficient range (min = 0.0)</span></li>
+            <li>Short Description: <span id="coefLow_short_desc">
+                Low end of coefficient range (min = 0.0)</span></li>
             <li>Long Description: <span id="coefLow_long_desc">
                 The parameter m1 for coefficents drawn from U(-m2, -m1) U U(m1, m2).</span>
             </li>
@@ -3585,11 +3590,13 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="colliderDiscoveryRule">colliderDiscoveryRule</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="colliderDiscoveryRule_short_desc">Collider discovery: 1 = Lookup from adjacency sepsets, 2 = Conservative (CPC), 3 = Max-P</span>
+            <li>Short Description: <span id="colliderDiscoveryRule_short_desc">
+                Collider discovery: 1 = Lookup from adjacency sepsets, 2 = Conservative (CPC), 3 = Max-P</span>
             </li>
             <li>Long Description: <span id="colliderDiscoveryRule_long_desc">
                 One may look them up from sepsets, as in the original PC, or estimate them conservatively, as
                 from the Conservative PC algorithm, or by choosing the sepsets with the maximum p-value, as in PC-Max.
+            </span>
             </li>
             <li>Default Value: <span id="colliderDiscoveryRule_default_value">1</span></li>
             <li>Lower Bound: <span id="colliderDiscoveryRule_lower_bound">1</span></li>
@@ -3599,7 +3606,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="completeRuleSetUsed">completeRuleSetUsed</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="completeRuleSetUsed_short_desc">Yes if the complete FCI rule set should be used</span>
+            <li>Short Description: <span id="completeRuleSetUsed_short_desc">
+                Yes if the complete FCI rule set should be used</span>
             </li>
             <li>Long Description: <span id="completeRuleSetUsed_long_desc">
                 Yes if the (simpler) final orientation rules set due to P. Spirtes,
@@ -3618,7 +3626,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             <li>Short Description: <span id="concurrentFAS_short_desc">Yes if a concurrent FAS should be done</span>
             </li>
             <li>Long Description: <span id="concurrentFAS_long_desc">
-                Yes if the version of the PC adjacency search that uses concurrent processing should be used, no if not.</span>
+                Yes if the version of the PC adjacency search that uses concurrent processing should be used,
+                no if not.</span>
             </li>
             <li>Default Value: <span id="concurrentFAS_default_value">false</span></li>
             <li>Lower Bound: <span id="concurrentFAS_lower_bound"></span></li>
@@ -4542,7 +4551,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="maxIterations">maxIterations</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="maxIterations_short_desc">The maximum number of iterations the algorithm should go through orienting edges</span>
+            <li>Short Description: <span id="maxIterations_short_desc">
+                The maximum number of iterations the algorithm should go through orienting edges</span>
             </li>
             <li>Long Description: <span id="maxIterations_long_desc">
                 In orienting, this algorith may go through a number of iterations, conditioning on more and more variables
@@ -4636,7 +4646,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="measuredMeasuredImpureAssociations">
             measuredMeasuredImpureAssociations</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="measuredMeasuredImpureAssociations_short_desc">Number of Measured <-> Measured impure edges</span>
+            <li>Short Description: <span id="measuredMeasuredImpureAssociations_short_desc">
+                Number of Measured <-> Measured impure edges</span>
             </li>
             <li>Long Description: <span id="measuredMeasuredImpureAssociations_long_desc">
                 It is possible for measures from two different structural nodes to be confounded. These confounding
@@ -4650,7 +4661,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="measuredMeasuredImpureParents">measuredMeasuredImpureParents</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="measuredMeasuredImpureParents_short_desc">Number of Measured --> Measured impure edges</span>
+            <li>Short Description: <span id="measuredMeasuredImpureParents_short_desc">
+                Number of Measured --> Measured impure edges</span>
             </li>
             <li>Long Description: <span id="measuredMeasuredImpureParents_long_desc">
                 It is possible for measures from two different structural nodes to have directed edges between them.
@@ -4677,7 +4689,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="measurementVariance">measurementVariance</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="measurementVariance_short_desc">Additive measurement noise variance (min = 0.0)</span>
+            <li>Short Description: <span id="measurementVariance_short_desc">
+                Additive measurement noise variance (min = 0.0)</span>
             </li>
             <li>Long Description: <span id="measurementVariance_long_desc">
                 If the value is greater than zero, independent Gaussian noise will be added with mean zero and the given
@@ -4692,7 +4705,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="mgmParam1">mgmParam1</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="mgmParam1_short_desc">MGM tuning parameter #1 (min = 0.0)</span></li>
-            <li>Long Description: <span id="mgmParam1_long_desc">The MGM algorithm has three internal tuning parameters, of which this is one.</span>
+            <li>Long Description: <span id="mgmParam1_long_desc">
+                The MGM algorithm has three internal tuning parameters, of which this is one.</span>
             </li>
             <li>Default Value: <span id="mgmParam1_default_value">0.1</span></li>
             <li>Lower Bound: <span id="mgmParam1_lower_bound">0.0</span></li>
@@ -4703,7 +4717,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="mgmParam2">mgmParam2</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="mgmParam2_short_desc">MGM tuning parameter #2 (min = 0.0)</span></li>
-            <li>Long Description: <span id="mgmParam2_long_desc">The MGM algorithm has three internal tuning parameters, of which this is one.</span>
+            <li>Long Description: <span id="mgmParam2_long_desc">
+                The MGM algorithm has three internal tuning parameters, of which this is one.</span>
             </li>
             <li>Default Value: <span id="mgmParam2_default_value">0.1</span></li>
             <li>Lower Bound: <span id="mgmParam2_lower_bound">0.0</span></li>
@@ -4749,7 +4764,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="numBasisFunctions">numBasisFunctions</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="numBasisFunctions_short_desc">Number of functions to use in (truncated) basis</span>
+            <li>Short Description: <span id="numBasisFunctions_short_desc">
+                Number of functions to use in (truncated) basis</span>
             </li>
             <li>Long Description: <span id="numBasisFunctions_long_desc">
                 This parameter specifies how many of the most significant basis functions to use as a basis.</span>
@@ -4762,9 +4778,11 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="numBscBootstrapSamples">numBscBootstrapSamples</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="numBscBootstrapSamples_short_desc">The number of bootstrappings drawing from posterior dist. (min = 1)</span>
+            <li>Short Description: <span id="numBscBootstrapSamples_short_desc">
+                The number of bootstrappings drawing from posterior dist. (min = 1)</span>
             </li>
-            <li>Long Description: <span id="numBscBootstrapSamples_long_desc">null</span></li>
+            <li>Long Description: <span id="numBscBootstrapSamples_long_desc">
+                The number of bootstrappings drawing from posterior dist. (min = 1)</span></li>
             <li>Default Value: <span id="numBscBootstrapSamples_default_value">50</span></li>
             <li>Lower Bound: <span id="numBscBootstrapSamples_lower_bound">1</span></li>
             <li>Upper Bound: <span id="numBscBootstrapSamples_upper_bound">2147483647</span></li>
@@ -4776,7 +4794,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             <li>Short Description: <span id="numCategories_short_desc">Number of categories for discrete variables (min = 2)</span>
             </li>
             <li>Long Description: <span id="numCategories_long_desc">
-                The number of categories to be used for randomly generated discrete variables. The default is 4; the minimum is 2.</span>
+                The number of categories to be used for randomly generated discrete variables. The default is 4;
+                the minimum is 2.</span>
             </li>
             <li>Default Value: <span id="numCategories_default_value">4</span></li>
             <li>Lower Bound: <span id="numCategories_lower_bound">2</span></li>
@@ -4843,7 +4862,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numRandomizedSearchModels_short_desc">The number of search probabilistic model (min = 1)</span>
             </li>
-            <li>Long Description: <span id="numRandomizedSearchModels_long_desc">The number of search probabilistic model (min = 1)</span></li>
+            <li>Long Description: <span id="numRandomizedSearchModels_long_desc">
+                The number of search probabilistic model (min = 1)</span></li>
             <li>Default Value: <span id="numRandomizedSearchModels_default_value">10</span></li>
             <li>Lower Bound: <span id="numRandomizedSearchModels_lower_bound">1</span></li>
             <li>Upper Bound: <span id="numRandomizedSearchModels_upper_bound">2147483647</span></li>
@@ -4906,7 +4926,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="numStarts_short_desc">The number of restarts, random after the first (default 1)</span>
             </li>
-            <li>Long Description: <span id="numStarts_long_desc">The number of times the algorithm should srarted from different initializations.
+            <li>Long Description: <span id="numStarts_long_desc">
+                The number of times the algorithm should srarted from different initializations.
                 By default, the algorithm will be run through at least once using the initialized parameters
                 (zero random restarts).</span>
             </li>
@@ -5082,7 +5103,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             </span>
             </li>
             <li>Long Description: <span id="graspAllowRandomnessIndideAlgorithm_long_desc">
-				This allows variables orders to be shuffled in certain sports to speed up large linear, Gaussain searches
+				This allows variables orders to be shuffled in certain sports to speed up large linear,
+                Gaussain searches
             </span>
             </li>
             <li>Default Value: <span id="graspAllowRandomnessIndideAlgorithm_default_value">false</span></li>
@@ -5230,6 +5252,7 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             <li>Long Description: <span id="orientVisibleFeedbackLoops_long_desc">
                 Please see the description of this algorithm in Thomas Richardson and Peter Spirtes in Chapter 7 of
                 Computation, Causation, & Discovery by Glymour and Cooper eds.</span>
+                </span>
             </li>
             <li>Default Value: <span id="orientVisibleFeedbackLoops_default_value">true</span></li>
             <li>Lower Bound: <span id="orientVisibleFeedbackLoops_lower_bound"></span></li>
@@ -5239,9 +5262,11 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="outputRBD">outputRBD</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="outputRBD_short_desc">Constraint Scoring: Yes: Dependent Scoring, No: Independent Scoring.</span>
+            <li>Short Description: <span id="outputRBD_short_desc">
+                Constraint Scoring: Yes: Dependent Scoring, No: Independent Scoring.</span>
             </li>
-            <li>Long Description: <span id="outputRBD_long_desc">null</span></li>
+            <li>Long Description: <span id="outputRBD_long_desc">
+                Constraint Scoring: Yes: Dependent Scoring, No: Independent Scoring.</span></li>
             <li>Default Value: <span id="outputRBD_default_value">true</span></li>
             <li>Lower Bound: <span id="outputRBD_lower_bound"></span></li>
             <li>Upper Bound: <span id="outputRBD_upper_bound"></span></li>
@@ -5253,7 +5278,9 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             <li>Short Description: <span id="penaltyDiscount_short_desc">Penalty discount (min = 0.0)</span></li>
             <li>Long Description: <span id="penaltyDiscount_long_desc">
                 The parameter c added to a modified BIC score of the form 2L – c k ln N, where L is the likelihood, k the number of degrees of freedom,
-                and N the sample size. Higher c yield sparser graphs.</li>
+                and N the sample size. Higher c yield sparser graphs.
+                </span>
+            </li>
             <li>Default Value: <span id="penaltyDiscount_default_value">2.0</span></li>
             <li>Lower Bound: <span id="penaltyDiscount_lower_bound">0.0</span></li>
             <li>Upper Bound: <span id="penaltyDiscount_upper_bound">1.7976931348623157E308</span></li>
@@ -5322,7 +5349,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <h3 class="parameter_description" id="thresholdAlpha">errorThreshold</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="thresholdAlpha_short_desc">Error Threshold</span></li>
-            <li>Long Description: <span id="thresholdAlpha_long_desc">Adjusts the threshold for judging conditional dependence.</span>
+            <li>Long Description: <span id="thresholdAlpha_long_desc">
+                Adjusts the threshold for judging conditional dependence.</span>
             </li>
             <li>Default Value: <span id="thresholdAlpha_default_value">0.5</span></li>
             <li>Lower Bound: <span id="thresholdAlpha_lower_bound">0.0</span></li>
@@ -5630,7 +5658,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             <li>Short Description: <span
                     id="semBicStructurePrior_short_desc">Structure Prior for SEM BIC (default 0)</span>
             </li>
-            <li>Long Description: <span id="semBicStructurePrior_long_desc">Structure prior; default is 0 (turned off); may be
+            <li>Long Description: <span id="semBicStructurePrior_long_desc">
+                Structure prior; default is 0 (turned off); may be
                 any positive number otherwise</span>
             </li>
             <li>Default Value: <span id="semBicStructurePrior_default_value">0</span></li>
@@ -5684,8 +5713,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             <li>Short Description: <span id="structurePrior_short_desc">Structure prior coefficient (min = 0.0)</span>
             </li>
             <li>Long Description: <span id="structurePrior_long_desc">
-                For Tetrad, we use as a structure prior the default number of parents for any conditional probability
-                table. Higher weight is accorded to tables with about that number of parents. The prior structure weights
+                The default number of parents for any conditional probability table. Higher weight is accorded
+                to tables with about that number of parents. The prior structure weights
                 are distributed according to a binomial distribution.</span>
             </li>
             <li>Default Value: <span id="structurePrior_default_value">1.0</span></li>
@@ -5696,7 +5725,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="symmetricFirstStep">symmetricFirstStep</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="symmetricFirstStep_short_desc">Yes if the first step step for FGES should do scoring for both X->Y and Y->X</span>
+            <li>Short Description: <span id="symmetricFirstStep_short_desc">
+                Yes if the first step step for FGES should do scoring for both X->Y and Y->X</span>
             </li>
             <li>Long Description: <span id="symmetricFirstStep_long_desc">
                 If Yes, scores for both X->Y and X<-Y will be calculated and the higher score used.</span>
@@ -5725,7 +5755,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="tDepth_short_desc">"T-Depth", the maximum number of neighbors considered in power set calculations</span>
             </li>
-            <li>Long Description: <span id="tDepth_long_desc">For FGES, this is the maximum number of T-neighbors or H-complement-neights
+            <li>Long Description: <span id="tDepth_long_desc">
+                For FGES, this is the maximum number of T-neighbors or H-complement-neights
                 that are considered in any scoring step. Default is -1 (unlimited).</span>
             </li>
             <li>Default Value: <span id="tDepth_default_value">-1</span></li>
@@ -5816,7 +5847,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="adjustOrientations_short_desc">Yes, if the orientation adjustment step should be included</span>
             </li>
-            <li>Long Description: <span id="adjustOrientations_long_desc">Yes, if the orientation adjustment step should be included</span></li>
+            <li>Long Description: <span id="adjustOrientations_long_desc">
+                Yes, if the orientation adjustment step should be included</span></li>
             <li>Default Value: <span id="adjustOrientations_default_value">false</span></li>
             <li>Lower Bound: <span id="adjustOrientations_lower_bound"></span></li>
             g
@@ -5913,7 +5945,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
         <ul class="parameter_description_list">
             <li>Short Description: <span id="ess_short_desc">Yes if the equivalent sample size should be used in place of N</span>
             </li>
-            <li>Long Description: <span id="ess_long_desc">We calculate the equivalent sample size by assuming that all record are equally correlated</span>
+            <li>Long Description: <span id="ess_long_desc">
+                We calculate the equivalent sample size by assuming that all record are equally correlated</span>
             </li>
             <li>Default Value: <span id="ess_default_value">false</span></li>
             <li>Lower Bound: <span id="ess_lower_bound"></span></li>
@@ -5988,6 +6021,7 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             <li>Short Description: <span id="varHigh_short_desc">High end of variance range (min = 0.0)</span></li>
             <li>Long Description: <span id="varHigh_long_desc">
                 The parameter 'b' for drawing independent variance values, from +U(a, b).
+            </span>
             </li>
             <li>Default Value: <span id="varHigh_default_value">3.0</span></li>
             <li>Lower Bound: <span id="varHigh_lower_bound">0.0</span></li>
@@ -6041,7 +6075,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             <li>Short Description: <span
                     id="useScore_short_desc">Yes if the score should be used; no if the test should be used</span>
             </li>
-            <li>Long Description: <span id="useScore_long_desc">BOSS can run either from a score or a test; this lets you choose which.</span>
+            <li>Long Description: <span id="useScore_long_desc">
+                BOSS can run either from a score or a test; this lets you choose which.</span>
             </li>
             <li>Default Value: <span id="useScore_default_value">true</span></li>
             <li>Lower Bound: <span id="useScore_lower_bound"></span></li>
