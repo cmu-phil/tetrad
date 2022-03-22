@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
                     DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
-                            "*", true);
+                            "*", true, Delimiter.TAB);
                     dataSets.add(data);
                 } catch (Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());

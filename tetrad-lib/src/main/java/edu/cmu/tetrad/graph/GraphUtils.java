@@ -2403,7 +2403,7 @@ public final class GraphUtils {
             boolean hasHeader = false;
 
             DataSet dataSet = DataUtils.loadContinuousData(file, commentMarker, quoteCharacter,
-                    missingValueMarker, hasHeader);
+                    missingValueMarker, hasHeader, Delimiter.TAB);
 
             List<Node> nodes = dataSet.getVariables();
             Graph graph = new EdgeListGraph(nodes);
@@ -3911,7 +3911,7 @@ public final class GraphUtils {
                 for (String nodeName : nodeAttributes.keySet()) {
                     Object value = nodeAttributes.get(nodeName);
 
-                    sb.append(String.format("%s: %f", nodeName, value));
+                    sb.append(String.format("%s: %s", nodeName, value));
 
                     count++;
 

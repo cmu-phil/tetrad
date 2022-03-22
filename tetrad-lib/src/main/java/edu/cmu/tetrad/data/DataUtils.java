@@ -26,10 +26,10 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.ContinuousData;
+import edu.pitt.dbmi.data.reader.Data;
+import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
-import edu.pitt.dbmi.data.reader.tabular.MixedTabularData;
-import edu.pitt.dbmi.data.reader.tabular.MixedTabularDatasetFileReader;
+import edu.pitt.dbmi.data.reader.tabular.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.BlockRealMatrix;
@@ -2417,10 +2417,10 @@ public final class DataUtils {
 
     @NotNull
     public static DataSet loadContinuousData(File file, String commentMarker, char quoteCharacter,
-                                             String missingValueMarker, boolean hasHeader)
+                                             String missingValueMarker, boolean hasHeader, Delimiter delimiter)
             throws IOException {
         ContinuousTabularDatasetFileReader dataReader
-                = new ContinuousTabularDatasetFileReader(file.toPath(), Delimiter.COMMA);
+                = new ContinuousTabularDatasetFileReader(file.toPath(), delimiter);
         dataReader.setCommentMarker(commentMarker);
         dataReader.setQuoteCharacter(quoteCharacter);
         dataReader.setMissingDataMarker(missingValueMarker);
@@ -2431,16 +2431,24 @@ public final class DataUtils {
 
     @NotNull
     public static DataSet loadDiscreteData(File file, String commentMarker, char quoteCharacter,
-                                           String missingValueMarker, boolean hasHeader)
+                                           String missingValueMarker, boolean hasHeader, Delimiter delimiter)
             throws IOException {
-        MixedTabularDatasetFileReader dataReader
-                = new MixedTabularDatasetFileReader(file.toPath(), Delimiter.COMMA, 1000000);
+        TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
+        DataColumn[] dataColumns = columnReader.readInDataColumns(new int[]{1}, true);
+
+        columnReader.setCommentMarker(commentMarker);
+
+        TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
+
+        // Need to specify commentMarker, .... again to the TabularDataFileReader
         dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteCharacter);
         dataReader.setMissingDataMarker(missingValueMarker);
-        dataReader.setHasHeader(hasHeader);
-        MixedTabularData data = (MixedTabularData) dataReader.readInData();
-        return (DataSet) DataConvertUtils.toMixedDataBox(data);
+        dataReader.setQuoteCharacter(quoteCharacter);
+
+        Data data = dataReader.read(dataColumns, hasHeader);
+        DataModel dataModel = DataConvertUtils.toDataModel(data);
+
+        return (DataSet) dataModel;
     }
 
 

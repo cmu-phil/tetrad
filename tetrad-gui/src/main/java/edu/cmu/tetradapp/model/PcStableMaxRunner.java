@@ -38,7 +38,7 @@ import java.util.*;
 public class PcStableMaxRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 //    private PC pc = null;
 
     private Set<Edge> pcAdjacent;
@@ -64,12 +64,12 @@ public class PcStableMaxRunner extends AbstractAlgorithmRunner
     // Starts PC from the given graph.
     public PcStableMaxRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     public PcStableMaxRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
@@ -140,7 +140,7 @@ public class PcStableMaxRunner extends AbstractAlgorithmRunner
         PcStableMax pc = new PcStableMax(getIndependenceTest());
         pc.setKnowledge(knowledge);
         pc.setDepth(depth);
-        pc.setInitialGraph(initialGraph);
+        pc.setExternalGraph(externalGraph);
         Graph graph = pc.search();
 
         System.out.println(graph);

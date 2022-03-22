@@ -114,7 +114,7 @@ public class FasFdr implements IFas {
     /**
      * The depth 0 graph, specified initially.
      */
-    private Graph initialGraph;
+    private Graph externalGraph;
 
 //    private List<Double> pValues = new ArrayList<Double>();
 
@@ -483,11 +483,11 @@ public class FasFdr implements IFas {
 //                    continue;
 //                }
 
-                if (initialGraph != null) {
-                    Node x2 = initialGraph.getNode(x.getName());
-                    Node y2 = initialGraph.getNode(y.getName());
+                if (externalGraph != null) {
+                    Node x2 = externalGraph.getNode(x.getName());
+                    Node y2 = externalGraph.getNode(y.getName());
 
-                    if (!initialGraph.isAdjacentTo(x2, y2)) {
+                    if (!externalGraph.isAdjacentTo(x2, y2)) {
                         continue;
                     }
                 }
@@ -669,8 +669,8 @@ public class FasFdr implements IFas {
         return sepset;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public boolean isVerbose() {

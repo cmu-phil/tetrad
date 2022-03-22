@@ -40,7 +40,7 @@ import java.util.Map;
 public class PcStableRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     //============================CONSTRUCTORS============================//
 
@@ -60,12 +60,12 @@ public class PcStableRunner extends AbstractAlgorithmRunner
     // Starts PC from the given graph.
     public PcStableRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     public PcStableRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
@@ -136,7 +136,7 @@ public class PcStableRunner extends AbstractAlgorithmRunner
         pc.setKnowledge(knowledge);
         pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         pc.setDepth(depth);
-        pc.setInitialGraph(initialGraph);
+        pc.setExternalGraph(externalGraph);
         Graph graph = pc.search();
 
         System.out.println(graph);

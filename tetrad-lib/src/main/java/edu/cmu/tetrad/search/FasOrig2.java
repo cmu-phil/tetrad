@@ -90,7 +90,7 @@ public class FasOrig2 implements IFas {
     /**
      * The depth 0 graph, specified initially.
      */
-    private Graph initialGraph;
+    private Graph externalGraph;
 
     private final NumberFormat nf = new DecimalFormat("0.00E0");
 
@@ -106,9 +106,9 @@ public class FasOrig2 implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public FasOrig2(Graph initialGraph, IndependenceTest test) {
-        if (initialGraph != null) {
-            this.initialGraph = new EdgeListGraph(initialGraph);
+    public FasOrig2(Graph externalGraph, IndependenceTest test) {
+        if (externalGraph != null) {
+            this.externalGraph = new EdgeListGraph(externalGraph);
         }
         this.test = test;
         this.nodes = test.getVariables();
@@ -224,11 +224,11 @@ public class FasOrig2 implements IFas {
 
                 Node y = nodes.get(j);
 
-                if (initialGraph != null) {
-                    Node x2 = initialGraph.getNode(x.getName());
-                    Node y2 = initialGraph.getNode(y.getName());
+                if (externalGraph != null) {
+                    Node x2 = externalGraph.getNode(x.getName());
+                    Node y2 = externalGraph.getNode(y.getName());
 
-                    if (!initialGraph.isAdjacentTo(x2, y2)) {
+                    if (!externalGraph.isAdjacentTo(x2, y2)) {
                         continue;
                     }
                 }

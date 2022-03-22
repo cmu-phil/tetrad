@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -49,7 +50,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
                     DataSet data = DataUtils.loadContinuousData(file1, "//", '\"' ,
-                            "*", true);
+                            "*", true, Delimiter.TAB);
                     dataSets.add(data);
                 }
 

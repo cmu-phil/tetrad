@@ -46,7 +46,7 @@ import java.util.*;
 public final class BffBeam implements Bff {
     private CovarianceMatrix cov = null;
     private IKnowledge knowledge = new Knowledge2();
-    private Graph initialGraph;
+    private Graph externalGraph;
     private Graph graph;
     private double alpha = 0.05;
     private double highPValueAlpha = 0.05;
@@ -65,7 +65,7 @@ public final class BffBeam implements Bff {
 
         this.knowledge = knowledge;
         this.graph = graph;
-        this.initialGraph = new EdgeListGraph(graph);
+        this.externalGraph = new EdgeListGraph(graph);
         this.cov = new CovarianceMatrix(data);
         this.scorer = new DagScorer(cov);
     }
@@ -75,13 +75,13 @@ public final class BffBeam implements Bff {
 
         this.knowledge = knowledge;
         this.graph = graph;
-        this.initialGraph = new EdgeListGraph(graph);
+        this.externalGraph = new EdgeListGraph(graph);
         this.cov = cov;
         this.scorer = new DagScorer(cov);
     }
 
     public Graph search() {
-        EdgeListGraph _graph = new EdgeListGraph(initialGraph);
+        EdgeListGraph _graph = new EdgeListGraph(externalGraph);
         addRequiredEdges(_graph);
         Graph bestGraph = SearchGraphUtils.dagFromCPDAG(_graph);
 

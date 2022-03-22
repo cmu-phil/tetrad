@@ -245,10 +245,10 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         throw new UnsupportedOperationException();
     }
 
-    public void setInitialGraph(Graph graph) {
+    public void setExternalGraph(Graph graph) {
     }
 
-    public Graph getInitialGraph() {
+    public Graph getExternalGraph() {
         return null;
     }
 

@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
@@ -32,11 +31,9 @@ import java.util.List;
 )
 @Experimental
 @Bootstrapping
-public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
+public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public Bpc() {
@@ -67,8 +64,8 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
             Bpc algorithm = new Bpc();
 
             //algorithm.setKnowledge(knowledge);
-//          if (initialGraph != null) {
-//      		algorithm.setInitialGraph(initialGraph);
+//          if (externalGraph != null) {
+//      		algorithm.setExternalGraph(externalGraph);
 //  		}
 
             DataSet data = (DataSet) dataSet;
@@ -132,20 +129,4 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
-
-    @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
-    }
-
 }

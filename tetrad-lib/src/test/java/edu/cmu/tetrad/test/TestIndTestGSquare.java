@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestGSquare;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Test;
 
 import java.io.File;
@@ -89,7 +90,7 @@ public class TestIndTestGSquare {
         System.out.println("Loading " + filename);
 
         return DataUtils.loadDiscreteData(new File(filename),
-                "//", '\"', "-99", true);
+                "//", '\"', "-99", true, Delimiter.TAB);
     }
 }
 

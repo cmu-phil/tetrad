@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Ccd;
 import edu.cmu.tetrad.search.IndTestCramerT;
 import edu.cmu.tetrad.search.Pc;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -66,7 +67,7 @@ public class YeastPcCcdSearchWrapper {
 
         try {
             cds = DataUtils.loadContinuousData(new File(args[0]), "//", '\"',
-                    "*", true);
+                    "*", true, Delimiter.TAB);
         } catch (IOException e) {
             e.printStackTrace();
         }

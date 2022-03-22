@@ -55,7 +55,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, 
     private List<ScoredGraph> topGraphs;
     private int index;
     private transient Fges fges;
-    private transient Graph initialGraph;
+    private transient Graph externalGraph;
 
     //============================CONSTRUCTORS============================//
 
@@ -70,13 +70,13 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, 
     public FgesRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
         if (graph == this) throw new IllegalArgumentException();
-        this.initialGraph = graph.getGraph();
+        this.externalGraph = graph.getGraph();
     }
 
     public FgesRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
         if (graph == this) throw new IllegalArgumentException();
-        this.initialGraph = graph.getGraph();
+        this.externalGraph = graph.getGraph();
     }
 
     public FgesRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -162,12 +162,12 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, 
                 for (DataModel dataModel : list) {
                     if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
                         throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
-                                "covariance matrices, or else all discrete data sets, or else a single initialGraph.");
+                                "covariance matrices, or else all discrete data sets, or else a single externalGraph.");
                     }
                 }
 
                 if (list.size() != 1) {
-                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or initialGraph " +
+                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or externalGraph " +
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
@@ -204,7 +204,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, 
             }
         }
 
-        fges.setInitialGraph(initialGraph);
+        fges.setExternalGraph(externalGraph);
         fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         fges.setVerbose(true);
         fges.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));

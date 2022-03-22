@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -441,7 +442,7 @@ public class Cstar {
 
     private DataSet readData(File dir, String s) {
         try {
-            DataSet dataSet = DataUtils.loadContinuousData(new File(dir, s),"//", '*', "*", true);
+            DataSet dataSet = DataUtils.loadContinuousData(new File(dir, s),"//", '*', "*", true, Delimiter.TAB);
 
             TetradLogger.getInstance().forceLogMessage(
                     "Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
@@ -760,7 +761,7 @@ public class Cstar {
 
     private double[][] loadMatrix(File file) {
         try {
-            DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"', "*", true);
+            DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB);
 
             TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
 

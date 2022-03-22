@@ -33,16 +33,24 @@ import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.WatchedProcess;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Edits some algorithm to search for Markov blanket CPDAGs.
@@ -93,7 +101,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     }
 
     private void initComponents() {
-        setPreferredSize(new Dimension(827, 582));
+        if (algorithmRunner.hasMissingValues()) {
+            setPreferredSize(new Dimension(827, 670));
+        } else {
+            setPreferredSize(new Dimension(827, 620));
+        }
 
         setLayout(new CardLayout());
         add(new SingleButtonCard(algorithmCard, algoFwdBtn));
@@ -201,7 +213,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                         JOptionPane.showMessageDialog(
                                 (Window) getTopLevelAncestor(),
                                 "Stopped with error:\n"
-                                        + exception.getMessage());
+                                + exception.getMessage());
                     }
 
 //                    paramBkBtn.setEnabled(true);

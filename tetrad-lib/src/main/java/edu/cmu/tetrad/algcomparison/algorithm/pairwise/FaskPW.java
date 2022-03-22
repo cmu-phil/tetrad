@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -12,7 +12,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.search.IndTestFisherZ;
-import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -23,22 +22,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RSkew.
+ * FASK-PW (pairwise).
  *
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK-PW",
-        command = "faskpw",
+        command = "fask-pw",
         algoType = AlgType.orient_pairwise,
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class FaskPW implements Algorithm, TakesInitialGraph {
+public class FaskPW implements Algorithm, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
     private Algorithm algorithm = null;
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     public FaskPW() {
     }
@@ -53,9 +52,9 @@ public class FaskPW implements Algorithm, TakesInitialGraph {
             Graph graph = algorithm.search(dataModel, parameters);
 
             if (graph != null) {
-                initialGraph = graph;
+                externalGraph = graph;
             } else {
-                throw new IllegalArgumentException("This RSkew algorithm needs both data and a graph source as inputs; it \n"
+                throw new IllegalArgumentException("This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
             }
 
@@ -69,8 +68,8 @@ public class FaskPW implements Algorithm, TakesInitialGraph {
             return fask.search();
         } else {
             FaskPW rSkew = new FaskPW(algorithm);
-            if (initialGraph != null) {
-                rSkew.setInitialGraph(initialGraph);
+            if (externalGraph != null) {
+                rSkew.setExternalGraph(externalGraph);
             }
 
             DataSet data = (DataSet) dataModel;
@@ -129,19 +128,19 @@ public class FaskPW implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
-            throw new IllegalArgumentException("This RSkew algorithm needs both data and a graph source as inputs; it \n"
+            throw new IllegalArgumentException("This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
                     + "will orient the edges in the input graph using the data.");
         }
 

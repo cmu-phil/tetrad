@@ -77,12 +77,12 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
     /**
      * Sets the initial graph for the algorithm, if feasible.
      */
-    void setInitialGraph(Graph graph);
+    void setExternalGraph(Graph graph);
 
     /**
      * @return the initial graph, if there is one, or null if not.
      */
-    Graph getInitialGraph();
+    Graph getExternalGraph();
 
     String getAlgorithmName();
 }

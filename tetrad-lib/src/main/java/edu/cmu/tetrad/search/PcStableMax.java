@@ -77,7 +77,7 @@ public class PcStableMax implements GraphSearch {
     /**
      * The initial graph for the Fast Adjacency Search, or null if there is none.
      */
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     /**
      * True if verbose output should be printed.
@@ -184,7 +184,7 @@ public class PcStableMax implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        Fas fas = new Fas(initialGraph, getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         fas.setStable(true);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
@@ -242,8 +242,8 @@ public class PcStableMax implements GraphSearch {
         return graph.getNodes();
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public boolean isVerbose() {

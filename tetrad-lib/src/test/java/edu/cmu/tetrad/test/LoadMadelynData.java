@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
 
             try {
                 DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"' ,
-                        "*", true);
+                        "*", true, Delimiter.TAB);
                 dataSets.add(dataSet);
 
                 if (!(dataSet.isContinuous())) {

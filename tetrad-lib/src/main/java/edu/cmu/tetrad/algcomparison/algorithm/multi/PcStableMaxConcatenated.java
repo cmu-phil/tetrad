@@ -33,7 +33,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
     private IndependenceWrapper test;
-    private Algorithm initialGraph = null;
+    private Algorithm externalGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public PcStableMaxConcatenated(IndependenceWrapper test, boolean compareToTrue) {
@@ -143,8 +143,8 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     @Override
     public String getDescription() {
         return "PC-Max (\"Peter and Clark\") on concatenating datasets using " + test.getDescription()
-                + (initialGraph != null ? " with initial graph from "
-                + initialGraph.getDescription() : "");
+                + (externalGraph != null ? " with initial graph from "
+                + externalGraph.getDescription() : "");
     }
 
     @Override

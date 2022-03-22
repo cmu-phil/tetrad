@@ -5,7 +5,6 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -35,13 +34,11 @@ import java.util.List;
 )
 @TimeSeries
 @Bootstrapping
-public class SvarGfci implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper, UsesScoreWrapper {
+public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
     private IKnowledge knowledge = null;
 
     public SvarGfci() {
@@ -64,8 +61,7 @@ public class SvarGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
             }
             edu.cmu.tetrad.search.SvarGFci search = new edu.cmu.tetrad.search.SvarGFci(test.getTest(dataSet, parameters),
                     score.getScore(dataSet, parameters));
-            IKnowledge _knowledge = dataSet.getKnowledge() != null ? dataSet.getKnowledge() : new Knowledge2();
-            search.setKnowledge(dataSet.getKnowledge());
+            search.setKnowledge(knowledge);
 
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -106,9 +102,7 @@ public class SvarGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
     }
 
     public String getDescription() {
-        return "SavrGFCI (SVAR GFCI) using " + test.getDescription() + " and " + score.getDescription()
-                + (algorithm != null ? " with initial graph from "
-                + algorithm.getDescription() : "");
+        return "SavrGFCI (SVAR GFCI) using " + test.getDescription() + " and " + score.getDescription();
     }
 
     @Override
@@ -122,7 +116,7 @@ public class SvarGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
 
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_INDEGREE);
-        parameters.add(Params.PRINT_STREAM);
+//        parameters.add(Params.PRINT_STREAM);
 
         parameters.add(Params.VERBOSE);
         return parameters;
@@ -139,18 +133,8 @@ public class SvarGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
     }
 
     @Override
@@ -159,18 +143,13 @@ public class SvarGfci implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
     }
 
     @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+    public ScoreWrapper getScoreWrapper() {
+        return score;
     }
 
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
-    }
-
-    @Override
-    public ScoreWrapper getScoreWrapper() {
-        return score;
     }
 
 }

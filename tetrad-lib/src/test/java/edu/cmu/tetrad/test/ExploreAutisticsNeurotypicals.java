@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -126,7 +127,7 @@ public final class ExploreAutisticsNeurotypicals {
                     if (file.getName().startsWith(prefixes[i]) && !file.getName().endsWith(".graph.txt")
                             && !file.getName().contains("tet")) {
                         DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
-                                "*", true);
+                                "*", true, Delimiter.TAB);
 
                         allDataSets.get(i).add(data);
                         attested = true;
@@ -522,7 +523,7 @@ public final class ExploreAutisticsNeurotypicals {
             String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets";
             File file = new File(path, "concat_usm_dataset_madelyn.txt");
             DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
-                    "*", true);
+                    "*", true, Delimiter.TAB);
 
             ContinuousVariable avg = new ContinuousVariable("Avg");
             data.addVariable(avg);

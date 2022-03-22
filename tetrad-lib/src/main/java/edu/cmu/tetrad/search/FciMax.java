@@ -109,7 +109,7 @@ public final class FciMax implements GraphSearch {
     /**
      * An initial graph if there is one.
      */
-    private Graph initialGraph;
+    private Graph externalGraph;
 
     /**
      * Max path length for the possible dsep search.
@@ -151,13 +151,13 @@ public final class FciMax implements GraphSearch {
     }
 
     public Graph search() {
-        Fas fas = new Fas(initialGraph, getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         fas.setVerbose(verbose);
         return search(fas);
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public Graph search(IFas fas) {

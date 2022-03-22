@@ -20,11 +20,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.statistic.BicEst;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -95,7 +97,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * An initial graph to start from.
      */
-    private Graph initialGraph;
+    private Graph externalGraph;
     /**
      * If non-null, edges not adjacent in this graph will not be added.
      */
@@ -216,8 +218,8 @@ public final class Fges implements GraphSearch, GraphScorer {
             adjacencies = GraphUtils.replaceNodes(adjacencies, getVariables());
         }
 
-        if (initialGraph != null) {
-            graph = new EdgeListGraph(initialGraph);
+        if (externalGraph != null) {
+            graph = new EdgeListGraph(externalGraph);
             graph = GraphUtils.replaceNodes(graph, getVariables());
         }
 
@@ -293,28 +295,28 @@ public final class Fges implements GraphSearch, GraphScorer {
      * @return the initial graph for the search. The search is initialized to
      * this graph and proceeds from there.
      */
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
     /**
      * Sets the initial graph.
      */
-    public void setInitialGraph(Graph initialGraph) {
-        initialGraph = GraphUtils.replaceNodes(initialGraph, variables);
+    public void setExternalGraph(Graph externalGraph) {
+        externalGraph = GraphUtils.replaceNodes(externalGraph, variables);
 
-        if (initialGraph != null) {
+        if (externalGraph != null) {
             if (verbose) {
-                out.println("Initial graph variables: " + initialGraph.getNodes());
+                out.println("Initial graph variables: " + externalGraph.getNodes());
                 out.println("Data set variables: " + variables);
             }
 
-            if (!new HashSet<>(initialGraph.getNodes()).equals(new HashSet<>(variables))) {
+            if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(variables))) {
                 throw new IllegalArgumentException("Variables aren't the same.");
             }
         }
 
-        this.initialGraph = initialGraph;
+        this.externalGraph = externalGraph;
     }
 
     /**
@@ -1293,7 +1295,8 @@ public final class Fges implements GraphSearch, GraphScorer {
                 final double bic = score.localScore(hashIndices.get(node), parentIndices);
 
                 if (recordScores) {
-                    node.addAttribute("BIC", bic);
+                    NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                    node.addAttribute("BIC", nf.format(bic));
                 }
 
                 _score += bic;
@@ -1301,7 +1304,8 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         if (recordScores) {
-            graph.addAttribute("BIC", _score);
+            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+            graph.addAttribute("BIC", nf.format(_score));
         }
 
         return _score;

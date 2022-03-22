@@ -38,7 +38,7 @@ import java.util.*;
 public class DataAlgorithmRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
     private Set<Edge> pcAdjacent;
     private Set<Edge> pcNonadjacent;
 
@@ -82,7 +82,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      */
     public DataAlgorithmRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
@@ -91,7 +91,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      */
     public DataAlgorithmRunner(Simulation dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
@@ -100,7 +100,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      */
     public DataAlgorithmRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
@@ -109,7 +109,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      */
     public DataAlgorithmRunner(Simulation dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
@@ -170,7 +170,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
         pc.setKnowledge(knowledge);
         pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         pc.setDepth(depth);
-        pc.setInitialGraph(initialGraph);
+        pc.setExternalGraph(externalGraph);
         graph = pc.search();
 
         System.out.println(graph);

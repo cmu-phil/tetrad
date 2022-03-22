@@ -24,6 +24,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.Vector;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +51,7 @@ public class ShortTriangularMatrix implements TriangularMatrix {
         File file = new File("C:/data1.txt");
         try {
             DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
-                    "*", true);
+                    "*", true, Delimiter.TAB);
             test.becomeCorrelationMatrix(data);
             System.out.println(test.toString());
             CorrelationMatrix m = new CorrelationMatrix(data);

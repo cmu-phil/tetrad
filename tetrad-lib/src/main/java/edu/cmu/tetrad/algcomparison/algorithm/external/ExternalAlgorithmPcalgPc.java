@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -71,7 +72,7 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
 
         try {
             DataSet dataSet2 = DataUtils.loadContinuousData(file, "//", '\"' ,
-                    "*", true);
+                    "*", true, Delimiter.TAB);
             System.out.println("Loading graph from " + file.getAbsolutePath());
             Graph graph = loadGraphPcAlgMatrix(dataSet2);
 

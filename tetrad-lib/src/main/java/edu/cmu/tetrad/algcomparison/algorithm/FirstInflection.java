@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
@@ -18,7 +18,7 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public class FirstInflection implements Algorithm, TakesInitialGraph {
+public class FirstInflection implements Algorithm, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
     private final double low;
@@ -209,7 +209,7 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public void setInitialGraph(Algorithm initialGraph) {
+    public void setExternalGraph(Algorithm externalGraph) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -376,12 +376,12 @@ public class FirstInflection implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph getInitialGraph() {
+    public Graph getExternalGraph() {
         return intialGraph;
     }
 
     @Override
-    public void setInitialGraph(Graph initialGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         // TODO Auto-generated method stub
         this.intialGraph = intialGraph;
     }

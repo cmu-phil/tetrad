@@ -54,7 +54,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
     private int index;
-    private transient Graph initialGraph;
+    private transient Graph externalGraph;
 
     //============================CONSTRUCTORS============================//
 

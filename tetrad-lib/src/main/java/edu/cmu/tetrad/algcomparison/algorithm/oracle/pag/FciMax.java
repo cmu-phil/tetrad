@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
@@ -30,15 +29,17 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public FciMax() {
+    }
+
+    public FciMax(IndependenceWrapper test) {
+        this.test = test;
     }
 
     @Override
@@ -46,22 +47,9 @@ public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
         return super.hashCode();
     }
 
-    public FciMax(IndependenceWrapper test) {
-        this.test = test;
-    }
-
-    public FciMax(IndependenceWrapper test, Algorithm algorithm) {
-        this.test = test;
-        this.algorithm = algorithm;
-    }
-
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (algorithm != null) {
-                initialGraph = algorithm.search(dataSet, parameters);
-            }
-
             edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
@@ -69,15 +57,15 @@ public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-//            if (initialGraph != null) {
-//                search.setInitialGraph(initialGraph);
+//            if (externalGraph != null) {
+//                search.setExternalGraph(externalGraph);
 //            }
             return search.search();
         } else {
             FciMax algorithm = new FciMax(test);
             //algorithm.setKnowledge(knowledge);
-//          if (initialGraph != null) {
-//      		algorithm.setInitialGraph(initialGraph);
+//          if (externalGraph != null) {
+//      		algorithm.setExternalGraph(externalGraph);
 //  		}
 
             DataSet data = (DataSet) dataSet;
@@ -113,9 +101,7 @@ public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     }
 
     public String getDescription() {
-        return "FCI (Fast Causal Inference) using " + test.getDescription()
-                + (algorithm != null ? " with initial graph from "
-                + algorithm.getDescription() : "");
+        return "FCI (Fast Causal Inference) using " + test.getDescription();
     }
 
     @Override
@@ -146,28 +132,13 @@ public class FciMax implements Algorithm, TakesInitialGraph, HasKnowledge, Takes
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
     }
 
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return test;
     }
 
 }

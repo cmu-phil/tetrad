@@ -3,7 +3,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScoreDeterministic;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
@@ -33,12 +32,11 @@ import static java.lang.Math.sqrt;
  */
 @Bootstrapping
 @Experimental
-public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
+public class GesMe implements Algorithm {
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
-    private Graph initialGraph = null;
-    private ScoreWrapper score = new SemBicScoreDeterministic();
+    private final ScoreWrapper score = new SemBicScoreDeterministic();
 
     public GesMe() {
         setCompareToTrue(false);
@@ -181,9 +179,6 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
         } else {
             GesMe algorithm = new GesMe(compareToTrue);
 
-            if (initialGraph != null) {
-                algorithm.setInitialGraph(initialGraph);
-            }
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
 
@@ -278,23 +273,8 @@ public class GesMe implements Algorithm, TakesInitialGraph/*, HasKnowledge*/ {
             }
         }
 
-        return "\n" + table.toString();
+        return "\n" + table;
 
-    }
-
-    @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

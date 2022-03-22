@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,7 +106,7 @@ public class FaskGraphs {
                     if (name.contains("autistic")) {
                         types.add(true);
                         DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"' ,
-                                "*", true);
+                                "*", true, Delimiter.TAB);
                         filenames.add(name);
                         datasets.add(dataSet);
                         Fask fask = new Fask();
@@ -114,7 +115,7 @@ public class FaskGraphs {
                     } else if (name.contains("typical")) {
                         types.add(false);
                         DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"' ,
-                                "*", true);
+                                "*", true, Delimiter.TAB);
                         filenames.add(name);
                         datasets.add(dataSet);
                         Fask fask = new Fask();

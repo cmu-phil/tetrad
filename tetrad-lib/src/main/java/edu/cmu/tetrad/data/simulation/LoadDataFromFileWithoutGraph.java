@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.utils.ParameterValues;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
             File file = new File(path);
             System.out.println("Loading data from " + file.getAbsolutePath());
             this.dataSet = DataUtils.loadContinuousData(file, "//", '\"' ,
-                    "*", true);
+                    "*", true, Delimiter.TAB);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -175,7 +175,7 @@ public final class Cfci implements GraphSearch {
         this.graph.fullyConnect(Endpoint.TAIL);
 
 //        // Step FCI B.  (Zhang's step F2.)
-        Fas adj = new Fas(graph, independenceTest);
+        Fas adj = new Fas(independenceTest);
         adj.setKnowledge(getKnowledge());
         adj.setDepth(depth);
         adj.setVerbose(verbose);
