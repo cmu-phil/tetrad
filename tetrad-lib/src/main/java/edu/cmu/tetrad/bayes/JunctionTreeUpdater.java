@@ -21,7 +21,6 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
@@ -263,7 +262,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
                     }
 
                     if (condition.existsCombination()) {
-                        double p = jta.getConditionalProbability(node, col, parents, parentValues);
+                        double p = (parents.length > 0)
+                                ? jta.getConditionalProbability(node, col, parents, parentValues)
+                                : jta.getMarginalProbability(node, col);
                         updatedBayesIm.setProbability(node, row, col, p);
                     } else {
                         updatedBayesIm.setProbability(node, row, col,
