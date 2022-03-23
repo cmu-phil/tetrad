@@ -107,7 +107,7 @@ public class AlgorithmCard extends JPanel {
     private final Map<AlgorithmModel, Map<DataType, IndependenceTestModel>> defaultIndTestModels = new HashMap<>();
     private final Map<AlgorithmModel, Map<DataType, ScoreModel>> defaultScoreModels = new HashMap<>();
     private final JCheckBox knowledgeChkBox = new JCheckBox("accepts knowledge");
-    private final JRadioButton linearGaussianRadBtn = new JRadioButton("Linear, Gaussain");
+    private final JRadioButton linearGaussianRadBtn = new JRadioButton("Linear, Gaussian");
     private final JRadioButton mixedRadBtn = new JRadioButton("Mixed Discrete/Gaussian");
     private final JRadioButton generalRadBtn = new JRadioButton("General");
     private final JRadioButton allRadBtn = new JRadioButton("All");
@@ -954,13 +954,13 @@ public class AlgorithmCard extends JPanel {
                                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                                 .addComponent(testLabel)
                                                                 .addComponent(scoreLabel))
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+//                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                                                 .addComponent(indTestComboBox, 0, 239, Short.MAX_VALUE)
                                                                 .addComponent(scoreComboBox, 0, 239, Short.MAX_VALUE)))
                                                 .addComponent(assumptionsLabel)
                                                 .addGroup(layout.createSequentialGroup()
-                                                        .addGap(6, 6, 6)
+//                                                        .addGap(6, 6, 6)
                                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                                 .addComponent(mixedRadBtn)
                                                                 .addComponent(linearGaussianRadBtn)
@@ -968,7 +968,8 @@ public class AlgorithmCard extends JPanel {
                                                                 .addComponent(allRadBtn)))
                                                 .addComponent(missingValueAlert)
                                                 .addComponent(testwiseDeletionAlert))
-                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+//                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                )
                 );
                 layout.setVerticalGroup(
                         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -983,19 +984,20 @@ public class AlgorithmCard extends JPanel {
                                         .addComponent(generalRadBtn)
 //                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(allRadBtn)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(missingValueAlert)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(testwiseDeletionAlert)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                                 .addComponent(testLabel)
                                                 .addComponent(indTestComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                                 .addComponent(scoreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addComponent(scoreLabel))
-                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+//                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                )
                 );
             } else {
                 GroupLayout layout = new GroupLayout(this);
@@ -1009,7 +1011,7 @@ public class AlgorithmCard extends JPanel {
                                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                                 .addComponent(testLabel)
                                                                 .addComponent(scoreLabel))
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+//                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                                                 .addComponent(indTestComboBox, 0, 239, Short.MAX_VALUE)
                                                                 .addComponent(scoreComboBox, 0, 239, Short.MAX_VALUE)))
@@ -1036,11 +1038,11 @@ public class AlgorithmCard extends JPanel {
                                         .addComponent(generalRadBtn)
 //                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(allRadBtn)
-                                        .addGap(18, 18, 18)
+//                                        .addGap(18, 18, 18)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                                 .addComponent(testLabel)
                                                 .addComponent(indTestComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                                 .addComponent(scoreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addComponent(scoreLabel))
