@@ -411,7 +411,7 @@ public final class SemEstimator implements TetradSerializable {
         }
     }
 
-    private void setSemOptimizer(SemOptimizer semOptimizer) {
+    public void setSemOptimizer(SemOptimizer semOptimizer) {
         this.semOptimizer = semOptimizer;
     }
 
