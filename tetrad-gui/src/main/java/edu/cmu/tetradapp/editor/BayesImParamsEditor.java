@@ -88,17 +88,8 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
             throw new IllegalStateException();
         }
 
-        manually.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("initializationMode", "manualRetain");
-            }
-        });
-
-        randomly.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("initializationMode", "randomOverwrite");
-            }
-        });
+        manually.addActionListener(e -> getParams().set("initializationMode", "manualRetain"));
+        randomly.addActionListener(e -> getParams().set("initializationMode", "randomOverwrite"));
 
         // continue workbench construction.
         Box b1 = Box.createVerticalBox();
