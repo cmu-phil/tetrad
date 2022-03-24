@@ -73,10 +73,10 @@ public class BayesPmWrapper implements SessionModel {
 
         int lowerBound, upperBound;
 
-        if (params.getString("initializationMode", "manual").equals("manual")) {
+        if (params.getString("initializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
             setBayesPm(graph, lowerBound, upperBound);
-        } else if (params.getString("initializationMode", "manual").equals("automatic")) {
+        } else if (params.getString("initializationMode", "trinary").equals("range")) {
             lowerBound = params.getInt("minCategories", 2);
             upperBound = params.getInt("maxCategories", 4);
             setBayesPm(graph, lowerBound, upperBound);
@@ -142,10 +142,10 @@ public class BayesPmWrapper implements SessionModel {
 
         int lowerBound, upperBound;
 
-        if (params.getString("initializationMode", "manual").equals("manual")) {
+        if (params.getString("initializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
             setBayesPm(new BayesPm(graph, bayesPm, lowerBound, upperBound));
-        } else if (params.getString("initializationMode", "manual").equals("automatic")) {
+        } else if (params.getString("initializationMode", "trinary").equals("range")) {
             lowerBound = params.getInt("minCategories", 2);
             upperBound = params.getInt("maxCategories", 4);
             setBayesPm(graph, lowerBound, upperBound);
@@ -178,10 +178,10 @@ public class BayesPmWrapper implements SessionModel {
 
         int lowerBound, upperBound;
 
-        if (params.getString("bayesPmInitializationMode", "automatic").equals("manual")) {
+        if (params.getString("bayesPmInitializationMode", "range").equals("trinary")) {
             lowerBound = upperBound = 3;
             setBayesPm(graph, lowerBound, upperBound);
-        } else if (params.getString("bayesPmInitializationMode", "automatic").equals("automatic")) {
+        } else if (params.getString("bayesPmInitializationMode", "range").equals("range")) {
             lowerBound = params.getInt("minCategories", 2);
             upperBound = params.getInt("maxCategories", 4);
             setBayesPm(graph, lowerBound, upperBound);
@@ -292,9 +292,9 @@ public class BayesPmWrapper implements SessionModel {
 
         int lowerBound, upperBound;
 
-        if (params.getString("bayesPmInitializationMode", "manual").equals("manual")) {
+        if (params.getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
-        } else if (params.getString("bayesPmInitializationMode", "manual").equals("automatic")) {
+        } else if (params.getString("bayesPmInitializationMode", "trinary").equals("range")) {
             lowerBound = params.getInt("minCategories", 2);
             upperBound = params.getInt("maxCategories", 4);
         } else {
@@ -319,13 +319,13 @@ public class BayesPmWrapper implements SessionModel {
 
             int lowerBound, upperBound;
 
-            String string = params.getString("bayesPmInitializationMode", "manual");
+            String string = params.getString("bayesPmInitializationMode", "trinary");
 
-            if (string.equals("manual")) {
+            if (string.equals("trinary")) {
                 lowerBound = upperBound = 3;
                 setBayesPm(new BayesPm(graph,
                         oldBayesPmWrapper.getBayesPm(), lowerBound, upperBound));
-            } else if (string.equals("automatic")) {
+            } else if (string.equals("range")) {
                 lowerBound = params.getInt("minCategories", 2);
                 upperBound = params.getInt("maxCategories", 4);
                 setBayesPm(graph, lowerBound, upperBound);

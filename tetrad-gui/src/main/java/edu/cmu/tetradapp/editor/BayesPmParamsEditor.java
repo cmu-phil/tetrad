@@ -92,14 +92,14 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         // construct the workbench.
         setLayout(new BorderLayout());
 
-        JRadioButton setUpManually =
+        JRadioButton trinary =
                 new JRadioButton("<html>" + "3-valued:</html>");
 
-        JRadioButton automaticallyAssigned =
+        JRadioButton range =
                 new JRadioButton("<html>" + "Range:</html>");
         ButtonGroup group = new ButtonGroup();
-        group.add(setUpManually);
-        group.add(automaticallyAssigned);
+        group.add(trinary);
+        group.add(range);
 
         // continue workbench construction.
         Box b1 = Box.createVerticalBox();
@@ -111,7 +111,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(Box.createVerticalStrut(5));
 
         Box b3 = Box.createHorizontalBox();
-        b3.add(setUpManually);
+        b3.add(trinary);
         b3.add(Box.createHorizontalGlue());
         b1.add(b3);
 
@@ -126,7 +126,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(Box.createVerticalStrut(10));
 
         Box b5 = Box.createHorizontalBox();
-        b5.add(automaticallyAssigned);
+        b5.add(range);
         b5.add(Box.createHorizontalGlue());
         b1.add(b5);
 
@@ -157,24 +157,24 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
 
-        if (getParams().getString("bayesPmInitializationMode", "automatic").equals("manual")) {
-            setUpManually.setSelected(true);
+        if (getParams().getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
+            trinary.setSelected(true);
             lowerBoundField.setEnabled(false);
             upperBoundField.setEnabled(false);
         } else {
-            automaticallyAssigned.setSelected(true);
+            range.setSelected(true);
             lowerBoundField.setEnabled(true);
             upperBoundField.setEnabled(true);
         }
 
-        setUpManually.addActionListener(e -> {
-            getParams().set("bayesPmInitializationMode", "manual");
+        trinary.addActionListener(e -> {
+            getParams().set("bayesPmInitializationMode", "trinary");
             lowerBoundField.setEnabled(false);
             upperBoundField.setEnabled(false);
         });
 
-        automaticallyAssigned.addActionListener(e -> {
-            getParams().set("bayesPmInitializationMode", "automatic");
+        range.addActionListener(e -> {
+            getParams().set("bayesPmInitializationMode", "range");
             lowerBoundField.setEnabled(true);
             upperBoundField.setEnabled(true);
         });
