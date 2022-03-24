@@ -50,7 +50,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.FciMax2 search = new edu.cmu.tetrad.search.FciMax2(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
@@ -101,7 +101,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
     }
 
     public String getDescription() {
-        return "FCI (Fast Causal Inference) using " + test.getDescription();
+        return "FCI-Max (Fast Causal Inference Max P-value) using " + test.getDescription();
     }
 
     @Override

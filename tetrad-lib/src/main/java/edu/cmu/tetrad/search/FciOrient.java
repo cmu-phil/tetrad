@@ -1161,7 +1161,7 @@ public final class FciOrient {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+    public void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
         logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it
