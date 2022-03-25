@@ -420,6 +420,10 @@ public final class DagEditor extends JPanel
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
+        JMenuItem randomGraph = new JMenuItem("Random Graph");
+        graph.add(randomGraph);
+        graph.addSeparator();
+
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));
@@ -427,8 +431,6 @@ public final class DagEditor extends JPanel
 //        graph.add(new AllPathsAction(getWorkbench()));
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
 
-        JMenuItem randomGraph = new JMenuItem("Random Graph");
-        graph.add(randomGraph);
 
         randomGraph.addActionListener(e -> {
             final GraphParamsEditor editor = new GraphParamsEditor();

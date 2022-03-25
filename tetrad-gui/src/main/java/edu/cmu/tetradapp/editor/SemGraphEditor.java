@@ -430,6 +430,10 @@ public final class SemGraphEditor extends JPanel
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
+        JMenuItem randomGraph = new JMenuItem("Random Graph");
+        graph.add(randomGraph);
+        graph.addSeparator();
+
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));
@@ -480,8 +484,6 @@ public final class SemGraphEditor extends JPanel
             getWorkbench().repaint();
         });
 
-        JMenuItem randomGraph = new JMenuItem("Random Graph");
-        graph.add(randomGraph);
 
         randomGraph.addActionListener(e -> {
             final GraphParamsEditor editor = new GraphParamsEditor();
@@ -519,7 +521,6 @@ public final class SemGraphEditor extends JPanel
             });
         });
 
-        graph.addSeparator();
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
 
         return graph;

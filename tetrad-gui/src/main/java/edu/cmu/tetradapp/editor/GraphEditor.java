@@ -434,6 +434,11 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
+        JMenuItem randomGraph = new JMenuItem("Random Graph");
+        graph.add(randomGraph);
+
+        graph.addSeparator();
+
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
 
@@ -457,8 +462,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             getWorkbench().repaint();
         });
 
-        JMenuItem randomGraph = new JMenuItem("Random Graph");
-        graph.add(randomGraph);
 
         randomGraph.addActionListener(e -> {
             final GraphParamsEditor editor = new GraphParamsEditor();
@@ -495,8 +498,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                 }
             });
         });
-
-        graph.addSeparator();
 
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
