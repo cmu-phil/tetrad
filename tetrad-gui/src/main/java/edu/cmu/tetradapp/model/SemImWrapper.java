@@ -61,19 +61,19 @@ public class SemImWrapper implements SessionModel {
         setSemIm(semIm);
     }
 
-    public SemImWrapper(SemEstimatorWrapper semEstWrapper) {
-        if (semEstWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        SemIm oldSemIm = semEstWrapper.getSemEstimator().getEstimatedSem();
-
-        try {
-            setSemIm((SemIm) new MarshalledObject(oldSemIm).get());
-        } catch (Exception e) {
-            throw new RuntimeException("SemIm could not be deep cloned.", e);
-        }
-    }
+//    public SemImWrapper(SemEstimatorWrapper semEstWrapper) {
+//        if (semEstWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        SemIm oldSemIm = semEstWrapper.getSemEstimator().getEstimatedSem();
+//
+//        try {
+//            setSemIm((SemIm) new MarshalledObject(oldSemIm).get());
+//        } catch (Exception e) {
+//            throw new RuntimeException("SemIm could not be deep cloned.", e);
+//        }
+//    }
 
     public SemImWrapper(Simulation simulation) {
         if (simulation == null) {
@@ -151,13 +151,13 @@ public class SemImWrapper implements SessionModel {
         }
     }
 
-    public SemImWrapper(SemImWrapper semImWrapper) {
-        if (semImWrapper == null) {
-            throw new NullPointerException("SemPmWrapper must not be null.");
-        }
-
-        setSemIm(semImWrapper.getSemIm());
-    }
+//    public SemImWrapper(SemImWrapper semImWrapper) {
+//        if (semImWrapper == null) {
+//            throw new NullPointerException("SemPmWrapper must not be null.");
+//        }
+//
+//        setSemIm(semImWrapper.getSemIm());
+//    }
 
     public SemImWrapper(PValueImproverWrapper wrapper) {
         SemIm oldSemIm = wrapper.getNewSemIm();

@@ -335,8 +335,7 @@
             <![CDATA[
                <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
                  <br> (1) PM (Bayes or SEM), OR
-                 <br> (2) IM (to convert Dirichlet Bayes IM to Bayes IM), OR
-                 <br> (3) Estimator (to extract IM)
+                 <br> (2) Estimator (to extract IM)
                  <br> Note that for the parent boxes, models need to have been created.
                </html>
             ]]>
