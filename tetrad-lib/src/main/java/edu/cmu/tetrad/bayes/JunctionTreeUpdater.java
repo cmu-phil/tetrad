@@ -118,20 +118,10 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedPm);
 
-        for (int i = 0; i < evidence.getNumNodes(); i++) {
-            if (evidence.isManipulated(i)) {
-                for (int j = 0; j < evidence.getNumCategories(i); j++) {
-                    if (evidence.getProposition().isAllowed(i, j)) {
-                        manipulatedBayesIm.setProbability(i, 0, j, 1.0);
-                    } else {
-                        manipulatedBayesIm.setProbability(i, 0, j, 0.0);
-                    }
-                }
-            }
-        }
+        Evidence evidence2 = new Evidence(evidence, manipulatedBayesIm);
+        this.updatedBayesIm = new UpdatedBayesIm(manipulatedBayesIm, evidence2);
 
-        this.jta = new JunctionTreeAlgorithm(manipulatedBayesIm);
-        this.updatedBayesIm = null;
+        this.jta = new JunctionTreeAlgorithm(updatedBayesIm);
     }
 
     @Override
