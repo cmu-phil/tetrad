@@ -2506,6 +2506,8 @@ public final class GraphUtils {
 
             String edge = tokens[0];
 
+            if ("Attributes:".equals(edge)) break;
+
             line = line.substring(line.indexOf(edge) + edge.length()).trim();
             tokens = line.split("\\s+");
 
@@ -2537,7 +2539,7 @@ public final class GraphUtils {
             } else if (end1 == '-') {
                 _end1 = Endpoint.TAIL;
             } else {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unrecognized endpoint: " + end1 + ", for edge " + edge);
             }
 
             if (end2 == '>') {
@@ -2547,7 +2549,7 @@ public final class GraphUtils {
             } else if (end2 == '-') {
                 _end2 = Endpoint.TAIL;
             } else {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unrecognized endpoint: " + end2 + ", for edge " + edge);
             }
 
             Edge _edge = new Edge(_from, _to, _end1, _end2);

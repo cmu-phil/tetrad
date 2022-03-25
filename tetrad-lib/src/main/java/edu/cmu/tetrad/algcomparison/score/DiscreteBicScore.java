@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Fisher Z test.
+ * Wrapper for Discrete BIC test.
  *
  * @author jdramsey
  */
