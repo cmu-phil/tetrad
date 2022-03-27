@@ -63,11 +63,6 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         } else {
             Bpc algorithm = new Bpc();
 
-            //algorithm.setKnowledge(knowledge);
-//          if (externalGraph != null) {
-//      		algorithm.setExternalGraph(externalGraph);
-//  		}
-
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
