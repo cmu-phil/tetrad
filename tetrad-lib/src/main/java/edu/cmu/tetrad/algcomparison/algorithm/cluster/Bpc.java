@@ -29,7 +29,7 @@ import java.util.List;
         command = "bpc",
         algoType = AlgType.search_for_structure_over_latents
 )
-@Experimental
+//@Experimental
 @Bootstrapping
 public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
