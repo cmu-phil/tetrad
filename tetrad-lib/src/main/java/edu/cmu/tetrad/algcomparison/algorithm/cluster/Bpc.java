@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BPC. Disabled on 4/2/2019
+ * Build Pure Clusters.
  *
  * @author jdramsey
  */
@@ -29,7 +29,6 @@ import java.util.List;
         command = "bpc",
         algoType = AlgType.search_for_structure_over_latents
 )
-//@Experimental
 @Bootstrapping
 public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
