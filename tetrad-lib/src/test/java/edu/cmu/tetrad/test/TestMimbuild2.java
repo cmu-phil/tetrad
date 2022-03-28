@@ -84,8 +84,8 @@ public class TestMimbuild2 {
 
                 BuildPureClusters bpc = new BuildPureClusters(
                         data, 0.001,
-                        testType,
-                        purifyType);
+                        testType
+                );
                 searchGraph = bpc.search();
 
                 partition = MimUtils.convertToClusters2(searchGraph);
