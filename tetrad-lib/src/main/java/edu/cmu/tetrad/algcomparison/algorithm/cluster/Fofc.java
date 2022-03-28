@@ -44,7 +44,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm, TakesInd
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            ICovarianceMatrix cov = new CorrelationMatrix(DataUtils.getCovMatrix(dataSet));
+            ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
             double alpha = parameters.getDouble(Params.ALPHA);
 
             boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
