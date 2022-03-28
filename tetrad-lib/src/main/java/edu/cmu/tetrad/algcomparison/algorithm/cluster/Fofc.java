@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FOFC.
+ * Find One Factor Clusters.
  *
  * @author jdramsey
  */
