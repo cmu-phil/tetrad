@@ -83,6 +83,7 @@ public class Purify {
     /*
      * Constructor Purify
      */
+
     public Purify(CorrelationMatrix correlationMatrix, double sig, TestType testType,
                   Clusters clusters) {
         if (DataUtils.containsMissingValue(correlationMatrix.getMatrix())) {
@@ -462,7 +463,7 @@ public class Purify {
                 new double[clusterSize][clusterSize][clusterSize][clusterSize][3];
         int numNotEliminated = numNotEliminated(cluster, eliminated);
 
-        List<Double> allPValues = new ArrayList<>();
+        List<Double> allPValues = new ArrayList<Double>();
         int numImpurities = 0;
 
         Set failures[] = new Set[clusterSize];
@@ -611,7 +612,7 @@ public class Purify {
 
     private void intraConstructPhase2(int _cluster[], boolean eliminated[],
                                       String clusterName) {
-        List<Integer> cluster = new ArrayList<>();
+        List<Integer> cluster = new ArrayList<Integer>();
         for (int i : _cluster) cluster.add(i);
 
         int numNotEliminated = numNotEliminated2(cluster, eliminated);
@@ -670,9 +671,9 @@ public class Purify {
     }
 
     private List<Double> listPValues(List<Integer> cluster, boolean[] eliminated, double cutoff) {
-        if (cluster.size() < 4) return new ArrayList<>();
+        if (cluster.size() < 4) return new ArrayList<Double>();
 
-        List<Double> pValues = new ArrayList<>();
+        List<Double> pValues = new ArrayList<Double>();
         ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), 4);
         int[] choice;
 
@@ -720,7 +721,7 @@ public class Purify {
 
     private void crossConstructPhase(List<int[]> partition, boolean eliminated[]) {
         int numImpurities = 0;
-        List<Double> allPValues = new ArrayList<>();
+        List<Double> allPValues = new ArrayList<Double>();
 
         Set failures[][] = new Set[partition.size()][];
         for (int i = 0; i < partition.size(); i++) {
@@ -993,14 +994,14 @@ public class Purify {
                     }
 
                     eliminated[i] = true;
-                    List<Integer> _cluster = new ArrayList<>();
+                    List<Integer> _cluster = new ArrayList<Integer>();
                     for (int j : cluster) _cluster.add(j);
                     List<Double> pValues = listPValues(_cluster, eliminated, cutoff);
 
                     if (pValues.size() > min) {
                         min = pValues.size();
                         minIndex = i;
-                        minCluster = new ArrayList<>(minCluster);
+                        minCluster = new ArrayList<Integer>(minCluster);
                         numImpurities = min;
                     }
                 }
@@ -1015,7 +1016,7 @@ public class Purify {
     }
 
     private List<Double> countCrossConstructPValues(List<int[]> partition, boolean[] eliminated, double cutoff) {
-        List<Double> allPValues = new ArrayList<>();
+        List<Double> allPValues = new ArrayList<Double>();
 
         for (int p1 = 0; p1 < partition.size(); p1++) {
             for (int p2 = p1 + 1; p2 < partition.size(); p2++) {
@@ -1029,7 +1030,7 @@ public class Purify {
 
                     while ((choice1 = gen1.next()) != null) {
                         while ((choice2 = gen2.next()) != null) {
-                            List<Integer> crossCluster = new ArrayList<>();
+                            List<Integer> crossCluster = new ArrayList<Integer>();
                             for (int i : choice1) crossCluster.add(cluster1[i]);
                             for (int i : choice2) crossCluster.add(cluster2[i]);
                             allPValues.addAll(listPValues(crossCluster, eliminated, cutoff));
@@ -1044,7 +1045,7 @@ public class Purify {
 
                     while ((choice1 = gen1.next()) != null) {
                         while ((choice2 = gen2.next()) != null) {
-                            List<Integer> crossCluster = new ArrayList<>();
+                            List<Integer> crossCluster = new ArrayList<Integer>();
                             for (int i : choice1) crossCluster.add(cluster1[i]);
                             for (int i : choice2) crossCluster.add(cluster2[i]);
                             allPValues.addAll(listPValues(crossCluster, eliminated, cutoff));
@@ -1835,7 +1836,7 @@ public class Purify {
         double tau[][] =
                 new double[numObserved][numObserved];     //measurement error variance
         //Note: error covariance matrix tau is usually *not* diagonal, unlike the implementation of other
-        //structural EM algorithm such as in MimBuildScoreSearch.
+        //structural EM algorithms such as in MimBuildScoreSearch.
         for (int i = 0; i < numLatent; i++) {
             for (int j = 0; j < numLatent; j++) {
                 beta[i][j] = 0.;
@@ -2270,7 +2271,7 @@ public class Purify {
             if (i < 4)
                 v[i] = new GraphNode("L" + (i + 1));
             else
-                v[i] = new GraphNode("v" + (i - 3));
+                v[i] = new GraphNode("V" + (i - 3));
             newGraph.addNode(v[i]);
         }
         for (int l = 0; l < numLatent; l++) {
@@ -2296,13 +2297,13 @@ public class Purify {
         this.latentNames = new Hashtable();
         this.latentNodes = new ArrayList();
         for (int i = 0; i < numLatent; i++) {
-            latentNames.put(v[i].getNode(), new Integer(i));
+            latentNames.put(v[i].getName(), new Integer(i));
             latentNodes.add(v[i]);
         }
         this.observableNames = new Hashtable();
         this.measuredNodes = new ArrayList();
         for (int i = numLatent; i < numLatent + numObserved; i++) {
-            observableNames.put(v[i].getNode(), new Integer(i - numLatent));
+            observableNames.put(v[i].getName(), new Integer(i - numLatent));
             measuredNodes.add(v[i]);
         }
 
