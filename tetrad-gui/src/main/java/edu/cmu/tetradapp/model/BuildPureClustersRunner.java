@@ -142,13 +142,13 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                 if (source instanceof ICovarianceMatrix) {
                     bpc = new BuildPureClusters((ICovarianceMatrix) source,
                             getParams().getDouble("alpha", 0.001),
-                            testType
-                    );
+                            testType,
+                            purifyType);
                 } else if (source instanceof DataSet) {
                     bpc = new BuildPureClusters(
                             (DataSet) source, getParams().getDouble("alpha", 0.001),
-                            testType
-                    );
+                            testType,
+                            purifyType);
                 } else {
                     throw new IllegalArgumentException();
                 }

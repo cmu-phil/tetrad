@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -55,7 +56,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
             TestType purifyType = TestType.TETRAD_BASED;
 
-            BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);
+            BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType, purifyType);
             bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return bpc.search();
