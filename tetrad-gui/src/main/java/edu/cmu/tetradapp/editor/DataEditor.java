@@ -357,9 +357,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         return tabbedPane().getTabCount();
     }
 
-    public List<Node> getKnownVariables() {
-        return dataWrapper.getKnownVariables();
-    }
+//    public List<Node> getKnownVariables() {
+//        return dataWrapper.getKnownVariables();
+//    }
 
     public List<String> getVarNames() {
         return dataWrapper.getVarNames();

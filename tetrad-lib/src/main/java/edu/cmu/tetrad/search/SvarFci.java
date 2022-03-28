@@ -111,7 +111,7 @@ public final class SvarFci implements GraphSearch {
     private ICovarianceMatrix covarianceMatrix;
     private double penaltyDiscount = 2;
     private SepsetMap possibleDsepSepsets = new SepsetMap();
-    private Graph initialGraph;
+    private Graph externalGraph;
     private int possibleDsepDepth = -1;
     private CorrelationMatrix corr;
 
@@ -198,8 +198,8 @@ public final class SvarFci implements GraphSearch {
     }
 
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public Graph search(IFas fas) {
@@ -209,7 +209,7 @@ public final class SvarFci implements GraphSearch {
         fas.setKnowledge(getKnowledge());
         fas.setDepth(depth);
         fas.setVerbose(verbose);
-        //fas.setInitialGraph(initialGraph);
+        //fas.setExternalGraph(externalGraph);
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 

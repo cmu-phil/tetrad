@@ -93,11 +93,6 @@ public class Fas implements IFas {
     private PrintStream out = System.out;
 
     /**
-     * Initial graph.
-     */
-    private Graph initialGraph = null;
-
-    /**
      * Which heuristic to use to fix variable order (1, 2, 3, or 0 = none).
      */
     private int heuristic = 0;
@@ -112,13 +107,6 @@ public class Fas implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public Fas(Graph initialGraph, IndependenceTest test) {
-        if (initialGraph != null) {
-            this.initialGraph = new EdgeListGraph(initialGraph);
-        }
-        this.test = test;
-    }
-
     public Fas(IndependenceTest test) {
         this.test = test;
     }
@@ -137,6 +125,8 @@ public class Fas implements IFas {
      */
     public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
+
+        test.setVerbose(verbose);
 
         int _depth = depth;
 
@@ -193,7 +183,7 @@ public class Fas implements IFas {
             }
         }
 
-        for (int d = 1; d <= _depth; d++) {
+        for (int d = 0; d <= _depth; d++) {
             boolean more;
 
             if (stable) {
@@ -288,24 +278,15 @@ public class Fas implements IFas {
                 break;
             }
 
-            if (depth == 0 && initialGraph != null) {
-                Node x2 = initialGraph.getNode(x.getName());
-                Node y2 = initialGraph.getNode(y.getName());
-
-                if (!initialGraph.isAdjacentTo(x2, y2)) {
-                    continue;
-                }
-            }
-
-            checkSide(scores, test, adjacencies, depth, x, y);
-            checkSide(scores, test, adjacencies, depth, y, x);
+            boolean b = checkSide(scores, test, adjacencies, depth, x, y);
+            if (!b) checkSide(scores, test, adjacencies, depth, y, x);
         }
 
         return freeDegree(adjacencies) > depth;
     }
 
-    private void checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, Node x, Node y) {
-        if (!adjacencies.get(x).contains(y)) return;
+    private boolean checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, Node x, Node y) {
+        if (!adjacencies.get(x).contains(y)) return false;
 
         List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
         _adjx.remove(y);
@@ -360,9 +341,13 @@ public class Fas implements IFas {
                                 " score = " + nf.format(test.getScore()));
                         out.println(SearchLogUtils.independenceFactMsg(x, y, Z, test.getPValue()));
                     }
+
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 
     private List<Node> possibleParents(Node x, List<Node> adjx,

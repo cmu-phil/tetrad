@@ -39,7 +39,7 @@ import java.util.List;
 public class FasRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     //============================CONSTRUCTORS============================//
 
@@ -59,12 +59,12 @@ public class FasRunner extends AbstractAlgorithmRunner
     // Starts PC from the given graph.
     public FasRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     public FasRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.initialGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
@@ -132,7 +132,7 @@ public class FasRunner extends AbstractAlgorithmRunner
         int depth = getParams().getInt("depth", -1);
         Graph graph = new EdgeListGraph(getIndependenceTest().getVariables());
 
-        Fas fas = new Fas(graph, getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         fas.setKnowledge(knowledge);
         fas.setDepth(depth);
         graph = fas.search();

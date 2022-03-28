@@ -261,7 +261,7 @@ public class Kpc implements GraphSearch {
         graph = new EdgeListGraph(nodes);
         graph.fullyConnect(Endpoint.TAIL);
 
-        Fas fas = new Fas(graph, getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setTrueGraph(trueGraph);

@@ -79,11 +79,6 @@ public class FasConcurrent implements IFas {
      */
     private SepsetMap sepsets = new SepsetMap();
 
-    /**
-     * The depth 0 graph, specified initially.
-     */
-    private Graph initialGraph;
-
     // Number formatter.
     private NumberFormat nf = new DecimalFormat("0.00E0");
 
@@ -114,14 +109,6 @@ public class FasConcurrent implements IFas {
      */
     public FasConcurrent(IndependenceTest test) {
         this.test = test;
-    }
-
-    /**
-     * Constructs a new FastAdjacencySearch.
-     */
-    public FasConcurrent(Graph initialGraph, IndependenceTest test) {
-        this.test = test;
-        this.initialGraph = initialGraph;
     }
 
     //==========================PUBLIC METHODS===========================//
@@ -369,15 +356,6 @@ public class FasConcurrent implements IFas {
 
             Node y = nodes.get(j);
 
-            if (initialGraph != null) {
-                Node x2 = initialGraph.getNode(x.getName());
-                Node y2 = initialGraph.getNode(y.getName());
-
-                if (!initialGraph.isAdjacentTo(x2, y2)) {
-                    continue;
-                }
-            }
-
             boolean independent;
 
             try {
@@ -535,10 +513,6 @@ public class FasConcurrent implements IFas {
 
     public SepsetMap getSepsets() {
         return sepsets;
-    }
-
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
     }
 
     /**

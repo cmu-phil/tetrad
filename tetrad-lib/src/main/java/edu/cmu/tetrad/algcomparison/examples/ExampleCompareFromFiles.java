@@ -23,10 +23,7 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Cpc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.CpcStable;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcStable;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -73,10 +70,9 @@ public class ExampleCompareFromFiles {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Cpc(new FisherZ()));
-        algorithms.add(new PcStable(new FisherZ()));
-        algorithms.add(new CpcStable(new FisherZ()));
+        algorithms.add(new PC(new FisherZ()));
+        algorithms.add(new CPC(new FisherZ()));
+        algorithms.add(new PCMAX(new FisherZ()));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(false);

@@ -4,9 +4,11 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.NumberFormat;
 import java.util.*;
 
 import static java.util.Collections.shuffle;
@@ -34,6 +36,9 @@ public class Grasp {
     private boolean cachingScores = true;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
+    private boolean useDataOrder = true;
+    private boolean allowRandomnessInsideAlgorithm = false;
+
     // other params
     private int depth = 4;
     private int numStarts = 1;
@@ -74,13 +79,13 @@ public class Grasp {
 
         scorer.setCachingScores(cachingScores);
 
-        List<Node> bestPerm = new ArrayList<>(order);
-        float best = Float.NEGATIVE_INFINITY;
+        List<Node> bestPerm = null;
+        double best = Double.NEGATIVE_INFINITY;
 
         scorer.score(order);
 
         for (int r = 0; r < numStarts; r++) {
-            if (r > 0) {
+            if ((r == 0 && !useDataOrder) || r > 0) {
                 shuffle(order);
             }
 
@@ -180,10 +185,22 @@ public class Grasp {
 
     private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
                           Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
-        for (Node y : scorer.getShuffledVariables()) {
+        List<Node> variables;
+
+        if (allowRandomnessInsideAlgorithm) {
+             variables = scorer.getShuffledVariables();
+        } else {
+            variables = scorer.getPi();
+        }
+
+        for (Node y : variables) {
             Set<Node> ancestors = scorer.getAncestors(y);
             List<Node> parents = new ArrayList<>(scorer.getParents(y));
-            shuffle(parents);
+
+            if (allowRandomnessInsideAlgorithm) {
+                shuffle(parents);
+            }
+
             for (Node x : parents) {
 
                 boolean covered = scorer.coveredEdge(x, y);
@@ -262,7 +279,9 @@ public class Grasp {
     public Graph getGraph(boolean cpDag) {
         if (scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
         Graph graph = scorer.getGraph(cpDag);
-        graph.addAttribute("# edges", graph.getNumEdges());
+
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        graph.addAttribute("score ", nf.format(scorer.score()));
         return graph;
     }
 
@@ -284,6 +303,7 @@ public class Grasp {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+        test.setVerbose(verbose);
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -327,7 +347,15 @@ public class Grasp {
         this.ordered = ordered  ;
     }
 
-    public void setUsePearl(boolean usePearl) {
+    public void setUseRaskuttiUhler(boolean usePearl) {
         this.usePearl = usePearl;
+    }
+
+    public void setUseDataOrder(boolean useDataOrder) {
+        this.useDataOrder = useDataOrder;
+    }
+
+    public void setAllowRandomnessInsideAlgorithm(boolean allowRandomnessInsideAlgorithm) {
+        this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithm;
     }
 }

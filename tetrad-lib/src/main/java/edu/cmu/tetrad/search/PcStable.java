@@ -86,7 +86,7 @@ public class PcStable implements GraphSearch {
     /**
      * The initial graph for the Fast Adjacency Search, or null if there is none.
      */
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     /**
      * Prints independencies info to out.
@@ -225,7 +225,7 @@ public class PcStable implements GraphSearch {
 
         graph = new EdgeListGraph(nodes);
 
-        Fas fas = new Fas(initialGraph, getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         fas.setStable(true);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
@@ -266,8 +266,8 @@ public class PcStable implements GraphSearch {
         return graph.getNodes();
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public void setVerbose(boolean verbose) {

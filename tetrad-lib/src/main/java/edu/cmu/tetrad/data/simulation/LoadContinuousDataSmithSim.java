@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (!newModel && !dataSets.isEmpty()) return;
+//        if (!newModel && !dataSets.isEmpty()) return;
         if (!dataSets.isEmpty()) return;
 
         this.dataSets = new ArrayList<>();
@@ -49,11 +50,9 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
             for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
-                DataReader reader = new DataReader();
-                reader.setVariablesSupplied(false);
-                reader.setDelimiter(DelimiterType.COMMA);
                 try {
-                    DataSet dataSet = reader.parseTabular(file);
+                    DataSet dataSet= DataUtils.loadContinuousData(file, "//", '\"' ,
+                            "*", true, Delimiter.TAB);
                     dataSets.add(dataSet);
                 } catch (Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());
@@ -135,11 +134,8 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
     public Graph readGraph(File file) {
         try {
-            DataReader reader = new DataReader();
-            reader.setVariablesSupplied(false);
-            reader.setDelimiter(DelimiterType.COMMA);
-
-            DataSet data = reader.parseTabular(file);
+            DataSet data= DataUtils.loadContinuousData(file, "//", '\"' ,
+                    "*", true, Delimiter.TAB);
             List<Node> variables = data.getVariables();
             Graph graph = new EdgeListGraph(variables);
 

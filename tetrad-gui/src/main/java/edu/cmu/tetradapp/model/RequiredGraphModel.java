@@ -152,8 +152,6 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         this.variables = new ArrayList<>(variableNodes);
         this.variableNames = new ArrayList<>(variableNames);
 
-        setKnowledgeBoxInput(input);
-
         this.resultGraph = input.getResultGraph();
 
         createKnowledge(params);
@@ -176,14 +174,6 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         }
 
         knwl.clear();
-
-        List<String> varNames = getVarNames();
-        getKnowledgeBoxInput().getVariableNames().stream()
-                .filter(e -> !e.startsWith("E_"))
-                .forEach(e -> {
-                    varNames.add(e);
-                    knwl.addVariable(e);
-                });
 
         if (resultGraph == null) {
             throw new NullPointerException("I couldn't find a parent graph.");

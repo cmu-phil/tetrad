@@ -2,13 +2,11 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,11 +39,10 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
             File file = new File(directory + "/structure_" + structure + "_coeff" + run + "_" + suffix + ".txt");
 
             System.out.println("Loading data from " + file.getAbsolutePath());
-            DataReader reader = new DataReader();
-            reader.setVariablesSupplied(true);
 
             try {
-                DataSet dataSet = reader.parseTabular(file);
+                DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"' ,
+                        "*", true, Delimiter.TAB);
                 dataSets.add(dataSet);
 
                 if (!(dataSet.isContinuous())) {

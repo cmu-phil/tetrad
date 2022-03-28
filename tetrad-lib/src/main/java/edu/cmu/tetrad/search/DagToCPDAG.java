@@ -112,7 +112,7 @@ public class DagToCPDAG {
     /**
      * The initial graph for the Fast Adjacency Search, or null if there is none.
      */
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     private boolean verbose = false;
 
@@ -374,8 +374,8 @@ public class DagToCPDAG {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public boolean isVerbose() {

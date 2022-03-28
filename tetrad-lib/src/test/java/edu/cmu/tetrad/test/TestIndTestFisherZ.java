@@ -98,9 +98,9 @@ public class TestIndTestFisherZ {
         test2.isIndependent(data2.getVariable(x.getName()), data2.getVariable(z.getName()));
         double p3 = test2.getPValue();
 
-//        assertEquals(NaN, p1, 0.01);
-        assertEquals(0, p2, 0.01);
-        assertEquals(0.03, p3, 0.01);
+        assertEquals(0.0, p1, 0.01);
+        assertEquals(0.0, p2, 0.01);
+        assertEquals(0.38, p3, 0.01);
     }
 
     @Test

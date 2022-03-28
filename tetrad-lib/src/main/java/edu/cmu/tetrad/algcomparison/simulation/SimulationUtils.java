@@ -36,8 +36,8 @@ public final class SimulationUtils {
                 return new BayesNetSimulation(randomGraph);
             case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                 return new SemSimulation(randomGraph);
-            case SimulationTypes.LINEAR_FISHER_MODEL:
-                return new LinearFisherModel(randomGraph);
+//            case SimulationTypes.LINEAR_FISHER_MODEL:
+//                return new LinearFisherModel(randomGraph);
             case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL:
                 return new GeneralSemSimulationSpecial1(randomGraph);
             case SimulationTypes.LEE_AND_HASTIE:

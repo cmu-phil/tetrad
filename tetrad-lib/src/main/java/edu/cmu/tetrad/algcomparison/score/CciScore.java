@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.Experimental;
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
@@ -20,10 +22,12 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "CCI-Score (Conditional Correlation Independence Score",
+        name = "CCI-Score (Conditional Correlation Independence Score)",
         command = "cci-score",
         dataType = {DataType.Continuous}
 )
+@General
+@Experimental
 public class CciScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;

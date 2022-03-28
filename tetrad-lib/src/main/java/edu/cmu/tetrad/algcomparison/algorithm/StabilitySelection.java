@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.BootstrapSampler;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -23,11 +23,11 @@ import java.util.concurrent.RecursiveAction;
  *
  * @author jdramsey
  */
-public class StabilitySelection implements Algorithm, TakesInitialGraph {
+public class StabilitySelection implements Algorithm, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
     private Algorithm algorithm;
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     public StabilitySelection(Algorithm algorithm) {
         this.algorithm = algorithm;
@@ -98,16 +98,16 @@ public class StabilitySelection implements Algorithm, TakesInitialGraph {
             }
         }
 
-        initialGraph = new EdgeListGraph(dataSet.getVariables());
+        externalGraph = new EdgeListGraph(dataSet.getVariables());
         double percentStability = parameters.getDouble("percentStability");
 
         for (Edge edge : counts.keySet()) {
             if (counts.get(edge) > percentStability * numSubsamples) {
-                initialGraph.addEdge(edge);
+                externalGraph.addEdge(edge);
             }
         }
 
-        return initialGraph;
+        return externalGraph;
     }
 
     private void increment(Edge edge, Map<Edge, Integer> counts) {
@@ -143,17 +143,17 @@ public class StabilitySelection implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

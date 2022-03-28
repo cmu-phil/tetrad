@@ -21,7 +21,6 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
@@ -119,20 +118,10 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedPm);
 
-        for (int i = 0; i < evidence.getNumNodes(); i++) {
-            if (evidence.isManipulated(i)) {
-                for (int j = 0; j < evidence.getNumCategories(i); j++) {
-                    if (evidence.getProposition().isAllowed(i, j)) {
-                        manipulatedBayesIm.setProbability(i, 0, j, 1.0);
-                    } else {
-                        manipulatedBayesIm.setProbability(i, 0, j, 0.0);
-                    }
-                }
-            }
-        }
+        Evidence evidence2 = new Evidence(evidence, manipulatedBayesIm);
+        this.updatedBayesIm = new UpdatedBayesIm(manipulatedBayesIm, evidence2);
 
-        this.jta = new JunctionTreeAlgorithm(manipulatedBayesIm);
-        this.updatedBayesIm = null;
+        this.jta = new JunctionTreeAlgorithm(updatedBayesIm);
     }
 
     @Override
@@ -263,7 +252,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
                     }
 
                     if (condition.existsCombination()) {
-                        double p = jta.getConditionalProbability(node, col, parents, parentValues);
+                        double p = (parents.length > 0)
+                                ? jta.getConditionalProbability(node, col, parents, parentValues)
+                                : jta.getMarginalProbability(node, col);
                         updatedBayesIm.setProbability(node, row, col, p);
                     } else {
                         updatedBayesIm.setProbability(node, row, col,

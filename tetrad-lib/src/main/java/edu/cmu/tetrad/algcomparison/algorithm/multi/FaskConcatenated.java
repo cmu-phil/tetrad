@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -38,13 +39,15 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
+    private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
     public FaskConcatenated() {
 
     }
 
-    public FaskConcatenated(IndependenceWrapper test) {
+    public FaskConcatenated(ScoreWrapper score, IndependenceWrapper test) {
+        this.score = score;
         this.test = test;
     }
 
@@ -61,14 +64,16 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
             dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
 
-            Fask search = new Fask(dataSet, test.getTest(dataSet, parameters));
+            Fask search = new Fask(dataSet,
+                    score.getScore(dataSet, parameters),
+                    test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setSkewEdgeThreshold(parameters.getDouble(Params.SKEW_EDGE_THRESHOLD));
             search.setKnowledge(knowledge);
 
             return search.search();
         } else {
-            FaskConcatenated algorithm = new FaskConcatenated(test);
+            FaskConcatenated algorithm = new FaskConcatenated(score, test);
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -106,7 +111,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            FaskConcatenated algorithm = new FaskConcatenated(test);
+            FaskConcatenated algorithm = new FaskConcatenated(score, test);
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));

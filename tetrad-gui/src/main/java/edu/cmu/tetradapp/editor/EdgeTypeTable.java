@@ -219,17 +219,18 @@ public class EdgeTypeTable extends JPanel {
         Endpoint endpoint1 = edge.getEndpoint1();
         Endpoint endpoint2 = edge.getEndpoint2();
 
-        if (node1Name.compareTo(node2Name) > 0) {
-            // swap endpoints
-            Endpoint tmpEndpoint = endpoint1;
-            endpoint1 = endpoint2;
-            endpoint2 = tmpEndpoint;
-
-            // swap node names
-            String tmpStr = node1Name;
-            node1Name = node2Name;
-            node2Name = tmpStr;
-        }
+        // These should not be flipped.
+//        if (node1Name.compareTo(node2Name) > 0) {
+//            // swap endpoints
+//            Endpoint tmpEndpoint = endpoint1;
+//            endpoint1 = endpoint2;
+//            endpoint2 = tmpEndpoint;
+//
+//            // swap node names
+//            String tmpStr = node1Name;
+//            node1Name = node2Name;
+//            node2Name = tmpStr;
+//        }
 
         String endpoint1Str = "";
         if (endpoint1 == Endpoint.TAIL) {

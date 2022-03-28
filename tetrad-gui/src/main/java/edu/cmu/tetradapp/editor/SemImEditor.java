@@ -71,13 +71,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     private static final long serialVersionUID = -1856607070184945405L;
 
     private OneEditor oneEditorPanel;
-    private JPanel targetPanel;
+    private final JPanel targetPanel;
     private int matrixSelection;
 
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
-     *
-     * @param semImWrapper
      */
     public SemImEditor(SemImWrapper semImWrapper) {
         this(semImWrapper, "Graphical Editor", "Tabular Editor", TabbedPaneDefault.GRAPHICAL);
@@ -85,8 +83,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
-     *
-     * @param semEstWrapper
      */
     public SemImEditor(SemEstimatorWrapper semEstWrapper) {
         this(new SemImWrapper(semEstWrapper.getSemEstimator().getEstimatedSem()));
@@ -94,11 +90,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
     /**
      * Constructs an editor for the given SemIm.
-     *
-     * @param wrapper
-     * @param graphicalEditorTitle
-     * @param tabularEditorTitle
-     * @param tabbedPaneDefault
      */
     public SemImEditor(final SemImWrapper wrapper, final String graphicalEditorTitle,
                        final String tabularEditorTitle, final TabbedPaneDefault tabbedPaneDefault) {
@@ -130,7 +121,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 validate();
             });
 
-//            comp.setMaximumSize(comp.getPreferredSize());
             Box b = Box.createHorizontalBox();
             b.add(new JLabel("Using model"));
             b.add(comp);
@@ -210,7 +200,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
         private static final long serialVersionUID = 6622060253747442717L;
 
-        private final TabbedPaneDefault tabbedPanedDefault;
         private final SemImWrapper semImWrapper;
 
         /**
@@ -264,7 +253,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             this.semImWrapper = wrapper;
             this.graphicalEditorTitle = graphicalEditorTitle;
             this.tabularEditorTitle = tabularEditorTitle;
-            this.tabbedPanedDefault = tabbedPaneDefault;
             displaySemIm(graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
         }
 
@@ -278,25 +266,21 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 tabbedPane.add(tabularEditorTitle, tabularEditor());
                 tabbedPane.add("Implied Matrices", impliedMatricesPanel());
                 tabbedPane.add("Model Statistics", modelStatisticsPanel());
-//            tabbedPane.setSelectedComponent(graphicalEditor());
             } else if (tabbedPaneDefault == TabbedPaneDefault.TABULAR) {
                 tabbedPane.add(tabularEditorTitle, tabularEditor());
                 tabbedPane.add(graphicalEditorTitle, graphicalEditor());
                 tabbedPane.add("Implied Matrices", impliedMatricesPanel());
                 tabbedPane.add("Model Statistics", modelStatisticsPanel());
-//            tabbedPane.setSelectedComponent(tabularEditor());
             } else if (tabbedPaneDefault == TabbedPaneDefault.COVMATRIX) {
                 tabbedPane.add("Implied Matrices", impliedMatricesPanel());
                 tabbedPane.add("Model Statistics", modelStatisticsPanel());
                 tabbedPane.add(graphicalEditorTitle, graphicalEditor());
                 tabbedPane.add(tabularEditorTitle, tabularEditor());
-//            tabbedPane.setSelectedComponent(impliedMatricesPanel());
             } else if (tabbedPaneDefault == TabbedPaneDefault.STATS) {
                 tabbedPane.add("Model Statistics", modelStatisticsPanel());
                 tabbedPane.add(graphicalEditorTitle, graphicalEditor());
                 tabbedPane.add(tabularEditorTitle, tabularEditor());
                 tabbedPane.add("Implied Matrices", impliedMatricesPanel());
-//            tabbedPane.setSelectedComponent(modelStatisticsPanel());
             }
 
             targetPanel.add(tabbedPane, BorderLayout.CENTER);
@@ -304,7 +288,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             JMenuBar menuBar = new JMenuBar();
             JMenu file = new JMenu("File");
             menuBar.add(file);
-//        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
             file.add(new SaveComponentImage(semImGraphicalEditor.getWorkbench(),
                     "Save Graph Image..."));
             file.add(this.getCopyMatrixMenuItem());
@@ -352,7 +335,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             errorTerms = new JMenuItem();
 
             // By default, hide the error terms.
-//        getSemGraph().setShowErrorTerms(false);
             if (getSemGraph().isShowErrorTerms()) {
                 errorTerms.setText("Hide Error Terms");
             } else {
@@ -373,7 +355,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
             });
 
-//        menuBar.add(graph);
             meansItem = new JCheckBoxMenuItem("Show means");
             interceptsItem = new JCheckBoxMenuItem("Show intercepts");
 
@@ -706,7 +687,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
             setLayout(new BorderLayout());
             JScrollPane scroll = new JScrollPane(workbench());
-//            scroll.setPreferredSize(new Dimension(450, 450));
 
             add(scroll, BorderLayout.CENTER);
 

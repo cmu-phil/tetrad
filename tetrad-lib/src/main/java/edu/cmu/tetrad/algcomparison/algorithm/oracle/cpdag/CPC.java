@@ -4,7 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -20,60 +20,80 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PC-Max
+ * CPC.
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "PcStableMax",
-//        command = "pc-stable-max",
-//        algoType = AlgType.forbid_latent_common_causes
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "CPC",
+        command = "cpc",
+        algoType = AlgType.forbid_latent_common_causes
+)
 @Bootstrapping
-public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
-    private boolean compareToTrue = false;
     private IndependenceWrapper test;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public PcStableMax() {
+    public CPC() {
     }
 
-    public PcStableMax(IndependenceWrapper test, boolean compareToTrue) {
+    public CPC(IndependenceWrapper test) {
         this.test = test;
-        this.compareToTrue = compareToTrue;
     }
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+            PcAll.ColliderDiscovery colliderDiscovery
+                    = PcAll.ColliderDiscovery.CONSERVATIVE;
 
-            if (algorithm != null) {
-//                initialGraph = algorithm.search(dataSet, parameters);
+            PcAll.ConflictRule conflictRule;
+
+            switch (parameters.getInt(Params.CONFLICT_RULE)) {
+                case 1:
+                    conflictRule = PcAll.ConflictRule.OVERWRITE;
+                    break;
+                case 2:
+                    conflictRule = PcAll.ConflictRule.BIDIRECTED;
+                    break;
+                case 3:
+                    conflictRule = PcAll.ConflictRule.PRIORITY;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Not a choice.");
             }
 
-            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
+            PcAll search = new PcAll(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
             search.setKnowledge(knowledge);
-            search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
-            search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
-            search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
-            search.setConflictRule(edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+            if (parameters.getBoolean(Params.STABLE_FAS)) {
+                search.setFasType(PcAll.FasType.STABLE);
+            } else {
+                search.setFasType(PcAll.FasType.REGULAR);
+            }
+
+            if (parameters.getBoolean(Params.CONCURRENT_FAS)) {
+                search.setConcurrent(PcAll.Concurrent.YES);
+            } else {
+                search.setConcurrent(PcAll.Concurrent.NO);
+            }
+
+            search.setColliderDiscovery(colliderDiscovery);
+            search.setConflictRule(conflictRule);
             search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
             search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
             return search.search();
         } else {
-            PcStableMax pcStableMax = new PcStableMax(test, compareToTrue);
+            CPC pcAll = new CPC(test);
 
-            if (initialGraph != null) {
-                pcStableMax.setInitialGraph(initialGraph);
-            }
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, pcStableMax, parameters.getInt(Params.NUMBER_RESAMPLING));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -101,18 +121,12 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        if (compareToTrue) {
-            return new EdgeListGraph(graph);
-        } else {
-            return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
-        }
+        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "PC-Stable-Max (\"Peter and Clark\"), Priority Rule, using " + test.getDescription()
-                + (algorithm != null ? " with initial graph from "
-                + algorithm.getDescription() : "");
+        return "PC using " + test.getDescription();
     }
 
     @Override
@@ -123,12 +137,16 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+        parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.CONCURRENT_FAS);
+//        parameters.add(Params.COLLIDER_DISCOVERY_RULE);
+        parameters.add(Params.CONFLICT_RULE);
         parameters.add(Params.DEPTH);
+        parameters.add(Params.FAS_HEURISTIC);
         parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
         parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
 
         parameters.add(Params.VERBOSE);
-
         return parameters;
     }
 
@@ -142,23 +160,9 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
         this.knowledge = knowledge;
     }
 
-    public boolean isCompareToTrue() {
-        return compareToTrue;
-    }
-
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
     }
 
     @Override
@@ -166,8 +170,4 @@ public class PcStableMax implements Algorithm, TakesInitialGraph, HasKnowledge, 
         this.test = test;
     }
 
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return test;
-    }
 }

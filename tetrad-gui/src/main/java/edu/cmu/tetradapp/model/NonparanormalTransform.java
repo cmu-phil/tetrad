@@ -20,10 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -39,14 +36,15 @@ public class NonparanormalTransform extends DataWrapper {
     //=============================CONSTRUCTORS==============================//
     public NonparanormalTransform(DataWrapper wrapper, Parameters params) {
         DataModel dataModel = wrapper.getSelectedDataModel();
-        if (dataModel instanceof DataSet && ((DataSet) dataModel).isContinuous()) {
-            setDataModel(DataUtils.getNonparanormalTransformed((DataSet) dataModel));
-            setSourceGraph(wrapper.getSourceGraph());
+        DataSet nonparanormalTransformed = DataUtils.getNonparanormalTransformed((DataSet) dataModel);
+        nonparanormalTransformed.setKnowledge(dataModel.getKnowledge().copy());
 
-            LogDataUtils.logDataModelList("Conversion of parent data to correlation matrix form.", getDataModelList());
-        } else {
-            throw new IllegalArgumentException("Expecting a continuous data set.");
-        }
+        setDataModel(nonparanormalTransformed);
+        setSourceGraph(wrapper.getSourceGraph());
+//        IKnowledge knowledge = new PairwiseForbiddenGraphModel().getKnowledge();
+//        setKnowledge(knowledge);
+
+        LogDataUtils.logDataModelList("Conversion of parent data to correlation matrix form.", getDataModelList());
     }
 
     /**

@@ -4,9 +4,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -29,13 +29,12 @@ import java.util.List;
         command = "pc-all",
         algoType = AlgType.forbid_latent_common_causes
 )
+@Experimental
 @Bootstrapping
-public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public PcAll() {
@@ -43,11 +42,6 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     public PcAll(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    public PcAll(IndependenceWrapper test, Algorithm algorithm) {
-        this.test = test;
-        this.algorithm = algorithm;
     }
 
     @Override
@@ -85,7 +79,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
                     throw new IllegalArgumentException("Not a choice.");
             }
 
-            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
             search.setKnowledge(knowledge);
@@ -110,11 +104,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
             return search.search();
         } else {
-            PcAll pcAll = new PcAll(test, algorithm);
-
-            if (initialGraph != null) {
-                pcAll.setInitialGraph(initialGraph);
-            }
+            PcAll pcAll = new PcAll(test);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -150,8 +140,7 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
 
     @Override
     public String getDescription() {
-        return "PC using " + test.getDescription() + (algorithm != null ? " with initial graph from "
-                + algorithm.getDescription() : "");
+        return "PC using " + test.getDescription();
     }
 
     @Override
@@ -186,28 +175,13 @@ public class PcAll implements Algorithm, TakesInitialGraph, HasKnowledge, TakesI
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
     }
 
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return test;
     }
 
 }

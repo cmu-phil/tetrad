@@ -56,13 +56,15 @@ public final class CorrelationMatrix extends CovarianceMatrix
     public CorrelationMatrix(DataSet dataSet) {
         super(Collections.unmodifiableList(dataSet.getVariables()),
                 dataSet.getCorrelationMatrix(), dataSet.getNumRows());
-        if (!dataSet.isContinuous()) {
-            throw new IllegalArgumentException("Data set not continuous.");
-        }
 
-        if (DataUtils.containsMissingValue(dataSet)) {
-            throw new IllegalArgumentException("Please remove or impute missing values.");
-        }
+        // These checks break testwise deletion
+//        if (!dataSet.isContinuous()) {
+//            throw new IllegalArgumentException("Data set not continuous.");
+//        }
+
+//        if (DataUtils.containsMissingValue(dataSet)) {
+//            throw new IllegalArgumentException("Please remove or impute missing values.");
+//        }
     }
 
     /**

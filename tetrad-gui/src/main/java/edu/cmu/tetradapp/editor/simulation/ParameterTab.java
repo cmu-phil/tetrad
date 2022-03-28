@@ -45,6 +45,7 @@ public class ParameterTab extends JPanel {
 
     private static final String[] GRAPH_ITEMS = new String[]{
             GraphTypes.RANDOM_FOWARD_DAG,
+            GraphTypes.ERDOS_RENYI_DAG,
             GraphTypes.SCALE_FREE_DAG,
             GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS,
             GraphTypes.RANDOM_ONE_FACTOR_MIM,
@@ -54,7 +55,7 @@ public class ParameterTab extends JPanel {
     private static final String[] SOURCE_GRAPH_ITEMS = {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.LINEAR_FISHER_MODEL,
+//            SimulationTypes.LINEAR_FISHER_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES
@@ -91,6 +92,10 @@ public class ParameterTab extends JPanel {
         }
     }
 
+    private Component getPanel() {
+        return null;
+    }
+
     private void initComponents() {
         setLayout(new BorderLayout());
         add(createSimulationOptionBox(), BorderLayout.NORTH);
@@ -120,6 +125,9 @@ public class ParameterTab extends JPanel {
             switch (graphItem) {
                 case GraphTypes.RANDOM_FOWARD_DAG:
                     randomGraph = new RandomForward();
+                    break;
+                case GraphTypes.ERDOS_RENYI_DAG:
+                    randomGraph = new ErdosRenyi();
                     break;
                 case GraphTypes.SCALE_FREE_DAG:
                     randomGraph = new ScaleFree();
@@ -154,9 +162,9 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
                         break;
-                    case SimulationTypes.LINEAR_FISHER_MODEL:
-                        simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()), simulation.getParams());
-                        break;
+//                    case SimulationTypes.LINEaAR_FISHER_MODEL:
+//                        simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()), simulation.getParams());
+//                        break;
                     case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL:
                         simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
                         break;
@@ -232,6 +240,7 @@ public class ParameterTab extends JPanel {
         Dimension buttonSize = new Dimension(268, 25);
 
         JButton button = new JButton("Simulate");
+
         button.setMinimumSize(buttonSize);
         button.setMaximumSize(buttonSize);
         button.setPreferredSize(buttonSize);
@@ -281,6 +290,16 @@ public class ParameterTab extends JPanel {
     }
 
     private void simulate() {
+        int ret = JOptionPane.showConfirmDialog(getPanel(), "Simulate new graph(s) and dataset(s)?",
+                "Confirm", JOptionPane.OK_CANCEL_OPTION);
+
+        if (ret == JOptionPane.CANCEL_OPTION) {
+            JOptionPane.showMessageDialog(getPanel(), "Keeping existing graph(s) and datasets(s)");
+            return;
+        } else {
+//            JOptionPane.showMessageDialog(getPanel(), "Created new graph(s) and datasets(s)...");
+        }
+
         new WatchedProcess((Window) getTopLevelAncestor()) {
             @Override
             public void watch() {
@@ -305,6 +324,7 @@ public class ParameterTab extends JPanel {
                     }
                 }
             }
+
         };
     }
 

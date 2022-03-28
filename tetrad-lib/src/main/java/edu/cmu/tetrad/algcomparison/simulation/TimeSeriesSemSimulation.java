@@ -42,7 +42,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (!newModel && !dataSets.isEmpty()) return;
+//        if (!newModel && !dataSets.isEmpty()) return;
         dataSets = new ArrayList<>();
         graphs = new ArrayList<>();
 

@@ -143,9 +143,10 @@ public class Mimbuild2 {
         this.latentsCov = latentscov;
         Graph graph;
 
-        Cpc search = new Cpc(new IndTestFisherZ(latentscov, alpha));
+        Grasp search = new Grasp(new IndTestFisherZ(latentscov, alpha));
         search.setKnowledge(knowledge);
-        graph = search.search();
+        search.bestOrder(latentscov.getVariables());
+        graph = search.getGraph(true);
 
 //        try {
 //            Ges search = new Ges(latentscov);

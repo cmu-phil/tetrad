@@ -225,6 +225,15 @@ public class RandomUtil {
     }
 
     /**
+     * @param mu
+     * @param beta
+     * @return Ibid.
+     */
+    public double nextGumbel(double mu, double beta) {
+        return new GumbelDistribution(randomGenerator, mu, beta).sample();
+    }
+
+    /**
      * @param df The degrees of freedom.
      * @return Ibid.
      */

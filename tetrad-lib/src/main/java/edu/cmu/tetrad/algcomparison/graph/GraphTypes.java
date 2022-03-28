@@ -25,9 +25,10 @@ package edu.cmu.tetrad.algcomparison.graph;
  */
 public final class GraphTypes {
 
-    public static final String RANDOM_FOWARD_DAG = "Random Foward DAG";
-    public static final String SCALE_FREE_DAG = "Scale Free DAG";
-    public static final String CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS = "Cyclic Constructed From Small Loops";
+    public static final String RANDOM_FOWARD_DAG = "Random Foward DAG (Fixed Average Degree)";
+    public static final String ERDOS_RENYI_DAG = "Erdos-Renyi DAG (Fixed Edge Probability)";
+    public static final String SCALE_FREE_DAG = "Scale Free DAG (Bollobas et al.)";
+    public static final String CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS = "Cyclic (Constructed From Small Loops)";
     public static final String RANDOM_ONE_FACTOR_MIM = "Random One Factor MIM";
     public static final String RANDOM_TWO_FACTOR_MIM = "Random Two Factor MIM";
 

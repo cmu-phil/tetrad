@@ -75,7 +75,7 @@ public class TestMimbuild2 {
 
             if (algorithm.equals("FOFC")) {
                 FindOneFactorClusters fofc = new FindOneFactorClusters(data, TestType.TETRAD_WISHART,
-                        FindOneFactorClusters.Algorithm.GAP, 0.001);
+                        FindOneFactorClusters.Algorithm.GAP, 0.001, null);
                 searchGraph = fofc.search();
                 partition = fofc.getClusters();
             } else if (algorithm.equals("BPC")) {
@@ -84,8 +84,8 @@ public class TestMimbuild2 {
 
                 BuildPureClusters bpc = new BuildPureClusters(
                         data, 0.001,
-                        testType,
-                        purifyType);
+                        testType
+                );
                 searchGraph = bpc.search();
 
                 partition = MimUtils.convertToClusters2(searchGraph);

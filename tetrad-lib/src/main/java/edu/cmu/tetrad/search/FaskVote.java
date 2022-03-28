@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -18,13 +19,15 @@ import static edu.cmu.tetrad.util.Params.*;
 public class FaskVote {
 
     private final IndependenceWrapper test;
+    private final ScoreWrapper score;
     // Knowledge the the search will obey, of forbidden and required edges.
     private IKnowledge knowledge = new Knowledge2();
 
     private final List<DataSet> dataSets;
 
-    public FaskVote(List<DataSet> dataSets, IndependenceWrapper test) {
+    public FaskVote(List<DataSet> dataSets, ScoreWrapper score, IndependenceWrapper test) {
         this.dataSets = dataSets;
+        this.score = score;
         this.test = test;
     }
 
@@ -49,7 +52,9 @@ public class FaskVote {
         List<Node> nodes = G0.getNodes();
 
         for (DataSet dataSet : dataSets) {
-            Fask fask = new Fask(dataSet, test.getTest(dataSet, parameters));
+            Fask fask = new Fask(dataSet,
+                    score.getScore(dataSet, parameters),
+                    test.getTest(dataSet, parameters));
             fask.setExternalGraph(GraphUtils.undirectedGraph(G0));
             fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
             fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));

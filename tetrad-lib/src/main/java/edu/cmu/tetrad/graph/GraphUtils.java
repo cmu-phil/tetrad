@@ -30,7 +30,7 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.*;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 import nu.xom.*;
 
 import java.io.*;
@@ -38,7 +38,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
 
@@ -1545,15 +1544,6 @@ public final class GraphUtils {
             Node node21 = graph2.getNode(name1);
             Node node22 = graph2.getNode(name2);
 
-//            if (node21 == null) {
-//                continue;
-////                throw new IllegalArgumentException("There was no node by that name in the reference graph: " + name1);
-//            }
-//
-//            if (node22 == null) {
-//                continue;
-////                throw new IllegalArgumentException("There was no node by that name in the reference graph: " + name2);
-//            }
             if (node21 == null || node22 == null || !graph2.isAdjacentTo(node21, node22)) {
                 edges.add(Edges.nondirectedEdge(edge1.getNode1(), edge1.getNode2()));
             }
@@ -1722,12 +1712,6 @@ public final class GraphUtils {
             convertedGraph.addEdge(newEdge);
         }
 
-//        for (Node node : originalGraph.getNodes()) {
-//            if (convertedGraph.getNode(node.getName()) == null) {
-//                convertedGraph.addNode(node);
-//            }
-//        }
-
         for (Triple triple : originalGraph.getUnderLines()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -1819,8 +1803,6 @@ public final class GraphUtils {
         }
 
         graph2 = GraphUtils.replaceNodes(graph2, graph1.getNodes());
-
-        assert graph2 != null;
 
         graph1 = GraphUtils.undirectedGraph(graph1);
         graph2 = GraphUtils.undirectedGraph(graph2);
@@ -2421,7 +2403,7 @@ public final class GraphUtils {
             boolean hasHeader = false;
 
             DataSet dataSet = DataUtils.loadContinuousData(file, commentMarker, quoteCharacter,
-                    missingValueMarker, hasHeader);
+                    missingValueMarker, hasHeader, Delimiter.TAB);
 
             List<Node> nodes = dataSet.getVariables();
             Graph graph = new EdgeListGraph(nodes);
@@ -2499,17 +2481,32 @@ public final class GraphUtils {
         for (String line = in.readLine(); line != null; line = in.readLine()) {
             line = line.trim();
             if (line.isEmpty()) {
-                break;
+                continue;
             }
 
             String[] tokens = line.split("\\s+");
 
-            String from = tokens[1];
+            String number = tokens[0];
+
+            String[] tokensa = number.split("\\.");
+
+            int fromIndex;
+
+            try {
+                Integer.parseInt(tokensa[0]);
+                fromIndex = 1;
+            } catch (NumberFormatException e) {
+                fromIndex = 0;
+            }
+
+            String from = tokens[fromIndex];
 
             line = line.substring(line.indexOf(from) + from.length()).trim();
             tokens = line.split("\\s+");
 
             String edge = tokens[0];
+
+            if ("Attributes:".equals(edge)) break;
 
             line = line.substring(line.indexOf(edge) + edge.length()).trim();
             tokens = line.split("\\s+");
@@ -2542,7 +2539,7 @@ public final class GraphUtils {
             } else if (end1 == '-') {
                 _end1 = Endpoint.TAIL;
             } else {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unrecognized endpoint: " + end1 + ", for edge " + edge);
             }
 
             if (end2 == '>') {
@@ -2552,7 +2549,7 @@ public final class GraphUtils {
             } else if (end2 == '-') {
                 _end2 = Endpoint.TAIL;
             } else {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unrecognized endpoint: " + end2 + ", for edge " + edge);
             }
 
             Edge _edge = new Edge(_from, _to, _end1, _end2);
@@ -3615,9 +3612,9 @@ public final class GraphUtils {
             private final Graph topGraph;
             private final Counts counts;
             private final int[] count;
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public CountTask(int chunk, int from, int to, List<Edge> edges, Graph leftGraph, Graph topGraph, int[] count) {
                 this.chunk = chunk;
@@ -3916,7 +3913,7 @@ public final class GraphUtils {
                 for (String nodeName : nodeAttributes.keySet()) {
                     Object value = nodeAttributes.get(nodeName);
 
-                    sb.append(String.format("%s: %f", nodeName, value));
+                    sb.append(String.format("%s: %s", nodeName, value));
 
                     count++;
 
@@ -4136,8 +4133,8 @@ public final class GraphUtils {
     private static boolean isDConnectedTo1(Node x, Node y, List<Node> z, Graph graph) {
         class EdgeNode {
 
-            private Edge edge;
-            private Node node;
+            private final Edge edge;
+            private final Node node;
 
             public EdgeNode(Edge edge, Node node) {
                 this.edge = edge;
@@ -4259,8 +4256,8 @@ public final class GraphUtils {
 
         class EdgeNode {
 
-            private Edge edge;
-            private Node node;
+            private final Edge edge;
+            private final Node node;
 
             public EdgeNode(Edge edge, Node node) {
                 this.edge = edge;
@@ -4837,21 +4834,19 @@ public final class GraphUtils {
     }
 
     public static List<Node> possibleDsep(Node x, Node y, Graph graph, int maxPathLength, IndependenceTest test) {
-        List<Node> dsep = new ArrayList<>();
+        Set<Node> dsep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
         Set<OrderedPair<Node>> V = new HashSet<>();
 
-        Map<Node, List<Node>> previous = new HashMap<>();
+        Map<Node, Set<Node>> previous = new HashMap<>();
         previous.put(x, null);
 
         OrderedPair<Node> e = null;
         int distance = 0;
 
         assert graph != null;
-        List<Node> adjacentNodes = graph.getAdjacentNodes(x);
-
-        Collections.sort(adjacentNodes);
+        Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
 
         for (Node b : adjacentNodes) {
             if (b == y) {
@@ -4863,7 +4858,7 @@ public final class GraphUtils {
             }
             Q.offer(edge);
             V.add(edge);
-            addToList(previous, b, x);
+            addToSet(previous, b, x);
             dsep.add(b);
         }
 
@@ -4896,7 +4891,7 @@ public final class GraphUtils {
                     continue;
                 }
 
-                addToList(previous, b, c);
+                addToSet(previous, b, c);
 
                 if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
                     OrderedPair<Node> u = new OrderedPair<>(a, c);
@@ -4921,20 +4916,23 @@ public final class GraphUtils {
             scores.put(node, test.getScore());
         }
 
-        dsep.sort(Comparator.comparing(scores::get));
-        Collections.reverse(dsep);
-
         dsep.remove(x);
         dsep.remove(y);
-        return dsep;
+
+        List<Node> _dsep = new ArrayList<>(dsep);
+
+        Collections.sort(_dsep);
+        Collections.reverse(_dsep);
+
+        return _dsep;
     }
 
-    private static boolean existOnePathWithPossibleParents(Map<Node, List<Node>> previous, Node w, Node x, Node b, Graph graph) {
+    private static boolean existOnePathWithPossibleParents(Map<Node, Set<Node>> previous, Node w, Node x, Node b, Graph graph) {
         if (w == x) {
             return true;
         }
 
-        final List<Node> p = previous.get(w);
+        final Set<Node> p = previous.get(w);
         if (p == null) {
             return false;
         }
@@ -4946,22 +4944,16 @@ public final class GraphUtils {
 
             if ((existsSemidirectedPath(r, x, graph))
                     || existsSemidirectedPath(r, b, graph)) {
-                if (existOnePathWithPossibleParents(previous, r, x, b, graph)) {
-                    return true;
-                }
+                return true;
             }
         }
 
         return false;
     }
 
-    private static void addToList(Map<Node, List<Node>> previous, Node b, Node c) {
-        List<Node> list = previous.get(c);
-
-        if (list == null) {
-            list = new ArrayList<>();
-        }
-
+    private static void addToSet(Map<Node, Set<Node>> previous, Node b, Node c) {
+        previous.computeIfAbsent(c, k -> new HashSet<>());
+        Set<Node> list = previous.get(c);
         list.add(b);
     }
 
@@ -5206,7 +5198,7 @@ public final class GraphUtils {
 
     private static class Counts {
 
-        private int[][] counts;
+        private final int[][] counts;
 
         public Counts() {
             this.counts = new int[8][6];

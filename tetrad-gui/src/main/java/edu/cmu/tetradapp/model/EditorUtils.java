@@ -28,6 +28,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.prefs.Preferences;
 
 /**
@@ -36,7 +37,7 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 public class EditorUtils {
-    public static Point getTopLeftPoint(List modelElements) {
+    public static Point getTopLeftPoint(List<Object> modelElements) {
         int x = Integer.MAX_VALUE;
         int y = Integer.MAX_VALUE;
 
@@ -76,17 +77,13 @@ public class EditorUtils {
             return new File(directory, prefix + "." + suffix);
         }
 
-        List files = Arrays.asList(directory.list());
+        List<String> files = Arrays.asList(Objects.requireNonNull(directory.list()));
         String name;
         int i = 0;
 
-        while (true) {
+        do {
             name = prefix + (++i) + "." + suffix;
-
-            if (!files.contains(name)) {
-                break;
-            }
-        }
+        } while (files.contains(name));
 
         return new File(directory, name);
     }
@@ -110,7 +107,7 @@ public class EditorUtils {
                                            Component parent, boolean overwrite, String dialogName, String saveLocation) {
         JFileChooser chooser = createJFileChooser(dialogName, saveLocation);
 
-        String fileSaveLocation = null;
+        String fileSaveLocation;
         if (saveLocation == null) {
             fileSaveLocation = Preferences.userRoot().get(
                     "fileSaveLocation", Preferences.userRoot().absolutePath());
@@ -149,7 +146,12 @@ public class EditorUtils {
                 continue;
             }
 
-            break;
+            int ret3 = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                    "Save session to directory " + outfile.getParent() + "?",
+                    "Confirm", JOptionPane.OK_CANCEL_OPTION);
+            if (ret3 == JOptionPane.OK_OPTION) {
+                break;
+            }
         }
 
         outfile = ensureSuffix(outfile, suffix);

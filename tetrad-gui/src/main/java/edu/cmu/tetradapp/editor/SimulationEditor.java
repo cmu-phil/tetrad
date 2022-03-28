@@ -102,7 +102,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
                 tabbedPane.setEnabledAt(0, true);
                 tabbedPane.setEnabledAt(1, true);
                 tabbedPane.setEnabledAt(2, true);
-                tabbedPane.setSelectedIndex(2);
+//                tabbedPane.setSelectedIndex(2);
             } else {
                 tabbedPane.setEnabledAt(0, true);
                 tabbedPane.setEnabledAt(1, false);

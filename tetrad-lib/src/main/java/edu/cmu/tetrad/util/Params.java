@@ -132,6 +132,7 @@ public final class Params {
     public static final String NUM_LAGS = "numLags";
     public static final String NUM_LATENTS = "numLatents";
     public static final String NUM_MEASURES = "numMeasures";
+    public static final String PROBABILITY_OF_EDGE = "probabilityOfEdge";
     public static final String NUM_RANDOMIZED_SEARCH_MODELS = "numRandomizedSearchModels";
     public static final String NUM_RUNS = "numRuns";
     public static final String NUM_STRUCTURAL_EDGES = "numStructuralEdges";
@@ -205,12 +206,20 @@ public final class Params {
     public static final String GRASP_USE_SCORE = "graspUseScore";
     public static final String GRASP_USE_VERMA_PEARL = "graspUseVermaPearl";
     public static final String GRASP_USE_DATA_ORDER = "graspUseDataOrder";
+    public static final String GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM = "graspAllowRandomnessIndideAlgorithm";
     public static final String GRASP_DEPTH = "graspDepth";
     public static final String GRASP_UNCOVERED_DEPTH = "graspUncoveredDepth";
     public static final String GRASP_NONSINGULAR_DEPTH = "graspNonSingularDepth";
     public static final String GRASP_ALG = "graspAlg";
     public static final String TIMEOUT = "timeout";
     public static final String GRASP_USE_VP_SCORING = "graspUseVpScoring";
+    public static final String SIMULATION_ERROR_TYPE = "simulationErrorType";
+    public static final String SIMULATION_PARAM1 = "simulationParam1";
+    public static final String SIMULATION_PARAM2 = "simulationParam2";
+    public static final String SELECTION_ALPHA = "selectionAlpha";
+    public static final String NUM_SUBSAMPLES = "numSubsamples";
+    public static final String TARGET_NAMES = "targetNames";
+    public static final String CSTAR_Q = "cstarQ";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

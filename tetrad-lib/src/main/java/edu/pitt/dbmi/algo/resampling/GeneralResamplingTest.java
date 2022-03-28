@@ -50,7 +50,7 @@ public class GeneralResamplingTest {
     /**
      * An initial graph to start from.
      */
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     public void setParallelMode(boolean runParallel) {
         this.runParallel = runParallel;
@@ -133,8 +133,8 @@ public class GeneralResamplingTest {
     /**
      * Sets the initial graph.
      */
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public void setSeed(long seed) {
@@ -183,8 +183,8 @@ public class GeneralResamplingTest {
 
         resamplingSearch.setAddOriginalDataset(addOriginalDataset);
 
-        if (initialGraph != null) {
-            resamplingSearch.setInitialGraph(initialGraph);
+        if (externalGraph != null) {
+            resamplingSearch.setExternalGraph(externalGraph);
         }
 
         if (verbose) {

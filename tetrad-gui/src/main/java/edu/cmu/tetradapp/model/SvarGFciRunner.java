@@ -45,7 +45,7 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
     //    private List<ScoredGraph> topGraphs;
 //    private int index;
     private transient SvarGFci gfci;
-//    private transient Graph initialGraph;
+//    private transient Graph externalGraph;
 
 
     //=========================CONSTRUCTORS================================//
@@ -223,12 +223,12 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
                 for (DataModel dataModel : list) {
                     if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
                         throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
-                                "covariance matrices, or else all discrete data sets, or else a single initialGraph.");
+                                "covariance matrices, or else all discrete data sets, or else a single externalGraph.");
                     }
                 }
 
                 if (list.size() != 1) {
-                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or initialGraph " +
+                    throw new IllegalArgumentException("FGES takes exactly one data set, covariance matrix, or externalGraph " +
                             "as input. For multiple data sets as input, use IMaGES.");
                 }
 
@@ -262,7 +262,7 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
             }
         }
 
-//        gfci.setInitialGraph(initialGraph);
+//        gfci.setExternalGraph(externalGraph);
 //        gfci.setKnowledge(getParameters().getKnowledge());
 //        gfci.setnumCPDAGsToStore(params.getnumCPDAGsToSave());
         gfci.setVerbose(true);

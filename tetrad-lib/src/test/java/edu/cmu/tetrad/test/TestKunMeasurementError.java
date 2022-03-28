@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pcd;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
@@ -82,7 +82,7 @@ public class TestKunMeasurementError {
         IndependenceWrapper test = new SemBicTest();
         ScoreWrapper score = new SemBicScore();
 
-        algorithms.add(new Pc(test));
+        algorithms.add(new PC(test));
         algorithms.add(new Fges(score));
         algorithms.add(new Pcd());
 

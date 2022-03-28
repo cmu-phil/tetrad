@@ -25,7 +25,7 @@ public class MultiFaskV1 {
     private final SemBicScoreMultiFas score;
 
     // An initial graph to orient, skipping the adjacency step.
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed = 0;
@@ -398,12 +398,12 @@ public class MultiFaskV1 {
         return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
     }
 
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public double getExtraEdgeThreshold() {

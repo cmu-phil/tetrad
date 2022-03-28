@@ -26,8 +26,6 @@ import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Edits the parameters for simulating data from Bayes nets.
@@ -72,40 +70,36 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
 
     public void setup() {
         lowerBoundField = new IntTextField(getParams().getInt("lowerBoundNumVals", 2), 4);
-        lowerBoundField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    getParams().set("lowerBoundNumVals", value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+        lowerBoundField.setFilter((value, oldValue) -> {
+            try {
+                getParams().set("lowerBoundNumVals", value);
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 
-        upperBoundField = new IntTextField(getParams().getInt("upperBoundNumVals", 2), 4);
-        upperBoundField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    getParams().set("upperBoundNumVals", value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+        upperBoundField = new IntTextField(getParams().getInt("upperBoundNumVals", 4), 4);
+        upperBoundField.setFilter((value, oldValue) -> {
+            try {
+                getParams().set("upperBoundNumVals", value);
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 
         // construct the workbench.
         setLayout(new BorderLayout());
 
-        JRadioButton setUpManually =
-                new JRadioButton("<html>" + "Set up manually.</html>");
+        JRadioButton trinary =
+                new JRadioButton("<html>" + "3-valued:</html>");
 
-        JRadioButton automaticallyAssigned =
-                new JRadioButton("<html>" + "Automatically assigned.</html>");
+        JRadioButton range =
+                new JRadioButton("<html>" + "Range:</html>");
         ButtonGroup group = new ButtonGroup();
-        group.add(setUpManually);
-        group.add(automaticallyAssigned);
+        group.add(trinary);
+        group.add(range);
 
         // continue workbench construction.
         Box b1 = Box.createVerticalBox();
@@ -117,15 +111,14 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(Box.createVerticalStrut(5));
 
         Box b3 = Box.createHorizontalBox();
-        b3.add(setUpManually);
+        b3.add(trinary);
         b3.add(Box.createHorizontalGlue());
-        //        b3.add(fixedField);
         b1.add(b3);
 
         Box b4 = Box.createHorizontalBox();
         b4.add(Box.createHorizontalStrut(25));
         b4.add(new JLabel("<html>" +
-                "All variables will initially have 2 categories, '0' and '1', " +
+                "All variables will initially have 3 categories, '0', '1' and '2', " +
                 "<br>which can then be changed variable by variable in the editor." +
                 "</html>"));
         b4.add(Box.createHorizontalGlue());
@@ -133,15 +126,15 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(Box.createVerticalStrut(10));
 
         Box b5 = Box.createHorizontalBox();
-        b5.add(automaticallyAssigned);
+        b5.add(range);
         b5.add(Box.createHorizontalGlue());
         b1.add(b5);
 
         Box b6 = Box.createHorizontalBox();
         b6.add(Box.createHorizontalStrut(25));
         b6.add(new JLabel("<html>" +
-                "Each variable will be automatically be assigned a number" +
-                "<br>of categories (for simulation, e.g.). " + "</html>"));
+                "Each variable will be automatically be assigned a number of categories" +
+                "<br>in a range." + "</html>"));
         b6.add(Box.createHorizontalGlue());
         b1.add(b6);
         b1.add(Box.createVerticalStrut(10));
@@ -164,30 +157,26 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
 
-        if (getParams().getString("bayesPmInitializationMode", "automatic").equals("automatic")) {
-            setUpManually.setSelected(true);
+        if (getParams().getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
+            trinary.setSelected(true);
             lowerBoundField.setEnabled(false);
             upperBoundField.setEnabled(false);
         } else {
-            automaticallyAssigned.setSelected(true);
+            range.setSelected(true);
             lowerBoundField.setEnabled(true);
             upperBoundField.setEnabled(true);
         }
 
-        setUpManually.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("bayesPmInitializationMode", "manual");
-                lowerBoundField.setEnabled(false);
-                upperBoundField.setEnabled(false);
-            }
+        trinary.addActionListener(e -> {
+            getParams().set("bayesPmInitializationMode", "trinary");
+            lowerBoundField.setEnabled(false);
+            upperBoundField.setEnabled(false);
         });
 
-        automaticallyAssigned.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("bayesPmInitializationMode", "automatic");
-                lowerBoundField.setEnabled(true);
-                upperBoundField.setEnabled(true);
-            }
+        range.addActionListener(e -> {
+            getParams().set("bayesPmInitializationMode", "range");
+            lowerBoundField.setEnabled(true);
+            upperBoundField.setEnabled(true);
         });
     }
 

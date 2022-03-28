@@ -90,7 +90,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      *
      * @serial
      */
-    private List<Node> variables = new ArrayList<>();
+    private List<Node> variables;
 
     /**
      * The container storing the data. Rows are cases; columns are variables.

@@ -394,7 +394,7 @@ public final class SearchGraphUtils {
 
     //use this for oritentation with an initial graph if using null trick for unconditional independence
     //AJ
-    public static List<Triple> orientCollidersUsingSepsets(SepsetMap set, IKnowledge knowledge, Graph graph, Graph initialGraph, boolean verbose) {
+    public static List<Triple> orientCollidersUsingSepsets(SepsetMap set, IKnowledge knowledge, Graph graph, Graph externalGraph, boolean verbose) {
         TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
         List<Triple> colliders = new ArrayList<>();
 
@@ -420,9 +420,9 @@ public final class SearchGraphUtils {
                 }
 
                 //for vanilla pc, I think a check if already oriented might need to be here -AJ
-                // Skip triples with parents not adjacent in initialGraph
+                // Skip triples with parents not adjacent in externalGraph
                 // may need a similar check for knowledge... -AJ
-                if (initialGraph != null && !initialGraph.isAdjacentTo(a, c)) {
+                if (externalGraph != null && !externalGraph.isAdjacentTo(a, c)) {
                     continue;
                 }
 
@@ -2320,6 +2320,7 @@ public final class SearchGraphUtils {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return -99;
         }
 
         return shd;

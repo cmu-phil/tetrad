@@ -2,9 +2,11 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
@@ -35,10 +37,11 @@ import static edu.cmu.tetrad.util.Params.*;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, TakesInitialGraph {
+public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test = null;
-    private Graph initialGraph = null;
+    private ScoreWrapper score = null;
+    private Graph externalGraph = null;
     private IKnowledge knowledge = new Knowledge2();
     private Algorithm algorithm = null;
 
@@ -70,7 +73,8 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.Fask search;
 
-            search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, test.getTest(dataSet, parameters));
+            search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, score.getScore(dataSet, parameters),
+                    test.getTest(dataSet, parameters));
 
             search.setDepth(parameters.getInt(DEPTH));
             search.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
@@ -79,8 +83,8 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
             search.setDelta(parameters.getDouble(FASK_DELTA));
             search.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
 
-            if (initialGraph != null) {
-                search.setExternalGraph(initialGraph);
+            if (externalGraph != null) {
+                search.setExternalGraph(externalGraph);
             } else if (algorithm != null) {
                 search.setExternalGraph(algorithm.search(dataSet, parameters));
             }
@@ -104,13 +108,13 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
             int adjacencyMethod = parameters.getInt(FASK_ADJACENCY_METHOD);
 
             if (adjacencyMethod == 1) {
-                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.GRASP);
-            } else if (adjacencyMethod == 2) {
                 search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FAS_STABLE);
-            } else if (adjacencyMethod == 3) {
+            } else if (adjacencyMethod == 2) {
                 search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FGES);
-            } else if (adjacencyMethod == 4) {
+            } else if (adjacencyMethod == 3) {
                 search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.EXTERNAL_GRAPH);
+            } else if (adjacencyMethod == 4) {
+                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.NONE);
             } else {
                 throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
             }
@@ -209,17 +213,28 @@ public class Fask implements Algorithm, HasKnowledge, TakesIndependenceWrapper, 
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
         this.algorithm = algorithm;
+    }
+
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
+    }
+
+    @Override
+    public ScoreWrapper getScoreWrapper() {
+        return score;
     }
 }

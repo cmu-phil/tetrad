@@ -80,7 +80,7 @@ public final class Cpc implements GraphSearch {
      */
     private Set<Triple> noncolliderTriples;
 
-    private Graph initialGraph;
+    private Graph externalGraph;
 
     /**
      * Set of ambiguous unshielded triples.
@@ -249,7 +249,7 @@ public final class Cpc implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
-        return search(new Fas(initialGraph, getIndependenceTest()), nodes);
+        return search(new Fas(getIndependenceTest()), nodes);
     }
 
     public Graph search(IFas fas, List<Node> nodes) {
@@ -672,12 +672,12 @@ public final class Cpc implements GraphSearch {
         this.verbose = verbose;
     }
 
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 }
 

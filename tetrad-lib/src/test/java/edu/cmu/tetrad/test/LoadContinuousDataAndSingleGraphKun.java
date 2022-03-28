@@ -2,10 +2,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -41,9 +38,8 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
         if (dir.exists()) {
             for (int i = 1; i <= 20; i++) {
                 File f = new File(path, prefix + i + ".txt");
-                DataReader reader = new DataReader();
                 try {
-                    covs.add(reader.parseCovariance(f));
+                    covs.add(DataUtils.parseCovariance(f, "//", DelimiterType.WHITESPACE, '\"', "*"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

@@ -24,10 +24,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -47,6 +44,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -73,14 +71,10 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             "edgeRemoved",
             "nodeRemoved"
     ));
-
-    private GraphWorkbench workbench;
     private final Parameters parameters;
-
     private final JScrollPane graphEditorScroll = new JScrollPane();
-
     private final EdgeTypeTable edgeTypeTable;
-
+    private GraphWorkbench workbench;
     /**
      * Flag to indicate if interventional variables are in the graph - Zhou
      */
@@ -171,6 +165,11 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     }
 
     @Override
+    public void setGraph(Graph graph) {
+        getWorkbench().setGraph(graph);
+    }
+
+    @Override
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
@@ -178,11 +177,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     @Override
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
-    }
-
-    @Override
-    public void setGraph(Graph graph) {
-        getWorkbench().setGraph(graph);
     }
 
     @Override
@@ -260,7 +254,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         Box instructionBox = Box.createHorizontalBox();
         instructionBox.setMaximumSize(new Dimension(820, 40));
 
-        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types");
+        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types and colorings");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
@@ -300,13 +294,18 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
         edgeTypeTable.setPreferredSize(new Dimension(820, 150));
 
-        // Use JSplitPane to allow resize the bottom box - Zhou
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
-        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
+//        //Use JSplitPane to allow resize the bottom box - Zhou
+//        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
+//        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
+
+        // Switching to tabbed pane because of resizing problems with the split pane... jdramsey 2021.08.25
+        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        tabbedPane.addTab("Graph", new PaddingPanel(topBox));
+        tabbedPane.addTab("Edges", edgeTypeTable);
 
         // Add to parent container
         add(menuBar, BorderLayout.NORTH);
-        add(splitPane, BorderLayout.CENTER);
+        add(tabbedPane, BorderLayout.CENTER);
 
         edgeTypeTable.update(graph);
 
@@ -435,6 +434,11 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
+        JMenuItem randomGraph = new JMenuItem("Random Graph");
+        graph.add(randomGraph);
+
+        graph.addSeparator();
+
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
 
@@ -458,8 +462,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             getWorkbench().repaint();
         });
 
-        JMenuItem randomGraph = new JMenuItem("Random Graph");
-        graph.add(randomGraph);
 
         randomGraph.addActionListener(e -> {
             final GraphParamsEditor editor = new GraphParamsEditor();
@@ -496,8 +498,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                 }
             });
         });
-
-        graph.addSeparator();
 
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));

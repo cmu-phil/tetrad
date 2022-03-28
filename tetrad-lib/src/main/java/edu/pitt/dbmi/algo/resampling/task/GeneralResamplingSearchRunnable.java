@@ -38,7 +38,7 @@ public class GeneralResamplingSearchRunnable implements Runnable {
     /**
      * An initial graph to start from.
      */
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     /**
      * Specification of forbidden and required edges.
@@ -84,12 +84,12 @@ public class GeneralResamplingSearchRunnable implements Runnable {
         this.knowledge = knowledge;
     }
 
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     /**

@@ -33,6 +33,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -832,16 +833,14 @@ public class MixedUtils {
 
     public static DataSet loadDataSet(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
-        DataReader reader = new DataReader();
-        reader.setVariablesSupplied(true);
-        return reader.parseTabular(file);
+        return DataUtils.loadContinuousData(file, "//", '\"' ,
+                "*", true, Delimiter.TAB);
     }
 
     public static DataSet loadDelim(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
-        DataReader reader = new DataReader();
-        reader.setVariablesSupplied(false);
-        return reader.parseTabular(file);
+        return DataUtils.loadContinuousData(file, "//", '\"' ,
+                "*", false, Delimiter.TAB);
     }
 
     //Gives a map of number of categories of DiscreteVariables in g. ContinuousVariables are mapped to 0
@@ -859,9 +858,8 @@ public class MixedUtils {
 
     public static DataSet loadData(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
-        DataReader reader = new DataReader();
-        reader.setVariablesSupplied(true);
-        return reader.parseTabular(file);
+        return DataUtils.loadContinuousData(file, "//", '\"' ,
+                "*", true, Delimiter.TAB);
     }
 
     /**

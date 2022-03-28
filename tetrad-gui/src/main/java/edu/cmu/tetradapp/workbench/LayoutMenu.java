@@ -168,18 +168,18 @@ public class LayoutMenu extends JMenu {
 //            });
 //        }
 
-        JMenuItem layeredDrawing = new JMenuItem("Layered Drawing");
-        add(layeredDrawing);
-
-        layeredDrawing.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                LayoutEditable layoutEditable = getLayoutEditable();
-                LayoutUtils.layeredDrawingLayout(layoutEditable);
-
-                // Copy the laid out graph to the clipboard.
-                getCopyLayoutAction().actionPerformed(null);
-            }
-        });
+//        JMenuItem layeredDrawing = new JMenuItem("Layered Drawing");
+//        add(layeredDrawing);
+//
+//        layeredDrawing.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                LayoutEditable layoutEditable = getLayoutEditable();
+//                LayoutUtils.layeredDrawingLayout(layoutEditable);
+//
+//                // Copy the laid out graph to the clipboard.
+//                getCopyLayoutAction().actionPerformed(null);
+//            }
+//        });
 
 
         JMenuItem fruchtermanReingold = new JMenuItem("Fruchterman-Reingold");

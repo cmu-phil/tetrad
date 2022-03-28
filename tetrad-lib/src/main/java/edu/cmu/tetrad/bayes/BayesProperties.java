@@ -58,11 +58,7 @@ public final class BayesProperties {
 
             this.variables = dataSet.getVariables();
 
-            if (!(((BoxDataSet) dataSet).getDataBox() instanceof VerticalIntDataBox)) {
-                throw new IllegalArgumentException();
-            }
-
-            VerticalIntDataBox box = (VerticalIntDataBox) dataBox;
+            VerticalIntDataBox box = new VerticalIntDataBox(dataBox);
 
             data = box.getVariableVectors();
             this.sampleSize = dataSet.getNumRows();

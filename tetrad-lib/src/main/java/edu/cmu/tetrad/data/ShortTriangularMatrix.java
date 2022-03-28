@@ -24,6 +24,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.Vector;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +43,24 @@ public class ShortTriangularMatrix implements TriangularMatrix {
 
     public ShortTriangularMatrix(int size) {
         create(size);
+    }
+
+    //testing sandbox
+    public static void main(String[] args) {
+        ShortTriangularMatrix test = new ShortTriangularMatrix();
+        File file = new File("C:/data1.txt");
+        try {
+            DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
+                    "*", true, Delimiter.TAB);
+            test.becomeCorrelationMatrix(data);
+            System.out.println(test.toString());
+            CorrelationMatrix m = new CorrelationMatrix(data);
+            System.out.println(m.toString());
+            System.out.println(test.getDouble(1, 3));
+            System.out.println(test.getDouble(3, 1));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void becomeCorrelationMatrix(DataSet dataSet) {
@@ -126,25 +145,6 @@ public class ShortTriangularMatrix implements TriangularMatrix {
             out.append("\n");
         }
         return out.toString();
-    }
-
-    //testing sandbox
-    public static void main(String[] args) {
-        ShortTriangularMatrix test = new ShortTriangularMatrix();
-        DataReader reader = new DataReader();
-        File file = new File("C:/data1.txt");
-        DataSet data = null;
-        try {
-            data = reader.parseTabular(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        test.becomeCorrelationMatrix(data);
-        System.out.println(test.toString());
-        CorrelationMatrix m = new CorrelationMatrix(data);
-        System.out.println(m.toString());
-        System.out.println(test.getDouble(1, 3));
-        System.out.println(test.getDouble(3, 1));
     }
 }
 

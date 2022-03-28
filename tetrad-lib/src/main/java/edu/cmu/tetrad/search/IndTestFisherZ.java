@@ -53,7 +53,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     /**
      * The correlation matrix.
      */
-    private final CovarianceMatrix cor;
+    private final CorrelationMatrix cor;
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
@@ -89,7 +89,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         }
 
         if (!dataSet.existsMissingValue()) {
-            this.cor = new CovarianceMatrix(dataSet);
+            this.cor = new CorrelationMatrix(dataSet);
             this.variables = cor.getVariables();
             this.indexMap = indexMap(variables);
             this.nameMap = nameMap(variables);

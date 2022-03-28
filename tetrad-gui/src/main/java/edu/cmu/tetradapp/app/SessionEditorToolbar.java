@@ -123,13 +123,13 @@ final class SessionEditorToolbar extends JPanel {
                         "<html>Add a node for a simulation object.</html>"),
                 new ButtonInfo("Search", "Search", "search",
                         "<html>Add a node for a search algorithm.</html>"),
+                new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
                 new ButtonInfo("Updater", "Updater", "updater",
                         "<html>Add a node for an updater.</html>"),
                 //new ButtonInfo("Classify", "Classify", "search",
                 //"<html>Add a node for a classifier.</html>"),
                 new ButtonInfo("Regression", "Regression", "regression",
                         "<html>Add a node for a regression.</html>"),
-                new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
                 new ButtonInfo("Note", "Note", "note",
                         "<html>Add a note to the session.</html>")
         };

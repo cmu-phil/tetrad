@@ -117,29 +117,29 @@ public class BayesImWrapper implements SessionModel, Memorable {
         this.modelSourceName = simulation.getName();
     }
 
-    public BayesImWrapper(BayesEstimatorWrapper wrapper, Parameters parameters) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        setBayesIm(wrapper.getEstimatedBayesIm());
-//        log(bayesIm);
-    }
+//    public BayesImWrapper(BayesEstimatorWrapper wrapper, Parameters parameters) {
+//        if (wrapper == null) {
+//            throw new NullPointerException();
+//        }
+//        setBayesIm(wrapper.getEstimatedBayesIm());
+////        log(bayesIm);
+//    }
 
-    public BayesImWrapper(DirichletEstimatorWrapper wrapper, Parameters parameters) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        setBayesIm(wrapper.getEstimatedBayesIm());
-//        log(bayesIm);
-    }
+//    public BayesImWrapper(DirichletEstimatorWrapper wrapper, Parameters parameters) {
+//        if (wrapper == null) {
+//            throw new NullPointerException();
+//        }
+//        setBayesIm(wrapper.getEstimatedBayesIm());
+////        log(bayesIm);
+//    }
 
-    public BayesImWrapper(DirichletBayesImWrapper wrapper, Parameters parameters) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        setBayesIm(new MlBayesIm(wrapper.getDirichletBayesIm()));
-//        log(bayesIm);
-    }
+//    public BayesImWrapper(DirichletBayesImWrapper wrapper, Parameters parameters) {
+//        if (wrapper == null) {
+//            throw new NullPointerException();
+//        }
+//        setBayesIm(new MlBayesIm(wrapper.getDirichletBayesIm()));
+////        log(bayesIm);
+//    }
 
     public BayesImWrapper(RowSummingExactWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
@@ -186,14 +186,14 @@ public class BayesImWrapper implements SessionModel, Memorable {
 //        log(bayesIm);
     }
 
-    public BayesImWrapper(BayesImWrapper bayesImWrapper) {
-        if (bayesImWrapper == null) {
-            throw new NullPointerException();
-        }
-
-        setBayesIm(new MlBayesIm(bayesImWrapper.getBayesIm()));
-//        log(bayesIm);
-    }
+//    public BayesImWrapper(BayesImWrapper bayesImWrapper) {
+//        if (bayesImWrapper == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        setBayesIm(new MlBayesIm(bayesImWrapper.getBayesIm()));
+////        log(bayesIm);
+//    }
 
 
     public BayesImWrapper(BayesIm bayesIm) {

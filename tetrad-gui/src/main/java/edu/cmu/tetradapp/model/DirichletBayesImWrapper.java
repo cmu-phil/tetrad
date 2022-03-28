@@ -70,11 +70,13 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
-        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
+        if (params.getString("initializationMode", "manual").equals("manual")) {
             this.dirichletBayesIm = DirichletBayesIm.blankDirichletIm(bayesPm);
-        } else if (params.getString("initializationMode", "manualRetain").equals("symmetricPrior")) {
+        } else if (params.getString("initializationMode", "manual").equals("symmetricPrior")) {
             this.dirichletBayesIm = DirichletBayesIm.symmetricDirichletIm(
                     bayesPm, params.getDouble("symmetricAlpha", 1.0));
+        } else {
+            throw new IllegalStateException("Expecting 'manual' or 'symmetricPrior");
         }
 
         log(this.dirichletBayesIm);

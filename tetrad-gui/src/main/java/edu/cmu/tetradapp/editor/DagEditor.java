@@ -255,7 +255,7 @@ public final class DagEditor extends JPanel
         Box instructionBox = Box.createHorizontalBox();
         instructionBox.setMaximumSize(new Dimension(820, 40));
 
-        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types");
+        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types and colorings");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
@@ -420,6 +420,10 @@ public final class DagEditor extends JPanel
     private JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
+        JMenuItem randomGraph = new JMenuItem("Random Graph");
+        graph.add(randomGraph);
+        graph.addSeparator();
+
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));
@@ -427,8 +431,6 @@ public final class DagEditor extends JPanel
 //        graph.add(new AllPathsAction(getWorkbench()));
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
 
-        JMenuItem randomGraph = new JMenuItem("Random Graph");
-        graph.add(randomGraph);
 
         randomGraph.addActionListener(e -> {
             final GraphParamsEditor editor = new GraphParamsEditor();

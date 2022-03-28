@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Graph;
  */
 public interface GraphSource {
     Graph getGraph();
+    String getName();
 }
 
 

@@ -1161,7 +1161,7 @@ public final class FciOrient {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+    public void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
         logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it
@@ -1242,14 +1242,14 @@ public final class FciOrient {
         }
 
         if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            if (!knowledge.isForbidden(x.getName(), y.getName())) {
-                return true;
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
+                return false;
             }
         }
 
         if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!knowledge.isForbidden(x.getName(), y.getName())) {
-                return true;
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
+                return false;
             }
         }
 

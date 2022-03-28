@@ -23,16 +23,13 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphSource;
-import edu.cmu.tetradapp.model.Simulation;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 /**
  * Edits the parameters for generating random graphs.
@@ -61,14 +58,6 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
      */
     private Object[] parentModels;
 
-    public void setParams(Parameters params) {
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        this.params = params;
-    }
-
     public void setParentModels(Object[] parentModels) {
         this.parentModels = parentModels;
     }
@@ -86,15 +75,38 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
             }
         }
 
-        if (graphSources.size() == 1 && graphSources.get(0) instanceof GeneralAlgorithmRunner) {
-            model1 = (GeneralAlgorithmRunner) graphSources.get(0);
-            model2 = ((GeneralAlgorithmRunner) model1).getDataWrapper();
-        } else if (graphSources.size() == 2) {
+        if (graphSources.size() != 2) {
+            throw new IllegalArgumentException("Expecting two graph sources as input.");
+        }
+
+        String name1 = graphSources.get(0).getName();
+        String name2 = graphSources.get(1).getName();
+        String storedName = Preferences.userRoot().get("__referenceSessionModel", "");
+
+        System.out.println("In body, name1 = " + name1 + " name2 = " + name2 + ", storedName = " + storedName);
+
+        if (name1.startsWith("Simulation")) {
             model1 = (SessionModel) graphSources.get(0);
             model2 = (SessionModel) graphSources.get(1);
+        } else if (name2.startsWith("Simulation")) {
+            model1 = (SessionModel) graphSources.get(1);
+            model2 = (SessionModel) graphSources.get(0);
+        } else if (storedName.equals(name1)) {
+            model1 = (SessionModel) graphSources.get(0);
+            model2 = (SessionModel) graphSources.get(1);
+        } else if (storedName.equals(name2)) {
+            model1 = (SessionModel) graphSources.get(1);
+            model2 = (SessionModel) graphSources.get(0);
         } else {
-            throw new IllegalArgumentException("Expecting 2 graph source.");
+            model1 = (SessionModel) graphSources.get(0);
+            model2 = (SessionModel) graphSources.get(1);
         }
+
+        System.out.println("Decision: reference = " + model1.getName() + ", target = " + model2.getName());
+
+//        Preferences.userRoot().put("__referenceSessionModel", model1.getName());
+        params.set("referenceGraphName", model1.getName());
+        params.getString("targetGraphName", model2.getName());
 
         setLayout(new BorderLayout());
 
@@ -105,17 +117,8 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         group1.add(resetOnExecute);
         group1.add(dontResetOnExecute);
 
-        resetOnExecute.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("resetTableOnExecute", true);
-            }
-        });
-
-        dontResetOnExecute.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("resetTableOnExecute", false);
-            }
-        });
+        resetOnExecute.addActionListener(e -> getParams().set("resetTableOnExecute", true));
+        dontResetOnExecute.addActionListener(e -> getParams().set("resetTableOnExecute", false));
 
         if (getParams().getBoolean("resetTableOnExecute", false)) {
             resetOnExecute.setSelected(true);
@@ -130,11 +133,7 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         group2.add(latents);
         group2.add(noLatents);
 
-        latents.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("keepLatents", true);
-            }
-        });
+        latents.addActionListener(e -> getParams().set("keepLatents", true));
 
         if (getParams().getBoolean("keepLatents", false)) {
             latents.setSelected(true);
@@ -146,51 +145,25 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         JRadioButton graph1 = new JRadioButton(model1.getName());
         JRadioButton graph2 = new JRadioButton(model2.getName());
 
-        graph1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("referenceGraphName", model1.getName());
-                getParams().set("targetGraphName", model2.getName());
-            }
+        graph1.addActionListener(e -> {
+            System.out.println("Graph1 button reference = " + model1.getName() + ", target = " + model2.getName());
+            Preferences.userRoot().put("__referenceSessionModel", model1.getName());
+            params.set("referenceGraphName", model1.getName());
+            params.getString("targetGraphName", model1.getName());
         });
 
-        graph2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("referenceGraphName", model2.getName());
-                getParams().set("targetGraphName", model1.getName());
-            }
+        graph2.addActionListener(e -> {
+            System.out.println("Graph2 button reference = " + model2.getName() + ", target = " + model1.getName());
+
+            Preferences.userRoot().put("__referenceSessionModel", model2.getName());
+            params.set("referenceGraphName", model2.getName());
+            params.getString("targetGraphName", model1.getName());
         });
 
         ButtonGroup group = new ButtonGroup();
         group.add(graph1);
         group.add(graph2);
-
-        boolean alreadySet = false;
-
-        if (model1 instanceof GeneralAlgorithmRunner) {
-            graph1.setSelected(true);
-        }
-
-        if (model2 instanceof GeneralAlgorithmRunner) {
-            graph2.setSelected(true);
-            alreadySet = true;
-        }
-
-        if (model2 instanceof Simulation) {
-            graph2.setSelected(true);
-            alreadySet = true;
-        }
-
-        if (!alreadySet) {
-            graph1.setSelected(true);
-        }
-
-        if (graph1.isSelected()) {
-            getParams().set("referenceGraphName", model1.getName());
-            getParams().set("targetGraphName", model2.getName());
-        } else if (graph2.isSelected()) {
-            getParams().set("referenceGraphName", model2.getName());
-            getParams().set("targetGraphName", model1.getName());
-        }
+        graph1.setSelected(true);
 
         Box b1 = Box.createVerticalBox();
 
@@ -219,6 +192,14 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
      */
     private synchronized Parameters getParams() {
         return this.params;
+    }
+
+    public void setParams(Parameters params) {
+        if (params == null) {
+            throw new NullPointerException();
+        }
+
+        this.params = params;
     }
 }
 

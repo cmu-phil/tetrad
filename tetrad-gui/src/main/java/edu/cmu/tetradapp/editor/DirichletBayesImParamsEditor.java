@@ -73,17 +73,15 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
     public void setup() {
         setLayout(new BorderLayout());
 
-        JRadioButton manualRetain = new JRadioButton();
+        JRadioButton manual = new JRadioButton();
         JRadioButton randomRetain = new JRadioButton();
 
-        manualRetain.setText(
-                "Manually, retaining previous values where possible.");
-        randomRetain.setText(
-                "Using a symmetric prior for each row of each conditional" +
+        manual.setText("Manually");
+        randomRetain.setText("Using a symmetric prior for each row of each conditional" +
                         " probability table.");
 
         ButtonGroup group = new ButtonGroup();
-        group.add(manualRetain);
+        group.add(manual);
         group.add(randomRetain);
 
         final DoubleTextField symmetricAlphaField = new DoubleTextField(
@@ -99,19 +97,19 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
             }
         });
 
-        if (getParams().getString("initializationMode", "manualRetain").equals("manualRetain")) {
-            manualRetain.setSelected(true);
+        if (getParams().getString("initializationMode", "symmetricPrior").equals("manual")) {
+            manual.setSelected(true);
             symmetricAlphaField.setEnabled(false);
-        } else if (getParams().getString("initializationMode", "manualRetain").equals("symmetricPrior")) {
+        } else if (getParams().getString("initializationMode", "symmetricPrior").equals("symmetricPrior")) {
             randomRetain.setSelected(true);
             symmetricAlphaField.setEnabled(true);
         } else {
             throw new IllegalStateException();
         }
 
-        manualRetain.addActionListener(new ActionListener() {
+        manual.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getParams().set("initializationMode", "manualRetain");
+                getParams().set("initializationMode", "manual");
                 symmetricAlphaField.setEnabled(false);
             }
         });
@@ -132,7 +130,7 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
         b2.add(Box.createHorizontalGlue());
 
         Box b3 = Box.createHorizontalBox();
-        b3.add(manualRetain);
+        b3.add(manual);
         b3.add(Box.createHorizontalGlue());
 
         Box b4 = Box.createHorizontalBox();

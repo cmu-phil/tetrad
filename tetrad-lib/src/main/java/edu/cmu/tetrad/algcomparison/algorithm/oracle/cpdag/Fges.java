@@ -3,7 +3,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -31,13 +30,11 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesScoreWrapper {
+public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
 
     private ScoreWrapper score;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public Fges() {
@@ -46,11 +43,6 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
 
     public Fges(ScoreWrapper score) {
         this.score = score;
-    }
-
-    public Fges(ScoreWrapper score, Algorithm algorithm) {
-        this.score = score;
-        this.algorithm = algorithm;
     }
 
     @Override
@@ -76,15 +68,11 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
                 search.setOut((PrintStream) obj);
             }
 
-            if (initialGraph != null) {
-                search.setInitialGraph(initialGraph);
-            }
-
             graph = search.search();
 
             return graph;
         } else {
-            Fges fges = new Fges(score, algorithm);
+            Fges fges = new Fges(score);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, fges, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -156,29 +144,13 @@ public class Fges implements Algorithm, TakesInitialGraph, HasKnowledge, UsesSco
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
-
+    public ScoreWrapper getScoreWrapper() {
+        return score;
     }
 
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
-    }
-
-    @Override
-    public ScoreWrapper getScoreWrapper() {
-        return score;
     }
 
 }

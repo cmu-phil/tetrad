@@ -70,8 +70,8 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             Gfci algorithm = new Gfci(test, score);
 
             //algorithm.setKnowledge(knowledge);
-//          if (initialGraph != null) {
-//      		algorithm.setInitialGraph(initialGraph);
+//          if (externalGraph != null) {
+//      		algorithm.setExternalGraph(externalGraph);
 //  		}
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -146,6 +146,11 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
+    public ScoreWrapper getScoreWrapper() {
+        return score;
+    }
+
+    @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
@@ -153,11 +158,6 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return test;
-    }
-
-    @Override
-    public ScoreWrapper getScoreWrapper() {
-        return score;
     }
 
 }

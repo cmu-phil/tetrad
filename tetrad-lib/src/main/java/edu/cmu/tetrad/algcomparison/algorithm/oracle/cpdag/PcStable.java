@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -25,12 +24,10 @@ import java.util.List;
  * @author jdramsey
  */
 @Bootstrapping
-public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, TakesIndependenceWrapper {
+public class PcStable implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public PcStable() {
@@ -40,18 +37,10 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
         this.test = test;
     }
 
-    public PcStable(IndependenceWrapper test, Algorithm algorithm) {
-        this.test = test;
-        this.algorithm = algorithm;
-    }
-
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (algorithm != null) {
-//            	initialGraph = algorithm.search(dataSet, parameters);
-            }
-            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters), initialGraph);
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
@@ -61,11 +50,8 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            PcStable pcStable = new PcStable(test, algorithm);
+            PcStable pcStable = new PcStable(test);
 
-            if (initialGraph != null) {
-                pcStable.setInitialGraph(initialGraph);
-            }
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, pcStable, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(knowledge);
@@ -100,8 +86,7 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
 
     @Override
     public String getDescription() {
-        return "PC-Stable (\"Peter and Clark\" Stable), Priority Rule, using " + test.getDescription() + (algorithm != null ? " with initial graph from " +
-                algorithm.getDescription() : "");
+        return "PC-Stable (\"Peter and Clark\" Stable), Priority Rule, using " + test.getDescription();
     }
 
     @Override
@@ -127,21 +112,6 @@ public class PcStable implements Algorithm, TakesInitialGraph, HasKnowledge, Tak
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
     }
 
     @Override

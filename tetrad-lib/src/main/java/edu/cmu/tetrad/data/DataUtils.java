@@ -26,8 +26,10 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.ContinuousData;
+import edu.pitt.dbmi.data.reader.Data;
+import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
+import edu.pitt.dbmi.data.reader.tabular.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.BlockRealMatrix;
@@ -35,9 +37,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.rmi.MarshalledObject;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -294,34 +294,45 @@ public final class DataUtils {
     /**
      * Log or unlog data
      *
-     * @param data
+     * @param dataSet
      * @param a
      * @param isUnlog
      * @return
      */
-    public static Matrix logData(Matrix data, double a, boolean isUnlog, int base) {
-        Matrix copy = data.copy();
+    public static DataSet logData(DataSet dataSet, double a, boolean isUnlog, int base) {
+        final Matrix data = dataSet.getDoubleData();
+        final Matrix X = data.like();
+        final double n = dataSet.getNumRows();
 
-        for (int j = 0; j < copy.columns(); j++) {
+        for (int j = 0; j < data.columns(); j++) {
+            final double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
+            final double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
 
-            for (int i = 0; i < copy.rows(); i++) {
+            if (dataSet.getVariable(j) instanceof DiscreteVariable) {
+                X.assignColumn(j, new Vector(x1));
+                continue;
+            }
+
+            for (int i = 0; i < x1.length; i++) {
                 if (isUnlog) {
                     if (base == 0) {
-                        copy.set(i, j, Math.exp(copy.get(i, j)) - a);
+                        x1[i] = Math.exp(x1Orig[i]) - a;
                     } else {
-                        copy.set(i, j, Math.pow(base, (copy.get(i, j))) - a);
+                        x1[i] = Math.pow(base, (x1Orig[i])) - a;
                     }
                 } else {
                     if (base == 0) {
-                        copy.set(i, j, Math.log(a + copy.get(i, j)));
+                        x1[i] = Math.log(a + x1Orig[i]);
                     } else {
-                        copy.set(i, j, Math.log(a + copy.get(i, j)) / Math.log(base));
+                        x1[i] = Math.log(a + x1Orig[i]) / Math.log(base);
                     }
                 }
             }
+
+            X.assignColumn(j, new Vector(x1));
         }
 
-        return copy;
+        return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
     }
 
 
@@ -767,6 +778,18 @@ public final class DataUtils {
             } else {
                 DiscreteVariable discreteVariable = (DiscreteVariable) variable;
 
+                boolean allNumerical = true;
+
+                for (String cat : discreteVariable.getCategories()) {
+                    try {
+                        Double.parseDouble(cat);
+                    } catch (NumberFormatException e) {
+                        allNumerical = false;
+                        break;
+                    }
+                }
+
+
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     int index = dataSet.getInt(i, j);
                     String catName = discreteVariable.getCategory(index);
@@ -775,7 +798,11 @@ public final class DataUtils {
                     if (catName.equals("*")) {
                         value = Double.NaN;
                     } else {
-                        value = Double.parseDouble(catName);
+                        if (allNumerical) {
+                            value = Double.parseDouble(catName);
+                        } else {
+                            value = index;
+                        }
                     }
 
                     continuousData.setDouble(i, j, value);
@@ -1379,14 +1406,14 @@ public final class DataUtils {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            double exoData[] = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.rows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
             }
 
             // Step 2. Multiply by cholesky to get correct covariance.
-            double point[] = new double[exoData.length];
+            double[] point = new double[exoData.length];
 
             for (int i = 0; i < exoData.length; i++) {
                 double sum = 0.0;
@@ -1844,7 +1871,8 @@ public final class DataUtils {
             final Matrix data = dataSet.getDoubleData();
             final Matrix X = data.like();
             final double n = dataSet.getNumRows();
-            double delta = 1e-8;;// 1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
+            double delta = 1e-8;
+//            delta = 1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
 
             final NormalDistribution normalDistribution = new NormalDistribution();
 
@@ -1868,8 +1896,8 @@ public final class DataUtils {
                 for (int i = 0; i < xTransformed.length; i++) {
                     xTransformed[i] /= n;
 
-                    if (xTransformed[i] < delta) xTransformed[i] = delta;
-                    if (xTransformed[i] > (1. - delta)) xTransformed[i] = 1. - delta;
+//                    if (xTransformed[i] < delta) xTransformed[i] = delta;
+//                    if (xTransformed[i] > (1. - delta)) xTransformed[i] = 1. - delta;
 
 //                    if (xTransformed[i] <= 0) xTransformed[i] = 0;
 //                    if (xTransformed[i] >= 1) xTransformed[i] = 1;
@@ -1944,7 +1972,7 @@ public final class DataUtils {
 
                 if (previous instanceof Double && current instanceof Double) {
                     double _previouw = (Double) previous;
-                    double _current= (Double) current;
+                    double _current = (Double) current;
 
                     if (Double.isNaN(_previouw) && Double.isNaN(_current)) {
                         constant = false;
@@ -2025,10 +2053,10 @@ public final class DataUtils {
      * Loads knowledge from a file. Assumes knowledge is the only thing in the
      * file. No jokes please. :)
      */
-    public static IKnowledge parseKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
+    public static IKnowledge loadKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
         FileReader reader = new FileReader(file);
         Lineizer lineizer = new Lineizer(reader, commentMarker);
-        IKnowledge knowledge = parseKnowledge(lineizer, DelimiterType.WHITESPACE.getPattern());
+        IKnowledge knowledge = loadKnowledge(lineizer, delimiterType.getPattern());
         TetradLogger.getInstance().reset();
         return knowledge;
     }
@@ -2044,7 +2072,7 @@ public final class DataUtils {
      * 4 x5
      * </pre>
      */
-    public static IKnowledge parseKnowledge(Lineizer lineizer, Pattern delimiter) {
+    public static IKnowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
         IKnowledge knowledge = new Knowledge2();
 
         String line = lineizer.nextLine();
@@ -2388,15 +2416,218 @@ public final class DataUtils {
     }
 
     @NotNull
-    public static DataSet loadContinuousData(File file, String commentMarker, char quoteCharacter, String missingValueMarker, boolean hasHeader) throws IOException {
-        ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(file.toPath(), Delimiter.COMMA);
+    public static DataSet loadContinuousData(File file, String commentMarker, char quoteCharacter,
+                                             String missingValueMarker, boolean hasHeader, Delimiter delimiter)
+            throws IOException {
+        ContinuousTabularDatasetFileReader dataReader
+                = new ContinuousTabularDatasetFileReader(file.toPath(), delimiter);
         dataReader.setCommentMarker(commentMarker);
         dataReader.setQuoteCharacter(quoteCharacter);
         dataReader.setMissingDataMarker(missingValueMarker);
         dataReader.setHasHeader(hasHeader);
         ContinuousData data = (ContinuousData) dataReader.readInData();
-        DataSet dataSet = (DataSet) DataConvertUtils.toContinuousDataModel(data);
-        return dataSet;
+        return (DataSet) DataConvertUtils.toContinuousDataModel(data);
+    }
+
+    @NotNull
+    public static DataSet loadDiscreteData(File file, String commentMarker, char quoteCharacter,
+                                           String missingValueMarker, boolean hasHeader, Delimiter delimiter)
+            throws IOException {
+        TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
+        DataColumn[] dataColumns = columnReader.readInDataColumns(new int[]{1}, true);
+
+        columnReader.setCommentMarker(commentMarker);
+
+        TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
+
+        // Need to specify commentMarker, .... again to the TabularDataFileReader
+        dataReader.setCommentMarker(commentMarker);
+        dataReader.setMissingDataMarker(missingValueMarker);
+        dataReader.setQuoteCharacter(quoteCharacter);
+
+        Data data = dataReader.read(dataColumns, hasHeader);
+        DataModel dataModel = DataConvertUtils.toDataModel(data);
+
+        return (DataSet) dataModel;
+    }
+
+
+    /**
+     * Reads in a covariance matrix. The format is as follows. </p>
+     * <pre>
+     * /covariance
+     * 100
+     * X1   X2   X3   X4
+     * 1.4
+     * 3.2  2.3
+     * 2.5  3.2  5.3
+     * 3.2  2.5  3.2  4.2
+     * </pre>
+     * <pre>
+     * CovarianceMatrix dataSet = DataLoader.loadCovMatrix(
+     *                           new FileReader(file), " \t", "//");
+     * </pre> The initial "/covariance" is optional.
+     */
+    public static ICovarianceMatrix parseCovariance(char[] chars, String commentMarker,
+                                                    DelimiterType delimiterType,
+                                                    char quoteChar,
+                                                    String missingValueMarker) {
+
+        // Do first pass to get a description of the file.
+        CharArrayReader reader = new CharArrayReader(chars);
+
+        // Close the reader and re-open for a second pass to load the data.
+        reader.close();
+        CharArrayReader reader2 = new CharArrayReader(chars);
+        ICovarianceMatrix covarianceMatrix = doCovariancePass(reader2, commentMarker,
+                delimiterType, quoteChar, missingValueMarker);
+
+        TetradLogger.getInstance().log("info", "\nData set loaded!");
+        return covarianceMatrix;
+    }
+
+    /**
+     * Parses the given files for a tabular data set, returning a
+     * RectangularDataSet if successful.
+     *
+     * @throws IOException if the file cannot be read.
+     */
+    public static ICovarianceMatrix parseCovariance(File file, String commentMarker,
+                                                    DelimiterType delimiterType,
+                                                    char quoteChar,
+                                                    String missingValueMarker) throws IOException {
+        FileReader reader = null;
+
+        try {
+            reader = new FileReader(file);
+            ICovarianceMatrix covarianceMatrix = doCovariancePass(reader, commentMarker,
+                    delimiterType, quoteChar, missingValueMarker);
+
+            TetradLogger.getInstance().log("info", "\nCovariance matrix loaded!");
+            return covarianceMatrix;
+        } catch (FileNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            if (reader != null) {
+                reader.close();
+            }
+
+            throw new RuntimeException("Parsing failed.", e);
+        }
+    }
+
+
+    static ICovarianceMatrix doCovariancePass(Reader reader, String commentMarker, DelimiterType delimiterType,
+                                              char quoteChar, String missingValueMarker) {
+        TetradLogger.getInstance().log("info", "\nDATA LOADING PARAMETERS:");
+        TetradLogger.getInstance().log("info", "File type = COVARIANCE");
+        TetradLogger.getInstance().log("info", "Comment marker = " + commentMarker);
+        TetradLogger.getInstance().log("info", "Delimiter type = " + delimiterType);
+        TetradLogger.getInstance().log("info", "Quote char = " + quoteChar);
+        TetradLogger.getInstance().log("info", "Missing value marker = " + missingValueMarker);
+        TetradLogger.getInstance().log("info", "--------------------");
+
+        Lineizer lineizer = new Lineizer(reader, commentMarker);
+
+        // Skip "/Covariance" if it is there.
+        String line = lineizer.nextLine();
+
+        if ("/Covariance".equalsIgnoreCase(line.trim())) {
+            line = lineizer.nextLine();
+        }
+
+        // Read br sample size.
+        RegexTokenizer st = new RegexTokenizer(line, delimiterType.getPattern(), quoteChar);
+        String token = st.nextToken();
+
+        int n;
+
+        try {
+            n = Integer.parseInt(token);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(
+                    "Expected a sample size here, got \"" + token + "\".");
+        }
+
+        if (st.hasMoreTokens() && !"".equals(st.nextToken())) {
+            throw new IllegalArgumentException(
+                    "Line from file has more tokens than expected: \"" + st.nextToken() + "\"");
+        }
+
+        // Read br variable names and set up DataSet.
+        line = lineizer.nextLine();
+
+        // Variable lists can't have missing values, so we can excuse an extra tab at the end of the line.
+        if (line.subSequence(line.length() - 1, line.length()).equals("\t")) {
+            line = line.substring(0, line.length() - 1);
+        }
+
+        st = new RegexTokenizer(line, delimiterType.getPattern(), quoteChar);
+
+        List<String> vars = new ArrayList<>();
+
+        while (st.hasMoreTokens()) {
+            String _token = st.nextToken();
+
+            if ("".equals(_token)) {
+                TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a variable name--ignoring.");
+                continue;
+            }
+
+            vars.add(_token);
+        }
+
+        String[] varNames = vars.toArray(new String[vars.size()]);
+
+        TetradLogger.getInstance().log("info", "Variables:");
+
+        for (String varName : varNames) {
+            TetradLogger.getInstance().log("info", varName + " --> Continuous");
+        }
+
+        // Read br covariances.
+        Matrix c = new Matrix(vars.size(), vars.size());
+
+        for (int i = 0; i < vars.size(); i++) {
+            st = new RegexTokenizer(lineizer.nextLine(), delimiterType.getPattern(), quoteChar);
+
+            for (int j = 0; j <= i; j++) {
+                if (!st.hasMoreTokens()) {
+                    throw new IllegalArgumentException("Expecting " + (i + 1)
+                            + " numbers on line " + (i + 1)
+                            + " of the covariance " + "matrix input.");
+                }
+
+                String literal = st.nextToken();
+
+                if ("".equals(literal)) {
+                    TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a "
+                            + "covariance value--ignoring.");
+                    continue;
+                }
+
+                if ("*".equals(literal)) {
+                    c.set(i, j, Double.NaN);
+                    c.set(j, i, Double.NaN);
+                    continue;
+                }
+
+                double r = Double.parseDouble(literal);
+
+                c.set(i, j, r);
+                c.set(j, i, r);
+            }
+        }
+
+        IKnowledge knowledge = loadKnowledge(lineizer, delimiterType.getPattern());
+
+        ICovarianceMatrix covarianceMatrix
+                = new CovarianceMatrix(createContinuousVariables(varNames), c, n);
+
+        covarianceMatrix.setKnowledge(knowledge);
+
+        TetradLogger.getInstance().log("info", "\nData set loaded!");
+        return covarianceMatrix;
     }
 }
 

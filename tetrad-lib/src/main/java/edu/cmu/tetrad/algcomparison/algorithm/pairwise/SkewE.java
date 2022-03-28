@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -31,11 +31,11 @@ import java.util.List;
 //        algoType = AlgType.orient_pairwise
 //)
 @Bootstrapping
-public class SkewE implements Algorithm, TakesInitialGraph {
+public class SkewE implements Algorithm, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
     private Algorithm algorithm = null;
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     public SkewE() {
     }
@@ -50,7 +50,7 @@ public class SkewE implements Algorithm, TakesInitialGraph {
             Graph graph = algorithm.search(dataSet, parameters);
 
             if (graph != null) {
-                initialGraph = graph;
+                externalGraph = graph;
             } else {
                 throw new IllegalArgumentException("This SkewE algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
@@ -59,14 +59,14 @@ public class SkewE implements Algorithm, TakesInitialGraph {
             List<DataSet> dataSets = new ArrayList<>();
             dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
-            Lofs2 lofs = new Lofs2(initialGraph, dataSets);
+            Lofs2 lofs = new Lofs2(externalGraph, dataSets);
             lofs.setRule(Lofs2.Rule.SkewE);
 
             return lofs.orient();
         } else {
             SkewE skewE = new SkewE(algorithm);
-            if (initialGraph != null) {
-                skewE.setInitialGraph(initialGraph);
+            if (externalGraph != null) {
+                skewE.setExternalGraph(externalGraph);
             }
 
             DataSet data = (DataSet) dataSet;
@@ -125,17 +125,17 @@ public class SkewE implements Algorithm, TakesInitialGraph {
     }
 
     @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
+    public Graph getExternalGraph() {
+        return externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setInitialGraph(Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This SkewE algorithm needs both data and a graph source as inputs; it \n"
                     + "will orient the edges in the input graph using the data.");

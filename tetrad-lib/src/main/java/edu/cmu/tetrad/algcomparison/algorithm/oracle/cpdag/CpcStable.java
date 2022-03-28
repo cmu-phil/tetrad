@@ -50,7 +50,7 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
             if (algorithm != null) {
 //                init = algorithm.search(dataSet, parameters);
             }
-            PcAll search = new PcAll(test.getTest(dataSet, parameters), init);
+            PcAll search = new PcAll(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(knowledge);
             search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);

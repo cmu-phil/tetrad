@@ -1,15 +1,13 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -73,9 +71,8 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
         System.out.println(file.getAbsolutePath());
 
         try {
-            DataReader reader = new DataReader();
-            reader.setVariablesSupplied(true);
-            DataSet dataSet2 = reader.parseTabular(file);
+            DataSet dataSet2 = DataUtils.loadContinuousData(file, "//", '\"' ,
+                    "*", true, Delimiter.TAB);
             System.out.println("Loading graph from " + file.getAbsolutePath());
             Graph graph = loadGraphPcAlgMatrix(dataSet2);
 

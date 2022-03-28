@@ -29,10 +29,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.text.DecimalFormat;
@@ -194,7 +191,7 @@ public final class Fask2 implements GraphSearch {
      */
     public Graph search() {
         long start = System.currentTimeMillis();
-        NumberFormat nf = new DecimalFormat("0.000");
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
@@ -216,7 +213,7 @@ public final class Fask2 implements GraphSearch {
         TetradLogger.getInstance().forceLogMessage("");
 
         Grasp grasp = new Grasp(score);
-        grasp.setUsePearl(false);
+        grasp.setUseRaskuttiUhler(false);
         grasp.setDepth(depth);
         grasp.bestOrder(dataSet.getVariables());
         Graph G = grasp.getGraph(false);
@@ -356,7 +353,7 @@ public final class Fask2 implements GraphSearch {
         this.graph = graph;
 
         double bic = new BicEst().getValue(null, graph, dataSet);
-        graph.addAttribute("BIC", bic);
+        graph.addAttribute("BIC", nf.format(bic));
 
         return graph;
     }

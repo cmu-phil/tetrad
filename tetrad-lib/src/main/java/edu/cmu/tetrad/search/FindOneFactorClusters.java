@@ -40,45 +40,28 @@ import static java.lang.Math.sqrt;
  */
 public class FindOneFactorClusters {
 
-    public Algorithm getAlgorithm() {
-        return algorithm;
-    }
-
-    public void setAlgorithm(Algorithm algorithm) {
-        this.algorithm = algorithm;
-    }
-
-    public enum Algorithm {SAG, GAP}
-
-    private CorrelationMatrix corr;
+    private final IndependenceTest indepTest;
+    private final CorrelationMatrix corr;
     // The list of all variables.
-    private List<Node> variables;
-
+    private final List<Node> variables;
     // The significance level.
-    private double alpha;
-
-    private TestType testType = TestType.TETRAD_DELTA;
-
+    private final double alpha;
     // The Delta test. Testing two tetrads simultaneously.
-    private DeltaTetradTest test;
-
+    private final DeltaTetradTest test;
     // The tetrad test--using Ricardo's. Used only for Wishart.
-    private ContinuousTetradTest test2;
-
+    private final ContinuousTetradTest test2;
     // The data.
-    private transient DataModel dataModel;
-
+    private final transient DataModel dataModel;
+    private final int depth = 0;
+    Map<Set<Integer>, Double> avgSumLnPs = new HashMap<>();
+    private TestType testType = TestType.TETRAD_DELTA;
     private List<List<Node>> clusters;
-
-    private int depth = 0;
     private boolean verbose = false;
     private boolean significanceCalculated = false;
     private Algorithm algorithm = Algorithm.GAP;
-
-    //========================================PUBLIC METHODS====================================//
-
-    public FindOneFactorClusters(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha) {
-        if (testType == null) throw new NullPointerException("Null test type.");
+    public FindOneFactorClusters(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha,
+                                 IndependenceTest indepTest) {
+        if (testType == null) throw new NullPointerException("Null indepTest type.");
         cov = new CovarianceMatrix(cov);
         this.variables = cov.getVariables();
         this.alpha = alpha;
@@ -87,14 +70,15 @@ public class FindOneFactorClusters {
         this.test2 = new ContinuousTetradTest(cov, testType, alpha);
         this.dataModel = cov;
         this.algorithm = algorithm;
+        this.indepTest = indepTest;
 
         this.corr = new CorrelationMatrix(cov);
 
 
     }
-
-    public FindOneFactorClusters(DataSet dataSet, TestType testType, Algorithm algorithm, double alpha) {
-        if (testType == null) throw new NullPointerException("Null test type.");
+    public FindOneFactorClusters(DataSet dataSet, TestType testType, Algorithm algorithm, double alpha,
+                                 IndependenceTest indepTest) {
+        if (testType == null) throw new NullPointerException("Null indepTest type.");
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.testType = testType;
@@ -102,8 +86,19 @@ public class FindOneFactorClusters {
         this.test2 = new ContinuousTetradTest(dataSet, testType, alpha);
         this.dataModel = dataSet;
         this.algorithm = algorithm;
+        this.indepTest = indepTest;
 
         this.corr = new CorrelationMatrix(dataSet);
+    }
+
+    //========================================PUBLIC METHODS====================================//
+
+    public Algorithm getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(Algorithm algorithm) {
+        this.algorithm = algorithm;
     }
 
     // renjiey
@@ -251,8 +246,6 @@ public class FindOneFactorClusters {
     }
 
     private Set<List<Integer>> estimateClustersTetradsFirst() {
-        System.out.println("A");
-
         List<Integer> _variables = allVariables();
 
         Set<List<Integer>> pureClusters = findPureClusters(_variables);
@@ -706,8 +699,6 @@ public class FindOneFactorClusters {
         return out;
     }
 
-    Map<Set<Integer>, Double> avgSumLnPs = new HashMap<>();
-
     // Finds clusters of size 4 or higher for the tetrad first algorithm.
     private Set<List<Integer>> findPureClusters(List<Integer> _variables) {
         Set<List<Integer>> clusters = new HashSet<>();
@@ -740,16 +731,18 @@ public class FindOneFactorClusters {
                 // Note that purity needs to be assessed with respect to all of the variables in order to
                 // remove all latent-measure impurities between pairs of latents.
                 if (pure(cluster, allVariables, alpha)) {
-                    if (verbose) {
-                        log("Found a pure: " + variablesForIndices(cluster));
-                    }
+//                    if (verbose) {
+//                        log("Found a pure: " + variablesForIndices(cluster));
+//                    }
 
 //                    if (modelInsignificantWithNewCluster(clusters, cluster)) continue;
 
                     addOtherVariables(_variables, allVariables, cluster);
 
                     if (verbose) {
-                        log("Cluster found: " + variablesForIndices(cluster));
+                        log("Cluster found: " + variablesForIndices(cluster)
+                                + (indepTest != null ? " all marginally dependent = "
+                                + allMarginallyDependent(cluster) : ""));
                     }
                     clusters.add(cluster);
                     _variables.removeAll(cluster);
@@ -762,6 +755,21 @@ public class FindOneFactorClusters {
         }
 
         return clusters;
+    }
+
+    private boolean allMarginallyDependent(List<Integer> cluster) {
+        if (indepTest == null) return false;
+
+        for (int i = 0; i < cluster.size(); i++) {
+            for (int j = i + 1; j < cluster.size(); j++) {
+                Node a = variables.get(cluster.get(i));
+                Node b = variables.get(cluster.get(j));
+
+                if (!indepTest.isDependent(a, b)) return false;
+            }
+        }
+
+        return true;
     }
 
     private void addOtherVariables(List<Integer> _variables, List<Integer> allVariables, List<Integer> cluster) {
@@ -831,9 +839,9 @@ public class FindOneFactorClusters {
         while (true) {
             if (remaining.size() < 3) break;
 
-            if (verbose) {
-                log("UnionPure = " + variablesForIndices(new ArrayList<>(unionPure)));
-            }
+//            if (verbose) {
+//                log("UnionPure = " + variablesForIndices(new ArrayList<>(unionPure)));
+//            }
 
             ChoiceGenerator gen = new ChoiceGenerator(remaining.size(), 3);
             int[] choice;
@@ -890,7 +898,9 @@ public class FindOneFactorClusters {
                     remaining.removeAll(cluster);
 
                     if (verbose) {
-                        log("3-cluster found: " + variablesForIndices(cluster));
+                        log("3-cluster found: " + variablesForIndices(cluster)
+                                + (indepTest != null ? " all marginally dependent = "
+                                + allMarginallyDependent(cluster) : ""));
                     }
 
                     continue REMAINING;
@@ -1217,7 +1227,6 @@ public class FindOneFactorClusters {
     private void log(String s) {
         if (verbose) {
             TetradLogger.getInstance().forceLogMessage(s);
-            System.out.println(s);
         }
     }
 
@@ -1228,6 +1237,8 @@ public class FindOneFactorClusters {
     public void setSignificanceCalculated(boolean significanceCalculated) {
         this.significanceCalculated = significanceCalculated;
     }
+
+    public enum Algorithm {SAG, GAP}
 }
 
 

@@ -106,10 +106,14 @@ public class FofcRunner extends AbstractMimRunner
                 FindOneFactorClusters.Algorithm.GAP);
 
         if (source instanceof DataSet) {
-            fofc = new FindOneFactorClusters((DataSet) source, tetradTestType, algorithm, getParams().getDouble("alpha", 0.001));
+            fofc = new FindOneFactorClusters((DataSet) source, tetradTestType, algorithm,
+                    getParams().getDouble("alpha", 0.001),
+                    null);
             searchGraph = fofc.search();
         } else if (source instanceof CovarianceMatrix) {
-            fofc = new FindOneFactorClusters((CovarianceMatrix) source, tetradTestType, algorithm, getParams().getDouble("alpha", 0.001));
+            fofc = new FindOneFactorClusters((CovarianceMatrix) source, tetradTestType, algorithm,
+                    getParams().getDouble("alpha", 0.001),
+                    null);
             searchGraph = fofc.search();
         } else {
             throw new IllegalArgumentException("Unrecognized data type.");

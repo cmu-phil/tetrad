@@ -241,7 +241,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
         graph = new EdgeListGraph(nodes);
         graph.fullyConnect(Endpoint.TAIL);
 
-        Fas fas = new Fas(graph, getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(0);
 
