@@ -29,30 +29,33 @@ import java.util.*;
 
 
 /**
- * BuildPureClusters is an implementation of the automated clustering and purification methods described on the report
- * "Learning Measurement Models" CMU-CALD-03-100.
+ * BuildPureClusters is an implementation of the automated clustering and purification methods
+ * described on the report "Learning Measurement Models" CMU-CALD-03-100.
  * <p>
- * The output is only the purified model. Future versions may include options to visualize the measurement pattern in
- * the GUI (it shows up in the console window, though.)
+ * The output is only the purified model. Future versions may include options to visualize the
+ * measurement pattern in the GUI (it shows up in the console window, though.)
  * <p>
  * No background knowledge is allowed yet. Future versions of this algorithm will include it.
  * <p>
  * References:
  * <p>
- * Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models". Technical report
- * CMU-CALD-03-100, Center for Automated Learning and Discovery, Carnegie Mellon University.
+ * Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models".
+ * Technical report CMU-CALD-03-100, Center for Automated Learning and Discovery, Carnegie Mellon
+ * University.
  * <p>
- * Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads." Sociological Methods and
- * Research 19, 80-92.
+ * Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads."
+ * Sociological Methods and Research 19, 80-92.
  * <p>
- * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of Psychology 19, 180-187.
+ * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of
+ * Psychology 19, 180-187.
  * <p>
- * Bron, C. and Kerbosch, J. (1973) "Algorithm 457: Finding all cliques of an undirected graph". Communications of ACM
- * 16, 575-577.
+ * Bron, C. and Kerbosch, J. (1973) "Algorithm 457: Finding all cliques of an undirected graph".
+ * Communications of ACM 16, 575-577.
+ * <p>
+ * --Cleaned up by jdramsey 2022-03-28
  *
  * @author Ricardo Silva
  */
-
 public final class BuildPureClusters {
     private boolean outputMessage;
 
@@ -77,17 +80,10 @@ public final class BuildPureClusters {
     private TetradTest tetradTest;
     private IndependenceTest independenceTest;
     private DataSet dataSet;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
     private double alpha;
     private boolean verbose;
 
-    //*********************************************************
-    // * INITIALIZATION
-    // *********************************************************/
+    //**************************** INITIALIZATION ***********************************/
 
     /**
      * Constructor BuildPureClusters
@@ -174,16 +170,11 @@ public final class BuildPureClusters {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-//        print("\n**************Starting BPC search!!!*************\n");
         TetradLogger.getInstance().log("info", "BPC alpha = " + alpha + " test = " + sigTestType);
 
         List<int[]> clustering = findMeasurementPattern();
-
-        // Remove clusters of size < 3.
         clustering.removeIf(cluster -> cluster.length < 3);
-
         List<Node> variables = tetradTest.getVariables();
-
         Set<Set<Integer>> clusters = new HashSet<>();
 
         for (int[] _c : clustering) {
@@ -197,17 +188,14 @@ public final class BuildPureClusters {
         }
 
         ClusterUtils.logClusters(clusters, variables);
-
         Graph graph = convertSearchGraph(clustering);
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
+        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
 
         long stop = System.currentTimeMillis();
-
         long elapsed = stop - start;
 
         TetradLogger.getInstance().log("elapsed", "Elapsed " + elapsed + " ms");
-
 
         return graph;
     }
@@ -236,9 +224,7 @@ public final class BuildPureClusters {
         return graph;
     }
 
-    /**
-     * ****************************************************** STATISTICAL TESTS *******************************************************
-     */
+    /******************************* STATISTICAL TESTS ***********************************/
 
     private boolean clusteredPartial1(int v1, int v2, int v3, int v4) {
         if (this.scoreTestMode) {
@@ -256,11 +242,14 @@ public final class BuildPureClusters {
                     cv[v3][v4] == EDGE_NONE) {
                 return true;
             }
+
             boolean test1 = tetradTest.tetradHolds(v1, v2, v3, v4);
             boolean test2 = tetradTest.tetradHolds(v1, v2, v4, v3);
+
             if (test1 && test2) {
                 return true;
             }
+
             boolean test3 = tetradTest.tetradHolds(v1, v3, v4, v2);
             return (test1 && test3) || (test2 && test3);
         }
@@ -288,9 +277,11 @@ public final class BuildPureClusters {
                     cv[v3][v5] == EDGE_NONE) {
                 return true;
             }
+
             boolean test1 = tetradTest.tetradHolds(v1, v2, v3, v5);
             boolean test2 = tetradTest.tetradHolds(v1, v2, v5, v3);
             boolean test3 = tetradTest.tetradHolds(v1, v3, v5, v2);
+
             return (test1 && test2) || (test1 && test3) || (test2 && test3);
         }
     }
@@ -332,27 +323,35 @@ public final class BuildPureClusters {
                     cv[v3][v6] == EDGE_NONE) {
                 return true;
             }
+
             boolean test1 = tetradTest.tetradHolds(v1, v2, v3, v6);
             boolean test2 = tetradTest.tetradHolds(v1, v2, v6, v3);
             boolean test3 = tetradTest.tetradHolds(v1, v3, v6, v2);
+
             if (!((test1 && test2) || (test1 && test3) || (test2 && test3))) {
                 return false;
             }
+
             test1 = tetradTest.tetradHolds(v4, v5, v6, v1);
             test2 = tetradTest.tetradHolds(v4, v5, v1, v6);
             test3 = tetradTest.tetradHolds(v4, v6, v1, v5);
+
             if (!((test1 && test2) || (test1 && test3) || (test2 && test3))) {
                 return false;
             }
+
             test1 = tetradTest.tetradHolds(v4, v5, v6, v2);
             test2 = tetradTest.tetradHolds(v4, v5, v2, v6);
             test3 = tetradTest.tetradHolds(v4, v6, v2, v5);
+
             if (!((test1 && test2) || (test1 && test3) || (test2 && test3))) {
                 return false;
             }
+
             test1 = tetradTest.tetradHolds(v4, v5, v6, v3);
             test2 = tetradTest.tetradHolds(v4, v5, v3, v6);
             test3 = tetradTest.tetradHolds(v4, v6, v3, v5);
+
             return (test1 && test2) || (test1 && test3) || (test2 && test3);
         }
     }
@@ -361,6 +360,7 @@ public final class BuildPureClusters {
         if (this.scoreTestMode) {
             return tetradTest.oneFactorTest(x1, y1, x2, x3);
         }
+
         return tetradTest.tetradScore3(x1, y1, x2, x3);
     }
 
@@ -369,6 +369,7 @@ public final class BuildPureClusters {
             return !tetradTest.oneFactorTest(x1, x2, y1, y2) &&
                     tetradTest.twoFactorTest(x1, x2, y1, y2);
         }
+
         return !tetradTest.tetradHolds(x1, x2, y2, y1) &&
                 !tetradTest.tetradHolds(x1, y1, x2, y2) &&
                 tetradTest.tetradHolds(x1, y1, y2, x2);
@@ -379,6 +380,7 @@ public final class BuildPureClusters {
         if (this.scoreTestMode) {
             return tetradTest.oneFactorTest(x1, y1, y2, y3);
         }
+
         return tetradTest.tetradScore3(x1, y1, y2, y3);
 
     }
@@ -388,6 +390,7 @@ public final class BuildPureClusters {
             return !tetradTest.oneFactorTest(x1, x2, y1, y2) &&
                     tetradTest.twoFactorTest(x1, x2, y1, y2);
         }
+
         return tetradTest.tetradHolds(x1, y1, y2, x2) &&
                 !tetradTest.tetradHolds(x1, x2, y2, y1) &&
                 !tetradTest.tetradHolds(x1, y1, x2, y2) &&
@@ -399,6 +402,7 @@ public final class BuildPureClusters {
         if (this.scoreTestMode) {
             return tetradTest.twoFactorTest(x1, x3, x2, y2);
         }
+
         return tetradTest.tetradHolds(x1, x2, y2, x3);
 
     }
@@ -407,8 +411,8 @@ public final class BuildPureClusters {
         if (this.scoreTestMode) {
             tetradTest.twoFactorTest(x2, y2, y1, y3);
         }
-        return tetradTest.tetradHolds(x2, y1, y3, y2);
 
+        return tetradTest.tetradHolds(x2, y1, y3, y2);
     }
 
     /*
@@ -421,7 +425,6 @@ public final class BuildPureClusters {
      *
      * For the discrete test, we just use g-square.
      */
-
     private boolean uncorrelated(int v1, int v2) {
 
         if (getCovarianceMatrix() != null) {
@@ -436,9 +439,7 @@ public final class BuildPureClusters {
         }
     }
 
-    /**
-     * ****************************************************** DEBUG UTILITIES *******************************************************
-     */
+    /********************************** DEBUG UTILITIES ***********************************/
 
     private void printClustering(List<int[]> clustering) {
         for (int[] cluster : clustering) {
@@ -452,14 +453,16 @@ public final class BuildPureClusters {
             sorted[i] = labels[c[i]];
         }
         for (int i = 0; i < sorted.length - 1; i++) {
-            int min = 1000000;
+            int min = Integer.MAX_VALUE;
             int min_idx = -1;
+
             for (int j = i; j < sorted.length; j++) {
                 if (sorted[j] < min) {
                     min = sorted[j];
                     min_idx = j;
                 }
             }
+
             int temp;
             temp = sorted[i];
             sorted[i] = min;
@@ -475,12 +478,14 @@ public final class BuildPureClusters {
         for (int i = 0; i < sorted.length - 1; i++) {
             String min = sorted[i];
             int min_idx = i;
+
             for (int j = i + 1; j < sorted.length; j++) {
                 if (sorted[j].compareTo(min) < 0) {
                     min = sorted[j];
                     min_idx = j;
                 }
             }
+
             String temp;
             temp = sorted[i];
             sorted[i] = min;
@@ -491,15 +496,18 @@ public final class BuildPureClusters {
     private void printLatentClique(int[] latents) {
         int[] sorted = new int[latents.length];
         System.arraycopy(latents, 0, sorted, 0, latents.length);
+
         for (int i = 0; i < sorted.length - 1; i++) {
-            int min = 1000000;
+            int min = Integer.MAX_VALUE;
             int min_idx = -1;
+
             for (int j = i; j < sorted.length; j++) {
                 if (sorted[j] < min) {
                     min = sorted[j];
                     min_idx = j;
                 }
             }
+
             int temp;
             temp = sorted[i];
             sorted[i] = min;
@@ -509,29 +517,36 @@ public final class BuildPureClusters {
 
     private List<int[]> findComponents(int[][] graph, int size) {
         boolean[] marked = new boolean[size];
+
         for (int i = 0; i < size; i++) {
             marked[i] = false;
         }
+
         int numMarked = 0;
         List<int[]> output = new ArrayList<>();
-
         int[] tempComponent = new int[size];
+
         while (numMarked != size) {
             int sizeTemp = 0;
             boolean noChange;
+
             do {
                 noChange = true;
+
                 for (int i = 0; i < size; i++) {
                     if (marked[i]) {
                         continue;
                     }
+
                     boolean inComponent = false;
+
                     for (int j = 0; j < sizeTemp; j++) {
                         if (graph[i][tempComponent[j]] == 3) {
                             inComponent = true;
                             break;
                         }
                     }
+
                     if (sizeTemp == 0 || inComponent) {
                         tempComponent[sizeTemp++] = i;
                         marked[i] = true;
@@ -540,23 +555,26 @@ public final class BuildPureClusters {
                     }
                 }
             } while (!noChange);
+
             if (sizeTemp > 1) {
                 int[] newPartition = new int[sizeTemp];
                 System.arraycopy(tempComponent, 0, newPartition, 0, sizeTemp);
                 output.add(newPartition);
             }
         }
+
         return output;
     }
 
-    /**
-     * Find all maximal cliques of a graph. However, it can generate an exponential number of cliques as a function of
-     * the number of impurities in the true graph. Therefore, we also use a counter to stop the computation after a
-     * given number of calls. </p> This is an implementation of Algorithm 2 from Bron and Kerbosch (1973).
+    /*
+     * Find all maximal cliques of a graph. However, it can generate an exponential number of
+     * cliques as a function of the number of impurities in the true graph. Therefore, we also
+     * use a counter to stop the computation after a given number of calls. </p> This is an
+     * implementation of Algorithm 2 from Bron and Kerbosch (1973).
      */
-
     private List<int[]> findMaximalCliques(int[] elements, int[][] ng) {
         boolean[][] connected = new boolean[this.numVariables()][this.numVariables()];
+
         for (int i = 0; i < connected.length; i++) {
             for (int j = i; j < connected.length; j++) {
                 if (i != j) {
@@ -567,6 +585,7 @@ public final class BuildPureClusters {
                 }
             }
         }
+
         int[] numCalls = new int[1];
         int[] c = new int[1];
         List<int[]> output = new ArrayList<>();
@@ -584,23 +603,28 @@ public final class BuildPureClusters {
         if (numCalls[0] > MAX_CLIQUE_TRIALS) {
             return;
         }
+
         int[] newA = new int[ce];
         int nod, fixp = -1;
         int newne, newce, i, j, count, pos = -1, p, s = -1, sel, minnod;
         minnod = ce;
         nod = 0;
+
         for (i = 0; i < ce && minnod != 0; i++) {
             p = old[i];
             count = 0;
+
             for (j = ne; j < ce && count < minnod; j++) {
                 if (!connected[p][old[j]]) {
                     count++;
                     pos = j;
                 }
             }
+
             if (count < minnod) {
                 fixp = p;
                 minnod = count;
+
                 if (i < ne) {
                     s = pos;
                 } else {
@@ -609,23 +633,29 @@ public final class BuildPureClusters {
                 }
             }
         }
+
         for (nod = minnod + nod; nod >= 1; nod--) {
             p = old[s];
             old[s] = old[ne];
             sel = old[ne] = p;
             newne = 0;
+
             for (i = 0; i < ne; i++) {
                 if (connected[sel][old[i]]) {
                     newA[newne++] = old[i];
                 }
             }
+
             newce = newne;
+
             for (i = ne + 1; i < ce; i++) {
                 if (connected[sel][old[i]]) {
                     newA[newce++] = old[i];
                 }
             }
+
             compsub[c[0]++] = sel;
+
             if (newce == 0) {
                 int[] clique = new int[c[0]];
                 System.arraycopy(compsub, 0, clique, 0, c[0]);
@@ -635,8 +665,10 @@ public final class BuildPureClusters {
                 findMaximalCliquesOperator(numCalls, output,
                         connected, compsub, c, newA, newne, newce);
             }
+
             c[0]--;
             ne++;
+
             if (nod > 1) {
                 s = ne;
                 while (connected[fixp][old[s]]) {
@@ -646,10 +678,9 @@ public final class BuildPureClusters {
         }
     }
 
-    /**
-     * @return true iff "newClique" is contained in some element of "clustering".
+    /*
+     * Return true iff "newClique" is contained in some element of "clustering".
      */
-
     private boolean cliqueContained(int[] newClique, int size, List<int[]> clustering) {
         for (int[] next : clustering) {
             if (size > next.length) {
@@ -672,9 +703,7 @@ public final class BuildPureClusters {
         return false;
     }
 
-    /**
-     * Remove cliques that are contained into another ones in cliqueList.
-     */
+    /* Remove cliques that are contained into another ones in cliqueList. */
     private List<int[]> trimCliqueList(List<int[]> cliqueList) {
         List<int[]> trimmed = new ArrayList<>();
         List<int[]> cliqueCopy = new ArrayList<>(cliqueList);
@@ -728,7 +757,7 @@ public final class BuildPureClusters {
         }
     }
 
-    /**
+    /*
      * Transforms clusterings (each "clustering" is a set of "clusters"), remove overlapping indicators for each
      * clustering, and order clusterings according to the number of nonoverlapping indicators, throwing away any latent
      * with zero indicators. Also, for each pair of indicators such that they are linked in ng, one of them is chosen to
@@ -736,7 +765,6 @@ public final class BuildPureClusters {
      * is a list of lists. Each element in the big list is a list of integer arrays, where each integer array represents
      * one cluster.
      */
-
     private int scoreClustering(List<int[]> clustering, boolean[] buffer) {
         int score = 0;
         Arrays.fill(buffer, true);
@@ -808,20 +836,25 @@ public final class BuildPureClusters {
                 int[] draftArea = new int[currentCluster.length];
                 int draftCount = 0;
                 next_item:
+
                 for (int value : currentCluster) {
                     for (int k = 0; k < baseClustering.size(); k++) {
                         if (k == j) {
                             continue;
                         }
+
                         int[] nextCluster = baseClustering.get(k);
+
                         for (int item : nextCluster) {
                             if (value == item) {
                                 continue next_item;
                             }
                         }
                     }
+
                     draftArea[draftCount++] = value;
                 }
+
                 if (draftCount > 1) {
                     //Only clusters with at least two indicators can be added
                     int[] newCluster = new int[draftCount];
@@ -839,14 +872,18 @@ public final class BuildPureClusters {
             //Current criterion: count the number of invalid relations each node participates in, greedily
             //remove nodes till none of these relations hold anymore
             boolean[][] impurities = new boolean[this.numVariables()][this.numVariables()];
+
             for (int j = 0; j < newClustering.size() - 1; j++) {
                 int[] currentCluster = newClustering.get(j);
+
                 for (int jj = j + 1; jj < currentCluster.length; jj++) {
                     for (int k = 0; k < newClustering.size(); k++) {
                         if (k == j) {
                             continue;
                         }
+
                         int[] nextCluster = newClustering.get(k);
+
                         for (int value : nextCluster) {
                             impurities[currentCluster[jj]][value] =
                                     ng[currentCluster[jj]][value] !=
@@ -857,22 +894,27 @@ public final class BuildPureClusters {
                     }
                 }
             }
+
             List<int[]> newClustering2 = removeMarkedImpurities(newClustering,
                     impurities);
             List<int[]> finalNewClustering = new ArrayList<>();
             List<Integer> finalUsedIds = new ArrayList<>();
+
             for (int j = 0; j < newClustering2.size(); j++) {
                 if (newClustering2.get(j).length > 0) {
                     finalNewClustering.add(newClustering2.get(j));
                     finalUsedIds.add(usedIds.get(j));
                 }
             }
+
             if (finalNewClustering.size() > 0) {
                 listOfClusterings.add(finalNewClustering);
                 int[] usedIdsArray = new int[finalUsedIds.size()];
+
                 for (int j = 0; j < finalUsedIds.size(); j++) {
                     usedIdsArray[j] = finalUsedIds.get(j);
                 }
+
                 clusteringIds.add(usedIdsArray);
                 System.out.println("* Filtered mimClustering 2");
                 printClustering(finalNewClustering);
@@ -895,16 +937,20 @@ public final class BuildPureClusters {
         for (int i = 0; i < listOfClusterings.size(); i++) {
             numIndicators[i] = clustersize(listOfClusterings.get(i));
         }
+
         int start = 0;
+
         while (start < listOfClusterings.size()) {
             int size3 = clustersize3(listOfClusterings.get(start));
             int end = start + 1;
+
             for (int j = start + 1; j < listOfClusterings.size(); j++) {
                 if (size3 != clustersize3(listOfClusterings.get(j))) {
                     break;
                 }
                 end++;
             }
+
             sortClusterings(start, end, listOfClusterings, numIndicators);
             start = end;
         }
@@ -917,19 +963,23 @@ public final class BuildPureClusters {
         int[][] elements = new int[clustersize(partition)][3];
         int[] partitionCount = new int[partition.size()];
         int countElements = 0;
+
         for (int p = 0; p < partition.size(); p++) {
             int[] next = partition.get(p);
             partitionCount[p] = 0;
+
             for (int j : next) {
                 elements[countElements][0] = j; // global ID
-                elements[countElements][1] = p;       // set partition ID
+                elements[countElements][1] = p; // set partition ID
                 countElements++;
                 partitionCount[p]++;
             }
         }
+
         //Count how many impure relations is entailed by each indicator
         for (int i = 0; i < elements.length; i++) {
             elements[i][2] = 0;
+
             for (int j = 0; j < elements.length; j++) {
                 if (impurities[elements[i][0]][elements[j][0]]) {
                     elements[i][2]++; // number of impure relations
@@ -939,22 +989,27 @@ public final class BuildPureClusters {
 
         //Iteratively eliminate impurities till some solution (or no solution) is found
         boolean[] eliminated = new boolean[this.numVariables()];
+
         while (!validSolution(elements, eliminated)) {
             //Sort them in the descending order of number of impurities (heuristic to avoid exponential search)
             sortByImpurityPriority(elements, partitionCount, eliminated);
             eliminated[elements[0][0]] = true;
+
             for (int i = 0; i < elements.length; i++) {
                 if (impurities[elements[i][0]][elements[0][0]]) {
                     elements[i][2]--;
                 }
             }
+
             partitionCount[elements[0][1]]--;
         }
 
         List<int[]> solution = new ArrayList<>();
+
         for (int[] next : partition) {
             int[] draftArea = new int[next.length];
             int draftCount = 0;
+
             for (int k : next) {
                 for (int[] element : elements) {
                     if (element[0] == k &&
@@ -963,6 +1018,7 @@ public final class BuildPureClusters {
                     }
                 }
             }
+
             if (draftCount > 0) {
                 int[] realCluster = new int[draftCount];
                 System.arraycopy(draftArea, 0, realCluster, 0, draftCount);
@@ -987,7 +1043,9 @@ public final class BuildPureClusters {
                 }
             }
         }
+
         int total = 0;
+
         while (total < elements.length && !eliminated[elements[total][0]]) {
             total++;
         }
@@ -996,27 +1054,32 @@ public final class BuildPureClusters {
         for (int i = 0; i < total - 1; i++) {
             int max = -1;
             int max_idx = -1;
+
             for (int j = i; j < total; j++) {
                 if (elements[j][2] > max) {
                     max = elements[j][2];
                     max_idx = j;
                 }
             }
+
             swapElements(elements, i, max_idx, temp);
         }
 
         //Now, within each cluster, select first those that belong to clusters with less than three latents.
         //Then, in decreasing order of cluster size.
         int start = 0;
+
         while (start < total) {
             int size = partitionCount[elements[start][1]];
             int end = start + 1;
+
             for (int j = start + 1; j < total; j++) {
                 if (size != partitionCount[elements[j][1]]) {
                     break;
                 }
                 end++;
             }
+
             //Put elements with partitionCount of 1 and 2 at the top of the list
             for (int i = start + 1; i < end; i++) {
                 if (partitionCount[elements[i][1]] == 1) {
@@ -1024,22 +1087,26 @@ public final class BuildPureClusters {
                     start++;
                 }
             }
+
             for (int i = start + 1; i < end; i++) {
                 if (partitionCount[elements[i][1]] == 2) {
                     swapElements(elements, i, start, temp);
                     start++;
                 }
             }
+
             //Now, order elements in the descending order of partitionCount
             for (int i = start; i < end - 1; i++) {
                 int max = -1;
                 int max_idx = -1;
+
                 for (int j = i; j < end; j++) {
                     if (partitionCount[elements[j][1]] > max) {
                         max = partitionCount[elements[j][1]];
                         max_idx = j;
                     }
                 }
+
                 swapElements(elements, i, max_idx, temp);
             }
             start = end;
@@ -1067,18 +1134,12 @@ public final class BuildPureClusters {
         return true;
     }
 
-
-    /**
-     * ****************************************************** MAIN ALGORITHM: INITIALIZATION
-     * *******************************************************
-     */
+    /******************** MAIN ALGORITHM: INITIALIZATION************************************/
 
     private List<int[]> initialMeasurementPattern(int[][] ng, int[][] cv) {
-
         boolean[][] notYellow = new boolean[numVariables()][numVariables()];
 
         /* Stage 1: identify (partially) uncorrelated and impure pairs */
-//        print(">> Stage 0.1");
         for (int v1 = 0; v1 < numVariables() - 1; v1++) {
             for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
                 ng[v1][v2] = ng[v2][v1] = EDGE_BLACK;
@@ -1142,11 +1203,14 @@ public final class BuildPureClusters {
 
         for (int v1 = 0; v1 < numVariables() - 1; v1++) {
             for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
+
                 //Trying to find unclustered({v1, v3, v5}, {v2, v4, v6})
                 if (ng[v1][v2] != EDGE_BLUE) {
                     continue;
                 }
+
                 boolean notFound = true;
+
                 for (int v3 = 0; v3 < numVariables() - 1 && notFound; v3++) {
                     if (v1 == v3 || v2 == v3 || //ng[v1][v3] != EDGE_BLUE ||
                             ng[v1][v3] == EDGE_GRAY || ng[v2][v3] == EDGE_GRAY ||
@@ -1154,6 +1218,7 @@ public final class BuildPureClusters {
                             cv[v2][v3] != EDGE_BLACK) {
                         continue;
                     }
+
                     for (int v5 = v3 + 1; v5 < numVariables() && notFound; v5++) {
                         if (v1 == v5 || v2 == v5 || //ng[v1][v5] != EDGE_BLUE || ng[v3][v5] != EDGE_BLUE ||
                                 ng[v1][v5] == EDGE_GRAY ||
@@ -1165,6 +1230,7 @@ public final class BuildPureClusters {
                                 clusteredPartial1(v1, v3, v5, v2)) {
                             continue;
                         }
+
                         for (int v4 = 0; v4 < numVariables() - 1 && notFound; v4++) {
                             if (v1 == v4 || v2 == v4 || v3 == v4 || v5 == v4 ||
                                     ng[v1][v4] == EDGE_GRAY ||
@@ -1178,8 +1244,8 @@ public final class BuildPureClusters {
                                     clusteredPartial2(v1, v3, v5, v2, v4)) {
                                 continue;
                             }
-                            for (int v6 = v4 + 1;
-                                 v6 < numVariables() && notFound; v6++) {
+
+                            for (int v6 = v4 + 1; v6 < numVariables() && notFound; v6++) {
                                 if (v1 == v6 || v2 == v6 || v3 == v6 ||
                                         v5 == v6 || ng[v1][v6] == EDGE_GRAY ||
                                         ng[v2][v6] == EDGE_GRAY ||
@@ -1193,6 +1259,7 @@ public final class BuildPureClusters {
                                         cv[v5][v6] != EDGE_BLACK) {
                                     continue;
                                 }
+
                                 if (unclusteredPartial3(v1, v3, v5, v2, v4, v6)) {
                                     notFound = false;
                                     ng[v1][v2] = ng[v2][v1] = EDGE_NONE;
@@ -1204,38 +1271,33 @@ public final class BuildPureClusters {
                                     ng[v5][v2] = ng[v2][v5] = EDGE_NONE;
                                     ng[v5][v4] = ng[v4][v5] = EDGE_NONE;
                                     ng[v5][v6] = ng[v6][v5] = EDGE_NONE;
-                                    notYellow[v1][v3] = notYellow[v3][v1] =
-                                            true;
-                                    notYellow[v1][v5] = notYellow[v5][v1] =
-                                            true;
-                                    notYellow[v3][v5] = notYellow[v5][v3] =
-                                            true;
-                                    notYellow[v2][v4] = notYellow[v4][v2] =
-                                            true;
-                                    notYellow[v2][v6] = notYellow[v6][v2] =
-                                            true;
-                                    notYellow[v4][v6] = notYellow[v6][v4] =
-                                            true;
+                                    notYellow[v1][v3] = notYellow[v3][v1] = true;
+                                    notYellow[v1][v5] = notYellow[v5][v1] = true;
+                                    notYellow[v3][v5] = notYellow[v5][v3] = true;
+                                    notYellow[v2][v4] = notYellow[v4][v2] = true;
+                                    notYellow[v2][v6] = notYellow[v6][v2] = true;
+                                    notYellow[v4][v6] = notYellow[v6][v4] = true;
                                 }
                             }
                         }
                     }
                 }
+
                 if (notYellow[v1][v2]) {
                     notFound = false;
                 }
 
                 if (notFound) {
+
                     //Trying to find unclustered({v1, v2, v3}, {v4, v5, v6})
                     for (int v3 = 0; v3 < numVariables() && notFound; v3++) {
                         if (v1 == v3 || v2 == v3 || ng[v1][v3] == EDGE_GRAY ||
                                 ng[v2][v3] == EDGE_GRAY ||
                                 cv[v1][v3] != EDGE_BLACK ||
-                                cv[v2][v3] != EDGE_BLACK)
-                        //ng[v1][v3] != EDGE_BLUE || ng[v2][v3] != EDGE_BLUE)*/
-                        {
+                                cv[v2][v3] != EDGE_BLACK) {
                             continue;
                         }
+
                         for (int v4 = 0; v4 < numVariables() - 2 && notFound; v4++) {
                             if (v1 == v4 || v2 == v4 || v3 == v4 ||
                                     ng[v1][v4] == EDGE_GRAY ||
@@ -1247,8 +1309,8 @@ public final class BuildPureClusters {
                                     clusteredPartial1(v1, v2, v3, v4)) {
                                 continue;
                             }
-                            for (int v5 = v4 + 1;
-                                 v5 < numVariables() - 1 && notFound; v5++) {
+
+                            for (int v5 = v4 + 1; v5 < numVariables() - 1 && notFound; v5++) {
                                 if (v1 == v5 || v2 == v5 || v3 == v5 ||
                                         ng[v1][v5] == EDGE_GRAY ||
                                         ng[v2][v5] == EDGE_GRAY ||
@@ -1262,8 +1324,8 @@ public final class BuildPureClusters {
                                                 v5)) {
                                     continue;
                                 }
-                                for (int v6 = v5 + 1;
-                                     v6 < numVariables() && notFound; v6++) {
+
+                                for (int v6 = v5 + 1; v6 < numVariables() && notFound; v6++) {
                                     if (v1 == v6 || v2 == v6 || v3 == v6 ||
                                             ng[v1][v6] == EDGE_GRAY ||
                                             ng[v2][v6] == EDGE_GRAY ||
@@ -1274,13 +1336,11 @@ public final class BuildPureClusters {
                                             cv[v2][v6] != EDGE_BLACK ||
                                             cv[v3][v6] != EDGE_BLACK ||
                                             cv[v4][v6] != EDGE_BLACK ||
-                                            cv[v5][v6] != EDGE_BLACK)
-                                    //ng[v4][v6] != EDGE_BLUE || ng[v5][v6] != EDGE_BLUE)*/
-                                    {
+                                            cv[v5][v6] != EDGE_BLACK) {
                                         continue;
                                     }
-                                    if (unclusteredPartial3(v1, v2, v3, v4, v5,
-                                            v6)) {
+
+                                    if (unclusteredPartial3(v1, v2, v3, v4, v5, v6)) {
                                         notFound = false;
                                         ng[v1][v4] = ng[v4][v1] = EDGE_NONE;
                                         ng[v1][v5] = ng[v5][v1] = EDGE_NONE;
@@ -1291,18 +1351,12 @@ public final class BuildPureClusters {
                                         ng[v3][v4] = ng[v4][v3] = EDGE_NONE;
                                         ng[v3][v5] = ng[v5][v3] = EDGE_NONE;
                                         ng[v3][v6] = ng[v6][v3] = EDGE_NONE;
-                                        notYellow[v1][v2] = notYellow[v2][v1] =
-                                                true;
-                                        notYellow[v1][v3] = notYellow[v3][v1] =
-                                                true;
-                                        notYellow[v2][v3] = notYellow[v3][v2] =
-                                                true;
-                                        notYellow[v4][v5] = notYellow[v5][v4] =
-                                                true;
-                                        notYellow[v4][v6] = notYellow[v6][v4] =
-                                                true;
-                                        notYellow[v5][v6] = notYellow[v6][v5] =
-                                                true;
+                                        notYellow[v1][v2] = notYellow[v2][v1] = true;
+                                        notYellow[v1][v3] = notYellow[v3][v1] = true;
+                                        notYellow[v2][v3] = notYellow[v3][v2] = true;
+                                        notYellow[v4][v5] = notYellow[v5][v4] = true;
+                                        notYellow[v4][v6] = notYellow[v6][v4] = true;
+                                        notYellow[v5][v6] = notYellow[v6][v5] = true;
                                     }
                                 }
                             }
@@ -1430,9 +1484,7 @@ public final class BuildPureClusters {
         return false;
     }
 
-    /**
-     * ****************************************************** MAIN ALGORITHM: CORE *******************************************************
-     */
+    /******************************* MAIN ALGORITHM: CORE ***************************************/
 
     private List<int[]> findMeasurementPattern() {
         int[][] ng = new int[numVariables()][numVariables()];
@@ -1444,7 +1496,6 @@ public final class BuildPureClusters {
         }
 
         List<int[]> initialClustering = initialMeasurementPattern(ng, cv);
-//        print("Initial mimClustering:");
         printClustering(initialClustering);
         for (int[] nextCluster : initialClustering) {
             for (int j : nextCluster) {
@@ -1687,15 +1738,20 @@ public final class BuildPureClusters {
      * Check if newClustering is contained in clusterings.
      */
     private boolean isNewClustering(List<List<int[]>> clusterings, List<int[]> newClustering) {
+
         nextClustering:
         for (List<int[]> clustering : clusterings) {
+
             nextOldCluster:
             for (Object value : clustering) {
                 int[] cluster = (int[]) value;
+
                 nextNewCluster:
                 for (Object o : newClustering) {
                     int[] newCluster = (int[]) o;
+
                     if (cluster.length == newCluster.length) {
+
                         nextElement:
                         for (int k : cluster) {
                             for (int i : newCluster) {
@@ -1703,15 +1759,20 @@ public final class BuildPureClusters {
                                     continue nextElement;
                                 }
                             }
+
                             continue nextNewCluster;
                         }
+
                         continue nextOldCluster;
                     }
                 }
+
                 continue nextClustering;
             }
+
             return false;
         }
+
         return true;
     }
 
@@ -1721,20 +1782,19 @@ public final class BuildPureClusters {
 
     private List<int[]> purify(List<List<int[]>> actualClusterings, List<int[]> clusterIds) {
 
-        //Try to find a solution. Maximum number of trials: 10
         if (!actualClusterings.isEmpty()) {
             List<int[]> partition = actualClusterings.get(0);
-
             printLatentClique(clusterIds.get(0));
-
             Clusters clustering = new Clusters();
             int clusterId = 0;
             printClustering(partition);
+
             for (int[] codes : partition) {
                 for (int code : codes) {
                     String var = tetradTest.getVarNames()[code];
                     clustering.addToCluster(clusterId, var);
                 }
+
                 clusterId++;
             }
 
@@ -1751,7 +1811,7 @@ public final class BuildPureClusters {
                 partition2.add(cluster);
             }
 
-            System.out.println("Partition 2 = " + partition2);
+            System.out.println("Partition = " + partition2);
 
             return partition;
         }
