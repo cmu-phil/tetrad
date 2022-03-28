@@ -181,14 +181,17 @@
 
     <p>There are two ways to copy a graph. </p>
 
-    <p>The first method allows you to copy a graph from any box which contains one. First, create a new graph box in the
+    <p>To copy a graph from any box which contains one, first, create a new graph box in the
         workspace, and draw an arrow from the box whose graph you want to copy to the new graph box. When opened, the
         new graph box will automatically contain a direct copy of the graph its parent box contains. </p>
+    <!--    <p>The first method allows you to copy a graph from any box which contains one. First, create a new graph box in the-->
+    <!--        workspace, and draw an arrow from the box whose graph you want to copy to the new graph box. When opened, the-->
+    <!--        new graph box will automatically contain a direct copy of the graph its parent box contains. </p>-->
 
-    <p>The second method allows you to copy a graph directly from most types of graph box.
-        First, highlight the graph in the old graph box and click “Edit—Copy Selected Graph.”
-        Then open up your new graph box and click “Edit—Paste Selected Graph.”
-        (Some types of graph box do not have this functionality; see “Manipulating a Graph.”)</p>
+    <!--    <p>The second method allows you to copy a graph directly from most types of graph box.-->
+    <!--        First, highlight the graph in the old graph box and click “Edit—Copy Selected Graph.”-->
+    <!--        Then open up your new graph box and click “Edit—Paste Selected Graph.”-->
+    <!--        (Some types of graph box do not have this functionality; see “Manipulating a Graph.”)</p>-->
 
 
     <h2>Manipulating a Graph</h2>
@@ -417,7 +420,7 @@
         of the graphs is the reference graph, and whether it contains latent variables. When the comparison is complete,
         the following window results:</p>
 
-    <img alt="" src="images/compare_box_4.png" width="650">
+    <img alt="" src="images/stats-list-example.png" width="650">
 
     <p>The first columns gives an abbreviation for the statistic; the second columns gives a definition of the
         statistic. The third columns gives the statistic value. </p>
@@ -1491,10 +1494,10 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         a measured variable are discarded, the manipulated variables are treated as independent of their causes in the
         graph, and probabilities for variables that are causes of the manipulated variables are unchanged. </p>
 
-    <p>There are four available updater algorithms in Tetrad: the approximate updater, the row summing exact updater,
-        the CPT invariant updater, and the SEM updater. All except for the SEM updater function only when given Bayes
-        instantiated models as input; the SEM updater functions when given a SEM instantiated model as input. None of
-        the updaters work on cyclic models.</p>
+    <p>There are five available updater algorithms in Tetrad: the approximate updater, the row summing exact updater,
+        the CPT invariant updater, the Junction Tree Updater, and the SEM updater. All except for the SEM updater
+        function only when given Bayes instantiated models as input; the SEM updater functions when given a SEM
+        instantiated model as input. None of the updaters work on cyclic models.</p>
 
     <h2>Possible Parent Boxes of the Updater Box:</h2>
 
@@ -1598,6 +1601,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>The CPT invariant exact updater is more accurate than the approximate updater, but slightly faster than the row
         summing exact updater. Ifs window functions exactly as the approximate updater down, with one exception: in
         “Multiple Variables” mode, you can see conditional as well as marginal probabilities.</p>
+
+    <h2>Junction Tree Exact Updater</h2>
+
+    <p>The Junction Tree exact updater is a another exact learning algroithm. Its window functions exactly as the
+        approximate updater down, with one exception: in “Multiple Variables” mode, you can see conditional as well
+        as marginal probabilities.</p>
 
     <h2>SEM Updater</h2>
 
@@ -2746,32 +2755,31 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     params.add(Params.NUM_STARTS);
     params.add(Params.GRASP_DEPTH);
 
-    <h3>The GLASSO Algorithm</h3>
+    <!--    <h3>The GLASSO Algorithm</h3>-->
 
-    <h4>Description</h4>
+    <!--    <h4>Description</h4>-->
 
-    <div id="glasso">
+    <!--    <div id="glasso">-->
 
-        <p>A translation of the Fortran code for GLASSO (Graphical LASSO—see Friedman, Tibshirani anad Hastie, 2007)
-            Like MGM, this produces an undirected graph in which parents are always married.</p>
+    <!--        <p>A translation of the Fortran code for GLASSO (Graphical LASSO—see Friedman, Tibshirani anad Hastie, 2007)-->
+    <!--            Like MGM, this produces an undirected graph in which parents are always married.</p>-->
 
-    </div>
+    <!--    </div>-->
 
-    <h4>Input Assumptions</h4>
+    <!--    <h4>Input Assumptions</h4>-->
 
-    <p>The data are continuous.</p>
+    <!--    <p>The data are continuous.</p>-->
 
-    <h4>Output Format</h4>
+    <!--    <h4>Output Format</h4>-->
 
-    <p>A Markov random field.</p>
+    <!--    <p>A Markov random field.</p>-->
 
-    <h4>Parameters</h4>
+    <!--    <h4>Parameters</h4>-->
 
-    <p><a href="#maxit">maxit</a>, <a href="#ia">ia</a>, <a href="#is">is</a>, <a href="#itr">itr</a>, <a href="#ipen">ipen</a>,
-        <a href="#thr">thr</a></p>
+    <!--    <p><a href="#maxit">maxit</a>, <a href="#ia">ia</a>, <a href="#is">is</a>, <a href="#itr">itr</a>, <a href="#ipen">ipen</a>,-->
+    <!--        <a href="#thr">thr</a></p>-->
 
-    <!-- Disabled on 4/2/2019
-<h3>The BPC Algorithm</h3>
+    <h3>The BPC/Mimbuild Algorithm</h3>
 
 <h4>Description</h4>
 
@@ -2780,17 +2788,31 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 <p>Searches for causal structure over latent variables, where the true models are Multiple Indicator Models (MIM’s) as described in the Graphs section.
 The idea is this. There is a set of latent (unmeasured) variables over which a directed acyclic model has been defined.
 Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is,
-measured variables that are all children of L.
-Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
-There is a theorem to the effect that if certain CPDAGs of these tetrad constraints hold,
-there must be a latent common cause of all of them (the Tetrad Representation Theorem, see Silva et al., 2003,
-where the BPC (“Build Pure Clusters”) algorithm is defined and discussed.) Moreover, once one has such a “measurement model,”
-once can estimate a covariance matrix over the latent variables that are parents of the measures and use some algorithm such as PC or GES to estimate a CPDAG over the latents.
-The algorithm to run PC or GES on this covariance matrix is called MimBuild (“MIM” is the the graph, Multiple Indicator Model; “Build” means build).
-In this way, one may recover causal structure over the latents. The more measures one has for each latent, the better the result is, generally.
-The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called “impurities”—that is,
-causal edges among the measured variables, or between measured variables and unintended latent.
-The algorithm will in effect remove one measure in each impure pair from consideration.</p>
+    measured variables that are all children of L.
+    Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
+    There is a theorem to the effect that if certain CPDAGs of these tetrad constraints hold,
+    there must be a latent common cause of all of them (the Tetrad Representation Theorem, see Silva et al., 2003,
+    where the BPC (“Build Pure Clusters”) algorithm is defined and discussed.) Moreover, once one has such a
+    “measurement model,”
+    once can estimate a covariance matrix over the latent variables that are parents of the measures and use some
+    algorithm such as PC or GES to estimate a CPDAG over the latents.
+    The algorithm to run PC or GES on this covariance matrix is called MimBuild (“MIM” is the the graph, Multiple
+    Indicator Model; “Build” means build).
+    In this way, one may recover causal structure over the latents. The more measures one has for each latent, the
+    better the result is, generally.
+    The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called
+    “impurities”—that is,
+    causal edges among the measured variables, or between measured variables and unintended latent.
+    The algorithm will in effect remove one measure in each impure pair from consideration.
+
+    The
+    algorithm to run PC or GES on this covariance matrix is
+    called MimBuild (“MIM” is the graph, Multiple Indicator Model; “Build” means build). MimBUILD is an optional
+    choice inside FOFC
+    In this way, one may recover causal structure over the latents. The more measures one has for each latent
+    the better the result is, generally.
+
+</p>
 
 </div>
 
@@ -2806,10 +2828,9 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 <h4>Parameters</h4>
 
 <p><a href="#maxit">alpha</a>, <a href="#useWishart">useWishart</a></p>
--->
 
 
-    <h3>The FOFC and MIMBUILD Algorithms</h3>
+    <h3>The FOFC/MIMBUILD Algorithm</h3>
 
     <h4>Description</h4>
 
@@ -2835,12 +2856,14 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
             In general, GAP is more accurate. The result is a clustering of variables.
             Once one has such a “measurement model, one can estimate (using the ESTIMATOR box) a covariance matrix over
             the latent variables that are parents of the
-            measures and use some algorithm such as PC or GES to estimate a CPDAG over the latent variables. The
+            measures and use some algorithm such as PC or GES to estimate a CPDAG over the latent variables.
+            The
             algorithm to run PC or GES on this covariance matrix is
             called MimBuild (“MIM” is the graph, Multiple Indicator Model; “Build” means build). MimBUILD is an optional
             choice inside FOFC
             In this way, one may recover causal structure over the latents. The more measures one has for each latent
-            the better the result is, generally. At least 3 measured
+            the better the result is, generally.
+            At least 3 measured
             indicator variables are needed for each latent variable.
             The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called
             “impurities”—that is,causal edges among the measured variables, or between measured variables and multiple
@@ -2854,7 +2877,6 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
     </div>
 
-    Ω
     <h3>The FTFC Algorithm</h3>
 
     <h4>Description</h4>
