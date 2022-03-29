@@ -47,13 +47,13 @@ public class DataConvertUtils {
 
     public static DataModel toDataModel(final Data data, final Metadata metadata) {
         if (data instanceof ContinuousData) {
-            return toContinuousDataModel((ContinuousData) data);
+            return DataConvertUtils.toContinuousDataModel((ContinuousData) data);
         } else if (data instanceof VerticalDiscreteTabularData) {
-            return toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data, metadata);
+            return DataConvertUtils.toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data, metadata);
         } else if (data instanceof MixedTabularData) {
-            return toMixedDataBox((MixedTabularData) data, metadata);
+            return DataConvertUtils.toMixedDataBox((MixedTabularData) data, metadata);
         } else if (data instanceof CovarianceData) {
-            return toCovarianceMatrix((CovarianceData) data);
+            return DataConvertUtils.toCovarianceMatrix((CovarianceData) data);
         } else {
             return null;
         }
@@ -61,20 +61,20 @@ public class DataConvertUtils {
 
     public static DataModel toDataModel(final Data data) {
         if (data instanceof ContinuousData) {
-            return toContinuousDataModel((ContinuousData) data);
+            return DataConvertUtils.toContinuousDataModel((ContinuousData) data);
         } else if (data instanceof VerticalDiscreteTabularData) {
-            return toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data);
+            return DataConvertUtils.toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data);
         } else if (data instanceof MixedTabularData) {
-            return toMixedDataBox((MixedTabularData) data);
+            return DataConvertUtils.toMixedDataBox((MixedTabularData) data);
         } else if (data instanceof CovarianceData) {
-            return toCovarianceMatrix((CovarianceData) data);
+            return DataConvertUtils.toCovarianceMatrix((CovarianceData) data);
         } else {
             return null;
         }
     }
 
     public static DataModel toCovarianceMatrix(final CovarianceData dataset) {
-        final List<Node> variables = toNodes(dataset.getVariables());
+        final List<Node> variables = DataConvertUtils.toNodes(dataset.getVariables());
         final Matrix matrix = new Matrix(dataset.getData());
         final int sampleSize = dataset.getNumberOfCases();
 
@@ -139,7 +139,7 @@ public class DataConvertUtils {
      * @return
      */
     public static DataModel toVerticalDiscreteDataModel(final VerticalDiscreteTabularData dataset, final Metadata metatdata) {
-        final Node[] nodes = toNodes(dataset.getDataColumns()).stream()
+        final Node[] nodes = DataConvertUtils.toNodes(dataset.getDataColumns()).stream()
                 .toArray(Node[]::new);
 
         metatdata.getInterventionalColumns().forEach(e -> {
@@ -162,14 +162,14 @@ public class DataConvertUtils {
 
     public static DataModel toVerticalDiscreteDataModel(final VerticalDiscreteTabularData dataset) {
         final DataBox dataBox = new VerticalIntDataBox(dataset.getData());
-        final List<Node> variables = toNodes(dataset.getDataColumns());
+        final List<Node> variables = DataConvertUtils.toNodes(dataset.getDataColumns());
 
         return new BoxDataSet(dataBox, variables);
     }
 
     public static DataModel toContinuousDataModel(final ContinuousData dataset) {
         final DataBox dataBox = new DoubleDataBox(dataset.getData());
-        final List<Node> variables = toNodes(dataset.getDataColumns());
+        final List<Node> variables = DataConvertUtils.toNodes(dataset.getDataColumns());
 
         return new BoxDataSet(dataBox, variables);
     }

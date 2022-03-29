@@ -128,7 +128,7 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore, Score {
                 continue;
             }
 
-            final int rowIndex = getRowIndex(dims, parentValues);
+            final int rowIndex = BDeuScore.getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;

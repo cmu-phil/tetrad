@@ -181,9 +181,9 @@ public class RegressionDataset implements Regression {
         final Matrix res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
         this.res2 = res2.getColumn(0);
 
-        final double rss = rss(x, y, b);
+        final double rss = RegressionDataset.rss(x, y, b);
         final double se = Math.sqrt(rss / (n - k));
-        final double tss = tss(y);
+        final double tss = RegressionDataset.tss(y);
         final double r2 = 1.0 - (rss / tss);
 
         final Vector sqErr = new Vector(x.columns());
@@ -252,9 +252,9 @@ public class RegressionDataset implements Regression {
         final Matrix _res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
         final Vector res2 = _res2.getColumn(0);
 
-        final double rss = rss(x, y, b);
+        final double rss = RegressionDataset.rss(x, y, b);
         final double se = Math.sqrt(rss / (n - k));
-        final double tss = tss(y);
+        final double tss = RegressionDataset.tss(y);
         final double r2 = 1.0 - (rss / tss);
 
         final Vector sqErr = new Vector(x.columns());

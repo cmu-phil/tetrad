@@ -199,7 +199,7 @@ public class Comparison2 {
                     throw new IllegalArgumentException("Test not set.");
                 }
                 final SvarFci search = new SvarFci(test);
-                final IKnowledge knowledge = getKnowledge(trueDag);
+                final IKnowledge knowledge = Comparison2.getKnowledge(trueDag);
                 search.setKnowledge(knowledge);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(new TsDagToPag(trueDag).convert());
@@ -496,7 +496,7 @@ public class Comparison2 {
                 throw new IllegalArgumentException("Test not set.");
             }
             final SvarFci search = new SvarFci(test);
-            final IKnowledge knowledge = getKnowledge(trueDag);
+            final IKnowledge knowledge = Comparison2.getKnowledge(trueDag);
             search.setKnowledge(knowledge);
             result.setResultGraph(search.search());
             result.setCorrectResult(new TsDagToPag(trueDag).convert());
@@ -605,7 +605,7 @@ public class Comparison2 {
             cols[i] = i;
         }
 
-        return getTextTable(dataSet, cols, new DecimalFormat("0.00")); //deleted .toString()
+        return Comparison2.getTextTable(dataSet, cols, new DecimalFormat("0.00")); //deleted .toString()
     }
 
     private static TextTable getTextTable(final DataSet dataSet, final int[] columns, final NumberFormat nf) {
@@ -671,29 +671,29 @@ public class Comparison2 {
         Collections.sort(variables, new Comparator<Node>() {
             @Override
             public int compare(final Node o1, final Node o2) {
-                final String name1 = getNameNoLag(o1);
-                final String name2 = getNameNoLag(o2);
+                final String name1 = Comparison2.getNameNoLag(o1);
+                final String name2 = Comparison2.getNameNoLag(o2);
 
 //                System.out.println("name 1 = " + name1);
 //                System.out.println("name 2 = " + name2);
-                final String prefix1 = getPrefix(name1);
-                final String prefix2 = getPrefix(name2);
+                final String prefix1 = Comparison2.getPrefix(name1);
+                final String prefix2 = Comparison2.getPrefix(name2);
 
 //                System.out.println("prefix 1 = " + prefix1);
 //                System.out.println("prefix 2 = " + prefix2);
-                final int index1 = getIndex(name1);
-                final int index2 = getIndex(name2);
+                final int index1 = Comparison2.getIndex(name1);
+                final int index2 = Comparison2.getIndex(name2);
 
 //                System.out.println("index 1 = " + index1);
 //                System.out.println("index 2 = " + index2);
-                if (getLag(o1.getName()) == getLag(o2.getName())) {
+                if (Comparison2.getLag(o1.getName()) == Comparison2.getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
                         return Integer.compare(index1, index2);
                     } else {
                         return prefix1.compareTo(prefix2);
                     }
                 } else {
-                    return getLag(o1.getName()) - getLag(o2.getName());
+                    return Comparison2.getLag(o1.getName()) - Comparison2.getLag(o2.getName());
                 }
             }
         });

@@ -51,11 +51,11 @@ public class LayoutUtils {
     static Layout layout = Layout.topToBottom;
 
     public static void setLayout(final Layout _layout) {
-        layout = _layout;
+        LayoutUtils.layout = _layout;
     }
 
     public static Layout getLayout() {
-        return layout;
+        return LayoutUtils.layout;
     }
 
     public static void setPreferredAsSize(final Component comp) {
@@ -139,7 +139,7 @@ public class LayoutUtils {
 
 
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.lag0TopToBottom;
+        LayoutUtils.layout = Layout.lag0TopToBottom;
     }
 
     public static void copyLag0LayoutBottomToTop(final LayoutEditable layoutEditable) {
@@ -200,7 +200,7 @@ public class LayoutUtils {
 
 
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.lag0BottomToTop;
+        LayoutUtils.layout = Layout.lag0BottomToTop;
     }
 
     public static void copyLag0LayoutLeftToRight(final LayoutEditable layoutEditable) {
@@ -261,7 +261,7 @@ public class LayoutUtils {
 
 
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.lag0LeftToRight;
+        LayoutUtils.layout = Layout.lag0LeftToRight;
     }
 
     public static void copyLag0LayoutRightToLeft(final LayoutEditable layoutEditable) {
@@ -322,7 +322,7 @@ public class LayoutUtils {
 
 
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.lag0RightToLeft;
+        LayoutUtils.layout = Layout.lag0RightToLeft;
     }
 
     public static void topToBottomLayout(final LayoutEditable layoutEditable) {
@@ -362,7 +362,7 @@ public class LayoutUtils {
         }
 
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.topToBottom;
+        LayoutUtils.layout = Layout.topToBottom;
     }
 
     public static void leftToRightLayout(final LayoutEditable layoutEditable) {
@@ -402,7 +402,7 @@ public class LayoutUtils {
         }
 
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.leftToRight;
+        LayoutUtils.layout = Layout.leftToRight;
     }
 
     public static void bottomToTopLayout(final LayoutEditable layoutEditable) {
@@ -442,7 +442,7 @@ public class LayoutUtils {
         }
 
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.bottomToTop;
+        LayoutUtils.layout = Layout.bottomToTop;
     }
 
     public static void rightToLeftLayout(final LayoutEditable layoutEditable) {
@@ -482,7 +482,7 @@ public class LayoutUtils {
         }
 
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.rightToLeft;
+        LayoutUtils.layout = Layout.rightToLeft;
     }
 
     public static void layeredDrawingLayout(final LayoutEditable layoutEditable) {
@@ -496,7 +496,7 @@ public class LayoutUtils {
 
         GraphUtils.hierarchicalLayout(graph);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.layered;
+        LayoutUtils.layout = Layout.layered;
     }
 
     private static void sourceGraphLayout(final LayoutEditable layoutEditable) {
@@ -511,7 +511,7 @@ public class LayoutUtils {
         final Graph sourceGraph = layoutEditable.getSourceGraph();
         GraphUtils.arrangeBySourceGraph(graph, sourceGraph);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.source;
+        LayoutUtils.layout = Layout.source;
     }
 
     public static void knowledgeLayout(final LayoutEditable layoutEditable) {
@@ -532,7 +532,7 @@ public class LayoutUtils {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     e1.getMessage());
         }
-        layout = Layout.knowledge;
+        LayoutUtils.layout = Layout.knowledge;
     }
 
     public static void circleLayout(final LayoutEditable layoutEditable) {
@@ -555,7 +555,7 @@ public class LayoutUtils {
 //        DataGraphUtils.circleLayout(graph, 200, 200, 150);
         GraphUtils.circleLayout(graph, centerx, centery, radius);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.circle;
+        LayoutUtils.layout = Layout.circle;
     }
 
     public static void kamadaKawaiLayout(final LayoutEditable layoutEditable) {
@@ -589,7 +589,7 @@ public class LayoutUtils {
                 GraphUtils.kamadaKawaiLayout(graph, initializeRandomly,
                         naturalEdgeLength, springConstant, stopEnergy);
                 layoutEditable.layoutByGraph(graph);
-                layout = Layout.kamadaKawai;
+                LayoutUtils.layout = Layout.kamadaKawai;
             }
         };
 
@@ -608,7 +608,7 @@ public class LayoutUtils {
 
         GraphUtils.fruchtermanReingoldLayout(graph);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.fruchtermReingold;
+        LayoutUtils.layout = Layout.fruchtermReingold;
     }
 
     public static void distanceFromSelectedLayout(final LayoutEditable layoutEditable) {
@@ -623,52 +623,52 @@ public class LayoutUtils {
         final DistanceFromSelected layout1 = new DistanceFromSelected(layoutEditable);
         layout1.doLayout();
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.distanceFromSelected;
+        LayoutUtils.layout = Layout.distanceFromSelected;
     }
 
     public static void lastLayout(final LayoutEditable layoutEditable) {
-        switch (layout) {
+        switch (LayoutUtils.layout) {
             case lag0TopToBottom:
-                copyLag0LayoutTopToBottom(layoutEditable);
+                LayoutUtils.copyLag0LayoutTopToBottom(layoutEditable);
                 break;
             case lag0BottomToTop:
-                copyLag0LayoutBottomToTop(layoutEditable);
+                LayoutUtils.copyLag0LayoutBottomToTop(layoutEditable);
                 break;
             case lag0LeftToRight:
-                copyLag0LayoutLeftToRight(layoutEditable);
+                LayoutUtils.copyLag0LayoutLeftToRight(layoutEditable);
                 break;
             case lag0RightToLeft:
-                copyLag0LayoutRightToLeft(layoutEditable);
+                LayoutUtils.copyLag0LayoutRightToLeft(layoutEditable);
                 break;
             case topToBottom:
-                topToBottomLayout(layoutEditable);
+                LayoutUtils.topToBottomLayout(layoutEditable);
                 break;
             case bottomToTop:
-                bottomToTopLayout(layoutEditable);
+                LayoutUtils.bottomToTopLayout(layoutEditable);
                 break;
             case leftToRight:
-                leftToRightLayout(layoutEditable);
+                LayoutUtils.leftToRightLayout(layoutEditable);
                 break;
             case rightToLeft:
-                rightToLeftLayout(layoutEditable);
+                LayoutUtils.rightToLeftLayout(layoutEditable);
                 break;
             case layered:
-                layeredDrawingLayout(layoutEditable);
+                LayoutUtils.layeredDrawingLayout(layoutEditable);
                 break;
             case source:
-                sourceGraphLayout(layoutEditable);
+                LayoutUtils.sourceGraphLayout(layoutEditable);
                 break;
             case knowledge:
-                knowledgeLayout(layoutEditable);
+                LayoutUtils.knowledgeLayout(layoutEditable);
                 break;
             case circle:
-                circleLayout(layoutEditable);
+                LayoutUtils.circleLayout(layoutEditable);
                 break;
             case kamadaKawai:
-                kamadaKawaiLayout(layoutEditable);
+                LayoutUtils.kamadaKawaiLayout(layoutEditable);
                 break;
             case fruchtermReingold:
-                fruchtermanReingoldLayout(layoutEditable);
+                LayoutUtils.fruchtermanReingoldLayout(layoutEditable);
                 break;
             default:
         }

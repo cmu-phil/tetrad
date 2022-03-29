@@ -311,7 +311,7 @@ public final class SessionEditorNode extends DisplayNode {
 //                }
         } catch (final CouldNotCreateModelException e) {
             SessionUtils.showPermissibleParentsDialog(e.getModelClass(),
-                    SessionEditorNode.this, true, true);
+                    this, true, true);
             e.printStackTrace();
 
         } catch (final ClassCastException e) {
@@ -323,7 +323,7 @@ public final class SessionEditorNode extends DisplayNode {
                 cause = cause.getCause();
             }
 
-            final Component centeringComp = SessionEditorNode.this;
+            final Component centeringComp = this;
             final String s = cause.getMessage();
 
             if (!"".equals(s)) {
@@ -494,7 +494,7 @@ public final class SessionEditorNode extends DisplayNode {
         final JMenuItem renameBox = new JMenuItem("Rename note");
         renameBox.setToolTipText("<html>Renames this note.</html>");
         renameBox.addActionListener((e) -> {
-            final Component centeringComp = SessionEditorNode.this;
+            final Component centeringComp = this;
             final String name
                     = JOptionPane.showInputDialog(centeringComp, "New name:");
 
@@ -518,7 +518,7 @@ public final class SessionEditorNode extends DisplayNode {
                 + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
                 + "</html>");
         cloneBox.addActionListener((e) -> {
-            firePropertyChange("cloneMe", null, SessionEditorNode.this);
+            firePropertyChange("cloneMe", null, this);
         });
 
         final JMenuItem deleteBox = new JMenuItem("Delete Note");
@@ -527,7 +527,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         deleteBox.addActionListener((e) -> {
             if (getSessionNode().getModel() == null) {
-                final Component centeringComp = SessionEditorNode.this;
+                final Component centeringComp = this;
                 final int ret = JOptionPane.showConfirmDialog(centeringComp,
                         "Really delete note?");
 
@@ -535,7 +535,7 @@ public final class SessionEditorNode extends DisplayNode {
                     return;
                 }
             } else {
-                final Component centeringComp = SessionEditorNode.this;
+                final Component centeringComp = this;
                 final int ret = JOptionPane.showConfirmDialog(centeringComp,
                         "<html>"
                                 + "Really delete note? Any information it contains will<br>"
@@ -589,12 +589,12 @@ public final class SessionEditorNode extends DisplayNode {
                 if (getSessionNode().getModel() == null) {
                     createModel(false);
                 } else {
-                    final Component centeringComp = SessionEditorNode.this;
+                    final Component centeringComp = this;
                     JOptionPane.showMessageDialog(centeringComp,
                             "Please destroy the model model first.");
                 }
             } catch (final Exception e1) {
-                final Component centeringComp = SessionEditorNode.this;
+                final Component centeringComp = this;
                 JOptionPane.showMessageDialog(centeringComp,
                         "Could not create a model for this box.");
                 e1.printStackTrace();
@@ -607,14 +607,14 @@ public final class SessionEditorNode extends DisplayNode {
         editModel.addActionListener((e) -> {
             try {
                 if (getSessionNode().getModel() == null) {
-                    final Component centeringComp = SessionEditorNode.this;
+                    final Component centeringComp = this;
                     JOptionPane.showMessageDialog(centeringComp,
                             "Sorry, no model has been created yet; there's nothing to edit.");
                 } else {
                     doDoubleClickAction();
                 }
             } catch (final Exception e1) {
-                final Component centeringComp = SessionEditorNode.this;
+                final Component centeringComp = this;
                 JOptionPane.showMessageDialog(centeringComp,
                         "Double click failed. See console for exception.");
                 e1.printStackTrace();
@@ -627,7 +627,7 @@ public final class SessionEditorNode extends DisplayNode {
                 + "<br>downstream models as well.</html>");
 
         destroyModel.addActionListener((e) -> {
-            final Component centeringComp = SessionEditorNode.this;
+            final Component centeringComp = this;
 
             if (getSessionNode().getModel() == null) {
                 JOptionPane.showMessageDialog(centeringComp,
@@ -677,7 +677,7 @@ public final class SessionEditorNode extends DisplayNode {
                 + "<br>overwriting any models that already exist.</html>");
 
         propagateDownstream.addActionListener((e) -> {
-            final Component centeringComp = SessionEditorNode.this;
+            final Component centeringComp = this;
 
             if (getSessionNode().getModel() != null && !getSessionNode().getChildren().isEmpty()) {
                 final int ret = JOptionPane.showConfirmDialog(centeringComp,
@@ -702,7 +702,7 @@ public final class SessionEditorNode extends DisplayNode {
         final JMenuItem renameBox = new JMenuItem("Rename Box");
         renameBox.setToolTipText("<html>Renames this session box.</html>");
         renameBox.addActionListener((e) -> {
-            final Component centeringComp = SessionEditorNode.this;
+            final Component centeringComp = this;
             final String name
                     = JOptionPane.showInputDialog(centeringComp, "New name:");
 
@@ -726,7 +726,7 @@ public final class SessionEditorNode extends DisplayNode {
                 + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
                 + "</html>");
         cloneBox.addActionListener((e) -> {
-            firePropertyChange("cloneMe", null, SessionEditorNode.this);
+            firePropertyChange("cloneMe", null, this);
         });
 
         final JMenuItem deleteBox = new JMenuItem("Delete Box");
@@ -734,7 +734,7 @@ public final class SessionEditorNode extends DisplayNode {
                 "<html>Deletes this box from the workbench</html>");
 
         deleteBox.addActionListener((e) -> {
-            final Component centeringComp = SessionEditorNode.this;
+            final Component centeringComp = this;
             final int ret = JOptionPane.showConfirmDialog(centeringComp,
                     "Are you sure you want to delete this box? It contains some work.",
                     null, JOptionPane.YES_NO_OPTION);
@@ -1010,7 +1010,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
 
         final Object[] options = {"Execute", "Break Edges"};
-        final Component centeringComp = SessionEditorNode.this;
+        final Component centeringComp = this;
         final int selection = JOptionPane.showOptionDialog(centeringComp,
                 "Changing this node will affect its children.\n"
                         + "Click on \"Execute\" to percolate changes down.\n"
@@ -1097,7 +1097,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         // The config file lists which model classes the node can be
         // associated with, based on the node's type.
-        loadModelClassesFromConfig(sessionNode);
+        SessionEditorNode.loadModelClassesFromConfig(sessionNode);
 
         final Class[] modelClasses = sessionNode.getConsistentModelClasses(true);
 
@@ -1136,7 +1136,7 @@ public final class SessionEditorNode extends DisplayNode {
         final SessionNodeWrapper sessionNodeWrapper = (SessionNodeWrapper) getModelNode();
         final SessionNode sessionNode = sessionNodeWrapper.getSessionNode();
         final ModelChooser chooser = this.config.getModelChooserInstance(sessionNode);
-        final Component centeringComp = SessionEditorNode.this;
+        final Component centeringComp = this;
 
         if (cancelable) {
             final int selection = JOptionPane.showOptionDialog(centeringComp,
@@ -1177,7 +1177,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
 
         final ModelChooser chooser = this.config.getModelChooserInstance(sessionNode);
-        final Component centeringComp = SessionEditorNode.this;
+        final Component centeringComp = this;
 
         JOptionPane.showMessageDialog(centeringComp, chooser,
                 "Choose Model for Help...", JOptionPane.QUESTION_MESSAGE);
@@ -1201,8 +1201,8 @@ public final class SessionEditorNode extends DisplayNode {
         final String nodeName = sessionNode.getBoxType();
 
         if (nodeName != null) {
-            final String baseName = extractBase(nodeName);
-            final Class[] newModelClasses = modelClasses(baseName);
+            final String baseName = SessionEditorNode.extractBase(nodeName);
+            final Class[] newModelClasses = SessionEditorNode.modelClasses(baseName);
 
             if (newModelClasses != null) {
                 sessionNode.setModelClasses(newModelClasses);
@@ -1256,7 +1256,7 @@ public final class SessionEditorNode extends DisplayNode {
         final SessionNodeWrapper nodeWrapper = (SessionNodeWrapper) getModelNode();
         final String buttonType = nodeWrapper.getButtonType();
         editor.setName(buttonType + " Structure Editor");
-        final Component centeringComp = SessionEditorNode.this;
+        final Component centeringComp = this;
 
         final int ret = JOptionPane.showOptionDialog(centeringComp, editor,
                 editor.getName(), JOptionPane.OK_CANCEL_OPTION,

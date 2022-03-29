@@ -183,12 +183,12 @@ public class FastIca {
      * (the default). if algorithmType == DEFLATION the components are extracted
      * one at a time.
      */
-    private int algorithmType = PARALLEL;
+    private int algorithmType = FastIca.PARALLEL;
 
     /**
      * The function type to be used, either LOGCOSH or EXP.
      */
-    private int function = LOGCOSH;
+    private int function = FastIca.LOGCOSH;
 
     /**
      * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
@@ -258,7 +258,7 @@ public class FastIca {
      * one at a time.
      */
     public void setAlgorithmType(final int algorithmType) {
-        if (!(algorithmType == DEFLATION || algorithmType == PARALLEL)) {
+        if (!(algorithmType == FastIca.DEFLATION || algorithmType == FastIca.PARALLEL)) {
             throw new IllegalArgumentException("Value should be DEFLATION or PARALLEL.");
         }
 
@@ -276,7 +276,7 @@ public class FastIca {
      * The function type to be used, either LOGCOSH or EXP.
      */
     public void setFunction(final int function) {
-        if (!(function == LOGCOSH || function == EXP)) {
+        if (!(function == FastIca.LOGCOSH || function == FastIca.EXP)) {
             throw new IllegalArgumentException("Value should be LOGCOSH or EXP.");
         }
 
@@ -446,10 +446,10 @@ public class FastIca {
         final Matrix X1 = K.times(this.X);
         final Matrix b;
 
-        if (this.algorithmType == DEFLATION) {
+        if (this.algorithmType == FastIca.DEFLATION) {
             b = icaDeflation(X1, this.tolerance, this.function, this.alpha,
                     this.maxIterations, this.verbose, this.wInit);
-        } else if (this.algorithmType == PARALLEL) {
+        } else if (this.algorithmType == FastIca.PARALLEL) {
             b = icaParallel(X1, this.numComponents, this.tolerance, this.function, this.alpha,
                     this.maxIterations, this.verbose, this.wInit);
         } else {
@@ -467,11 +467,11 @@ public class FastIca {
     private Matrix icaDeflation(final Matrix X,
                                 final double tolerance, final int function, final double alpha,
                                 final int maxIterations, final boolean verbose, final Matrix wInit) {
-        if (verbose && function == LOGCOSH) {
+        if (verbose && function == FastIca.LOGCOSH) {
             TetradLogger.getInstance().log("info", "Deflation FastIca using lgcosh approx. to neg-entropy function");
         }
 
-        if (verbose && function == EXP) {
+        if (verbose && function == FastIca.EXP) {
             TetradLogger.getInstance().log("info", "Deflation FastIca using exponential approx. to neg-entropy function");
         }
 
@@ -583,9 +583,9 @@ public class FastIca {
     }
 
     private double g(final double alpha, final double y) {
-        if (this.function == LOGCOSH) {
+        if (this.function == FastIca.LOGCOSH) {
             return tanh(alpha * y);
-        } else if (this.function == EXP) {
+        } else if (this.function == FastIca.EXP) {
             return y * exp(-(y * y) / 2.);
         } else {
             throw new IllegalArgumentException("That function is not configured.");

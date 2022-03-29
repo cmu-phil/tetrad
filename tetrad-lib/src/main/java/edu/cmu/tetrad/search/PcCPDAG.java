@@ -282,8 +282,8 @@ public class PcCPDAG implements GraphSearch {
 
                 final List<Node> sepset = set.get(b, c);
                 if (sepset != null && !sepset.contains(a) &&
-                        isArrowpointAllowedPattern(b, a, knowledge, graph) &&
-                        isArrowpointAllowedPattern(c, a, knowledge, graph) &&
+                        PcCPDAG.isArrowpointAllowedPattern(b, a, knowledge, graph) &&
+                        PcCPDAG.isArrowpointAllowedPattern(c, a, knowledge, graph) &&
                         !createsCycle(b, a, graph) && !createsCycle(c, a, graph)) {
                     graph.setEndpoint(b, a, Endpoint.ARROW);
                     graph.setEndpoint(c, a, Endpoint.ARROW);

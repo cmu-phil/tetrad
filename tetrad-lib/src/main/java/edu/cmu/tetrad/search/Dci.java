@@ -991,7 +991,7 @@ public class Dci {
      */
     private static Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> pathsEnsuringTrek(final Graph graph, final List<Node> ensureTrek, final Set<Node> conditioning) {
         final Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> paths = new HashMap<>();
-        pathsEnsuringTrek(graph, ensureTrek, 1, new LinkedList<>(Arrays.asList(ensureTrek.get(0))),
+        Dci.pathsEnsuringTrek(graph, ensureTrek, 1, new LinkedList<>(Arrays.asList(ensureTrek.get(0))),
                 conditioning, new HashMap<Triple, NodePair>(), paths, new HashSet<>(Arrays.asList(ensureTrek.get(0))));
         return paths;
     }
@@ -1089,7 +1089,7 @@ public class Dci {
             } else {
                 currentVisited = visited;
             }
-            pathsEnsuringTrek(graph, ensureTrek, index, path, conditioning, colliders, paths, currentVisited);
+            Dci.pathsEnsuringTrek(graph, ensureTrek, index, path, conditioning, colliders, paths, currentVisited);
             path.removeLast();
             if (next == node2) {
                 index--;
@@ -1121,7 +1121,7 @@ public class Dci {
             int t = 1;
             for (final List<Node> trek : treks) {
                 System.out.println("Finding ways to ensure minimal spanning treks... " + t + " of " + treks.size());
-                this.necessaryTreks.put(trek, pathsEnsuringTrek(graph, trek, minimalSpanningTreks.get(trek)));
+                this.necessaryTreks.put(trek, Dci.pathsEnsuringTrek(graph, trek, minimalSpanningTreks.get(trek)));
                 t++;
             }
         }

@@ -91,11 +91,11 @@ public class ParamType implements TetradSerializable {
 
     // Declarations required for serialization.
     private static int NEXT_ORDINAL = 0;
-    private final int ordinal = NEXT_ORDINAL++;
-    private static final ParamType[] TYPES = {COEF, MEAN, VAR, COVAR, DIST};
+    private final int ordinal = ParamType.NEXT_ORDINAL++;
+    private static final ParamType[] TYPES = {ParamType.COEF, ParamType.MEAN, ParamType.VAR, ParamType.COVAR, ParamType.DIST};
 
     Object readResolve() throws ObjectStreamException {
-        return TYPES[this.ordinal]; // Canonicalize.
+        return ParamType.TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

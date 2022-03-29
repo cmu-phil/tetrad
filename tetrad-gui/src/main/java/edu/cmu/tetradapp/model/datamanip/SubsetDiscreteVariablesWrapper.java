@@ -48,7 +48,7 @@ public class SubsetDiscreteVariablesWrapper extends DataWrapper {
         if (!(model instanceof DataSet)) {
             throw new IllegalArgumentException("The given dataset must be tabular");
         }
-        this.setDataModel(createModel((DataSet) model));
+        this.setDataModel(SubsetDiscreteVariablesWrapper.createModel((DataSet) model));
         this.setSourceGraph(data.getSourceGraph());
 
         LogDataUtils.logDataModelList("Parent data restricted to discrete variables only.", getDataModelList());

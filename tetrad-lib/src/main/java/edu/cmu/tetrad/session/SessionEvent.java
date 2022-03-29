@@ -54,11 +54,11 @@ public class SessionEvent extends EventObject {
         super(source);
 
         switch (type) {
-            case EXECUTION_STARTED:
+            case SessionEvent.EXECUTION_STARTED:
                 this.type = type;
                 break;
 
-            case ADDING_EDGE:
+            case SessionEvent.ADDING_EDGE:
                 this.type = type;
                 break;
 
@@ -84,22 +84,22 @@ public class SessionEvent extends EventObject {
         }
 
         switch (type) {
-            case NODE_ADDED:
+            case SessionEvent.NODE_ADDED:
 
                 // Falls through!
-            case NODE_REMOVED:
+            case SessionEvent.NODE_REMOVED:
 
                 // Falls through!
-            case MODEL_CREATED:
+            case SessionEvent.MODEL_CREATED:
 
                 // Falls through!
-            case MODEL_DESTROYED:
+            case SessionEvent.MODEL_DESTROYED:
 
                 // Falls through!
-            case MODEL_UNCLEAR:
+            case SessionEvent.MODEL_UNCLEAR:
 
                 // Falls through!
-            case REPETITION_CHANGED:
+            case SessionEvent.REPETITION_CHANGED:
                 this.type = type;
                 break;
 
@@ -123,10 +123,10 @@ public class SessionEvent extends EventObject {
         this.child = child;
 
         switch (type) {
-            case PARENT_ADDED:
+            case SessionEvent.PARENT_ADDED:
 
                 // Falls through!
-            case PARENT_REMOVED:
+            case SessionEvent.PARENT_REMOVED:
                 this.type = type;
                 break;
 

@@ -827,7 +827,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
                     break;
                 }
 
-                final List<Node> condSet = asList(choice, _nodes);
+                final List<Node> condSet = Mbfs.asList(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -863,7 +863,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
                     break;
                 }
 
-                final List<Node> condSet = asList(choice, _nodes);
+                final List<Node> condSet = Mbfs.asList(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -937,8 +937,8 @@ public final class Mbfs implements MbSearch, GraphSearch {
     }
 
     private boolean colliderAllowed(final Node x, final Node y, final Node z, final IKnowledge knowledge) {
-        return isArrowpointAllowed1(x, y, knowledge) &&
-                isArrowpointAllowed1(z, y, knowledge);
+        return Mbfs.isArrowpointAllowed1(x, y, knowledge) &&
+                Mbfs.isArrowpointAllowed1(z, y, knowledge);
     }
 
     private static boolean isArrowpointAllowed1(final Node from, final Node to,

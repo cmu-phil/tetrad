@@ -77,7 +77,7 @@ public class Matrix extends BasicMatrix {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }
-        if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
+        if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Integer " + x + " cannot be stored as a short");
         }
@@ -109,7 +109,7 @@ public class Matrix extends BasicMatrix {
      * the integer x can be converted to a short without causing overflow.
      */
     public void setValue(final int r, final int c, final int x) {
-        if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
+        if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Integer " + x + " cannot be stored as a short");
         }

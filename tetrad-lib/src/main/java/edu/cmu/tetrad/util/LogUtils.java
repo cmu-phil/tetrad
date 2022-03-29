@@ -68,7 +68,7 @@ public class LogUtils {
      */
     @SuppressWarnings({"UnusedDeclaration"})
     public static LogUtils getInstance() {
-        return INSTANCE;
+        return LogUtils.INSTANCE;
     }
 
     //===========================PUBLIC METHODS=========================//

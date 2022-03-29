@@ -242,14 +242,14 @@ class FactorAnalysisJoe {
 
         int failSafe = 0;
 
-        while (vectorSum(this.dValues) / trace(this.correlationMatrix.getMatrix()) < .99) {
-            System.out.println("****************  " + this.dValues.lastElement() / trace(this.correlationMatrix.getMatrix()));
+        while (FactorAnalysisJoe.vectorSum(this.dValues) / FactorAnalysisJoe.trace(this.correlationMatrix.getMatrix()) < .99) {
+            System.out.println("****************  " + this.dValues.lastElement() / FactorAnalysisJoe.trace(this.correlationMatrix.getMatrix()));
             //calculate new residual matrix
-            final Matrix prod = matrixMult(this.factorLoadingVectors.lastElement(),
-                    transpose(this.factorLoadingVectors.lastElement()));
+            final Matrix prod = FactorAnalysisJoe.matrixMult(this.factorLoadingVectors.lastElement(),
+                    FactorAnalysisJoe.transpose(this.factorLoadingVectors.lastElement()));
 //            System.out.println("Prod = " + prod);
 
-            final Matrix residual = matrixSubtract(this.residualMatrices.lastElement(), prod);
+            final Matrix residual = FactorAnalysisJoe.matrixSubtract(this.residualMatrices.lastElement(), prod);
             this.residualMatrices.add(residual);
             successiveResidualHelper(this.residualMatrices.lastElement(), unitVector);
 
@@ -267,10 +267,10 @@ class FactorAnalysisJoe {
      * the amount of total variance accounted for so far.
      */
     private void successiveResidualHelper(final Matrix residual, Matrix approximationVector) {
-        Matrix uVector = matrixMult(residual, approximationVector);
-        Matrix lVector = matrixMult(transpose(approximationVector), uVector);
+        Matrix uVector = FactorAnalysisJoe.matrixMult(residual, approximationVector);
+        Matrix lVector = FactorAnalysisJoe.matrixMult(FactorAnalysisJoe.transpose(approximationVector), uVector);
         double dScalar = Math.sqrt(lVector.get(0, 0));
-        Matrix aVector = matrixDiv(dScalar, uVector);
+        Matrix aVector = FactorAnalysisJoe.matrixDiv(dScalar, uVector);
 
         final Vector aVectors = new Vector();
         final Vector uVectors = new Vector();
@@ -283,10 +283,10 @@ class FactorAnalysisJoe {
 
         for (int i = 0; i < 100; i++) {
             approximationVector = (Matrix) aVectors.lastElement();
-            uVector = matrixMult(residual, approximationVector);
-            lVector = matrixMult(transpose(approximationVector), uVector);
+            uVector = FactorAnalysisJoe.matrixMult(residual, approximationVector);
+            lVector = FactorAnalysisJoe.matrixMult(FactorAnalysisJoe.transpose(approximationVector), uVector);
             dScalar = Math.sqrt(lVector.get(0, 0));
-            aVector = matrixDiv(dScalar, uVector);
+            aVector = FactorAnalysisJoe.matrixDiv(dScalar, uVector);
 
             aVectors.add(aVector);
             uVectors.add(uVector);
@@ -405,15 +405,15 @@ class FactorAnalysisJoe {
     }
 
     public static Matrix diag(final DataSet dataSet) {
-        return diag(dataSet.getDoubleData());
+        return FactorAnalysisJoe.diag(dataSet.getDoubleData());
     }
 
     public static Matrix diag(final ICovarianceMatrix covMatrix) {
-        return diag(covMatrix.getMatrix());
+        return FactorAnalysisJoe.diag(covMatrix.getMatrix());
     }
 
     public static Matrix diag(final CorrelationMatrix corMatrix) {
-        return diag(corMatrix.getMatrix());
+        return FactorAnalysisJoe.diag(corMatrix.getMatrix());
     }
 
     /*

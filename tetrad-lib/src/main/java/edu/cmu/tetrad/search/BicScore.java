@@ -135,7 +135,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
                 continue;
             }
 
-            final int rowIndex = getRowIndex(dims, parentValues);
+            final int rowIndex = BicScore.getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;

@@ -316,7 +316,7 @@ public class DiscreteMixedLikelihood {
 
     // One record.
     private double gaussianLikelihood(final int k, final Matrix sigma) {
-        return -0.5 * logdet(sigma) - 0.5 * k * (1 + LOG2PI);
+        return -0.5 * logdet(sigma) - 0.5 * k * (1 + DiscreteMixedLikelihood.LOG2PI);
     }
 
     private double logdet(final Matrix m) {

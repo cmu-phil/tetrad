@@ -137,7 +137,7 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
 
             if (current == max) {
                 JOptionPane.showMessageDialog(
-                        EMBayesEstimatorEditorWizard.this,
+                        this,
                         "There are no more variables.");
             }
 

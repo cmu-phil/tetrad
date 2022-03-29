@@ -51,7 +51,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      * The color this node when unselected; depends on whether there is a model
      * or not.
      */
-    private Color unselectedColor = NO_MODEL_COLOR;
+    private Color unselectedColor = StdDisplayComp.NO_MODEL_COLOR;
 
     /**
      * Font used to render text.
@@ -122,9 +122,9 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
     public void setHasModel(final boolean hasModel) {
         if (hasModel) {
-            this.unselectedColor = HAS_MODEL_COLOR;
+            this.unselectedColor = StdDisplayComp.HAS_MODEL_COLOR;
         } else {
-            this.unselectedColor = NO_MODEL_COLOR;
+            this.unselectedColor = StdDisplayComp.NO_MODEL_COLOR;
         }
     }
 
@@ -171,7 +171,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         final Box b3 = Box.createHorizontalBox();
         b3.add(Box.createHorizontalGlue());
         b3.add(Box.createHorizontalStrut(5));
-        this.acronymLabel.setFont(SMALL_FONT);
+        this.acronymLabel.setFont(StdDisplayComp.SMALL_FONT);
         b3.add(this.acronymLabel);
         b3.add(Box.createHorizontalStrut(5));
         b3.add(Box.createHorizontalGlue());

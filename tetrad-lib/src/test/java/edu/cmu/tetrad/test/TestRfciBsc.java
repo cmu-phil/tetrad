@@ -53,7 +53,7 @@ public class TestRfciBsc {
 
         // simulate data from instantiated model
         final DataSet fullData = bayesIm.simulateData(sampleSize, seed, true);
-        refineData(fullData);
+        TestRfciBsc.refineData(fullData);
         final DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
@@ -110,18 +110,18 @@ public class TestRfciBsc {
         RandomUtil.getInstance().setSeed(seed);
 
         // get the Bayesian network (graph and parameters) of the given model
-        final BayesIm im = loadBayesIm(modelName);
+        final BayesIm im = TestRfciBsc.loadBayesIm(modelName);
         final BayesPm pm = im.getBayesPm();
         final Graph dag = pm.getDag();
 
         // set a number of latent variables
         final int LV = 4;
         GraphUtils.fixLatents4(LV, dag);
-        System.out.println("Variables set to be latent:" + getLatents(dag));
+        System.out.println("Variables set to be latent:" + TestRfciBsc.getLatents(dag));
 
         // simulate data from instantiated model
         final DataSet fullData = im.simulateData(sampleSize, seed, true);
-        refineData(fullData);
+        TestRfciBsc.refineData(fullData);
 
         final DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 

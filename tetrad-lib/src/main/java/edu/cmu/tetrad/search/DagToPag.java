@@ -131,7 +131,7 @@ public final class DagToPag {
         final Graph graph = new EdgeListGraph(measured);
 
         for (int i = 0; i < measured.size(); i++) {
-            addAdjacencies(measured.get(i), this.dag, graph);
+            DagToPag.addAdjacencies(measured.get(i), this.dag, graph);
         }
 
         return graph;
@@ -146,7 +146,7 @@ public final class DagToPag {
         final Set<Node> induced = new HashSet<>();
 
         for (final Node b : dag.getAdjacentNodes(x)) {
-            collectInducedNodesVisit2(dag, x, b, path, builtGraph);
+            DagToPag.collectInducedNodesVisit2(dag, x, b, path, builtGraph);
         }
 
         return induced;
@@ -190,7 +190,7 @@ public final class DagToPag {
         }
 
         for (final Node c : dag.getAdjacentNodes(b)) {
-            collectInducedNodesVisit2(dag, x, c, path, builtGraph);
+            DagToPag.collectInducedNodesVisit2(dag, x, c, path, builtGraph);
         }
 
         path.removeLast();
@@ -286,8 +286,8 @@ public final class DagToPag {
     }
 
     private boolean foundCollider(final Graph dag, final Node a, final Node b, final Node c) {
-        final boolean ipba = existsInducingPathInto(b, a, dag);
-        final boolean ipbc = existsInducingPathInto(b, c, dag);
+        final boolean ipba = DagToPag.existsInducingPathInto(b, a, dag);
+        final boolean ipbc = DagToPag.existsInducingPathInto(b, c, dag);
 
         if (!(ipba && ipbc)) {
             printTrueDefCollider(a, b, c, false);

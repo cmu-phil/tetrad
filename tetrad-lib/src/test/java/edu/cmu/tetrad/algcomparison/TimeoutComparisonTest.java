@@ -63,14 +63,14 @@ public class TimeoutComparisonTest {
     @Ignore
     @Test
     public void testTimeoutComparison() throws IOException {
-        final Parameters parameters = getParameters();
-        final Statistics statistics = getStatistics();
-        final Algorithms algorithms = getAlgorithms();
-        final Simulations simulations = getSimulations();
+        final Parameters parameters = TimeoutComparisonTest.getParameters();
+        final Statistics statistics = TimeoutComparisonTest.getStatistics();
+        final Algorithms algorithms = TimeoutComparisonTest.getAlgorithms();
+        final Simulations simulations = TimeoutComparisonTest.getSimulations();
 
-        final String resultsPath = tmpDir.newFolder("comparison").toString();
+        final String resultsPath = TimeoutComparisonTest.tmpDir.newFolder("comparison").toString();
 
-        final TimeoutComparison comparisonEngine = getTetradComparisonEngine();
+        final TimeoutComparison comparisonEngine = TimeoutComparisonTest.getTetradComparisonEngine();
         comparisonEngine.compareFromSimulations(resultsPath, simulations, algorithms, statistics, parameters, 60, TimeUnit.SECONDS);
 
         System.out.println("================================================================================");

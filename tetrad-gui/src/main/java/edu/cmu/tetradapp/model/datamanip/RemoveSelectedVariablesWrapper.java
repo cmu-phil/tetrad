@@ -46,9 +46,9 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
         final DataModel model = data.getSelectedDataModel();
 
         if (model instanceof DataSet) {
-            this.setDataModel(createRectangularModel(((DataSet) model).copy()));
+            this.setDataModel(RemoveSelectedVariablesWrapper.createRectangularModel(((DataSet) model).copy()));
         } else if (model instanceof ICovarianceMatrix) {
-            this.setDataModel(createCovarianceModel((ICovarianceMatrix) model));
+            this.setDataModel(RemoveSelectedVariablesWrapper.createCovarianceModel((ICovarianceMatrix) model));
         } else {
             throw new IllegalArgumentException("Expecting a rectangular data " +
                     "set or a covariance matrix.");

@@ -265,7 +265,7 @@ public class IonSearchEditor extends AbstractSearchEditor
             public void run() {
                 while (true) {
                     try {
-                        sleep(300);
+                        Thread.sleep(300);
 
                         if (!process.isAlive()) {
                             getExecuteButton().setEnabled(true);

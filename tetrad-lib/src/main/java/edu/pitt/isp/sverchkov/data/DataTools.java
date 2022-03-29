@@ -38,9 +38,9 @@ public class DataTools {
     public static DataTable<String, String> dataTableFromFile(final File file) throws FileNotFoundException {
         DataTable<String, String> data = null;
         try (final Scanner in = new Scanner(file)) {
-            data = new DataTableImpl<>(Arrays.asList(in.nextLine().trim().split(DELIMITER_REGEX)));
+            data = new DataTableImpl<>(Arrays.asList(in.nextLine().trim().split(DataTools.DELIMITER_REGEX)));
             while (in.hasNextLine())
-                data.addRow(Arrays.asList(in.nextLine().trim().split(DELIMITER_REGEX)));
+                data.addRow(Arrays.asList(in.nextLine().trim().split(DataTools.DELIMITER_REGEX)));
         }
         return data;
     }
@@ -52,18 +52,18 @@ public class DataTools {
                 String delim = "";
                 for (final Attribute a : data.variables()) {
                     out.append(delim).append(a.toString());
-                    delim = DELIMITER;
+                    delim = DataTools.DELIMITER;
                 }
-                out.append(NEWLINE);
+                out.append(DataTools.NEWLINE);
             }
 
             for (final List<Value> row : data) {
                 String delim = "";
                 for (final Value v : row) {
                     out.append(delim).append(v.toString());
-                    delim = DELIMITER;
+                    delim = DataTools.DELIMITER;
                 }
-                out.append(NEWLINE);
+                out.append(DataTools.NEWLINE);
             }
         }
     }

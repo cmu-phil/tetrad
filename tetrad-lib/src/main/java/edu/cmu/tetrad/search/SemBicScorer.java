@@ -31,7 +31,7 @@ public class SemBicScorer {
             throw new NullPointerException("Dag was not specified.");
         }
 
-        final Map<Node, Integer> hashIndices = buildIndexing(dag.getNodes());
+        final Map<Node, Integer> hashIndices = SemBicScorer.buildIndexing(dag.getNodes());
 
         double _score = 0.0;
 

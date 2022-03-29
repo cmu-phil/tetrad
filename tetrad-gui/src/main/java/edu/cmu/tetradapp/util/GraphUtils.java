@@ -41,7 +41,7 @@ public class GraphUtils {
         final String type = parameters.getString("randomGraphType", "ScaleFree");
 
         if (type.equals("Uniform")) {
-            return makeRandomDag(graph,
+            return GraphUtils.makeRandomDag(graph,
                     newGraphNumMeasuredNodes,
                     newGraphNumLatents,
                     newGraphNumEdges,
@@ -54,11 +54,11 @@ public class GraphUtils {
                     graphChooseFixed,
                     addCycles, parameters);
         } else if (type.equals("Mim")) {
-            return makeRandomMim(numFactors, numStructuralNodes, maxStructuralEdges, measurementModelDegree,
+            return GraphUtils.makeRandomMim(numFactors, numStructuralNodes, maxStructuralEdges, measurementModelDegree,
                     numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
                     numMeasuredMeasuredImpureAssociations);
         } else if (type.equals("ScaleFree")) {
-            return makeRandomScaleFree(newGraphNumMeasuredNodes,
+            return GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,
                     newGraphNumLatents, alpha, beta, deltaIn, deltaOut);
         }
 

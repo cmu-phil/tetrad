@@ -44,10 +44,10 @@ public class SemXmlRenderer {
      */
     public static Element getElement(final SemIm semIm) {
         final Element semElement = new Element(SemXmlConstants.SEM);
-        semElement.appendChild(makeVariables(semIm));
-        semElement.appendChild(makeEdges(semIm));
-        semElement.appendChild(makeMarginalErrorDistribution(semIm));
-        semElement.appendChild(makeJointErrorDistribution(semIm));
+        semElement.appendChild(SemXmlRenderer.makeVariables(semIm));
+        semElement.appendChild(SemXmlRenderer.makeEdges(semIm));
+        semElement.appendChild(SemXmlRenderer.makeMarginalErrorDistribution(semIm));
+        semElement.appendChild(SemXmlRenderer.makeJointErrorDistribution(semIm));
         return semElement;
     }
 
@@ -106,7 +106,7 @@ public class SemXmlRenderer {
         final SemGraph semGraph = semIm.getSemPm().getGraph();
         semGraph.setShowErrorTerms(true);
 
-        for (final Node node : getExogenousNodes(semGraph)) {
+        for (final Node node : SemXmlRenderer.getExogenousNodes(semGraph)) {
 //            Node graphNode = semGraph.getChildren(node).get(0);
             normal = new Element(SemXmlConstants.NORMAL);
             normal.addAttribute(new Attribute(SemXmlConstants.VARIABLE, node.getName()));

@@ -136,7 +136,7 @@ public class BCCausalInference {
         final double lnTermPrior_XY = Math.log(1 - Math.exp(lnTermPrior_X_Y));  // this is equal to ln(1 - p^(1/numberOfScores))
         double scoreAll = 0;  // will contain the sum over the scores of all hypotheses
         for (int i = 1; i <= countsTracker.numOfScores; i++) {
-            scoreAll += lnXpluslnY(lnTermPrior_X_Y + (scores[i][1] + scores[i][2]), lnTermPrior_XY + scores[i][3]);
+            scoreAll += BCCausalInference.lnXpluslnY(lnTermPrior_X_Y + (scores[i][1] + scores[i][2]), lnTermPrior_XY + scores[i][3]);
         }
         final double probInd = Math.exp(score_X_Y - scoreAll);
 
@@ -188,7 +188,7 @@ public class BCCausalInference {
         while (instancePtr < countsTracker.countsPtr) {
             final double score;
             if (this.scoreFn == 1) {
-                score = scoringFn1(node, instancePtr, q, PESS_VALUE, countsTracker);
+                score = scoringFn1(node, instancePtr, q, BCCausalInference.PESS_VALUE, countsTracker);
             } else {
                 score = scoringFn2(node, instancePtr, countsTracker);
             }

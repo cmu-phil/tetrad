@@ -140,7 +140,7 @@ public class FactorAnalysis {
         final LinkedList<Matrix> residuals = new LinkedList<>();
         final LinkedList<Matrix> rotatedFactorVectors = new LinkedList<>();
 
-        final Matrix normalizedFactorLoadings = normalizeRows(factorLoadingMatrix);
+        final Matrix normalizedFactorLoadings = FactorAnalysis.normalizeRows(factorLoadingMatrix);
         residuals.add(normalizedFactorLoadings);
 
         final Matrix unitColumn = new Matrix(factorLoadingMatrix.rows(), 1);
@@ -183,10 +183,10 @@ public class FactorAnalysis {
 
             for (int i = 0; i < 200; i++) {
                 final Matrix bVector = r.times(hVectors.get(i));
-                final double averageSumSquaresBVector = unitColumn.transpose().times(matrixExp(bVector, 2))
+                final double averageSumSquaresBVector = unitColumn.transpose().times(FactorAnalysis.matrixExp(bVector, 2))
                         .scalarMult(1.0 / (double) bVector.rows()).get(0, 0);
 
-                final Matrix betaVector = matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
+                final Matrix betaVector = FactorAnalysis.matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
                 final Matrix uVector = r.transpose().times(betaVector);
 
                 final double alpha2 = (Math.sqrt(uVector.transpose().times(uVector).get(0, 0)));
@@ -300,7 +300,7 @@ public class FactorAnalysis {
             for (int j = 0; j < matrix.columns(); j++)
                 colVector.set(j, 0, vector.get(j));
 
-            normalizedRows.add(normalizeVector(colVector));
+            normalizedRows.add(FactorAnalysis.normalizeVector(colVector));
         }
 
         final Matrix result = new Matrix(matrix.rows(), matrix.columns());

@@ -71,11 +71,11 @@ public final class NodeType implements TetradSerializable {
 
     // Declarations required for serialization.
     private static int nextOrdinal = 0;
-    private final int ordinal = nextOrdinal++;
-    public static final NodeType[] TYPES = {MEASURED, LATENT, ERROR, NO_TYPE, RANDOMIZE, LOCK};
+    private final int ordinal = NodeType.nextOrdinal++;
+    public static final NodeType[] TYPES = {NodeType.MEASURED, NodeType.LATENT, NodeType.ERROR, NodeType.NO_TYPE, NodeType.RANDOMIZE, NodeType.LOCK};
 
     Object readResolve() throws ObjectStreamException {
-        return TYPES[this.ordinal]; // Canonicalize.
+        return NodeType.TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

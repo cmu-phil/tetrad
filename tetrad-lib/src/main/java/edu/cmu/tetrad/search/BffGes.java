@@ -238,8 +238,8 @@ public final class BffGes implements Bff {
                         continue;
                     }
 
-                    final List<Node> tNeighbors = getTNeighbors(_x, _y, graph);
-                    final List<Set<Node>> tSubsets = powerSet(tNeighbors);
+                    final List<Node> tNeighbors = BffGes.getTNeighbors(_x, _y, graph);
+                    final List<Set<Node>> tSubsets = BffGes.powerSet(tNeighbors);
 
                     for (final Set<Node> tSubset : tSubsets) {
 
@@ -319,8 +319,8 @@ public final class BffGes implements Bff {
                     continue;
                 }
 
-                final List<Node> hNeighbors = getHNeighbors(_x, _y, graph);
-                final List<Set<Node>> hSubsets = powerSet(hNeighbors);
+                final List<Node> hNeighbors = BffGes.getHNeighbors(_x, _y, graph);
+                final List<Set<Node>> hSubsets = BffGes.powerSet(hNeighbors);
 
                 for (final Set<Node> hSubset : hSubsets) {
                     if (!validSetByKnowledge(_x, _y, hSubset, false)) {
@@ -337,7 +337,7 @@ public final class BffGes implements Bff {
                         continue;
                     }
 
-                    if (!validDelete(_x, _y, hSubset, graph)) {
+                    if (!BffGes.validDelete(_x, _y, hSubset, graph)) {
                         continue;
                     }
 
@@ -496,7 +496,7 @@ public final class BffGes implements Bff {
 
     private boolean validInsert(final Node x, final Node y, final Set<Node> subset, final Graph graph) {
         final List<Node> naYXT = new LinkedList<>(subset);
-        naYXT.addAll(findNaYX(x, y, graph));
+        naYXT.addAll(BffGes.findNaYX(x, y, graph));
 
         return GraphUtils.isClique(naYXT, graph) && isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<Node>());
 
@@ -507,7 +507,7 @@ public final class BffGes implements Bff {
      */
     private static boolean validDelete(final Node x, final Node y, final Set<Node> h,
                                        final Graph graph) {
-        final List<Node> naYXH = findNaYX(x, y, graph);
+        final List<Node> naYXH = BffGes.findNaYX(x, y, graph);
         naYXH.removeAll(h);
         return GraphUtils.isClique(naYXH, graph);
     }

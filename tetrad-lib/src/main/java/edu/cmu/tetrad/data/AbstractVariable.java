@@ -134,12 +134,12 @@ public abstract class AbstractVariable implements Variable {
         final String node1 = getName();
         final String node2 = node.getName();
 
-        final boolean isAlpha1 = ALPHA.matcher(node1).matches();
-        final boolean isAlpha2 = ALPHA.matcher(node2).matches();
-        final boolean isAlphaNum1 = ALPHA_NUM.matcher(node1).matches();
-        final boolean isAlphaNum2 = ALPHA_NUM.matcher(node2).matches();
-        final boolean isLag1 = LAG.matcher(node1).matches();
-        final boolean isLag2 = LAG.matcher(node2).matches();
+        final boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
+        final boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
+        final boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
+        final boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
+        final boolean isLag1 = Node.LAG.matcher(node1).matches();
+        final boolean isLag2 = Node.LAG.matcher(node2).matches();
 
         if (isAlpha1) {
             if (isLag2) {

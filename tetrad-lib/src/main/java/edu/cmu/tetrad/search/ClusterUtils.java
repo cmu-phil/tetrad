@@ -601,7 +601,7 @@ public class ClusterUtils {
 
         final Set<Node> latentsSet = new HashSet<>();
         for (int i = 0; i < clusters.size(); i++) {
-            final Node latent = new GraphNode(LATENT_PREFIX + (i + 1));
+            final Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
             latent.setNodeType(NodeType.LATENT);
             nodes.add(latent);
             latentsSet.add(latent);
@@ -794,7 +794,7 @@ public class ClusterUtils {
     public static List<String> generateLatentNames(final int total) {
         final List<String> output = new ArrayList<>();
         for (int i = 0; i < total; i++) {
-            output.add(LATENT_PREFIX + (i + 1));
+            output.add(ClusterUtils.LATENT_PREFIX + (i + 1));
         }
         return output;
     }

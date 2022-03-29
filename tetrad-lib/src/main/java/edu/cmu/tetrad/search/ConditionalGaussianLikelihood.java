@@ -305,7 +305,7 @@ public class ConditionalGaussianLikelihood {
 
     // One record.
     private double gaussianLikelihood(final int k, final Matrix sigma) {
-        return -0.5 * log(sigma.det()) - 0.5 * k * (1 + LOG2PI);
+        return -0.5 * log(sigma.det()) - 0.5 * k * (1 + ConditionalGaussianLikelihood.LOG2PI);
     }
 
     private Matrix cov(final Matrix x) {

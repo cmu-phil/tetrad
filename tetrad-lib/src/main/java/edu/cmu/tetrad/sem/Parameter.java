@@ -97,7 +97,7 @@ public final class Parameter implements TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Distribution distribution = DEFAULT_DISTRIBUTION;
+    private Distribution distribution = Parameter.DEFAULT_DISTRIBUTION;
 
     /**
      * If this parameter is either fixed or not initialized randomly, returns

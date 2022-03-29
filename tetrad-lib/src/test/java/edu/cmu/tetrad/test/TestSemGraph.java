@@ -68,7 +68,7 @@ public final class TestSemGraph extends TestCase {
 
         final SemGraph graph2 = new SemGraph(graph);
 
-        assertEquals(graph, graph2);
+        TestCase.assertEquals(graph, graph2);
     }
 
     /**

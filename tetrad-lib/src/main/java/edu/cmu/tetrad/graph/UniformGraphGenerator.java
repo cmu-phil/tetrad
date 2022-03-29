@@ -132,8 +132,8 @@ public final class UniformGraphGenerator {
      */
     public UniformGraphGenerator(final int structure) {
         switch (structure) {
-            case ANY_DAG:
-            case CONNECTED_DAG:
+            case UniformGraphGenerator.ANY_DAG:
+            case UniformGraphGenerator.CONNECTED_DAG:
                 break;
             default:
                 throw new IllegalArgumentException("Unrecognized structure.");
@@ -206,11 +206,11 @@ public final class UniformGraphGenerator {
     }
 
     public void setMaxInDegree(final int maxInDegree) {
-        if (ANY_DAG == getStructure() && getMaxInDegree() < 0) {
+        if (UniformGraphGenerator.ANY_DAG == getStructure() && getMaxInDegree() < 0) {
             throw new IllegalArgumentException("Max indegree must be >= 1 " +
                     "when generating DAGs without the assumption of " +
                     "connectedness.");
-        } else if (CONNECTED_DAG == getStructure() && getMaxInDegree() < 2) {
+        } else if (UniformGraphGenerator.CONNECTED_DAG == getStructure() && getMaxInDegree() < 2) {
             throw new IllegalArgumentException("Max indegree must be >= 2 " +
                     "when generating DAGs under the assumption of " +
                     "connectedness.");
@@ -224,13 +224,13 @@ public final class UniformGraphGenerator {
     }
 
     public void setMaxOutDegree(final int maxOutDegree) {
-        if (ANY_DAG == getStructure() && getMaxInDegree() < 1) {
+        if (UniformGraphGenerator.ANY_DAG == getStructure() && getMaxInDegree() < 1) {
             throw new IllegalArgumentException("Max indegree must be >= 1 " +
                     "when generating DAGs without the assumption of " +
                     "connectedness.");
         }
 
-        if (CONNECTED_DAG == getStructure() && getMaxInDegree() < 2) {
+        if (UniformGraphGenerator.CONNECTED_DAG == getStructure() && getMaxInDegree() < 2) {
             throw new IllegalArgumentException("Max indegree must be >= 2 " +
                     "when generating DAGs under the assumption of " +
                     "connectedness.");
@@ -276,9 +276,9 @@ public final class UniformGraphGenerator {
     }
 
     public void generate() {
-        if (ANY_DAG == getStructure()) {
+        if (UniformGraphGenerator.ANY_DAG == getStructure()) {
             generateArbitraryDag();
-        } else if (CONNECTED_DAG == getStructure()) {
+        } else if (UniformGraphGenerator.CONNECTED_DAG == getStructure()) {
             generateConnectedDag();
         } else {
             throw new IllegalStateException("Unknown structure type.");

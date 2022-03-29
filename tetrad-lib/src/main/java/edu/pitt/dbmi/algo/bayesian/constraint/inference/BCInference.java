@@ -269,7 +269,7 @@ public class BCInference {
 
         lnYminusLnX = lnY - lnX;
 
-        if (lnYminusLnX < MININUM_EXPONENT) {
+        if (lnYminusLnX < BCInference.MININUM_EXPONENT) {
             return lnX;
         } else {
             return Math.log1p(Math.exp(lnYminusLnX)) + lnX;

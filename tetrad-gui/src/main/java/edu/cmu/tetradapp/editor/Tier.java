@@ -64,7 +64,7 @@ class Tier extends JPanel {
     }
 
     public static void setKnowledge(final IKnowledge k) {
-        know = k;
+        Tier.know = k;
     }
 
     /**
@@ -79,7 +79,7 @@ class Tier extends JPanel {
         add(new JLabel("Tier " + this.num));
         add(this.jsp);
 
-        final List t = know.getTier(this.num);
+        final List t = Tier.know.getTier(this.num);
 
         this.view.setLayout(new BoxLayout(this.view, BoxLayout.X_AXIS));
 
@@ -136,10 +136,10 @@ class Tier extends JPanel {
         System.out.println("edit unspecified list");
         System.out.println("vNames Contains: " + vNames);
 
-        for (int i = 0; i < know.getNumTiers(); i++) {
+        for (int i = 0; i < Tier.know.getNumTiers(); i++) {
             System.out.println("Tier " + i);
 
-            final List t = know.getTier(i);
+            final List t = Tier.know.getTier(i);
 
             System.out.println("Tier contains: " + t);
 

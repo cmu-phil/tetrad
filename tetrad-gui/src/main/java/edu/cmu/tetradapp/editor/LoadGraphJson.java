@@ -35,7 +35,7 @@ public class LoadGraphJson extends AbstractAction {
 
     @Override
     public void actionPerformed(final ActionEvent e) {
-        final JFileChooser chooser = getJFileChooser();
+        final JFileChooser chooser = LoadGraphJson.getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.showOpenDialog((Component) this.graphEditable);
 

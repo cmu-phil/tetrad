@@ -15,7 +15,7 @@ import java.util.List;
  * @author jdramsey
  */
 public interface IndependenceWrapper extends HasParameters, TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Returns true iff x and y are independent conditional on z for the given data set.

@@ -127,7 +127,7 @@ public class TetradLogger {
      * @return - instance
      */
     public static TetradLogger getInstance() {
-        return INSTANCE;
+        return TetradLogger.INSTANCE;
     }
 
 

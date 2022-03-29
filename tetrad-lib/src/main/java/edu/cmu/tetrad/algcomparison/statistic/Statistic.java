@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @author jdramsey
  */
 public interface Statistic extends Serializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * The abbreviation for the statistic. This will be printed at the top of each

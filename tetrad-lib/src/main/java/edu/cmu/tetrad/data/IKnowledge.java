@@ -117,13 +117,13 @@ public interface IKnowledge extends TetradSerializable {
 
     int isInWhichTier(Node node); // added by DMalinsky for SvarFCI 4/20/16
 
-    public List<KnowledgeEdge> getListOfRequiredEdges();
+    List<KnowledgeEdge> getListOfRequiredEdges();
 
-    public List<KnowledgeEdge> getListOfExplicitlyRequiredEdges();
+    List<KnowledgeEdge> getListOfExplicitlyRequiredEdges();
 
-    public List<KnowledgeEdge> getListOfForbiddenEdges();
+    List<KnowledgeEdge> getListOfForbiddenEdges();
 
-    public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges();
+    List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges();
 
     boolean isOnlyCanCauseNextTier(int tier);
 

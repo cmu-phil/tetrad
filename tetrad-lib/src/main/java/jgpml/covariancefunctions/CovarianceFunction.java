@@ -37,7 +37,7 @@ public interface CovarianceFunction {
      *
      * @return number of hyperparameters
      */
-    public int numParameters();
+    int numParameters();
 
     /**
      * Compute covariance matrix of a dataset X
@@ -46,7 +46,7 @@ public interface CovarianceFunction {
      * @param X        input dataset
      * @return K covariance <code>Matrix</code>
      */
-    public Matrix compute(Matrix loghyper, Matrix X);
+    Matrix compute(Matrix loghyper, Matrix X);
 
     /**
      * Compute compute test set covariances
@@ -56,7 +56,7 @@ public interface CovarianceFunction {
      * @param Xstar    test set
      * @return [K(Xstar, Xstar) K(X,Xstar)]
      */
-    public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar);
+    Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar);
 
     /**
      * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
@@ -67,6 +67,6 @@ public interface CovarianceFunction {
      * @param index    hyperparameter index
      * @return <code>Matrix</code> of derivatives
      */
-    public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index);
+    Matrix computeDerivatives(Matrix loghyper, Matrix X, int index);
 
 }

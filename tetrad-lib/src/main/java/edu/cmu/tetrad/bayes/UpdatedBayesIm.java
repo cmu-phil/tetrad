@@ -337,7 +337,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
                         continue;
                     }
 
-                    if (Math.abs(prob - otherProb) > ALLOWABLE_DIFFERENCE) {
+                    if (Math.abs(prob - otherProb) > UpdatedBayesIm.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }
@@ -458,7 +458,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         final int[] variableValues = new int[condition.getNumVariables()];
 
         for (int i = 0; i < condition.getNumVariables(); i++) {
-            variableValues[i] = nextValue(condition, i, -1);
+            variableValues[i] = UpdatedBayesIm.nextValue(condition, i, -1);
         }
 
         variableValues[variableValues.length - 1] = -1;
@@ -468,16 +468,16 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         loop:
         while (true) {
             for (int i = condition.getNumVariables() - 1; i >= 0; i--) {
-                if (hasNextValue(condition, i, variableValues[i])) {
+                if (UpdatedBayesIm.hasNextValue(condition, i, variableValues[i])) {
                     variableValues[i]
-                            = nextValue(condition, i, variableValues[i]);
+                            = UpdatedBayesIm.nextValue(condition, i, variableValues[i]);
 
                     for (int j = i + 1; j < condition.getNumVariables(); j++) {
-                        if (!hasNextValue(condition, j, -1)) {
+                        if (!UpdatedBayesIm.hasNextValue(condition, j, -1)) {
                             break loop;
                         }
 
-                        variableValues[j] = nextValue(condition, j, -1);
+                        variableValues[j] = UpdatedBayesIm.nextValue(condition, j, -1);
                     }
 
                     final double cellProb = getCellProb(variableValues);
@@ -502,7 +502,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
 
     private static boolean hasNextValue(final Proposition proposition, final int variable,
                                         final int curIndex) {
-        return nextValue(proposition, variable, curIndex) != -1;
+        return UpdatedBayesIm.nextValue(proposition, variable, curIndex) != -1;
     }
 
     private static int nextValue(final Proposition proposition, final int variable,

@@ -49,11 +49,11 @@ public final class ExploreAutisticsNeurotypicals {
 //        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOee.2012.04.20/data/USM_Datasets";
         final List<List<DataSet>> allDatasets = loadData(path, "autistic", "typical");
         final List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
-        final List<List<Graph>> graphs = reconcileNodes(allGraphs);
-        final List<Edge> _edges = getAllEdges(allGraphs);
-        final DataSet dataSet = createEdgeDataSet(graphs, _edges);
+        final List<List<Graph>> graphs = ExploreAutisticsNeurotypicals.reconcileNodes(allGraphs);
+        final List<Edge> _edges = ExploreAutisticsNeurotypicals.getAllEdges(allGraphs);
+        final DataSet dataSet = ExploreAutisticsNeurotypicals.createEdgeDataSet(graphs, _edges);
 //        dataSet = restrictDataRange(dataSet, .1, .9);
-        printData(path, "edgedata", dataSet);
+        ExploreAutisticsNeurotypicals.printData(path, "edgedata", dataSet);
     }
 
     public void printTrekNodeData() {
@@ -61,9 +61,9 @@ public final class ExploreAutisticsNeurotypicals {
         final List<List<DataSet>> allDatasets = loadData(path, "autistic", "typical");
         final List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
 
-        final DataSet dataSet = getTrekNodeDataSet(allGraphs);
+        final DataSet dataSet = ExploreAutisticsNeurotypicals.getTrekNodeDataSet(allGraphs);
 
-        printData(path, "treknodedata", dataSet);
+        ExploreAutisticsNeurotypicals.printData(path, "treknodedata", dataSet);
     }
 
     public void printTrekEdgeData() {
@@ -73,11 +73,11 @@ public final class ExploreAutisticsNeurotypicals {
         List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
 
         final List<Node> nodes = allGraphs.get(0).get(0).getNodes();
-        allGraphs = reconcileNodes(allGraphs);
-        final List<Edge> allTrekEdges = getAllTrekEdges(allGraphs, 5);
-        DataSet dataSet = createEdgeDataSet(allGraphs, allTrekEdges);
-        dataSet = restrictDataRange(dataSet, .3, .7);
-        printData(path, "trekedgedata", dataSet);
+        allGraphs = ExploreAutisticsNeurotypicals.reconcileNodes(allGraphs);
+        final List<Edge> allTrekEdges = ExploreAutisticsNeurotypicals.getAllTrekEdges(allGraphs, 5);
+        DataSet dataSet = ExploreAutisticsNeurotypicals.createEdgeDataSet(allGraphs, allTrekEdges);
+        dataSet = ExploreAutisticsNeurotypicals.restrictDataRange(dataSet, .3, .7);
+        ExploreAutisticsNeurotypicals.printData(path, "trekedgedata", dataSet);
     }
 
     private List<List<Graph>> runAlgorithm(final String path, final List<List<DataSet>> allDatasets, final double penaltyDiscount) {
@@ -155,7 +155,7 @@ public final class ExploreAutisticsNeurotypicals {
         final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets/all";
         final List<List<DataSet>> allDatasets = loadData(path, "ROI_data_autistic", "ROI_data_typical");
         final List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
-        final List<List<Graph>> graphs = reconcileNodes(allGraphs);
+        final List<List<Graph>> graphs = ExploreAutisticsNeurotypicals.reconcileNodes(allGraphs);
         final List<Node> nodes = graphs.get(0).get(0).getNodes();
 
         System.out.print("Group\t");
@@ -191,13 +191,13 @@ public final class ExploreAutisticsNeurotypicals {
             nodes.add(new ContinuousVariable(node.getName()));
         }
 
-        graphs = reconcileNodes(graphs);
+        graphs = ExploreAutisticsNeurotypicals.reconcileNodes(graphs);
 
         final Node fusiformLeft = graphs.get(0).get(0).getNode("Fusiform_L");
         final Node fusiformRight = graphs.get(0).get(0).getNode("Fusiform_R");
         final ContinuousVariable group = new ContinuousVariable("Group");
         nodes.add(group);
-        final int numGraphs = getNumGraphs(graphs);
+        final int numGraphs = ExploreAutisticsNeurotypicals.getNumGraphs(graphs);
         nodes.remove(fusiformLeft);
         nodes.remove(fusiformRight);
         final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(numGraphs, nodes.size()), nodes);
@@ -295,8 +295,8 @@ public final class ExploreAutisticsNeurotypicals {
         final List<Node> nodes = graphs.get(0).get(0).getNodes();
         final ContinuousVariable group = new ContinuousVariable("Group");
         nodes.add(group);
-        graphs = reconcileNodes(graphs);
-        final int numGraphs = getNumGraphs(graphs);
+        graphs = ExploreAutisticsNeurotypicals.reconcileNodes(graphs);
+        final int numGraphs = ExploreAutisticsNeurotypicals.getNumGraphs(graphs);
         final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(numGraphs, nodes.size()), nodes);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -339,7 +339,7 @@ public final class ExploreAutisticsNeurotypicals {
     }
 
     private static List<List<Graph>> reconcileNodes(final List<List<Graph>> graphs) {
-        final List<Node> _nodes = new ArrayList<>(getAllNodes(graphs));
+        final List<Node> _nodes = new ArrayList<>(ExploreAutisticsNeurotypicals.getAllNodes(graphs));
 
         int count = 0;
 
@@ -397,7 +397,7 @@ public final class ExploreAutisticsNeurotypicals {
     private static DataSet createEdgeDataSet(final List<List<Graph>> graphs2, final List<Edge> edges) {
         System.out.println("# edges = " + edges.size());
 
-        final int numGraphs = getNumGraphs(graphs2);
+        final int numGraphs = ExploreAutisticsNeurotypicals.getNumGraphs(graphs2);
 
         final List<Node> edgeVars = new ArrayList<>();
 

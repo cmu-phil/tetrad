@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * Initializes a history array.
  */
 public interface Initializer extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Initializes a history array.

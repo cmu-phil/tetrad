@@ -61,12 +61,12 @@ public final class ScoreDescriptions {
                 }
             });
         } catch (final IOException ex) {
-            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
+            ScoreDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
     }
 
     public static ScoreDescriptions getInstance() {
-        return INSTANCE;
+        return ScoreDescriptions.INSTANCE;
     }
 
     public String get(final String shortName) {

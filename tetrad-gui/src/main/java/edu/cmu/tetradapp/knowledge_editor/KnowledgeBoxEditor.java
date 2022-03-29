@@ -540,12 +540,12 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showRequiredByGroups) {
             final List<KnowledgeEdge> list = knowledge.getListOfRequiredEdges();
-            if (list.size() > EDGE_LIMIT) {
+            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
                 this.showRequiredByGroups = false;
                 if (checkBox != null) {
                     checkBox.setSelected(false);
                 }
-                final String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
+                final String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
                 list.forEach(e -> {
@@ -566,12 +566,12 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showForbiddenByGroups) {
             final List<KnowledgeEdge> list = knowledge.getListOfForbiddenEdges();
-            if (list.size() > EDGE_LIMIT) {
+            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
                 this.showForbiddenByGroups = false;
                 if (checkBox != null) {
                     checkBox.setSelected(false);
                 }
-                final String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
+                final String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
                 list.forEach(e -> {
@@ -592,12 +592,12 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showRequired) {
             final List<KnowledgeEdge> list = knowledge.getListOfExplicitlyRequiredEdges();
-            if (list.size() > EDGE_LIMIT) {
+            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
                 this.showRequired = false;
                 if (checkBox != null) {
                     checkBox.setSelected(false);
                 }
-                final String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
+                final String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
                 list.forEach(e -> {
@@ -618,12 +618,12 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showForbiddenByTiers) {
             final List<KnowledgeEdge> list = knowledge.getListOfForbiddenEdges();
-            if (list.size() > EDGE_LIMIT) {
+            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
                 this.showForbiddenByTiers = false;
                 if (checkBox != null) {
                     checkBox.setSelected(false);
                 }
-                final String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
+                final String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
                 list.forEach(e -> {
@@ -656,12 +656,12 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showForbiddenExplicitly) {
             final List<KnowledgeEdge> list = knowledge.getListOfExplicitlyForbiddenEdges();
-            if (list.size() > EDGE_LIMIT) {
+            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
                 this.showForbiddenExplicitly = false;
                 if (checkBox != null) {
                     checkBox.setSelected(false);
                 }
-                final String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
+                final String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
                 list.forEach(e -> {

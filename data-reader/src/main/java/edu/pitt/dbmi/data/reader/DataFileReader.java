@@ -73,13 +73,13 @@ public abstract class DataFileReader implements DataReader {
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
-            final byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
                     final byte currChar = buffer[i];
 
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         finished = hasSeenNonblankChar && !skip;
                         if (finished) {
                             count++;
@@ -91,12 +91,12 @@ public abstract class DataFileReader implements DataReader {
                         cmntIndex = 0;
                         checkForComment = comment.length > 0;
                     } else if (!skip) {
-                        if (currChar > SPACE_CHAR) {
+                        if (currChar > DataFileReader.SPACE_CHAR) {
                             hasSeenNonblankChar = true;
                         }
 
                         // skip blank chars at the begining of the line
-                        if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                             continue;
                         }
 
@@ -121,7 +121,7 @@ public abstract class DataFileReader implements DataReader {
                             if (!hasQuoteChar) {
                                 switch (this.delimiter) {
                                     case WHITESPACE:
-                                        if (currChar <= SPACE_CHAR && prevChar > SPACE_CHAR) {
+                                        if (currChar <= DataFileReader.SPACE_CHAR && prevChar > DataFileReader.SPACE_CHAR) {
                                             count++;
                                         }
                                         break;
@@ -166,12 +166,12 @@ public abstract class DataFileReader implements DataReader {
             int cmntIndex = 0;
             final boolean checkForComment = comment.length > 0;
 
-            final byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len; i++) {
                     final byte currChar = buffer[i];
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (!skip && cmntIndex > 0) {
                             count++;
                         }
@@ -182,12 +182,12 @@ public abstract class DataFileReader implements DataReader {
                         cmntIndex = 0;
                     } else {
                         if (!skip) {
-                            if (currChar > SPACE_CHAR) {
+                            if (currChar > DataFileReader.SPACE_CHAR) {
                                 hasSeenNonblankChar = true;
                             }
 
                             // skip blank chars at the begining of the line
-                            if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                            if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                                 continue;
                             }
 

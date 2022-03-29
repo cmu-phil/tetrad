@@ -575,10 +575,10 @@ public class Ling {
         final Distribution gp2 = new GaussianPower(2);
 
         //the coefficients of the error terms  (here, all 1s)
-        final Vector errorCoefficients = getErrorCoeffsIdentity(graphWP.getGraph().getNumNodes());
+        final Vector errorCoefficients = Ling.getErrorCoeffsIdentity(graphWP.getGraph().getNumNodes());
 
         //generate data from the SEM
-        final Matrix inVectors = simulateCyclic(graphWP, errorCoefficients, this.numSamples, gp2);
+        final Matrix inVectors = Ling.simulateCyclic(graphWP, errorCoefficients, this.numSamples, gp2);
 
         //reformat it
         this.dataSet = new BoxDataSet(new DoubleDataBox(inVectors.transpose().toArray()), graphWP.getGraph().getNodes());
@@ -608,11 +608,11 @@ public class Ling {
     // used to produce dataset if one is not provided as the input to the constructor
 
     private static Matrix simulateCyclic(final GraphWithParameters dwp, final Vector errorCoefficients, final int n, final Distribution distribution) {
-        final Matrix reducedForm = reducedForm(dwp);
+        final Matrix reducedForm = Ling.reducedForm(dwp);
 
         final Matrix vectors = new Matrix(dwp.getGraph().getNumNodes(), n);
         for (int j = 0; j < n; j++) {
-            final Vector vector = simulateReducedForm(reducedForm, errorCoefficients, distribution);
+            final Vector vector = Ling.simulateReducedForm(reducedForm, errorCoefficients, distribution);
             vectors.assignColumn(j, vector);
         }
         return vectors;
@@ -677,9 +677,9 @@ public class Ling {
 
             normalizedZldW = LingUtils.normalizeDiagonal(zldPerm.getMatrixW());
             // Note: add method to deal with this data
-            zldPerm.setMatrixBhat(computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
+            zldPerm.setMatrixBhat(Ling.computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
             final Matrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
-            final boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
+            final boolean isStableTetradMatrix = Ling.allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
             final GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
 
             gs.addGraph(graph.getGraph());
@@ -745,9 +745,9 @@ public class Ling {
 
             normalizedZldW = LingUtils.normalizeDiagonal(zldPerm.getMatrixW());
             // Note: add method to deal with this data
-            zldPerm.setMatrixBhat(computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
+            zldPerm.setMatrixBhat(Ling.computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
             final Matrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
-            final boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
+            final boolean isStableTetradMatrix = Ling.allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
             final GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
 
             gs.addGraph(graph.getGraph());
@@ -805,11 +805,11 @@ public class Ling {
         final Matrix mat = ica_W.transpose();
         //returns all zeroless-diagonal column-permutations
 
-        final List<List<Integer>> nRookAssignments = nRookColumnAssignments(mat, makeAllRows(mat.rows()));
+        final List<List<Integer>> nRookAssignments = Ling.nRookColumnAssignments(mat, Ling.makeAllRows(mat.rows()));
 
         //for each assignment, add the corresponding permutation to 'permutations'
         for (final List<Integer> permutation : nRookAssignments) {
-            final Matrix matrixW = permuteRows(ica_W, permutation).transpose();
+            final Matrix matrixW = Ling.permuteRows(ica_W, permutation).transpose();
             final PermutationMatrixPair permTetradMatrixPair = new PermutationMatrixPair(permutation, matrixW);
             permutations.add(permTetradMatrixPair);
         }
@@ -942,7 +942,7 @@ public class Ling {
                     final java.util.Vector newAvailableRows = (new java.util.Vector(availableRows));
                     newAvailableRows.removeElement(currentRowIndex);
                     final Matrix subMat = mat.getPart(0, mat.rows() - 1, 1, mat.columns() - 2);
-                    final List<List<Integer>> allLater = nRookColumnAssignments(subMat, newAvailableRows);
+                    final List<List<Integer>> allLater = Ling.nRookColumnAssignments(subMat, newAvailableRows);
 
                     for (final List<Integer> laterPerm : allLater) {
                         laterPerm.add(0, currentRowIndex);

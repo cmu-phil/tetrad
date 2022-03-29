@@ -176,7 +176,7 @@ public final class SemEstimatorEditor extends JPanel {
             editorPanel.add(b);
 
             final EditorWindow window = new EditorWindow(editorPanel,
-                    "All Paths", "Close", false, SemEstimatorEditor.this);
+                    "All Paths", "Close", false, this);
             DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
             window.setVisible(true);
         });
@@ -899,7 +899,7 @@ public final class SemEstimatorEditor extends JPanel {
             this.tableModel = new ParamTableModel(wrapper, editor, maxFreeParamsForStatistics);
             table.setModel(getTableModel());
             this.tableModel.addTableModelListener((e) -> {
-                SemImTabularEditor.this.firePropertyChange("modelChanged", null, null);
+                this.firePropertyChange("modelChanged", null, null);
             });
 
             add(new JScrollPane(table), BorderLayout.CENTER);
@@ -1384,8 +1384,8 @@ public final class SemEstimatorEditor extends JPanel {
             });
 
             field.addActionListener((e) -> {
-                if (SemImGraphicalEditor.this.dialog != null) {
-                    SemImGraphicalEditor.this.dialog.setVisible(false);
+                if (this.dialog != null) {
+                    this.dialog.setVisible(false);
                 }
             });
 
@@ -1502,8 +1502,8 @@ public final class SemEstimatorEditor extends JPanel {
             });
 
             field.addActionListener((e) -> {
-                if (SemImGraphicalEditor.this.dialog != null) {
-                    SemImGraphicalEditor.this.dialog.setVisible(false);
+                if (this.dialog != null) {
+                    this.dialog.setVisible(false);
                 }
             });
 
@@ -1814,11 +1814,11 @@ public final class SemEstimatorEditor extends JPanel {
                     d *= Math.sqrt(varA * varB);
 
                     semIm().setParamValue(parameter, d);
-                    SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
+                    this.firePropertyChange("modelChanged", null, null);
                 } else if (!this.editor.isEditCovariancesAsCorrelations()
                         && parameter.getType() == ParamType.COVAR) {
                     semIm().setParamValue(parameter, d);
-                    SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
+                    this.firePropertyChange("modelChanged", null, null);
                 } else if (parameter.getType() == ParamType.COEF) {
 //                semIm().setParamValue(parameter, d);
 //                firePropertyChange("modelChanged", null, null);
@@ -1833,7 +1833,7 @@ public final class SemEstimatorEditor extends JPanel {
                         semIm().setIntercept(y, intercept);
                     }
 
-                    SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
+                    this.firePropertyChange("modelChanged", null, null);
                 }
             } catch (final NumberFormatException e) {
                 // Let the old value be reinstated.
@@ -1851,7 +1851,7 @@ public final class SemEstimatorEditor extends JPanel {
 
                 if (parameter.getType() == ParamType.VAR && d >= 0) {
                     semIm().setParamValue(node, node, d * d);
-                    SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
+                    this.firePropertyChange("modelChanged", null, null);
                 } else if (parameter.getType() == ParamType.MEAN) {
                     if (this.editor.isEditIntercepts()) {
                         semIm().setIntercept(node, d);
@@ -1859,7 +1859,7 @@ public final class SemEstimatorEditor extends JPanel {
                         semIm().setMean(node, d);
                     }
 
-                    SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
+                    this.firePropertyChange("modelChanged", null, null);
                 }
             } catch (final Exception exception) {
                 exception.printStackTrace(System.err);

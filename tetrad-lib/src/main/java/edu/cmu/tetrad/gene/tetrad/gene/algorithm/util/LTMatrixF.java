@@ -70,7 +70,7 @@ public class LTMatrixF extends BasicLTMatrix {
      * be converted to a float without causing overflow.
      */
     public void setValue(final int r, final int c, final double x) {
-        if ((x < MIN_FLOAT) || (x > MAX_FLOAT)) {
+        if ((x < BasicMatrix.MIN_FLOAT) || (x > BasicMatrix.MAX_FLOAT)) {
             throw new IllegalArgumentException(
                     "Double " + x + " cannot be stored as a float");
         }

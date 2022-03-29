@@ -232,7 +232,7 @@ public class FtfcSearchEditor extends JPanel {
                 TaskManager.getInstance().setCanceled(false);
 
                 try {
-                    sleep(FtfcSearchEditor.this.delay);
+                    Thread.sleep(FtfcSearchEditor.this.delay);
                 } catch (final InterruptedException e) {
                     return;
                 }
@@ -279,7 +279,7 @@ public class FtfcSearchEditor extends JPanel {
 
                 while (thread().isAlive()) {
                     try {
-                        sleep(200);
+                        Thread.sleep(200);
                     } catch (final InterruptedException e) {
                         return;
                     }

@@ -193,7 +193,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         if (model instanceof DataModelList) {
             for (int i = 0; i < ((DataModelList) model).size(); i++) {
                 final DataModel _model = ((DataModelList) model).get(i);
-                this.tabbedPane.addTab(tabName(_model, 1), dataDisplay(_model));
+                this.tabbedPane.addTab(DataEditor.tabName(_model, 1), dataDisplay(_model));
             }
 
             add(this.tabbedPane, BorderLayout.CENTER);
@@ -202,7 +202,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 add(menuBar(), BorderLayout.NORTH);
             }
         } else {
-            this.tabbedPane.addTab(tabName(model, 1), dataDisplay(model));
+            this.tabbedPane.addTab(DataEditor.tabName(model, 1), dataDisplay(model));
             add(this.tabbedPane, BorderLayout.CENTER);
 
             if (this.showMenus) {
@@ -226,13 +226,13 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         final DataModel selectedModel = dataModelList.getSelectedModel();
 
         removeAll();
-        removeEmptyModels(dataModelList);
+        DataEditor.removeEmptyModels(dataModelList);
 
         int selectedIndex = -1;
 
         for (int i = 0; i < dataModelList.size(); i++) {
             final DataModel dataModel = dataModelList.get(i);
-            tabbedPane().addTab(tabName(dataModel, i + 1),
+            tabbedPane().addTab(DataEditor.tabName(dataModel, i + 1),
                     dataDisplay(dataModel));
             if (selectedModel == dataModel) {
                 selectedIndex = i;
@@ -272,12 +272,12 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
         removeAll();
         tabbedPane().removeAll();
-        removeEmptyModels(dataModelList);
+        DataEditor.removeEmptyModels(dataModelList);
 
         int tabIndex = 0;
 
         for (final DataModel dataModel : dataModelList) {
-            tabbedPane().addTab(tabName(dataModel, ++tabIndex),
+            tabbedPane().addTab(DataEditor.tabName(dataModel, ++tabIndex),
                     dataDisplay(dataModel));
         }
 
@@ -300,12 +300,12 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         dataModelList.clear();
         dataModelList.add(dataModel);
 
-        removeEmptyModels(dataModelList);
+        DataEditor.removeEmptyModels(dataModelList);
         tabbedPane().removeAll();
 
         for (int i = 0; i < dataModelList.size(); i++) {
             final Object _dataModel = dataModelList.get(i);
-            tabbedPane().addTab(tabName(dataModel, i + 1),
+            tabbedPane().addTab(DataEditor.tabName(dataModel, i + 1),
                     dataDisplay(_dataModel));
         }
 
@@ -840,7 +840,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             for (int i = 0; i < dataModelList.size(); i++) {
                 final Object _dataModel = dataModelList.get(i);
                 final JComponent display = dataDisplay(_dataModel);
-                tabbedPane().addTab(tabName(_dataModel, i + 1), display);
+                tabbedPane().addTab(DataEditor.tabName(_dataModel, i + 1), display);
             }
 
             tabbedPane().addPropertyChangeListener(new PropertyChangeListener() {

@@ -48,7 +48,7 @@ public class SubsetContinuousVariablesWrapper extends DataWrapper {
         if (!(model instanceof DataSet)) {
             throw new IllegalArgumentException("The given dataset must be tabular");
         }
-        this.setDataModel(createModel((DataSet) model));
+        this.setDataModel(SubsetContinuousVariablesWrapper.createModel((DataSet) model));
         this.setSourceGraph(data.getSourceGraph());
 
         LogDataUtils.logDataModelList("Parent data restricted to continuous variables only.", getDataModelList());

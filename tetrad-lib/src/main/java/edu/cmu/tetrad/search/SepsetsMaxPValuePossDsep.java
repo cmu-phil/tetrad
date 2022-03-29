@@ -87,8 +87,8 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
 
 //        List<Node> adji = graph.getAdjacentNodes(i);
 //        List<Node> adjk = graph.getAdjacentNodes(k);
-        final List<Node> adji = new ArrayList<>(possibleDsep(i, k, this.graph, this.maxPathLength));
-        final List<Node> adjk = new ArrayList<>(possibleDsep(k, i, this.graph, this.maxPathLength));
+        final List<Node> adji = new ArrayList<>(SepsetsMaxPValuePossDsep.possibleDsep(i, k, this.graph, this.maxPathLength));
+        final List<Node> adjk = new ArrayList<>(SepsetsMaxPValuePossDsep.possibleDsep(k, i, this.graph, this.maxPathLength));
         adji.remove(k);
         adjk.remove(i);
 
@@ -150,7 +150,7 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
             if (e == null) e = edge;
             Q.offer(edge);
             V.add(edge);
-            addToList(previous, b, x);
+            SepsetsMaxPValuePossDsep.addToList(previous, b, x);
             dsep.add(b);
         }
 
@@ -166,7 +166,7 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
             final Node a = t.getFirst();
             final Node b = t.getSecond();
 
-            if (existOnePathWithPossibleParents(previous, b, x, b, graph)) {
+            if (SepsetsMaxPValuePossDsep.existOnePathWithPossibleParents(previous, b, x, b, graph)) {
                 dsep.add(b);
             }
 
@@ -175,7 +175,7 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
                 if (c == x) continue;
                 if (c == y) continue;
 
-                addToList(previous, b, c);
+                SepsetsMaxPValuePossDsep.addToList(previous, b, c);
 
                 if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
                     final OrderedPair<Node> u = new OrderedPair<>(a, c);
@@ -204,9 +204,9 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
         for (final Node r : p) {
             if (r == b || r == x) continue;
 
-            if ((existsSemidirectedPath(r, x, graph)) ||
-                    existsSemidirectedPath(r, b, graph)) {
-                if (existOnePathWithPossibleParents(previous, r, x, b, graph)) {
+            if ((SepsetsMaxPValuePossDsep.existsSemidirectedPath(r, x, graph)) ||
+                    SepsetsMaxPValuePossDsep.existsSemidirectedPath(r, b, graph)) {
+                if (SepsetsMaxPValuePossDsep.existOnePathWithPossibleParents(previous, r, x, b, graph)) {
                     return true;
                 }
             }

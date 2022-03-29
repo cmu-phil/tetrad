@@ -50,7 +50,7 @@ public class DecompressibleInputStream extends ObjectInputStream {
         try {
             localClass = Class.forName(resultClassDescriptor.getName());
         } catch (final ClassNotFoundException e) {
-            LOGGER.error("No local class for " + resultClassDescriptor.getName(), e);
+            DecompressibleInputStream.LOGGER.error("No local class for " + resultClassDescriptor.getName(), e);
             return resultClassDescriptor;
         }
         final ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);

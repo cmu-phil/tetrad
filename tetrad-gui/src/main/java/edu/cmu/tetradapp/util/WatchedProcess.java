@@ -147,11 +147,11 @@ public abstract class WatchedProcess {
     }
 
     private boolean isShowDialog() {
-        return SHOW_DIALOG;
+        return WatchedProcess.SHOW_DIALOG;
     }
 
     public void setShowDialog(final boolean showDialog) {
-        SHOW_DIALOG = showDialog;
+        WatchedProcess.SHOW_DIALOG = showDialog;
     }
 
     public boolean isAlive() {
@@ -187,7 +187,7 @@ public abstract class WatchedProcess {
             final Thread watcher = new Thread() {
                 public void run() {
                     try {
-                        sleep(WatchedProcess.this.delay);
+                        Thread.sleep(WatchedProcess.this.delay);
                     } catch (final InterruptedException e) {
                         return;
                     }
@@ -211,7 +211,7 @@ public abstract class WatchedProcess {
                                     getThread().stop();
 
                                     try {
-                                        sleep(500);
+                                        Thread.sleep(500);
                                     } catch (final InterruptedException e1) {
                                         JOptionPane.showMessageDialog(
                                                 WatchedProcess.this.centeringComp,
@@ -257,7 +257,7 @@ public abstract class WatchedProcess {
 //                        LogUtils.getInstance().add(out, Level.FINER);
                         while (getThread().isAlive()) {
                             try {
-                                sleep(200);
+                                Thread.sleep(200);
                                 if (existsOtherDialog()) {
                                     dialog.setVisible(false);
                                 } else {

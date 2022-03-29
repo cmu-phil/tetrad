@@ -118,7 +118,7 @@ public final class GraphGeneratorRandomNumEdges {
      */
     public GraphGeneratorRandomNumEdges(final int structure) {
         switch (structure) {
-            case ANY_DAG:
+            case GraphGeneratorRandomNumEdges.ANY_DAG:
                 break;
             default:
                 throw new IllegalArgumentException("Unrecognized structure.");
@@ -215,7 +215,7 @@ public final class GraphGeneratorRandomNumEdges {
     }
 
     public void generate() {
-        if (ANY_DAG == getStructure()) {
+        if (GraphGeneratorRandomNumEdges.ANY_DAG == getStructure()) {
             generateArbitraryDag();
         } else {
             throw new IllegalStateException("Unknown structure type.");

@@ -146,14 +146,14 @@ public final class ContinuousVariable extends AbstractVariable
      * @return the missing value marker, wrapped as a Double.
      */
     public Object getMissingValueMarker() {
-        return MISSING_VALUE;
+        return ContinuousVariable.MISSING_VALUE;
     }
 
     /**
      * @return the missing value marker.
      */
     public static double getDoubleMissingValue() {
-        return MISSING_VALUE;
+        return ContinuousVariable.MISSING_VALUE;
     }
 
     /**

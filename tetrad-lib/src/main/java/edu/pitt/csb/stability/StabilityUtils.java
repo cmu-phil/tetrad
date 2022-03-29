@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 /**
@@ -56,7 +57,7 @@ public class StabilityUtils {
         final int numVars = data.getNumColumns();
         final DoubleMatrix2D thetaMat = DoubleFactory2D.dense.make(numVars, numVars, 0.0);
 
-        final int[][] samps = subSampleNoReplacement(data.getNumRows(), b, N);
+        final int[][] samps = StabilityUtils.subSampleNoReplacement(data.getNumRows(), b, N);
 
         for (int s = 0; s < N; s++) {
             final DataSet dataSubSamp = data.subsetRows(samps[s]);
@@ -76,7 +77,7 @@ public class StabilityUtils {
         final int numVars = data.getNumColumns();
         final DoubleMatrix2D thetaMat = DoubleFactory2D.dense.make(numVars, numVars, 0.0);
 
-        final int[][] samps = subSampleNoReplacement(data.getNumRows(), b, N);
+        final int[][] samps = StabilityUtils.subSampleNoReplacement(data.getNumRows(), b, N);
 
         final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
@@ -118,7 +119,7 @@ public class StabilityUtils {
                     tasks.add(new StabilityAction(this.chunk, this.from, mid));
                     tasks.add(new StabilityAction(this.chunk, mid, this.to));
 
-                    invokeAll(tasks);
+                    ForkJoinTask.invokeAll(tasks);
 
                     return;
                 }
@@ -205,7 +206,7 @@ public class StabilityUtils {
             int[] curSamp;
             SAMP:
             while (true) {
-                curSamp = subSampleIndices(sampSize, subSize);
+                curSamp = StabilityUtils.subSampleIndices(sampSize, subSize);
                 for (int j = 0; j < i; j++) {
                     if (Arrays.equals(curSamp, sampMat[j])) {
                         continue SAMP;
@@ -248,12 +249,12 @@ public class StabilityUtils {
         final double lambda = .1;
         final SearchWrappers.MGMWrapper mgm = new SearchWrappers.MGMWrapper(new double[]{lambda, lambda, lambda});
         long start = System.currentTimeMillis();
-        final DoubleMatrix2D xi = StabilitySearch(ds, mgm, 8, 200);
+        final DoubleMatrix2D xi = StabilityUtils.StabilitySearch(ds, mgm, 8, 200);
         long end = System.currentTimeMillis();
         System.out.println("Not parallel: " + ((end - start) / 1000.0));
 
         start = System.currentTimeMillis();
-        final DoubleMatrix2D xi2 = StabilitySearchPar(ds, mgm, 8, 200);
+        final DoubleMatrix2D xi2 = StabilityUtils.StabilitySearchPar(ds, mgm, 8, 200);
         end = System.currentTimeMillis();
         System.out.println("Parallel: " + ((end - start) / 1000.0));
 

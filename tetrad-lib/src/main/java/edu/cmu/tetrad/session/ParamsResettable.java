@@ -28,7 +28,7 @@ package edu.cmu.tetrad.session;
  * @author Joseph Ramsey
  */
 public interface ParamsResettable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * In some cases (for instance, algorithm runners), cloned session models

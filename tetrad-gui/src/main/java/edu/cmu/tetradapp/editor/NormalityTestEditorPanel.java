@@ -112,7 +112,7 @@ class NormalityTestEditorPanel extends JPanel {
 
 
     private Box buildEditArea() {
-        setPreferredAsMax(this.variableBox);
+        NormalityTestEditorPanel.setPreferredAsMax(this.variableBox);
 
         final Box main = Box.createVerticalBox();
         final Box hBox = Box.createHorizontalBox();

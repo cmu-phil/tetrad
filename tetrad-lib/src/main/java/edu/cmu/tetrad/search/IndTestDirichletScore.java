@@ -255,7 +255,7 @@ public final class IndTestDirichletScore implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "IndTest Dirichlet Score, alpha = " + nf.format(getAlpha());
+        return "IndTest Dirichlet Score, alpha = " + IndTestDirichletScore.nf.format(getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//

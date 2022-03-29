@@ -422,7 +422,7 @@ public class Ion {
             for (final IonIndependenceFacts fact : this.associations) {
                 for (final List<Node> nodes : fact.getZ()) {
                     if (nodes.isEmpty()) {
-                        final List<List<Node>> treks = treks(pag, fact.x, fact.y);
+                        final List<List<Node>> treks = Ion.treks(pag, fact.x, fact.y);
                         if (treks.size() == 1) {
                             final List<Node> trek = treks.get(0);
                             final List<Triple> triples = new ArrayList<>();
@@ -455,7 +455,7 @@ public class Ion {
                 for (final IonIndependenceFacts fact : this.associations) {
                     for (final List<Node> nodes : fact.getZ()) {
                         if (nodes.isEmpty()) {
-                            if (treks(newPag, fact.x, fact.y).isEmpty()) {
+                            if (Ion.treks(newPag, fact.x, fact.y).isEmpty()) {
                                 elimTreks = true;
                             }
                             // stop looping once the empty set is found
@@ -1581,7 +1581,7 @@ public class Ion {
 
     public static List<List<Node>> treks(final Graph graph, final Node node1, final Node node2) {
         final List<List<Node>> paths = new LinkedList<>();
-        treks(graph, node1, node2, new LinkedList<Node>(), paths);
+        Ion.treks(graph, node1, node2, new LinkedList<Node>(), paths);
         return paths;
     }
 
@@ -1622,7 +1622,7 @@ public class Ion {
                 continue;
             }
 
-            treks(graph, next, node2, path, paths);
+            Ion.treks(graph, next, node2, path, paths);
         }
 
         path.removeLast();

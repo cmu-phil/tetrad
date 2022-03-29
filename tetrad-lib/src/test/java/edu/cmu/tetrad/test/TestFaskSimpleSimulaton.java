@@ -93,11 +93,11 @@ public class TestFaskSimpleSimulaton {
     }
 
     private double q(final double[] x, final double[] y) {
-        return cv(x, y, x) / cv(x, x, x) - cv(x, y, y) / cv(x, x, y);
+        return TestFaskSimpleSimulaton.cv(x, y, x) / TestFaskSimpleSimulaton.cv(x, x, x) - TestFaskSimpleSimulaton.cv(x, y, y) / TestFaskSimpleSimulaton.cv(x, x, y);
     }
 
     private double symmetric(final double[] x, final double[] y) {
-        return cv(x, y, x) / cv(x, x, x) - cv(x, y, y) / cv(y, y, y);
+        return TestFaskSimpleSimulaton.cv(x, y, x) / TestFaskSimpleSimulaton.cv(x, x, x) - TestFaskSimpleSimulaton.cv(x, y, y) / TestFaskSimpleSimulaton.cv(y, y, y);
     }
 
     public static double cv(final double[] x, final double[] y, final double[] condition) {
@@ -164,10 +164,10 @@ public class TestFaskSimpleSimulaton {
             if (leftright(y, x))
                 ytox = ytox + 1;
 
-            zzdiff[i] = cu(z, z, x) - cu(z, z, y);
-            xxdiff[i] = cu(x, x, x) - cu(x, x, y);
+            zzdiff[i] = TestFaskSimpleSimulaton.cu(z, z, x) - TestFaskSimpleSimulaton.cu(z, z, y);
+            xxdiff[i] = TestFaskSimpleSimulaton.cu(x, x, x) - TestFaskSimpleSimulaton.cu(x, x, y);
 
-            ratiodiff[i] = (cu(z, z, x) / cu(x, x, x)) - (cu(z, z, y) / cu(x, x, y));
+            ratiodiff[i] = (TestFaskSimpleSimulaton.cu(z, z, x) / TestFaskSimpleSimulaton.cu(x, x, x)) - (TestFaskSimpleSimulaton.cu(z, z, y) / TestFaskSimpleSimulaton.cu(x, x, y));
 
         }
 

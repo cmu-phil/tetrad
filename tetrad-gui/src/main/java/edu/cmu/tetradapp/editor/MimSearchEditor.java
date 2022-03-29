@@ -269,7 +269,7 @@ class MimSearchEditor extends JPanel {
         final Thread watcher = new Thread() {
             public void run() {
                 try {
-                    sleep(MimSearchEditor.this.delay);
+                    Thread.sleep(MimSearchEditor.this.delay);
                 } catch (final InterruptedException e) {
                     return;
                 }
@@ -316,7 +316,7 @@ class MimSearchEditor extends JPanel {
 
                 while (thread().isAlive()) {
                     try {
-                        sleep(200);
+                        Thread.sleep(200);
                     } catch (final InterruptedException e) {
                         return;
                     }

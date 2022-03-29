@@ -346,7 +346,7 @@ public final class IndTestDrton implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Drton, alpha = " + nf.format(getAlpha());
+        return "Drton, alpha = " + IndTestDrton.nf.format(getAlpha());
     }
 
     public void setPValueLogger(final PrintStream pValueLogger) {

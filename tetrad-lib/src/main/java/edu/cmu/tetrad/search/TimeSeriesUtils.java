@@ -53,7 +53,7 @@ public class TimeSeriesUtils {
      * residuals of these regressions for each variable are returned.
      */
     public static DataSet ar(final DataSet timeSeries, final int numLags) {
-        final DataSet timeLags = createLagData(timeSeries, numLags);
+        final DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
         final List<Node> regressors = new ArrayList<>();
 
         for (int i = timeSeries.getNumColumns(); i < timeLags.getNumColumns(); i++) {
@@ -95,7 +95,7 @@ public class TimeSeriesUtils {
             }
         }
 
-        final DataSet timeLags = createLagData(timeSeries, numLags);
+        final DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
 
         final Regression regression = new RegressionDataset(timeLags);
 
@@ -280,7 +280,7 @@ public class TimeSeriesUtils {
     }
 
     public static double[] getSelfLoopCoefs(final DataSet timeSeries) {
-        final DataSet timeLags = createLagData(timeSeries, 1);
+        final DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, 1);
 
         final double[] coefs = new double[timeSeries.getNumColumns()];
 
@@ -298,7 +298,7 @@ public class TimeSeriesUtils {
     }
 
     public static double sumOfArCoefficients(final DataSet timeSeries, final int numLags) {
-        final DataSet timeLags = createLagData(timeSeries, numLags);
+        final DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
         final List<Node> regressors = new ArrayList<>();
 
         for (int i = timeSeries.getNumColumns(); i < timeLags.getNumColumns(); i++) {
@@ -774,29 +774,29 @@ public class TimeSeriesUtils {
         Collections.sort(variables, new Comparator<Node>() {
             @Override
             public int compare(final Node o1, final Node o2) {
-                final String name1 = getNameNoLag(o1);
-                final String name2 = getNameNoLag(o2);
+                final String name1 = TimeSeriesUtils.getNameNoLag(o1);
+                final String name2 = TimeSeriesUtils.getNameNoLag(o2);
 
 //                System.out.println("name 1 = " + name1);
 //                System.out.println("name 2 = " + name2);
-                final String prefix1 = getPrefix(name1);
-                final String prefix2 = getPrefix(name2);
+                final String prefix1 = TimeSeriesUtils.getPrefix(name1);
+                final String prefix2 = TimeSeriesUtils.getPrefix(name2);
 
 //                System.out.println("prefix 1 = " + prefix1);
 //                System.out.println("prefix 2 = " + prefix2);
-                final int index1 = getIndex(name1);
-                final int index2 = getIndex(name2);
+                final int index1 = TimeSeriesUtils.getIndex(name1);
+                final int index2 = TimeSeriesUtils.getIndex(name2);
 
 //                System.out.println("index 1 = " + index1);
 //                System.out.println("index 2 = " + index2);
-                if (getLag(o1.getName()) == getLag(o2.getName())) {
+                if (TimeSeriesUtils.getLag(o1.getName()) == TimeSeriesUtils.getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
                         return Integer.compare(index1, index2);
                     } else {
                         return prefix1.compareTo(prefix2);
                     }
                 } else {
-                    return getLag(o1.getName()) - getLag(o2.getName());
+                    return TimeSeriesUtils.getLag(o1.getName()) - TimeSeriesUtils.getLag(o2.getName());
                 }
             }
         });

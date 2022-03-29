@@ -56,7 +56,7 @@ class LoadBayesImXmlAction extends AbstractAction {
             throw new RuntimeException("Not a Bayes IM.");
         }
 
-        final JFileChooser chooser = getJFileChooser();
+        final JFileChooser chooser = LoadBayesImXmlAction.getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
         chooser.showOpenDialog(null);
@@ -70,7 +70,7 @@ class LoadBayesImXmlAction extends AbstractAction {
         try {
             final Builder builder = new Builder();
             final Document document = builder.build(file);
-            printDocument(document);
+            LoadBayesImXmlAction.printDocument(document);
 
             final BayesXmlParser parser = new BayesXmlParser();
             final BayesIm bayesIm = parser.getBayesIm(document.getRootElement());

@@ -127,48 +127,48 @@ public class YeastPcCcdSearchWrapper {
             //if(verbose) {
             d1.writeBytes("\n \n**Results for data in file yeastTRN**\n \n");
             d1.writeBytes("  Acutal adj matrix: \n");
-            printAdjMatrix(yeastReg, listOfNames, d1);
+            YeastPcCcdSearchWrapper.printAdjMatrix(yeastReg, listOfNames, d1);
             //}
 
 
             final int[] PC05Accuracy;
-            PC05Accuracy = PCAccuracy(0.05, ngenes, cds, bk, yeastReg,
+            PC05Accuracy = YeastPcCcdSearchWrapper.PCAccuracy(0.05, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
             final int[] PC10Accuracy;
-            PC10Accuracy = PCAccuracy(0.10, ngenes, cds, bk, yeastReg,
+            PC10Accuracy = YeastPcCcdSearchWrapper.PCAccuracy(0.10, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
             final int[] PC15Accuracy;
-            PC15Accuracy = PCAccuracy(0.15, ngenes, cds, bk, yeastReg,
+            PC15Accuracy = YeastPcCcdSearchWrapper.PCAccuracy(0.15, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
             final int[] PC20Accuracy;
-            PC20Accuracy = PCAccuracy(0.20, ngenes, cds, bk, yeastReg,
+            PC20Accuracy = YeastPcCcdSearchWrapper.PCAccuracy(0.20, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
             final int[] PC30Accuracy;
-            PC30Accuracy = PCAccuracy(0.30, ngenes, cds, bk, yeastReg,
+            PC30Accuracy = YeastPcCcdSearchWrapper.PCAccuracy(0.30, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
             final int[] CCD05Accuracy;
-            CCD05Accuracy = CcdAccuracy(0.05, ngenes, cds, bk, yeastReg,
+            CCD05Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.05, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
             final int[] CCD10Accuracy;
-            CCD10Accuracy = CcdAccuracy(0.10, ngenes, cds, bk, yeastReg,
+            CCD10Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.10, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
             final int[] CCD15Accuracy;
-            CCD15Accuracy = CcdAccuracy(0.15, ngenes, cds, bk, yeastReg,
+            CCD15Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.15, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
             final int[] CCD20Accuracy;
-            CCD20Accuracy = CcdAccuracy(0.20, ngenes, cds, bk, yeastReg,
+            CCD20Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.20, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
             final int[] CCD30Accuracy;
-            CCD30Accuracy = CcdAccuracy(0.30, ngenes, cds, bk, yeastReg,
+            CCD30Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.30, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
             /*
@@ -342,7 +342,7 @@ public class YeastPcCcdSearchWrapper {
         }
 
         if (v) {
-            printAdjMatrix(ccdModelAdj, names, d);
+            YeastPcCcdSearchWrapper.printAdjMatrix(ccdModelAdj, names, d);
         }
 
         return falsePosNeg;
@@ -438,7 +438,7 @@ public class YeastPcCcdSearchWrapper {
         }
 
         if (v) {
-            printAdjMatrix(pcModelAdj, names, d);
+            YeastPcCcdSearchWrapper.printAdjMatrix(pcModelAdj, names, d);
         }
 
         return falsePosNeg;

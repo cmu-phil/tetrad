@@ -32,6 +32,6 @@ import java.util.List;
  */
 public interface TabularDataValidation extends Validation, DatasetReader {
 
-    public List<ValidationResult> validate(DataColumn[] dataColumns, boolean hasHeader);
+    List<ValidationResult> validate(DataColumn[] dataColumns, boolean hasHeader);
 
 }

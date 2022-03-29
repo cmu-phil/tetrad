@@ -416,7 +416,7 @@ public class PcStableMaxLocal implements GraphSearch {
             final Node b = collider.getY();
             final Node c = collider.getZ();
 
-            if (!(isArrowpointAllowed(a, b, knowledge) && isArrowpointAllowed(c, b, knowledge))) {
+            if (!(PcStableMaxLocal.isArrowpointAllowed(a, b, knowledge) && PcStableMaxLocal.isArrowpointAllowed(c, b, knowledge))) {
                 continue;
             }
 

@@ -189,21 +189,21 @@ public class ProximalGradient {
                 }
             }
 
-            dx = norm2(X.copy().assign(Xold, Functions.minus)) / Math.max(1, norm2(X));
+            dx = ProximalGradient.norm2(X.copy().assign(Xold, Functions.minus)) / Math.max(1, ProximalGradient.norm2(X));
 
             //sometimes there are more edge changes after initial 0, so may want to do two zeros in a row...
             if (diffEdges == 0 && this.edgeConverge) {
                 noEdgeChangeCount++;
                 if (noEdgeChangeCount >= this.noEdgeChangeTol) {
                     System.out.println("Edges converged at iter: " + iterCount + " with |dx|/|x|: " + dx);
-                    System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
+                    System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + ProximalGradient.norm2(X) + " nll: " +
                             Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
                     break;
                 }
                 // negative noEdgeChangeTol stops when diffEdges <= |noEdgeChangeTol|
             } else if (this.noEdgeChangeTol < 0 && diffEdges <= Math.abs(this.noEdgeChangeTol)) {
                 System.out.println("Edges converged at iter: " + iterCount + " with |dx|/|x|: " + dx);
-                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
+                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + ProximalGradient.norm2(X) + " nll: " +
                         Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
                 break;
             } else {
@@ -213,7 +213,7 @@ public class ProximalGradient {
             //edge converge should happen before params converge, unless epsilon is big
             if (dx < epsilon && !this.edgeConverge) {
                 System.out.println("Converged at iter: " + iterCount + " with |dx|/|x|: " + dx + " < epsilon: " + epsilon);
-                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
+                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + ProximalGradient.norm2(X) + " nll: " +
                         Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
                 break;
             }
@@ -235,7 +235,7 @@ public class ProximalGradient {
 
 
             if (iterCount % this.printIter == 0) {
-                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
+                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + ProximalGradient.norm2(X) + " nll: " +
                         Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
                 //System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " nll: " + negLogLikelihood(params) + " reg: " + regTerm(params));
             }

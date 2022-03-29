@@ -99,7 +99,7 @@ public final class TestBayesIm {
 //        assertTrue(rowsEqual(bayesIm3, bayesIm3.getNodeIndex(b), 2, 3));
 
         // Make sure the 'c' node got ?'s.
-        assertTrue(rowUnspecified(bayesIm3, bayesIm3.getNodeIndex(c), 0));
+        assertTrue(TestBayesIm.rowUnspecified(bayesIm3, bayesIm3.getNodeIndex(c), 0));
 
         dag.removeNode(c);
         final BayesPm bayesPm4 = new BayesPm(dag, bayesPm3);
@@ -107,8 +107,8 @@ public final class TestBayesIm {
 
         // Make sure the 'b' node has 2 rows of '?'s'.
         assertTrue(bayesIm4.getNumRows(bayesIm4.getNodeIndex(b)) == 2);
-        assertTrue(rowUnspecified(bayesIm4, bayesIm4.getNodeIndex(b), 0));
-        assertTrue(rowUnspecified(bayesIm4, bayesIm4.getNodeIndex(b), 1));
+        assertTrue(TestBayesIm.rowUnspecified(bayesIm4, bayesIm4.getNodeIndex(b), 0));
+        assertTrue(TestBayesIm.rowUnspecified(bayesIm4, bayesIm4.getNodeIndex(b), 1));
     }
 
     /**

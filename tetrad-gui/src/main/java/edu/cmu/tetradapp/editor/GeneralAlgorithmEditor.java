@@ -150,7 +150,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         this.algorithmRunner.getGraphs().clear();
         this.algorithmRunner.getGraphs().add(graph);
 
-        LOGGER.info("Remote graph result assigned to algorithmRunner!");
+        GeneralAlgorithmEditor.LOGGER.info("Remote graph result assigned to algorithmRunner!");
         firePropertyChange("modelChanged", null, null);
 
         this.graphCard.refresh();

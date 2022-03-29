@@ -62,7 +62,7 @@ public abstract class BasicMatrix {
     /**
      * Minimum float value
      */
-    public static final float MIN_FLOAT = -MAX_FLOAT;
+    public static final float MIN_FLOAT = -BasicMatrix.MAX_FLOAT;
 
     /**
      * No parameters constructor, only used within the package

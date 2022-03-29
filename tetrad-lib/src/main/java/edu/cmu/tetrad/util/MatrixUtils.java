@@ -58,10 +58,10 @@ public final class MatrixUtils {
         final int numOfRow = mat.length;
         final double[][] repMat = new double[numOfRow * nRow][];
         for (int row = 0; row < numOfRow; row++) {
-            repMat[row] = repeatCopyVector(mat[row], mColumn);
+            repMat[row] = MatrixUtils.repeatCopyVector(mat[row], mColumn);
         }
 
-        repeatCopyRow(repMat, --nRow, numOfRow, numOfRow);
+        MatrixUtils.repeatCopyRow(repMat, --nRow, numOfRow, numOfRow);
 
         return repMat;
     }
@@ -77,10 +77,10 @@ public final class MatrixUtils {
         final int numOfRow = mat.length;
         final double[][] repMat = new double[numOfRow * n][];
         for (int row = 0; row < numOfRow; row++) {
-            repMat[row] = repeatCopyVector(mat[row], n);
+            repMat[row] = MatrixUtils.repeatCopyVector(mat[row], n);
         }
 
-        repeatCopyRow(repMat, --n, numOfRow, numOfRow);
+        MatrixUtils.repeatCopyRow(repMat, --n, numOfRow, numOfRow);
         return repMat;
     }
 
@@ -445,13 +445,13 @@ public final class MatrixUtils {
      *                                  undefined value (Double.NaN).
      */
     public static Matrix impliedCovar2(final Matrix edgeCoef, final Matrix errCovar) {
-        if (containsNaN(edgeCoef)) {
+        if (MatrixUtils.containsNaN(edgeCoef)) {
             throw new IllegalArgumentException("Edge coefficient matrix must not "
                     + "contain undefined values. Probably the search put them "
                     + "there.");
         }
 
-        if (containsNaN(errCovar)) {
+        if (MatrixUtils.containsNaN(errCovar)) {
             throw new IllegalArgumentException("Error covariance matrix must not "
                     + "contain undefined values. Probably the search put them "
                     + "there.");
@@ -476,14 +476,14 @@ public final class MatrixUtils {
     }
 
     public static Matrix impliedCovar(final Matrix edgeCoef, final Matrix errCovar) {
-        if (containsNaN(edgeCoef)) {
+        if (MatrixUtils.containsNaN(edgeCoef)) {
             System.out.println(edgeCoef);
             throw new IllegalArgumentException("Edge coefficient matrix must not "
                     + "contain undefined values. Probably the search put them "
                     + "there.");
         }
 
-        if (containsNaN(errCovar)) {
+        if (MatrixUtils.containsNaN(errCovar)) {
             throw new IllegalArgumentException("Error covariance matrix must not "
                     + "contain undefined values. Probably the search put them "
                     + "there.");
@@ -527,12 +527,12 @@ public final class MatrixUtils {
      * elements are stacked in columns left to right, top to bottom.)
      */
     public static double[][] vech(final double[][] m) {
-        if (!isSymmetric(m, 1.e-5)) {
+        if (!MatrixUtils.isSymmetric(m, 1.e-5)) {
             throw new IllegalArgumentException("m must be a symmetric matrix.");
         }
 
         final int order = m.length;
-        final int vechSize = sum0ToN(order);
+        final int vechSize = MatrixUtils.sum0ToN(order);
         final double[] vech = new double[vechSize];
 
         int index = -1;
@@ -542,7 +542,7 @@ public final class MatrixUtils {
             }
         }
 
-        return asCol(vech);
+        return MatrixUtils.asCol(vech);
     }
 
     /**
@@ -550,7 +550,7 @@ public final class MatrixUtils {
      */
     public static double[][] invVech(final double[] vech) {
 
-        final int order = vechOrder(vech);
+        final int order = MatrixUtils.vechOrder(vech);
 
         // Recreate the symmetric matrix.
         final double[][] m = new double[order][order];
@@ -573,7 +573,7 @@ public final class MatrixUtils {
      * columns left to right, top to bottom.)
      */
     public static double[][] vec(final double[][] m) {
-        assert isSquare(m);
+        assert MatrixUtils.isSquare(m);
 
         final int order = m.length;
         final int vecSize = order * order;
@@ -586,7 +586,7 @@ public final class MatrixUtils {
             }
         }
 
-        return asCol(vec);
+        return MatrixUtils.asCol(vec);
     }
 
     /**
@@ -607,7 +607,7 @@ public final class MatrixUtils {
      */
     public static double[][] vechToVecLeft(final int n) {
         final int row = n * n;
-        final int col = sum0ToN(n);
+        final int col = MatrixUtils.sum0ToN(n);
         final double[][] m = new double[row][col];
 
         int index = -1;
@@ -719,16 +719,16 @@ public final class MatrixUtils {
      */
     public static String toString(final double[][] m) {
         final NumberFormat nf = new DecimalFormat(" 0.0000;-0.0000");
-        return toString(m, nf);
+        return MatrixUtils.toString(m, nf);
     }
 
     public static String toString(final double[][] m, final List<String> variables) {
         final NumberFormat nf = new DecimalFormat(" 0.0000;-0.0000");
-        return toString(m, nf, variables);
+        return MatrixUtils.toString(m, nf, variables);
     }
 
     private static String toString(final double[][] m, final NumberFormat nf) {
-        return toString(m, nf, null);
+        return MatrixUtils.toString(m, nf, null);
     }
 
     /**
@@ -753,7 +753,7 @@ public final class MatrixUtils {
         }
 
         if (m == null) {
-            result = nullMessage();
+            result = MatrixUtils.nullMessage();
         } else if (m.length > 0) {
             final TextTable textTable = new TextTable(m.length + 1, m[0].length);
 
@@ -769,7 +769,7 @@ public final class MatrixUtils {
 
             result = "\n" + textTable;
         } else {
-            result = nullMessage();
+            result = MatrixUtils.nullMessage();
         }
 
         return result;
@@ -777,7 +777,7 @@ public final class MatrixUtils {
 
     public static String toStringSquare(final double[][] m, final List<String> variables) {
         final NumberFormat nf = new DecimalFormat(" 0.0000;-0.0000");
-        return toStringSquare(m, nf, variables);
+        return MatrixUtils.toStringSquare(m, nf, variables);
     }
 
     public static String toStringSquare(final double[][] m, final NumberFormat nf, List<String> variables) {
@@ -795,7 +795,7 @@ public final class MatrixUtils {
         }
 
         if (m == null) {
-            result = nullMessage();
+            result = MatrixUtils.nullMessage();
         } else {
             final TextTable textTable = new TextTable(m.length + 1, m[0].length + 1);
 
@@ -838,7 +838,7 @@ public final class MatrixUtils {
         }
 
         if (m == null) {
-            result = nullMessage();
+            result = MatrixUtils.nullMessage();
         } else {
             final TextTable textTable = new TextTable(m.length + 1, m[0].length);
 
@@ -862,7 +862,7 @@ public final class MatrixUtils {
         final String result;
 
         if (m == null) {
-            result = nullMessage();
+            result = MatrixUtils.nullMessage();
         } else {
             if (variables == null) {
                 variables = new ArrayList<>();
@@ -930,7 +930,7 @@ public final class MatrixUtils {
         final String result;
 
         if (m == null) {
-            result = nullMessage();
+            result = MatrixUtils.nullMessage();
         } else {
             final TextTable textTable = new TextTable(m.length, m[0].length);
 

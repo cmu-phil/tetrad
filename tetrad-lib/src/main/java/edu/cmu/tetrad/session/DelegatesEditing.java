@@ -30,7 +30,7 @@ import javax.swing.*;
  * @author William Taysom -- Jun 14, 2003
  */
 public interface DelegatesEditing {
-    public JComponent getEditDelegate();
+    JComponent getEditDelegate();
 }
 
 

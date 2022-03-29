@@ -258,7 +258,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Conditional Correlation, q = " + nf.format(getAlpha());
+        return "Conditional Correlation, q = " + IndTestConditionalCorrelation.nf.format(getAlpha());
     }
 
     public boolean isVerbose() {

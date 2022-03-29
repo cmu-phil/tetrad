@@ -625,7 +625,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                     tasks.add(new EffectTask(this.chunk, this.from, mid));
                     tasks.add(new EffectTask(this.chunk, mid, this.to));
 
-                    invokeAll(tasks);
+                    ForkJoinTask.invokeAll(tasks);
 
                     return true;
                 }
@@ -679,7 +679,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             final Set<Node> toProcess = new HashSet<>();
 
             for (final Node node : visited) {
-                final Set<Node> neighbors = getNeighbors(node, graph);
+                final Set<Node> neighbors = FgesOrienter.getNeighbors(node, graph);
                 final Set<Node> storedNeighbors = this.neighbors.get(node);
 
                 if (!neighbors.equals(storedNeighbors)) {
@@ -837,7 +837,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                     tasks.add(new AdjTask(this.pairs, this.from, mid));
                     tasks.add(new AdjTask(this.pairs, mid, this.to));
 
-                    invokeAll(tasks);
+                    ForkJoinTask.invokeAll(tasks);
 
                     return true;
                 }
@@ -865,8 +865,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             }
         }
 
-        final Set<Node> naYX = getNaYX(a, b, graph);
-        final List<Node> t = getTNeighbors(a, b, graph);
+        final Set<Node> naYX = FgesOrienter.getNaYX(a, b, graph);
+        final List<Node> t = FgesOrienter.getTNeighbors(a, b, graph);
 
         final int _depth = Math.min(t.size(), this.depth == -1 ? 1000 : this.depth);
 
@@ -948,7 +948,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                     tasks.add(new BackwardTask(this.nodes, this.chunk, this.from, mid, this.hashIndices));
                     tasks.add(new BackwardTask(this.nodes, this.chunk, mid, this.to, this.hashIndices));
 
-                    invokeAll(tasks);
+                    ForkJoinTask.invokeAll(tasks);
 
                     return true;
                 }
@@ -977,7 +977,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             }
         }
 
-        final Set<Node> naYX = getNaYX(a, b, graph);
+        final Set<Node> naYX = FgesOrienter.getNaYX(a, b, graph);
 
         clearArrow(a, b);
 
@@ -1402,7 +1402,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
             for (final Node u : G.getAdjacentNodes(t)) {
                 final Edge edge = G.getEdge(t, u);
-                final Node c = traverseSemiDirected(t, edge);
+                final Node c = FgesOrienter.traverseSemiDirected(t, edge);
                 if (c == null) continue;
                 if (cond.contains(c)) continue;
                 if (c == to) return true;

@@ -312,7 +312,7 @@ public class ConditionalGaussianOtherLikelihood {
 
     // One record.
     private double gaussianLikelihood(final int k, final Matrix sigma) {
-        return -0.5 * logdet(sigma) - 0.5 * k - 0.5 * k * LOGMATH2PI;
+        return -0.5 * logdet(sigma) - 0.5 * k - 0.5 * k * ConditionalGaussianOtherLikelihood.LOGMATH2PI;
     }
 
     private double logdet(final Matrix m) {

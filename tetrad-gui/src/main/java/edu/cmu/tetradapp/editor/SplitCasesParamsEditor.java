@@ -92,7 +92,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
         this.params.set("numSplits", numSplits);
         this.splitEditorPanel.removeAll();
-        final SplitCasesSpec defaultSpec = getDefaultSpec(this.dataSet.getNumRows(), numSplits);
+        final SplitCasesSpec defaultSpec = SplitCasesParamsEditor.getDefaultSpec(this.dataSet.getNumRows(), numSplits);
         final SplitEditor splitEditor = new SplitEditor(defaultSpec);
         this.params.set("splitCasesSpec", defaultSpec);
         this.splitEditorPanel.add(splitEditor, BorderLayout.CENTER);
@@ -105,7 +105,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
     public void setup() {
         SplitCasesSpec spec = (SplitCasesSpec) this.params.get("splitCasesSpec", null);
         if (spec != null) {
-            spec = getDefaultSpec(this.dataSet.getNumRows(), this.params.getInt("numSplits", 3));
+            spec = SplitCasesParamsEditor.getDefaultSpec(this.dataSet.getNumRows(), this.params.getInt("numSplits", 3));
         }
         this.numSplitsField = new IntTextField(this.params.getInt("numSplits", 3), 2);
         this.numSplitsField.setFilter(new IntTextField.Filter() {
@@ -209,7 +209,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
 
     private static SplitCasesSpec getDefaultSpec(final int sampleSize, final int numSplits) {
-        final int[] breakpoints = defaultBreakpoints(sampleSize, numSplits);
+        final int[] breakpoints = SplitCasesParamsEditor.defaultBreakpoints(sampleSize, numSplits);
         final List<String> splitNames = new LinkedList<>();
 
         if (numSplits == 1) {

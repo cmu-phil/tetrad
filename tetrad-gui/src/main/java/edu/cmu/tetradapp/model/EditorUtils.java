@@ -105,7 +105,7 @@ public class EditorUtils {
 
     public static File getSaveFileWithPath(final String prefix, final String suffix,
                                            final Component parent, final boolean overwrite, final String dialogName, final String saveLocation) {
-        final JFileChooser chooser = createJFileChooser(dialogName, saveLocation);
+        final JFileChooser chooser = EditorUtils.createJFileChooser(dialogName, saveLocation);
 
         final String fileSaveLocation;
         if (saveLocation == null) {
@@ -118,7 +118,7 @@ public class EditorUtils {
         chooser.setCurrentDirectory(dir);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-        final File selectedFile = nextFile(fileSaveLocation, prefix, suffix, overwrite);
+        final File selectedFile = EditorUtils.nextFile(fileSaveLocation, prefix, suffix, overwrite);
 
         chooser.setSelectedFile(selectedFile);
         File outfile;
@@ -154,7 +154,7 @@ public class EditorUtils {
             }
         }
 
-        outfile = ensureSuffix(outfile, suffix);
+        outfile = EditorUtils.ensureSuffix(outfile, suffix);
         if (saveLocation == null) {
             Preferences.userRoot().put("fileSaveLocation", outfile.getParent());
         } else {
@@ -179,7 +179,7 @@ public class EditorUtils {
      */
     public static File getSaveFile(final String prefix, final String suffix,
                                    final Component parent, final boolean overwrite, final String dialogName) {
-        return getSaveFileWithPath(prefix, suffix, parent, overwrite, dialogName, null);
+        return EditorUtils.getSaveFileWithPath(prefix, suffix, parent, overwrite, dialogName, null);
     }
 
     /**

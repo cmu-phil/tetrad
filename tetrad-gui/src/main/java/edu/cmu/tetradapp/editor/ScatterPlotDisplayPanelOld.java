@@ -162,11 +162,11 @@ class ScatterPlotDisplayPanelOld extends JPanel {
         g2d.fillRect(this.PADDINGLEFT, 0, (this.WIDTH + this.SPACE) - this.PADDINGLEFT, height);
 
         //border
-        g2d.setColor(LINE_COLOR);
+        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
         g2d.drawRect(this.PADDINGLEFT, 0, (this.WIDTH + this.SPACE) - this.PADDINGLEFT, height - 2 * this.SPACE);
 
         // draw the buttom line
-        g2d.setColor(LINE_COLOR);
+        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
 
 //        double least = Math.floor(this.scatterPlot.getMinSample());
 //        double greatest = Math.ceil(this.scatterPlot.getMaxSample());
@@ -177,7 +177,7 @@ class ScatterPlotDisplayPanelOld extends JPanel {
 //        int size = (WIDTH - PADDINGLEFT) / 4;
 
         // draw the side line
-        g2d.setColor(LINE_COLOR);
+        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
         final int topY = 0;
 //        String top = "" + Math.ceil(this.scatterPlot.getMaxSample());
         g2d.drawString(maxStr, this.PADDINGLEFT - fontMetrics.stringWidth(maxStr), topY + 10);
@@ -246,12 +246,12 @@ class ScatterPlotDisplayPanelOld extends JPanel {
 
             final double[] regLeft = plotPoint(least, coef[0] + coef[1] * least, least, greatest);
             final double[] regRight = plotPoint(greatest, coef[0] + coef[1] * greatest, least, greatest);
-            g2d.setColor(LINE_COLOR);
+            g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
             g2d.drawLine((int) regLeft[0] + 2, (int) regLeft[1] + 2, (int) regRight[0] + 2, (int) regRight[1] + 2);
         }
 
         // draw the display string.
-        g2d.setColor(LINE_COLOR);
+        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
 //        g2d.drawString(getDisplayString(), PADDINGOTHER, HEIGHT - 5);
     }
 

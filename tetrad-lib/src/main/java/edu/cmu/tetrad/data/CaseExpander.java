@@ -35,7 +35,7 @@ public final class CaseExpander implements DataFilter {
      * Expands cases for the given dataset.
      */
     public final DataSet filter(final DataSet dataSet) {
-        return expand(dataSet);
+        return CaseExpander.expand(dataSet);
     }
 
     private static DataSet expand(final DataSet dataSet) {

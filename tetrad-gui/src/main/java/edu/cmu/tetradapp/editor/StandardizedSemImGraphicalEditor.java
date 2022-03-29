@@ -458,7 +458,7 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
 
             label.setBackground(Color.white);
             label.setOpaque(true);
-            label.setFont(SMALL_FONT);
+            label.setFont(StandardizedSemImGraphicalEditor.SMALL_FONT);
             label.setText(" " + asString(val) + " ");
             label.addMouseListener(new EdgeMouseListener(edge, this));
 
@@ -472,7 +472,7 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
         final JLabel label = new JLabel();
         label.setBackground(Color.WHITE);
         label.addMouseListener(new NodeMouseListener(node, this));
-        label.setFont(SMALL_FONT);
+        label.setFont(StandardizedSemImGraphicalEditor.SMALL_FONT);
 
         final NodeType nodeType = node.getNodeType();
 

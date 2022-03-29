@@ -410,7 +410,7 @@ class GeneralizedTemplateEditor extends JComponent {
                     }
 
                     try {
-                        sleep(200);
+                        Thread.sleep(200);
                     } catch (final InterruptedException e) {
                         e.printStackTrace();
                     }

@@ -207,7 +207,7 @@ public final class ChoiceGenerator {
     }
 
     public static int getNumCombinations(final int a, final int b) {
-        return (int) round(exp(logCombinations(a, b)));
+        return (int) round(exp(ChoiceGenerator.logCombinations(a, b)));
     }
 
     public static double logCombinations(final int a, final int b) {

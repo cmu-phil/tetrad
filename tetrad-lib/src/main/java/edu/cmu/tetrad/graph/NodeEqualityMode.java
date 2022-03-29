@@ -33,11 +33,11 @@ public class NodeEqualityMode {
     private static Type type = Type.NAME;
 
     public static void setEqualityMode(final Type _type) {
-        type = _type;
+        NodeEqualityMode.type = _type;
     }
 
     public static Type getEqualityType() {
-        return type;
+        return NodeEqualityMode.type;
     }
 }
 

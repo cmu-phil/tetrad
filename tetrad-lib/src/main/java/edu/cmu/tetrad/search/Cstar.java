@@ -618,9 +618,9 @@ public class Cstar {
             table.setToken(i + 1, column++, nf.format(records.get(i).getMinBeta()));
 //            table.setToken(i + 1, column++, nf.format(sumPi));
             table.setToken(i + 1, column++, nf.format(R - sumPi));
-            final double er = er(records.get(i).getPi(), (i + 1), p);
+            final double er = Cstar.er(records.get(i).getPi(), (i + 1), p);
             table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
-            final double pcer = pcer(records.get(i).getPi(), (i + 1), p);
+            final double pcer = Cstar.pcer(records.get(i).getPi(), (i + 1), p);
             table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(pcer));
 
             if (this.trueDag != null) {
@@ -734,7 +734,7 @@ public class Cstar {
 
     // Meinhausen and Buhlmann E(|V|) bound
     private static double er(final double pi, final double q, final double p) {
-        return p * pcer(pi, q, p);
+        return p * Cstar.pcer(pi, q, p);
     }
 
     // Meinhausen and Buhlmann per comparison error rate (PCER)

@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 public interface GraphRandomizer extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Randomizes the given lag graph--in other words, chooses random edges for

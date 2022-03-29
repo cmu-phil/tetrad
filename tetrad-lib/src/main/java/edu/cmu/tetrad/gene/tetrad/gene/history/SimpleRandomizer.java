@@ -65,7 +65,7 @@ public class SimpleRandomizer implements GraphInitializer {
     /**
      * The indegree type of this randomizer.
      */
-    private int indegreeType = CONSTANT;
+    private int indegreeType = SimpleRandomizer.CONSTANT;
 
     /**
      * The stored indegree for this randomizer (differently interpreted
@@ -98,13 +98,13 @@ public class SimpleRandomizer implements GraphInitializer {
         // Set indegree type.
         switch (indegreeType) {
 
-            case CONSTANT:
+            case SimpleRandomizer.CONSTANT:
 
                 // Falls through!
-            case MAX:
+            case SimpleRandomizer.MAX:
 
                 // Falls through!
-            case MEAN:
+            case SimpleRandomizer.MEAN:
                 this.indegreeType = indegreeType;
                 break;
 
@@ -165,16 +165,16 @@ public class SimpleRandomizer implements GraphInitializer {
             // This is not a housekeeping gene, so add more edges.
             switch (this.indegreeType) {
 
-                case CONSTANT:
+                case SimpleRandomizer.CONSTANT:
                     extraEdges = this.indegree - 1;
                     break;
 
-                case MAX:
+                case SimpleRandomizer.MAX:
                     extraEdges = RandomUtil.getInstance().nextInt(
                             this.indegree - 1) + 1;
                     break;
 
-                case MEAN:
+                case SimpleRandomizer.MEAN:
                     extraEdges = RandomUtil.getInstance().nextInt(
                             2 * (this.indegree - 1) - 1) + 1;
 

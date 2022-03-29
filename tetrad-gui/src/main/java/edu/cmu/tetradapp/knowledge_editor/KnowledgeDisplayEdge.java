@@ -229,14 +229,14 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
             throw new NullPointerException("Node2 must not be null.");
         }
 
-        if (!(type == FORBIDDEN_EXPLICITLY || type == FORBIDDEN_BY_TIERS ||
-                type == REQUIRED || type == REQUIRED_BY_GROUPS || type == FORBIDDEN_BY_GROUPS)) {
+        if (!(type == KnowledgeDisplayEdge.FORBIDDEN_EXPLICITLY || type == KnowledgeDisplayEdge.FORBIDDEN_BY_TIERS ||
+                type == KnowledgeDisplayEdge.REQUIRED || type == KnowledgeDisplayEdge.REQUIRED_BY_GROUPS || type == KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS)) {
             throw new IllegalArgumentException();
         }
 
         this.node1 = node1;
         this.node2 = node2;
-        this.mode = ANCHORED_UNSELECTED;
+        this.mode = KnowledgeDisplayEdge.ANCHORED_UNSELECTED;
         this.type = type;
 
         node1.addComponentListener(this.compHandler);
@@ -272,7 +272,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         this.modelEdge = modelEdge;
         this.node1 = node1;
         this.node2 = node2;
-        this.mode = ANCHORED_UNSELECTED;
+        this.mode = KnowledgeDisplayEdge.ANCHORED_UNSELECTED;
 
         node1.addComponentListener(this.compHandler);
         node2.addComponentListener(this.compHandler);
@@ -281,15 +281,15 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
         final int edgeType = _modelEdge.getType();
         if (edgeType == KnowledgeModelEdge.FORBIDDEN_EXPLICITLY) {
-            this.type = FORBIDDEN_EXPLICITLY;
+            this.type = KnowledgeDisplayEdge.FORBIDDEN_EXPLICITLY;
         } else if (edgeType == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
-            this.type = FORBIDDEN_BY_TIERS;
+            this.type = KnowledgeDisplayEdge.FORBIDDEN_BY_TIERS;
         } else if (edgeType == KnowledgeModelEdge.REQUIRED) {
-            this.type = REQUIRED;
+            this.type = KnowledgeDisplayEdge.REQUIRED;
         } else if (edgeType == KnowledgeModelEdge.REQUIRED_BY_GROUPS) {
-            this.type = REQUIRED_BY_GROUPS;
+            this.type = KnowledgeDisplayEdge.REQUIRED_BY_GROUPS;
         } else if (edgeType == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS) {
-            this.type = FORBIDDEN_BY_GROUPS;
+            this.type = KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS;
         }
 
         node1.addPropertyChangeListener(this.propertyChangeHandler);
@@ -322,14 +322,14 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
                     "Mouse track point must not " + "be null.");
         }
 
-        if (!(type == FORBIDDEN_EXPLICITLY || type == FORBIDDEN_BY_TIERS ||
-                type == REQUIRED || type == REQUIRED_BY_GROUPS || type == FORBIDDEN_BY_GROUPS)) {
+        if (!(type == KnowledgeDisplayEdge.FORBIDDEN_EXPLICITLY || type == KnowledgeDisplayEdge.FORBIDDEN_BY_TIERS ||
+                type == KnowledgeDisplayEdge.REQUIRED || type == KnowledgeDisplayEdge.REQUIRED_BY_GROUPS || type == KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS)) {
             throw new IllegalArgumentException();
         }
 
         this.node1 = node1;
         this.mouseTrackPoint = mouseTrackPoint;
-        this.mode = HALF_ANCHORED;
+        this.mode = KnowledgeDisplayEdge.HALF_ANCHORED;
         this.type = type;
 
         resetBounds();
@@ -344,7 +344,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         // be called before repaint().
         switch (this.mode) {
 
-            case HALF_ANCHORED:
+            case KnowledgeDisplayEdge.HALF_ANCHORED:
                 g.setColor(getLineColor());
 
                 final Point point = getRelativeMouseTrackPoint();
@@ -356,7 +356,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
                 }
                 break;
 
-            case ANCHORED_UNSELECTED:
+            case KnowledgeDisplayEdge.ANCHORED_UNSELECTED:
                 g.setColor(getLineColor());
 
                 setConnectedPoints(calculateEdge(getNode1(), getNode2()));
@@ -366,7 +366,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
                 }
                 break;
 
-            case ANCHORED_SELECTED:
+            case KnowledgeDisplayEdge.ANCHORED_SELECTED:
                 g.setColor(this.selectedColor);
 
                 setConnectedPoints(calculateEdge(getNode1(), getNode2()));
@@ -434,7 +434,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     private Polygon getClickRegion() {
 
         if ((this.clickRegion == null) && (getConnectedPoints() != null)) {
-            this.clickRegion = getSleeve(getConnectedPoints());
+            this.clickRegion = KnowledgeDisplayEdge.getSleeve(getConnectedPoints());
         }
 
         return this.clickRegion;
@@ -448,15 +448,15 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      */
     public final PointPair getPointPair() {
         switch (this.mode) {
-            case HALF_ANCHORED:
+            case KnowledgeDisplayEdge.HALF_ANCHORED:
                 final Point point = getRelativeMouseTrackPoint();
                 setConnectedPoints(calculateEdge(getNode1(), point));
                 break;
 
-            case ANCHORED_UNSELECTED:
+            case KnowledgeDisplayEdge.ANCHORED_UNSELECTED:
 
                 // Falls through!
-            case ANCHORED_SELECTED:
+            case KnowledgeDisplayEdge.ANCHORED_SELECTED:
                 setConnectedPoints(calculateEdge(getNode1(), getNode2()));
                 break;
 
@@ -505,7 +505,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * @return true iff the component is selected.
      */
     public final boolean isSelected() {
-        return this.mode == ANCHORED_SELECTED;
+        return this.mode == KnowledgeDisplayEdge.ANCHORED_SELECTED;
     }
 
     /**
@@ -518,8 +518,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
         final boolean oldSelected = isSelected();
 
-        if (this.mode != HALF_ANCHORED) {
-            this.mode = (selected ? ANCHORED_SELECTED : ANCHORED_UNSELECTED);
+        if (this.mode != KnowledgeDisplayEdge.HALF_ANCHORED) {
+            this.mode = (selected ? KnowledgeDisplayEdge.ANCHORED_SELECTED : KnowledgeDisplayEdge.ANCHORED_UNSELECTED);
             firePropertyChange("selected", oldSelected, selected);
             if (oldSelected != selected) {
                 repaint();
@@ -548,7 +548,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *                               not in the HALF_ANCHORED mode.
      */
     public final void updateTrackPoint(final Point p) {
-        if (this.mode != HALF_ANCHORED) {
+        if (this.mode != KnowledgeDisplayEdge.HALF_ANCHORED) {
             throw new IllegalStateException(
                     "Cannot call the updateTrackPoint " +
                             "method when the edge is " +
@@ -697,18 +697,18 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
             final Endpoint endpointB = getModelEdge().getEndpoint2();
 
             if (endpointA == Endpoint.CIRCLE) {
-                drawCircleEndpoint(pp.getTo(), pp.getFrom(), g);
+                KnowledgeDisplayEdge.drawCircleEndpoint(pp.getTo(), pp.getFrom(), g);
             } else if (endpointA == Endpoint.ARROW) {
-                drawArrowEndpoint(pp.getTo(), pp.getFrom(), g);
+                KnowledgeDisplayEdge.drawArrowEndpoint(pp.getTo(), pp.getFrom(), g);
             }
 
             if (endpointB == Endpoint.CIRCLE) {
-                drawCircleEndpoint(pp.getFrom(), pp.getTo(), g);
+                KnowledgeDisplayEdge.drawCircleEndpoint(pp.getFrom(), pp.getTo(), g);
             } else if (endpointB == Endpoint.ARROW) {
-                drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
+                KnowledgeDisplayEdge.drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
             }
         } else {
-            drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
+            KnowledgeDisplayEdge.drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
         }
     }
 
@@ -783,7 +783,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         Point pTo = new Point(pIn);
         Point pMid = null;
 
-        while (distance(pFrom, pTo) > 2.0) {
+        while (KnowledgeDisplayEdge.distance(pFrom, pTo) > 2.0) {
             pMid = new Point((pFrom.x + pTo.x) / 2, (pFrom.y + pTo.y) / 2);
 
             if (comp.contains(pMid.x - loc.x, pMid.y - loc.y)) {
@@ -812,7 +812,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         final int d = 7;    // halfwidth of the sleeve.
 
         if (Math.abs(pp.getFrom().y - pp.getTo().y) <= 3) {
-            return getHorizSleeve(pp, d);
+            return KnowledgeDisplayEdge.getHorizSleeve(pp, d);
         }
 
         final int[] xpoints = new int[4];
@@ -880,7 +880,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         final Rectangle node2RelativeBounds;
 
         switch (this.mode) {
-            case HALF_ANCHORED:
+            case KnowledgeDisplayEdge.HALF_ANCHORED:
                 final Rectangle temp = new Rectangle(this.mouseTrackPoint.x,
                         this.mouseTrackPoint.y, 0, 0);
 
@@ -898,10 +898,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
                         -getLocation().y);
                 break;
 
-            case ANCHORED_UNSELECTED:
+            case KnowledgeDisplayEdge.ANCHORED_UNSELECTED:
 
                 // Falls through!
-            case ANCHORED_SELECTED:
+            case KnowledgeDisplayEdge.ANCHORED_SELECTED:
                 final Rectangle r1 = this.node1.getBounds();
                 final Rectangle r2 = this.node2.getBounds();
                 final Point c1 = new Point((int) (r1.x + r1.width / 2.0),
@@ -963,16 +963,16 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     public Color getLineColor() {
         // Ignore highlighting, too evil. jdramsey 3/4/2010
 
-        if (this.type == FORBIDDEN_EXPLICITLY) {
+        if (this.type == KnowledgeDisplayEdge.FORBIDDEN_EXPLICITLY) {
             return this.forbiddenExplicitlyColor;
         }
-        if (this.type == FORBIDDEN_BY_TIERS) {
+        if (this.type == KnowledgeDisplayEdge.FORBIDDEN_BY_TIERS) {
             return this.forbiddenByTiersColor;
-        } else if (this.type == REQUIRED) {
+        } else if (this.type == KnowledgeDisplayEdge.REQUIRED) {
             return this.requiredColor;
-        } else if (this.type == REQUIRED_BY_GROUPS) {
+        } else if (this.type == KnowledgeDisplayEdge.REQUIRED_BY_GROUPS) {
             return this.requiredGroupsColor;
-        } else if (this.type == FORBIDDEN_BY_GROUPS) {
+        } else if (this.type == KnowledgeDisplayEdge.FORBIDDEN_BY_GROUPS) {
             return this.forbiddenGroupsColor;
         } else {
             throw new IllegalStateException();

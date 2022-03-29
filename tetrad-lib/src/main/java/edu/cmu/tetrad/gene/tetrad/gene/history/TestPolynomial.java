@@ -77,7 +77,7 @@ public class TestPolynomial extends TestCase {
 
         final double[] values = new double[]{1.0, 2.0, 3.0, 4.0};
 
-        assertEquals(15.0, p.evaluate(values), 0.00001);
+        TestCase.assertEquals(15.0, p.evaluate(values), 0.00001);
     }
 
     /**

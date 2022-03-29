@@ -115,7 +115,7 @@ class QQPlotEditorPanel extends JPanel {
 
 
     private Box buildEditArea() {
-        setPreferredAsMax(this.variableBox);
+        QQPlotEditorPanel.setPreferredAsMax(this.variableBox);
 
         final Box main = Box.createVerticalBox();
         final Box hBox = Box.createHorizontalBox();

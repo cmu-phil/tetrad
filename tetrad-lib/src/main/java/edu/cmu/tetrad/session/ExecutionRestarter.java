@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @see SimulationStudy
  */
 public interface ExecutionRestarter extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Specifies a procedure that should be followed when a new execution has

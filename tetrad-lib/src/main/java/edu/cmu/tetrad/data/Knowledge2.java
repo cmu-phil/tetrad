@@ -114,11 +114,11 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     private boolean checkVarName(final String name) {
-        return VARNAME_PATTERN.matcher(name).matches();
+        return Knowledge2.VARNAME_PATTERN.matcher(name).matches();
     }
 
     private String checkSpec(final String spec) {
-        final Matcher matcher = SPEC_PATTERN.matcher(spec);
+        final Matcher matcher = Knowledge2.SPEC_PATTERN.matcher(spec);
         if (!matcher.matches()) {
             throw new IllegalArgumentException(spec + ": Cpdag names can consist of alphabetic "
                     + "characters plus :, _, -, and .. A wildcard '*' may be included to match a "
@@ -150,7 +150,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     private Set<String> split(final String spec) {
-        return Arrays.stream(COMMAN_DELIM.split(spec))
+        return Arrays.stream(Knowledge2.COMMAN_DELIM.split(spec))
                 .map(String::trim)
                 .filter(e -> !e.isEmpty())
                 .collect(Collectors.toSet());

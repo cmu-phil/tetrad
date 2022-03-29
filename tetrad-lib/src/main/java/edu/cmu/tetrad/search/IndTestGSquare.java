@@ -219,16 +219,16 @@ public final class IndTestGSquare implements IndependenceTest {
             final StringBuilder sb = new StringBuilder();
             sb.append("INDEPENDENCE ACCEPTED: ");
             sb.append(SearchLogUtils.independenceFact(x, y, z));
-            sb.append("\tp = ").append(nf.format(result.getPValue())).append(
-                    "\tg^2 = ").append(nf.format(result.getGSquare())).append(
+            sb.append("\tp = ").append(IndTestGSquare.nf.format(result.getPValue())).append(
+                    "\tg^2 = ").append(IndTestGSquare.nf.format(result.getGSquare())).append(
                     "\tdf = ").append(result.getDf());
             TetradLogger.getInstance().log("independencies", sb.toString());
         } else {
             final StringBuilder sb = new StringBuilder();
             sb.append("Not independent: ");
             sb.append(SearchLogUtils.independenceFact(x, y, z));
-            sb.append("\tp = ").append(nf.format(result.getPValue())).append(
-                    "\tg^2 = ").append(nf.format(result.getGSquare())).append(
+            sb.append("\tp = ").append(IndTestGSquare.nf.format(result.getPValue())).append(
+                    "\tg^2 = ").append(IndTestGSquare.nf.format(result.getGSquare())).append(
                     "\tdf = ").append(result.getDf());
             TetradLogger.getInstance().log("independencies", sb.toString());
         }
@@ -301,7 +301,7 @@ public final class IndTestGSquare implements IndependenceTest {
     }
 
     public String toString() {
-        return "G Square, alpha = " + nf.format(getAlpha());
+        return "G Square, alpha = " + IndTestGSquare.nf.format(getAlpha());
     }
 
     /**

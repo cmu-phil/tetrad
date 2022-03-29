@@ -101,7 +101,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     /**
      * The getModel mode of the workbench.
      */
-    private int workbenchMode = SELECT_MOVE;
+    private int workbenchMode = AbstractWorkbench.SELECT_MOVE;
 
     /**
      * When edges are being constructed, one edge is anchored to a node and the
@@ -675,21 +675,21 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param workbenchMode One of SELECT_MOVE, ADD_NODE, ADD_EDGE.
      */
     public final void setWorkbenchMode(final int workbenchMode) {
-        if (workbenchMode == SELECT_MOVE) {
-            if (this.workbenchMode != SELECT_MOVE) {
+        if (workbenchMode == AbstractWorkbench.SELECT_MOVE) {
+            if (this.workbenchMode != AbstractWorkbench.SELECT_MOVE) {
                 this.workbenchMode = workbenchMode;
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 deselectAll();
             } else {
                 setCursor(new Cursor(Cursor.HAND_CURSOR));
             }
-        } else if (workbenchMode == ADD_NODE) {
-            if (this.workbenchMode != ADD_NODE) {
+        } else if (workbenchMode == AbstractWorkbench.ADD_NODE) {
+            if (this.workbenchMode != AbstractWorkbench.ADD_NODE) {
                 this.workbenchMode = workbenchMode;
                 deselectAll();
             }
-        } else if (workbenchMode == ADD_EDGE) {
-            if (this.workbenchMode != ADD_EDGE) {
+        } else if (workbenchMode == AbstractWorkbench.ADD_EDGE) {
+            if (this.workbenchMode != AbstractWorkbench.ADD_EDGE) {
                 this.workbenchMode = workbenchMode;
                 deselectAll();
             }
@@ -1299,7 +1299,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 final IDisplayEdge displayEdge = (IDisplayEdge) getModelEdgesToDisplay().get(edge);
 
                 if (displayEdge != null) {
-                    displayEdge.setOffset(calcEdgeOffset(i, edges.size(), awayFrom));
+                    displayEdge.setOffset(AbstractWorkbench.calcEdgeOffset(i, edges.size(), awayFrom));
                 }
             }
         } catch (final UnsupportedOperationException e) {
@@ -1365,7 +1365,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (components[i] instanceof DisplayNode) {
                 final DisplayNode node = (DisplayNode) components[i];
 
-                distance = distance(p, node.getCenterPoint());
+                distance = AbstractWorkbench.distance(p, node.getCenterPoint());
 
                 if (distance < leastDistance) {
                     leastDistance = distance;
@@ -1532,11 +1532,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             if (keyCode == KeyEvent.VK_ALT) {
                 if (id == KeyEvent.KEY_PRESSED) {
-                    this.workbenchMode = ADD_EDGE;
+                    this.workbenchMode = AbstractWorkbench.ADD_EDGE;
                     setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
                 } else if (id == KeyEvent.KEY_RELEASED) {
                     finishEdge();
-                    this.workbenchMode = SELECT_MOVE;
+                    this.workbenchMode = AbstractWorkbench.SELECT_MOVE;
                     setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
             }
@@ -1860,22 +1860,22 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         final PointPair connectedPoints = graphEdge.getConnectedPoints();
         final Point pointA = connectedPoints.getFrom();
         final Point pointB = connectedPoints.getTo();
-        final double length = distance(pointA, pointB);
+        final double length = AbstractWorkbench.distance(pointA, pointB);
         final double endpointRadius = Math.min(20.0, length / 3.0);
 
         if (e.isShiftDown()) {
-            if (distance(point, pointA) < endpointRadius) {
+            if (AbstractWorkbench.distance(point, pointA) < endpointRadius) {
                 toggleEndpoint(graphEdge, 1);
                 firePropertyChange("modelChanged", null, null);
-            } else if (distance(point, pointB) < endpointRadius) {
+            } else if (AbstractWorkbench.distance(point, pointB) < endpointRadius) {
                 toggleEndpoint(graphEdge, 2);
                 firePropertyChange("modelChanged", null, null);
             }
         } else {
-            if (distance(point, pointA) < endpointRadius) {
+            if (AbstractWorkbench.distance(point, pointA) < endpointRadius) {
                 directEdge(graphEdge, 1);
                 firePropertyChange("modelChanged", null, null);
-            } else if (distance(point, pointB) < endpointRadius) {
+            } else if (AbstractWorkbench.distance(point, pointB) < endpointRadius) {
                 directEdge(graphEdge, 2);
                 firePropertyChange("modelChanged", null, null);
             }
@@ -1894,7 +1894,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
 
         switch (this.workbenchMode) {
-            case SELECT_MOVE:
+            case AbstractWorkbench.SELECT_MOVE:
                 if (source == this) {
                     startRubberband(loc);
                 } else if (source instanceof DisplayNode) {
@@ -1902,7 +1902,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 }
                 break;
 
-            case ADD_NODE:
+            case AbstractWorkbench.ADD_NODE:
                 if (!isAllowDoubleClickActions()) {
                     return;
                 }
@@ -1913,7 +1913,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                 break;
 
-            case ADD_EDGE:
+            case AbstractWorkbench.ADD_EDGE:
                 // if (!isAllowDoubleClickActions()) {
                 // return;
                 // }
@@ -1947,7 +1947,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         final Object source = e.getSource();
 
         switch (this.workbenchMode) {
-            case SELECT_MOVE:
+            case AbstractWorkbench.SELECT_MOVE:
                 if (source == this) {
                     finishRubberband();
                 } else if (source instanceof DisplayNode) {
@@ -1971,7 +1971,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 }
                 break;
 
-            case ADD_EDGE:
+            case AbstractWorkbench.ADD_EDGE:
                 // if (!isAllowDoubleClickActions()) {
                 // return;
                 // }
@@ -1988,18 +1988,18 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         final Point newPoint = e.getPoint();
 
         switch (this.workbenchMode) {
-            case SELECT_MOVE:
+            case AbstractWorkbench.SELECT_MOVE:
                 dragNodes(source, newPoint, e.isShiftDown());
                 break;
 
-            case ADD_NODE:
+            case AbstractWorkbench.ADD_NODE:
                 if (source instanceof DisplayNode && getSelectedComponents().isEmpty()) {
                     dragNodes(source, newPoint, e.isShiftDown());
                 }
 
                 break;
 
-            case ADD_EDGE:
+            case AbstractWorkbench.ADD_EDGE:
                 // if (!isAllowDoubleClickActions()) {
                 // return;
                 // }
@@ -2504,7 +2504,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             // unit vector normal to the vector from pp.from to pp.to.
             final double dx = pp.getFrom().x - pp.getTo().x;
             final double dy = pp.getFrom().y - pp.getTo().y;
-            final double dist = distance(pp.getFrom(), pp.getTo());
+            final double dist = AbstractWorkbench.distance(pp.getFrom(), pp.getTo());
             final double normalx = -dy / dist;
             final double normaly = dx / dist;
 

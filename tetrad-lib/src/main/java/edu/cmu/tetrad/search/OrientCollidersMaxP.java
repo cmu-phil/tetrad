@@ -308,7 +308,7 @@ public final class OrientCollidersMaxP {
     private void orientCollider(final Graph graph, final Node a, final Node b, final Node c, final PcAll.ConflictRule conflictRule) {
         if (this.knowledge.isForbidden(a.getName(), b.getName())) return;
         if (this.knowledge.isForbidden(c.getName(), b.getName())) return;
-        orientCollider(a, b, c, conflictRule, graph);
+        OrientCollidersMaxP.orientCollider(a, b, c, conflictRule, graph);
     }
 
     private boolean wouldCreateBadCollider(final Graph graph, final Node x, final Node y) {

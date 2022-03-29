@@ -96,7 +96,7 @@ public class CovSEard implements CovarianceFunction {
         for (int i = 0; i < this.D; i++)
             diag.set(i, i, 1 / ell.get(i, 0));
 
-        this.K = exp(squareDist(diag.times(X.transpose())).times(-0.5)).times(sf2);   // SE covariance
+        this.K = exp(CovSEard.squareDist(diag.times(X.transpose())).times(-0.5)).times(sf2);   // SE covariance
 
         return this.K;
     }
@@ -127,7 +127,7 @@ public class CovSEard implements CovarianceFunction {
         for (int i = 0; i < this.D; i++)
             diag.set(i, i, 1 / ell.get(i, 0));
 
-        final Matrix B = exp(squareDist(diag.times(X.transpose()), diag.times(Xstar.transpose())).times(-0.5)).times(sf2);
+        final Matrix B = exp(CovSEard.squareDist(diag.times(X.transpose()), diag.times(Xstar.transpose())).times(-0.5)).times(sf2);
 
         return new Matrix[]{A, B};
     }
@@ -162,11 +162,11 @@ public class CovSEard implements CovarianceFunction {
             for (int i = 0; i < this.D; i++)
                 diag.set(i, i, 1 / ell.get(i, 0));
 
-            this.K = exp(squareDist(diag.times(X.transpose())).times(-0.5)).times(sf2);   // SE covariance
+            this.K = exp(CovSEard.squareDist(diag.times(X.transpose())).times(-0.5)).times(sf2);   // SE covariance
         }
 
         if (index < this.D) {   //length scale parameters
-            final Matrix col = squareDist(X.getMatrix(0, X.getRowDimension() - 1, index, index).transpose().times(1 / ell.get(index, 0)));
+            final Matrix col = CovSEard.squareDist(X.getMatrix(0, X.getRowDimension() - 1, index, index).transpose().times(1 / ell.get(index, 0)));
 
             A = this.K.arrayTimes(col);
         } else {    // magnitude parameter
@@ -178,7 +178,7 @@ public class CovSEard implements CovarianceFunction {
     }
 
     private static Matrix squareDist(final Matrix a) {
-        return squareDist(a, a);
+        return CovSEard.squareDist(a, a);
     }
 
     private static Matrix squareDist(final Matrix a, final Matrix b) {

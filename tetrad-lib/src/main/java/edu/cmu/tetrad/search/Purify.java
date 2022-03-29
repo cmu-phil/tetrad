@@ -201,13 +201,13 @@ public class Purify {
             }
             if (type == TestType.GAUSSIAN_SCORE || type == TestType.GAUSSIAN_SCORE_MARKS) {
                 final SemGraph semGraph = scoreBasedPurify(getClusters());
-                return convertSearchGraph(semGraph);
+                return Purify.convertSearchGraph(semGraph);
             } else if (type == TestType.GAUSSIAN_SCORE_ITERATE) {
                 final SemGraph semGraphI = scoreBasedPurifyIterate(getClusters());
-                return convertSearchGraph(semGraphI);
+                return Purify.convertSearchGraph(semGraphI);
             } else if (type == TestType.NONE) {
                 final SemGraph semGraph3 = dummyPurification(getClusters());
-                return convertSearchGraph(semGraph3);
+                return Purify.convertSearchGraph(semGraph3);
             } else {
                 final List pureClusters;
 //                if (constraintSearchVariation == 0) {

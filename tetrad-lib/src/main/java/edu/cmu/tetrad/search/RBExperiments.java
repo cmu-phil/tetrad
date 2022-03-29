@@ -1149,7 +1149,7 @@ public class RBExperiments {
 
         lnYminusLnX = lnY - lnX;
 
-        if (lnYminusLnX < MININUM_EXPONENT) {
+        if (lnYminusLnX < RBExperiments.MININUM_EXPONENT) {
             return lnX;
         } else {
             final double w = Math.log1p(exp(lnYminusLnX));

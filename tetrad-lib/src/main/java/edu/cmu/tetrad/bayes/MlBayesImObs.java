@@ -164,7 +164,7 @@ public final class MlBayesImObs implements BayesIm {
      */
     public MlBayesImObs(final BayesPm bayesPm) throws IllegalArgumentException {
         //this(bayesPm, null, MANUAL);
-        this(bayesPm, MANUAL);
+        this(bayesPm, MlBayesImObs.MANUAL);
     }
 
     /**
@@ -257,7 +257,7 @@ public final class MlBayesImObs implements BayesIm {
 
         // Copy all the old values over.
         //initialize(bayesIm, MlBayesIm.MANUAL);
-        initialize(bayesIm, MANUAL);
+        initialize(bayesIm, MlBayesImObs.MANUAL);
     }
 
     /**
@@ -597,7 +597,7 @@ public final class MlBayesImObs implements BayesIm {
      */
     public void randomizeRow(final int nodeIndex, final int rowIndex) {
         final int size = getNumColumns(nodeIndex);
-        this.probs[nodeIndex][rowIndex] = getRandomWeights(size);
+        this.probs[nodeIndex][rowIndex] = MlBayesImObs.getRandomWeights(size);
     }
 
     /**
@@ -940,7 +940,7 @@ public final class MlBayesImObs implements BayesIm {
                         continue;
                     }
 
-                    if (Math.abs(prob - otherProb) > ALLOWABLE_DIFFERENCE) {
+                    if (Math.abs(prob - otherProb) > MlBayesImObs.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }
@@ -1049,7 +1049,7 @@ public final class MlBayesImObs implements BayesIm {
 
         ///////////////////////////////////////////////////////////////////////
         // initialize the jpd
-        if (initializationMethod == RANDOM) {
+        if (initializationMethod == MlBayesImObs.RANDOM) {
             // this does not work: assigning arbitrary random values to the jpd
             // will violate the constraints imposed by the graphical structure
             //jpd.createRandomCellTable();
@@ -1065,7 +1065,7 @@ public final class MlBayesImObs implements BayesIm {
                     createRandomCellTable();
                 }
             }
-        } else if (initializationMethod == MANUAL) {
+        } else if (initializationMethod == MlBayesImObs.MANUAL) {
             if (oldBayesIm == null) {
                 this.jpd.clearCellTable();
             } else if (oldBayesIm.getClass().getSimpleName().equals("MlBayesIm")) {

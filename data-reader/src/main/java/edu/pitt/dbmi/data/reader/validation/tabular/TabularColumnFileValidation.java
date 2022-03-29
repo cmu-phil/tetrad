@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.data.reader.validation.tabular;
 
+import edu.pitt.dbmi.data.reader.DataFileReader;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.AbstractTabularColumnFileReader;
 import edu.pitt.dbmi.data.reader.util.Columns;
@@ -136,13 +137,13 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
             int lineNum = 1;
             final StringBuilder dataBuilder = new StringBuilder();
 
-            final byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
                     final byte currChar = buffer[i];
 
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         finished = hasSeenNonblankChar && !skip;
                         if (finished) {
                             final String value = dataBuilder.toString().trim();
@@ -171,12 +172,12 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
                         cmntIndex = 0;
                         checkForComment = comment.length > 0;
                     } else if (!skip) {
-                        if (currChar > SPACE_CHAR) {
+                        if (currChar > DataFileReader.SPACE_CHAR) {
                             hasSeenNonblankChar = true;
                         }
 
                         // skip blank chars at the begining of the line
-                        if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                             continue;
                         }
 
@@ -203,7 +204,7 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
                                 final boolean isDelimiter;
                                 switch (this.delimiter) {
                                     case WHITESPACE:
-                                        isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
+                                        isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
                                         break;
                                     default:
                                         isDelimiter = (currChar == delimChar);

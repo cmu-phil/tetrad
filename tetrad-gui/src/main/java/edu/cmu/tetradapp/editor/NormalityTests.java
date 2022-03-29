@@ -55,7 +55,7 @@ class NormalityTests {
             result += "-";
         }
         result += "\n\nKolmogorov Smirnov:\n--------------------------------\n";
-        final double[] ksResults = kolmogorovSmirnov(dataSet, variable);
+        final double[] ksResults = NormalityTests.kolmogorovSmirnov(dataSet, variable);
         final double ksStat = Math.round((ksResults[0] * 10000000.0)) / 10000000.0;
         result += "K-S Statistic: " + ksStat + "\n\n";
         result += "Significance Levels:\t.20\t.15\t.10\t.05\t.01\nK-S Critical Values:";
@@ -119,13 +119,13 @@ class NormalityTests {
     public static double[] kolmogorovSmirnov(final DataSet dataSet, final ContinuousVariable variable) {
         final int n = dataSet.getNumRows();
         final int columnIndex = dataSet.getColumn(variable);
-        final Normal idealDistribution = getNormal(dataSet, variable);
+        final Normal idealDistribution = NormalityTests.getNormal(dataSet, variable);
 
         final double[] ks = new double[6];
 
         //get all critical values
         for (int i = 1; i < 6; i++) {
-            ks[i] = estimateKSCriticalValue(i, n);
+            ks[i] = NormalityTests.estimateKSCriticalValue(i, n);
         }
 
         final double[] _data = dataSet.getDoubleData().getColumn(columnIndex).toArray();
@@ -395,7 +395,7 @@ class NormalityTests {
     public static double cramerVonMises(final DataSet dataSet, final ContinuousVariable variable) {
         final int n = dataSet.getNumRows();
         final int columnIndex = dataSet.getColumn(variable);
-        final Normal idealDistribution = getNormal(dataSet, variable);
+        final Normal idealDistribution = NormalityTests.getNormal(dataSet, variable);
 
         double cvmStatistic = 0.0;
 
@@ -418,7 +418,7 @@ class NormalityTests {
      */
 
     private static Normal getNormal(final DataSet dataSet, final Variable variable) {
-        final double[] paramsForNormal = normalParams(dataSet, variable);
+        final double[] paramsForNormal = NormalityTests.normalParams(dataSet, variable);
         final double mean = paramsForNormal[0];
         final double sd = paramsForNormal[1];
 

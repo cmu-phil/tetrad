@@ -48,14 +48,14 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
         Graph graph = this.randomGraph.createGraph(parameters);
         graph = TimeSeriesUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS));
-        topToBottomLayout((TimeLagGraph) graph);
+        TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
         this.knowledge = TimeSeriesUtils.getKnowledge(graph);
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = this.randomGraph.createGraph(parameters);
                 graph = TimeSeriesUtils.graphToLagGraph(graph, 2);
-                topToBottomLayout((TimeLagGraph) graph);
+                TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
             }
 
             this.graphs.add(graph);

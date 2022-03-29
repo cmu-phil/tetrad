@@ -374,7 +374,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
      */
     private ContinuousDiscretizationSpec getEqualFreqDiscretizationSpec(final int numCategories) {
         final double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(this.data, numCategories);
-        final List<String> cats = defaultCategories(numCategories);
+        final List<String> cats = ContinuousDiscretizationEditor.defaultCategories(numCategories);
         return new ContinuousDiscretizationSpec(breakpoints, cats);
     }
 
@@ -383,7 +383,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
      */
     private ContinuousDiscretizationSpec getDontDiscretizeSpec(final int numCategories) {
         final double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(this.data, numCategories);
-        final List<String> cats = defaultCategories(numCategories);
+        final List<String> cats = ContinuousDiscretizationEditor.defaultCategories(numCategories);
         return new ContinuousDiscretizationSpec(breakpoints, cats, ContinuousDiscretizationSpec.NONE);
     }
 
@@ -392,8 +392,8 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
      */
     private ContinuousDiscretizationSpec getEvenlyDividedDiscretizationSpec(
             final int numCategories) {
-        final double[] breakpoints = defaultBreakpoints(this.max, this.min, numCategories);
-        final List<String> categories = defaultCategories(numCategories);
+        final double[] breakpoints = ContinuousDiscretizationEditor.defaultBreakpoints(this.max, this.min, numCategories);
+        final List<String> categories = ContinuousDiscretizationEditor.defaultCategories(numCategories);
         return new ContinuousDiscretizationSpec(breakpoints, categories);
     }
 

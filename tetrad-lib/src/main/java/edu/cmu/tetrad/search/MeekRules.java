@@ -272,7 +272,7 @@ public class MeekRules implements ImpliedOrientation {
     }
 
     private boolean direct(final Node a, final Node c, final Graph graph, final Set<Node> visited) {
-        if (!isArrowpointAllowed(a, c, this.knowledge)) return false;
+        if (!MeekRules.isArrowpointAllowed(a, c, this.knowledge)) return false;
         if (!Edges.isUndirectedEdge(graph.getEdge(a, c))) return false;
 
         // True if new unshielded colliders should not be oriented by the procedure. That is, if

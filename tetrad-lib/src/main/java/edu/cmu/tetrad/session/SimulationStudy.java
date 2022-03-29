@@ -67,7 +67,7 @@ public final class SimulationStudy {
         session.addSessionListener(new SessionAdapter() {
             public void nodeRemoved(final SessionEvent e) {
                 final SessionNode node = e.getNode();
-                removeRepetition(node);
+                SimulationStudy.removeRepetition(node);
             }
         });
     }
@@ -231,7 +231,7 @@ public final class SimulationStudy {
         // the model for a particular node already exists, in which
         // cases it is not created again. (This avoids repetition.)
         // jdramsey 1/11/01
-        final int repetition = doRepetition ? getRepetition(sessionNode) : 1;
+        final int repetition = doRepetition ? SimulationStudy.getRepetition(sessionNode) : 1;
 
         Preferences.userRoot().putBoolean("errorFound", false);
 
@@ -335,13 +335,13 @@ public final class SimulationStudy {
             }
         }
 
-        found.retainAll(getDescendants(node));
+        found.retainAll(SimulationStudy.getDescendants(node));
         return found;
     }
 
     public static Set getDescendants(final SessionNode node) {
         final HashSet<SessionNode> descendants = new HashSet<>();
-        doChildClosureVisit(node, descendants);
+        SimulationStudy.doChildClosureVisit(node, descendants);
         return descendants;
     }
 
@@ -354,7 +354,7 @@ public final class SimulationStudy {
             final Collection<SessionNode> children = node.getChildren();
 
             for (final SessionNode child : children) {
-                doChildClosureVisit(child, closure);
+                SimulationStudy.doChildClosureVisit(child, closure);
             }
         }
     }

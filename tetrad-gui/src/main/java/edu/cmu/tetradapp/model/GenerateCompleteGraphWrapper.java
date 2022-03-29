@@ -43,7 +43,7 @@ public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotA
 
 
     public GenerateCompleteGraphWrapper(final Graph graph) {
-        super(generateCompleteGraph(graph), "Generate Complete Graph");
+        super(GenerateCompleteGraphWrapper.generateCompleteGraph(graph), "Generate Complete Graph");
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 

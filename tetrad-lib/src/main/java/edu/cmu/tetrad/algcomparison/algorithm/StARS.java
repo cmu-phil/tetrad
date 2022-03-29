@@ -71,7 +71,7 @@ public class StARS implements Algorithm, TakesExternalGraph {
         double _lambda = Double.NaN;
 
         for (double lambda = this.low; lambda <= this.high; lambda += 0.5) {
-            final double D = getD(parameters, this.parameter, lambda, samples, this.algorithm);
+            final double D = StARS.getD(parameters, this.parameter, lambda, samples, this.algorithm);
             System.out.println("lambda = " + lambda + " D = " + D);
 
             if (D > maxD && D < beta) {
@@ -142,8 +142,8 @@ public class StARS implements Algorithm, TakesExternalGraph {
 //        }
         System.out.println("FINAL: lambda = " + _lambda + " D = " + maxD);
 
-        System.out.println(this.parameter + " = " + getValue(_lambda, parameters));
-        _parameters.set(this.parameter, getValue(_lambda, parameters));
+        System.out.println(this.parameter + " = " + StARS.getValue(_lambda, parameters));
+        _parameters.set(this.parameter, StARS.getValue(_lambda, parameters));
 
         return this.algorithm.search(dataSet, _parameters);
     }

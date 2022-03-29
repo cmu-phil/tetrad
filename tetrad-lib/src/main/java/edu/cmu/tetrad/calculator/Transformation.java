@@ -65,7 +65,7 @@ public class Transformation {
             return;
         }
         for (final String equation : equations) {
-            transformEquation(data, equation);
+            Transformation.transformEquation(data, equation);
         }
     }
 
@@ -78,7 +78,7 @@ public class Transformation {
         final ExpressionParser parser = new ExpressionParser(data.getVariableNames(), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
         final Equation equation = parser.parseEquation(eq);
 
-        addVariableIfRequired(data, equation.getVariable());
+        Transformation.addVariableIfRequired(data, equation.getVariable());
         final Expression expression = equation.getExpression();
         final Node variable = data.getVariable(equation.getVariable());
         if (variable == null) {
@@ -86,7 +86,7 @@ public class Transformation {
         }
         final int column = data.getColumn(variable);
         // build the context pairs.
-        final List<String> contextVars = getContextVariables(expression);
+        final List<String> contextVars = Transformation.getContextVariables(expression);
         // now do the transformation row by row.
         final DataBackedContext context = new DataBackedContext(data, contextVars);
         final int rows = data.getNumRows();
@@ -119,7 +119,7 @@ public class Transformation {
             if (sub instanceof VariableExpression) {
                 variables.add(((VariableExpression) sub).getVariable());
             } else if (!(sub instanceof ConstantExpression)) {
-                variables.addAll(getContextVariables(sub));
+                variables.addAll(Transformation.getContextVariables(sub));
             }
         }
 

@@ -79,32 +79,32 @@ public class BryanSensitivityStudy {
 
 
         {
-            final Parameters parameters = getParameters();
-            final Graph graph = getGraph1();
+            final Parameters parameters = BryanSensitivityStudy.getParameters();
+            final Graph graph = BryanSensitivityStudy.getGraph1();
             final Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph1.txt", algorithms, statistics, parameters);
         }
 
         {
-            final Parameters parameters = getParameters();
-            final Graph graph = getGraph2();
+            final Parameters parameters = BryanSensitivityStudy.getParameters();
+            final Graph graph = BryanSensitivityStudy.getGraph2();
             final Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph2.txt", algorithms, statistics, parameters);
         }
 
         {
-            final Parameters parameters = getParameters();
-            final Graph graph = getGraph3();
+            final Parameters parameters = BryanSensitivityStudy.getParameters();
+            final Graph graph = BryanSensitivityStudy.getGraph3();
             final Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph3.txt", algorithms, statistics, parameters);
         }
 
         {
-            final Parameters parameters = getParameters();
-            final Graph graph = getGraph4();
+            final Parameters parameters = BryanSensitivityStudy.getParameters();
+            final Graph graph = BryanSensitivityStudy.getGraph4();
             final Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph4.txt", algorithms, statistics, parameters);

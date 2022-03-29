@@ -74,7 +74,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("numStructuralEdges", value);
                 return value;
             } catch (final Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -94,7 +94,7 @@ class RandomMimParamsEditor extends JPanel {
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
                 return value;
             } catch (final Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
                 return oldValue;
@@ -112,7 +112,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("measurementModelDegree", value);
                 return value;
             } catch (final Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -129,7 +129,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("latentMeasuredImpureParents", value);
                 return value;
             } catch (final Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -146,7 +146,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("measuredMeasuredImpureParents", value);
                 return value;
             } catch (final Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -164,7 +164,7 @@ class RandomMimParamsEditor extends JPanel {
                         value);
                 return value;
             } catch (final Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }

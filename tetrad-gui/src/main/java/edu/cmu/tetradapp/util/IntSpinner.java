@@ -69,10 +69,10 @@ public class IntSpinner extends JSpinner {
         super(new SpinnerNumberModel(value, null, null, step));
         this.editor = new IntTextField(value, size);
         // make the spinner a bit bigger than the text field (looks better)
-        this.setPreferredSize(increment(this.editor.getPreferredSize(), 2));
-        this.setMaximumSize(increment(this.editor.getMaximumSize(), 2));
-        this.setMinimumSize(increment(this.editor.getMinimumSize(), 2));
-        this.setSize(increment(this.editor.getSize(), 2));
+        this.setPreferredSize(IntSpinner.increment(this.editor.getPreferredSize(), 2));
+        this.setMaximumSize(IntSpinner.increment(this.editor.getMaximumSize(), 2));
+        this.setMinimumSize(IntSpinner.increment(this.editor.getMinimumSize(), 2));
+        this.setSize(IntSpinner.increment(this.editor.getSize(), 2));
 
         this.editor.setFilter(new IntTextField.Filter() {
             public int filter(int value, final int oldValue) {

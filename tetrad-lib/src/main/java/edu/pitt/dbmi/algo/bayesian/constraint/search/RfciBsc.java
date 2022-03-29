@@ -289,10 +289,10 @@ public class RfciBsc implements GraphSearch {
             @Override
             public Boolean call() throws Exception {
                 if (!pagLnBSCD.containsKey(this.pagOrig)) {
-                    final double lnInd = getLnProb(this.pagOrig, h);
+                    final double lnInd = RfciBsc.getLnProb(this.pagOrig, h);
 
                     // Filtering
-                    final double lnDep = getLnProbUsingDepFiltering(this.pagOrig, h, imHat, estDepBN);
+                    final double lnDep = RfciBsc.getLnProbUsingDepFiltering(this.pagOrig, h, imHat, estDepBN);
 
                     pagLnBSCD.put(this.pagOrig, lnDep);
                     pagLnBSCI.put(this.pagOrig, lnInd);
@@ -344,8 +344,8 @@ public class RfciBsc implements GraphSearch {
             this.out.println("maxLnDep: " + maxLnDep + " maxLnInd: " + maxLnInd);
         }
 
-        final double lnQBSCDTotal = lnQTotal(pagLnBSCD);
-        final double lnQBSCITotal = lnQTotal(pagLnBSCI);
+        final double lnQBSCDTotal = RfciBsc.lnQTotal(pagLnBSCD);
+        final double lnQBSCITotal = RfciBsc.lnQTotal(pagLnBSCI);
 
         // normalize the scores
         this.bscD = maxLnDep - lnQBSCDTotal;
@@ -524,7 +524,7 @@ public class RfciBsc implements GraphSearch {
 
         lnYminusLnX = lnY - lnX;
 
-        if (lnYminusLnX < MININUM_EXPONENT) {
+        if (lnYminusLnX < RfciBsc.MININUM_EXPONENT) {
             return lnX;
         } else {
             final double w = Math.log1p(exp(lnYminusLnX));
@@ -540,7 +540,7 @@ public class RfciBsc implements GraphSearch {
         while (iter.hasNext()) {
             final Graph pag = iter.next();
             final double lnQ = pagLnProb.get(pag);
-            lnQTotal = lnXplusY(lnQTotal, lnQ);
+            lnQTotal = RfciBsc.lnXplusY(lnQTotal, lnQ);
         }
 
         return lnQTotal;

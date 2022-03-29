@@ -275,7 +275,7 @@ public final class IndTestRegressionAD implements IndependenceTest {
     }
 
     public String toString() {
-        return "Linear Regression Test, alpha = " + nf.format(getAlpha());
+        return "Linear Regression Test, alpha = " + IndTestRegressionAD.nf.format(getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//

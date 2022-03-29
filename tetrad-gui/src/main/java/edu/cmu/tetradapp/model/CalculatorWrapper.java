@@ -57,7 +57,7 @@ public class CalculatorWrapper extends DataWrapper {
         final DataModelList originals = data.getDataModelList();
 
         for (final DataModel model : originals) {
-            final DataSet copy = copy((DataSet) model);
+            final DataSet copy = CalculatorWrapper.copy((DataSet) model);
 
             final List<String> equations = new ArrayList<>();
 

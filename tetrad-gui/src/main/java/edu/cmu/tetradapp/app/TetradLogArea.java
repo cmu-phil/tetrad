@@ -216,7 +216,7 @@ class TetradLogArea extends JPanel {
         // Do Layout.
         final Box b1 = Box.createVerticalBox();
 
-        b1.add(createLogToBox());
+        b1.add(TetradLogArea.createLogToBox());
         b1.add(Box.createVerticalStrut(5));
 
         final Box b4 = Box.createHorizontalBox();

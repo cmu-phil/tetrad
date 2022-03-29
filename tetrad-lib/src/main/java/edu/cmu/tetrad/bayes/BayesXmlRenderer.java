@@ -43,9 +43,9 @@ public final class BayesXmlRenderer {
 
         final Element element = new Element("bayesNet");
 
-        element.appendChild(getVariablesElement(bayesIm));
-        element.appendChild(getParentsElement(bayesIm));
-        element.appendChild(getCptsElement(bayesIm));
+        element.appendChild(BayesXmlRenderer.getVariablesElement(bayesIm));
+        element.appendChild(BayesXmlRenderer.getParentsElement(bayesIm));
+        element.appendChild(BayesXmlRenderer.getCptsElement(bayesIm));
 
         return element;
     }

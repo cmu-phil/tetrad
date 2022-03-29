@@ -129,7 +129,7 @@ class TabularDataTable extends AbstractTableModel {
             if (row == 0) {
                 // Append "-D" notation to discrete variables, "-C" for continuous
                 // and append additional "-I" for those added interventional variables - Zhou
-                String columnHeader = this.columnHeaderNotationDefault + Integer.toString(columnIndex + 1);
+                String columnHeader = this.columnHeaderNotationDefault + (columnIndex + 1);
 
                 if (variable instanceof DiscreteVariable) {
                     columnHeader += this.columnHeaderNotationDiscrete;
@@ -165,7 +165,7 @@ class TabularDataTable extends AbstractTableModel {
             }
         } else if (col >= this.dataSet.getNumColumns() + getNumLeadingCols()) {
             if (row == 0) {
-                return "C" + Integer.toString(columnIndex + 1);
+                return "C" + (columnIndex + 1);
             }
         }
 

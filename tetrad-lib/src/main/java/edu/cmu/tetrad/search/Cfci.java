@@ -408,7 +408,7 @@ public final class Cfci implements GraphSearch {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                final List<Node> condSet = asList(choice, _nodes);
+                final List<Node> condSet = Cfci.asList(choice, _nodes);
 
                 if (test.isIndependent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -436,7 +436,7 @@ public final class Cfci implements GraphSearch {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                final List<Node> condSet = asList(choice, _nodes);
+                final List<Node> condSet = Cfci.asList(choice, _nodes);
 
                 if (test.isIndependent(x, z, condSet)) {
                     if (condSet.contains(y)) {

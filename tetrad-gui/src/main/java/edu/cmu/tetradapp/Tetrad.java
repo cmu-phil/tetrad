@@ -107,13 +107,13 @@ public final class Tetrad implements PropertyChangeListener {
      */
     public static void main(final String[] argv) {
         if (argv != null && argv.length > 0) {
-            enableExperimental = EXP_OPT.equals(argv[0]);
+            Tetrad.enableExperimental = Tetrad.EXP_OPT.equals(argv[0]);
         }
 
         // Avoid updates to swing code that causes comparison-method-violates-its-general-contract warnings
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
-        setLookAndFeel();
+        Tetrad.setLookAndFeel();
 
         // This is needed to get numbers to be parsed and rendered uniformly, especially in the interface.
         Locale.setDefault(Locale.US);

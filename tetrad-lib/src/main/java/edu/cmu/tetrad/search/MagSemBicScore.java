@@ -123,13 +123,13 @@ public class MagSemBicScore implements Score {
 
     public static double getVarRy(final int i, final int[] parents, final Matrix data, final ICovarianceMatrix covariances, final boolean calculateRowSubsets) {
         try {
-            final int[] all = concat(i, parents);
-            final Matrix cov = getCov(getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
-            final int[] pp = indexedParents(parents);
+            final int[] all = MagSemBicScore.concat(i, parents);
+            final Matrix cov = MagSemBicScore.getCov(MagSemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
+            final int[] pp = MagSemBicScore.indexedParents(parents);
             final Matrix covxx = cov.getSelection(pp, pp);
             final Matrix covxy = cov.getSelection(pp, new int[]{0});
             final Matrix b = (covxx.inverse().times(covxy));
-            final Matrix bStar = bStar(b);
+            final Matrix bStar = MagSemBicScore.bStar(b);
             return (bStar.transpose().times(cov).times(bStar).get(0, 0));
         } catch (final SingularMatrixException e) {
             final List<Node> variables = covariances.getVariables();
@@ -221,7 +221,7 @@ public class MagSemBicScore implements Score {
         if (this.ruleType == RuleType.NANDY) {
             return nandyBic(x, y, z);
         } else {
-            return localScore(y, append(z, x)) - localScore(y, z);
+            return localScore(y, MagSemBicScore.append(z, x)) - localScore(y, z);
         }
     }
 
@@ -260,7 +260,7 @@ public class MagSemBicScore implements Score {
 
         final double varey;
 
-        varey = getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+        varey = MagSemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
 
         final double c = getPenaltyDiscount();
 

@@ -77,7 +77,7 @@ public class MatrixF extends BasicMatrix {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }
-        if ((x < MIN_FLOAT) || (x > MAX_FLOAT)) {
+        if ((x < BasicMatrix.MIN_FLOAT) || (x > BasicMatrix.MAX_FLOAT)) {
             throw new IllegalArgumentException(
                     "Integer " + x + " cannot be stored as a float");
         }
@@ -109,7 +109,7 @@ public class MatrixF extends BasicMatrix {
      * the double x can be converted to a float without causing overflow.
      */
     public void setValue(final int r, final int c, final double x) {
-        if ((x < MIN_FLOAT) || (x > MAX_FLOAT)) {
+        if ((x < BasicMatrix.MIN_FLOAT) || (x > BasicMatrix.MAX_FLOAT)) {
             throw new IllegalArgumentException(
                     "Integer " + x + " cannot be stored as a float");
         }

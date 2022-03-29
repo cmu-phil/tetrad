@@ -135,7 +135,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public GraphWrapper(final GeneralizedSemImWrapper wrapper) {
-        this(getStrongestInfluenceGraph(wrapper.getSemIms().get(0)));
+        this(GraphWrapper.getStrongestInfluenceGraph(wrapper.getSemIms().get(0)));
         if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
         }
@@ -235,7 +235,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         }
 
         for (final Expression _expression : expressions) {
-            final String param = findParameter(_expression, name);
+            final String param = GraphWrapper.findParameter(_expression, name);
 
             if (param != null) {
                 return param;
@@ -278,8 +278,8 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
                 final Expression expression1 = pm.getNodeExpression(node1);
                 final Expression expression2 = pm.getNodeExpression(node2);
 
-                final String param1 = findParameter(expression1, node2.getName());
-                final String param2 = findParameter(expression2, node1.getName());
+                final String param1 = GraphWrapper.findParameter(expression1, node2.getName());
+                final String param2 = GraphWrapper.findParameter(expression2, node1.getName());
 
                 if (param1 == null || param2 == null) {
                     continue;

@@ -29,10 +29,10 @@ import java.util.List;
  */
 public interface CovarianceData extends Data {
 
-    public int getNumberOfCases();
+    int getNumberOfCases();
 
-    public List<String> getVariables();
+    List<String> getVariables();
 
-    public double[][] getData();
+    double[][] getData();
 
 }

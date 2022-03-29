@@ -87,7 +87,7 @@ public class IndependenceFactsEditor extends JPanel {
         loadButton.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
 
-                final JFileChooser chooser = getJFileChooser();
+                final JFileChooser chooser = IndependenceFactsEditor.getJFileChooser();
                 chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 chooser.showOpenDialog(IndependenceFactsEditor.this);
 

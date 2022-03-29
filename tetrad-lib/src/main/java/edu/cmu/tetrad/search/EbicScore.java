@@ -111,7 +111,7 @@ public class EbicScore implements Score {
 
     @Override
     public double localScoreDiff(final int x, final int y, final int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
+        return localScore(y, EbicScore.append(z, x)) - localScore(y, z);
     }
 
     @Override

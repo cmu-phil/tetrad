@@ -58,29 +58,29 @@ public final class ModificationRegistery {
             editor = ((DelegatesEditing) editor).getEditDelegate();
         }
 
-        EDITORS_TO_SESSION_NODES.put(editor, sessionNode);
+        ModificationRegistery.EDITORS_TO_SESSION_NODES.put(editor, sessionNode);
 
         final PropertyChangeListener listener = new PropertyChangeListener() {
             public void propertyChange(final PropertyChangeEvent evt) {
                 if ("modelChanged".equals(evt.getPropertyName())) {
                     final JComponent editor = (JComponent) evt.getSource();
-                    final Object sessionNode = EDITORS_TO_SESSION_NODES.get(editor);
+                    final Object sessionNode = ModificationRegistery.EDITORS_TO_SESSION_NODES.get(editor);
                     if (sessionNode != null) {
-                        EDITED_MODELS.add(sessionNode);
+                        ModificationRegistery.EDITED_MODELS.add(sessionNode);
                     }
                 }
             }
         };
 
         editor.addPropertyChangeListener(listener);
-        EDITORS_TO_LISTENERS.put(editor, listener);
+        ModificationRegistery.EDITORS_TO_LISTENERS.put(editor, listener);
     }
 
     /**
      * @return true if an editor has registered that model has changed.
      */
     public static boolean modelHasChanged(final SessionNode sessionNode) {
-        return EDITED_MODELS.contains(sessionNode);
+        return ModificationRegistery.EDITED_MODELS.contains(sessionNode);
     }
 
     public static void unregisterEditor(JComponent editor) {
@@ -88,11 +88,11 @@ public final class ModificationRegistery {
             editor = ((DelegatesEditing) editor).getEditDelegate();
         }
 
-        EDITORS_TO_SESSION_NODES.remove(editor);
+        ModificationRegistery.EDITORS_TO_SESSION_NODES.remove(editor);
         final PropertyChangeListener listener =
-                EDITORS_TO_LISTENERS.get(editor);
+                ModificationRegistery.EDITORS_TO_LISTENERS.get(editor);
         editor.removePropertyChangeListener(listener);
-        EDITORS_TO_LISTENERS.remove(editor);
+        ModificationRegistery.EDITORS_TO_LISTENERS.remove(editor);
     }
 
     /**
@@ -100,7 +100,7 @@ public final class ModificationRegistery {
      * changes have been made.
      */
     public static void unregisterSessionNode(final SessionNode sessionNode) {
-        EDITED_MODELS.remove(sessionNode);
+        ModificationRegistery.EDITED_MODELS.remove(sessionNode);
     }
 }
 

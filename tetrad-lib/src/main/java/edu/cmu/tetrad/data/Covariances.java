@@ -6,7 +6,7 @@ package edu.cmu.tetrad.data;
  * @author Joseph D. Ramsey
  */
 public interface Covariances {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Returns the covariance at (i, j).

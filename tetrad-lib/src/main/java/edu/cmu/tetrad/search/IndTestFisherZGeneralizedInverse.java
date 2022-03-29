@@ -324,7 +324,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     }
 
     public String toString() {
-        return "Fisher's Z - Generalized Inverse, alpha = " + nf.format(getAlpha());
+        return "Fisher's Z - Generalized Inverse, alpha = " + IndTestFisherZGeneralizedInverse.nf.format(getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//
@@ -441,7 +441,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             sb.append("}");
 
 //            sb.append(" p = ").append(nf.format(p));
-            sb.append(" SSE = ").append(nf.format(SSE));
+            sb.append(" SSE = ").append(IndTestFisherZGeneralizedInverse.nf.format(SSE));
 
             TetradLogger.getInstance().log("independencies", sb.toString());
             System.out.println(sb);

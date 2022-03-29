@@ -272,7 +272,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
 
         public BigLabel(final String text) {
             super(text);
-            setFont(FONT);
+            setFont(BigLabel.FONT);
         }
     }
 }

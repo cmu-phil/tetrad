@@ -263,7 +263,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Conditional Correlation, alpha = " + nf.format(getAlpha());
+        return "Conditional Correlation, alpha = " + IndTestKciMatlab.nf.format(getAlpha());
     }
 
     //==================================PRIVATE METHODS================================

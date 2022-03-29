@@ -117,7 +117,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         discretizeVariableList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(final ListSelectionEvent e) {
                 final JList list = (JList) e.getSource();
-                final List<Node> selected = getSelected(list);
+                final List<Node> selected = DiscretizationParamsEditor.getSelected(list);
 
                 finalizeEdit();
 

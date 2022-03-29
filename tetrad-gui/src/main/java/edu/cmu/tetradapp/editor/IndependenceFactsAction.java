@@ -299,7 +299,7 @@ public class IndependenceFactsAction extends AbstractAction {
 //                        return result.getType() ? "Independent" : "Dependent";
                     }
                 } else if (columnIndex == 3) {
-                    return nf.format(result.getpValue());
+                    return IndependenceFactsAction.nf.format(result.getpValue());
                 }
 
                 return null;
@@ -616,10 +616,10 @@ public class IndependenceFactsAction extends AbstractAction {
 
                         if (usesDSeparation()) {
                             getResults().add(new Result(++resultIndex,
-                                    dsepFactString(x, y, z), indep, pValue));
+                                    IndependenceFactsAction.dsepFactString(x, y, z), indep, pValue));
                         } else {
                             getResults().add(new Result(++resultIndex,
-                                    independenceFactString(x, y, z), indep, pValue));
+                                    IndependenceFactsAction.independenceFactString(x, y, z), indep, pValue));
                         }
                     }
                 }
@@ -689,7 +689,7 @@ public class IndependenceFactsAction extends AbstractAction {
             buf.append("Result: ");
             buf.append(getFact()).append("\t");
             buf.append(getType()).append("\t");
-            buf.append(nf.format(getpValue()));
+            buf.append(Result.nf.format(getpValue()));
             return buf.toString();
         }
     }

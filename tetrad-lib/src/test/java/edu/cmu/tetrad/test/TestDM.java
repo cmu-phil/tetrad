@@ -57,7 +57,7 @@ public class TestDM {
 
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
-        final Graph graph = emptyGraph(4);
+        final Graph graph = TestDM.emptyGraph(4);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
@@ -104,7 +104,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = emptyGraph(8);
+        final Graph graph = TestDM.emptyGraph(8);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
@@ -176,7 +176,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = emptyGraph(12);
+        final Graph graph = TestDM.emptyGraph(12);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
@@ -277,7 +277,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = emptyGraph(6);
+        final Graph graph = TestDM.emptyGraph(6);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
         graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
@@ -337,7 +337,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = emptyGraph(6);
+        final Graph graph = TestDM.emptyGraph(6);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X4"));
@@ -394,7 +394,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = emptyGraph(8);
+        final Graph graph = TestDM.emptyGraph(8);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X4"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X5"));
@@ -612,7 +612,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = emptyGraph(5);
+        final Graph graph = TestDM.emptyGraph(5);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
@@ -696,7 +696,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = emptyGraph(4);
+        final Graph graph = TestDM.emptyGraph(4);
 
         final Node X0 = graph.getNode("X0");
         final Node X1 = graph.getNode("X1");
@@ -727,7 +727,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = emptyGraph(9);
+        final Graph graph = TestDM.emptyGraph(9);
 
         final Node X0 = graph.getNode("X0");
         final Node X1 = graph.getNode("X1");
@@ -791,7 +791,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = emptyGraph(12);
+        final Graph graph = TestDM.emptyGraph(12);
 
         final Node X0 = graph.getNode("X0");
         final Node X1 = graph.getNode("X1");

@@ -51,7 +51,7 @@ public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        final Graph CPDAG = getCPDAG(new EdgeListGraph(graph));
+        final Graph CPDAG = CPDAGFromDagGraphWrapper.getCPDAG(new EdgeListGraph(graph));
         setGraph(CPDAG);
 
         TetradLogger.getInstance().log("info", "\nGenerating CPDAG from DAG.");

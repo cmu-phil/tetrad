@@ -33,7 +33,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Joseph Ramsey
  */
 public interface SessionModel extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Sets the name of the session model.

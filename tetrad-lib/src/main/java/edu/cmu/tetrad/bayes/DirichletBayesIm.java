@@ -258,7 +258,7 @@ public final class DirichletBayesIm implements BayesIm {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static DirichletBayesIm serializableInstance() {
-        return blankDirichletIm(BayesPm.serializableInstance());
+        return DirichletBayesIm.blankDirichletIm(BayesPm.serializableInstance());
     }
 
     //===============================PUBLIC METHODS========================//
@@ -996,7 +996,7 @@ public final class DirichletBayesIm implements BayesIm {
                     }
 
                     if (Math.abs(probability - otherProbability)
-                            > ALLOWABLE_DIFFERENCE) {
+                            > DirichletBayesIm.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }
@@ -1081,7 +1081,7 @@ public final class DirichletBayesIm implements BayesIm {
     private double[] getRandomPseudocounts(final int size) {
         assert size >= 0;
 
-        final double[] weights = getRandomWeights(size);
+        final double[] weights = DirichletBayesIm.getRandomWeights(size);
         final double[] row = new double[size];
         int sum = 0;
 

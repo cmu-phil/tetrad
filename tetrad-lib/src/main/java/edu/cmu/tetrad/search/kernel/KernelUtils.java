@@ -74,8 +74,8 @@ public class KernelUtils {
      */
     public static Matrix constructCentralizedGramMatrix(final List<Kernel> kernels, final DataSet dataset, final List<Node> nodes) {
         final int m = dataset.getNumRows();
-        final Matrix gram = constructGramMatrix(kernels, dataset, nodes);
-        final Matrix H = constructH(m);
+        final Matrix gram = KernelUtils.constructGramMatrix(kernels, dataset, nodes);
+        final Matrix H = KernelUtils.constructH(m);
         final Matrix KH = gram.times(H);
         final Matrix HKH = H.times(KH);
         return HKH;
@@ -121,7 +121,7 @@ public class KernelUtils {
         final double[] Dadv = new double[m];
         final int[] p = new int[m];
         for (int i = 0; i < m; i++) {
-            Dadv[i] = evaluate(kernels, dataset, nodes, i, i);
+            Dadv[i] = KernelUtils.evaluate(kernels, dataset, nodes, i, i);
             p[i] = i;
         }
 
@@ -166,7 +166,7 @@ public class KernelUtils {
                 for (int i = 0; i < k; i++) {
                     s += G.get(j, i) * G.get(k, i);
                 }
-                G.set(j, k, (evaluate(kernels, dataset, nodes, p[j], p[k]) - s) / diag);
+                G.set(j, k, (KernelUtils.evaluate(kernels, dataset, nodes, p[j], p[k]) - s) / diag);
             }
 
             // update diagonal

@@ -39,49 +39,49 @@ public class SplashScreen {
     private static JFrame frame;
 
     public static void show(final Frame parent, final String title, final int max) {
-        hide();
+        SplashScreen.hide();
         SplashScreen.COUNTER = 0;
         SplashScreen.MAX = max;
-        WINDOW = new SplashWindow(parent, null, title);
+        SplashScreen.WINDOW = new SplashWindow(parent, null, title);
     }
 
     public static void show(final String title, final int max) {
-        hide();
+        SplashScreen.hide();
         SplashScreen.COUNTER = 0;
         SplashScreen.MAX = max;
-        frame = new JFrame();
-        WINDOW = new SplashWindow(frame, null, title);
+        SplashScreen.frame = new JFrame();
+        SplashScreen.WINDOW = new SplashWindow(SplashScreen.frame, null, title);
     }
 
     public static void hide() {
-        if (WINDOW == null) {
+        if (SplashScreen.WINDOW == null) {
             return;
         }
         // show a complete bar for a short while
-        WINDOW.bar.setValue(MAX);
-        WINDOW.bar.repaint();
+        SplashScreen.WINDOW.bar.setValue(SplashScreen.MAX);
+        SplashScreen.WINDOW.bar.repaint();
 
-        WINDOW.setVisible(false);
-        WINDOW.dispose();
-        WINDOW = null;
+        SplashScreen.WINDOW.setVisible(false);
+        SplashScreen.WINDOW.dispose();
+        SplashScreen.WINDOW = null;
 
-        if (frame != null) {
-            frame.dispose();
-            frame = null;
+        if (SplashScreen.frame != null) {
+            SplashScreen.frame.dispose();
+            SplashScreen.frame = null;
         }
     }
 
     public static void increment() {
-        increment(1);
+        SplashScreen.increment(1);
     }
 
     private static void increment(final int by) {
-        COUNTER += by;
-        if (COUNTER > MAX) {
-            COUNTER = MAX;
+        SplashScreen.COUNTER += by;
+        if (SplashScreen.COUNTER > SplashScreen.MAX) {
+            SplashScreen.COUNTER = SplashScreen.MAX;
         }
-        if (WINDOW != null) {
-            WINDOW.bar.setValue(COUNTER);
+        if (SplashScreen.WINDOW != null) {
+            SplashScreen.WINDOW.bar.setValue(SplashScreen.COUNTER);
         }
     }
 
@@ -123,7 +123,7 @@ public class SplashScreen {
             textArea.setBorder(new EmptyBorder(5, 5, 5, 5));
             b.add(textArea);
 
-            this.bar = new JProgressBar(0, MAX);
+            this.bar = new JProgressBar(0, SplashScreen.MAX);
             this.bar.setBackground(Color.white);
             this.bar.setBorderPainted(false);
             b.add(this.bar);

@@ -76,7 +76,7 @@ class DescriptiveStats {
 
         b.append("Descriptive Statistics for: " + variable.getName() + "\n\n");
 
-        final double[] normalValues = normalParams(data);
+        final double[] normalValues = DescriptiveStats.normalParams(data);
         final TextTable table;
 
         if (continuous) {
@@ -107,10 +107,10 @@ class DescriptiveStats {
 
 
         if (continuous) {
-            final double[] median = median(data);
+            final double[] median = DescriptiveStats.median(data);
 
             table.setToken(rowindex, 0, "SE Mean:");
-            table.setToken(rowindex++, 1, nf.format(standardErrorMean(normalValues[1], dataSet.getNumRows())));
+            table.setToken(rowindex++, 1, nf.format(DescriptiveStats.standardErrorMean(normalValues[1], dataSet.getNumRows())));
 
             table.setToken(rowindex, 0, "Median:");
             table.setToken(rowindex++, 1, nf.format(median[0]));
@@ -158,7 +158,7 @@ class DescriptiveStats {
      */
 
     public static Normal getNormal(final double[] data) {
-        final double[] paramsForNormal = normalParams(data);
+        final double[] paramsForNormal = DescriptiveStats.normalParams(data);
         final double mean = paramsForNormal[0];
         final double sd = paramsForNormal[1];
 

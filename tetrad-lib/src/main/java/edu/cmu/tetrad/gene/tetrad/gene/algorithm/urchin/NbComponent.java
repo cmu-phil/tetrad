@@ -23,15 +23,15 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 
 
 public interface NbComponent {
-    public double getValue();
+    double getValue();
 
-    public void setValue(double v);
+    void setValue(double v);
 
-    public void update();
+    void update();
 
-    public void addParent(NbComponent c, int i);
+    void addParent(NbComponent c, int i);
 
-    public String getName();
+    String getName();
 }
 
 

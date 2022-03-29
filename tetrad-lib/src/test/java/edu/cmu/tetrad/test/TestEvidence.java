@@ -45,7 +45,7 @@ public final class TestEvidence {
      */
     @Test
     public void testUpdate1() {
-        final BayesIm bayesIm = sampleBayesIm2();
+        final BayesIm bayesIm = TestEvidence.sampleBayesIm2();
 
         final Evidence evidence = Evidence.tautology(bayesIm);
         evidence.getProposition().removeCategory(0, 1);

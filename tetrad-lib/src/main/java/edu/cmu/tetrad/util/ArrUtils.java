@@ -60,7 +60,7 @@ final class ArrUtils {
      */
     public static String toString(final double[] arr) {
         final NumberFormat nf = new DecimalFormat(" 0.0000;-0.0000");
-        return toString(arr, nf);
+        return ArrUtils.toString(arr, nf);
     }
 
     /**
@@ -95,7 +95,7 @@ final class ArrUtils {
             throw new NullPointerException("NumberFormat must not be null.");
         }
         if (arr == null) {
-            result = nullMessage();
+            result = ArrUtils.nullMessage();
         } else {
             final StringBuilder buf = new StringBuilder();
             buf.append("\n");

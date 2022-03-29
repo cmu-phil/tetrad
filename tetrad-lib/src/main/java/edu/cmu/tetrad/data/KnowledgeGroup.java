@@ -74,7 +74,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      * @param type - the type
      */
     public KnowledgeGroup(final int type, final Set<String> from, final Set<String> to) {
-        if (type != REQUIRED && type != FORBIDDEN) {
+        if (type != KnowledgeGroup.REQUIRED && type != KnowledgeGroup.FORBIDDEN) {
             throw new NullPointerException("The given type needs to be either REQUIRED or FORBIDDEN");
         }
         if (from == null) {
@@ -83,7 +83,7 @@ public final class KnowledgeGroup implements TetradSerializable {
         if (to == null) {
             throw new NullPointerException("The to set must not be null");
         }
-        if (intersect(from, to)) {
+        if (KnowledgeGroup.intersect(from, to)) {
             throw new IllegalArgumentException("The from and to sets must not intersect");
         }
         this.fromGroup = new HashSet<>(from);
@@ -96,7 +96,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      * Constructs an empty instance of a knowledge group.
      */
     public KnowledgeGroup(final int type) {
-        if (type != REQUIRED && type != FORBIDDEN) {
+        if (type != KnowledgeGroup.REQUIRED && type != KnowledgeGroup.FORBIDDEN) {
             throw new NullPointerException("The given type needs to be either REQUIRED or FORBIDDEN");
         }
         this.type = type;
@@ -112,7 +112,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static KnowledgeGroup serializableInstance() {
-        return new KnowledgeGroup(REQUIRED, new HashSet<String>(0), new HashSet<String>(0));
+        return new KnowledgeGroup(KnowledgeGroup.REQUIRED, new HashSet<String>(0), new HashSet<String>(0));
     }
 
 
@@ -179,7 +179,7 @@ public final class KnowledgeGroup implements TetradSerializable {
     public boolean isConflict(final KnowledgeGroup group) {
         // if they have different types, then if they share an edge there is a conflict.
         if (this.type != group.type) {
-            return intersect(this.fromGroup, group.fromGroup) && intersect(this.toGroup, group.toGroup);
+            return KnowledgeGroup.intersect(this.fromGroup, group.fromGroup) && KnowledgeGroup.intersect(this.toGroup, group.toGroup);
         }
         // otherwise they either don't share edges or are the same type and no conflicts
         // exist (as at worst they will have edges in common).
@@ -239,7 +239,7 @@ public final class KnowledgeGroup implements TetradSerializable {
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.type != REQUIRED && this.type != FORBIDDEN) {
+        if (this.type != KnowledgeGroup.REQUIRED && this.type != KnowledgeGroup.FORBIDDEN) {
             throw new IllegalStateException("Type must be REQUIRED or FORBIDDEN");
         }
 

@@ -28,6 +28,6 @@ import java.util.List;
  */
 public interface DataPreviewer {
 
-    public List<String> getPreviews(int fromLine, int toLine, int numOfCharacters) throws IOException;
+    List<String> getPreviews(int fromLine, int toLine, int numOfCharacters) throws IOException;
 
 }

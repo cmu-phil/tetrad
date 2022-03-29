@@ -29,7 +29,7 @@ package edu.cmu.tetrad.session;
  */
 public interface Executable {
     @SuppressWarnings({"UnusedDeclaration"})
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Executes the algorithm.

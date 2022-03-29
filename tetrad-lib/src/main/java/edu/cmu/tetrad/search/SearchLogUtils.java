@@ -82,10 +82,10 @@ public class SearchLogUtils {
         final StringBuilder sb = new StringBuilder();
 
         sb.append("Independence accepted: ");
-        sb.append(independenceFact(x, y, condSet));
+        sb.append(SearchLogUtils.independenceFact(x, y, condSet));
 
         if (!Double.isNaN(pValue)) {
-            sb.append("\tp = ").append(nf.format(pValue));
+            sb.append("\tp = ").append(SearchLogUtils.nf.format(pValue));
         }
 
         return sb.toString();
@@ -95,10 +95,10 @@ public class SearchLogUtils {
         final StringBuilder sb = new StringBuilder();
 
         sb.append("Dependent: ");
-        sb.append(independenceFact(x, y, condSet));
+        sb.append(SearchLogUtils.independenceFact(x, y, condSet));
 
         if (!Double.isNaN(pValue)) {
-            sb.append("\tp = ").append(nf.format(pValue));
+            sb.append("\tp = ").append(SearchLogUtils.nf.format(pValue));
         }
 
         return sb.toString();

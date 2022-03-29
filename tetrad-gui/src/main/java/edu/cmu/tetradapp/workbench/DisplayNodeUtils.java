@@ -48,31 +48,31 @@ public class DisplayNodeUtils {
     private static final int PIXEL_GAP = 7;
 
     public static Color getNodeFillColor() {
-        return NODE_FILL_COLOR;
+        return DisplayNodeUtils.NODE_FILL_COLOR;
     }
 
     public static Color getNodeEdgeColor() {
-        return NODE_EDGE_COLOR;
+        return DisplayNodeUtils.NODE_EDGE_COLOR;
     }
 
     public static Color getNodeSelectedFillColor() {
-        return NODE_SELECTED_FILL_COLOR;
+        return DisplayNodeUtils.NODE_SELECTED_FILL_COLOR;
     }
 
     public static Color getNodeSelectedEdgeColor() {
-        return NODE_SELECTED_EDGE_COLOR;
+        return DisplayNodeUtils.NODE_SELECTED_EDGE_COLOR;
     }
 
     public static Color getNodeTextColor() {
-        return NODE_TEXT_COLOR;
+        return DisplayNodeUtils.NODE_TEXT_COLOR;
     }
 
     public static Font getFont() {
-        return FONT;
+        return DisplayNodeUtils.FONT;
     }
 
     public static int getPixelGap() {
-        return PIXEL_GAP;
+        return DisplayNodeUtils.PIXEL_GAP;
     }
 }
 

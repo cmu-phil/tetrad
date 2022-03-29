@@ -45,7 +45,7 @@ public class TemplateExpander {
     }
 
     public static TemplateExpander getInstance() {
-        return INSTANCE;
+        return TemplateExpander.INSTANCE;
     }
 
     /**

@@ -80,7 +80,7 @@ public class RegressionCovariance implements Regression {
      * @param covariances The covariance matrix.
      */
     public RegressionCovariance(final ICovarianceMatrix covariances) {
-        this(covariances, zeroMeans(covariances.getDimension()));
+        this(covariances, RegressionCovariance.zeroMeans(covariances.getDimension()));
     }
 
     /**
@@ -92,7 +92,7 @@ public class RegressionCovariance implements Regression {
      *                    null.
      */
     private RegressionCovariance(final ICovarianceMatrix covariances, final Vector means) {
-        this(new CorrelationMatrix(covariances), standardDeviations(covariances),
+        this(new CorrelationMatrix(covariances), RegressionCovariance.standardDeviations(covariances),
                 means);
     }
 

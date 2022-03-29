@@ -70,13 +70,13 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
         double pTo = this.high;
         double pMid = this.high;
 
-        double lastD = getD(parameters, this.parameter, this.high, samples, samples.size(), this.algorithm, this.archive);
+        double lastD = StARS2.getD(parameters, this.parameter, this.high, samples, samples.size(), this.algorithm, this.archive);
 
         while (abs(pFrom - pTo) > tolerance) {
             pMid = (pFrom + pTo) / 2.0;
-            _parameters.set(this.parameter, getValue(pMid, parameters));
+            _parameters.set(this.parameter, StARS2.getValue(pMid, parameters));
 
-            final double D = getD(parameters, this.parameter, pMid, samples, samples.size(), this.algorithm, this.archive);
+            final double D = StARS2.getD(parameters, this.parameter, pMid, samples, samples.size(), this.algorithm, this.archive);
             System.out.println("pFrom = " + pFrom + " pTo = " + pTo + " pMid = " + pMid + " D = " + D);
 
             if (D > lastD && D < cutoff) {
@@ -101,10 +101,10 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
 //        );
 //
 //        double _p = getValue(p.getPoint()[0], parameters);
-        final double _p = getValue(pMid, parameters);
+        final double _p = StARS2.getValue(pMid, parameters);
 //        _p = Math.round(_p * 10.0) / 10.0;
         System.out.println(this.parameter + " = " + _p);
-        _parameters.set(this.parameter, getValue(_p, parameters));
+        _parameters.set(this.parameter, StARS2.getValue(_p, parameters));
 //
         return this.algorithm.search(dataSet, _parameters);
     }

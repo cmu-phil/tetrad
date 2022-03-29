@@ -66,7 +66,7 @@ public class AlgorithmFactory {
 
     public static Algorithm create(final Class<? extends Algorithm> algoClass, final IndependenceWrapper test, final ScoreWrapper score, final Graph externalGraph)
             throws IllegalAccessException, InstantiationException {
-        final Algorithm algorithm = create(algoClass, test, score);
+        final Algorithm algorithm = AlgorithmFactory.create(algoClass, test, score);
         if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
             ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }
@@ -83,12 +83,12 @@ public class AlgorithmFactory {
         final IndependenceWrapper test = (indTestClass == null) ? null : indTestClass.newInstance();
         final ScoreWrapper score = (scoreClass == null) ? null : scoreClass.newInstance();
 
-        return create(algoClass, test, score);
+        return AlgorithmFactory.create(algoClass, test, score);
     }
 
     public static Algorithm create(final Class<? extends Algorithm> algoClass, final Class<? extends IndependenceWrapper> indTestClass, final Class<? extends ScoreWrapper> scoreClass, final Graph externalGraph)
             throws IllegalAccessException, InstantiationException {
-        final Algorithm algorithm = create(algoClass, indTestClass, scoreClass);
+        final Algorithm algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
             ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }

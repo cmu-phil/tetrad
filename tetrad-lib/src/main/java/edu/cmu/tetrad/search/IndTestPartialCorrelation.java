@@ -257,7 +257,7 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Fisher's Z, alpha = " + nf.format(getAlpha());
+        return "Fisher's Z, alpha = " + IndTestPartialCorrelation.nf.format(getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//

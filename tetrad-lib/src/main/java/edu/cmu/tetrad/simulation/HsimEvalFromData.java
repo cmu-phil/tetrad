@@ -156,7 +156,7 @@ public class HsimEvalFromData {
                         + " cases=" + cases + " frepeat=" + fsimRepeat.get(j) + " iterations=" + iterations);
                 //if(verbosity>0){System.out.println(fMSE[j].allToString());}
                 output = output + fMSE[j].allToString() + nl;
-                latexTableArray[j] = prelimToPRAOtable(fMSE[j]);
+                latexTableArray[j] = HsimEvalFromData.prelimToPRAOtable(fMSE[j]);
             }
             for (int j = 0; j < hMSE.length; j++) {
                 for (int k = 0; k < hMSE[j].length; k++) {
@@ -164,7 +164,7 @@ public class HsimEvalFromData {
                             + " cases=" + cases + " rsize=" + 1 + " repeat=" + hsimRepeat.get(k) + " iterations=" + iterations);
                     //if(verbosity>0){System.out.println(hMSE[j][k].allToString());}
                     output = output + hMSE[j][k].allToString() + nl;
-                    latexTableArray[fsimRepeat.size() + j * hMSE[j].length + k] = prelimToPRAOtable(hMSE[j][k]);
+                    latexTableArray[fsimRepeat.size() + j * hMSE[j].length + k] = HsimEvalFromData.prelimToPRAOtable(hMSE[j][k]);
                 }
             }
             //record all the params, the base error values, and the fsim/hsim mean squared errors

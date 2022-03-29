@@ -60,18 +60,18 @@ public class MathUtils {
         if (a == 0 && b == 0) {
             return 1;
         } else if (a == 0 && b > 0) {
-            return (int) Math.round(Math.exp(1 - (logFactorial(b) + logFactorial(a - b))));
+            return (int) Math.round(Math.exp(1 - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b))));
         } else if (a > 0 && b == 0) {
-            return (int) Math.round(Math.exp(logFactorial(a) - (1 + logFactorial(a - b))));
+            return (int) Math.round(Math.exp(MathUtils.logFactorial(a) - (1 + MathUtils.logFactorial(a - b))));
         } else if (a > 0 && b > 0) {
-            return (int) Math.round(Math.exp(logFactorial(a) - (logFactorial(b) + logFactorial(a - b))));
+            return (int) Math.round(Math.exp(MathUtils.logFactorial(a) - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b))));
         } else {
             throw new IllegalArgumentException();
         }
     }
 
     public static double logChoose(final int a, final int b) {
-        return logFactorial(a) - (logFactorial(b) + logFactorial(a - b));
+        return MathUtils.logFactorial(a) - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b));
     }
 }
 

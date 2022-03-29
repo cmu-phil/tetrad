@@ -169,7 +169,7 @@ public class EndpointMatrixGraph implements Graph {
     public static Graph shallowCopy(final EndpointMatrixGraph graph) {
         final EndpointMatrixGraph _graph = new EndpointMatrixGraph();
 
-        _graph.graphMatrix = copy(graph.graphMatrix);
+        _graph.graphMatrix = EndpointMatrixGraph.copy(graph.graphMatrix);
         _graph.nodes = new ArrayList<>(graph.nodes);
         _graph.ambiguousTriples = new HashSet<>(graph.ambiguousTriples);
         _graph.underLineTriples = new HashSet<>(graph.underLineTriples);

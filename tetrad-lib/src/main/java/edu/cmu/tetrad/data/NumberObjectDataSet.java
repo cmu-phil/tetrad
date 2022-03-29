@@ -355,7 +355,7 @@ public final class NumberObjectDataSet
         final Object variable = getVariable(col);
 
         if (variable instanceof ContinuousVariable) {
-            setDouble(row, col, getValueFromObjectContinuous(value));
+            setDouble(row, col, NumberObjectDataSet.getValueFromObjectContinuous(value));
         } else if (variable instanceof DiscreteVariable) {
             setInt(row, col, getValueFromObjectDiscrete(value,
                     (DiscreteVariable) variable));

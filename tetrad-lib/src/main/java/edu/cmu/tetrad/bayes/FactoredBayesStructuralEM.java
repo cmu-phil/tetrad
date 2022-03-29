@@ -184,7 +184,7 @@ public final class FactoredBayesStructuralEM {
         }
 
         final double score0 =
-                factorScoreMD(dag0, bdeMetricCache, bayesPmTest0, bayesImMn0);
+                FactoredBayesStructuralEM.factorScoreMD(dag0, bdeMetricCache, bayesPmTest0, bayesImMn0);
 
         TetradLogger.getInstance().log("details", "Score of L1,X1,X2,X3 (no edges) for itself = " + score0);
 
@@ -221,7 +221,7 @@ public final class FactoredBayesStructuralEM {
         }
 
         final double score1 =
-                factorScoreMD(dag1, bdeMetricCache, bayesPmTest1, bayesImMn0);
+                FactoredBayesStructuralEM.factorScoreMD(dag1, bdeMetricCache, bayesPmTest1, bayesImMn0);
 
         TetradLogger.getInstance().log("details", "Score of X1-->L1 for L1,X1,X2,X3 (no edges) = " + score1);
 
@@ -297,7 +297,7 @@ public final class FactoredBayesStructuralEM {
                 final List<Graph> models = ModelGenerator.generate(graphMn);
 
                 double bestScore =
-                        factorScoreMD(dagMn, this.bdeMetricCache, this.bayesPmMn, bayesImMn);
+                        FactoredBayesStructuralEM.factorScoreMD(dagMn, this.bdeMetricCache, this.bayesPmMn, bayesImMn);
 
                 final EdgeListGraph edges = new EdgeListGraph(dagMn);
 
@@ -317,7 +317,7 @@ public final class FactoredBayesStructuralEM {
                         bayesPmTest.setNumCategories(node, FactoredBayesStructuralEM.this.ncategories[i]);
                     }
 
-                    final double score = factorScoreMD(dag, this.bdeMetricCache, bayesPmTest,
+                    final double score = FactoredBayesStructuralEM.factorScoreMD(dag, this.bdeMetricCache, bayesPmTest,
                             bayesImMn);
 
                     final EdgeListGraph edgesTest = new EdgeListGraph(dag);

@@ -57,7 +57,7 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
         try {
             getPreviews(fromLine, toLine, numOfCharacters, linePreviews);
         } catch (final ClosedByInterruptException exception) {
-            LOGGER.error("", exception);
+            BasicDataPreviewer.LOGGER.error("", exception);
         }
 
         return linePreviews;
@@ -81,7 +81,7 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
                 while (buffer.hasRemaining() && !isDone && !Thread.currentThread().isInterrupted()) {
                     final byte currentChar = buffer.get();
                     if (skipLine) {
-                        if (currentChar == CARRIAGE_RETURN || currentChar == LINE_FEED) {
+                        if (currentChar == AbstractDataPreviewer.CARRIAGE_RETURN || currentChar == AbstractDataPreviewer.LINE_FEED) {
                             skipLine = false;
 
                             if (charCount > 0) {
@@ -91,7 +91,7 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
                             }
 
                             lineNumber++;
-                            if (currentChar == LINE_FEED && previousChar == CARRIAGE_RETURN) {
+                            if (currentChar == AbstractDataPreviewer.LINE_FEED && previousChar == AbstractDataPreviewer.CARRIAGE_RETURN) {
                                 lineNumber--;
                             }
                         }
@@ -100,7 +100,7 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
                     } else if (lineNumber < fromLine) {
                         skipLine = true;
                     } else {
-                        if (currentChar == CARRIAGE_RETURN || currentChar == LINE_FEED) {
+                        if (currentChar == AbstractDataPreviewer.CARRIAGE_RETURN || currentChar == AbstractDataPreviewer.LINE_FEED) {
                             if (charCount > 0) {
                                 charCount = 0;
                                 list.add(lineBuilder.toString());
@@ -108,13 +108,13 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
                             }
 
                             lineNumber++;
-                            if (currentChar == LINE_FEED && previousChar == CARRIAGE_RETURN) {
+                            if (currentChar == AbstractDataPreviewer.LINE_FEED && previousChar == AbstractDataPreviewer.CARRIAGE_RETURN) {
                                 lineNumber--;
                             }
                         } else {
                             charCount++;
                             if (charCount > numOfCharacters) {
-                                lineBuilder.append(ELLIPSIS);
+                                lineBuilder.append(AbstractDataPreviewer.ELLIPSIS);
                                 skipLine = true;
                             } else {
                                 lineBuilder.append((char) currentChar);

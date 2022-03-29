@@ -825,7 +825,7 @@ public final class IndTestHsic implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "HSIC, alpha = " + nf.format(getAlpha());
+        return "HSIC, alpha = " + IndTestHsic.nf.format(getAlpha());
     }
 
     public boolean determines(final List z, final Node x) throws UnsupportedOperationException {

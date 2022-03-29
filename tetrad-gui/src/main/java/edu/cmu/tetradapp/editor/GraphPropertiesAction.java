@@ -103,16 +103,16 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         final JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(300, 300));
 
-        textArea.append("\nNumber of nodes: " + String.valueOf(getGraph().getNumNodes()));
-        textArea.append("\nNumber of latents: " + String.valueOf(numLatents));
-        textArea.append("\nNumber of edges: " + String.valueOf(getGraph().getNumEdges()));
-        textArea.append("\nNumber of directed edges: " + String.valueOf(numDirectedEdges));
-        textArea.append("\nNumber of bidirected edges: " + String.valueOf(numBidirectedEdges));
-        textArea.append("\nNumber of undirected edges: " + String.valueOf(numUndirectedEdges));
-        textArea.append("\nMax degree: " + String.valueOf(getGraph().getConnectivity()));
-        textArea.append("\nMax indegree: " + String.valueOf(maxIndegree));
-        textArea.append("\nMax outdegree: " + String.valueOf(maxOutdegree));
-        textArea.append("\nNumber of latents: " + String.valueOf(numLatents));
+        textArea.append("\nNumber of nodes: " + getGraph().getNumNodes());
+        textArea.append("\nNumber of latents: " + numLatents);
+        textArea.append("\nNumber of edges: " + getGraph().getNumEdges());
+        textArea.append("\nNumber of directed edges: " + numDirectedEdges);
+        textArea.append("\nNumber of bidirected edges: " + numBidirectedEdges);
+        textArea.append("\nNumber of undirected edges: " + numUndirectedEdges);
+        textArea.append("\nMax degree: " + getGraph().getConnectivity());
+        textArea.append("\nMax indegree: " + maxIndegree);
+        textArea.append("\nMax outdegree: " + maxOutdegree);
+        textArea.append("\nNumber of latents: " + numLatents);
         textArea.append("\n" + (cyclic ? "Cyclic" : "Acyclic"));
 
         final Box b2 = Box.createHorizontalBox();

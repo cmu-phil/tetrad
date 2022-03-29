@@ -61,7 +61,7 @@ public class LTMatrix extends BasicLTMatrix {
      * checks that x can be converted to a short without causing overflow.
      */
     public void setDoubleValue(final int r, final int c, final double x) {
-        if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
+        if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Double " + x + " cannot be stored as a short");
         }
@@ -73,7 +73,7 @@ public class LTMatrix extends BasicLTMatrix {
      * can be converted to a short without causing overflow.
      */
     public void setValue(final int r, final int c, final int x) {
-        if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
+        if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Double " + x + " cannot be stored as a short");
         }

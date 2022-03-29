@@ -405,7 +405,7 @@ public final class IndTestCramerT implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Partial Correlation T Test, alpha = " + nf.format(getAlpha());
+        return "Partial Correlation T Test, alpha = " + IndTestCramerT.nf.format(getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//

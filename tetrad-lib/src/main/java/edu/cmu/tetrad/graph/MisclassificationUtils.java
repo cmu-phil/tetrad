@@ -98,8 +98,8 @@ public class MisclassificationUtils {
                 final Endpoint endpoint1 = refGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
                 final Endpoint endpoint2 = estGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
 
-                final int index1 = getIndex(endpoint1);
-                final int index2 = getIndex(endpoint2);
+                final int index1 = MisclassificationUtils.getIndex(endpoint1);
+                final int index2 = MisclassificationUtils.getIndex(endpoint2);
 
                 counts[index1][index2]++;
             }
@@ -160,8 +160,8 @@ public class MisclassificationUtils {
 
             final Edge trueConvert = new Edge(x, y, true1.getProximalEndpoint(x), true1.getProximalEndpoint(y));
 
-            final int m = getTypeLeft(trueConvert, est1);
-            final int n = getTypeTop(est1);
+            final int m = MisclassificationUtils.getTypeLeft(trueConvert, est1);
+            final int n = MisclassificationUtils.getTypeTop(est1);
 
             counts[m][n]++;
         }
@@ -178,8 +178,8 @@ public class MisclassificationUtils {
 
             final Edge estConvert = new Edge(x, y, est1.getProximalEndpoint(x), est1.getProximalEndpoint(y));
 
-            final int m = getTypeLeft(true1, estConvert);
-            final int n = getTypeTop(estConvert);
+            final int m = MisclassificationUtils.getTypeLeft(true1, estConvert);
+            final int n = MisclassificationUtils.getTypeTop(estConvert);
 
             if (n == 5) {
                 counts[m][n]++;

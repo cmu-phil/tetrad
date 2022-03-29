@@ -44,7 +44,7 @@ public final class TestBayesXml {
 
     @Test
     public void testRoundtrip() {
-        final BayesIm bayesIm = sampleBayesIm1();
+        final BayesIm bayesIm = TestBayesXml.sampleBayesIm1();
         final Element element = BayesXmlRenderer.getElement(bayesIm);
 
         final BayesXmlParser parser = new BayesXmlParser();
@@ -55,7 +55,7 @@ public final class TestBayesXml {
 
     @Test
     public void testRoundtrip2() {
-        final BayesIm bayesIm = sampleBayesIm2();
+        final BayesIm bayesIm = TestBayesXml.sampleBayesIm2();
         final Element element = BayesXmlRenderer.getElement(bayesIm);
 
         final BayesXmlParser parser = new BayesXmlParser();
@@ -66,7 +66,7 @@ public final class TestBayesXml {
 
     @Test
     public void testRoundtrip3() {
-        final BayesIm bayesIm = sampleBayesIm3();
+        final BayesIm bayesIm = TestBayesXml.sampleBayesIm3();
         final Element element = BayesXmlRenderer.getElement(bayesIm);
 
         final BayesXmlParser parser = new BayesXmlParser();
@@ -206,7 +206,7 @@ public final class TestBayesXml {
      * @param element the element to print.
      */
     private static void printElement(final Element element) {
-        printDocument(new Document(element));
+        TestBayesXml.printDocument(new Document(element));
     }
 
     private static void printDocument(final Document document) {

@@ -41,7 +41,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 public interface UpdateFunction extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Returns the indexed lag graph, if one is available.

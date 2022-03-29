@@ -80,17 +80,17 @@ public class ADTreeTest {
 
         // the query is an arbitrary map of vars and their values
         final TreeMap<Node, Short> query = new TreeMap<>();
-        query.put(node(pm, "X1"), (short) 1);
-        query.put(node(pm, "X5"), (short) 0);
+        query.put(ADTreeTest.node(pm, "X1"), (short) 1);
+        query.put(ADTreeTest.node(pm, "X5"), (short) 0);
         start = System.currentTimeMillis();
         System.out.println(String.format("Count is %d", adTree.count(query)));
         System.out.println(String.format("Query in %s ms", System.currentTimeMillis() - start));
 
         query.clear();
-        query.put(node(pm, "X1"), (short) 1);
-        query.put(node(pm, "X2"), (short) 1);
-        query.put(node(pm, "X5"), (short) 0);
-        query.put(node(pm, "X10"), (short) 1);
+        query.put(ADTreeTest.node(pm, "X1"), (short) 1);
+        query.put(ADTreeTest.node(pm, "X2"), (short) 1);
+        query.put(ADTreeTest.node(pm, "X5"), (short) 0);
+        query.put(ADTreeTest.node(pm, "X10"), (short) 1);
         start = System.currentTimeMillis();
         System.out.println(String.format("Count is %d", adTree.count(query)));
         System.out.println(String.format("Query in %s ms", System.currentTimeMillis() - start));

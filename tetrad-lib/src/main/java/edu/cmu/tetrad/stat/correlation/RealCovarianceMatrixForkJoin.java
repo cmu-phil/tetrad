@@ -21,6 +21,7 @@ package edu.cmu.tetrad.stat.correlation;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 /**
@@ -128,7 +129,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
-                invokeAll(actions);
+                ForkJoinTask.invokeAll(actions);
             }
         }
 
@@ -189,7 +190,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
-                invokeAll(actions);
+                ForkJoinTask.invokeAll(actions);
             }
         }
 
@@ -240,7 +241,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
-                invokeAll(actions);
+                ForkJoinTask.invokeAll(actions);
             }
         }
     }

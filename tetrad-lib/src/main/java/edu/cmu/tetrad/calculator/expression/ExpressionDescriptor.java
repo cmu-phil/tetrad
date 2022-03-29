@@ -41,7 +41,7 @@ public interface ExpressionDescriptor extends TetradSerializable {
         static final long serialVersionUID = 23L;
 
         public static Position serializableInstance() {
-            return NEITHER;
+            return Position.NEITHER;
         }
     }
 

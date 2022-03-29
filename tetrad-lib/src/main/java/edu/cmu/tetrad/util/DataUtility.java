@@ -56,16 +56,16 @@ public class DataUtility {
         try (final FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
             final MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
             byte currentChar = -1;
-            byte prevChar = NEW_LINE;
+            byte prevChar = DataUtility.NEW_LINE;
             while (buffer.hasRemaining()) {
                 currentChar = buffer.get();
-                if (currentChar == CARRIAGE_RETURN) {
-                    currentChar = NEW_LINE;
+                if (currentChar == DataUtility.CARRIAGE_RETURN) {
+                    currentChar = DataUtility.NEW_LINE;
                 }
 
-                if (currentChar == delim || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
+                if (currentChar == delim || (currentChar == DataUtility.NEW_LINE && prevChar != DataUtility.NEW_LINE)) {
                     count++;
-                    if (currentChar == NEW_LINE) {
+                    if (currentChar == DataUtility.NEW_LINE) {
                         break;
                     }
                 }
@@ -74,7 +74,7 @@ public class DataUtility {
             }
 
             // take care of cases where there's no newline at the end of the file
-            if (!(currentChar == -1 || currentChar == NEW_LINE)) {
+            if (!(currentChar == -1 || currentChar == DataUtility.NEW_LINE)) {
                 count++;
             }
         }
@@ -92,21 +92,21 @@ public class DataUtility {
 
         try (final FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
             final MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-            byte prevChar = NEW_LINE;
+            byte prevChar = DataUtility.NEW_LINE;
             while (buffer.hasRemaining()) {
                 byte currentChar = buffer.get();
-                if (currentChar == CARRIAGE_RETURN) {
-                    currentChar = NEW_LINE;
+                if (currentChar == DataUtility.CARRIAGE_RETURN) {
+                    currentChar = DataUtility.NEW_LINE;
                 }
 
-                if (currentChar == NEW_LINE && prevChar != NEW_LINE) {
+                if (currentChar == DataUtility.NEW_LINE && prevChar != DataUtility.NEW_LINE) {
                     count++;
                 }
 
                 prevChar = currentChar;
             }
 
-            if (prevChar != NEW_LINE) {
+            if (prevChar != DataUtility.NEW_LINE) {
                 count++;
             }
         }

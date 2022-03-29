@@ -236,10 +236,10 @@ public class ScatterPlotView extends JPanel {
             });
 
             // build the gui.
-            restrictSize(this.xSelector);
-            restrictSize(this.newConditioningVariableSelector);
-            restrictSize(this.newConditioningVariableButton);
-            restrictSize(this.removeConditioningVariableButton);
+            ScatterPlotController.restrictSize(this.xSelector);
+            ScatterPlotController.restrictSize(this.newConditioningVariableSelector);
+            ScatterPlotController.restrictSize(this.newConditioningVariableButton);
+            ScatterPlotController.restrictSize(this.removeConditioningVariableButton);
 
             buildEditArea();
         }
@@ -278,8 +278,8 @@ public class ScatterPlotView extends JPanel {
         }
 
         private void buildEditArea() {
-            restrictSize(this.xSelector);
-            restrictSize(this.ySelector);
+            ScatterPlotController.restrictSize(this.xSelector);
+            ScatterPlotController.restrictSize(this.ySelector);
 
             final Box main = Box.createVerticalBox();
             final Box b1 = Box.createHorizontalBox();
@@ -441,12 +441,12 @@ public class ScatterPlotView extends JPanel {
                 } else if (type == Type.BelowAverage) {
                     b4.add(new JLabel(variable + " = Below Average"));
                 } else if (type == Type.Ntile) {
-                    b4.add(new JLabel(variable + " = " + tiles[ntile - 1] + " " + ntileIndex));
+                    b4.add(new JLabel(variable + " = " + ScatterPlotView.tiles[ntile - 1] + " " + ntileIndex));
                 }
 
                 b4.add(Box.createHorizontalGlue());
                 this.checkBox = new JCheckBox();
-                restrictSize(this.checkBox);
+                ScatterPlotController.restrictSize(this.checkBox);
                 b4.add(this.checkBox);
                 this.box = b4;
 
@@ -544,7 +544,7 @@ public class ScatterPlotView extends JPanel {
             radio3.addActionListener(new ActionListener() {
                 public void actionPerformed(final ActionEvent e) {
                     ContinuousInquiryPanel.this.type = ScatterPlotController.ContinuousConditioningPanel.Type.Ntile;
-                    final double[] breakpoints = getNtileBreakpoints(ContinuousInquiryPanel.this.data, getNtile());
+                    final double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(ContinuousInquiryPanel.this.data, getNtile());
                     final double breakpoint1 = breakpoints[getNtileIndex() - 1];
                     final double breakpoint2 = breakpoints[getNtileIndex()];
                     ContinuousInquiryPanel.this.field1.setValue(breakpoint1);
@@ -573,15 +573,15 @@ public class ScatterPlotView extends JPanel {
             final int ntileIndex = conditioningPanel.getNtileIndex();
 
             for (int n = 2; n <= 10; n++) {
-                this.ntileCombo.addItem(tiles[n - 1]);
-                this.ntileMap.put(tiles[n - 1], n);
+                this.ntileCombo.addItem(ScatterPlotView.tiles[n - 1]);
+                this.ntileMap.put(ScatterPlotView.tiles[n - 1], n);
             }
 
             for (int n = 1; n <= ntile; n++) {
                 this.ntileIndexCombo.addItem(n);
             }
 
-            this.ntileCombo.setSelectedItem(tiles[ntile - 1]);
+            this.ntileCombo.setSelectedItem(ScatterPlotView.tiles[ntile - 1]);
             this.ntileIndexCombo.setSelectedItem(ntileIndex);
 
             this.ntileCombo.addItemListener(new ItemListener() {
@@ -597,7 +597,7 @@ public class ScatterPlotView extends JPanel {
                         ContinuousInquiryPanel.this.ntileIndexCombo.addItem(n);
                     }
 
-                    final double[] breakpoints = getNtileBreakpoints(ContinuousInquiryPanel.this.data, getNtile());
+                    final double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(ContinuousInquiryPanel.this.data, getNtile());
                     final double breakpoint1 = breakpoints[getNtileIndex() - 1];
                     final double breakpoint2 = breakpoints[getNtileIndex()];
                     ContinuousInquiryPanel.this.field1.setValue(breakpoint1);
@@ -609,7 +609,7 @@ public class ScatterPlotView extends JPanel {
                 public void itemStateChanged(final ItemEvent e) {
                     final int ntile = getNtile();
                     final int ntileIndex = getNtileIndex();
-                    final double[] breakpoints = getNtileBreakpoints(ContinuousInquiryPanel.this.data, ntile);
+                    final double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(ContinuousInquiryPanel.this.data, ntile);
                     final double breakpoint1 = breakpoints[ntileIndex - 1];
                     final double breakpoint2 = breakpoints[ntileIndex];
                     ContinuousInquiryPanel.this.field1.setValue(breakpoint1);
@@ -628,7 +628,7 @@ public class ScatterPlotView extends JPanel {
                 this.field2.setValue(StatUtils.mean(this.data));
             } else if (this.type == ScatterPlotController.ContinuousConditioningPanel.Type.Ntile) {
                 radio3.setSelected(true);
-                final double[] breakpoints = getNtileBreakpoints(this.data, getNtile());
+                final double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(this.data, getNtile());
                 final double breakpoint1 = breakpoints[getNtileIndex() - 1];
                 final double breakpoint2 = breakpoints[getNtileIndex()];
                 this.field1.setValue(breakpoint1);

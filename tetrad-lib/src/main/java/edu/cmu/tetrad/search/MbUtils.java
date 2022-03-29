@@ -217,7 +217,7 @@ public class MbUtils {
      * Trims <code>graph</code> to variables whose least distance to the target is no more than <code>distance</code>
      */
     public static void trimToDistance(final Graph graph, final Node target, final int distance) {
-        final Set<Node> nodes = getNeighborhood(graph, target, distance);
+        final Set<Node> nodes = MbUtils.getNeighborhood(graph, target, distance);
 
         final List<Node> irrelevantNodes = graph.getNodes();
         irrelevantNodes.removeAll(nodes);
@@ -258,7 +258,7 @@ public class MbUtils {
                                              final boolean orientBidirectedEdges,
                                              final IndependenceTest test, final int depth,
                                              final Node target) {
-        return new LinkedList<>(listMbDags(new EdgeListGraph(mbCPDAG),
+        return new LinkedList<>(MbUtils.listMbDags(new EdgeListGraph(mbCPDAG),
                 orientBidirectedEdges, test, depth, target));
     }
 
@@ -272,7 +272,7 @@ public class MbUtils {
                                          final Node target) {
         final Set<Graph> dags = new HashSet<>();
         final Graph graph = new EdgeListGraph(mbCPDAG);
-        doAbbreviatedMbOrientation(graph, test, depth, target);
+        MbUtils.doAbbreviatedMbOrientation(graph, test, depth, target);
         final Set<Edge> edges = graph.getEdges();
         Edge edge = null;
 
@@ -296,12 +296,12 @@ public class MbUtils {
         graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.TAIL);
         graph.setEndpoint(edge.getNode1(), edge.getNode2(), Endpoint.ARROW);
         dags.addAll(
-                listMbDags(graph, orientBidirectedEdges, test, depth, target));
+                MbUtils.listMbDags(graph, orientBidirectedEdges, test, depth, target));
 
         graph.setEndpoint(edge.getNode1(), edge.getNode2(), Endpoint.TAIL);
         graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.ARROW);
         dags.addAll(
-                listMbDags(graph, orientBidirectedEdges, test, depth, target));
+                MbUtils.listMbDags(graph, orientBidirectedEdges, test, depth, target));
 
         return dags;
     }
@@ -318,9 +318,9 @@ public class MbUtils {
                                                    final int depth, final Node target) {
         SearchGraphUtils.orientUsingMeekRulesLocally(new Knowledge2(), graph,
                 test, depth);
-        trimToMbNodes(graph, target, false);
-        trimEdgesAmongParents(graph, target);
-        trimEdgesAmongParentsOfChildren(graph, target);
+        MbUtils.trimToMbNodes(graph, target, false);
+        MbUtils.trimEdgesAmongParents(graph, target);
+        MbUtils.trimEdgesAmongParentsOfChildren(graph, target);
     }
 }
 

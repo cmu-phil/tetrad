@@ -148,7 +148,7 @@ public final class MlBayesIm implements BayesIm {
      *                                  provided.
      */
     public MlBayesIm(final BayesPm bayesPm) throws IllegalArgumentException {
-        this(bayesPm, null, MANUAL);
+        this(bayesPm, null, MlBayesIm.MANUAL);
     }
 
     /**
@@ -568,12 +568,12 @@ public final class MlBayesIm implements BayesIm {
      */
     public void randomizeRow(final int nodeIndex, final int rowIndex) {
         final int size = getNumColumns(nodeIndex);
-        this.probs[nodeIndex][rowIndex] = getRandomWeights3(size);
+        this.probs[nodeIndex][rowIndex] = MlBayesIm.getRandomWeights3(size);
     }
 
     private void randomizeRow2(final int nodeIndex, final int rowIndex, final double[] biases) {
         final int size = getNumColumns(nodeIndex);
-        this.probs[nodeIndex][rowIndex] = getRandomWeights2(size, biases);
+        this.probs[nodeIndex][rowIndex] = MlBayesIm.getRandomWeights2(size, biases);
     }
 
     private static double[] getRandomWeights2(final int size, final double[] biases) {
@@ -1178,7 +1178,7 @@ public final class MlBayesIm implements BayesIm {
                         continue;
                     }
 
-                    if (abs(prob - otherProb) > ALLOWABLE_DIFFERENCE) {
+                    if (abs(prob - otherProb) > MlBayesIm.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }
@@ -1303,7 +1303,7 @@ public final class MlBayesIm implements BayesIm {
         this.probs[nodeIndex] = new double[numRows][numCols];
 
         // Initialize each row.
-        if (initializationMethod == RANDOM) {
+        if (initializationMethod == MlBayesIm.RANDOM) {
             randomizeTable(nodeIndex);
         } else {
             for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
@@ -1319,9 +1319,9 @@ public final class MlBayesIm implements BayesIm {
 
     private void overwriteRow(final int nodeIndex, final int rowIndex,
                               final int initializationMethod) {
-        if (initializationMethod == RANDOM) {
+        if (initializationMethod == MlBayesIm.RANDOM) {
             randomizeRow(nodeIndex, rowIndex);
-        } else if (initializationMethod == MANUAL) {
+        } else if (initializationMethod == MlBayesIm.MANUAL) {
             initializeRowAsUnknowns(nodeIndex, rowIndex);
         } else {
             throw new IllegalArgumentException("Unrecognized state.");

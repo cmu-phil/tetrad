@@ -39,7 +39,7 @@ public final class DataColumns {
     }
 
     public static DataColumn[] update(DataColumn[] dataColumns, final Metadata metadata) {
-        final Map<String, ColumnMetadata> columnMetadataMap = getColumnMetadataMap(metadata);
+        final Map<String, ColumnMetadata> columnMetadataMap = DataColumns.getColumnMetadataMap(metadata);
 
         // update data column's data type and metadata column's column number
         for (final DataColumn dataColumn : dataColumns) {

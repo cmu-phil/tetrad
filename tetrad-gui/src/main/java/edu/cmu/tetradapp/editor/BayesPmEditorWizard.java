@@ -224,7 +224,7 @@ final class BayesPmEditorWizard extends JPanel {
             ++current;
 
             if (current == max) {
-                JOptionPane.showMessageDialog(BayesPmEditorWizard.this,
+                JOptionPane.showMessageDialog(this,
                         "There are no more variables.");
             }
 

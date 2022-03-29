@@ -285,7 +285,7 @@ public final class LoadDataDialog extends JPanel {
 
         // Put the list in a scrollable area
         final JScrollPane fileListScrollPane = new JScrollPane(this.fileList);
-        fileListScrollPane.setAlignmentX(LEFT_ALIGNMENT);
+        fileListScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         this.fileListBox = Box.createVerticalBox();
         this.fileListBox.setMinimumSize(new Dimension(305, 250));
@@ -411,7 +411,7 @@ public final class LoadDataDialog extends JPanel {
 
         // Put the list in a scrollable area
         this.filesToValidateScrollPane = new JScrollPane(this.validationFileList);
-        this.filesToValidateScrollPane.setAlignmentX(LEFT_ALIGNMENT);
+        this.filesToValidateScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         this.filesToValidateBox.add(this.filesToValidateScrollPane);
 

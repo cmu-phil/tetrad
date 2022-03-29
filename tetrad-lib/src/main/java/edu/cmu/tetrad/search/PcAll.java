@@ -441,7 +441,7 @@ public final class PcAll implements GraphSearch {
 
                 if (isColliderSepset(y, sepsetsxz)) {
                     if (colliderAllowed(x, y, z, knowledge)) {
-                        orientCollider(x, y, z, this.conflictRule, this.graph);
+                        PcAll.orientCollider(x, y, z, this.conflictRule, this.graph);
                     }
 
                     this.colliderTriples.add(new Triple(x, y, z));
@@ -582,8 +582,8 @@ public final class PcAll implements GraphSearch {
                 final List<Node> s2 = new ArrayList<>(sepset);
                 if (!s2.contains(b)) s2.add(b);
 //
-                if (!sepset.contains(b) && isArrowpointAllowed(a, b, knowledge) && isArrowpointAllowed(c, b, knowledge)) {
-                    orientCollider(a, b, c, conflictRule, graph);
+                if (!sepset.contains(b) && PcAll.isArrowpointAllowed(a, b, knowledge) && PcAll.isArrowpointAllowed(c, b, knowledge)) {
+                    PcAll.orientCollider(a, b, c, conflictRule, graph);
 
                     if (verbose) {
                         System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);

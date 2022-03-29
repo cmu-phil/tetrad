@@ -78,7 +78,7 @@ public class LingamStudy {
         final Simulations simulations = new Simulations();
         simulations.add(new LinearFisherModel(new RandomForward()));
 
-        comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, getParameters());
+        comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, LingamStudy.getParameters());
 
     }
 

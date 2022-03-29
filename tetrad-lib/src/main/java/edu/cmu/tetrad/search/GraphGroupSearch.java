@@ -35,12 +35,12 @@ public interface GraphGroupSearch {
      *
      * @return GraphGroup
      */
-    public GraphGroup search();
+    GraphGroup search();
 
     /**
      * @return long
      */
-    public long getElapsedTime();
+    long getElapsedTime();
 
 }
 

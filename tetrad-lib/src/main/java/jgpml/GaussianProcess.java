@@ -124,7 +124,7 @@ public class GaussianProcess {
             this.L = cd.getL();                // cholesky factorization of the covariance
 
             // alpha = L'\(L\y);
-            this.alpha = bSubstitutionWithTranspose(this.L, fSubstitution(this.L, y));
+            this.alpha = GaussianProcess.bSubstitutionWithTranspose(this.L, GaussianProcess.fSubstitution(this.L, y));
 
 //            double[][] yarr = y.getArray();
 //            double[][] alphaarr = alpha.getArray();
@@ -142,9 +142,9 @@ public class GaussianProcess {
             lml += 0.5 * n * Math.log(2 * Math.PI);
 
 
-            final Matrix W = bSubstitutionWithTranspose(this.L, (fSubstitution(this.L, Matrix.identity(n, n)))).minus(this.alpha.times(this.alpha.transpose()));     // precompute for convenience
+            final Matrix W = GaussianProcess.bSubstitutionWithTranspose(this.L, (GaussianProcess.fSubstitution(this.L, Matrix.identity(n, n)))).minus(this.alpha.times(this.alpha.transpose()));     // precompute for convenience
             for (int i = 0; i < df0.getRowDimension(); i++) {
-                df0.set(i, 0, sum(W.arrayTimes(this.covFunction.computeDerivatives(logtheta, x, i))) / 2);
+                df0.set(i, 0, GaussianProcess.sum(W.arrayTimes(this.covFunction.computeDerivatives(logtheta, x, i))) / 2);
             }
 
             return lml;
@@ -177,11 +177,11 @@ public class GaussianProcess {
 
         final Matrix ystar = Kstar.transpose().times(this.alpha);
 
-        final Matrix v = fSubstitution(this.L, Kstar);
+        final Matrix v = GaussianProcess.fSubstitution(this.L, Kstar);
 
         v.arrayTimesEquals(v);
 
-        final Matrix Sstar = Kss.minus(sumColumns(v).transpose());
+        final Matrix Sstar = Kss.minus(GaussianProcess.sumColumns(v).transpose());
 
         return new Matrix[]{ystar, Sstar};
     }
@@ -303,7 +303,7 @@ public class GaussianProcess {
 
     private final static double RATIO = 10;               // maximum allowed slope ratio
 
-    private final static double SIG = 0.1, RHO = SIG / 2;   // SIG and RHO are the constants controlling the Wolfe-
+    private final static double SIG = 0.1, RHO = GaussianProcess.SIG / 2;   // SIG and RHO are the constants controlling the Wolfe-
     // Powell conditions. SIG is the maximum allowed absolute ratio between
     // previous and new slopes (derivatives in the search direction), thus setting
     // SIG to low (positive) values forces higher precision in the line-searches.
@@ -357,7 +357,7 @@ public class GaussianProcess {
             Matrix X0 = params.copy();
             Matrix dF0 = df0.copy();
 
-            M = (length > 0) ? MAX : Math.min(MAX, -length - i);
+            M = (length > 0) ? GaussianProcess.MAX : Math.min(GaussianProcess.MAX, -length - i);
 
             while (true) {                            // keep extrapolating as long as necessary
 
@@ -378,7 +378,7 @@ public class GaussianProcess {
                     //f3 = f.evaluate(m1,cf, in, out, df3);
                     f3 = negativeLogLikelihood(m1, in, out, df3);
 
-                    if (Double.isNaN(f3) || Double.isInfinite(f3) || hasInvalidNumbers(df3.getRowPackedCopy())) {
+                    if (Double.isNaN(f3) || Double.isInfinite(f3) || GaussianProcess.hasInvalidNumbers(df3.getRowPackedCopy())) {
                         x3 = (x2 + x3) / 2;     // catch any error which occured in f
                     } else {
                         success = 1;
@@ -394,7 +394,7 @@ public class GaussianProcess {
 
                 d3 = df3.transpose().times(s).get(0, 0);  // new slope
 
-                if (d3 > SIG * d0 || f3 > f0 + x3 * RHO * d0 || M == 0) {  // are we done extrapolating?
+                if (d3 > GaussianProcess.SIG * d0 || f3 > f0 + x3 * GaussianProcess.RHO * d0 || M == 0) {  // are we done extrapolating?
                     break;
                 }
 
@@ -411,11 +411,11 @@ public class GaussianProcess {
                 x3 = x1 - d1 * (x2 - x1) * (x2 - x1) / (B + Math.sqrt(B * B - A * d1 * (x2 - x1)));  // num. error possible, ok!
 
                 if (Double.isNaN(x3) || Double.isInfinite(x3) || x3 < 0)     // num prob | wrong sign?
-                    x3 = x2 * EXT;                             // extrapolate maximum amount
-                else if (x3 > x2 * EXT)                        // new point beyond extrapolation limit?
-                    x3 = x2 * EXT;                            // extrapolate maximum amount
-                else if (x3 < x2 + INT * (x2 - x1))               // new point too close to previous point?
-                    x3 = x2 + INT * (x2 - x1);
+                    x3 = x2 * GaussianProcess.EXT;                             // extrapolate maximum amount
+                else if (x3 > x2 * GaussianProcess.EXT)                        // new point beyond extrapolation limit?
+                    x3 = x2 * GaussianProcess.EXT;                            // extrapolate maximum amount
+                else if (x3 < x2 + GaussianProcess.INT * (x2 - x1))               // new point too close to previous point?
+                    x3 = x2 + GaussianProcess.INT * (x2 - x1);
 
             }
 
@@ -423,10 +423,10 @@ public class GaussianProcess {
             x4 = 0;
             d4 = 0;
 
-            while ((Math.abs(d3) > -SIG * d0 ||
-                    f3 > f0 + x3 * RHO * d0) && M > 0) {               // keep interpolating
+            while ((Math.abs(d3) > -GaussianProcess.SIG * d0 ||
+                    f3 > f0 + x3 * GaussianProcess.RHO * d0) && M > 0) {               // keep interpolating
 
-                if (d3 > 0 || f3 > f0 + x3 * RHO * d0) {                // choose subinterval
+                if (d3 > 0 || f3 > f0 + x3 * GaussianProcess.RHO * d0) {                // choose subinterval
                     x4 = x3;
                     f4 = f3;
                     d4 = d3;                  // move point 3 to point 4
@@ -448,7 +448,7 @@ public class GaussianProcess {
                     x3 = (x2 + x4) / 2;               // if we had a numerical problem then bisect
                 }
 
-                x3 = Math.max(Math.min(x3, x4 - INT * (x4 - x2)), x2 + INT * (x4 - x2));  // don't accept too close
+                x3 = Math.max(Math.min(x3, x4 - GaussianProcess.INT * (x4 - x2)), x2 + GaussianProcess.INT * (x4 - x2));  // don't accept too close
 
                 final Matrix m1 = s.times(x3).plus(params);
                 //f3 = f.evaluate(m1,cf, in, out, df3);
@@ -467,7 +467,7 @@ public class GaussianProcess {
 
             }                                                    // end interpolation
 
-            if (Math.abs(d3) < -SIG * d0 && f3 < f0 + x3 * RHO * d0) {     // if line search succeeded
+            if (Math.abs(d3) < -GaussianProcess.SIG * d0 && f3 < f0 + x3 * GaussianProcess.RHO * d0) {     // if line search succeeded
                 params = s.times(x3).plus(params);
                 f0 = f3;
 
@@ -496,7 +496,7 @@ public class GaussianProcess {
                     d0 = s.times(-1).transpose().times(s).get(0, 0);
                 }
 
-                x3 = x3 * Math.min(RATIO, d3 / (d0 - Double.MIN_VALUE));    // slope ratio but max RATIO
+                x3 = x3 * Math.min(GaussianProcess.RATIO, d3 / (d0 - Double.MIN_VALUE));    // slope ratio but max RATIO
                 ls_failed = 0;                                          // this line search did not fail
 
             } else {

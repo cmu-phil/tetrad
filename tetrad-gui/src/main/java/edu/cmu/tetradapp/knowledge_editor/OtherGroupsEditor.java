@@ -371,7 +371,7 @@ class OtherGroupsEditor extends JPanel {
                 final DefaultListModel model = (DefaultListModel) getModel();
                 boolean added = false;
                 for (final Object var : (List) tr.getTransferData(flavor)) {
-                    if (!modelContains(var, model) && !opposingContains((String) var)) {
+                    if (!OtherGroupsEditor.modelContains(var, model) && !opposingContains((String) var)) {
                         model.addElement(var);
                         added = true;
                     }
@@ -382,13 +382,13 @@ class OtherGroupsEditor extends JPanel {
                     return;
                 }
 
-                sort(model);
+                OtherGroupsEditor.sort(model);
                 final KnowledgeGroup group = OtherGroupsEditor.this.knowledge.getKnowledgeGroups().get(this.index);
                 final KnowledgeGroup g;
                 if (this.from) {
-                    g = new KnowledgeGroup(group.getType(), getElementsInModel(model), group.getToVariables());
+                    g = new KnowledgeGroup(group.getType(), OtherGroupsEditor.getElementsInModel(model), group.getToVariables());
                 } else {
-                    g = new KnowledgeGroup(group.getType(), group.getFromVariables(), getElementsInModel(model));
+                    g = new KnowledgeGroup(group.getType(), group.getFromVariables(), OtherGroupsEditor.getElementsInModel(model));
                 }
                 try {
                     OtherGroupsEditor.this.knowledge.setKnowledgeGroup(this.index, g);
@@ -419,9 +419,9 @@ class OtherGroupsEditor extends JPanel {
                     final KnowledgeGroup group = OtherGroupsEditor.this.knowledge.getKnowledgeGroups().get(this.index);
                     final KnowledgeGroup g;
                     if (this.from) {
-                        g = new KnowledgeGroup(group.getType(), getElementsInModel(model), group.getToVariables());
+                        g = new KnowledgeGroup(group.getType(), OtherGroupsEditor.getElementsInModel(model), group.getToVariables());
                     } else {
-                        g = new KnowledgeGroup(group.getType(), group.getFromVariables(), getElementsInModel(model));
+                        g = new KnowledgeGroup(group.getType(), group.getFromVariables(), OtherGroupsEditor.getElementsInModel(model));
                     }
                     try {
                         OtherGroupsEditor.this.knowledge.setKnowledgeGroup(this.index, g);

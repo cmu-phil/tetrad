@@ -89,10 +89,10 @@ public final class DelimiterType implements TetradSerializable {
 
     // Declarations required for serialization.
     private static int nextOrdinal = 0;
-    private final int ordinal = nextOrdinal++;
-    private static final DelimiterType[] TYPES = {WHITESPACE, TAB, COMMA};
+    private final int ordinal = DelimiterType.nextOrdinal++;
+    private static final DelimiterType[] TYPES = {DelimiterType.WHITESPACE, DelimiterType.TAB, DelimiterType.COMMA};
 
     final Object readResolve() throws ObjectStreamException {
-        return TYPES[this.ordinal]; // Canonicalize.
+        return DelimiterType.TYPES[this.ordinal]; // Canonicalize.
     }
 }

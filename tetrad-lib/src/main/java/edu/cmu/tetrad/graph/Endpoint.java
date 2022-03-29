@@ -69,11 +69,11 @@ public final class Endpoint implements TetradSerializable {
 
     // Declarations required for serialization.
     private static int nextOrdinal = 0;
-    private final int ordinal = nextOrdinal++;
-    public static final Endpoint[] TYPES = {TAIL, ARROW, CIRCLE, STAR, NULL};
+    private final int ordinal = Endpoint.nextOrdinal++;
+    public static final Endpoint[] TYPES = {Endpoint.TAIL, Endpoint.ARROW, Endpoint.CIRCLE, Endpoint.STAR, Endpoint.NULL};
 
     Object readResolve() throws ObjectStreamException {
-        return TYPES[this.ordinal]; // Canonicalize.
+        return Endpoint.TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

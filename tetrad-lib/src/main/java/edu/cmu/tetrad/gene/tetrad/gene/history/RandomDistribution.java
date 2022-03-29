@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 public interface RandomDistribution extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Draws a new noise value from the underlying distribution.

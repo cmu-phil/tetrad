@@ -182,11 +182,11 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         info.addActionListener(e -> {
             final Class model = getSelectedModel();
             if (model == null) {
-                JOptionPane.showMessageDialog(CategorizingModelChooser.this, "No node selected. Select" +
+                JOptionPane.showMessageDialog(this, "No node selected. Select" +
                         " a node to get help for it.");
             } else {
                 SessionUtils.showPermissibleParentsDialog(model,
-                        CategorizingModelChooser.this, false, false);
+                        this, false, false);
             }
         });
 
@@ -289,11 +289,11 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         }
 
         public Object getRoot() {
-            return ROOT;
+            return ChooserTreeModel.ROOT;
         }
 
         public Object getChild(final Object parent, final int index) {
-            if (ROOT.equals(parent)) {
+            if (ChooserTreeModel.ROOT.equals(parent)) {
                 return this.categories.get(index);
             } else if (parent instanceof String) {
                 final List<ModelWrapper> models = this.map.get(parent);
@@ -303,7 +303,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         }
 
         public int getChildCount(final Object parent) {
-            if (ROOT.equals(parent)) {
+            if (ChooserTreeModel.ROOT.equals(parent)) {
                 return this.categories.size();
             } else if (parent instanceof ModelWrapper) {
                 return 0;
@@ -321,7 +321,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         }
 
         public int getIndexOfChild(final Object parent, final Object child) {
-            if (ROOT.equals(parent)) {
+            if (ChooserTreeModel.ROOT.equals(parent)) {
                 return this.categories.indexOf(child);
             }
             final List<ModelWrapper> models = this.map.get(parent);

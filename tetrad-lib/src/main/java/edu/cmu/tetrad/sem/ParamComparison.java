@@ -71,11 +71,11 @@ public class ParamComparison {
 
     // Declarations required for serialization.
     private static int nextOrdinal = 0;
-    private final int ordinal = nextOrdinal++;
-    private static final ParamComparison[] TYPES = {NC, LT, EQ, LE};
+    private final int ordinal = ParamComparison.nextOrdinal++;
+    private static final ParamComparison[] TYPES = {ParamComparison.NC, ParamComparison.LT, ParamComparison.EQ, ParamComparison.LE};
 
     Object readResolve() {
-        return TYPES[this.ordinal]; // Canonicalize.
+        return ParamComparison.TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

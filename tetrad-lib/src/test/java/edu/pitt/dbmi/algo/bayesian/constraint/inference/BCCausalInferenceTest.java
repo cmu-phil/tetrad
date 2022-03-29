@@ -33,8 +33,8 @@ public class BCCausalInferenceTest {
     @Test
     public void testProbConstraint() throws IOException {
         final Path casFile = Paths.get(getClass().getResource("/cooper.data/small_data.cas").getFile());
-        final int[] nodeDimension = readInNodeDimension(casFile);
-        final int[][] dataset = readInDataset(casFile);
+        final int[] nodeDimension = BCCausalInferenceTest.readInNodeDimension(casFile);
+        final int[][] dataset = BCCausalInferenceTest.readInDataset(casFile);
 
         float expected = 0.7650975f;
         float result = (float) (new BCCausalInference(nodeDimension, dataset))

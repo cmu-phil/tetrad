@@ -115,7 +115,7 @@ final class SessionUtils {
                     continue PARENT_SET;
                 }
 
-                final String descrip = getModelName(parameterType);
+                final String descrip = SessionUtils.getModelName(parameterType);
 
                 if (descrip == null) {
                     j.remove();
@@ -131,7 +131,7 @@ final class SessionUtils {
 
             for (final Object parameterType1 : parameterTypes) {
                 final Class parameterType = (Class) parameterType1;
-                final String descrip = getModelName(parameterType);
+                final String descrip = SessionUtils.getModelName(parameterType);
                 combination.add(descrip);
             }
 

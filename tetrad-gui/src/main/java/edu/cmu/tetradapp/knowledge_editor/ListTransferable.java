@@ -46,7 +46,7 @@ class ListTransferable implements Transferable {
             new DataFlavor(ListTransferable.class, "String List Selection")};
 
 
-    public final static DataFlavor DATA_FLAVOR = dataFlavors[0];
+    public final static DataFlavor DATA_FLAVOR = ListTransferable.dataFlavors[0];
 
 
     /**
@@ -87,7 +87,7 @@ class ListTransferable implements Transferable {
      * this object.
      */
     public boolean isDataFlavorSupported(final DataFlavor flavor) {
-        return flavor.equals(dataFlavors[0]);
+        return flavor.equals(ListTransferable.dataFlavors[0]);
     }
 
     /**
@@ -97,7 +97,7 @@ class ListTransferable implements Transferable {
      * least descriptive).
      */
     public DataFlavor[] getTransferDataFlavors() {
-        return dataFlavors;
+        return ListTransferable.dataFlavors;
     }
 }
 

@@ -223,8 +223,8 @@ public class GeneralResamplingTest {
             graph.addNode(nodes.get(start));
         } else if (start < end) {
             final int mid = (start + end) / 2;
-            addNodeToGraph(graph, nodes, start, mid);
-            addNodeToGraph(graph, nodes, mid + 1, end);
+            GeneralResamplingTest.addNodeToGraph(graph, nodes, start, mid);
+            GeneralResamplingTest.addNodeToGraph(graph, nodes, mid + 1, end);
         }
     }
 
@@ -261,7 +261,7 @@ public class GeneralResamplingTest {
         complete.fullyConnect(Endpoint.TAIL);
 
         final Graph graph = new EdgeListGraph();
-        addNodeToGraph(graph, complete.getNodes(), 0, complete.getNodes().size() - 1);
+        GeneralResamplingTest.addNodeToGraph(graph, complete.getNodes(), 0, complete.getNodes().size() - 1);
 
         for (final Edge e : complete.getEdges()) {
 
@@ -473,7 +473,7 @@ public class GeneralResamplingTest {
         // Adjacency Confusion Matrix
         final int[][] adjAr = new int[2][2];
 
-        countAdjConfMatrix(adjAr, edges, truth, estimate, 0, numEdges - 1);
+        GeneralResamplingTest.countAdjConfMatrix(adjAr, edges, truth, estimate, 0, numEdges - 1);
 
         return adjAr;
     }
@@ -494,8 +494,8 @@ public class GeneralResamplingTest {
 
         } else if (start < end) {
             final int mid = (start + end) / 2;
-            countAdjConfMatrix(adjAr, edges, truth, estimate, start, mid);
-            countAdjConfMatrix(adjAr, edges, truth, estimate, mid + 1, end);
+            GeneralResamplingTest.countAdjConfMatrix(adjAr, edges, truth, estimate, start, mid);
+            GeneralResamplingTest.countAdjConfMatrix(adjAr, edges, truth, estimate, mid + 1, end);
         }
     }
 
@@ -508,7 +508,7 @@ public class GeneralResamplingTest {
         // Edge Type Confusion Matrix
         final int[][] edgeAr = new int[8][8];
 
-        countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, 0, numEdges - 1);
+        GeneralResamplingTest.countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, 0, numEdges - 1);
 
         return edgeAr;
     }
@@ -585,8 +585,8 @@ public class GeneralResamplingTest {
 
         } else if (start < end) {
             final int mid = (start + end) / 2;
-            countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, start, mid);
-            countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, mid + 1, end);
+            GeneralResamplingTest.countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, start, mid);
+            GeneralResamplingTest.countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, mid + 1, end);
         }
     }
 

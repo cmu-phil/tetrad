@@ -427,7 +427,7 @@ public class PcLocal implements GraphSearch {
 
             for (final Node u : this.graph.getAdjacentNodes(t)) {
                 final Edge edge = this.graph.getEdge(t, u);
-                final Node c = traverseSemiDirected(t, edge);
+                final Node c = PcLocal.traverseSemiDirected(t, edge);
                 if (c == null) continue;
                 if (cond.contains(c)) continue;
 

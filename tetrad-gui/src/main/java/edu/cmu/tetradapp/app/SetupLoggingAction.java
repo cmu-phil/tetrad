@@ -51,7 +51,7 @@ public class SetupLoggingAction extends AbstractAction {
 
 
     public void actionPerformed(final ActionEvent e) {
-        final JComponent comp = buildSetupLoggingComponent();
+        final JComponent comp = SetupLoggingAction.buildSetupLoggingComponent();
         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), comp,
                 "File Logging Setup", JOptionPane.PLAIN_MESSAGE);
     }
@@ -153,7 +153,7 @@ public class SetupLoggingAction extends AbstractAction {
 //        b1.add(b2);
 //        b1.add(Box.createVerticalStrut(5));
 
-        b1.add(createLogToBox());
+        b1.add(SetupLoggingAction.createLogToBox());
         b1.add(Box.createVerticalStrut(5));
 //        b1.add(automaticBox);
 //        b1.add(Box.createVerticalStrut(10));

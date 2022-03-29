@@ -202,7 +202,7 @@ class SchurTransformer {
                 computeShift(il, iu, iteration, shift);
 
                 // stop transformation after too many iterations
-                if (++iteration > MAX_ITERATIONS) {
+                if (++iteration > SchurTransformer.MAX_ITERATIONS) {
                     return;
 //                    throw new MaxCountExceededException(LocalizedFormats.CONVERGENCE_FAILED,
 //                            MAX_ITERATIONS);

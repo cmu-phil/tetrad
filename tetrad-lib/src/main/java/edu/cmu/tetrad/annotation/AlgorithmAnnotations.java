@@ -39,7 +39,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
     }
 
     public static AlgorithmAnnotations getInstance() {
-        return INSTANCE;
+        return AlgorithmAnnotations.INSTANCE;
     }
 
     public List<AnnotatedClass<Algorithm>> filterOutExperimental(final List<AnnotatedClass<Algorithm>> list) {

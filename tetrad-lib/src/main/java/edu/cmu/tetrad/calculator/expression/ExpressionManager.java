@@ -57,7 +57,7 @@ public class ExpressionManager {
 
 
     private ExpressionManager() {
-        this.descriptors = new ArrayList<>(listDescriptors());
+        this.descriptors = new ArrayList<>(ExpressionManager.listDescriptors());
         for (final ExpressionDescriptor exp : this.descriptors) {
             if (this.tokenMap.containsKey(exp.getToken())) {
                 throw new IllegalStateException("Expression descriptors must have unique tokens, but " + exp.getToken()
@@ -74,7 +74,7 @@ public class ExpressionManager {
      * @return an instanceo of the manager.
      */
     public static ExpressionManager getInstance() {
-        return INSTANCE;
+        return ExpressionManager.INSTANCE;
     }
 
     /**

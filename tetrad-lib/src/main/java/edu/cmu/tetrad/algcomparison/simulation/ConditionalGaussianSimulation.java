@@ -172,7 +172,7 @@ public class ConditionalGaussianSimulation implements Simulation {
             }
         }
 
-        G = makeMixedGraph(G, nd);
+        G = ConditionalGaussianSimulation.makeMixedGraph(G, nd);
         nodes = G.getNodes();
 
         final DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);

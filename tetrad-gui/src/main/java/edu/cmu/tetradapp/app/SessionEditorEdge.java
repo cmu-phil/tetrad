@@ -42,7 +42,7 @@ final class SessionEditorEdge extends DisplayEdge {
     private static final int RANDOMIZED = 1;
 
     /* States */
-    private final Color curr_color = DIE_BACKGROUND;
+    private final Color curr_color = SessionEditorEdge.DIE_BACKGROUND;
     private int sessionEdgeMode = 0;
 
     /**
@@ -138,7 +138,7 @@ final class SessionEditorEdge extends DisplayEdge {
 
             g.setColor(c);
             g.fillPolygon(dice);
-            g.setColor(DIE_DOT);
+            g.setColor(SessionEditorEdge.DIE_DOT);
             g.drawPolygon(dice);
 
             final int height = dicedot[0].radius * 2;
@@ -162,7 +162,7 @@ final class SessionEditorEdge extends DisplayEdge {
         final PointPair pp = getConnectedPoints();
         final Point midPoint = new Point((pp.getFrom().x + pp.getTo().x) / 2,
                 (pp.getFrom().y + pp.getTo().y) / 2);
-        double d = distance(pp.getFrom(), pp.getTo());
+        double d = DisplayEdge.distance(pp.getFrom(), pp.getTo());
 
         if (d < 1) {
             d = 1;
@@ -211,7 +211,7 @@ final class SessionEditorEdge extends DisplayEdge {
     }
 
     private Polygon getDiceSleeve() {
-        return calcDiceSleeve(getDiceArea());
+        return SessionEditorEdge.calcDiceSleeve(getDiceArea());
     }
 
     /**
@@ -230,9 +230,9 @@ final class SessionEditorEdge extends DisplayEdge {
      */
     public boolean isRandomized() {
 
-        if (this.sessionEdgeMode == RANDOMIZED) {
+        if (this.sessionEdgeMode == SessionEditorEdge.RANDOMIZED) {
             return true;
-        } else if (this.sessionEdgeMode == UNRANDOMIZED) {
+        } else if (this.sessionEdgeMode == SessionEditorEdge.UNRANDOMIZED) {
             return false;
         } else {
             throw new IllegalStateException();
@@ -251,7 +251,7 @@ final class SessionEditorEdge extends DisplayEdge {
         final PointPair pp;
 
         switch (getMode()) {
-            case HALF_ANCHORED:
+            case DisplayEdge.HALF_ANCHORED:
                 g.setColor(getLineColor());
                 pp = calculateEdge(getNode1(), getRelativeMouseTrackPoint());
 
@@ -268,7 +268,7 @@ final class SessionEditorEdge extends DisplayEdge {
                 }
                 break;
 
-            case ANCHORED_UNSELECTED:
+            case DisplayEdge.ANCHORED_UNSELECTED:
                 g.setColor(getLineColor());
 
                 pp = calculateEdge(getNode1(), getNode2());
@@ -286,7 +286,7 @@ final class SessionEditorEdge extends DisplayEdge {
                 }
                 break;
 
-            case ANCHORED_SELECTED:
+            case DisplayEdge.ANCHORED_SELECTED:
                 g.setColor(getSelectedColor());
 
                 pp = calculateEdge(getNode1(), getNode2());
@@ -310,7 +310,7 @@ final class SessionEditorEdge extends DisplayEdge {
 
         setConnectedPoints(pp);
 
-        if (this.sessionEdgeMode == RANDOMIZED) {
+        if (this.sessionEdgeMode == SessionEditorEdge.RANDOMIZED) {
             drawDice(g, false, this.curr_color);
         }
     }

@@ -93,7 +93,7 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     /**
      * The getModel mode.
      */
-    private int mode = SINGLE_VALUE;
+    private int mode = BayesUpdaterEditorObs.SINGLE_VALUE;
 
     //===============================CONSTRUCTORS=========================//
 
@@ -120,9 +120,9 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
 
         this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(final PropertyChangeEvent evt) {
-                if (BayesUpdaterEditorObs.this.mode == MULTI_VALUE &&
+                if (BayesUpdaterEditorObs.this.mode == BayesUpdaterEditorObs.MULTI_VALUE &&
                         "selectedNodes".equals(evt.getPropertyName())) {
-                    setMode(MULTI_VALUE);
+                    setMode(BayesUpdaterEditorObs.MULTI_VALUE);
                 }
             }
         });
@@ -297,9 +297,9 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         group.add(singleVariable);
         group.add(multiVariable);
 
-        if (this.mode == SINGLE_VALUE) {
+        if (this.mode == BayesUpdaterEditorObs.SINGLE_VALUE) {
             singleVariable.setSelected(true);
-        } else if (this.mode == MULTI_VALUE) {
+        } else if (this.mode == BayesUpdaterEditorObs.MULTI_VALUE) {
             multiVariable.setSelected(true);
         }
 
@@ -314,13 +314,13 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
 
         singleVariable.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-                setMode(SINGLE_VALUE);
+                setMode(BayesUpdaterEditorObs.SINGLE_VALUE);
             }
         });
 
         multiVariable.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-                setMode(MULTI_VALUE);
+                setMode(BayesUpdaterEditorObs.MULTI_VALUE);
             }
         });
 
@@ -330,9 +330,9 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     private void setMode(final int mode) {
         this.mode = mode;
 
-        if (mode == SINGLE_VALUE) {
+        if (mode == BayesUpdaterEditorObs.SINGLE_VALUE) {
             show("editEvidenceSingle");
-        } else if (mode == MULTI_VALUE) {
+        } else if (mode == BayesUpdaterEditorObs.MULTI_VALUE) {
             show("editEvidenceMultiple");
         } else {
             throw new IllegalStateException();

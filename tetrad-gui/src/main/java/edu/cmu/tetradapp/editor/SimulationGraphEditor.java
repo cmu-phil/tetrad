@@ -85,12 +85,12 @@ public final class SimulationGraphEditor extends JPanel {
             // Do nothing.
         } else if (graphs.size() > 1) {
             for (int i = 0; i < graphs.size(); i++) {
-                this.tabbedPane.addTab(tabName(i + 1), new JScrollPane(graphDisplay(graphs.get(i))));
+                this.tabbedPane.addTab(SimulationGraphEditor.tabName(i + 1), new JScrollPane(graphDisplay(graphs.get(i))));
             }
 
             add(this.tabbedPane, BorderLayout.CENTER);
         } else {
-            this.tabbedPane.addTab(tabName(1), new JScrollPane(graphDisplay(graphs.get(0))));
+            this.tabbedPane.addTab(SimulationGraphEditor.tabName(1), new JScrollPane(graphDisplay(graphs.get(0))));
             add(this.tabbedPane, BorderLayout.CENTER);
 
         }
@@ -112,7 +112,7 @@ public final class SimulationGraphEditor extends JPanel {
 
         for (int i = 0; i < this.graphs.size(); i++) {
             final Graph graph = this.graphs.get(i);
-            tabbedPane().addTab(tabName(i + 1), graphDisplay(graph));
+            tabbedPane().addTab(SimulationGraphEditor.tabName(i + 1), graphDisplay(graph));
         }
 
         tabbedPane().setSelectedIndex(selectedIndex);

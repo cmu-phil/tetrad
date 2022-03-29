@@ -127,8 +127,8 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
                     "Next button type must be a " + "non-null string.");
         }
 
-        final String name = nextUniqueName(this.nextButtonType, getGraph());
-        final Class[] modelClasses = getModelClasses(this.nextButtonType);
+        final String name = SessionEditorWorkbench.nextUniqueName(this.nextButtonType, getGraph());
+        final Class[] modelClasses = SessionEditorWorkbench.getModelClasses(this.nextButtonType);
         final SessionNode newNode
                 = new SessionNode(this.nextButtonType, name, modelClasses);
 

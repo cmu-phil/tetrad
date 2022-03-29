@@ -70,8 +70,8 @@ public class KnowledgeModelEdge extends Edge
         if (node1 == null || node2 == null) {
             throw new NullPointerException();
         }
-        if (this.type != FORBIDDEN_EXPLICITLY && this.type != FORBIDDEN_BY_TIERS
-                && this.type != REQUIRED && this.type != FORBIDDEN_BY_GROUPS && this.type != REQUIRED_BY_GROUPS) {
+        if (this.type != KnowledgeModelEdge.FORBIDDEN_EXPLICITLY && this.type != KnowledgeModelEdge.FORBIDDEN_BY_TIERS
+                && this.type != KnowledgeModelEdge.REQUIRED && this.type != KnowledgeModelEdge.FORBIDDEN_BY_GROUPS && this.type != KnowledgeModelEdge.REQUIRED_BY_GROUPS) {
             throw new IllegalArgumentException("The given type is not known");
         }
 

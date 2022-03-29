@@ -239,7 +239,7 @@ public final class TestSearchGraph {
 //
 //        Graph graph = gen.getDag();
 
-        final Graph graph = weightedRandomGraph(250, 400);
+        final Graph graph = TestSearchGraph.weightedRandomGraph(250, 400);
 
         final List<Integer> degreeCounts = new ArrayList<>();
         final Map<Integer, Integer> degreeCount = new HashMap<>();
@@ -267,10 +267,10 @@ public final class TestSearchGraph {
             System.out.println(log(i + 1) + " " + log(j));
         }
 
-        System.out.println("\nCPL = " + characteristicPathLength(graph));
+        System.out.println("\nCPL = " + TestSearchGraph.characteristicPathLength(graph));
 
-        final Graph erGraph = erdosRenyiGraph(200, 200);
-        System.out.println("\n ER CPL = " + characteristicPathLength(erGraph));
+        final Graph erGraph = TestSearchGraph.erdosRenyiGraph(200, 200);
+        System.out.println("\n ER CPL = " + TestSearchGraph.characteristicPathLength(erGraph));
     }
 
     public static Graph erdosRenyiGraph(final int n, final int e) {
@@ -308,11 +308,11 @@ public final class TestSearchGraph {
         final Graph graph = new EdgeListGraph(nodes);
 
         for (int e0 = 0; e0 < e; e0++) {
-            final int i1 = weightedRandom(nodes, graph);
+            final int i1 = TestSearchGraph.weightedRandom(nodes, graph);
 //            int i2 = RandomUtil.getInstance().nextInt(n);
-            final int i2 = weightedRandom(nodes, graph);
+            final int i2 = TestSearchGraph.weightedRandom(nodes, graph);
 
-            if (!(shortestPath(nodes.get(i1), nodes.get(i2), graph) < 9)) {
+            if (!(TestSearchGraph.shortestPath(nodes.get(i1), nodes.get(i2), graph) < 9)) {
                 e0--;
                 continue;
             }
@@ -394,7 +394,7 @@ public final class TestSearchGraph {
         final int n = nodes.size();
 
         for (int b = 0; b < n; b++) {
-            total = weight(nodes, graph, total, b);
+            total = TestSearchGraph.weight(nodes, graph, total, b);
         }
 
         final int r = RandomUtil.getInstance().nextInt(total);
@@ -403,7 +403,7 @@ public final class TestSearchGraph {
         int index = 0;
 
         for (int b = 0; b < n; b++) {
-            count = weight(nodes, graph, count, b);
+            count = TestSearchGraph.weight(nodes, graph, count, b);
             if (r <= count) {
                 index = b;
                 break;
@@ -428,7 +428,7 @@ public final class TestSearchGraph {
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i; j < nodes.size(); j++) {
-                final int shortest = shortestPath(nodes.get(i), nodes.get(j), g);
+                final int shortest = TestSearchGraph.shortestPath(nodes.get(i), nodes.get(j), g);
                 total += shortest;
                 count++;
             }

@@ -45,11 +45,11 @@ public class GdistanceRandom {
 
     private List<Double> randomPairSimulation() {
         //make 2 random dags over the vars in locationMap
-        final int numVars = locationMap.getNumColumns();
+        final int numVars = GdistanceRandom.locationMap.getNumColumns();
         if (this.verbose) System.out.println("generating pair of random dags");
-        final Graph dag1 = GraphUtils.randomGraphRandomForwardEdges(locationMap.getVariables(), 0, this.numEdges1, numVars, numVars, numVars, false, false);
+        final Graph dag1 = GraphUtils.randomGraphRandomForwardEdges(GdistanceRandom.locationMap.getVariables(), 0, this.numEdges1, numVars, numVars, numVars, false, false);
         if (this.verbose) System.out.println(dag1);
-        final Graph dag2 = GraphUtils.randomGraphRandomForwardEdges(locationMap.getVariables(), 0, this.numEdges2, numVars, numVars, numVars, false, false);
+        final Graph dag2 = GraphUtils.randomGraphRandomForwardEdges(GdistanceRandom.locationMap.getVariables(), 0, this.numEdges2, numVars, numVars, numVars, false, false);
 
         //convert those dags to CPDAGs
         if (this.verbose) System.out.println("converting dags to CPDAGs");
@@ -58,13 +58,13 @@ public class GdistanceRandom {
 
         //run Gdistance on these two graphs
         if (this.verbose) System.out.println("running Gdistance on the CPDAGs");
-        final Gdistance gdist = new Gdistance(locationMap, this.xdist, this.ydist, this.zdist);
+        final Gdistance gdist = new Gdistance(GdistanceRandom.locationMap, this.xdist, this.ydist, this.zdist);
         return gdist.distances(graph1, graph2);
     }
 
     //**********Methods for setting values of private variables**************//
     public void setLocationMap(final DataSet map) {
-        locationMap = map;
+        GdistanceRandom.locationMap = map;
     }
 
     public void setNumEdges1(final int edges) {

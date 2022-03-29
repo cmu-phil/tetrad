@@ -50,7 +50,7 @@ public class SplitCasesWrapper extends DataWrapper {
             throw new NullPointerException("The given parameters must not be null");
         }
         final DataSet originalData = (DataSet) data.getSelectedDataModel();
-        final DataModel model = createSplits(originalData, params);
+        final DataModel model = SplitCasesWrapper.createSplits(originalData, params);
         this.setDataModel(model);
         this.setSourceGraph(data.getSourceGraph());
 

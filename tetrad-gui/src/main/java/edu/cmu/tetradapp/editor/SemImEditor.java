@@ -808,8 +808,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             });
 
             field.addActionListener((e) -> {
-                if (SemImGraphicalEditor.this.dialog != null) {
-                    SemImGraphicalEditor.this.dialog.setVisible(false);
+                if (this.dialog != null) {
+                    this.dialog.setVisible(false);
                 }
             });
 
@@ -926,8 +926,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             });
 
             field.addActionListener((e) -> {
-                if (SemImGraphicalEditor.this.dialog != null) {
-                    SemImGraphicalEditor.this.dialog.setVisible(false);
+                if (this.dialog != null) {
+                    this.dialog.setVisible(false);
                 }
             });
 
@@ -1238,11 +1238,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     d *= Math.sqrt(varA * varB);
 
                     semIm().setParamValue(parameter, d);
-                    SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
+                    this.firePropertyChange("modelChanged", null, null);
                 } else if (!this.editor.isEditCovariancesAsCorrelations()
                         && parameter.getType() == ParamType.COVAR) {
                     semIm().setParamValue(parameter, d);
-                    SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
+                    this.firePropertyChange("modelChanged", null, null);
                 } else if (parameter.getType() == ParamType.COEF) {
 //                semIm().setParamValue(parameter, d);
 //                firePropertyChange("modelChanged", null, null);
@@ -1257,7 +1257,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                         semIm().setIntercept(y, intercept);
                     }
 
-                    SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
+                    this.firePropertyChange("modelChanged", null, null);
                 }
             } catch (final NumberFormatException e) {
                 // Let the old value be reinstated.
@@ -1275,7 +1275,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
                 if (parameter.getType() == ParamType.VAR && d >= 0) {
                     semIm().setParamValue(node, node, d * d);
-                    SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
+                    this.firePropertyChange("modelChanged", null, null);
                 } else if (parameter.getType() == ParamType.MEAN) {
                     if (this.editor.isEditIntercepts()) {
                         semIm().setIntercept(node, d);
@@ -1283,7 +1283,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                         semIm().setMean(node, d);
                     }
 
-                    SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
+                    this.firePropertyChange("modelChanged", null, null);
                 }
             } catch (final Exception exception) {
                 exception.printStackTrace(System.err);
@@ -1513,7 +1513,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             this.tableModel = new ParamTableModel(wrapper, editor, maxFreeParamsForStatistics);
             table.setModel(getTableModel());
             this.tableModel.addTableModelListener((e) -> {
-                SemImTabularEditor.this.firePropertyChange("modelChanged", null, null);
+                this.firePropertyChange("modelChanged", null, null);
             });
 
             add(new JScrollPane(table), BorderLayout.CENTER);

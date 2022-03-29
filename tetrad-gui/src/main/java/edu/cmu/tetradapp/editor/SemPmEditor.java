@@ -469,7 +469,7 @@ class SemPmGraphicalEditor extends JPanel {
 
             label.setBackground(Color.white);
             label.setOpaque(true);
-            label.setFont(SMALL_FONT);
+            label.setFont(SemPmGraphicalEditor.SMALL_FONT);
             label.setText(parameter.getName());
             label.addMouseListener(new EdgeMouseListener(edge, this));
             workbench().setEdgeLabel(edge, label);
@@ -487,7 +487,7 @@ class SemPmGraphicalEditor extends JPanel {
             final JLabel label = new JLabel();
             label.setForeground(Color.blue);
             label.setBackground(Color.white);
-            label.setFont(SMALL_FONT);
+            label.setFont(SemPmGraphicalEditor.SMALL_FONT);
             label.setText(parameter.getName());
             label.addMouseListener(new NodeMouseListener(node, this));
 

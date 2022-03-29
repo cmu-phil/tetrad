@@ -333,7 +333,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Fisher's Z, alpha = " + nf.format(getAlpha());
+        return "Fisher's Z, alpha = " + IndTestCorrelationT.nf.format(getAlpha());
     }
 
     public void setPValueLogger(final PrintStream pValueLogger) {

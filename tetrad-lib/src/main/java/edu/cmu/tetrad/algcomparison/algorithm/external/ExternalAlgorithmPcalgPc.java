@@ -77,7 +77,7 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
             final DataSet dataSet2 = DataUtils.loadContinuousData(file, "//", '\"' ,
                     "*", true, Delimiter.TAB);
             System.out.println("Loading graph from " + file.getAbsolutePath());
-            final Graph graph = loadGraphPcAlgMatrix(dataSet2);
+            final Graph graph = ExternalAlgorithmPcalgPc.loadGraphPcAlgMatrix(dataSet2);
 
             GraphUtils.circleLayout(graph, 225, 200, 150);
 

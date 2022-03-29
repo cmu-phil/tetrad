@@ -419,7 +419,7 @@ public final class TimeLagGraphEditor extends JPanel
             final ConfigurationEditor editor = new ConfigurationEditor((TimeLagGraph) getGraph());
 
             final EditorWindow editorWindow
-                    = new EditorWindow(editor, "Configuration...", "Save", true, TimeLagGraphEditor.this);
+                    = new EditorWindow(editor, "Configuration...", "Save", true, this);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();

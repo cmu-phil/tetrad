@@ -46,16 +46,16 @@ public class BayesianConstraintInference {
      * @param args the command line arguments
      */
     public static void main(final String[] args) {
-        if (args == null || args.length != NUM_REQ_ARGS) {
-            System.err.println(USAGE);
+        if (args == null || args.length != BayesianConstraintInference.NUM_REQ_ARGS) {
+            System.err.println(BayesianConstraintInference.USAGE);
             System.exit(127);
         }
 
         for (int i = 0; i < args.length; i++) {
             final String flag = args[i];
-            if (flag.equals(CAS_FLAG)) {
-                casFile = new File(args[++i]);
-                checkFile(casFile, false);
+            if (flag.equals(BayesianConstraintInference.CAS_FLAG)) {
+                BayesianConstraintInference.casFile = new File(args[++i]);
+                BayesianConstraintInference.checkFile(BayesianConstraintInference.casFile, false);
             } else {
                 System.out.printf("Unknown switch %s.\n", flag);
                 System.exit(-1);
@@ -63,8 +63,8 @@ public class BayesianConstraintInference {
         }
 
         try {
-            final int[][] dataset = readInDataset(casFile);
-            final int[] nodeDimension = readInNodeDimension(casFile);
+            final int[][] dataset = BayesianConstraintInference.readInDataset(BayesianConstraintInference.casFile);
+            final int[] nodeDimension = BayesianConstraintInference.readInNodeDimension(BayesianConstraintInference.casFile);
             final BCInference bci = new BCInference(dataset, nodeDimension);
 
             BCInference.OP constraint = BCInference.OP.dependent;

@@ -170,7 +170,7 @@ public final class MimAdjacencySearch {
 
                     // for each subset of size n ...
                     while ((subset = cg.next()) != null) {
-                        final List<Node> condSet = asList(subset, seta);
+                        final List<Node> condSet = MimAdjacencySearch.asList(subset, seta);
                         if (ind.isIndependent(nodeX, nodeY, condSet) &&
                                 knowledge.noEdgeRequired(nodeX.getName(),
                                         nodeY.getName())) {

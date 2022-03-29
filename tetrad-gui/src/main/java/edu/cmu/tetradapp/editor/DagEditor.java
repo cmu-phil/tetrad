@@ -437,7 +437,7 @@ public final class DagEditor extends JPanel
             editor.setParams(this.parameters);
 
             final EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
-                    "Done", false, DagEditor.this);
+                    "Done", false, this);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();

@@ -134,7 +134,7 @@ final class DirichletBayesImProbsWizard extends JPanel {
 
             if (current == max) {
                 JOptionPane.showMessageDialog(
-                        DirichletBayesImProbsWizard.this,
+                        this,
                         "There are no more variables.");
             }
 

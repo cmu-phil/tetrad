@@ -83,7 +83,7 @@ public class BooleanGlassSimulation implements Simulation {
             }
         }
 
-        topToBottomLayout(graph);
+        BooleanGlassSimulation.topToBottomLayout(graph);
 
         this.graph = graph;
     }

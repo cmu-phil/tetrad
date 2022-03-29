@@ -56,7 +56,7 @@ class LoadGraphTxt extends AbstractAction {
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(final ActionEvent e) {
-        final JFileChooser chooser = getJFileChooser();
+        final JFileChooser chooser = LoadGraphTxt.getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.showOpenDialog((Component) this.graphEditable);
 

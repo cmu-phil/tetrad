@@ -38,7 +38,7 @@ final class SessionWrappers {
 
     public static Node addNode(final SessionWrapper sessionWrapper, final String nodeType,
                                final String nodeName, final int centerX, final int centerY) {
-        final SessionNodeWrapper node = getNewModelNode(nodeType, nodeName);
+        final SessionNodeWrapper node = SessionWrappers.getNewModelNode(nodeType, nodeName);
         node.setCenter(centerX, centerY);
         sessionWrapper.addNode(node);
         return node;
@@ -81,7 +81,7 @@ final class SessionWrappers {
                     "Next button type must be a " + "non-null string.");
         }
 
-        final Class[] modelClasses = getModelClasses(nextButtonType);
+        final Class[] modelClasses = SessionWrappers.getModelClasses(nextButtonType);
         final SessionNode newNode =
                 new SessionNode(nextButtonType, name, modelClasses);
         final SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);

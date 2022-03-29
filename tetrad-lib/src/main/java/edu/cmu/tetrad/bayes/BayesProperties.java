@@ -299,7 +299,7 @@ public final class BayesProperties {
                         "values (record " + i + " column " + i + ")");
             }
 
-            final int rowIndex = getRowIndex(dims, parentValues);
+            final int rowIndex = BayesProperties.getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;

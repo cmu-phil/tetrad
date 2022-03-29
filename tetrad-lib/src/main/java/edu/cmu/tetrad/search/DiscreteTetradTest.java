@@ -167,9 +167,9 @@ public final class DiscreteTetradTest implements TetradTest {
     }
 
     private void initialization() {
-        for (int i = 0; i < GHY.length; i++) {
-            GHY[i] *= Math.sqrt(2);
-            GHW[i] /= Math.sqrt(Math.PI);
+        for (int i = 0; i < DiscreteTetradTest.GHY.length; i++) {
+            DiscreteTetradTest.GHY[i] *= Math.sqrt(2);
+            DiscreteTetradTest.GHW[i] /= Math.sqrt(Math.PI);
         }
         final int numRows = this.dataSet.getNumRows();
         final int numColumns = this.dataSet.getNumColumns();
@@ -180,9 +180,9 @@ public final class DiscreteTetradTest implements TetradTest {
         this.sig2 = 2. * this.sig / 3.;
         this.sig3 = this.sig;
 
-        this.rhoGrid = new double[RHO_GRID_SIZE];
-        for (int i = 1; i < RHO_GRID_SIZE; i++) {
-            this.rhoGrid[i - 1] = -1. + (2. / RHO_GRID_SIZE) * i;
+        this.rhoGrid = new double[DiscreteTetradTest.RHO_GRID_SIZE];
+        for (int i = 1; i < DiscreteTetradTest.RHO_GRID_SIZE; i++) {
+            this.rhoGrid[i - 1] = -1. + (2. / DiscreteTetradTest.RHO_GRID_SIZE) * i;
         }
 
 //        this.rawdata = this.dataSet.getIntMatrixTransposed();
@@ -190,8 +190,8 @@ public final class DiscreteTetradTest implements TetradTest {
         // Store and order possible values
         this.values = new int[numColumns][];
         this.valueIndices = new int[numColumns];
-        final int[] tempValues = new int[MAX_VALUES];
-        final boolean[] marked = new boolean[MAX_VALUES];
+        final int[] tempValues = new int[DiscreteTetradTest.MAX_VALUES];
+        final boolean[] marked = new boolean[DiscreteTetradTest.MAX_VALUES];
         for (int i = 0; i < numColumns; i++) {
             int vSize = 0;
             rowloop:
@@ -202,7 +202,7 @@ public final class DiscreteTetradTest implements TetradTest {
                         continue rowloop;
                     }
                 }
-                if (vSize < MAX_VALUES - 1) {
+                if (vSize < DiscreteTetradTest.MAX_VALUES - 1) {
                     tempValues[vSize++] = value;
                 } else {
                     throw new RuntimeException(
@@ -1682,26 +1682,26 @@ public final class DiscreteTetradTest implements TetradTest {
         }
 
         double l = 0.;
-        for (int t = 0; t < GHY.length; t++) {
-            double tValue = GHW[t];
+        for (int t = 0; t < DiscreteTetradTest.GHY.length; t++) {
+            double tValue = DiscreteTetradTest.GHW[t];
             for (int i = 0; i < indices.length; i++) {
                 final int numValues = this.values[indices[i]].length;
                 if (v[i] == 0) {
                     tValue *= ProbUtils.normalCdf((
                             this.thresholds[indices[i]][0] * stdU[i] -
-                                    coeff[i] * GHY[t] * stdEta) / stdE[i]);
+                                    coeff[i] * DiscreteTetradTest.GHY[t] * stdEta) / stdE[i]);
                 } else if (v[i] == numValues - 1) {
                     tValue *= (1. - ProbUtils.normalCdf((
                             this.thresholds[indices[i]][numValues - 2] *
-                                    stdU[i] - coeff[i] * GHY[t] * stdEta) /
+                                    stdU[i] - coeff[i] * DiscreteTetradTest.GHY[t] * stdEta) /
                             stdE[i]));
                 } else {
                     tValue *= ProbUtils.normalCdf((
                             this.thresholds[indices[i]][v[i]] * stdU[i] -
-                                    coeff[i] * GHY[t] * stdEta) / stdE[i]) -
+                                    coeff[i] * DiscreteTetradTest.GHY[t] * stdEta) / stdE[i]) -
                             ProbUtils.normalCdf((this.thresholds[indices[i]][
                                     v[i] - 1] * stdU[i] -
-                                    coeff[i] * GHY[t] * stdEta) / stdE[i]);
+                                    coeff[i] * DiscreteTetradTest.GHY[t] * stdEta) / stdE[i]);
                 }
             }
             l += tValue;
@@ -1768,11 +1768,11 @@ public final class DiscreteTetradTest implements TetradTest {
         }
 
         double l = 0.;
-        for (int t1 = 0; t1 < GHY.length; t1++) {
-            for (int t2 = 0; t2 < GHY.length; t2++) {
-                double tValue = GHW[t1] * GHW[t2];
-                final double eta1 = GHY[t1] * stdEta1;
-                final double eta2 = eta1 * coeffEta + GHY[t2] * stdEtaError2;
+        for (int t1 = 0; t1 < DiscreteTetradTest.GHY.length; t1++) {
+            for (int t2 = 0; t2 < DiscreteTetradTest.GHY.length; t2++) {
+                double tValue = DiscreteTetradTest.GHW[t1] * DiscreteTetradTest.GHW[t2];
+                final double eta1 = DiscreteTetradTest.GHY[t1] * stdEta1;
+                final double eta2 = eta1 * coeffEta + DiscreteTetradTest.GHY[t2] * stdEtaError2;
                 for (int i = 0; i < indices.length; i++) {
                     final double eta;
                     if (indices.length == 4) {

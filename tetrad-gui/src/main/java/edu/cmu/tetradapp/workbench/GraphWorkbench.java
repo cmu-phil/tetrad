@@ -50,8 +50,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public static final int UNDIRECTED_EDGE = 5;
 
     //====================PRIVATE FIELDS=================================//
-    private int nodeType = MEASURED_NODE;
-    private int edgeMode = DIRECTED_EDGE;
+    private int nodeType = GraphWorkbench.MEASURED_NODE;
+    private int edgeMode = GraphWorkbench.DIRECTED_EDGE;
 
     //========================CONSTRUCTORS===============================//
 
@@ -96,13 +96,13 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
         final Node modelNode;
 
         switch (this.nodeType) {
-            case MEASURED_NODE:
+            case GraphWorkbench.MEASURED_NODE:
                 name = nextVariableName("X");
                 modelNode = new GraphNode(name);
                 modelNode.setNodeType(NodeType.MEASURED);
                 break;
 
-            case LATENT_NODE:
+            case GraphWorkbench.LATENT_NODE:
                 name = nextVariableName("L");
                 modelNode = new GraphNode(name);
                 modelNode.setNodeType(NodeType.LATENT);
@@ -185,19 +185,19 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      */
     public Edge getNewModelEdge(final Node node1, final Node node2) {
         switch (this.edgeMode) {
-            case DIRECTED_EDGE:
+            case GraphWorkbench.DIRECTED_EDGE:
                 return Edges.directedEdge(node1, node2);
 
-            case NONDIRECTED_EDGE:
+            case GraphWorkbench.NONDIRECTED_EDGE:
                 return Edges.nondirectedEdge(node1, node2);
 
-            case UNDIRECTED_EDGE:
+            case GraphWorkbench.UNDIRECTED_EDGE:
                 return Edges.undirectedEdge(node1, node2);
 
-            case PARTIALLY_ORIENTED_EDGE:
+            case GraphWorkbench.PARTIALLY_ORIENTED_EDGE:
                 return Edges.partiallyOrientedEdge(node1, node2);
 
-            case BIDIRECTED_EDGE:
+            case GraphWorkbench.BIDIRECTED_EDGE:
                 return Edges.bidirectedEdge(node1, node2);
 
             default:
@@ -218,20 +218,20 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
         final Color color = null;
 
         switch (this.edgeMode) {
-            case DIRECTED_EDGE:
+            case GraphWorkbench.DIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.DIRECTED, color);
 
-            case NONDIRECTED_EDGE:
+            case GraphWorkbench.NONDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.NONDIRECTED, color);
 
-            case UNDIRECTED_EDGE:
+            case GraphWorkbench.UNDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.UNDIRECTED, color);
 
-            case PARTIALLY_ORIENTED_EDGE:
+            case GraphWorkbench.PARTIALLY_ORIENTED_EDGE:
                 return new DisplayEdge(node, mouseLoc,
                         DisplayEdge.PARTIALLY_ORIENTED, color);
 
-            case BIDIRECTED_EDGE:
+            case GraphWorkbench.BIDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.BIDIRECTED, color);
 
             default:
@@ -286,15 +286,15 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      */
     public void setEdgeMode(final int edgeMode) {
         switch (edgeMode) {
-            case DIRECTED_EDGE:
+            case GraphWorkbench.DIRECTED_EDGE:
                 // Falls through!
-            case NONDIRECTED_EDGE:
+            case GraphWorkbench.NONDIRECTED_EDGE:
                 // Falls through!
-            case UNDIRECTED_EDGE:
+            case GraphWorkbench.UNDIRECTED_EDGE:
                 // Falls through!
-            case PARTIALLY_ORIENTED_EDGE:
+            case GraphWorkbench.PARTIALLY_ORIENTED_EDGE:
                 // Falls through!
-            case BIDIRECTED_EDGE:
+            case GraphWorkbench.BIDIRECTED_EDGE:
                 this.edgeMode = edgeMode;
                 break;
             default:
@@ -306,7 +306,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      * Sets the type of this node to the given type.
      */
     public void setNodeType(final int nodeType) {
-        if (nodeType == MEASURED_NODE || nodeType == LATENT_NODE) {
+        if (nodeType == GraphWorkbench.MEASURED_NODE || nodeType == GraphWorkbench.LATENT_NODE) {
             this.nodeType = nodeType;
         } else {
             throw new IllegalArgumentException("The type of the node must be "
@@ -375,13 +375,13 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             throw new NullPointerException("Base name must be non-null.");
         }
         final List<Node> currentNodes = this.getWorkbench().getGraph().getNodes();
-        if (!containsName(currentNodes, base)) {
+        if (!GraphWorkbench.containsName(currentNodes, base)) {
             return base;
         }
         // otherwise fine new unique name.
         base += "_";
         int i = 1;
-        while (containsName(currentNodes, base + i)) {
+        while (GraphWorkbench.containsName(currentNodes, base + i)) {
             i++;
         }
 

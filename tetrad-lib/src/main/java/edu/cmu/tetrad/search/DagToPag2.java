@@ -192,8 +192,8 @@ public final class DagToPag2 {
     }
 
     private boolean foundCollider(final Graph dag, final Node a, final Node b, final Node c) {
-        final boolean ipba = existsInducingPathInto(b, a, dag);
-        final boolean ipbc = existsInducingPathInto(b, c, dag);
+        final boolean ipba = DagToPag2.existsInducingPathInto(b, a, dag);
+        final boolean ipbc = DagToPag2.existsInducingPathInto(b, c, dag);
 
         if (!(ipba && ipbc)) {
             printTrueDefCollider(a, b, c, false);

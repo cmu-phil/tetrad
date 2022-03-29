@@ -710,20 +710,20 @@ public final class LargeScaleSimulation {
                 final String name1 = getNameNoLag(o1);
                 final String name2 = getNameNoLag(o2);
 
-                final String prefix1 = getPrefix(name1);
-                final String prefix2 = getPrefix(name2);
+                final String prefix1 = LargeScaleSimulation.getPrefix(name1);
+                final String prefix2 = LargeScaleSimulation.getPrefix(name2);
 
-                final int index1 = getIndex(name1);
-                final int index2 = getIndex(name2);
+                final int index1 = LargeScaleSimulation.getIndex(name1);
+                final int index2 = LargeScaleSimulation.getIndex(name2);
 
-                if (getLag(o1.getName()) == getLag(o2.getName())) {
+                if (LargeScaleSimulation.getLag(o1.getName()) == LargeScaleSimulation.getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
                         return Integer.compare(index1, index2);
                     } else {
                         return prefix1.compareTo(prefix2);
                     }
                 } else {
-                    return getLag(o1.getName()) - getLag(o2.getName());
+                    return LargeScaleSimulation.getLag(o1.getName()) - LargeScaleSimulation.getLag(o2.getName());
                 }
             }
         });

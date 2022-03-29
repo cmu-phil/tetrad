@@ -68,18 +68,18 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     public void paint(final Graphics g) {
         final int width = getSize().width;
         final int height = getSize().height;
-        g.setColor(BACKGROUND_COLOR);
+        g.setColor(NoteDisplayComp.BACKGROUND_COLOR);
         g.fillRect(0, 0, width, height);
 
         int y = this.name.getSize().height;
         y += 2;
-        g.setColor(BORDER_COLOR);
+        g.setColor(NoteDisplayComp.BORDER_COLOR);
         while (y < height) {
             g.drawLine(0, y, width, y);
             y += 5;
         }
         // draw the border.
-        g.setColor(BORDER_COLOR);
+        g.setColor(NoteDisplayComp.BORDER_COLOR);
         g.drawRect(0, 0, width - 1, height - 1);
 
         super.paint(g);
@@ -129,7 +129,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     private void buildComponents() {
         removeAll();
         setLayout(new BorderLayout());
-        setBackground(BACKGROUND_COLOR);
+        setBackground(NoteDisplayComp.BACKGROUND_COLOR);
         setFont(DisplayNodeUtils.getFont());
 
         final Box b = Box.createVerticalBox();

@@ -310,7 +310,7 @@ public final class IndTestLaggedRegression implements IndependenceTest {
     }
 
     public String toString() {
-        return "Linear Regression Test, alpha = " + nf.format(getAlpha());
+        return "Linear Regression Test, alpha = " + IndTestLaggedRegression.nf.format(getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//

@@ -233,9 +233,9 @@ public class EigenDecomposition {
             this.cachedD = MatrixUtils.createRealDiagonalMatrix(this.realEigenvalues);
 
             for (int i = 0; i < this.imagEigenvalues.length; i++) {
-                if (Precision.compareTo(this.imagEigenvalues[i], 0.0, EPSILON) > 0) {
+                if (Precision.compareTo(this.imagEigenvalues[i], 0.0, EigenDecomposition.EPSILON) > 0) {
                     this.cachedD.setEntry(i, i + 1, this.imagEigenvalues[i]);
-                } else if (Precision.compareTo(this.imagEigenvalues[i], 0.0, EPSILON) < 0) {
+                } else if (Precision.compareTo(this.imagEigenvalues[i], 0.0, EigenDecomposition.EPSILON) < 0) {
                     this.cachedD.setEntry(i, i - 1, this.imagEigenvalues[i]);
                 }
             }
@@ -278,7 +278,7 @@ public class EigenDecomposition {
      */
     public boolean hasComplexEigenvalues() {
         for (int i = 0; i < this.imagEigenvalues.length; i++) {
-            if (!Precision.equals(this.imagEigenvalues[i], 0.0, EPSILON)) {
+            if (!Precision.equals(this.imagEigenvalues[i], 0.0, EigenDecomposition.EPSILON)) {
                 return true;
             }
         }
@@ -539,7 +539,7 @@ public class EigenDecomposition {
             for (int i = 0; i < this.realEigenvalues.length; ++i) {
                 // Looking for eigenvalues that are 0, where we consider anything much much smaller
                 // than the largest eigenvalue to be effectively 0.
-                if (Precision.equals(eigenvalueNorm(i) / largestEigenvalueNorm, 0, EPSILON)) {
+                if (Precision.equals(eigenvalueNorm(i) / largestEigenvalueNorm, 0, EigenDecomposition.EPSILON)) {
                     return false;
                 }
             }
@@ -769,7 +769,7 @@ public class EigenDecomposition {
 
         for (int i = 0; i < this.realEigenvalues.length; i++) {
             if (i == (this.realEigenvalues.length - 1) ||
-                    Precision.equals(matT[i + 1][i], 0.0, EPSILON)) {
+                    Precision.equals(matT[i + 1][i], 0.0, EigenDecomposition.EPSILON)) {
                 this.realEigenvalues[i] = matT[i][i];
             } else {
                 final double x = matT[i + 1][i + 1];
@@ -821,7 +821,7 @@ public class EigenDecomposition {
         }
 
         // we can not handle a matrix with zero norm
-        if (Precision.equals(norm, 0.0, EPSILON)) {
+        if (Precision.equals(norm, 0.0, EigenDecomposition.EPSILON)) {
             throw new MathArithmeticException(LocalizedFormats.ZERO_NORM);
         }
 
@@ -845,7 +845,7 @@ public class EigenDecomposition {
                     for (int j = l; j <= idx; j++) {
                         r += matrixT[i][j] * matrixT[j][idx];
                     }
-                    if (Precision.compareTo(this.imagEigenvalues[i], 0.0, EPSILON) < 0) {
+                    if (Precision.compareTo(this.imagEigenvalues[i], 0.0, EigenDecomposition.EPSILON) < 0) {
                         z = w;
                         s = r;
                     } else {
@@ -907,7 +907,7 @@ public class EigenDecomposition {
                     }
                     final double w = matrixT[i][i] - p;
 
-                    if (Precision.compareTo(this.imagEigenvalues[i], 0.0, EPSILON) < 0) {
+                    if (Precision.compareTo(this.imagEigenvalues[i], 0.0, EigenDecomposition.EPSILON) < 0) {
                         z = w;
                         r = ra;
                         s = sa;

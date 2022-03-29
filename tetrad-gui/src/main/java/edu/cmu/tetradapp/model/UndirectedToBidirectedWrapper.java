@@ -43,7 +43,7 @@ public class UndirectedToBidirectedWrapper extends GraphWrapper implements DoNot
 
 
     public UndirectedToBidirectedWrapper(final Graph graph) {
-        super(pickDagFromCPDAG(graph), "Make Bidirected Edges Undirected");
+        super(UndirectedToBidirectedWrapper.pickDagFromCPDAG(graph), "Make Bidirected Edges Undirected");
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 

@@ -42,30 +42,30 @@ public final class MultidataUtils {
         final DataModel dataModel = dataModels.get(0);
         final DataBox dataBox = ((BoxDataSet) dataModel).getDataBox();
 
-        final int[] rowCounts = getRowCounts(dataModels);
+        final int[] rowCounts = MultidataUtils.getRowCounts(dataModels);
 
         final List<Node> variables = new ArrayList<>(dataModel.getVariables().size());
-        combineVariables(dataModels, variables);
+        MultidataUtils.combineVariables(dataModels, variables);
 
         final int numOfRows = Arrays.stream(rowCounts).sum();
-        final int numOfCols = getNumberOfColumns(dataModel);
+        final int numOfCols = MultidataUtils.getNumberOfColumns(dataModel);
 
         if (dataBox instanceof DoubleDataBox || dataBox instanceof VerticalDoubleDataBox) {
             final double[][] continuousData = new double[numOfRows][numOfCols];
-            combineContinuousData(dataModels, continuousData);
+            MultidataUtils.combineContinuousData(dataModels, continuousData);
 
             return new BoxDataSet(new DoubleDataBox(continuousData), variables);
         } else if (dataBox instanceof VerticalIntDataBox) {
             final int[][] discreteData = new int[numOfCols][];
-            combineDiscreteDataToDiscreteVerticalData(dataModels, variables, discreteData, numOfRows, numOfCols);
+            MultidataUtils.combineDiscreteDataToDiscreteVerticalData(dataModels, variables, discreteData, numOfRows, numOfCols);
 
             return new BoxDataSet(new VerticalIntDataBox(discreteData), variables);
         } else if (dataBox instanceof MixedDataBox) {
             final double[][] continuousData = new double[numOfCols][];
-            combineMixedContinuousData(dataModels, variables, continuousData, numOfRows, numOfCols);
+            MultidataUtils.combineMixedContinuousData(dataModels, variables, continuousData, numOfRows, numOfCols);
 
             final int[][] discreteData = new int[numOfCols][];
-            combineMixedDiscreteData(dataModels, variables, discreteData, numOfRows, numOfCols);
+            MultidataUtils.combineMixedDiscreteData(dataModels, variables, discreteData, numOfRows, numOfCols);
 
             return new BoxDataSet(new MixedDataBox(variables, numOfRows, continuousData, discreteData), variables);
         } else {
@@ -123,9 +123,9 @@ public final class MultidataUtils {
 
     public static void combineMixedDiscreteData(final List<DataModel> dataModels, final List<Node> variables, final int[][] combinedData, final int numOfRows, final int numOfColumns) {
         if (dataModels.size() == 1) {
-            combineSingleMixedDiscreteData(dataModels, combinedData, numOfColumns);
+            MultidataUtils.combineSingleMixedDiscreteData(dataModels, combinedData, numOfColumns);
         } else {
-            combineMultipleMixedDiscreteData(dataModels, variables, combinedData, numOfRows, numOfColumns);
+            MultidataUtils.combineMultipleMixedDiscreteData(dataModels, variables, combinedData, numOfRows, numOfColumns);
         }
     }
 
@@ -172,9 +172,9 @@ public final class MultidataUtils {
 
     public static void combineMixedContinuousData(final List<DataModel> dataModels, final List<Node> variables, final double[][] combinedData, final int numOfRows, final int numOfColumns) {
         if (dataModels.size() == 1) {
-            combineSingleMixedContinuousData(dataModels, combinedData, numOfColumns);
+            MultidataUtils.combineSingleMixedContinuousData(dataModels, combinedData, numOfColumns);
         } else {
-            combineMultipleMixedContinuousData(dataModels, variables, combinedData, numOfRows, numOfColumns);
+            MultidataUtils.combineMultipleMixedContinuousData(dataModels, variables, combinedData, numOfRows, numOfColumns);
         }
     }
 
@@ -351,11 +351,11 @@ public final class MultidataUtils {
         final DataBox dataBox = ((BoxDataSet) dataModel).getDataBox();
 
         if (dataBox instanceof DoubleDataBox || dataBox instanceof VerticalDoubleDataBox) {
-            combineContinuousVariables(dataModels, variables);
+            MultidataUtils.combineContinuousVariables(dataModels, variables);
         } else if (dataBox instanceof VerticalIntDataBox) {
-            combineDiscreteVariables(dataModels, variables);
+            MultidataUtils.combineDiscreteVariables(dataModels, variables);
         } else if (dataBox instanceof MixedDataBox) {
-            combineMixedVariables(dataModels, variables);
+            MultidataUtils.combineMixedVariables(dataModels, variables);
         } else {
             throw new UnsupportedOperationException("This method only supports data with continuous, discrete, or mixed variables.");
         }

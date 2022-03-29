@@ -304,7 +304,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
         final SemOptimizer optimizer;
 
         if (containsFixedParam(this.semPm) || this.semPm.getGraph().existsDirectedCycle()
-                || containsCovarParam(this.semPm)) {
+                || SemEstimatorWrapper.containsCovarParam(this.semPm)) {
             optimizer = new SemOptimizerPowell();
         } else if (containsLatent) {
             optimizer = new SemOptimizerEm();

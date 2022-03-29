@@ -291,7 +291,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
             public void run() {
                 while (true) {
                     try {
-                        sleep(300);
+                        Thread.sleep(300);
 
                         if (!process.isAlive()) {
                             getExecuteButton().setEnabled(true);

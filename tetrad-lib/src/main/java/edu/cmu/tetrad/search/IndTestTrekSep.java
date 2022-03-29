@@ -373,7 +373,7 @@ public final class IndTestTrekSep implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "t-Separation test, alpha = " + nf.format(getAlpha());
+        return "t-Separation test, alpha = " + IndTestTrekSep.nf.format(getAlpha());
     }
 
     public void setPValueLogger(final PrintStream pValueLogger) {

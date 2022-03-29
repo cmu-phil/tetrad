@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.data.reader.tabular;
 
 import edu.pitt.dbmi.data.reader.DataColumn;
+import edu.pitt.dbmi.data.reader.DataFileReader;
 import edu.pitt.dbmi.data.reader.DataReaderException;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.util.Columns;
@@ -132,13 +133,13 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
             int lineNum = 1;
             final StringBuilder dataBuilder = new StringBuilder();
 
-            final byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
                     final byte currChar = buffer[i];
 
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         finished = hasSeenNonblankChar && !skip;
                         if (finished) {
                             final String value = dataBuilder.toString().trim();
@@ -148,7 +149,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                             if (numOfExCols == 0 || exColsIndex >= numOfExCols || colNum != columnsToExclude[exColsIndex]) {
                                 if (value.isEmpty()) {
                                     final String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
-                                    LOGGER.error(errMsg);
+                                    TabularColumnFileReader.LOGGER.error(errMsg);
                                     throw new DataReaderException(errMsg);
                                 } else {
                                     columns.add(new TabularDataColumn(value, colNum, false, isDiscrete));
@@ -166,12 +167,12 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                         cmntIndex = 0;
                         checkForComment = comment.length > 0;
                     } else if (!skip) {
-                        if (currChar > SPACE_CHAR) {
+                        if (currChar > DataFileReader.SPACE_CHAR) {
                             hasSeenNonblankChar = true;
                         }
 
                         // skip blank chars at the begining of the line
-                        if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                             continue;
                         }
 
@@ -198,7 +199,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                                 final boolean isDelimiter;
                                 switch (this.delimiter) {
                                     case WHITESPACE:
-                                        isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
+                                        isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
                                         break;
                                     default:
                                         isDelimiter = (currChar == delimChar);
@@ -214,7 +215,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                                     } else {
                                         if (value.isEmpty()) {
                                             final String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
-                                            LOGGER.error(errMsg);
+                                            TabularColumnFileReader.LOGGER.error(errMsg);
                                             throw new DataReaderException(errMsg);
                                         } else {
                                             columns.add(new TabularDataColumn(value, colNum, false, isDiscrete));
@@ -241,7 +242,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                 if (numOfExCols == 0 || exColsIndex >= numOfExCols || colNum != columnsToExclude[exColsIndex]) {
                     if (value.isEmpty()) {
                         final String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
-                        LOGGER.error(errMsg);
+                        TabularColumnFileReader.LOGGER.error(errMsg);
                         throw new DataReaderException(errMsg);
                     } else {
                         columns.add(new TabularDataColumn(value, colNum, false, isDiscrete));

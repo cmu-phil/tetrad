@@ -280,7 +280,7 @@ final class RangeEditor extends JComponent {
 
         public BigLabel(final String text) {
             super(text);
-            setFont(FONT);
+            setFont(BigLabel.FONT);
         }
     }
 

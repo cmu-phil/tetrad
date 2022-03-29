@@ -102,7 +102,7 @@ public class KMeans implements ClusteringAlgorithm {
     /**
      * The type of initialization, one of RANDOM_POINTS,
      */
-    private int initializationType = RANDOM_POINTS;
+    private int initializationType = KMeans.RANDOM_POINTS;
 
     /**
      * True if verbose output should be printed.
@@ -127,7 +127,7 @@ public class KMeans implements ClusteringAlgorithm {
     public static KMeans randomPoints(final int numCenters) {
         final KMeans algorithm = new KMeans();
         algorithm.numCenters = numCenters;
-        algorithm.initializationType = RANDOM_POINTS;
+        algorithm.initializationType = KMeans.RANDOM_POINTS;
 
         return algorithm;
     }
@@ -143,7 +143,7 @@ public class KMeans implements ClusteringAlgorithm {
     public static KMeans randomClusters(final int numCenters) {
         final KMeans algorithm = new KMeans();
         algorithm.numCenters = numCenters;
-        algorithm.initializationType = RANDOM_CLUSTERS;
+        algorithm.initializationType = KMeans.RANDOM_CLUSTERS;
 
         return algorithm;
     }
@@ -174,14 +174,14 @@ public class KMeans implements ClusteringAlgorithm {
     public void cluster(final Matrix data) {
         this.data = data;
 
-        if (this.initializationType == RANDOM_POINTS) {
+        if (this.initializationType == KMeans.RANDOM_POINTS) {
             this.centers = pickCenters(this.numCenters, data);
             this.clusters = new ArrayList<>();
 
             for (int i = 0; i < data.rows(); i++) {
                 this.clusters.add(-1);
             }
-        } else if (this.initializationType == RANDOM_CLUSTERS) {
+        } else if (this.initializationType == KMeans.RANDOM_CLUSTERS) {
             this.centers = new Matrix(this.numCenters, data.columns());
 
             // Randomly assign points to clusters and get the initial centers of
@@ -194,7 +194,7 @@ public class KMeans implements ClusteringAlgorithm {
             }
 
             moveCentersToMeans();
-        } else if (this.initializationType == EXPLICIT_POINTS) {
+        } else if (this.initializationType == KMeans.EXPLICIT_POINTS) {
             this.clusters = new ArrayList<>();
 
             for (int i = 0; i < data.rows(); i++) {
@@ -226,7 +226,7 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     public List<List<Integer>> getClusters() {
-        return convertClusterIndicesToLists(this.clusters);
+        return KMeans.convertClusterIndicesToLists(this.clusters);
     }
 
     private static List<List<Integer>> convertClusterIndicesToLists(final List<Integer> clusterIndices) {

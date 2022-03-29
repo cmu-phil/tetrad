@@ -319,7 +319,7 @@ public class MimbuildEditor extends JPanel {
         final Thread watcher = new Thread() {
             public void run() {
                 try {
-                    sleep(MimbuildEditor.this.delay);
+                    Thread.sleep(MimbuildEditor.this.delay);
                 } catch (final InterruptedException e) {
                     return;
                 }
@@ -366,7 +366,7 @@ public class MimbuildEditor extends JPanel {
 
                 while (thread().isAlive()) {
                     try {
-                        sleep(200);
+                        Thread.sleep(200);
                     } catch (final InterruptedException e) {
                         return;
                     }

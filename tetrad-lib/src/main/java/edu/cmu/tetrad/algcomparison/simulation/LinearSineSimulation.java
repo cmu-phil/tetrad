@@ -140,7 +140,7 @@ public class LinearSineSimulation implements Simulation {
             nd.put(this.shuffledOrder.get(i).getName(), 0);
         }
 
-        G = makeMixedGraph(G, nd);
+        G = LinearSineSimulation.makeMixedGraph(G, nd);
         nodes = G.getNodes();
 
         final DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);

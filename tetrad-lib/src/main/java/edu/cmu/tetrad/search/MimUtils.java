@@ -46,11 +46,11 @@ public final class MimUtils {
             }
         }
 
-        return convertToClusters(clusterGraph, measuredVariables);
+        return MimUtils.convertToClusters(clusterGraph, measuredVariables);
     }
 
     public static List<List<Node>> convertToClusters2(final Graph clusterGraph) {
-        final Clusters clusters = convertToClusters(clusterGraph);
+        final Clusters clusters = MimUtils.convertToClusters(clusterGraph);
 
         final List<List<Node>> _clusters = new ArrayList<>();
 

@@ -27,6 +27,6 @@ import java.io.IOException;
  */
 public interface MetadataReader {
 
-    public Metadata read() throws IOException;
+    Metadata read() throws IOException;
 
 }

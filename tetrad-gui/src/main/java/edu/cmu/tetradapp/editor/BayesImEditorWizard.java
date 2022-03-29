@@ -143,7 +143,7 @@ public final class BayesImEditorWizard extends JPanel {
             ++current;
 
             if (current == max) {
-                JOptionPane.showMessageDialog(BayesImEditorWizard.this,
+                JOptionPane.showMessageDialog(this,
                         "There are no more variables.");
             }
 

@@ -86,11 +86,11 @@ public class ExpressionLexer {
         if (seq == null) {
             throw new NullPointerException("CharSequence must not be null.");
         }
-        if (PATTERNS == null) {
-            PATTERNS = createPatterns();
+        if (ExpressionLexer.PATTERNS == null) {
+            ExpressionLexer.PATTERNS = ExpressionLexer.createPatterns();
         }
         this.charSequence = seq;
-        this.matchers = createMatchers(PATTERNS, seq);
+        this.matchers = ExpressionLexer.createMatchers(ExpressionLexer.PATTERNS, seq);
     }
 
     //=================================== Public Methods =====================================//
@@ -206,7 +206,7 @@ public class ExpressionLexer {
         regex.put(Token.RPAREN, "\\)");
         regex.put(Token.COMMA, ",");
         regex.put(Token.NUMBER, "-?[\\d\\.]+(e-?\\d+)?");
-        regex.put(Token.OPERATOR, getExpressionRegex());
+        regex.put(Token.OPERATOR, ExpressionLexer.getExpressionRegex());
         regex.put(Token.PARAMETER, "\\$|(([a-zA-Z]{1})([a-zA-Z0-9-_/:\\.]*))");
         regex.put(Token.EQUATION, "\\=");
         regex.put(Token.STRING, "\\\".*\\\"");

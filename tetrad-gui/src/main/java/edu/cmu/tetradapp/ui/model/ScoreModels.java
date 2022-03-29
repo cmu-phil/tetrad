@@ -126,7 +126,7 @@ public final class ScoreModels {
     }
 
     public static ScoreModels getInstance() {
-        return INSTANCE;
+        return ScoreModels.INSTANCE;
     }
 
     public List<ScoreModel> getModels() {

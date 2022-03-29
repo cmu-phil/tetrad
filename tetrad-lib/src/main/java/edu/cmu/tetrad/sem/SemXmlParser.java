@@ -50,11 +50,11 @@ public class SemXmlParser {
         final Element jointDistributionElement = semImElement.getFirstChildElement(SemXmlConstants.JOINT_ERROR_DISTRIBUTION);
 
 
-        final Dag graph = makeVariables(variablesElement);
-        final SemIm im = makeEdges(edgesElement, graph);
-        setNodeMeans(variablesElement, im);
-        addMarginalErrorDistribution(marginalDistributionElement, im);
-        addJointErrorDistribution(jointDistributionElement, im);
+        final Dag graph = SemXmlParser.makeVariables(variablesElement);
+        final SemIm im = SemXmlParser.makeEdges(edgesElement, graph);
+        SemXmlParser.setNodeMeans(variablesElement, im);
+        SemXmlParser.addMarginalErrorDistribution(marginalDistributionElement, im);
+        SemXmlParser.addJointErrorDistribution(jointDistributionElement, im);
 
         return im;
     }

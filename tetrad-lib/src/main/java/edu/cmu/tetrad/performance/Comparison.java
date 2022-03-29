@@ -37,13 +37,13 @@ public class Comparison {
         final ComparisonResult result = new ComparisonResult(params);
 
         if (params.getDataFile() != null) {
-            dataSet = loadDataFile(params.getDataFile());
+            dataSet = Comparison.loadDataFile(params.getDataFile());
 
             if (params.getGraphFile() == null) {
                 throw new IllegalArgumentException("True graph file not set.");
             }
 
-            trueDag = loadGraphFile(params.getGraphFile());
+            trueDag = Comparison.loadGraphFile(params.getGraphFile());
         } else {
             if (params.getNumVars() == -1) {
                 throw new IllegalArgumentException("Number of variables not set.");
@@ -320,7 +320,7 @@ public class Comparison {
             cols[i] = i;
         }
 
-        return getTextTable(dataSet, cols, new DecimalFormat("0.00")).toString();
+        return Comparison.getTextTable(dataSet, cols, new DecimalFormat("0.00")).toString();
     }
 
 

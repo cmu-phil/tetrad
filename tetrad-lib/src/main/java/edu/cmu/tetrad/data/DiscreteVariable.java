@@ -190,7 +190,7 @@ public final class DiscreteVariable extends AbstractVariable
      */
     public DiscreteVariable(final DiscreteVariable variable) {
         super(variable.getName());
-        this.categoriesCopy = getStoredCategoryList(variable.getCategories());
+        this.categoriesCopy = DiscreteVariable.getStoredCategoryList(variable.getCategories());
         setCategoryNamesDisplayed(true);
     }
 
@@ -233,15 +233,15 @@ public final class DiscreteVariable extends AbstractVariable
      * @return the missing value marker as an Integer.
      */
     public final Object getMissingValueMarker() {
-        return MISSING_VALUE;
+        return DiscreteVariable.MISSING_VALUE;
     }
 
     /**
      * @return the variable category specified by the given category.
      */
     public final String getCategory(final int category) {
-        if (category == MISSING_VALUE) {
-            return MISSING_VALUE_STRING;
+        if (category == DiscreteVariable.MISSING_VALUE) {
+            return DiscreteVariable.MISSING_VALUE_STRING;
         } else {
             return getCategories().get(category);
         }
@@ -253,7 +253,7 @@ public final class DiscreteVariable extends AbstractVariable
      */
     public final List<String> getCategories() {
         if (this.categories == null) {
-            this.categories = Collections.unmodifiableList(getStoredCategoryList(this.categoriesCopy));
+            this.categories = Collections.unmodifiableList(DiscreteVariable.getStoredCategoryList(this.categoriesCopy));
         }
         return this.categories;
     }
@@ -264,7 +264,7 @@ public final class DiscreteVariable extends AbstractVariable
      */
     public final boolean checkValue(final int category) {
         final boolean inRange = (category >= 0) && (category < getNumCategories());
-        final boolean isMissing = (category == MISSING_VALUE);
+        final boolean isMissing = (category == DiscreteVariable.MISSING_VALUE);
         return inRange || isMissing;
     }
 
@@ -280,9 +280,9 @@ public final class DiscreteVariable extends AbstractVariable
     public final boolean isMissingValue(final Object value) {
         if (value instanceof Integer) {
             final Integer ivalue = (Integer) value;
-            return ivalue == MISSING_VALUE;
+            return ivalue == DiscreteVariable.MISSING_VALUE;
         } else if (value instanceof String) {
-            return MISSING_VALUE_STRING.equals(value);
+            return DiscreteVariable.MISSING_VALUE_STRING.equals(value);
         }
 
         return false;
@@ -517,7 +517,7 @@ public final class DiscreteVariable extends AbstractVariable
             throw new IllegalArgumentException("Duplicate category.");
         }
 
-        this.categoriesCopy = Collections.unmodifiableList(getStoredCategoryList(categoryList));
+        this.categoriesCopy = Collections.unmodifiableList(DiscreteVariable.getStoredCategoryList(categoryList));
     }
 
     /**
@@ -549,18 +549,18 @@ public final class DiscreteVariable extends AbstractVariable
 
         final Set<String> categorySet = new HashSet<>(categoryList);
 
-        if (STORED_CATEGORY_LISTS == null) {
-            STORED_CATEGORY_LISTS = new ArrayList<>();
+        if (DiscreteVariable.STORED_CATEGORY_LISTS == null) {
+            DiscreteVariable.STORED_CATEGORY_LISTS = new ArrayList<>();
         }
 
-        for (final LinkedList<String> list : STORED_CATEGORY_LISTS) {
+        for (final LinkedList<String> list : DiscreteVariable.STORED_CATEGORY_LISTS) {
             if (categorySet.equals(new HashSet<>(list))) {
                 return list;
             }
         }
 
         final LinkedList<String> newList = new LinkedList<>(categoryList);
-        STORED_CATEGORY_LISTS.add(newList);
+        DiscreteVariable.STORED_CATEGORY_LISTS.add(newList);
         return newList;
     }
 

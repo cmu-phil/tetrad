@@ -81,7 +81,7 @@ public class TestGeneralResamplingTest {
         final int numBootstrapSamples = 5;
         final boolean verbose = true;
 
-        final Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
+        final Graph dag = TestGeneralResamplingTest.makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
         System.out.println("Truth Graph:");
         System.out.println(dag);
@@ -119,12 +119,12 @@ public class TestGeneralResamplingTest {
         // Adjacency Confusion Matrix
         final int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(dag, resultGraph);
 
-        printAdjConfusionMatrix(adjAr);
+        TestGeneralResamplingTest.printAdjConfusionMatrix(adjAr);
 
         // Edge Type Confusion Matrix
         final int[][] edgeAr = GeneralResamplingTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
 
-        printEdgeTypeConfusionMatrix(edgeAr);
+        TestGeneralResamplingTest.printEdgeTypeConfusionMatrix(edgeAr);
     }
 
     @Ignore
@@ -143,7 +143,7 @@ public class TestGeneralResamplingTest {
         final boolean verbose = true;
         final long seed = 123;
 
-        final Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
+        final Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
 
         //System.out.println("Truth Graph:");
         //System.out.println(dag.toString());
@@ -177,12 +177,12 @@ public class TestGeneralResamplingTest {
         // Adjacency Confusion Matrix
         final int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(dag, resultGraph);
 
-        printAdjConfusionMatrix(adjAr);
+        TestGeneralResamplingTest.printAdjConfusionMatrix(adjAr);
 
         // Edge Type Confusion Matrix
         final int[][] edgeAr = GeneralResamplingTest.getEdgeTypeConfusionMatrix(dag, resultGraph);
 
-        printEdgeTypeConfusionMatrix(edgeAr);
+        TestGeneralResamplingTest.printEdgeTypeConfusionMatrix(edgeAr);
     }
 
     @Test
@@ -198,7 +198,7 @@ public class TestGeneralResamplingTest {
         final int numBootstrapSamples = 5;
         final boolean verbose = true;
 
-        final Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
+        final Graph dag = TestGeneralResamplingTest.makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
         final BayesPm pm = new BayesPm(dag, 2, 3);
         final BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
@@ -241,12 +241,12 @@ public class TestGeneralResamplingTest {
         // Adjacency Confusion Matrix
         final int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(truePag, resultGraph);
 
-        printAdjConfusionMatrix(adjAr);
+        TestGeneralResamplingTest.printAdjConfusionMatrix(adjAr);
 
         // Edge Type Confusion Matrix
         final int[][] edgeAr = GeneralResamplingTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
 
-        printEdgeTypeConfusionMatrix(edgeAr);
+        TestGeneralResamplingTest.printEdgeTypeConfusionMatrix(edgeAr);
     }
 
     @Ignore
@@ -265,7 +265,7 @@ public class TestGeneralResamplingTest {
         final boolean verbose = true;
         final long seed = 123;
 
-        final Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
+        final Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
 
         final DagToPag2 dagToPag = new DagToPag2(dag);
         final Graph truePag = dagToPag.convert();
@@ -303,12 +303,12 @@ public class TestGeneralResamplingTest {
         // Adjacency Confusion Matrix
         final int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(truePag, resultGraph);
 
-        printAdjConfusionMatrix(adjAr);
+        TestGeneralResamplingTest.printAdjConfusionMatrix(adjAr);
 
         // Edge Type Confusion Matrix
         final int[][] edgeAr = GeneralResamplingTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
 
-        printEdgeTypeConfusionMatrix(edgeAr);
+        TestGeneralResamplingTest.printEdgeTypeConfusionMatrix(edgeAr);
     }
 
     @Ignore
@@ -325,7 +325,7 @@ public class TestGeneralResamplingTest {
         final int numBootstrapSamples = 5;
         final boolean verbose = true;
 
-        final Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
+        final Graph dag = TestGeneralResamplingTest.makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
         final DagToPag2 dagToPag = new DagToPag2(dag);
         final Graph truePag = dagToPag.convert();
@@ -367,12 +367,12 @@ public class TestGeneralResamplingTest {
         // Adjacency Confusion Matrix
         final int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(truePag, resultGraph);
 
-        printAdjConfusionMatrix(adjAr);
+        TestGeneralResamplingTest.printAdjConfusionMatrix(adjAr);
 
         // Edge Type Confusion Matrix
         final int[][] edgeAr = GeneralResamplingTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
 
-        printEdgeTypeConfusionMatrix(edgeAr);
+        TestGeneralResamplingTest.printEdgeTypeConfusionMatrix(edgeAr);
     }
 
     @Ignore
@@ -391,7 +391,7 @@ public class TestGeneralResamplingTest {
         final boolean verbose = true;
         final long seed = 123;
 
-        final Graph dag = makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
+        final Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
 
         final DagToPag2 dagToPag = new DagToPag2(dag);
         final Graph truePag = dagToPag.convert();
@@ -428,12 +428,12 @@ public class TestGeneralResamplingTest {
         // Adjacency Confusion Matrix
         final int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(truePag, resultGraph);
 
-        printAdjConfusionMatrix(adjAr);
+        TestGeneralResamplingTest.printAdjConfusionMatrix(adjAr);
 
         // Edge Type Confusion Matrix
         final int[][] edgeAr = GeneralResamplingTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
 
-        printEdgeTypeConfusionMatrix(edgeAr);
+        TestGeneralResamplingTest.printEdgeTypeConfusionMatrix(edgeAr);
     }
 
     private static int sum2DArray(final int[][] ar, final int iStart, final int iEnd, final int jStart, final int jEnd) {
@@ -443,17 +443,17 @@ public class TestGeneralResamplingTest {
                 return ar[iStart][jStart];
             } else if (jStart < jEnd) {
                 final int mid = (jStart + jEnd) / 2;
-                sum += sum2DArray(ar, iStart, iEnd, jStart, mid) + sum2DArray(ar, iStart, iEnd, mid + 1, jEnd);
+                sum += TestGeneralResamplingTest.sum2DArray(ar, iStart, iEnd, jStart, mid) + TestGeneralResamplingTest.sum2DArray(ar, iStart, iEnd, mid + 1, jEnd);
             }
         } else if (iStart < iEnd) {
             final int mid = (iStart + iEnd) / 2;
-            sum += sum2DArray(ar, iStart, mid, jStart, jEnd) + sum2DArray(ar, mid + 1, iEnd, jStart, jEnd);
+            sum += TestGeneralResamplingTest.sum2DArray(ar, iStart, mid, jStart, jEnd) + TestGeneralResamplingTest.sum2DArray(ar, mid + 1, iEnd, jStart, jEnd);
         }
         return sum;
     }
 
     private static void printEdgeTypeConfusionMatrix(final int[][] edgeAr) {
-        final int numEdges = sum2DArray(edgeAr, 0, edgeAr.length - 1, 0, edgeAr[0].length - 1);
+        final int numEdges = TestGeneralResamplingTest.sum2DArray(edgeAr, 0, edgeAr.length - 1, 0, edgeAr[0].length - 1);
 
         System.out.println("=================================");
         System.out.println("Edge Orientation Confusion Matrix");
@@ -495,7 +495,7 @@ public class TestGeneralResamplingTest {
     }
 
     private static void printAdjConfusionMatrix(final int[][] adjAr) {
-        final int numEdges = sum2DArray(adjAr, 0, adjAr.length - 1, 0, adjAr[0].length - 1);
+        final int numEdges = TestGeneralResamplingTest.sum2DArray(adjAr, 0, adjAr.length - 1, 0, adjAr[0].length - 1);
 
         System.out.println("============================");
         System.out.println("Adjacency Confusion Matrix");

@@ -88,9 +88,9 @@ final class ConstructTemplateAction extends AbstractAction {
      * @return a copy of the template names. Must be public.
      */
     public static String[] getTemplateNames() {
-        final String[] templateNamesCopy = new String[TEMPLATE_NAMES.length];
-        System.arraycopy(TEMPLATE_NAMES, 0, templateNamesCopy, 0,
-                TEMPLATE_NAMES.length);
+        final String[] templateNamesCopy = new String[ConstructTemplateAction.TEMPLATE_NAMES.length];
+        System.arraycopy(ConstructTemplateAction.TEMPLATE_NAMES, 0, templateNamesCopy, 0,
+                ConstructTemplateAction.TEMPLATE_NAMES.length);
         return templateNamesCopy;
     }
 
@@ -103,15 +103,15 @@ final class ConstructTemplateAction extends AbstractAction {
     public void actionPerformed(final ActionEvent e) {
         final int leftX = getLeftX();
 
-        if (this.templateName.equals(getTemplateNames()[0])) {
+        if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[0])) {
             simulateDataFixedIM(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[1])) {
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[1])) {
             searchFromSimulatedDataWithCompare(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[2])) {
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[2])) {
             searchFromLoadedOrSimulatedData(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[3])) {
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[3])) {
             estimateFromSimulatedData(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[4])) {
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[4])) {
             estimateThenUpdateUsingSearchResult(leftX);
         }
         // Removed 4/9/2019 Folded into FOFC
@@ -124,7 +124,7 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     public void addParent(final SessionEditorNode thisNode, final String type) {
-        final String name = nextName(type);
+        final String name = ConstructTemplateAction.nextName(type);
         addNode(type, name, thisNode.getX() - 50, thisNode.getY() - 50);
         addEdge(name, thisNode.getName());
     }
@@ -163,15 +163,15 @@ final class ConstructTemplateAction extends AbstractAction {
 
         final List<Node> nodes = new LinkedList<>();
 
-        final String data = nextName("Data");
-        final String search = nextName("Search");
+        final String data = ConstructTemplateAction.nextName("Data");
+        final String search = ConstructTemplateAction.nextName("Search");
 
         nodes.add(addNode("Data", data, leftX, 100));
         nodes.add(addNode("Search", search, 125 + leftX, 100));
 
         addEdge(data, search);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
     private void simulateDataFixedIM(final int leftX) {
@@ -179,11 +179,11 @@ final class ConstructTemplateAction extends AbstractAction {
 
         final List<Node> nodes = new LinkedList<>();
 
-        final String graph = nextName("Graph");
-        final String pm = nextName("PM");
-        final String im = nextName("IM");
-        final String data = nextName("Simulation");
-        final String search = nextName("Search");
+        final String graph = ConstructTemplateAction.nextName("Graph");
+        final String pm = ConstructTemplateAction.nextName("PM");
+        final String im = ConstructTemplateAction.nextName("IM");
+        final String data = ConstructTemplateAction.nextName("Simulation");
+        final String search = ConstructTemplateAction.nextName("Search");
 
         nodes.add(addNode("Graph", graph, leftX, 100));
         nodes.add(addNode("PM", pm, leftX, 200));
@@ -196,7 +196,7 @@ final class ConstructTemplateAction extends AbstractAction {
         addEdge(im, data);
         addEdge(data, search);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
     private void searchFromSimulatedDataWithCompare(final int leftX) {
@@ -209,9 +209,9 @@ final class ConstructTemplateAction extends AbstractAction {
 
         final List<Node> nodes = new LinkedList<>();
 
-        final String data = nextName("Simulation");
-        final String search = nextName("Search");
-        final String compare = nextName("Compare");
+        final String data = ConstructTemplateAction.nextName("Simulation");
+        final String search = ConstructTemplateAction.nextName("Search");
+        final String compare = ConstructTemplateAction.nextName("Compare");
 
         nodes.add(addNode("Simulation", data, leftX, 100));
         nodes.add(addNode("Search", search, 150 + leftX, 100));
@@ -221,7 +221,7 @@ final class ConstructTemplateAction extends AbstractAction {
         addEdge(data, compare);
         addEdge(search, compare);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
     private void estimateFromSimulatedData(final int leftX) {
@@ -234,19 +234,19 @@ final class ConstructTemplateAction extends AbstractAction {
 
         final List<Node> nodes = new LinkedList<>();
 
-        final String data = nextName("Data");
-        final String search = nextName("Search");
+        final String data = ConstructTemplateAction.nextName("Data");
+        final String search = ConstructTemplateAction.nextName("Search");
 
         nodes.add(addNode("Data", data, leftX, 100));
         nodes.add(addNode("Search", search, leftX + 150, 100));
 
-        final String graph = nextName("Graph");
+        final String graph = ConstructTemplateAction.nextName("Graph");
         nodes.add(addNode("Graph", graph, leftX + 150, 200));
 
-        final String pm = nextName("PM");
+        final String pm = ConstructTemplateAction.nextName("PM");
         nodes.add(addNode("PM", pm, leftX + 150, 300));
 
-        final String estimator = nextName("Estimator");
+        final String estimator = ConstructTemplateAction.nextName("Estimator");
         nodes.add(addNode("Estimator", estimator, leftX, 300));
 
         addEdge(data, search);
@@ -256,7 +256,7 @@ final class ConstructTemplateAction extends AbstractAction {
         addEdge(data, pm);
         addEdge(pm, estimator);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
     private void estimateThenUpdateUsingSearchResult(final int leftX) {
@@ -269,22 +269,22 @@ final class ConstructTemplateAction extends AbstractAction {
 
         final List<Node> nodes = new LinkedList<>();
 
-        final String data = nextName("Data");
-        final String search = nextName("Search");
+        final String data = ConstructTemplateAction.nextName("Data");
+        final String search = ConstructTemplateAction.nextName("Search");
 
         nodes.add(addNode("Data", data, leftX, 100));
         nodes.add(addNode("Search", search, leftX + 150, 100));
 
-        final String graph = nextName("Graph");
+        final String graph = ConstructTemplateAction.nextName("Graph");
         nodes.add(addNode("Graph", graph, leftX + 150, 200));
 
-        final String pm = nextName("PM");
+        final String pm = ConstructTemplateAction.nextName("PM");
         nodes.add(addNode("PM", pm, leftX + 150, 300));
 
-        final String estimator = nextName("Estimator");
+        final String estimator = ConstructTemplateAction.nextName("Estimator");
         nodes.add(addNode("Estimator", estimator, leftX, 300));
 
-        final String updater = nextName("Updater");
+        final String updater = ConstructTemplateAction.nextName("Updater");
         nodes.add(addNode("Updater", updater, leftX, 400));
 
         addEdge(data, search);
@@ -295,7 +295,7 @@ final class ConstructTemplateAction extends AbstractAction {
         addEdge(pm, estimator);
         addEdge(estimator, updater);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
     private static void selectSubgraph(final List<Node> nodes) {
@@ -389,7 +389,7 @@ final class ConstructTemplateAction extends AbstractAction {
 
     private Node addNode(final String nodeType, final String nodeName, final int centerX,
                          final int centerY) {
-        final SessionNodeWrapper node = getNewModelNode(nodeType, nodeName);
+        final SessionNodeWrapper node = ConstructTemplateAction.getNewModelNode(nodeType, nodeName);
         node.setCenter(centerX, centerY);
         getSessionWrapper().addNode(node);
         return node;
@@ -433,7 +433,7 @@ final class ConstructTemplateAction extends AbstractAction {
                     "Next button type must be a " + "non-null string.");
         }
 
-        final Class[] modelClasses = getModelClasses(nextButtonType);
+        final Class[] modelClasses = ConstructTemplateAction.getModelClasses(nextButtonType);
         final SessionNode newNode
                 = new SessionNode(nextButtonType, name, modelClasses);
         final SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);

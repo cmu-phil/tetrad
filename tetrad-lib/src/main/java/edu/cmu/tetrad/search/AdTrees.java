@@ -14,11 +14,11 @@ public class AdTrees {
     private static final Map<DataSet, AdLeafTree> adTrees = new HashMap<>();
 
     public static AdLeafTree getAdLeafTree(final DataSet dataSet) {
-        AdLeafTree tree = adTrees.get(dataSet);
+        AdLeafTree tree = AdTrees.adTrees.get(dataSet);
 
         if (tree == null) {
             tree = new AdLeafTree(dataSet);
-            adTrees.put(dataSet, tree);
+            AdTrees.adTrees.put(dataSet, tree);
         }
 
         return tree;

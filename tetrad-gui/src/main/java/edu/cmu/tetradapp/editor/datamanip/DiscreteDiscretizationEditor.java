@@ -91,8 +91,8 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
     //===========================PRIVATE METHODS=========================//
 
     private RemapEditor createRemapEditor() {
-        final List<String> categories = defaultCategories(this.variable);
-        final int[] remap = defaultRemap(categories);
+        final List<String> categories = DiscreteDiscretizationEditor.defaultCategories(this.variable);
+        final int[] remap = DiscreteDiscretizationEditor.defaultRemap(categories);
         final DiscreteDiscretizationSpec discretizationSpec =
                 new DiscreteDiscretizationSpec(remap, categories);
         this.remapEditor = new RemapEditor(this.variable, discretizationSpec);
@@ -122,7 +122,7 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
 
         public BigLabel() {
             super(" --> ");
-            setFont(FONT);
+            setFont(BigLabel.FONT);
         }
     }
 

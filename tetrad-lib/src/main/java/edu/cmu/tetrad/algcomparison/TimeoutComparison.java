@@ -874,7 +874,7 @@ public class TimeoutComparison {
     }
 
     private String dateTimeNow() {
-        return DF.format(new Date(System.currentTimeMillis()));
+        return TimeoutComparison.DF.format(new Date(System.currentTimeMillis()));
     }
 
     private void shutdownAndAwaitTermination(final ExecutorService pool) {

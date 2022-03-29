@@ -150,7 +150,7 @@ public class SemLikelihood2 {
 
     // One record.
     private double gaussianLikelihood(final int k, final Matrix sigma) {
-        return -0.5 * logdet(sigma) - 0.5 * k * (1.0 + LOG2PI);
+        return -0.5 * logdet(sigma) - 0.5 * k * (1.0 + SemLikelihood2.LOG2PI);
     }
 
     private double logdet(final Matrix m) {

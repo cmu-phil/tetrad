@@ -159,7 +159,7 @@ public class Gdistance {
                 final List<Edge> vicEdges = this.vicinity.getVicinity(edge1, Gdistance.this.chunksize);
                 //System.out.println(vicEdges);
                 for (final Edge edge2 : vicEdges) {
-                    thisDistance = edgesDistance(edge1, edge2, Gdistance.this.locationMap, Gdistance.this.xDist, Gdistance.this.yDist, Gdistance.this.zDist);
+                    thisDistance = Gdistance.edgesDistance(edge1, edge2, Gdistance.this.locationMap, Gdistance.this.xDist, Gdistance.this.yDist, Gdistance.this.zDist);
                     //remember only the shortest distance seen
                     if (count == 1) {
                         leastDistance = thisDistance;
@@ -225,8 +225,8 @@ public class Gdistance {
             final Node edge2h = Edges.getDirectedEdgeHead(edge2);
             final Node edge2t = Edges.getDirectedEdgeTail(edge2);
             //compare tail to tail
-            final double tDistance = nodesDistance(edge1t, edge2t, locationMap, xD, yD, zD);
-            final double hDistance = nodesDistance(edge1h, edge2h, locationMap, xD, yD, zD);
+            final double tDistance = Gdistance.nodesDistance(edge1t, edge2t, locationMap, xD, yD, zD);
+            final double hDistance = Gdistance.nodesDistance(edge1h, edge2h, locationMap, xD, yD, zD);
             return tDistance + hDistance;
         } else {
             //otherwise if either edge is not directed:
@@ -238,12 +238,12 @@ public class Gdistance {
             final Node node22 = edge2.getNode2();
 
             //first compare node1 to node1 and node2 to node2
-            final double dist11 = nodesDistance(node11, node21, locationMap, xD, yD, zD);
-            final double dist22 = nodesDistance(node12, node22, locationMap, xD, yD, zD);
+            final double dist11 = Gdistance.nodesDistance(node11, node21, locationMap, xD, yD, zD);
+            final double dist22 = Gdistance.nodesDistance(node12, node22, locationMap, xD, yD, zD);
 
             //then compare node1 to node2 and node2 to node1
-            final double dist12 = nodesDistance(node11, node22, locationMap, xD, yD, zD);
-            final double dist21 = nodesDistance(node12, node21, locationMap, xD, yD, zD);
+            final double dist12 = Gdistance.nodesDistance(node11, node22, locationMap, xD, yD, zD);
+            final double dist21 = Gdistance.nodesDistance(node12, node21, locationMap, xD, yD, zD);
 
             //then return the minimum of the two ways of pairing nodes from each edge
             return Math.min(dist11 + dist22, dist12 + dist21);

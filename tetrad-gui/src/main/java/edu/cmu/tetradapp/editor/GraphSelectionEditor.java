@@ -67,7 +67,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private final GraphEditorOptionsPanel graphEditorOptionsPanel;
     private JPanel workbenchScrollsPanel = new JPanel();
     private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo = new JComboBox<>();
-    ;
 
     private final HelpSet helpSet;
 
@@ -873,7 +872,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         private JButton createTextButton() {
             final GraphSelectionTextInputAction action
-                    = new GraphSelectionTextInputAction(GraphEditorOptionsPanel.this,
+                    = new GraphSelectionTextInputAction(this,
                     GraphSelectionEditor.this.wrapper, this.sourceList, this.selectedList);
             final JButton sort = new JButton(action);
             sort.setFont(sort.getFont().deriveFont(11f));

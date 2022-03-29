@@ -52,7 +52,7 @@ public final class ParamDescriptions {
                 doc = Jsoup.parse(inputStream, "UTF-8", "");
             }
         } catch (final IOException ex) {
-            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
+            ParamDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
 
         // Get the description of each parameter
@@ -116,7 +116,7 @@ public final class ParamDescriptions {
     }
 
     public static ParamDescriptions getInstance() {
-        return INSTANCE;
+        return ParamDescriptions.INSTANCE;
     }
 
     public ParamDescription get(final String name) {

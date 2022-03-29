@@ -50,7 +50,7 @@ public class TextTable {
     /**
      * True if columns should be left justified, false if right justified.
      */
-    private int justification = RIGHT_JUSTIFIED;
+    private int justification = TextTable.RIGHT_JUSTIFIED;
 
     /**
      * The number of spaces between columns. By default, 2.
@@ -146,7 +146,7 @@ public class TextTable {
      * Sets the justification, either LEFT_JUSTIFIED or RIGHT_JUSTIFIED.
      */
     public void setJustification(final int justification) {
-        if (!(justification == LEFT_JUSTIFIED || justification == RIGHT_JUSTIFIED)) {
+        if (!(justification == TextTable.LEFT_JUSTIFIED || justification == TextTable.RIGHT_JUSTIFIED)) {
             throw new IllegalArgumentException();
         }
 
@@ -182,7 +182,7 @@ public class TextTable {
 
                     final int numPaddingSpaces = colWidths[j] - token1[j].length();
 
-                    if (getJustification() == RIGHT_JUSTIFIED) {
+                    if (getJustification() == TextTable.RIGHT_JUSTIFIED) {
                         for (int k = 0; k < numPaddingSpaces; k++) {
                             buffer.append(' ');
                         }
@@ -190,7 +190,7 @@ public class TextTable {
 
                     buffer.append(token1[j]);
 
-                    if (getJustification() == LEFT_JUSTIFIED) {
+                    if (getJustification() == TextTable.LEFT_JUSTIFIED) {
                         for (int k = 0; k < numPaddingSpaces; k++) {
                             buffer.append(' ');
                         }

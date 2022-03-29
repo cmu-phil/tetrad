@@ -51,7 +51,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
         if (this.increment > 0) {
 
             for (double value = this.low - this.increment; value <= this.high + 0.0000001; value += this.increment) {
-                final double value0 = getValue(value, parameters);
+                final double value0 = FirstInflection.getValue(value, parameters);
 
                 _parameters.set(this.parameter, value0);
                 this.intialGraph = this.algorithm.search(dataSet, _parameters);
@@ -84,7 +84,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
 
             if (_value == Math.round((this.low + this.increment) * 1000000000.0) / 1000000000.0) {
                 for (double value = this.low; value >= Double.NEGATIVE_INFINITY; value -= this.increment) {
-                    value = getValue(value, parameters);
+                    value = FirstInflection.getValue(value, parameters);
 
                     _parameters.set(this.parameter, value);
                     this.intialGraph = this.algorithm.search(dataSet, _parameters);
@@ -113,7 +113,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
 
         } else {
             for (double value = this.high; value >= this.low - 0.0000001; value += this.increment) {
-                final double value0 = getValue(value, parameters);
+                final double value0 = FirstInflection.getValue(value, parameters);
 
                 _parameters.set(this.parameter, value0);
                 this.intialGraph = this.algorithm.search(dataSet, _parameters);
@@ -146,7 +146,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
 
             if (_value == Math.round((this.high - this.increment) * 1000000000.0) / 1000000000.0) {
                 for (double value = this.low; value >= Double.NEGATIVE_INFINITY; value -= this.increment) {
-                    value = getValue(value, parameters);
+                    value = FirstInflection.getValue(value, parameters);
 
                     _parameters.set(this.parameter, value);
                     this.intialGraph = this.algorithm.search(dataSet, _parameters);
@@ -309,8 +309,8 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
                 return 100000;
             }
 
-            final double _p1 = getValue(p1, this.params);
-            final double _p2 = getValue(p2, this.params);
+            final double _p1 = FirstInflection.getValue(p1, this.params);
+            final double _p2 = FirstInflection.getValue(p2, this.params);
 
             if (this.archive.get(_p1) == null) {
                 this.params.set(this.paramName, _p1);

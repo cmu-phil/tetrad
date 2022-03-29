@@ -42,7 +42,7 @@ public class DesktopController implements DesktopControllable {
 
 
     public static DesktopControllable getInstance() {
-        return INSTANCE;
+        return DesktopController.INSTANCE;
     }
 
     /**
@@ -51,63 +51,63 @@ public class DesktopController implements DesktopControllable {
      * launched.
      */
     public static void setReference(final DesktopControllable component) {
-        INSTANCE = component;
+        DesktopController.INSTANCE = component;
     }
 
     public void newSessionEditor() {
-        getInstance().newSessionEditor();
+        DesktopController.getInstance().newSessionEditor();
     }
 
     public SessionEditorIndirectRef getFrontmostSessionEditor() {
-        return getInstance().getFrontmostSessionEditor();
+        return DesktopController.getInstance().getFrontmostSessionEditor();
     }
 
     public void exitProgram() {
-        getInstance().exitProgram();
+        DesktopController.getInstance().exitProgram();
     }
 
     public boolean existsSessionByName(final String name) {
-        return getInstance().existsSessionByName(name);
+        return DesktopController.getInstance().existsSessionByName(name);
     }
 
     public Session getSessionByName(final String name) {
-        return getInstance().getSessionByName(name);
+        return DesktopController.getInstance().getSessionByName(name);
     }
 
     public void addSessionEditor(final SessionEditorIndirectRef editor) {
-        getInstance().addSessionEditor(editor);
+        DesktopController.getInstance().addSessionEditor(editor);
     }
 
     public void closeEmptySessions() {
-        getInstance().closeAllSessions();
+        DesktopController.getInstance().closeAllSessions();
     }
 
     public void putMetadata(final SessionWrapperIndirectRef sessionWrapper,
                             final TetradMetadataIndirectRef metadata) {
-        getInstance().putMetadata(sessionWrapper, metadata);
+        DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
     }
 
     public TetradMetadataIndirectRef getTetradMetadata(
             final SessionWrapperIndirectRef sessionWrapper) {
-        return getInstance().getTetradMetadata(sessionWrapper);
+        return DesktopController.getInstance().getTetradMetadata(sessionWrapper);
     }
 
     public void addEditorWindow(final EditorWindowIndirectRef editorWindow, final int layer) {
-        getInstance().addEditorWindow(editorWindow, layer);
+        DesktopController.getInstance().addEditorWindow(editorWindow, layer);
     }
 
 
     public void closeFrontmostSession() {
-        getInstance().closeFrontmostSession();
+        DesktopController.getInstance().closeFrontmostSession();
     }
 
     @Override
     public void closeSessionByName(final String name) {
-        getInstance().closeSessionByName(name);
+        DesktopController.getInstance().closeSessionByName(name);
     }
 
     public boolean closeAllSessions() {
-        return getInstance().closeAllSessions();
+        return DesktopController.getInstance().closeAllSessions();
     }
 }
 

@@ -125,11 +125,11 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
                 (JScrollPane) createPredictorVarListbox();
 
 
-        this.responseButton = new ArrowButton(this, INCLUDE_RESPONSE);
+        this.responseButton = new ArrowButton(this, RegressionParamsPanel.INCLUDE_RESPONSE);
         final ArrowButton predictorInButton =
-                new ArrowButton(this, INCLUDE_PREDICTOR);
+                new ArrowButton(this, RegressionParamsPanel.INCLUDE_PREDICTOR);
         final ArrowButton predictorOutButton =
-                new ArrowButton(this, EXCLUDE_PREDICTOR, false);
+                new ArrowButton(this, RegressionParamsPanel.EXCLUDE_PREDICTOR, false);
 
         this.responseVar = new StringTextField("", 10);
         this.responseVar.setEditable(false);
@@ -385,7 +385,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         }
 
         /* include/exclude response variable */
-        if (e.getActionCommand().equals(INCLUDE_RESPONSE)) {
+        if (e.getActionCommand().equals(RegressionParamsPanel.INCLUDE_RESPONSE)) {
             if ((this.availableVarsList.isSelectionEmpty()) &&
                     (this.responseButton.getIsIncluded())) {
                 return;
@@ -409,7 +409,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             params().set("targetName", targetName());
         }
         /* include predictor variable */
-        else if (e.getActionCommand().equals(INCLUDE_PREDICTOR)) {
+        else if (e.getActionCommand().equals(RegressionParamsPanel.INCLUDE_PREDICTOR)) {
             if (this.availableVarsList.isSelectionEmpty()) {
                 return;
             }
@@ -419,7 +419,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             predsModel.addElement(varName);
 
             /* exclude predictor variable */
-        } else if (e.getActionCommand().equals(EXCLUDE_PREDICTOR)) {
+        } else if (e.getActionCommand().equals(RegressionParamsPanel.EXCLUDE_PREDICTOR)) {
             if (this.predictorVarListbox.isSelectionEmpty()) {
                 return;
             }

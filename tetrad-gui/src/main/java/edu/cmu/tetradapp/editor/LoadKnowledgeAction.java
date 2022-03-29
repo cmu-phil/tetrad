@@ -94,7 +94,7 @@ final class LoadKnowledgeAction extends AbstractAction {
         int ret = 1;
 
         while (ret == 1) {
-            final JFileChooser chooser = getJFileChooser();
+            final JFileChooser chooser = LoadKnowledgeAction.getJFileChooser();
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
             final Component comp =
@@ -175,12 +175,12 @@ final class KnowledgeLoaderWizard extends JPanel {
         this.fileTextArea = new JTextArea();
         this.fileTextArea.setEditable(false);
         this.fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        setText(file, this.fileTextArea);
+        KnowledgeLoaderWizard.setText(file, this.fileTextArea);
         final JScrollPane fileScroll = new JScrollPane(this.fileTextArea);
         fileScroll.setPreferredSize(new Dimension(400, 300));
         fileScroll.setBorder(new TitledBorder("File You Selected"));
 
-        sampleTextArea.setText(knowledgeSampleText());
+        sampleTextArea.setText(KnowledgeLoaderWizard.knowledgeSampleText());
         sampleTextArea.setCaretPosition(0);
 
         final JComboBox delimiterBox =

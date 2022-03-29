@@ -35,7 +35,7 @@ public class LTestBoolSearch {
     static int ngenes = 5;
     static int ntimes = 400;
 
-    static int[][] cases = new int[ntimes][ngenes];
+    static int[][] cases = new int[LTestBoolSearch.ntimes][LTestBoolSearch.ngenes];
 
     public static void main(final String[] argv) {
 
@@ -52,11 +52,11 @@ public class LTestBoolSearch {
         }
 
         final BufferedReader in = new BufferedReader(new InputStreamReader(s));
-        for (int k = 0; k < ntimes; k++) {
+        for (int k = 0; k < LTestBoolSearch.ntimes; k++) {
             try {
                 st = new StringTokenizer(in.readLine());
-                for (int j = 0; j < ngenes; j++) {
-                    cases[k][j] = Integer.parseInt(st.nextToken(" "));
+                for (int j = 0; j < LTestBoolSearch.ngenes; j++) {
+                    LTestBoolSearch.cases[k][j] = Integer.parseInt(st.nextToken(" "));
                 }
             } catch (final IOException e) {
                 System.out.println("Read error in " + fileName);
@@ -64,17 +64,17 @@ public class LTestBoolSearch {
             }
         }
 
-        for (int k = 0; k < ntimes; k++) {
-            for (int j = 0; j < ngenes; j++) {
-                if (cases[k][j] == -1) {
-                    cases[k][j] = 0;
+        for (int k = 0; k < LTestBoolSearch.ntimes; k++) {
+            for (int j = 0; j < LTestBoolSearch.ngenes; j++) {
+                if (LTestBoolSearch.cases[k][j] == -1) {
+                    LTestBoolSearch.cases[k][j] = 0;
                 }
             }
         }
 
         final String[] names = {"Gene 0", "Gene 1", "Gene 2", "Gene 3", "Gene 4"};
 
-        final BoolSearch bs = new BoolSearch(cases, names);
+        final BoolSearch bs = new BoolSearch(LTestBoolSearch.cases, names);
 
         bs.bool2(3);
     }

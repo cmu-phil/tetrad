@@ -421,7 +421,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
             final Node oldNode2 = oldBayesPm.getDag().getNode(node.getName());
             numVals = oldBayesPm.getNumCategories(oldNode2);
         } else {
-            numVals = pickNumVals(lowerBound, upperBound);
+            numVals = BayesPm.pickNumVals(lowerBound, upperBound);
         }
 
         final int min = Math.min(oldBayesPm.getNumCategories(oldNode), numVals);
@@ -451,7 +451,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
 
         final List<String> valueList = new ArrayList<>();
 
-        for (int i = 0; i < pickNumVals(lowerBound, upperBound); i++) {
+        for (int i = 0; i < BayesPm.pickNumVals(lowerBound, upperBound); i++) {
             valueList.add(DataUtils.defaultCategory(i));
         }
 

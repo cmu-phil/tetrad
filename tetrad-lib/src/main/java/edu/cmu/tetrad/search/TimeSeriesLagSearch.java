@@ -392,8 +392,8 @@ public final class TimeSeriesLagSearch implements GraphSearch {
     }
 
     private boolean colliderAllowed(final Node x, final Node y, final Node z, final IKnowledge knowledge) {
-        return isArrowpointAllowed1(x, y, knowledge) &&
-                isArrowpointAllowed1(z, y, knowledge);
+        return TimeSeriesLagSearch.isArrowpointAllowed1(x, y, knowledge) &&
+                TimeSeriesLagSearch.isArrowpointAllowed1(z, y, knowledge);
     }
 
     private static boolean isArrowpointAllowed1(final Node from, final Node to,

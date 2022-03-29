@@ -657,7 +657,7 @@ public final class Cefs {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                final List<Node> condSet = asList(choice, _nodes);
+                final List<Node> condSet = Cefs.asList(choice, _nodes);
 
                 if (test.isIndependent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -686,7 +686,7 @@ public final class Cefs {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                final List<Node> condSet = asList(choice, _nodes);
+                final List<Node> condSet = Cefs.asList(choice, _nodes);
 
                 if (test.isIndependent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -754,8 +754,8 @@ public final class Cefs {
     }
 
     private boolean colliderAllowed(final Node x, final Node y, final Node z, final IKnowledge knowledge) {
-        return isArrowpointAllowed1(x, y, knowledge) &&
-                isArrowpointAllowed1(z, y, knowledge);
+        return Cefs.isArrowpointAllowed1(x, y, knowledge) &&
+                Cefs.isArrowpointAllowed1(z, y, knowledge);
     }
 
     private static boolean isArrowpointAllowed1(final Node from, final Node to,

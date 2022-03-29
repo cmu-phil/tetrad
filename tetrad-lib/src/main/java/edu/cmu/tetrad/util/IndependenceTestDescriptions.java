@@ -61,12 +61,12 @@ public final class IndependenceTestDescriptions {
                 }
             });
         } catch (final IOException ex) {
-            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
+            IndependenceTestDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
     }
 
     public static IndependenceTestDescriptions getInstance() {
-        return INSTANCE;
+        return IndependenceTestDescriptions.INSTANCE;
     }
 
     public String get(final String shortName) {

@@ -144,11 +144,11 @@ final class LogisticRegressionParamsPanel extends JPanel
         final JScrollPane predictorListbox =
                 (JScrollPane) createPredictorVarListbox();
 
-        this.responseButton = new ArrowButton(this, INCLUDE_RESPONSE);
+        this.responseButton = new ArrowButton(this, LogisticRegressionParamsPanel.INCLUDE_RESPONSE);
         final ArrowButton predictorInButton =
-                new ArrowButton(this, INCLUDE_PREDICTOR);
+                new ArrowButton(this, LogisticRegressionParamsPanel.INCLUDE_PREDICTOR);
         final ArrowButton predictorOutButton =
-                new ArrowButton(this, EXCLUDE_PREDICTOR, false);
+                new ArrowButton(this, LogisticRegressionParamsPanel.EXCLUDE_PREDICTOR, false);
 
         this.responseVar = new StringTextField("", 10);
         this.responseVar.setEditable(false);
@@ -390,7 +390,7 @@ final class LogisticRegressionParamsPanel extends JPanel
         }
 
         /* include/exclude response variable */
-        if (e.getActionCommand().equals(INCLUDE_RESPONSE)) {
+        if (e.getActionCommand().equals(LogisticRegressionParamsPanel.INCLUDE_RESPONSE)) {
             if ((this.availableVarsList.isSelectionEmpty()) &&
                     (this.responseButton.getIsIncluded())) {
                 return;
@@ -444,7 +444,7 @@ final class LogisticRegressionParamsPanel extends JPanel
         }
 
         // include predictor variable.
-        else if (e.getActionCommand().equals(INCLUDE_PREDICTOR)) {
+        else if (e.getActionCommand().equals(LogisticRegressionParamsPanel.INCLUDE_PREDICTOR)) {
             if (this.availableVarsList.isSelectionEmpty()) {
                 return;
             }
@@ -461,7 +461,7 @@ final class LogisticRegressionParamsPanel extends JPanel
             }
         }
         // exclude predictor variable.
-        else if (e.getActionCommand().equals(EXCLUDE_PREDICTOR)) {
+        else if (e.getActionCommand().equals(LogisticRegressionParamsPanel.EXCLUDE_PREDICTOR)) {
             if (this.predictorVarListbox.isSelectionEmpty()) {
                 return;
             }

@@ -297,7 +297,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
         // create variable box.
         final Box varBox = Box.createVerticalBox();
-        varBox.add(createLabel("Variables:"));
+        varBox.add(CalculatorEditor.createLabel("Variables:"));
         varBox.add(createVariableList());
         varBox.add(Box.createVerticalGlue());
 

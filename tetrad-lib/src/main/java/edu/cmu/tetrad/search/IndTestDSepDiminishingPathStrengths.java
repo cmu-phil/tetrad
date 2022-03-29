@@ -345,7 +345,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
         for (final Node c : graph.getAdjacentNodes(b)) {
             if (a == c) continue;
 
-            if (reachable(a, b, c, z, graph)) {
+            if (IndTestDSepDiminishingPathStrengths.reachable(a, b, c, z, graph)) {
                 if (isDConnectedToVisit4(b, c, y, path, z, graph, alpha)) {
 //                    path.removeLast();
                     return true;
@@ -364,7 +364,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
             return true;
         }
 
-        final boolean ancestor = isAncestor(b, z, graph);
+        final boolean ancestor = IndTestDSepDiminishingPathStrengths.isAncestor(b, z, graph);
         return collider && ancestor;
     }
 

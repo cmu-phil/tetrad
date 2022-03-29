@@ -12,7 +12,7 @@ public class TaskManager {
     private boolean canceled;
 
     public static TaskManager getInstance() {
-        return instance;
+        return TaskManager.instance;
     }
 
     public void setCanceled(final boolean canceled) {

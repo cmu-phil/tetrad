@@ -42,7 +42,7 @@ public class DagInCPDAGWrapper extends GraphWrapper implements DoNotAddOldModel 
 
 
     public DagInCPDAGWrapper(final Graph graph) {
-        super(getGraph(graph), "Choose DAG in CPDAG.");
+        super(DagInCPDAGWrapper.getGraph(graph), "Choose DAG in CPDAG.");
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 

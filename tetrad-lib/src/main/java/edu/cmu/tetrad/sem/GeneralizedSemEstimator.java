@@ -382,7 +382,7 @@ public class GeneralizedSemEstimator {
             this.parameters = parameters;
             this.tierOrdering = tierOrdering;
             this.context = context;
-            this.dataValues = getDataValues(data, tierOrdering);
+            this.dataValues = GeneralizedSemEstimator.getDataValues(data, tierOrdering);
         }
 
         @Override
@@ -393,7 +393,7 @@ public class GeneralizedSemEstimator {
                 }
             }
 
-            final double[][] r = calcResiduals(this.dataValues, this.tierOrdering, this.parameters, parameters, this.pm, this.context);
+            final double[][] r = GeneralizedSemEstimator.calcResiduals(this.dataValues, this.tierOrdering, this.parameters, parameters, this.pm, this.context);
 
             double total = 0.0;
 
@@ -488,9 +488,9 @@ public class GeneralizedSemEstimator {
                 this.context.putParameterValue(this.parameters.get(k), values[k]);
             }
 
-            final double[][] dataValues = getDataValues(this.data, this.tierOrdering);
+            final double[][] dataValues = GeneralizedSemEstimator.getDataValues(this.data, this.tierOrdering);
 
-            final double[] r = calcOneResiduals(this.index, dataValues, this.tierOrdering, this.parameters, values, this.pm, this.context);
+            final double[] r = GeneralizedSemEstimator.calcOneResiduals(this.index, dataValues, this.tierOrdering, this.parameters, values, this.pm, this.context);
 
             final Expression expression = this.pm.getNodeExpression(error);
 

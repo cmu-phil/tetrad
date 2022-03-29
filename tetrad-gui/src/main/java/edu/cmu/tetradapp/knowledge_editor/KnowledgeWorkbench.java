@@ -45,7 +45,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     public static final int REQUIRED_EDGE = 2;
 
     //====================PRIVATE FIELDS=================================//
-    private int edgeMode = FORBIDDEN_EDGE;
+    private int edgeMode = KnowledgeWorkbench.FORBIDDEN_EDGE;
 
     /**
      * Constructs a new workbench workbench for the given workbench model.
@@ -112,10 +112,10 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
         final KnowledgeModelNode _node2 = (KnowledgeModelNode) node2;
 
         switch (this.edgeMode) {
-            case FORBIDDEN_EDGE:
+            case KnowledgeWorkbench.FORBIDDEN_EDGE:
                 return new KnowledgeModelEdge(_node1, _node2,
                         KnowledgeModelEdge.FORBIDDEN_EXPLICITLY);
-            case REQUIRED_EDGE:
+            case KnowledgeWorkbench.REQUIRED_EDGE:
                 return new KnowledgeModelEdge(_node1, _node2,
                         KnowledgeModelEdge.REQUIRED);
             default:
@@ -159,10 +159,10 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      */
     public IDisplayEdge getNewTrackingEdge(final DisplayNode node, final Point mouseLoc) {
         switch (this.edgeMode) {
-            case FORBIDDEN_EDGE:
+            case KnowledgeWorkbench.FORBIDDEN_EDGE:
                 return new KnowledgeDisplayEdge(node, mouseLoc,
                         KnowledgeDisplayEdge.FORBIDDEN_EXPLICITLY);
-            case REQUIRED_EDGE:
+            case KnowledgeWorkbench.REQUIRED_EDGE:
                 return new KnowledgeDisplayEdge(node, mouseLoc,
                         KnowledgeDisplayEdge.REQUIRED);
             default:
@@ -204,9 +204,9 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      */
     public void setEdgeMode(final int edgeMode) {
         switch (edgeMode) {
-            case FORBIDDEN_EDGE:
+            case KnowledgeWorkbench.FORBIDDEN_EDGE:
                 // Falls through!
-            case REQUIRED_EDGE:
+            case KnowledgeWorkbench.REQUIRED_EDGE:
                 this.edgeMode = edgeMode;
                 break;
             default:

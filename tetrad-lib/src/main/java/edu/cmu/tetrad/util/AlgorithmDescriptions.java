@@ -60,12 +60,12 @@ public class AlgorithmDescriptions {
                 }
             });
         } catch (final IOException ex) {
-            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
+            AlgorithmDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
     }
 
     public static AlgorithmDescriptions getInstance() {
-        return INSTANCE;
+        return AlgorithmDescriptions.INSTANCE;
     }
 
     public String get(final String shortName) {

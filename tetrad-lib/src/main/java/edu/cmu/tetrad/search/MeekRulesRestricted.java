@@ -215,11 +215,11 @@ public class MeekRulesRestricted implements ImpliedOrientation {
             }
 
             if (graph.isDirectedFromTo(b, a) && graph.isUndirectedFromTo(a, c)) {
-                if (!isUnshieldedNoncollider(b, a, c, graph)) {
+                if (!MeekRulesRestricted.isUnshieldedNoncollider(b, a, c, graph)) {
                     continue;
                 }
 
-                if (isArrowpointAllowed(a, c, knowledge, graph) && !createsCycle(a, c, graph)) {
+                if (MeekRulesRestricted.isArrowpointAllowed(a, c, knowledge, graph) && !createsCycle(a, c, graph)) {
                     final Edge after = direct(a, c, graph);
                     final Node x = after.getNode1();
                     final Node y = after.getNode2();
@@ -239,11 +239,11 @@ public class MeekRulesRestricted implements ImpliedOrientation {
                             "Meek R1 triangle (" + b + "-->" + a + "---" + c + ")", graph.getEdge(a, c)));
                 }
             } else if (graph.isDirectedFromTo(c, a) && graph.isUndirectedFromTo(a, b)) {
-                if (!isUnshieldedNoncollider(b, a, c, graph)) {
+                if (!MeekRulesRestricted.isUnshieldedNoncollider(b, a, c, graph)) {
                     continue;
                 }
 
-                if (isArrowpointAllowed(a, b, knowledge, graph) && !createsCycle(a, b, graph)) {
+                if (MeekRulesRestricted.isArrowpointAllowed(a, b, knowledge, graph) && !createsCycle(a, b, graph)) {
                     final Edge after = direct(a, b, graph);
                     final Node x = after.getNode1();
                     final Node y = after.getNode2();
@@ -284,7 +284,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
             if (graph.isDirectedFromTo(b, a) &&
                     graph.isDirectedFromTo(a, c) &&
                     graph.isUndirectedFromTo(b, c)) {
-                if (isArrowpointAllowed(b, c, knowledge, graph) && !createsCycle(b, c, graph)) {
+                if (MeekRulesRestricted.isArrowpointAllowed(b, c, knowledge, graph) && !createsCycle(b, c, graph)) {
                     final Edge after = direct(b, c, graph);
                     final Node x = after.getNode1();
                     final Node y = after.getNode2();
@@ -302,7 +302,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
             } else if (graph.isDirectedFromTo(c, a) &&
                     graph.isDirectedFromTo(a, b) &&
                     graph.isUndirectedFromTo(c, b)) {
-                if (isArrowpointAllowed(c, b, knowledge, graph) && !createsCycle(c, b, graph)) {
+                if (MeekRulesRestricted.isArrowpointAllowed(c, b, knowledge, graph) && !createsCycle(c, b, graph)) {
                     final Edge after = direct(c, b, graph);
                     final Node x = after.getNode1();
                     final Node y = after.getNode2();
@@ -361,8 +361,8 @@ public class MeekRulesRestricted implements ImpliedOrientation {
 
                 if (graph.isUndirectedFromTo(b, c) &&
                         graph.isUndirectedFromTo(b, d)) {
-                    if (isArrowpointAllowed(b, a, knowledge, graph) && !createsCycle(b, a, graph)) {
-                        if (!isUnshieldedNoncollider(c, b, d, graph)) {
+                    if (MeekRulesRestricted.isArrowpointAllowed(b, a, knowledge, graph) && !createsCycle(b, a, graph)) {
+                        if (!MeekRulesRestricted.isUnshieldedNoncollider(c, b, d, graph)) {
                             continue;
                         }
 
@@ -417,11 +417,11 @@ public class MeekRulesRestricted implements ImpliedOrientation {
                 if (graph.isDirectedFromTo(b, a) && graph.isDirectedFromTo(a, c)) {
                     if (graph.isUndirectedFromTo(d, b) &&
                             graph.isUndirectedFromTo(d, c)) {
-                        if (!isUnshieldedNoncollider(c, d, b, graph)) {
+                        if (!MeekRulesRestricted.isUnshieldedNoncollider(c, d, b, graph)) {
                             continue;
                         }
 
-                        if (isArrowpointAllowed(d, c, knowledge, graph) && !createsCycle(d, c, graph)) {
+                        if (MeekRulesRestricted.isArrowpointAllowed(d, c, knowledge, graph) && !createsCycle(d, c, graph)) {
                             final Edge after = direct(d, c, graph);
                             final Node x = after.getNode1();
                             final Node y = after.getNode2();
@@ -440,11 +440,11 @@ public class MeekRulesRestricted implements ImpliedOrientation {
                     }
                 } else if (graph.isDirectedFromTo(c, a) && graph.isDirectedFromTo(a, b)) {
                     if (graph.isUndirectedFromTo(d, b) && graph.isUndirectedFromTo(d, c)) {
-                        if (!isUnshieldedNoncollider(c, d, b, graph)) {
+                        if (!MeekRulesRestricted.isUnshieldedNoncollider(c, d, b, graph)) {
                             continue;
                         }
 
-                        if (isArrowpointAllowed(d, c, knowledge, graph) && !createsCycle(d, c, graph)) {
+                        if (MeekRulesRestricted.isArrowpointAllowed(d, c, knowledge, graph) && !createsCycle(d, c, graph)) {
                             final Edge after = direct(d, c, graph);
                             final Node x = after.getNode1();
                             final Node y = after.getNode2();

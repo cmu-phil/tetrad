@@ -186,7 +186,7 @@ public class ProbUtils {
             j = (int) Math.floor(Math.abs(x) * 16. + .5);
             z = j * .0625;
             h = Math.abs(x) - z;
-            f = r[j];
+            f = ProbUtils.r[j];
             f1 = f * z - 1;
             f2 = f + z * f1;
             f3 = f1 * 2. + z * f2;
@@ -217,13 +217,13 @@ public class ProbUtils {
      */
     private static double macheps() {
 
-        if (vm_epsilon >= 1.0) {
-            while (1.0 + vm_epsilon / 2.0 != 1.0) {
-                vm_epsilon /= 2.0;
+        if (ProbUtils.vm_epsilon >= 1.0) {
+            while (1.0 + ProbUtils.vm_epsilon / 2.0 != 1.0) {
+                ProbUtils.vm_epsilon /= 2.0;
             }
         }
 
-        return vm_epsilon;
+        return ProbUtils.vm_epsilon;
     }
 
     private static final double[] cof = {76.18009172947146, -86.50532032941677,
@@ -257,7 +257,7 @@ public class ProbUtils {
         tmp -= (x + 0.5) * Math.log(tmp);
         ser = 1.000000000190015;
         for (j = 0; j <= 5; j++) {
-            ser += cof[j] / ++y;
+            ser += ProbUtils.cof[j] / ++y;
         }
         return -tmp + Math.log(2.5066282746310005 * ser / x);
     }
@@ -266,7 +266,7 @@ public class ProbUtils {
      * Calculates the log beta function of p and q.
      */
     public static double logbeta(final double p, final double q) {
-        return (lngamma(p) + lngamma(q) - lngamma(p + q));
+        return (ProbUtils.lngamma(p) + ProbUtils.lngamma(q) - ProbUtils.lngamma(p + q));
     }
 
     /**
@@ -319,7 +319,7 @@ public class ProbUtils {
             // I'm not sure these tolerances are optimal.
         }
 
-        eps = macheps();
+        eps = ProbUtils.macheps();
         alneps = Math.log(eps);
         sml = eps;
         alnsml = alneps;
@@ -337,7 +337,7 @@ public class ProbUtils {
 
         if ((p + q) * y / (p + 1.0) < eps) {
             dbetai = 0.0;
-            xb = p * Math.log(Math.max(y, sml)) - Math.log(p) - logbeta(p, q);
+            xb = p * Math.log(Math.max(y, sml)) - Math.log(p) - ProbUtils.logbeta(p, q);
 
             if ((xb > alnsml) && (y != 0.0)) {
                 dbetai = Math.exp(xb);
@@ -358,7 +358,7 @@ public class ProbUtils {
                 ps = 1.0;
             }
 
-            xb = p * Math.log(y) - logbeta(ps, p) - Math.log(p);
+            xb = p * Math.log(y) - ProbUtils.logbeta(ps, p) - Math.log(p);
             dbetai = 0.0;
 
             if (xb >= alnsml) {
@@ -380,7 +380,7 @@ public class ProbUtils {
             // now evaluate the finite sum, maybe.
             //
             if (q > 1.0) {
-                xb = p * Math.log(y) + q * Math.log(1.0 - y) - logbeta(p, q) -
+                xb = p * Math.log(y) + q * Math.log(1.0 - y) - ProbUtils.logbeta(p, q) -
                         Math.log(q);
                 ib = (int) Math.max(xb / alnsml, 0.0);
                 term = Math.exp(xb - ((double) ib) * alnsml);
@@ -448,7 +448,7 @@ public class ProbUtils {
         } else {
             da = (double) k + 1.0;
             db = (double) (n - k);
-            dp = 1.0 - betaCdf(p, da, db);
+            dp = 1.0 - ProbUtils.betaCdf(p, da, db);
         }
 
         return dp;
@@ -465,7 +465,7 @@ public class ProbUtils {
      * F CDF.
      */
     public static double fCdf(final double x, final double df1, final double df2) {
-        return (1.0 - betaCdf(df2 / (df2 + df1 * x), 0.5 * df2, 0.5 * df1));
+        return (1.0 - ProbUtils.betaCdf(df2 / (df2 + df1 * x), 0.5 * df2, 0.5 * df1));
     }
 
     // From Numerical Recipes, with normal approximation from Appl. Stat. 239
@@ -485,7 +485,7 @@ public class ProbUtils {
             sx = Math.sqrt(a) * 3.0 *
                     (Math.pow(x / a, 1.0 / 3.0) + 1.0 / (a * 9.0) - 1.0);
 
-            return normalCdf(sx);
+            return ProbUtils.normalCdf(sx);
         }
     }
 
@@ -505,12 +505,12 @@ public class ProbUtils {
             del = 1.0 / a;
             sum = del;
 
-            for (n = 1; (!done) && (n < ITMAX); n++) {
+            for (n = 1; (!done) && (n < ProbUtils.ITMAX); n++) {
                 ap += 1.0;
                 del *= x / ap;
                 sum += del;
 
-                if (Math.abs(del) < EPSILON) {
+                if (Math.abs(del) < ProbUtils.EPSILON) {
                     done = true;
                 }
             }
@@ -534,7 +534,7 @@ public class ProbUtils {
         a1 = x;
         p = 0.0;
 
-        for (an = 1.0; (!done) && (an <= ITMAX); an += 1.0) {
+        for (an = 1.0; (!done) && (an <= ProbUtils.ITMAX); an += 1.0) {
             ana = an - a;
             a0 = (a1 + a0 * ana) * fac;
             b0 = (b1 + b0 * ana) * fac;
@@ -546,7 +546,7 @@ public class ProbUtils {
                 fac = 1.0 / a1;
                 g = b1 * fac;
 
-                if (Math.abs((g - gold) / g) < EPSILON) {
+                if (Math.abs((g - gold) / g) < ProbUtils.EPSILON) {
                     p = Math.exp(-x + a * Math.log(x) - gln) * g;
                     done = true;
                 }
@@ -568,15 +568,15 @@ public class ProbUtils {
 
         if ((x <= 0.0) || (a <= 0.0)) {
             return Double.NaN;
-        } else if (a > LARGE_A) {
-            return gnorm(a, x);
+        } else if (a > ProbUtils.LARGE_A) {
+            return ProbUtils.gnorm(a, x);
         } else {
-            gln = lngamma(a);
+            gln = ProbUtils.lngamma(a);
 
             if (x < (a + 1.0)) {
-                return gser(a, x, gln);
+                return ProbUtils.gser(a, x, gln);
             } else {
-                return (1.0 - gcf(a, x, gln));
+                return (1.0 - ProbUtils.gcf(a, x, gln));
             }
         }
     }
@@ -599,7 +599,7 @@ public class ProbUtils {
             dp = (k < 0) ? 0.0 : 1.0;
         } else {
             dx = k + 1.0;
-            dp = 1.0 - gammaCdf(dx, y);
+            dp = 1.0 - ProbUtils.gammaCdf(dx, y);
         }
 
         return (dp);
@@ -640,12 +640,12 @@ public class ProbUtils {
                 //                int ia = 0, ib = (int) Math.floor(db);
 
                 dx = db / (db + da * t);
-                dp = betaCdf(dx, db, da);
+                dp = ProbUtils.betaCdf(dx, db, da);
                 cdf = (x >= 0) ? 1.0 - .5 * dp : .5 * dp;
             } else {
 
                 /* asymptotic series for large or non-integer df */
-                if (y > TOL) {
+                if (y > ProbUtils.TOL) {
                     y = Math.log(b);
                 }
 
@@ -656,7 +656,7 @@ public class ProbUtils {
                         (0.8 * y * y + 100.0 + b) + y + 3.0) / b + 1.0) *
                         Math.sqrt(y);
                 y = -1.0 * y;
-                cdf = normalCdf(y);
+                cdf = ProbUtils.normalCdf(y);
 
                 if (x > 0.0) {
                     cdf = 1.0 - cdf;
@@ -676,7 +676,7 @@ public class ProbUtils {
                 a = Math.sqrt(b);
                 y = a * n;
 
-                for (j = 2; Math.abs(a - z) > TOL; j += 2.0) {
+                for (j = 2; Math.abs(a - z) > ProbUtils.TOL; j += 2.0) {
                     z = a;
                     y = (y * (j - 1)) / (b * j);
                     a = a + y / (n + j);
@@ -692,8 +692,8 @@ public class ProbUtils {
                 a = ((n - 1.0) / (b * n)) * a + y;
             }
 
-            a = (Math.abs(n) < TOL) ?
-                    a / Math.sqrt(b) : TWOVRPI * (Math.atan(y) + a / b);
+            a = (Math.abs(n) < ProbUtils.TOL) ?
+                    a / Math.sqrt(b) : ProbUtils.TWOVRPI * (Math.atan(y) + a / b);
             cdf = z - a;
 
             if (x > 0.0) {
@@ -761,17 +761,17 @@ public class ProbUtils {
         final double fpu;
         double xin;
 
-        beta = lngamma(p) + lngamma(q) - lngamma(p + q);
+        beta = ProbUtils.lngamma(p) + ProbUtils.lngamma(q) - ProbUtils.lngamma(p + q);
 
         // Define accuracy and initialise.
-        fpu = sae * 10.;
+        fpu = ProbUtils.sae * 10.;
         ret_val = alpha;
 
-        if ((p <= zero) || (q <= zero)) {
+        if ((p <= ProbUtils.zero) || (q <= ProbUtils.zero)) {
             return ret_val;
         }
 
-        if ((alpha == zero) || (alpha == one)) {
+        if ((alpha == ProbUtils.zero) || (alpha == ProbUtils.one)) {
             return ret_val;
 
             // change tail if necessary
@@ -783,7 +783,7 @@ public class ProbUtils {
             qq = q;
             indx = false;
         } else {
-            a = one - alpha;
+            a = ProbUtils.one - alpha;
             pp = q;
             qq = p;
             indx = true;
@@ -791,35 +791,35 @@ public class ProbUtils {
 
         // calculate the initial approximation
         r = Math.sqrt(-Math.log(a * a));
-        y = r - (r * .27061 + 2.30753) / (one + (r * .04481 + .99229) * r);
+        y = r - (r * .27061 + 2.30753) / (ProbUtils.one + (r * .04481 + .99229) * r);
 
-        if ((pp > one) && (qq > one)) {
-            r = (y * y - three) / six;
-            s = one / (pp + pp - one);
-            t = one / (qq + qq - one);
-            h = two / (s + t);
+        if ((pp > ProbUtils.one) && (qq > ProbUtils.one)) {
+            r = (y * y - ProbUtils.three) / ProbUtils.six;
+            s = ProbUtils.one / (pp + pp - ProbUtils.one);
+            t = ProbUtils.one / (qq + qq - ProbUtils.one);
+            h = ProbUtils.two / (s + t);
             d_1 = y * Math.sqrt(h + r) / h;
-            d_2 = (t - s) * (r + five / six - two / (three * h));
+            d_2 = (t - s) * (r + ProbUtils.five / ProbUtils.six - ProbUtils.two / (ProbUtils.three * h));
             w = d_1 - d_2;
             ret_val = pp / (pp + qq * Math.exp(w + w));
         } else {
             r = qq + qq;
-            t = one / (qq * 9.);
+            t = ProbUtils.one / (qq * 9.);
 
             // Computing 3rd power
-            d_1 = one - t + y * Math.sqrt(t);
+            d_1 = ProbUtils.one - t + y * Math.sqrt(t);
             t = r * (d_1 * d_1 * d_1);
 
-            if (t <= zero) {
+            if (t <= ProbUtils.zero) {
                 ret_val =
-                        one - Math.exp((Math.log((one - a) * qq) + beta) / qq);
+                        ProbUtils.one - Math.exp((Math.log((ProbUtils.one - a) * qq) + beta) / qq);
             } else {
-                t = (four * pp + r - two) / t;
+                t = (ProbUtils.four * pp + r - ProbUtils.two) / t;
 
-                if (t <= one) {
+                if (t <= ProbUtils.one) {
                     ret_val = Math.exp((Math.log(a * pp) + beta) / pp);
                 } else {
-                    ret_val = one - two / (t + one);
+                    ret_val = ProbUtils.one - ProbUtils.two / (t + ProbUtils.one);
                 }
             }
         }
@@ -827,11 +827,11 @@ public class ProbUtils {
         //
         // solve for x by a modified newton-raphson method, using the function binc
         //
-        r = one - pp;
-        t = one - qq;
-        yprev = zero;
-        sq = one;
-        prev = one;
+        r = ProbUtils.one - pp;
+        t = ProbUtils.one - qq;
+        yprev = ProbUtils.zero;
+        sq = ProbUtils.one;
+        prev = ProbUtils.one;
 
         if (ret_val < 1e-4) {
             ret_val = 1e-4;
@@ -844,20 +844,20 @@ public class ProbUtils {
         }
 
         d_1 = -5.0 / (pp * pp) - 1.0 / (a * a) - 13.0;
-        iex = (sae > d_1) ? (int) sae : (int) d_1;
+        iex = (ProbUtils.sae > d_1) ? (int) ProbUtils.sae : (int) d_1;
         acu = Math.pow(10.0, (double) iex);
 
         do {
-            y = betaCdf(ret_val, pp, qq);
+            y = ProbUtils.betaCdf(ret_val, pp, qq);
             xin = ret_val;
             y = (y - a) * Math.exp(
-                    beta + r * Math.log(xin) + t * Math.log(one - xin));
+                    beta + r * Math.log(xin) + t * Math.log(ProbUtils.one - xin));
 
-            if (y * yprev <= zero) {
+            if (y * yprev <= ProbUtils.zero) {
                 prev = (sq > fpu) ? sq : fpu;
             }
 
-            g = one;
+            g = ProbUtils.one;
 
             do {
                 adj = g * y;
@@ -866,27 +866,27 @@ public class ProbUtils {
                 if (sq < prev) {
                     tx = ret_val - adj;
 
-                    if ((tx >= zero) && (tx <= one)) {
+                    if ((tx >= ProbUtils.zero) && (tx <= ProbUtils.one)) {
                         if ((prev <= acu) || (y * y <= acu)) {
                             if (indx) {
-                                ret_val = one - ret_val;
+                                ret_val = ProbUtils.one - ret_val;
                             }
 
                             return ret_val;
                         }
 
-                        if ((tx != zero) && (tx != one)) {
+                        if ((tx != ProbUtils.zero) && (tx != ProbUtils.one)) {
                             break;
                         }
                     }
                 }
 
-                g /= three;
+                g /= ProbUtils.three;
             } while (true);
 
             if (tx == ret_val) {
                 if (indx) {
-                    ret_val = one - ret_val;
+                    ret_val = ProbUtils.one - ret_val;
                 }
 
                 return ret_val;
@@ -921,14 +921,14 @@ public class ProbUtils {
         m = n * p;
         s = Math.sqrt(n * p * (1 - p));
         del = Math.max(1, (int) (0.2 * s));
-        k = (int) (m + s * normalQuantile(x));
+        k = (int) (m + s * ProbUtils.normalQuantile(x));
         k1 = k;
         k2 = k;
 
         do {
             k1 = k1 - del;
             k1 = Math.max(0, k1);
-            p1 = binomialCdf(k1, n, p);
+            p1 = ProbUtils.binomialCdf(k1, n, p);
         } while ((k1 > 0) && (p1 > x));
 
         if ((k1 == 0) && (p1 >= x)) {
@@ -938,7 +938,7 @@ public class ProbUtils {
         do {
             k2 = k2 + del;
             k2 = Math.min(n, k2);
-            p2 = binomialCdf(k2, n, p);
+            p2 = ProbUtils.binomialCdf(k2, n, p);
         } while ((k2 < n) && (p2 < x));
 
         if ((k2 == n) && (p2 <= x)) {
@@ -947,7 +947,7 @@ public class ProbUtils {
 
         while (k2 - k1 > 1) {
             k = (k1 + k2) / 2;
-            pk = binomialCdf(k, n, p);
+            pk = ProbUtils.binomialCdf(k, n, p);
 
             if (pk < x) {
                 k1 = k;
@@ -1050,80 +1050,80 @@ public class ProbUtils {
         final double xx;
         //        int if1;
 
-        g = lngamma(v * 0.5);
+        g = ProbUtils.lngamma(v * 0.5);
 
         // test arguments and initialise
-        ret_val = -one;
-        xx = half * v;
-        c = xx - one;
+        ret_val = -ProbUtils.one;
+        xx = ProbUtils.half * v;
+        c = xx - ProbUtils.one;
 
-        if (v < -c5 * Math.log(p)) {
+        if (v < -ProbUtils.c5 * Math.log(p)) {
 
             // starting approximation for small chi-squared
-            ch = Math.pow(p * xx * Math.exp(g + xx * aa), one / xx);
+            ch = Math.pow(p * xx * Math.exp(g + xx * ProbUtils.aa), ProbUtils.one / xx);
 
-            if (ch < e) {
+            if (ch < ProbUtils.e) {
                 ret_val = ch;
 
                 return ret_val;
             }
-        } else if (v > c3) {
+        } else if (v > ProbUtils.c3) {
 
             // call to algorithm AS 111 - note that p has been tested above.
             // AS 241 could be used as an alternative.
-            x = normalQuantile(p);
+            x = ProbUtils.normalQuantile(p);
 
             // starting approximation using Wilson and Hilferty estimate
-            p1 = c2 / v;
+            p1 = ProbUtils.c2 / v;
 
             // Computing 3rd power
-            d_1 = x * Math.sqrt(p1) + one - p1;
+            d_1 = x * Math.sqrt(p1) + ProbUtils.one - p1;
             ch = v * (d_1 * d_1 * d_1);
 
             // starting approximation for p tending to 1
-            if (ch > c6 * v + six) {
-                ch = -two * (Math.log(one - p) - c * Math.log(half * ch) + g);
+            if (ch > ProbUtils.c6 * v + ProbUtils.six) {
+                ch = -ProbUtils.two * (Math.log(ProbUtils.one - p) - c * Math.log(ProbUtils.half * ch) + g);
             }
         } else {
 
             // starting approximation for v less than or equal to 0.32
-            ch = c4;
-            a = Math.log(one - p);
+            ch = ProbUtils.c4;
+            a = Math.log(ProbUtils.one - p);
 
             do {
                 q = ch;
-                p1 = one + ch * (c7 + ch);
-                p2 = ch * (c9 + ch * (c8 + ch));
-                d_1 = -half + (c7 + two * ch) / p1;
-                d_2 = (c9 + ch * (c10 + three * ch)) / p2;
+                p1 = ProbUtils.one + ch * (ProbUtils.c7 + ch);
+                p2 = ch * (ProbUtils.c9 + ch * (ProbUtils.c8 + ch));
+                d_1 = -ProbUtils.half + (ProbUtils.c7 + ProbUtils.two * ch) / p1;
+                d_2 = (ProbUtils.c9 + ch * (ProbUtils.c10 + ProbUtils.three * ch)) / p2;
                 t = d_1 - d_2;
-                ch -= (one - Math.exp(a + g + half * ch + c * aa) * p2 / p1) /
+                ch -= (ProbUtils.one - Math.exp(a + g + ProbUtils.half * ch + c * ProbUtils.aa) * p2 / p1) /
                         t;
-            } while (Math.abs(q / ch - one) > c1);
+            } while (Math.abs(q / ch - ProbUtils.one) > ProbUtils.c1);
         }
 
         do {
 
             // call to gammad and calculation of seven term Taylor series
             q = ch;
-            p1 = half * ch;
-            p2 = p - gammaCdf(xx, p1);
-            t = p2 * Math.exp(xx * aa + g + p1 - c * Math.log(ch));
+            p1 = ProbUtils.half * ch;
+            p2 = p - ProbUtils.gammaCdf(xx, p1);
+            t = p2 * Math.exp(xx * ProbUtils.aa + g + p1 - c * Math.log(ch));
             b = t / ch;
-            a = half * t - b * c;
-            s1 = (c19 +
-                    a * (c17 + a * (c14 + a * (c13 + a * (c12 + c11 * a))))) /
-                    c24;
-            s2 = (c24 + a * (c29 + a * (c32 + a * (c33 + c35 * a)))) / c37;
-            s3 = (c19 + a * (c25 + a * (c28 + c31 * a))) / c37;
-            s4 = (c20 + a * (c27 + c34 * a) + c * (c22 + a * (c30 + c36 * a))) /
-                    c38;
-            s5 = (c13 + c21 * a + c * (c18 + c26 * a)) / c37;
-            s6 = (c15 + c * (c23 + c16 * c)) / c38;
+            a = ProbUtils.half * t - b * c;
+            s1 = (ProbUtils.c19 +
+                    a * (ProbUtils.c17 + a * (ProbUtils.c14 + a * (ProbUtils.c13 + a * (ProbUtils.c12 + ProbUtils.c11 * a))))) /
+                    ProbUtils.c24;
+            s2 = (ProbUtils.c24 + a * (ProbUtils.c29 + a * (ProbUtils.c32 + a * (ProbUtils.c33 + ProbUtils.c35 * a)))) / ProbUtils.c37;
+            s3 = (ProbUtils.c19 + a * (ProbUtils.c25 + a * (ProbUtils.c28 + ProbUtils.c31 * a))) / ProbUtils.c37;
+            s4 = (ProbUtils.c20 + a * (ProbUtils.c27 + ProbUtils.c34 * a) + c * (ProbUtils.c22 + a * (ProbUtils.c30 + ProbUtils.c36 * a))) /
+                    ProbUtils.c38;
+            s5 = (ProbUtils.c13 + ProbUtils.c21 * a + c * (ProbUtils.c18 + ProbUtils.c26 * a)) / ProbUtils.c37;
+            s6 = (ProbUtils.c15 + c * (ProbUtils.c23 + ProbUtils.c16 * c)) / ProbUtils.c38;
             d_1 = (s3 - b * (s4 - b * (s5 - b * s6)));
             d_1 = (s1 - b * (s2 - b * d_1));
-            ch += t * (one + half * t * s1 - b * c * d_1);
-        } while (Math.abs(q / ch - one) > e);
+            ch += t * (ProbUtils.one + ProbUtils.half * t * s1 - b * c * d_1);
+        } while (Math.abs(q / ch - ProbUtils.one) > ProbUtils.e);
 
         ret_val = ch;
 
@@ -1137,14 +1137,14 @@ public class ProbUtils {
         if (p == 0.0) {
             return 0.0;
         } else {
-            dx = betaCdf(1.0 - p, 0.5 * df2, 0.5 * df1);
+            dx = ProbUtils.betaCdf(1.0 - p, 0.5 * df2, 0.5 * df1);
 
             return (df2 * (1.0 / dx - 1.0) / df1);
         }
     }
 
     public static double gammaQuantile(final double a, final double p) {
-        return (0.5 * chisqQuantile(p, 2.0 * a));
+        return (0.5 * ProbUtils.chisqQuantile(p, 2.0 * a));
     }
 
     private static final double split = 0.42e0;
@@ -1175,24 +1175,24 @@ public class ProbUtils {
         double r;
         double ppn;
 
-        q = p - half;
+        q = p - ProbUtils.half;
 
-        if (Math.abs(q) <= split) {
+        if (Math.abs(q) <= ProbUtils.split) {
             r = q * q;
-            ppn = q * (((a3 * r + a2) * r + a1) * r + a0) /
-                    ((((b4 * r + b3) * r + b2) * r + b1) * r + one);
+            ppn = q * (((ProbUtils.a3 * r + ProbUtils.a2) * r + ProbUtils.a1) * r + ProbUtils.a0) /
+                    ((((ProbUtils.b4 * r + ProbUtils.b3) * r + ProbUtils.b2) * r + ProbUtils.b1) * r + ProbUtils.one);
         } else {
             r = p;
 
-            if (q > zero) {
-                r = one - p;
+            if (q > ProbUtils.zero) {
+                r = ProbUtils.one - p;
             }
 
             r = Math.sqrt(-Math.log(r));
-            ppn = (((cc3 * r + cc2) * r + cc1) * r + cc0) /
-                    ((d2 * r + d1) * r + one);
+            ppn = (((ProbUtils.cc3 * r + ProbUtils.cc2) * r + ProbUtils.cc1) * r + ProbUtils.cc0) /
+                    ((ProbUtils.d2 * r + ProbUtils.d1) * r + ProbUtils.one);
 
-            if (q < zero) {
+            if (q < ProbUtils.zero) {
                 ppn = -ppn;
             }
         }
@@ -1224,14 +1224,14 @@ public class ProbUtils {
         m = l;
         s = Math.sqrt(l);
         del = Math.max(1, (int) (0.2 * s));
-        k = (int) (m + s * normalQuantile(x));
+        k = (int) (m + s * ProbUtils.normalQuantile(x));
         k1 = k;
         k2 = k;
 
         do {
             k1 = k1 - del;
             k1 = Math.max(0, k1);
-            p1 = poissonCdf(k1, l);
+            p1 = ProbUtils.poissonCdf(k1, l);
         } while ((k1 > 0) && (p1 > x));
 
         if ((k1 == 0) && (p1 >= x)) {
@@ -1240,12 +1240,12 @@ public class ProbUtils {
 
         do {
             k2 = k2 + del;
-            p2 = poissonCdf(k2, l);
+            p2 = ProbUtils.poissonCdf(k2, l);
         } while (p2 < x);
 
         while (k2 - k1 > 1) {
             k = (k1 + k2) / 2;
-            pk = poissonCdf(k, l);
+            pk = ProbUtils.poissonCdf(k, l);
 
             if (pk < x) {
                 k1 = k;
@@ -1278,11 +1278,11 @@ public class ProbUtils {
 
         if (n <= 3.0) {
             if (n == 1) {
-                sq = Math.tan(HALF_PI * (1.0 - p));
+                sq = Math.tan(ProbUtils.HALF_PI * (1.0 - p));
             } else if (n == 2.0) {
                 sq = Math.sqrt(2.0 / (p * (2.0 - p)) - 2.0);
             } else {
-                sq = betaQuantile(p, 0.5 * n, 0.5);
+                sq = ProbUtils.betaQuantile(p, 0.5 * n, 0.5);
 
                 if (sq != 0.0) {
                     sq = Math.sqrt(n / sq - n);
@@ -1292,14 +1292,14 @@ public class ProbUtils {
             a = 1.0 / (n - 0.5);
             b = 48.0 / (a * a);
             c = ((20700.0 * a / b - 98.0) * a - 16) * a + 96.36;
-            d = ((94.5 / (b + c) - 3.0) / b + 1.0) * Math.sqrt(a * HALF_PI) * n;
+            d = ((94.5 / (b + c) - 3.0) / b + 1.0) * Math.sqrt(a * ProbUtils.HALF_PI) * n;
             x = d * p;
             y = Math.pow(x, 2.0 / n);
 
             if (y > 0.05 + a) {
 
                 // asymptotic inverse expansion about normal
-                x = normalQuantile(0.5 * p);
+                x = ProbUtils.normalQuantile(0.5 * p);
                 y = x * x;
 
                 if (n < 5) {
@@ -1334,7 +1334,7 @@ public class ProbUtils {
             return 0.0;
         } else {
             return (Math.exp(Math.log(x) * (a - 1) + Math.log(1 - x) * (b - 1) -
-                    logbeta(a, b)));
+                    ProbUtils.logbeta(a, b)));
         }
     }
 
@@ -1347,18 +1347,18 @@ public class ProbUtils {
         } else if ((k < 0) || (k > n)) {
             return 0.0;
         } else {
-            return (Math.exp(lngamma(n + 1.0) - lngamma(k + 1.0) -
-                    lngamma(n - k + 1.0) + k * Math.log(p) +
+            return (Math.exp(ProbUtils.lngamma(n + 1.0) - ProbUtils.lngamma(k + 1.0) -
+                    ProbUtils.lngamma(n - k + 1.0) + k * Math.log(p) +
                     (n - k) * Math.log(1.0 - p)));
         }
     }
 
     public static double cauchyPdf(final double x) {
-        return tPdf(x, 1.0);
+        return ProbUtils.tPdf(x, 1.0);
     }
 
     public static double chisqPdf(final double x, final double v) {
-        return (0.5 * gammaPdf(0.5 * x, 0.5 * v));
+        return (0.5 * ProbUtils.gammaPdf(0.5 * x, 0.5 * v));
     }
 
     public static double fPdf(final double x, final double a, final double b) {
@@ -1367,7 +1367,7 @@ public class ProbUtils {
             return 0.0;
         } else {
             return (Math.exp(0.5 * a * Math.log(a) + 0.5 * b * Math.log(b) +
-                    (0.5 * a - 1.0) * Math.log(x) - logbeta(0.5 * a, 0.5 * b) -
+                    (0.5 * a - 1.0) * Math.log(x) - ProbUtils.logbeta(0.5 * a, 0.5 * b) -
                     0.5 * (a + b) * Math.log(b + a * x)));
         }
     }
@@ -1377,7 +1377,7 @@ public class ProbUtils {
         if (x <= 0.0) {
             return 0.0;
         } else {
-            return Math.exp(Math.log(x) * (a - 1) - x - lngamma(a));
+            return Math.exp(Math.log(x) * (a - 1) - x - ProbUtils.lngamma(a));
         }
     }
 
@@ -1392,15 +1392,15 @@ public class ProbUtils {
         } else if (k < 0) {
             return 0.0;
         } else {
-            return (Math.exp(k * Math.log(lambda) - lambda - lngamma(k + 1.0)));
+            return (Math.exp(k * Math.log(lambda) - lambda - ProbUtils.lngamma(k + 1.0)));
         }
     }
 
     @SuppressWarnings({"SameParameterValue"})
     public static double tPdf(final double x, final double a) {
 
-        return ((1.0 / Math.sqrt(a * Math.PI)) * Math.exp(lngamma(
-                0.5 * (a + 1)) - lngamma(0.5 * a) -
+        return ((1.0 / Math.sqrt(a * Math.PI)) * Math.exp(ProbUtils.lngamma(
+                0.5 * (a + 1)) - ProbUtils.lngamma(0.5 * a) -
                 0.5 * (a + 1) * Math.log(1.0 + x * x / a)));
     }
 
@@ -1408,23 +1408,23 @@ public class ProbUtils {
     private static long seedi = 123456789L, seedj = 362436069L;
 
     public static void uniformSeeds(final long a, final long b) {
-        seedi = a & MASK;
-        seedj = b & MASK;
+        ProbUtils.seedi = a & ProbUtils.MASK;
+        ProbUtils.seedj = b & ProbUtils.MASK;
     }
 
     public static double uniformRand() {
 
-        seedi = (seedi * 69069 + 23606797) & MASK;
-        seedj ^= (seedj << 13) & MASK;
-        seedj ^= (seedj >> 17) & MASK;
-        seedj ^= (seedj << 5) & MASK;
+        ProbUtils.seedi = (ProbUtils.seedi * 69069 + 23606797) & ProbUtils.MASK;
+        ProbUtils.seedj ^= (ProbUtils.seedj << 13) & ProbUtils.MASK;
+        ProbUtils.seedj ^= (ProbUtils.seedj >> 17) & ProbUtils.MASK;
+        ProbUtils.seedj ^= (ProbUtils.seedj << 5) & ProbUtils.MASK;
 
-        return ((double) ((seedi + seedj) & MASK) * Math.pow(2.0, -32.0));
+        return ((double) ((ProbUtils.seedi + ProbUtils.seedj) & ProbUtils.MASK) * Math.pow(2.0, -32.0));
     }
 
     public static int bernoulliRand(final double p) {
 
-        return (uniformRand() <= p) ? 1 : 0;
+        return (ProbUtils.uniformRand() <= p) ? 1 : 0;
     }
 
     /**
@@ -1447,22 +1447,22 @@ public class ProbUtils {
             do {
                 k++;
 
-                t *= uniformRand();
+                t *= ProbUtils.uniformRand();
             } while (t > expxm);
         } else {
             sqrt2xm = Math.sqrt(2.0 * xm);
             logxm = Math.log(xm);
-            g = xm * logxm - lngamma(xm + 1.0);
+            g = xm * logxm - ProbUtils.lngamma(xm + 1.0);
 
             do {
                 do {
-                    y = Math.tan(Math.PI * uniformRand());
+                    y = Math.tan(Math.PI * ProbUtils.uniformRand());
                     k = (int) Math.floor(sqrt2xm * y + xm);
                 } while (k < 0);
 
                 t = 0.9 * (1.0 + y * y) *
-                        Math.exp(k * logxm - lngamma((double) k + 1.0) - g);
-            } while (uniformRand() > t);
+                        Math.exp(k * logxm - ProbUtils.lngamma((double) k + 1.0) - g);
+            } while (ProbUtils.uniformRand() > t);
         }
 
         return (k);
@@ -1497,7 +1497,7 @@ public class ProbUtils {
             k = 0;
 
             for (j = 0; j < n; j++) {
-                if (uniformRand() < p) {
+                if (ProbUtils.uniformRand() < p) {
                     k++;
                 }
             }
@@ -1509,7 +1509,7 @@ public class ProbUtils {
             do {
                 k++;
 
-                t *= uniformRand();
+                t *= ProbUtils.uniformRand();
             } while (t > g);
 
             if (k > n) {
@@ -1517,7 +1517,7 @@ public class ProbUtils {
             }
         } else {
             en = n;
-            g = lngamma(en + 1.0);
+            g = ProbUtils.lngamma(en + 1.0);
             pc = 1.0 - p;
             plog = Math.log(p);
             pclog = Math.log(pc);
@@ -1525,14 +1525,14 @@ public class ProbUtils {
 
             do {
                 do {
-                    y = Math.tan(Math.PI * uniformRand());
+                    y = Math.tan(Math.PI * ProbUtils.uniformRand());
                     em = sq * y + am;
                 } while ((em < 0.0) || (em >= en + 1.0));
 
                 em = Math.floor(em);
-                t = 1.2 * sq * (1.0 + y * y) * Math.exp(g - lngamma(em + 1.0) -
-                        lngamma(en - em + 1.0) + em * plog + (en - em) * pclog);
-            } while (uniformRand() > t);
+                t = 1.2 * sq * (1.0 + y * y) * Math.exp(g - ProbUtils.lngamma(em + 1.0) -
+                        ProbUtils.lngamma(en - em + 1.0) + em * plog + (en - em) * pclog);
+            } while (ProbUtils.uniformRand() > t);
 
             k = (int) em;
         }
@@ -1560,8 +1560,8 @@ public class ProbUtils {
 
         /* ratio of uniforms with linear pretest */
         do {
-            u = uniformRand();
-            u1 = uniformRand();
+            u = ProbUtils.uniformRand();
+            u1 = ProbUtils.uniformRand();
             v = c * (2 * u1 - 1);
             x = v / u;
             y = x * x / 4.0;
@@ -1579,8 +1579,8 @@ public class ProbUtils {
 
         /* ratio of uniforms on half disk */
         do {
-            u1 = uniformRand();
-            u2 = uniformRand();
+            u1 = ProbUtils.uniformRand();
+            u2 = ProbUtils.uniformRand();
             v1 = 2.0 * u1 - 1.0;
             v2 = u2;
         } while (v1 * v1 + v2 * v2 > 1.0);
@@ -1617,8 +1617,8 @@ public class ProbUtils {
             c = (a + e) / e;
 
             do {
-                u0 = uniformRand();
-                u1 = uniformRand();
+                u0 = ProbUtils.uniformRand();
+                u1 = ProbUtils.uniformRand();
                 v = c * u0;
 
                 if (v <= 1.0) {
@@ -1636,7 +1636,7 @@ public class ProbUtils {
                 }
             } while (!done);
         } else if (a == 1.0) {
-            x = -Math.log(uniformRand());
+            x = -Math.log(ProbUtils.uniformRand());
         } else {
 
             /* Cheng and Feast algorithm */
@@ -1648,8 +1648,8 @@ public class ProbUtils {
 
             do {
                 do {
-                    u1 = uniformRand();
-                    u2 = uniformRand();
+                    u1 = ProbUtils.uniformRand();
+                    u2 = ProbUtils.uniformRand();
 
                     if (a > 2.5) {
                         u1 = u2 + c5 * (1.0 - 1.86 * u1);
@@ -1670,14 +1670,14 @@ public class ProbUtils {
      * Chi square random generator.
      */
     public static double chisqRand(final double df) {
-        return (2.0 * gammaRand(df / 2.0));
+        return (2.0 * ProbUtils.gammaRand(df / 2.0));
     }
 
     /**
      * T distribution random generator.
      */
     public static double tRand(final double df) {
-        return (normalRand() / Math.sqrt(chisqRand(df) / df));
+        return (ProbUtils.normalRand() / Math.sqrt(ProbUtils.chisqRand(df) / df));
     }
 
     /**
@@ -1688,8 +1688,8 @@ public class ProbUtils {
         final double x;
         final double y;
 
-        x = gammaRand(a);
-        y = gammaRand(b);
+        x = ProbUtils.gammaRand(a);
+        y = ProbUtils.gammaRand(b);
 
         return (x / (x + y));
     }
@@ -1698,7 +1698,7 @@ public class ProbUtils {
      * F distribution random generator.
      */
     public static double fRand(final double ndf, final double ddf) {
-        return ((ddf * chisqRand(ndf)) / (ndf * chisqRand(ddf)));
+        return ((ddf * ProbUtils.chisqRand(ndf)) / (ndf * ProbUtils.chisqRand(ddf)));
     }
 
     /**
@@ -1713,7 +1713,7 @@ public class ProbUtils {
      */
 
     public static double biNormalCdf(final double ah, final double ak, final double r) {
-        return biNormalCdf2(-ah, -ak, r);
+        return ProbUtils.biNormalCdf2(-ah, -ak, r);
     }
 
     @SuppressWarnings({"UnusedAssignment"})
@@ -1896,7 +1896,7 @@ public class ProbUtils {
             System.out.println();
         }
         System.out.println();*/
-        orderIntegral(a, b, cov);
+        ProbUtils.orderIntegral(a, b, cov);
         /*for (int i = 0; i < a.length; i++)
             System.out.println("a = " + a[i] + ", b = " + b[i]);
         for (int i = 0; i < cov.length; i++) {

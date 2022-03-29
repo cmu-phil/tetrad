@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 class TabularDataTransferHandler extends TransferHandler {
 
     public int getSourceActions(final JComponent c) {
-        return COPY_OR_MOVE;
+        return TransferHandler.COPY_OR_MOVE;
     }
 
     /**
@@ -456,7 +456,7 @@ class TabularDataTransferHandler extends TransferHandler {
     }
 
     public void exportDone(final JComponent source, final Transferable data, final int action) {
-        if (action == MOVE && source instanceof TabularDataJTable) {
+        if (action == TransferHandler.MOVE && source instanceof TabularDataJTable) {
             final TabularDataJTable tableTabular = (TabularDataJTable) source;
             tableTabular.deleteSelected();
         }

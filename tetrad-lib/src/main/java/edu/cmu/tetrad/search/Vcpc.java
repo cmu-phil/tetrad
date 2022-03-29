@@ -781,12 +781,12 @@ public final class Vcpc implements GraphSearch {
 
 
     private static void buildPowerSet(final List<Node> boundary, final int count) {
-        powerSet.add(boundary);
+        Vcpc.powerSet.add(boundary);
 
         for (int i = 0; i < boundary.size(); i++) {
             final List<Node> temp = new ArrayList<>(boundary);
             temp.remove(i);
-            buildPowerSet(temp, temp.size());
+            Vcpc.buildPowerSet(temp, temp.size());
         }
     }
 
@@ -842,7 +842,7 @@ public final class Vcpc implements GraphSearch {
     private Set<Node> future(final Node x, final Graph graph) {
         final Set<Node> futureNodes = new HashSet<>();
         final LinkedList path = new LinkedList<>();
-        futureNodeVisit(graph, x, path, futureNodes);
+        Vcpc.futureNodeVisit(graph, x, path, futureNodes);
         if (futureNodes.contains(x)) {
             futureNodes.remove(x);
         }
@@ -897,7 +897,7 @@ public final class Vcpc implements GraphSearch {
             } else {
                 final Node a = path.get(size - 2);
                 final Edge edge1 = graph.getEdge(a, b);
-                c = traverseFuturePath(b, edge1, edge2);
+                c = Vcpc.traverseFuturePath(b, edge1, edge2);
                 if (c == null) {
                     continue;
                 }
@@ -905,7 +905,7 @@ public final class Vcpc implements GraphSearch {
                     continue;
                 }
             }
-            futureNodeVisit(graph, c, path, futureNodes);
+            Vcpc.futureNodeVisit(graph, c, path, futureNodes);
         }
         path.removeLast();
     }
@@ -1248,8 +1248,8 @@ public final class Vcpc implements GraphSearch {
     }
 
     private boolean colliderAllowed(final Node x, final Node y, final Node z, final IKnowledge knowledge) {
-        return isArrowpointAllowed1(x, y, knowledge) &&
-                isArrowpointAllowed1(z, y, knowledge);
+        return Vcpc.isArrowpointAllowed1(x, y, knowledge) &&
+                Vcpc.isArrowpointAllowed1(z, y, knowledge);
     }
 
     public static boolean isArrowpointAllowed1(final Node from, final Node to,

@@ -343,8 +343,8 @@ public class MultiFaskV1 {
         double lrSum = 0;
 
         for (int i = 0; i < this.dataSets.size(); i++) {
-            final double left = cu(x[i], y[i], x[i]) / (sqrt(cu(x[i], x[i], x[i]) * cu(y[i], y[i], x[i])));
-            final double right = cu(x[i], y[i], y[i]) / (sqrt(cu(x[i], x[i], y[i]) * cu(y[i], y[i], y[i])));
+            final double left = MultiFaskV1.cu(x[i], y[i], x[i]) / (sqrt(MultiFaskV1.cu(x[i], x[i], x[i]) * MultiFaskV1.cu(y[i], y[i], x[i])));
+            final double right = MultiFaskV1.cu(x[i], y[i], y[i]) / (sqrt(MultiFaskV1.cu(x[i], x[i], y[i]) * MultiFaskV1.cu(y[i], y[i], y[i])));
             double lr = left - right;
 
             double r = StatUtils.correlation(x[i], y[i]);

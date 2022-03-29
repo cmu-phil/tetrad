@@ -70,7 +70,7 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     //============================CONSTRUCTORS==========================//
 
     public ContinuousDiscretizationSpec(final double[] breakpoints, final List<String> categories) {
-        this(breakpoints, categories, EVENLY_DISTRIBUTED_INTERVALS);
+        this(breakpoints, categories, ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
     }
 
 
@@ -79,7 +79,7 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
         if (breakpoints == null) {
             throw new NullPointerException();
         }
-        if (method != EVENLY_DISTRIBUTED_VALUES && method != EVENLY_DISTRIBUTED_INTERVALS && method != NONE) {
+        if (method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES && method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS && method != ContinuousDiscretizationSpec.NONE) {
             throw new IllegalArgumentException();
         }
         this.breakpoints = breakpoints;
@@ -104,7 +104,7 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     }
 
     public void setMethod(final int method) {
-        if (method != EVENLY_DISTRIBUTED_VALUES && method != EVENLY_DISTRIBUTED_INTERVALS && method != NONE) {
+        if (method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES && method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS && method != ContinuousDiscretizationSpec.NONE) {
             throw new IllegalArgumentException();
         }
         this.method = method;
@@ -143,8 +143,8 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
             throw new NullPointerException();
         }
 
-        if (this.method != EVENLY_DISTRIBUTED_VALUES && this.method != EVENLY_DISTRIBUTED_INTERVALS) {
-            this.method = EVENLY_DISTRIBUTED_INTERVALS;
+        if (this.method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES && this.method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS) {
+            this.method = ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS;
         }
     }
 }

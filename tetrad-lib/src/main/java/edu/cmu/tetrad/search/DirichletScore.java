@@ -132,7 +132,7 @@ public class DirichletScore implements LocalDiscreteScore, Score {
                         "values (record " + i + " column " + i + ")");
             }
 
-            final int rowIndex = getRowIndex(dims, parentValues);
+            final int rowIndex = DirichletScore.getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;

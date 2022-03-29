@@ -120,9 +120,9 @@ class ScatterPlotEditorPanel extends JPanel {
     }
 
     private Box buildEditArea(final DataSet dataset) {
-        setPreferredAsMax(this.yVariableBox);
-        setPreferredAsMax(this.xVariableBox);
-        setPreferredAsMax(this.newCondBox);
+        ScatterPlotEditorPanel.setPreferredAsMax(this.yVariableBox);
+        ScatterPlotEditorPanel.setPreferredAsMax(this.xVariableBox);
+        ScatterPlotEditorPanel.setPreferredAsMax(this.newCondBox);
 
         final Box main2 = Box.createVerticalBox();
 

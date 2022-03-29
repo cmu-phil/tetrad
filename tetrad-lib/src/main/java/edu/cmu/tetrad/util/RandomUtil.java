@@ -69,7 +69,7 @@ public class RandomUtil {
      * Constructs a new random number generator based on the getModel date in milliseconds.
      */
     private RandomUtil() {
-        this(seedUniquifier() ^ System.nanoTime());
+        this(RandomUtil.seedUniquifier() ^ System.nanoTime());
     }
 
     /**
@@ -84,16 +84,16 @@ public class RandomUtil {
     private static long seedUniquifier() {
         // L'Ecuyer, "Tables of Linear Congruential Generators of
         // Different Sizes and Good Lattice Structure", 1999
-        final long current = seedUniquifier;
-        seedUniquifier = current * 1181783497276652981L;
-        return seedUniquifier;
+        final long current = RandomUtil.seedUniquifier;
+        RandomUtil.seedUniquifier = current * 1181783497276652981L;
+        return RandomUtil.seedUniquifier;
     }
 
     /**
      * @return the singleton instance of this class.
      */
     public static RandomUtil getInstance() {
-        return randomUtil;
+        return RandomUtil.randomUtil;
     }
 
     //=======================================PUBLIC METHODS=================================//

@@ -35,37 +35,37 @@ import java.util.List;
  */
 
 public interface TetradTest {
-    public DataSet getDataSet();
+    DataSet getDataSet();
 
-    public int tetradScore(int i, int j, int k, int q);
+    int tetradScore(int i, int j, int k, int q);
 
-    public boolean tetradScore3(int i, int j, int k, int q);
+    boolean tetradScore3(int i, int j, int k, int q);
 
-    public boolean tetradScore1(int i, int j, int k, int q);
+    boolean tetradScore1(int i, int j, int k, int q);
 
-    public boolean tetradHolds(int i, int j, int k, int q);
+    boolean tetradHolds(int i, int j, int k, int q);
 
-    public double tetradPValue(int i, int j, int k, int q);
+    double tetradPValue(int i, int j, int k, int q);
 
-    public double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2);
+    double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2);
 
-    public boolean oneFactorTest(int a, int b, int c, int d);
+    boolean oneFactorTest(int a, int b, int c, int d);
 
-    public boolean oneFactorTest(int a, int b, int c, int d, int e);
+    boolean oneFactorTest(int a, int b, int c, int d, int e);
 
-    public boolean oneFactorTest(int a, int b, int c, int d, int e, int f);
+    boolean oneFactorTest(int a, int b, int c, int d, int e, int f);
 
-    public boolean twoFactorTest(int a, int b, int c, int d);
+    boolean twoFactorTest(int a, int b, int c, int d);
 
-    public boolean twoFactorTest(int a, int b, int c, int d, int e);
+    boolean twoFactorTest(int a, int b, int c, int d, int e);
 
-    public boolean twoFactorTest(int a, int b, int c, int d, int e, int f);
+    boolean twoFactorTest(int a, int b, int c, int d, int e, int f);
 
-    public double getSignificance();
+    double getSignificance();
 
-    public void setSignificance(double sig);
+    void setSignificance(double sig);
 
-    public String[] getVarNames();
+    String[] getVarNames();
 
     List<Node> getVariables();
 

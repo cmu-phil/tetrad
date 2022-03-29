@@ -217,7 +217,7 @@ public class ParameterTab extends JPanel {
         if (this.simulation.getSimulation() != null) {
             final Set<String> params = new LinkedHashSet<>(this.simulation.getSimulation().getParameters());
             if (params.isEmpty()) {
-                this.parameterBox.add(NO_PARAM_LBL, BorderLayout.NORTH);
+                this.parameterBox.add(ParameterTab.NO_PARAM_LBL, BorderLayout.NORTH);
             } else {
                 final Box parameters = Box.createVerticalBox();
                 final Box[] paramBoxes = ParameterComponents.toArray(
@@ -267,9 +267,9 @@ public class ParameterTab extends JPanel {
 
         // type of graph options
         if (!this.simulation.isFixedGraph()) {
-            Arrays.stream(GRAPH_ITEMS).forEach(this.graphsDropdown::addItem);
+            Arrays.stream(ParameterTab.GRAPH_ITEMS).forEach(this.graphsDropdown::addItem);
             this.graphsDropdown.setMaximumSize(this.graphsDropdown.getPreferredSize());
-            this.graphsDropdown.setSelectedItem(this.simulation.getParams().getString("graphsDropdownPreference", GRAPH_ITEMS[0]));
+            this.graphsDropdown.setSelectedItem(this.simulation.getParams().getString("graphsDropdownPreference", ParameterTab.GRAPH_ITEMS[0]));
             this.graphsDropdown.addActionListener(e -> refreshParameters());
 
             simOptBox.add(createLabeledComponent("Type of Graph: ", this.graphsDropdown));
@@ -373,7 +373,7 @@ public class ParameterTab extends JPanel {
                         + simulation.getSimulation().getClass());
             }
         } else {
-            items = SOURCE_GRAPH_ITEMS;
+            items = ParameterTab.SOURCE_GRAPH_ITEMS;
         }
 
         return items;

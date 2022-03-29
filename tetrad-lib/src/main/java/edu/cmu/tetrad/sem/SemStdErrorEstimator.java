@@ -37,7 +37,7 @@ public class SemStdErrorEstimator {
 
     //Some constants used by the method SecondPartialDerivativeRidr
     private static final double CON = 1.4;
-    private static final double CON2 = CON * CON;
+    private static final double CON2 = SemStdErrorEstimator.CON * SemStdErrorEstimator.CON;
     private static final double BIG = 1.e30;
     private static final int NTAB = 10;
     private static final double SAFE = 2.0;
@@ -277,7 +277,7 @@ public class SemStdErrorEstimator {
                                                final double[] args, final double delt) {
 
         final double[] arg = new double[args.length];
-        final double[][] a = new double[NTAB][NTAB];
+        final double[][] a = new double[SemStdErrorEstimator.NTAB][SemStdErrorEstimator.NTAB];
         double hh = delt;
         double errt;
         double ans = 0.0;
@@ -318,10 +318,10 @@ public class SemStdErrorEstimator {
         }
 
         a[0][0] = (ff1 - ff2 - ff3 + ff4) / (4.0 * delt * delt);
-        double err = BIG;
+        double err = SemStdErrorEstimator.BIG;
 
-        for (int ii = 1; ii < NTAB; ii++) {
-            hh /= CON;
+        for (int ii = 1; ii < SemStdErrorEstimator.NTAB; ii++) {
+            hh /= SemStdErrorEstimator.CON;
 
             System.arraycopy(args, 0, arg, 0, args.length);
 
@@ -357,12 +357,12 @@ public class SemStdErrorEstimator {
 
             a[0][ii] = (ff1 - ff2 - ff3 + ff4) / (4.0 * hh * hh);
 
-            fac = CON2;
+            fac = SemStdErrorEstimator.CON2;
 
             for (int jj = 1; jj < ii; jj++) {
                 a[jj][ii] =
                         (a[jj - 1][ii] * fac - a[jj - 1][ii - 1]) / (fac - 1.0);
-                fac = CON2 * fac;
+                fac = SemStdErrorEstimator.CON2 * fac;
                 errt = Math.max(Math.abs(a[jj][ii] - a[jj - 1][ii]),
                         Math.abs(a[jj][ii] - a[jj - 1][ii - 1]));
                 if (errt < err) {
@@ -371,7 +371,7 @@ public class SemStdErrorEstimator {
                 }
             }
 
-            if (Math.abs(a[ii][ii] - a[ii - 1][ii - 1]) >= SAFE * err) {
+            if (Math.abs(a[ii][ii] - a[ii - 1][ii - 1]) >= SemStdErrorEstimator.SAFE * err) {
                 break;
             }
         }

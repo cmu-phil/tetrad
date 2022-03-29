@@ -203,7 +203,7 @@ public class Discretizer {
                     for (int j = 0; j < this.sourceDataSet.getNumRows(); j++) {
                         trimmedData[j] = this.sourceDataSet.getDouble(j, col);
                     }
-                    final Discretization discretization = discretize(trimmedData,
+                    final Discretization discretization = Discretizer.discretize(trimmedData,
                             breakpoints, name, categories);
 
                     final int _col = newDataSet.getColumn(variable);

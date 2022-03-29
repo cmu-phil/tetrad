@@ -85,7 +85,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @param params - The params for the search.
      */
     AbstractMBSearchRunner(final DataModel source, final Parameters params) {
-        super(castData(source));
+        super(AbstractMBSearchRunner.castData(source));
         if (source == null) {
             throw new NullPointerException("The source data was null.");
         }

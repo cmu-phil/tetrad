@@ -110,7 +110,7 @@ public final class IndTestMulti implements IndependenceTest {
 
     public boolean isIndependentPooledFisher2(final List<IndependenceTest> independenceTests, final Node x, final Node y, final List<Node> condSet) {
         final double alpha = independenceTests.get(0).getAlpha();
-        final List<Double> pValues = getAvailablePValues(independenceTests, x, y, condSet);
+        final List<Double> pValues = IndTestMulti.getAvailablePValues(independenceTests, x, y, condSet);
 
         double tf = 0.0;
         int numPValues = 0;

@@ -1418,7 +1418,7 @@ public final class FgesMb {
                     tasks.add(new AdjTask(this.chunk, this.nodes, this.from, this.from + mid));
                     tasks.add(new AdjTask(this.chunk, this.nodes, this.from + mid, this.to));
 
-                    invokeAll(tasks);
+                    ForkJoinTask.invokeAll(tasks);
 
                     return true;
                 }
@@ -1572,7 +1572,7 @@ public final class FgesMb {
                     tasks.add(new BackwardTask(this.r, this.adj, this.chunk, this.from, this.from + mid, this.hashIndices));
                     tasks.add(new BackwardTask(this.r, this.adj, this.chunk, this.from + mid, this.to, this.hashIndices));
 
-                    invokeAll(tasks);
+                    ForkJoinTask.invokeAll(tasks);
 
                     return true;
                 }
@@ -2081,7 +2081,7 @@ public final class FgesMb {
                 }
 
                 final Edge edge = this.graph.getEdge(t, u);
-                final Node c = traverseSemiDirected(t, edge);
+                final Node c = FgesMb.traverseSemiDirected(t, edge);
                 if (c == null) {
                     continue;
                 }

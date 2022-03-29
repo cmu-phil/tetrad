@@ -178,7 +178,7 @@ public final class Fask implements GraphSearch {
 
     // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
     private static double correxp(final double[] x, final double[] y, final double[] z) {
-        return E(x, y, z) / sqrt(E(x, x, z) * E(y, y, z));
+        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -288,8 +288,8 @@ public final class Fask implements GraphSearch {
                 final double[] x = this.D[i];
                 final double[] y = this.D[j];
 
-                final double cx = correxp(x, y, x);
-                final double cy = correxp(x, y, y);
+                final double cx = Fask.correxp(x, y, x);
+                final double cy = Fask.correxp(x, y, y);
 
                 if (G.isAdjacentTo(X, Y) || (abs(cx - cy) > this.skewEdgeThreshold)) {
                     final double lr = lrs[i][j];// leftRight(x, y);
@@ -597,7 +597,7 @@ public final class Fask implements GraphSearch {
         final double sx = skewness(x);
         final double sy = skewness(y);
         final double r = correlation(x, y);
-        double lr = correxp(x, y, x) - correxp(x, y, y);
+        double lr = Fask.correxp(x, y, x) - Fask.correxp(x, y, y);
 
         if (this.empirical) {
             lr *= signum(sx) * signum(sy);
@@ -613,8 +613,8 @@ public final class Fask implements GraphSearch {
     }
 
     private double faskLeftRightV1(final double[] x, final double[] y) {
-        final double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
-        final double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
+        final double left = Fask.cu(x, y, x) / (sqrt(Fask.cu(x, x, x) * Fask.cu(y, y, x)));
+        final double right = Fask.cu(x, y, y) / (sqrt(Fask.cu(x, x, y) * Fask.cu(y, y, y)));
         double lr = left - right;
 
         double r = StatUtils.correlation(x, y);

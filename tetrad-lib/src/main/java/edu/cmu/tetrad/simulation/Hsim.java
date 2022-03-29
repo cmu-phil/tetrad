@@ -53,7 +53,7 @@ public class Hsim {
         final Set<Node> mbAll = new HashSet<Node>(); //initialize an empty set of nodes;
         Set<Node> mbAdd = new HashSet<Node>(); //init set for adding
         for (final Node node : this.simnodes) {
-            mbAdd = mb(this.mydag, node); //find mb for that node
+            mbAdd = Hsim.mb(this.mydag, node); //find mb for that node
             mbAll.addAll(mbAdd); //use .addAll to add this mb to the set
         }
         //make sure all the simnodes are in mbAll! a disconnected node could cause errors later otherwise

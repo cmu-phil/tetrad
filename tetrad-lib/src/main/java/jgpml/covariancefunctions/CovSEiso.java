@@ -76,7 +76,7 @@ public class CovSEiso implements CovarianceFunction {
         final double ell = Math.exp(loghyper.get(0, 0));
         final double sf2 = Math.exp(2 * loghyper.get(1, 0));
 
-        final Matrix K = exp(squareDist(X.transpose().times(1 / ell)).times(-0.5)).times(sf2);
+        final Matrix K = exp(CovSEiso.squareDist(X.transpose().times(1 / ell)).times(-0.5)).times(sf2);
 
         return K;
     }
@@ -101,7 +101,7 @@ public class CovSEiso implements CovarianceFunction {
         Arrays.fill(a, sf2);
         final Matrix A = new Matrix(a, a.length);
 
-        final Matrix B = exp(squareDist(X.transpose().times(1 / ell), Xstar.transpose().times(1 / ell)).times(-0.5)).times(sf2);
+        final Matrix B = exp(CovSEiso.squareDist(X.transpose().times(1 / ell), Xstar.transpose().times(1 / ell)).times(-0.5)).times(sf2);
 
         return new Matrix[]{A, B};
     }
@@ -125,7 +125,7 @@ public class CovSEiso implements CovarianceFunction {
         final double ell = Math.exp(loghyper.get(0, 0));
         final double sf2 = Math.exp(2 * loghyper.get(1, 0));
 
-        final Matrix tmp = squareDist(X.transpose().times(1 / ell));
+        final Matrix tmp = CovSEiso.squareDist(X.transpose().times(1 / ell));
         Matrix A = null;
         if (index == 0) {
             A = exp(tmp.times(-0.5)).arrayTimes(tmp).times(sf2);
@@ -138,7 +138,7 @@ public class CovSEiso implements CovarianceFunction {
 
 
     private static Matrix squareDist(final Matrix a) {
-        return squareDist(a, a);
+        return CovSEiso.squareDist(a, a);
     }
 
     private static Matrix squareDist(final Matrix a, final Matrix b) {

@@ -54,7 +54,7 @@ public class DataGraphUtils {
 
         final Graph graph = new EdgeListGraph(dag);
 
-        return randomMim(graph, numMeasurementsPerLatent,
+        return DataGraphUtils.randomMim(graph, numMeasurementsPerLatent,
                 numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents, numMeasuredMeasuredImpureAssociations,
                 true);
 
@@ -240,7 +240,7 @@ public class DataGraphUtils {
                                             final int numLatentMeasuredImpureParents,
                                             final int numMeasuredMeasuredImpureParents,
                                             final int numMeasuredMeasuredImpureAssociations) {
-        final Graph mim = randomSingleFactorModel(numStructuralNodes, numStructuralEdges,
+        final Graph mim = DataGraphUtils.randomSingleFactorModel(numStructuralNodes, numStructuralEdges,
                 numMeasurementsPerLatent, numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations);
 

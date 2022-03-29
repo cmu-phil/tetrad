@@ -203,7 +203,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 return true;
             }
 
-            if (visibleEdgeHelperVisit(graph, C, A, B, path)) {
+            if (EdgeListGraph.visibleEdgeHelperVisit(graph, C, A, B, path)) {
                 return true;
             }
         }
@@ -240,7 +240,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 }
             }
 
-            if (visibleEdgeHelperVisit(graph, D, c, b, path)) {
+            if (EdgeListGraph.visibleEdgeHelperVisit(graph, D, c, b, path)) {
                 return true;
             }
         }
@@ -352,7 +352,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 }
             }
 
-            return visibleEdgeHelper(A, B, this);
+            return EdgeListGraph.visibleEdgeHelper(A, B, this);
         } else {
             throw new IllegalArgumentException(
                     "Given edge is not in the graph.");

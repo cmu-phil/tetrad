@@ -339,7 +339,7 @@ class QQPlot {
         //System.out.println("******* " + column2);
 
         for (int i = 0; i < data.getNumRows(); i++) {
-            final double valueAtQuantile = findQuantile((i + 1) / (data.getNumRows() + 1.0), this.minData, this.maxData, n, .0001, 0, 50);
+            final double valueAtQuantile = QQPlot.findQuantile((i + 1) / (data.getNumRows() + 1.0), this.minData, this.maxData, n, .0001, 0, 50);
             //System.out.println(((i + 1) / (150 + 1.0)) + "************ " + findQuantile(.5, this.minData, this.maxData, n, .0001, 0, 50));
             //System.out.println("Column: " + column + " VaQ: " + valueAtQuantile);
             this.comparisonVariable[i] = valueAtQuantile;
@@ -377,10 +377,10 @@ class QQPlot {
         } else {
             if (cdfResult > quantile) {
                 //System.out.println("Searching lesser");
-                return findQuantile(quantile, low, mid - precision, n, precision, count + 1, searchCap);
+                return QQPlot.findQuantile(quantile, low, mid - precision, n, precision, count + 1, searchCap);
             } else {
                 //System.out.println("Searching greater");
-                return findQuantile(quantile, mid + precision, high, n, precision, count + 1, searchCap);
+                return QQPlot.findQuantile(quantile, mid + precision, high, n, precision, count + 1, searchCap);
             }
         }
     }

@@ -29,7 +29,7 @@ package edu.cmu.tetrad.search;
 public class GwpResult {
 
     public interface PartialEvaluationResult {
-        public double[] values();
+        double[] values();
     }
 
     public static class AdjacencyEvaluationResult implements PartialEvaluationResult {

@@ -53,7 +53,7 @@ public final class BayesXmlParser {
         final List<Node> variables = getVariables(element0);
         final BayesPm bayesPm = makeBayesPm(variables, element1);
 
-        return makeBayesIm(bayesPm, element2);
+        return BayesXmlParser.makeBayesIm(bayesPm, element2);
     }
 
     private List<Node> getVariables(final Element element0) {

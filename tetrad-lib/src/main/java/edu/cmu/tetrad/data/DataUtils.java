@@ -449,7 +449,7 @@ public final class DataUtils {
 
     public static DataSet standardizeData(final DataSet dataSet) {
         final List<DataSet> dataSets = Collections.singletonList(dataSet);
-        final List<DataSet> outList = standardizeData(dataSets);
+        final List<DataSet> outList = DataUtils.standardizeData(dataSets);
         return outList.get(0);
     }
 
@@ -611,7 +611,7 @@ public final class DataUtils {
         // Extract submatrix of correlation matrix using this index array.
         final Matrix submatrix = m.getSelection(indices, indices);
 
-        if (containsMissingValue(submatrix)) {
+        if (DataUtils.containsMissingValue(submatrix)) {
             throw new IllegalArgumentException(
                     "Please remove or impute missing values first.");
         }
@@ -866,7 +866,7 @@ public final class DataUtils {
 
         Collections.addAll(_dataSets, dataSets);
 
-        return concatenate(_dataSets);
+        return DataUtils.concatenate(_dataSets);
     }
 
     public static Matrix concatenate(final Matrix... dataSets) {
@@ -1209,7 +1209,7 @@ public final class DataUtils {
         final RealMatrix q = new BlockRealMatrix(data.toArray());
 
         final RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
-        final RealMatrix q2 = times(q1, q);
+        final RealMatrix q2 = DataUtils.times(q1, q);
         final Matrix prod = new Matrix(q2.getData());
 
         final double factor = 1.0 / (data.rows() - 1);
@@ -1234,7 +1234,7 @@ public final class DataUtils {
 
         System.out.println(m);
 
-        System.out.println(times(m.transpose(), m));
+        System.out.println(DataUtils.times(m.transpose(), m));
 
         System.out.println(MatrixUtils.transposeWithoutCopy(m).multiply(m));
 
@@ -1245,7 +1245,7 @@ public final class DataUtils {
         final RealMatrix q = new BlockRealMatrix(n.toArray());
 
         final RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
-        final RealMatrix q2 = times(q1, q);
+        final RealMatrix q2 = DataUtils.times(q1, q);
         System.out.println(new Matrix(q2.getData()));
     }
 
@@ -1628,7 +1628,7 @@ public final class DataUtils {
      */
     public static Matrix covMatrixForDefinedRows(final DataSet dataSet, final int[] vars, final int[] n) {
         DataSet _dataSet = dataSet.copy();
-        _dataSet = center(_dataSet);
+        _dataSet = DataUtils.center(_dataSet);
 
         final Matrix reduced = new Matrix(vars.length, vars.length);
 
@@ -1891,7 +1891,7 @@ public final class DataUtils {
 
                 final double std1 = StatUtils.sd(x1);
                 final double mu1 = StatUtils.mean(x1);
-                final double[] xTransformed = ranks(data, x1);
+                final double[] xTransformed = DataUtils.ranks(data, x1);
 
                 for (int i = 0; i < xTransformed.length; i++) {
                     xTransformed[i] /= n;
@@ -2056,7 +2056,7 @@ public final class DataUtils {
     public static IKnowledge loadKnowledge(final File file, final DelimiterType delimiterType, final String commentMarker) throws IOException {
         final FileReader reader = new FileReader(file);
         final Lineizer lineizer = new Lineizer(reader, commentMarker);
-        final IKnowledge knowledge = loadKnowledge(lineizer, delimiterType.getPattern());
+        final IKnowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
         TetradLogger.getInstance().reset();
         return knowledge;
     }
@@ -2151,9 +2151,9 @@ public final class DataUtils {
                             continue;
                         }
 
-                        final String name = substitutePeriodsForSpaces(token);
+                        final String name = DataUtils.substitutePeriodsForSpaces(token);
 
-                        addVariable(knowledge, name);
+                        DataUtils.addVariable(knowledge, name);
 
                         knowledge.addToTier(tier - 1, name);
 
@@ -2192,9 +2192,9 @@ public final class DataUtils {
                     while (st.hasMoreTokens()) {
                         String token = st.nextToken();
                         token = token.trim();
-                        final String name = substitutePeriodsForSpaces(token);
+                        final String name = DataUtils.substitutePeriodsForSpaces(token);
 
-                        addVariable(knowledge, name);
+                        DataUtils.addVariable(knowledge, name);
 
                         from.add(name);
                     }
@@ -2206,9 +2206,9 @@ public final class DataUtils {
                     while (st.hasMoreTokens()) {
                         String token = st.nextToken();
                         token = token.trim();
-                        final String name = substitutePeriodsForSpaces(token);
+                        final String name = DataUtils.substitutePeriodsForSpaces(token);
 
-                        addVariable(knowledge, name);
+                        DataUtils.addVariable(knowledge, name);
 
                         to.add(name);
                     }
@@ -2249,9 +2249,9 @@ public final class DataUtils {
                     while (st.hasMoreTokens()) {
                         String token = st.nextToken();
                         token = token.trim();
-                        final String name = substitutePeriodsForSpaces(token);
+                        final String name = DataUtils.substitutePeriodsForSpaces(token);
 
-                        addVariable(knowledge, name);
+                        DataUtils.addVariable(knowledge, name);
 
                         from.add(name);
                     }
@@ -2263,9 +2263,9 @@ public final class DataUtils {
                     while (st.hasMoreTokens()) {
                         String token = st.nextToken();
                         token = token.trim();
-                        final String name = substitutePeriodsForSpaces(token);
+                        final String name = DataUtils.substitutePeriodsForSpaces(token);
 
-                        addVariable(knowledge, name);
+                        DataUtils.addVariable(knowledge, name);
 
                         to.add(name);
                     }
@@ -2319,9 +2319,9 @@ public final class DataUtils {
                                 + ": Line contains fewer than two elements.");
                     }
 
-                    addVariable(knowledge, from);
+                    DataUtils.addVariable(knowledge, from);
 
-                    addVariable(knowledge, to);
+                    DataUtils.addVariable(knowledge, to);
 
                     knowledge.setForbidden(from, to);
                 }
@@ -2370,8 +2370,8 @@ public final class DataUtils {
                                 + ": Line contains fewer than two elements.");
                     }
 
-                    addVariable(knowledge, from);
-                    addVariable(knowledge, to);
+                    DataUtils.addVariable(knowledge, from);
+                    DataUtils.addVariable(knowledge, to);
 
                     knowledge.removeForbidden(from, to);
                     knowledge.setRequired(from, to);
@@ -2479,7 +2479,7 @@ public final class DataUtils {
         // Close the reader and re-open for a second pass to load the data.
         reader.close();
         final CharArrayReader reader2 = new CharArrayReader(chars);
-        final ICovarianceMatrix covarianceMatrix = doCovariancePass(reader2, commentMarker,
+        final ICovarianceMatrix covarianceMatrix = DataUtils.doCovariancePass(reader2, commentMarker,
                 delimiterType, quoteChar, missingValueMarker);
 
         TetradLogger.getInstance().log("info", "\nData set loaded!");
@@ -2500,7 +2500,7 @@ public final class DataUtils {
 
         try {
             reader = new FileReader(file);
-            final ICovarianceMatrix covarianceMatrix = doCovariancePass(reader, commentMarker,
+            final ICovarianceMatrix covarianceMatrix = DataUtils.doCovariancePass(reader, commentMarker,
                     delimiterType, quoteChar, missingValueMarker);
 
             TetradLogger.getInstance().log("info", "\nCovariance matrix loaded!");
@@ -2619,10 +2619,10 @@ public final class DataUtils {
             }
         }
 
-        final IKnowledge knowledge = loadKnowledge(lineizer, delimiterType.getPattern());
+        final IKnowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
 
         final ICovarianceMatrix covarianceMatrix
-                = new CovarianceMatrix(createContinuousVariables(varNames), c, n);
+                = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), c, n);
 
         covarianceMatrix.setKnowledge(knowledge);
 

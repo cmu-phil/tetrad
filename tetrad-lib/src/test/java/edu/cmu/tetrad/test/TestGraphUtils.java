@@ -298,7 +298,7 @@ public final class TestGraphUtils {
                     if (L == x1 || L == x2) continue;
 
                     if (L.getNodeType() == NodeType.LATENT) {
-                        if (existsLatentPath(dag, L, x1) && existsLatentPath(dag, L, x2)) {
+                        if (TestGraphUtils.existsLatentPath(dag, L, x1) && TestGraphUtils.existsLatentPath(dag, L, x2)) {
                             System.out.println("Edge " + edge + " falsely colored green.");
                         }
                     }
@@ -308,7 +308,7 @@ public final class TestGraphUtils {
             if (edge.isBold()) {
                 System.out.println("Bold");
 
-                if (!existsLatentPath(dag, x1, x2)) {
+                if (!TestGraphUtils.existsLatentPath(dag, x1, x2)) {
                     System.out.println("Edge " + edge + " is falsely bold.");
                 }
             }
@@ -317,7 +317,7 @@ public final class TestGraphUtils {
 
     public static boolean existsLatentPath(final Graph graph, final Node b, final Node y) {
         if (b == y) return false;
-        return existsLatentPath(graph, b, y, new LinkedList<Node>());
+        return TestGraphUtils.existsLatentPath(graph, b, y, new LinkedList<Node>());
     }
 
     public static boolean existsLatentPath(final Graph graph, final Node b, final Node y, final LinkedList<Node> path) {
@@ -334,7 +334,7 @@ public final class TestGraphUtils {
                 continue;
             }
 
-            if (!existsLatentPath(graph, c, y, path)) {
+            if (!TestGraphUtils.existsLatentPath(graph, c, y, path)) {
                 return false;
             }
         }

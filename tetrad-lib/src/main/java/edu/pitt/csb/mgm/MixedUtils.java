@@ -186,7 +186,7 @@ public class MixedUtils {
 
     public static int[] getDiscLevels(final DataSet ds) {
         //ArrayList<Integer> levels = new ArrayList<Integer>[];
-        final DataSet discDs = getDiscreteData(ds);
+        final DataSet discDs = MixedUtils.getDiscreteData(ds);
         final int[] levels = new int[discDs.getNumColumns()];
         int i = 0;
         for (final Node n : discDs.getVariables()) {
@@ -229,7 +229,7 @@ public class MixedUtils {
     }
 
     public static double numVals(final DoubleMatrix1D vec) {
-        return valSet(vec).size();
+        return MixedUtils.valSet(vec).size();
     }
 
     public static Set<Double> valSet(final DoubleMatrix1D vec) {
@@ -319,7 +319,7 @@ public class MixedUtils {
     //public static GeneralizedSemPm GaussianCategoricalPm(Graph trueGraph, HashMap<String, Integer> nodeDists, String paramTemplate) throws IllegalStateException{
     public static GeneralizedSemPm GaussianCategoricalPm(final Graph trueGraph, final String paramTemplate) throws IllegalStateException {
 
-        final Map<String, Integer> nodeDists = getNodeDists(trueGraph);
+        final Map<String, Integer> nodeDists = MixedUtils.getNodeDists(trueGraph);
 
         final GeneralizedSemPm semPm = new GeneralizedSemPm(trueGraph);
         try {
@@ -449,7 +449,7 @@ public class MixedUtils {
 
     //legacy
     public static GeneralizedSemIm GaussianCategoricalIm(final GeneralizedSemPm pm) {
-        return GaussianCategoricalIm(pm, true);
+        return MixedUtils.GaussianCategoricalIm(pm, true);
     }
 
     /**
@@ -467,7 +467,7 @@ public class MixedUtils {
      */
     public static GeneralizedSemIm GaussianCategoricalIm(final GeneralizedSemPm pm, final boolean discParamRand) {
 
-        final Map<String, Integer> nodeDists = getNodeDists(pm.getGraph());
+        final Map<String, Integer> nodeDists = MixedUtils.getNodeDists(pm.getGraph());
 
         final GeneralizedSemIm im = new GeneralizedSemIm(pm);
         //System.out.println(im);
@@ -491,7 +491,7 @@ public class MixedUtils {
                     continue;
                 }
 
-                final List<String> params = getEdgeParams(n, par, pm);
+                final List<String> params = MixedUtils.getEdgeParams(n, par, pm);
                 // just use the first parameter as the "weight" for the whole edge
                 double w = im.getParameterValue(params.get(0));
                 // double[] newWeights;
@@ -520,7 +520,7 @@ public class MixedUtils {
                     }
 
                     if (discParamRand)
-                        weightInds = arrayPermute(weightInds);
+                        weightInds = MixedUtils.arrayPermute(weightInds);
 
 
                     for (int i = 0; i < cL; i++) {
@@ -537,9 +537,9 @@ public class MixedUtils {
                     final double[] newWeights;
                     final int curL = (pL > 0 ? pL : cL);
                     if (discParamRand)
-                        newWeights = generateMixedEdgeParams(w, curL);
+                        newWeights = MixedUtils.generateMixedEdgeParams(w, curL);
                     else
-                        newWeights = evenSplitVector(w, curL);
+                        newWeights = MixedUtils.evenSplitVector(w, curL);
 
                     int count = 0;
                     for (final String p : params) {
@@ -563,7 +563,7 @@ public class MixedUtils {
     public static List<String> getEdgeParams(final String s1, final String s2, final GeneralizedSemPm pm) {
         final Node n1 = pm.getNode(s1);
         final Node n2 = pm.getNode(s2);
-        return getEdgeParams(n1, n2, pm);
+        return MixedUtils.getEdgeParams(n1, n2, pm);
     }
 
     //randomly permute an array of doubles
@@ -707,7 +707,7 @@ public class MixedUtils {
                 nd.put(n.getName(), "Norm");
             }
         }
-        return allEdgeStats(pT, pE, nd);
+        return MixedUtils.allEdgeStats(pT, pE, nd);
     }
 
     // break out stats by node distributions, here only "Norm" and "Disc"
@@ -873,7 +873,7 @@ public class MixedUtils {
     public static boolean isColinear(final DataSet ds, final boolean verbose) {
         final List<Node> nodes = ds.getVariables();
         boolean isco = false;
-        final CorrelationMatrix cor = new CorrelationMatrix(makeContinuousData(ds));
+        final CorrelationMatrix cor = new CorrelationMatrix(MixedUtils.makeContinuousData(ds));
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
                 if (cor.getValue(i, j) == 1) {
@@ -953,7 +953,7 @@ public class MixedUtils {
     }
 
     public static DoubleMatrix2D graphToMatrix(final Graph graph) {
-        return graphToMatrix(graph, 1, 1);
+        return MixedUtils.graphToMatrix(graph, 1, 1);
     }
 
     /**
@@ -1024,7 +1024,7 @@ public class MixedUtils {
         nd.put("X4", 4);
         nd.put("X5", 0);
 
-        g = makeMixedGraph(g, nd);
+        g = MixedUtils.makeMixedGraph(g, nd);
 
         /*Graph g = new EdgeListGraph();
         g.addNode(new ContinuousVariable("X1"));
@@ -1037,7 +1037,7 @@ public class MixedUtils {
         g.addDirectedEdge(g.getNode("X3"), g.getNode("X4"));
         g.addDirectedEdge(g.getNode("X4"), g.getNode("X5"));
         */
-        final GeneralizedSemPm pm = GaussianCategoricalPm(g, "Split(-1.5,-1,1,1.5)");
+        final GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(g, "Split(-1.5,-1,1,1.5)");
         System.out.println(pm);
 
         System.out.println("STARTS WITH");
@@ -1056,7 +1056,7 @@ public class MixedUtils {
         System.out.println(pm);
 
 
-        final GeneralizedSemIm im = GaussianCategoricalIm(pm);
+        final GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
         System.out.println(im);
 
         final int samps = 15;

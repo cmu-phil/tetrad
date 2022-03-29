@@ -43,22 +43,22 @@ class IndTestMenuItems {
 
         if (dataModel == null &&
                 setter.getSourceGraph() != null) {
-            addGraphTestMenuItems(test, setter);
+            IndTestMenuItems.addGraphTestMenuItems(test, setter);
         } else if (dataModel instanceof DataSet) {
             final DataSet _dataSet = (DataSet) dataModel;
 
             if (_dataSet.isContinuous()) {
-                addContinuousTestMenuItems(test, setter);
+                IndTestMenuItems.addContinuousTestMenuItems(test, setter);
             } else if (_dataSet.isDiscrete()) {
-                addDiscreteTestMenuItems(test, setter);
+                IndTestMenuItems.addDiscreteTestMenuItems(test, setter);
             } else if (_dataSet.isMixed()) {
-                addMixedTestMenuItems(test, setter);
+                IndTestMenuItems.addMixedTestMenuItems(test, setter);
             } else {
                 throw new IllegalArgumentException(
                         "Don't have any tests for mixed data sets right now.");
             }
         } else if (dataModel instanceof ICovarianceMatrix) {
-            addCovMatrixTestMenuItems(test, setter);
+            IndTestMenuItems.addCovMatrixTestMenuItems(test, setter);
         } else if (dataModel instanceof DataModelList) {
             final DataModelList dataSets = (DataModelList) dataModel;
 
@@ -69,7 +69,7 @@ class IndTestMenuItems {
                 if (!dataSet.isContinuous()) continuous = false;
             }
 
-            addMultiTestMenuItems(test, setter);
+            IndTestMenuItems.addMultiTestMenuItems(test, setter);
         }
     }
 

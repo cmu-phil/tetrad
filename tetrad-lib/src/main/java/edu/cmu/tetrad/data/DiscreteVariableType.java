@@ -71,11 +71,11 @@ public final class DiscreteVariableType implements TetradSerializable {
 
     // Declarations required for serialization.
     private static int nextOrdinal = 0;
-    private final int ordinal = nextOrdinal++;
-    private static final DiscreteVariableType[] TYPES = {NOMINAL, ORDINAL};
+    private final int ordinal = DiscreteVariableType.nextOrdinal++;
+    private static final DiscreteVariableType[] TYPES = {DiscreteVariableType.NOMINAL, DiscreteVariableType.ORDINAL};
 
     final Object readResolve() throws ObjectStreamException {
-        return TYPES[this.ordinal]; // Canonicalize.
+        return DiscreteVariableType.TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

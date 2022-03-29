@@ -57,7 +57,7 @@ public class IonHittingSet {
         final List<Set<GraphChange>> F;
 
         /* Enhancement Step 3 */
-        F = precompute(Forig);
+        F = IonHittingSet.precompute(Forig);
 
         /* Revised Step 1 */
         currentLevel.addFirst(new HsNode(new GraphChange(), 0));
@@ -69,10 +69,10 @@ public class IonHittingSet {
             final HsNode n = currentLevel.removeFirst();
 
             /* check redundency here in case of new hitting sets since node creation */
-            if (nodeRedundant(n, hittingSets)) {
+            if (IonHittingSet.nodeRedundant(n, hittingSets)) {
             } // do nothing
             else {
-                final int nextUCSigma = findNextUCSigma(F, n);
+                final int nextUCSigma = IonHittingSet.findNextUCSigma(F, n);
 
                 /* Path intersects with all elements of F, add to hittingSets */
                 if (nextUCSigma == -1)
@@ -88,7 +88,7 @@ public class IonHittingSet {
 
                         if (newPath.isConsistent(nextLCSigma)) {
                             newPath.union(nextLCSigma);
-                            if (pathNecessary(newPath, nextLevel))
+                            if (IonHittingSet.pathNecessary(newPath, nextLevel))
                                 nextLevel.add(new HsNode(newPath, n.getLabel()));
                         }
                     }

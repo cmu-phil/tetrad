@@ -334,7 +334,7 @@ public class TestSemIm {
         final Parameters params = new Parameters();
         final SemIm semIm = new SemIm(semPm, params);
 
-        final SemIm modified = modifySemImStandardizedInterventionOnTargetParents(semIm, x4);
+        final SemIm modified = TestSemIm.modifySemImStandardizedInterventionOnTargetParents(semIm, x4);
 
         modified.simulateData(1000, false);
 

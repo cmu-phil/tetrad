@@ -101,12 +101,12 @@ public class EdgeTypeTable extends JPanel {
                 return comp;
             });
 
-            tableModel.setColumnIdentifiers(EDGES_AND_EDGE_TYPES);
+            tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES_AND_EDGE_TYPES);
 
             final List<Edge> edges = graph.getEdges().stream().collect(Collectors.toList());
             Edges.sortEdges(edges);
             edges.forEach(edge -> {
-                final String[] rowData = new String[EDGES_AND_EDGE_TYPES.length];
+                final String[] rowData = new String[EdgeTypeTable.EDGES_AND_EDGE_TYPES.length];
                 addEdgeData(edge, rowData);
                 addEdgeProbabilityData(edge, rowData);
 
@@ -117,12 +117,12 @@ public class EdgeTypeTable extends JPanel {
 
             this.table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-            tableModel.setColumnIdentifiers(EDGES);
+            tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES);
 
             final List<Edge> edges = graph.getEdges().stream().collect(Collectors.toList());
             Edges.sortEdges(edges);
             edges.forEach(edge -> {
-                final String[] rowData = new String[EDGES.length];
+                final String[] rowData = new String[EdgeTypeTable.EDGES.length];
                 addEdgeData(edge, rowData);
 
                 tableModel.addRow(rowData);

@@ -582,7 +582,7 @@ public class IndependenceFactsEditor extends JPanel {
 
         LOOP:
         while ((choice1 = gen1.next()) != null) {
-            final List<String> s2 = asList(choice1, vars1);
+            final List<String> s2 = IndependenceFactsEditor.asList(choice1, vars1);
 
             final List<String> vars2 = new ArrayList<>(vars1);
             vars2.removeAll(s2);
@@ -591,7 +591,7 @@ public class IndependenceFactsEditor extends JPanel {
             int[] choice2;
 
             while ((choice2 = gen2.next()) != null) {
-                final List<String> s3 = asList(choice2, vars2);
+                final List<String> s3 = IndependenceFactsEditor.asList(choice2, vars2);
 
                 final List<String> vars3 = new ArrayList<>(vars2);
                 vars3.removeAll(s3);
@@ -645,7 +645,7 @@ public class IndependenceFactsEditor extends JPanel {
                         }
 
                         this.results.get(this.results.size() - 1).add(new IndependenceResult(this.results.size(),
-                                factString(x, y, z), indep, pValue));
+                                IndependenceFactsEditor.factString(x, y, z), indep, pValue));
                     }
 
                     if (this.results.size() > getListLimit()) break LOOP;

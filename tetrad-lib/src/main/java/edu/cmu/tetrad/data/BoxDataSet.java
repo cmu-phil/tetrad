@@ -323,7 +323,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         final Object variable = getVariable(col);
 
         if (variable instanceof ContinuousVariable) {
-            setDouble(row, col, getValueFromObjectContinuous(value));
+            setDouble(row, col, BoxDataSet.getValueFromObjectContinuous(value));
         } else if (variable instanceof DiscreteVariable) {
             setInt(row, col, getValueFromObjectDiscrete(value,
                     (DiscreteVariable) variable));

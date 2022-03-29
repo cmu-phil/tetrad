@@ -50,7 +50,7 @@ public class TetradProperties {
     }
 
     public static TetradProperties getInstance() {
-        return INSTANCE;
+        return TetradProperties.INSTANCE;
     }
 
     public Set<String> getProperties() {

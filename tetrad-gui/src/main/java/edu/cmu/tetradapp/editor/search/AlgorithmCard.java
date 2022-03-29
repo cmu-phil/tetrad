@@ -388,7 +388,7 @@ public class AlgorithmCard extends JPanel {
         try {
             algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         } catch (final IllegalAccessException | InstantiationException exception) {
-            LOGGER.error("", exception);
+            AlgorithmCard.LOGGER.error("", exception);
         }
 
         // Those pairwise algos (R3, RShew, Skew..) require source graph to initialize - Zhou
@@ -451,7 +451,7 @@ public class AlgorithmCard extends JPanel {
                 }
 
             } catch (final IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
-                LOGGER.error("", exception);
+                AlgorithmCard.LOGGER.error("", exception);
                 msg = "";
             }
 
@@ -473,7 +473,7 @@ public class AlgorithmCard extends JPanel {
                             JOptionPane.showMessageDialog(this.desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
                         }
                     } catch (final IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
-                        LOGGER.error("", exception);
+                        AlgorithmCard.LOGGER.error("", exception);
                     }
                 }
             }

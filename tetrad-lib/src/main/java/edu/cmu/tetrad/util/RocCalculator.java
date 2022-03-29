@@ -35,7 +35,7 @@ public class RocCalculator {
     public static final int ASCENDING = 0;
     private static final int DESCENDING = 1;
 
-    private int direction = ASCENDING;
+    private int direction = RocCalculator.ASCENDING;
 
     private int[][] points;
     private final ScoreCategoryPair[] scoreCatPairs;
@@ -62,7 +62,7 @@ public class RocCalculator {
                     "number of items as inCategory array.");
         }
 
-        if (direction != ASCENDING && direction != DESCENDING) {
+        if (direction != RocCalculator.ASCENDING && direction != RocCalculator.DESCENDING) {
             throw new IllegalArgumentException(
                     "Direction must be ASCENDING or " + "DESCENDING.");
         }
@@ -168,7 +168,7 @@ public class RocCalculator {
 
         //If a higher score implies a lower probability that the case has property P
         //reverse the order.
-        if (this.direction == DESCENDING) {
+        if (this.direction == RocCalculator.DESCENDING) {
             final int numPairs = this.scoreCatPairs.length;
             final ScoreCategoryPair[] scpRev = new ScoreCategoryPair[numPairs];
 

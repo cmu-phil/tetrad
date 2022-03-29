@@ -309,7 +309,7 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
     private JComboBox selector() {
         if (this.selector == null) {
             this.selector = new JComboBox();
-            final java.util.List<String> selections = getImpliedSelections();
+            final java.util.List<String> selections = StandardizedSemImImpliedMatricesPanel.getImpliedSelections();
 
             for (final Object selection : selections) {
                 this.selector.addItem(selection);
@@ -318,7 +318,7 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
             this.selector.addItemListener(new ItemListener() {
                 public void itemStateChanged(final ItemEvent e) {
                     final String item = (String) e.getItem();
-                    setMatrixSelection(getImpliedSelections().indexOf(item));
+                    setMatrixSelection(StandardizedSemImImpliedMatricesPanel.getImpliedSelections().indexOf(item));
                 }
             });
         }

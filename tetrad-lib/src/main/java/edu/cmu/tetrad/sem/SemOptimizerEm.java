@@ -144,7 +144,7 @@ public class SemOptimizerEm implements SemOptimizer {
             maximization();
             updateMatrices();
             newScore = scoreSemIm();
-        } while (newScore > score + FUNC_TOLERANCE);
+        } while (newScore > score + SemOptimizerEm.FUNC_TOLERANCE);
 
         semIm.getSemPm().getGraph().setShowErrorTerms(showErrors);
     }

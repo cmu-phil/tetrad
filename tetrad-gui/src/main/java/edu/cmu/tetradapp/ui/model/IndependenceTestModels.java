@@ -125,7 +125,7 @@ public final class IndependenceTestModels {
     }
 
     public static IndependenceTestModels getInstance() {
-        return INSTANCE;
+        return IndependenceTestModels.INSTANCE;
     }
 
     public List<IndependenceTestModel> getModels() {

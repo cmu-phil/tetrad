@@ -19,38 +19,38 @@ import java.util.Set;
 public class JsonUtils {
 
     public static Graph parseJSONObjectToTetradGraph(final String jsonResponse) {
-        return parseJSONObjectToTetradGraph(new JSONObject(jsonResponse));
+        return JsonUtils.parseJSONObjectToTetradGraph(new JSONObject(jsonResponse));
     }
 
     public static Graph parseJSONObjectToTetradGraph(final JSONObject jObj) {
         if (!jObj.isNull("graph")) {
-            return parseJSONObjectToTetradGraph(jObj.getJSONObject("graph"));
+            return JsonUtils.parseJSONObjectToTetradGraph(jObj.getJSONObject("graph"));
         }
 
         // Node
-        final List<Node> nodes = parseJSONArrayToTetradNodes(jObj.getJSONArray("nodes"));
+        final List<Node> nodes = JsonUtils.parseJSONArrayToTetradNodes(jObj.getJSONArray("nodes"));
         final EdgeListGraph graph = new EdgeListGraph(nodes);
 
         // Edge
-        final Set<Edge> edges = parseJSONArrayToTetradEdges(graph, jObj.getJSONArray("edgesSet"));
+        final Set<Edge> edges = JsonUtils.parseJSONArrayToTetradEdges(graph, jObj.getJSONArray("edgesSet"));
         for (final Edge edge : edges) {
             graph.addEdge(edge);
         }
 
         // ambiguousTriples
-        final Set<Triple> ambiguousTriples = parseJSONArrayToTetradTriples(jObj.getJSONArray("ambiguousTriples"));
+        final Set<Triple> ambiguousTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("ambiguousTriples"));
         for (final Triple triple : ambiguousTriples) {
             graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
         }
 
         // underLineTriples
-        final Set<Triple> underLineTriples = parseJSONArrayToTetradTriples(jObj.getJSONArray("underLineTriples"));
+        final Set<Triple> underLineTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("underLineTriples"));
         for (final Triple triple : underLineTriples) {
             graph.addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
 
         // dottedUnderLineTriples
-        final Set<Triple> dottedUnderLineTriples = parseJSONArrayToTetradTriples(jObj.getJSONArray("dottedUnderLineTriples"));
+        final Set<Triple> dottedUnderLineTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("dottedUnderLineTriples"));
         for (final Triple triple : dottedUnderLineTriples) {
             graph.addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
@@ -60,7 +60,7 @@ public class JsonUtils {
         graph.setStuffRemovedSinceLastTripleAccess(stuffRemovedSinceLastTripleAccess);
 
         // highlightedEdges
-        final Set<Edge> highlightedEdges = parseJSONArrayToTetradEdges(graph, jObj.getJSONArray("highlightedEdges"));
+        final Set<Edge> highlightedEdges = JsonUtils.parseJSONArrayToTetradEdges(graph, jObj.getJSONArray("highlightedEdges"));
         for (final Edge edge : highlightedEdges) {
             graph.setHighlighted(edge, true);
         }
@@ -72,7 +72,7 @@ public class JsonUtils {
         final Set<Triple> triples = new HashSet<>();
 
         for (int i = 0; i < jArray.length(); i++) {
-            final Triple triple = parseJSONArrayToTetradTriple(jArray.getJSONObject(i));
+            final Triple triple = JsonUtils.parseJSONArrayToTetradTriple(jArray.getJSONObject(i));
             triples.add(triple);
         }
 
@@ -80,9 +80,9 @@ public class JsonUtils {
     }
 
     public static Triple parseJSONArrayToTetradTriple(final JSONObject jObj) {
-        final Node x = parseJSONObjectToTetradNode(jObj.getJSONObject("x"));
-        final Node y = parseJSONObjectToTetradNode(jObj.getJSONObject("y"));
-        final Node z = parseJSONObjectToTetradNode(jObj.getJSONObject("z"));
+        final Node x = JsonUtils.parseJSONObjectToTetradNode(jObj.getJSONObject("x"));
+        final Node y = JsonUtils.parseJSONObjectToTetradNode(jObj.getJSONObject("y"));
+        final Node z = JsonUtils.parseJSONObjectToTetradNode(jObj.getJSONObject("z"));
 
         return new Triple(x, y, z);
     }
@@ -91,7 +91,7 @@ public class JsonUtils {
         final Set<Edge> edges = new HashSet<>();
 
         for (int i = 0; i < jArray.length(); i++) {
-            final Edge edge = parseJSONObjectToTetradEdge(graph, jArray.getJSONObject(i));
+            final Edge edge = JsonUtils.parseJSONObjectToTetradEdge(graph, jArray.getJSONObject(i));
             edges.add(edge);
         }
 
@@ -110,7 +110,7 @@ public class JsonUtils {
             final JSONArray jArray = jObj.getJSONArray("properties");
             if (jArray != null) {
                 for (int i = 0; i < jArray.length(); i++) {
-                    edge.addProperty(parseJSONObjectToEdgeProperty(jArray.getString(i)));
+                    edge.addProperty(JsonUtils.parseJSONObjectToEdgeProperty(jArray.getString(i)));
                 }
             }
         } catch (final JSONException e) {
@@ -123,7 +123,7 @@ public class JsonUtils {
             final JSONArray jArray = jObj.getJSONArray("edgeTypeProbabilities");
             if (jArray != null) {
                 for (int i = 0; i < jArray.length(); i++) {
-                    edge.addEdgeTypeProbability(parseJSONObjectToEdgeTypeProperty(jArray.getJSONObject(i)));
+                    edge.addEdgeTypeProbability(JsonUtils.parseJSONObjectToEdgeTypeProperty(jArray.getJSONObject(i)));
                 }
             }
         } catch (final JSONException e) {
@@ -168,7 +168,7 @@ public class JsonUtils {
             final JSONArray jArray = jObj.getJSONArray("properties");
             if (jArray != null) {
                 for (int i = 0; i < jArray.length(); i++) {
-                    edgeTypeProbability.addProperty(parseJSONObjectToEdgeProperty(jArray.getString(i)));
+                    edgeTypeProbability.addProperty(JsonUtils.parseJSONObjectToEdgeProperty(jArray.getString(i)));
                 }
             }
         } catch (final JSONException e) {
@@ -198,7 +198,7 @@ public class JsonUtils {
         final List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < jArray.length(); i++) {
-            final Node node = parseJSONObjectToTetradNode(jArray.getJSONObject(i));
+            final Node node = JsonUtils.parseJSONObjectToTetradNode(jArray.getJSONObject(i));
             nodes.add(node);
         }
 

@@ -161,7 +161,7 @@ public class GraphWithParameters {
             System.out.print("thisEdge = " + thisEdge);
 
             //is it in this DAG?
-            final Edge standardEdge = getCorrespondingEdge(standardDag, thisEdge);
+            final Edge standardEdge = GraphWithParameters.getCorrespondingEdge(standardDag, thisEdge);
             System.out.println(", standardEdge = " + standardEdge);
 
             final boolean adjCorrect = (standardEdge != null);
@@ -176,7 +176,7 @@ public class GraphWithParameters {
             System.out.print("standardEdge = " + standardEdge);
 
             //is it in this DAG?
-            final Edge thisEdge = getCorrespondingEdge(this.getGraph(), standardEdge);
+            final Edge thisEdge = GraphWithParameters.getCorrespondingEdge(this.getGraph(), standardEdge);
             System.out.println(", thisEdge = " + thisEdge);
 
             final boolean adjCorrect = (thisEdge != null);
@@ -211,7 +211,7 @@ public class GraphWithParameters {
 
         for (final Edge standardEdge : standardGraph.getEdges()) { //for each edge in the "correct" graph
 
-            final Edge thisEdge = getCorrespondingEdge(this.getGraph(), standardEdge);
+            final Edge thisEdge = GraphWithParameters.getCorrespondingEdge(this.getGraph(), standardEdge);
             System.out.print("standardEdge = " + standardEdge +
                     (standardEdge == null ? "" : " (directed = " + standardEdge.isDirected()));
             System.out.println("), thisEdge = " + thisEdge +
@@ -230,7 +230,7 @@ public class GraphWithParameters {
                 }
             } else { //standardEdge is directed
                 if (thisEdge.isDirected()) { //estimate edge is directed: compare direction
-                    if (getCorrespondingDirectedEdge(this.getGraph(), standardEdge) != null) { //there is a corresponding edge pointing "forward"
+                    if (GraphWithParameters.getCorrespondingDirectedEdge(this.getGraph(), standardEdge) != null) { //there is a corresponding edge pointing "forward"
                         this.oriCorrect++;
                         this.correctDirectedOrientationEdges.add(thisEdge);
                     } else { //standardEdge is undirected, is directed
@@ -266,10 +266,10 @@ public class GraphWithParameters {
         final List<Node> nodes = getGraph().getNodes();
         for (int i = 0; i < nodes.size(); i++) { //iterating through each node pair
             final Node node1 = nodes.get(i);
-            final Node realNode1 = getCorrespondingNode(standardGraph.getGraph(), node1);
+            final Node realNode1 = GraphWithParameters.getCorrespondingNode(standardGraph.getGraph(), node1);
             for (int j = 0; j < i; j++) {
                 final Node node2 = nodes.get(j);
-                final Node realNode2 = getCorrespondingNode(standardGraph.getGraph(), node2);
+                final Node realNode2 = GraphWithParameters.getCorrespondingNode(standardGraph.getGraph(), node2);
 
                 System.out.println("node1 = " + node1 + "  node2 = " + node2);
                 final double coeff12 = getDirectedEdgeCoeff(node1, node2);
@@ -310,11 +310,11 @@ public class GraphWithParameters {
             final Node node2Edges = edge.getNode2();
 
             System.out.println("node1Edges = " + node1Edges + "  node2Edges = " + node2Edges);
-            final Node node1this = getCorrespondingNode(this.getGraph(), node1Edges);
-            final Node node2this = getCorrespondingNode(this.getGraph(), node2Edges);
+            final Node node1this = GraphWithParameters.getCorrespondingNode(this.getGraph(), node1Edges);
+            final Node node2this = GraphWithParameters.getCorrespondingNode(this.getGraph(), node2Edges);
             final double coeff12 = getDirectedEdgeCoeff(node1this, node2this);
-            final Node node1sta = getCorrespondingNode(standardGraph.getGraph(), node1Edges);
-            final Node node2sta = getCorrespondingNode(standardGraph.getGraph(), node2Edges);
+            final Node node1sta = GraphWithParameters.getCorrespondingNode(standardGraph.getGraph(), node1Edges);
+            final Node node2sta = GraphWithParameters.getCorrespondingNode(standardGraph.getGraph(), node2Edges);
             final double realCoeff12 = standardGraph.getDirectedEdgeCoeff(node1sta, node2sta);
             final double err12 = java.lang.Math.pow(coeff12 - realCoeff12, 2);
             System.out.println("err12 = " + err12);
@@ -364,7 +364,7 @@ public class GraphWithParameters {
         System.out.println("correctOrientationEdges = " + this.correctDirectedOrientationEdges);
         for (final Edge edge : edgesToEvaluate) {
             final double thisCoeff = this.getWeightHash().get(edge);
-            final Edge standardEdge = getCorrespondingEdge(standardGraph.getGraph(), edge);
+            final Edge standardEdge = GraphWithParameters.getCorrespondingEdge(standardGraph.getGraph(), edge);
             final double standardCoeff = standardGraph.getWeightHash().get(standardEdge);
             final double diff = thisCoeff - standardCoeff;
             System.out.println("thisEdge " + edge + ": " + thisCoeff + "   err = " + diff);
@@ -400,8 +400,8 @@ public class GraphWithParameters {
 
     public static Edge getCorrespondingEdge(final Graph graph, final Edge edge) {
 //		System.out.println("entered getCorrespondingEdge: edge = " + edge);
-        final Node node1 = getCorrespondingNode(graph, edge.getNode1());
-        final Node node2 = getCorrespondingNode(graph, edge.getNode2());
+        final Node node1 = GraphWithParameters.getCorrespondingNode(graph, edge.getNode1());
+        final Node node2 = GraphWithParameters.getCorrespondingNode(graph, edge.getNode2());
         final Edge result = graph.getEdge(node1, node2);
         return result;
     }
@@ -425,7 +425,7 @@ public class GraphWithParameters {
     //does the graph have an edge similar to 'edge'?
 
     private static boolean hasCorrespondingAdjacency(final Graph graph, final Edge edge) {
-        final Edge corrEdge = getCorrespondingEdge(graph, edge);
+        final Edge corrEdge = GraphWithParameters.getCorrespondingEdge(graph, edge);
         return corrEdge != null;
     }
 

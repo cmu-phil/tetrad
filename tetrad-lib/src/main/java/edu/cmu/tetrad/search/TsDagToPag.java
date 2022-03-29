@@ -231,8 +231,8 @@ public final class TsDagToPag {
     }
 
     private boolean foundCollider(final Graph dag, final Node a, final Node b, final Node c) {
-        final boolean ipba = existsInducingPathInto(b, a, dag, this.knowledge);
-        final boolean ipbc = existsInducingPathInto(b, c, dag, this.knowledge);
+        final boolean ipba = TsDagToPag.existsInducingPathInto(b, a, dag, this.knowledge);
+        final boolean ipbc = TsDagToPag.existsInducingPathInto(b, c, dag, this.knowledge);
 
         if (!(ipba && ipbc)) {
             printTrueDefCollider(a, b, c, false);
@@ -269,7 +269,7 @@ public final class TsDagToPag {
             final Edge edge = graph.getEdge(x, b);
             if (!edge.pointsTowards(x)) continue;
 
-            if (existsInducingPathVisitts(graph, x, b, x, y, path, knowledge)) {
+            if (TsDagToPag.existsInducingPathVisitts(graph, x, b, x, y, path, knowledge)) {
                 return true;
             }
         }
@@ -392,7 +392,7 @@ public final class TsDagToPag {
                 }
             }
 
-            if (existsInducingPathVisitts(graph, b, c, x, y, path, knowledge)) {
+            if (TsDagToPag.existsInducingPathVisitts(graph, b, c, x, y, path, knowledge)) {
                 return true;
             }
         }

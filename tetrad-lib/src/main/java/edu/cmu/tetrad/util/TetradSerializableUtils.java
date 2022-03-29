@@ -189,7 +189,7 @@ public class TetradSerializableUtils {
                     continue;
                 }
 
-                for (final Class safelySerializableClass : safelySerializableTypes) {
+                for (final Class safelySerializableClass : TetradSerializableUtils.safelySerializableTypes) {
                     if (safelySerializableClass.isAssignableFrom(type)) {
                         continue FIELDS;
                     }

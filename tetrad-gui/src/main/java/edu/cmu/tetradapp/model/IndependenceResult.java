@@ -77,7 +77,7 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     public String toString() {
-        return "Result: " + getFact() + "\t" + getType() + "\t" + nf.format(getpValue());
+        return "Result: " + getFact() + "\t" + getType() + "\t" + IndependenceResult.nf.format(getpValue());
     }
 }
 

@@ -60,19 +60,19 @@ public class TestIndexedConnectivity extends TestCase {
 
         System.out.println(indexedConnectivity);
 
-        assertEquals("G1", indexedConnectivity.getFactor(0));
-        assertEquals("G2", indexedConnectivity.getFactor(1));
-        assertEquals("G3", indexedConnectivity.getFactor(2));
+        TestCase.assertEquals("G1", indexedConnectivity.getFactor(0));
+        TestCase.assertEquals("G2", indexedConnectivity.getFactor(1));
+        TestCase.assertEquals("G3", indexedConnectivity.getFactor(2));
 
-        assertEquals(2, indexedConnectivity.getParent(0, 0).getIndex());
-        assertEquals(0, indexedConnectivity.getParent(1, 0).getIndex());
-        assertEquals(1, indexedConnectivity.getParent(2, 0).getIndex());
-        assertEquals(2, indexedConnectivity.getParent(2, 1).getIndex());
+        TestCase.assertEquals(2, indexedConnectivity.getParent(0, 0).getIndex());
+        TestCase.assertEquals(0, indexedConnectivity.getParent(1, 0).getIndex());
+        TestCase.assertEquals(1, indexedConnectivity.getParent(2, 0).getIndex());
+        TestCase.assertEquals(2, indexedConnectivity.getParent(2, 1).getIndex());
 
-        assertEquals(1, indexedConnectivity.getParent(0, 0).getLag());
-        assertEquals(2, indexedConnectivity.getParent(1, 0).getLag());
-        assertEquals(3, indexedConnectivity.getParent(2, 0).getLag());
-        assertEquals(4, indexedConnectivity.getParent(2, 1).getLag());
+        TestCase.assertEquals(1, indexedConnectivity.getParent(0, 0).getLag());
+        TestCase.assertEquals(2, indexedConnectivity.getParent(1, 0).getLag());
+        TestCase.assertEquals(3, indexedConnectivity.getParent(2, 0).getLag());
+        TestCase.assertEquals(4, indexedConnectivity.getParent(2, 1).getLag());
     }
 
     /**

@@ -155,27 +155,27 @@ public class TestMeasurementSimulator extends TestCase {
     public void testDefaultParameterSettings() {
 
         setDefaultParameters();
-        assertEquals(10.0, this.simulator.getDishDishVariability(), 0.0001);
-        assertEquals(4, this.simulator.getNumSamplesPerDish());
-        assertEquals(0.025, this.simulator.getSampleSampleVariability(),
+        TestCase.assertEquals(10.0, this.simulator.getDishDishVariability(), 0.0001);
+        TestCase.assertEquals(4, this.simulator.getNumSamplesPerDish());
+        TestCase.assertEquals(0.025, this.simulator.getSampleSampleVariability(),
                 0.0001);
-        assertEquals(0.1, this.simulator.getChipChipVariability(), 0.0001);
-        assertEquals(0.025, this.simulator.getPixelDigitalization(), 0.0001);
-        assertEquals(1, this.simulator.getNumDishes());
-        assertEquals(10000, this.simulator.getNumCellsPerDish());
-        assertEquals(4, this.simulator.getStepsGenerated());
-        assertEquals(1, this.simulator.getFirstStepStored());
-        assertEquals(1, this.simulator.getInterval());
-        assertEquals(false, this.simulator.isRawDataSaved());
-        assertEquals(true, this.simulator.isInitSync());
+        TestCase.assertEquals(0.1, this.simulator.getChipChipVariability(), 0.0001);
+        TestCase.assertEquals(0.025, this.simulator.getPixelDigitalization(), 0.0001);
+        TestCase.assertEquals(1, this.simulator.getNumDishes());
+        TestCase.assertEquals(10000, this.simulator.getNumCellsPerDish());
+        TestCase.assertEquals(4, this.simulator.getStepsGenerated());
+        TestCase.assertEquals(1, this.simulator.getFirstStepStored());
+        TestCase.assertEquals(1, this.simulator.getInterval());
+        TestCase.assertEquals(false, this.simulator.isRawDataSaved());
+        TestCase.assertEquals(true, this.simulator.isInitSync());
 
         // Make sure the time steps are 1, 2, 3, 4.
         final int[] timeSteps = this.simulator.getTimeSteps();
 
-        assertEquals(4, timeSteps.length);
+        TestCase.assertEquals(4, timeSteps.length);
 
         for (int i = 0; i < timeSteps.length; i++) {
-            assertEquals(i + 1, timeSteps[i]);
+            TestCase.assertEquals(i + 1, timeSteps[i]);
         }
     }
 
@@ -197,9 +197,9 @@ public class TestMeasurementSimulator extends TestCase {
         final double[][][] rawData = this.simulator.getRawData();
 
         // (Test the dimensions.)
-        assertEquals(3, rawData.length);              // # variables.
-        assertEquals(4, rawData[0].length);           // # time steps.
-        assertEquals(10000, rawData[0][0].length);    // # cells / dish
+        TestCase.assertEquals(3, rawData.length);              // # variables.
+        TestCase.assertEquals(4, rawData[0].length);           // # time steps.
+        TestCase.assertEquals(10000, rawData[0][0].length);    // # cells / dish
 
         // The test is to see whether Gene 1 at time step 2 has a
         // standard deviation of 0.05. Of course the gene and time
@@ -210,7 +210,7 @@ public class TestMeasurementSimulator extends TestCase {
         final double stdev = Descriptive.standardDeviation(
                 Descriptive.variance(rawData[0][1].length, sum, sumOfSquares));
 
-        assertEquals(0.05, stdev, 0.01);
+        TestCase.assertEquals(0.05, stdev, 0.01);
     }
 
     /**
@@ -258,8 +258,8 @@ public class TestMeasurementSimulator extends TestCase {
         final double gene3time1mean =
                 Descriptive.mean(new DoubleArrayList(measuredData[2][0]));
 
-        assertEquals(Math.abs(0.1 * gene2time1mean), gene2time1sd, 0.03);
-        assertEquals(Math.abs(0.1 * gene3time1mean), gene3time1sd, 0.03);
+        TestCase.assertEquals(Math.abs(0.1 * gene2time1mean), gene2time1sd, 0.03);
+        TestCase.assertEquals(Math.abs(0.1 * gene3time1mean), gene3time1sd, 0.03);
     }
 
     /**
@@ -302,8 +302,8 @@ public class TestMeasurementSimulator extends TestCase {
                 Descriptive.variance(measuredData[2][0].length, sum1,
                         sumOfSquares1));
 
-        assertEquals(0.2, gene2time1sd, 0.02);
-        assertEquals(0.2, gene3time1sd, 0.02);
+        TestCase.assertEquals(0.2, gene2time1sd, 0.02);
+        TestCase.assertEquals(0.2, gene3time1sd, 0.02);
     }
 
     /**
@@ -354,9 +354,9 @@ public class TestMeasurementSimulator extends TestCase {
                 Descriptive.variance(measuredData[1][1].length, sum2,
                         sumOfSquares2));
 
-        assertEquals(0.3, gene2time1sd, 0.02);
-        assertEquals(0.3, gene3time1sd, 0.02);
-        assertEquals(0.3, gene1time2sd, 0.02);
+        TestCase.assertEquals(0.3, gene2time1sd, 0.02);
+        TestCase.assertEquals(0.3, gene3time1sd, 0.02);
+        TestCase.assertEquals(0.3, gene1time2sd, 0.02);
     }
 
     /**
@@ -407,9 +407,9 @@ public class TestMeasurementSimulator extends TestCase {
                 Descriptive.variance(measuredData[1][1].length, sum2,
                         sumOfSquares2));
 
-        assertEquals(0.3, gene2time1sd, 0.1);
-        assertEquals(0.3, gene3time1sd, 0.1);
-        assertEquals(0.3, gene1time2sd, 0.1);
+        TestCase.assertEquals(0.3, gene2time1sd, 0.1);
+        TestCase.assertEquals(0.3, gene3time1sd, 0.1);
+        TestCase.assertEquals(0.3, gene1time2sd, 0.1);
     }
 
     /**

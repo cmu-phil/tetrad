@@ -35,7 +35,7 @@ public final class DisplayNameHandler {
      * Converts the given lagged factor into a display string.
      */
     public static String getDisplayString(final LaggedFactor laggedFactor) {
-        return getDisplayString(laggedFactor.getFactor(),
+        return DisplayNameHandler.getDisplayString(laggedFactor.getFactor(),
                 laggedFactor.getLag());
     }
 
@@ -51,8 +51,8 @@ public final class DisplayNameHandler {
      */
     public static LaggedFactor getLaggedFactor(final String displayString) {
 
-        final String factor = extractFactor_Display(displayString);
-        final int lag = extractLag_Display(displayString);
+        final String factor = DisplayNameHandler.extractFactor_Display(displayString);
+        final int lag = DisplayNameHandler.extractLag_Display(displayString);
 
         return new LaggedFactor(factor, lag);
     }

@@ -215,7 +215,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
         this.workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
             final String propertyName = evt.getPropertyName();
-            if (EVENTS.contains(propertyName)) {
+            if (GraphEditor.EVENTS.contains(propertyName)) {
                 if (getWorkbench() != null) {
                     final Graph targetGraph = (Graph) getWorkbench().getGraph();
 
@@ -470,7 +470,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             editor.setParams(this.parameters);
 
             final EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
-                    "Done", false, GraphEditor.this);
+                    "Done", false, this);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();

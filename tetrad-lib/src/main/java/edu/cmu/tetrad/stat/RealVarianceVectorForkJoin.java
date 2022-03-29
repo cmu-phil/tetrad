@@ -19,6 +19,7 @@
 package edu.cmu.tetrad.stat;
 
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 /**
@@ -99,7 +100,7 @@ public class RealVarianceVectorForkJoin implements RealVariance {
                 computeVariance();
             } else {
                 final int middle = (this.end + this.start) / 2;
-                invokeAll(new VarianceAction(this.data, this.means, this.biasCorrected, this.start, middle), new VarianceAction(this.data, this.means, this.biasCorrected, middle + 1, this.end));
+                ForkJoinTask.invokeAll(new VarianceAction(this.data, this.means, this.biasCorrected, this.start, middle), new VarianceAction(this.data, this.means, this.biasCorrected, middle + 1, this.end));
             }
         }
 
@@ -141,7 +142,7 @@ public class RealVarianceVectorForkJoin implements RealVariance {
                 computeMean();
             } else {
                 final int middle = (this.end + this.start) / 2;
-                invokeAll(new MeanAction(this.data, this.means, this.start, middle), new MeanAction(this.data, this.means, middle + 1, this.end));
+                ForkJoinTask.invokeAll(new MeanAction(this.data, this.means, this.start, middle), new MeanAction(this.data, this.means, middle + 1, this.end));
             }
         }
     }

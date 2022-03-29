@@ -388,7 +388,7 @@ class ExpressionEditor extends JPanel {
 
         if (!this.selections.isEmpty()) {
             final Selection sel = this.selections.get(0);
-            this.expression.setSelectionColor(SELECTION);
+            this.expression.setSelectionColor(ExpressionEditor.SELECTION);
             this.expression.select(sel.x, sel.y);
             this.expression.grabFocus();
         }

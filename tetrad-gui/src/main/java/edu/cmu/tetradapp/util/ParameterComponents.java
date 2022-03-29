@@ -63,7 +63,7 @@ public final class ParameterComponents {
         return params.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescs.get(e)),
+                        e -> ParameterComponents.createParameterComponent(e, parameters, paramDescs.get(e)),
                         (u, v) -> {
                             throw new IllegalStateException(String.format("Duplicate key %s.", u));
                         },
@@ -198,15 +198,15 @@ public final class ParameterComponents {
         if (defaultValue instanceof Double) {
             final double lowerBoundDouble = paramDesc.getLowerBoundDouble();
             final double upperBoundDouble = paramDesc.getUpperBoundDouble();
-            component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+            component = ParameterComponents.getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
         } else if (defaultValue instanceof Integer) {
             final int lowerBoundInt = paramDesc.getLowerBoundInt();
             final int upperBoundInt = paramDesc.getUpperBoundInt();
-            component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+            component = ParameterComponents.getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
         } else if (defaultValue instanceof Boolean) {
-            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+            component = ParameterComponents.getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
         } else if (defaultValue instanceof String) {
-            component = getStringField(parameter, parameters, (String) defaultValue);
+            component = ParameterComponents.getStringField(parameter, parameters, (String) defaultValue);
         } else {
             throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }

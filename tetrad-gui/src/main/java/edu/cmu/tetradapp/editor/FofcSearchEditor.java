@@ -230,7 +230,7 @@ public class FofcSearchEditor extends JPanel {
         final Thread watcher = new Thread() {
             public void run() {
                 try {
-                    sleep(FofcSearchEditor.this.delay);
+                    Thread.sleep(FofcSearchEditor.this.delay);
                 } catch (final InterruptedException e) {
                     return;
                 }
@@ -277,7 +277,7 @@ public class FofcSearchEditor extends JPanel {
 
                 while (thread().isAlive()) {
                     try {
-                        sleep(200);
+                        Thread.sleep(200);
                     } catch (final InterruptedException e) {
                         return;
                     }

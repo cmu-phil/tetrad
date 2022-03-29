@@ -88,7 +88,7 @@ public class TestSimpleRandomizer extends TestCase {
 
             // Make sure it's not a housekeeping gene.
             if (1 != parents.size()) {
-                assertEquals(indegree, parents.size());
+                TestCase.assertEquals(indegree, parents.size());
             }
         }
     }
@@ -141,7 +141,7 @@ public class TestSimpleRandomizer extends TestCase {
 
             // The mean of the nonhousekeeping genes should be the
             // specified indegree, to within 0.5.
-            assertEquals((double) indegree, mean, 1.2);
+            TestCase.assertEquals((double) indegree, mean, 1.2);
         }
     }
 
@@ -180,7 +180,7 @@ public class TestSimpleRandomizer extends TestCase {
             }
         }
 
-        assertTrue(indegree <= max);
+        TestCase.assertTrue(indegree <= max);
     }
 
     public void tearDown() {

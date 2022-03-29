@@ -142,10 +142,10 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         // Set the "small" size of the frame so that it has sensible
         // bounds when the users unmazimizes it.
         final Dimension fullSize = this.desktopPane.getSize();
-        final int smallSize = Math.min(fullSize.width - MARGIN, fullSize.height
-                - MARGIN);
+        final int smallSize = Math.min(fullSize.width - TetradDesktop.MARGIN, fullSize.height
+                - TetradDesktop.MARGIN);
         final Dimension size = new Dimension(smallSize, smallSize);
-        setGoodBounds(frame, this.desktopPane, size);
+        TetradDesktop.setGoodBounds(frame, this.desktopPane, size);
         this.desktopPane.add(frame);
 
         // Set the frame to be maximized. This step must come after the frame

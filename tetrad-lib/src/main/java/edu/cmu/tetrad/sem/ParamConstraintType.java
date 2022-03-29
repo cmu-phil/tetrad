@@ -86,11 +86,11 @@ public class ParamConstraintType implements TetradSerializable {
 
     // Declarations required for serialization.
     private static int NEXT_ORDINAL = 0;
-    private final int ordinal = NEXT_ORDINAL++;
-    private static final ParamConstraintType[] TYPES = {LT, GT, EQ, NONE};
+    private final int ordinal = ParamConstraintType.NEXT_ORDINAL++;
+    private static final ParamConstraintType[] TYPES = {ParamConstraintType.LT, ParamConstraintType.GT, ParamConstraintType.EQ, ParamConstraintType.NONE};
 
     Object readResolve() throws ObjectStreamException {
-        return TYPES[this.ordinal]; // Canonicalize.
+        return ParamConstraintType.TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

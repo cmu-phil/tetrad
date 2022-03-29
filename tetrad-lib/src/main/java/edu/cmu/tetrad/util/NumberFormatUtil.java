@@ -48,7 +48,7 @@ public class NumberFormatUtil {
      * @return Ibid.
      */
     public static NumberFormatUtil getInstance() {
-        return INSTANCE;
+        return NumberFormatUtil.INSTANCE;
     }
 
     /**

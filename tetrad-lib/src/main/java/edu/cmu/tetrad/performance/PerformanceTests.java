@@ -2218,8 +2218,8 @@ public class PerformanceTests {
                 final Endpoint endpoint1 = refGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
                 final Endpoint endpoint2 = estGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
 
-                final int index1 = getIndex(endpoint1);
-                final int index2 = getIndex(endpoint2);
+                final int index1 = PerformanceTests.getIndex(endpoint1);
+                final int index2 = PerformanceTests.getIndex(endpoint2);
 
                 counts[index1][index2]++;
             }
