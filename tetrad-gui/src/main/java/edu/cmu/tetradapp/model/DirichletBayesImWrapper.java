@@ -51,15 +51,15 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
     /**
      * @serial Cannot be null.
      */
-    private DirichletBayesIm dirichletBayesIm;
+    private final DirichletBayesIm dirichletBayesIm;
 
     //===========================CONSTRUCTORS=============================//
-    public DirichletBayesImWrapper(Simulation simulation) {
+    public DirichletBayesImWrapper(final Simulation simulation) {
         throw new NullPointerException("Sorry, that was not a Dirichlet Bayes IM simulation.");
     }
 
-    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
-                                   Parameters params) {
+    public DirichletBayesImWrapper(final BayesPmWrapper bayesPmWrapper,
+                                   final Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -68,7 +68,7 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
+        final BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
         if (params.getString("initializationMode", "manual").equals("manual")) {
             this.dirichletBayesIm = DirichletBayesIm.blankDirichletIm(bayesPm);
@@ -109,7 +109,7 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
 //    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper, Simulation simulation) {
 //        this(bayesPmWrapper, (DataWrapper) simulation);
 //    }
-    public DirichletBayesImWrapper(DirichletEstimatorWrapper wrapper) {
+    public DirichletBayesImWrapper(final DirichletEstimatorWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -146,24 +146,24 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (dirichletBayesIm == null) {
+        if (this.dirichletBayesIm == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return dirichletBayesIm.getBayesPm().getDag();
+        return this.dirichletBayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -183,7 +183,7 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
         return getGraph().getNodes();
     }
 
-    private void log(DirichletBayesIm im) {
+    private void log(final DirichletBayesIm im) {
         TetradLogger.getInstance().log("info", "Dirichlet Bayes IM");
         TetradLogger.getInstance().log("im", im.toString());
     }

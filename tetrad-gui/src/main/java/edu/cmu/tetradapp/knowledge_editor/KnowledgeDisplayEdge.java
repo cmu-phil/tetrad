@@ -159,7 +159,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * The node that this edge is linked "from."
      */
-    private DisplayNode node1;
+    private final DisplayNode node1;
 
     /**
      * The node that this edge is linked "to."
@@ -219,8 +219,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * @param node2 the 'to' component.
      * @param type  FORBIDDEN or REQUIRED.
      */
-    public KnowledgeDisplayEdge(KnowledgeDisplayNode node1,
-                                KnowledgeDisplayNode node2, int type) {
+    public KnowledgeDisplayEdge(final KnowledgeDisplayNode node1,
+                                final KnowledgeDisplayNode node2, final int type) {
         if (node1 == null) {
             throw new NullPointerException("Node1 must not be null.");
         }
@@ -239,11 +239,11 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         this.mode = ANCHORED_UNSELECTED;
         this.type = type;
 
-        node1.addComponentListener(compHandler);
-        node2.addComponentListener(compHandler);
+        node1.addComponentListener(this.compHandler);
+        node2.addComponentListener(this.compHandler);
 
-        node1.addPropertyChangeListener(propertyChangeHandler);
-        node2.addPropertyChangeListener(propertyChangeHandler);
+        node1.addPropertyChangeListener(this.propertyChangeHandler);
+        node2.addPropertyChangeListener(this.propertyChangeHandler);
 
         resetBounds();
     }
@@ -255,8 +255,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * @param node1 the 'from' component.
      * @param node2 the 'to' component.
      */
-    public KnowledgeDisplayEdge(Edge modelEdge, DisplayNode node1,
-                                DisplayNode node2) {
+    public KnowledgeDisplayEdge(final Edge modelEdge, final DisplayNode node1,
+                                final DisplayNode node2) {
         if (modelEdge == null) {
             throw new NullPointerException("Model edge must not be null.");
         }
@@ -274,12 +274,12 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         this.node2 = node2;
         this.mode = ANCHORED_UNSELECTED;
 
-        node1.addComponentListener(compHandler);
-        node2.addComponentListener(compHandler);
+        node1.addComponentListener(this.compHandler);
+        node2.addComponentListener(this.compHandler);
 
-        KnowledgeModelEdge _modelEdge = (KnowledgeModelEdge) modelEdge;
+        final KnowledgeModelEdge _modelEdge = (KnowledgeModelEdge) modelEdge;
 
-        int edgeType = _modelEdge.getType();
+        final int edgeType = _modelEdge.getType();
         if (edgeType == KnowledgeModelEdge.FORBIDDEN_EXPLICITLY) {
             this.type = FORBIDDEN_EXPLICITLY;
         } else if (edgeType == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
@@ -292,8 +292,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
             this.type = FORBIDDEN_BY_GROUPS;
         }
 
-        node1.addPropertyChangeListener(propertyChangeHandler);
-        node2.addPropertyChangeListener(propertyChangeHandler);
+        node1.addPropertyChangeListener(this.propertyChangeHandler);
+        node2.addPropertyChangeListener(this.propertyChangeHandler);
 
         resetBounds();
     }
@@ -311,8 +311,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * @param mouseTrackPoint the initial value of the mouse track point.
      * @see #updateTrackPoint
      */
-    public KnowledgeDisplayEdge(DisplayNode node1, Point mouseTrackPoint,
-                                int type) {
+    public KnowledgeDisplayEdge(final DisplayNode node1, final Point mouseTrackPoint,
+                                final int type) {
         if (node1 == null) {
             throw new NullPointerException("Node1 must not be null.");
         }
@@ -338,7 +338,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Paints the component.
      */
-    public void paint(Graphics g) {
+    public void paint(final Graphics g) {
 
         // NOTE:  For this component, the resetBounds() methods should ALWAYS
         // be called before repaint().
@@ -347,7 +347,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
             case HALF_ANCHORED:
                 g.setColor(getLineColor());
 
-                Point point = getRelativeMouseTrackPoint();
+                final Point point = getRelativeMouseTrackPoint();
                 setConnectedPoints(calculateEdge(getNode1(), point));
 
                 if (getConnectedPoints() != null) {
@@ -367,7 +367,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
                 break;
 
             case ANCHORED_SELECTED:
-                g.setColor(selectedColor);
+                g.setColor(this.selectedColor);
 
                 setConnectedPoints(calculateEdge(getNode1(), getNode2()));
 
@@ -384,7 +384,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Draws the actual edge.
      */
-    private void drawEdge(Graphics g) {
+    private void drawEdge(final Graphics g) {
         getConnectedPoints().getFrom().translate(-getLocation().x,
                 -getLocation().y);
         getConnectedPoints().getTo().translate(-getLocation().x,
@@ -415,8 +415,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * @param y the y value of the point to be tested.
      * @return true of (x, y) is in the click region, false if not.
      */
-    public boolean contains(int x, int y) {
-        Polygon clickRegion = getClickRegion();
+    public boolean contains(final int x, final int y) {
+        final Polygon clickRegion = getClickRegion();
 
         if (clickRegion != null) {
             return clickRegion.contains(new Point(x, y));
@@ -449,7 +449,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     public final PointPair getPointPair() {
         switch (this.mode) {
             case HALF_ANCHORED:
-                Point point = getRelativeMouseTrackPoint();
+                final Point point = getRelativeMouseTrackPoint();
                 setConnectedPoints(calculateEdge(getNode1(), point));
                 break;
 
@@ -511,12 +511,12 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Sets whether the component is selected.
      */
-    public final void setSelected(boolean selected) {
+    public final void setSelected(final boolean selected) {
         if (selected == isSelected()) {
             return;
         }
 
-        boolean oldSelected = isSelected();
+        final boolean oldSelected = isSelected();
 
         if (this.mode != HALF_ANCHORED) {
             this.mode = (selected ? ANCHORED_SELECTED : ANCHORED_UNSELECTED);
@@ -547,7 +547,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * @throws IllegalStateException if this method is called when this edge is
      *                               not in the HALF_ANCHORED mode.
      */
-    public final void updateTrackPoint(Point p) {
+    public final void updateTrackPoint(final Point p) {
         if (this.mode != HALF_ANCHORED) {
             throw new IllegalStateException(
                     "Cannot call the updateTrackPoint " +
@@ -579,13 +579,13 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * intersections of the edge with node 1 and node 2.
      */
     public final PointPair getConnectedPoints() {
-        return connectedPoints;
+        return this.connectedPoints;
     }
 
     /**
      * Allows subclasses to set what the connected points are.
      */
-    public final void setConnectedPoints(PointPair connectedPoints) {
+    public final void setConnectedPoints(final PointPair connectedPoints) {
         this.connectedPoints = connectedPoints;
     }
 
@@ -594,13 +594,13 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * given relative to the containing component.)
      */
     public final Point getRelativeMouseTrackPoint() {
-        return relativeMouseTrackPoint;
+        return this.relativeMouseTrackPoint;
     }
 
     /**
      * Allows subclasses to set the clickable region is for this component.
      */
-    private void setClickRegion(Polygon clickRegion) {
+    private void setClickRegion(final Polygon clickRegion) {
         this.clickRegion = clickRegion;
     }
 
@@ -614,9 +614,9 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * @return a point pair which represents the connecting line segment through
      * the center of each rectangle touching the edge of each.
      */
-    private PointPair calculateEdge(Component comp1, Component comp2) {
-        Rectangle r1 = comp1.getBounds();
-        Rectangle r2 = comp2.getBounds();
+    private PointPair calculateEdge(final Component comp1, final Component comp2) {
+        final Rectangle r1 = comp1.getBounds();
+        final Rectangle r2 = comp2.getBounds();
         Point c1 = new Point((int) (r1.x + r1.width / 2.0),
                 (int) (r1.y + r1.height / 2.0));
         Point c2 = new Point((int) (r2.x + r2.width / 2.0),
@@ -624,8 +624,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
         double angle = Math.atan2(c1.y - c2.y, c1.x - c2.x);
         angle += Math.PI / 2;
-        Point d = new Point((int) (offset * Math.cos(angle)),
-                (int) (offset * Math.sin(angle)));
+        final Point d = new Point((int) (this.offset * Math.cos(angle)),
+                (int) (this.offset * Math.sin(angle)));
         c1.translate(d.x, d.y);
         c2.translate(d.x, d.y);
 
@@ -654,15 +654,15 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * from a given point p to a given component. Assumes that the component
      * contains the center point of its bounding rectangle.
      */
-    private PointPair calculateEdge(DisplayNode comp, Point p) {
-        Rectangle r = comp.getBounds();
-        Point p1 = new Point((int) (r.x + r.width / 2.0),
+    private PointPair calculateEdge(final DisplayNode comp, final Point p) {
+        final Rectangle r = comp.getBounds();
+        final Point p1 = new Point((int) (r.x + r.width / 2.0),
                 (int) (r.y + r.height / 2.0));
-        Point p2 = new Point(p);
+        final Point p2 = new Point(p);
 
         p2.translate(getLocation().x, getLocation().y);
 
-        Point p3 = getBoundaryIntersection(comp, p1, p2);
+        final Point p3 = getBoundaryIntersection(comp, p1, p2);
 
         return (p3 == null) ? null : new PointPair(p3, p2);
     }
@@ -670,7 +670,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Calculates the distance between a pair of points.
      */
-    private static double distance(Point p1, Point p2) {
+    private static double distance(final Point p1, final Point p2) {
 
         double d;
 
@@ -690,11 +690,11 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *           endpoint, and vice-versa.
      * @param g  the graphics context.
      */
-    private void drawEndpoints(PointPair pp, Graphics g) {
+    private void drawEndpoints(final PointPair pp, final Graphics g) {
 
         if (getModelEdge() != null) {
-            Endpoint endpointA = getModelEdge().getEndpoint1();
-            Endpoint endpointB = getModelEdge().getEndpoint2();
+            final Endpoint endpointA = getModelEdge().getEndpoint1();
+            final Endpoint endpointB = getModelEdge().getEndpoint2();
 
             if (endpointA == Endpoint.CIRCLE) {
                 drawCircleEndpoint(pp.getTo(), pp.getFrom(), g);
@@ -717,11 +717,11 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Draws an arrowhead at the 'to' end of the edge.
      */
-    private static void drawArrowEndpoint(Point from, Point to, Graphics g) {
-        double a = to.x - from.x;
-        double b = from.y - to.y;
-        double theta = Math.atan2(b, a);
-        int itheta = (int) ((theta * 360.0) / (2.0 * Math.PI) + 180);
+    private static void drawArrowEndpoint(final Point from, final Point to, final Graphics g) {
+        final double a = to.x - from.x;
+        final double b = from.y - to.y;
+        final double theta = Math.atan2(b, a);
+        final int itheta = (int) ((theta * 360.0) / (2.0 * Math.PI) + 180);
 
         g.fillArc(to.x - 18, to.y - 18, 36, 36, itheta - 15, 30);
     }
@@ -730,19 +730,19 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * Draws a circle endpoint at the 'to' point angled as if coming from the
      * 'from' point.
      */
-    private static void drawCircleEndpoint(Point from, Point to, Graphics g) {
+    private static void drawCircleEndpoint(final Point from, final Point to, final Graphics g) {
         final int diameter = 13;
-        double a = to.x - from.x;
-        double b = from.y - to.y;
-        double theta = Math.atan2(b, a);
+        final double a = to.x - from.x;
+        final double b = from.y - to.y;
+        final double theta = Math.atan2(b, a);
         //        int itheta = (int) ((theta * 360.0) / (2.0 * Math.PI) + 180);
-        int xminus = (int) (Math.cos(theta) * diameter / 2);
-        int yplus = (int) (Math.sin(theta) * diameter / 2);
+        final int xminus = (int) (Math.cos(theta) * diameter / 2);
+        final int yplus = (int) (Math.sin(theta) * diameter / 2);
 
         g.fillOval(to.x - xminus - diameter / 2, to.y + yplus - diameter / 2,
                 diameter, diameter);
 
-        Color c = g.getColor();
+        final Color c = g.getColor();
 
         g.setColor(Color.white);
         g.fillOval(to.x - xminus - diameter / 4 - 1,
@@ -760,9 +760,9 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * If the connecting line intersects the boundary at more than one place,
      * the outermost one is returned.
      */
-    private Point getBoundaryIntersection(Component comp, Point pIn,
-                                          Point pOut) {
-        Point loc = comp.getLocation();
+    private Point getBoundaryIntersection(final Component comp, final Point pIn,
+                                          final Point pOut) {
+        final Point loc = comp.getLocation();
 
         if (!comp.contains(pIn.x - loc.x, pIn.y - loc.y)) {
             return null;
@@ -804,20 +804,21 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * @return the Polygon representing the sleeve, or null if no such Polygon
      * exists (because, e.g., one of the endpoints is null).
      */
-    private static Polygon getSleeve(PointPair pp) {
+    private static Polygon getSleeve(final PointPair pp) {
         if ((pp == null) || (pp.getFrom() == null) || (pp.getTo() == null)) {
             return null;
         }
 
-        int d = 7;    // halfwidth of the sleeve.
+        final int d = 7;    // halfwidth of the sleeve.
 
         if (Math.abs(pp.getFrom().y - pp.getTo().y) <= 3) {
             return getHorizSleeve(pp, d);
         }
 
-        int xpoints[] = new int[4];
-        int ypoints[] = new int[4];
-        double qx, qy;
+        final int[] xpoints = new int[4];
+        final int[] ypoints = new int[4];
+        final double qx;
+        final double qy;
 
         qx = pp.getTo().x - pp.getFrom().x;
         qy = pp.getTo().y - pp.getFrom().y;
@@ -830,7 +831,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         sx += (double) pp.getFrom().x + 1.0;
         sy += (double) pp.getFrom().y + 1.0;
 
-        Point t = new Point((int) (sx) - pp.getFrom().x,
+        final Point t = new Point((int) (sx) - pp.getFrom().x,
                 (int) (sy) - pp.getFrom().y);
 
         xpoints[0] = pp.getFrom().x + t.x;
@@ -853,9 +854,9 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * @param halfWidth the half-width of the sleeve.
      * @return the sleeve as a polygon.
      */
-    private static Polygon getHorizSleeve(PointPair pp, int halfWidth) {
-        int[] xpoints = new int[4];
-        int[] ypoints = new int[4];
+    private static Polygon getHorizSleeve(final PointPair pp, final int halfWidth) {
+        final int[] xpoints = new int[4];
+        final int[] ypoints = new int[4];
 
         xpoints[0] = pp.getFrom().x;
         xpoints[1] = pp.getFrom().x;
@@ -875,11 +876,12 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * the bounds of these two components relative to this new union.
      */
     private void resetBounds() {
-        Rectangle node1RelativeBounds, node2RelativeBounds;
+        final Rectangle node1RelativeBounds;
+        final Rectangle node2RelativeBounds;
 
         switch (this.mode) {
             case HALF_ANCHORED:
-                Rectangle temp = new Rectangle(this.mouseTrackPoint.x,
+                final Rectangle temp = new Rectangle(this.mouseTrackPoint.x,
                         this.mouseTrackPoint.y, 0, 0);
 
                 Rectangle r = getNode1().getBounds().union(temp.getBounds());
@@ -900,17 +902,17 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
                 // Falls through!
             case ANCHORED_SELECTED:
-                Rectangle r1 = node1.getBounds();
-                Rectangle r2 = node2.getBounds();
-                Point c1 = new Point((int) (r1.x + r1.width / 2.0),
+                final Rectangle r1 = this.node1.getBounds();
+                final Rectangle r2 = this.node2.getBounds();
+                final Point c1 = new Point((int) (r1.x + r1.width / 2.0),
                         (int) (r1.y + r1.height / 2.0));
-                Point c2 = new Point((int) (r2.x + r2.width / 2.0),
+                final Point c2 = new Point((int) (r2.x + r2.width / 2.0),
                         (int) (r2.y + r2.height / 2.0));
 
                 double angle = Math.atan2(c1.y - c2.y, c1.x - c2.x);
                 angle += Math.PI / 2;
-                Point d = new Point((int) (offset * Math.cos(angle)),
-                        (int) (offset * Math.sin(angle)));
+                final Point d = new Point((int) (this.offset * Math.cos(angle)),
+                        (int) (this.offset * Math.sin(angle)));
 
                 r1.translate(d.x, d.y);
                 r2.translate(d.x, d.y);
@@ -935,42 +937,42 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     private boolean isShowAdjacenciesOnly() {
-        return showAdjacenciesOnly;
+        return this.showAdjacenciesOnly;
     }
 
-    public final void setShowAdjacenciesOnly(boolean showAdjacenciesOnly) {
+    public final void setShowAdjacenciesOnly(final boolean showAdjacenciesOnly) {
         this.showAdjacenciesOnly = showAdjacenciesOnly;
     }
 
     public final Edge getModelEdge() {
-        return modelEdge;
+        return this.modelEdge;
     }
 
     public double getOffset() {
-        return offset;
+        return this.offset;
     }
 
-    public void setOffset(double offset) {
+    public void setOffset(final double offset) {
         this.offset = offset;
     }
 
     public int getType() {
-        return type;
+        return this.type;
     }
 
     public Color getLineColor() {
         // Ignore highlighting, too evil. jdramsey 3/4/2010
 
-        if (type == FORBIDDEN_EXPLICITLY) {
-            return forbiddenExplicitlyColor;
+        if (this.type == FORBIDDEN_EXPLICITLY) {
+            return this.forbiddenExplicitlyColor;
         }
-        if (type == FORBIDDEN_BY_TIERS) {
-            return forbiddenByTiersColor;
-        } else if (type == REQUIRED) {
-            return requiredColor;
-        } else if (type == REQUIRED_BY_GROUPS) {
+        if (this.type == FORBIDDEN_BY_TIERS) {
+            return this.forbiddenByTiersColor;
+        } else if (this.type == REQUIRED) {
+            return this.requiredColor;
+        } else if (this.type == REQUIRED_BY_GROUPS) {
             return this.requiredGroupsColor;
-        } else if (type == FORBIDDEN_BY_GROUPS) {
+        } else if (this.type == FORBIDDEN_BY_GROUPS) {
             return this.forbiddenGroupsColor;
         } else {
             throw new IllegalStateException();
@@ -982,15 +984,15 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @throws UnsupportedOperationException
      */
-    public void setLineColor(Color lineColor) {
+    public void setLineColor(final Color lineColor) {
 //        throw new UnsupportedOperationException();
     }
 
     public boolean getBold() {
-        return bold;
+        return this.bold;
     }
 
-    public void setBold(boolean bold) {
+    public void setBold(final boolean bold) {
         this.bold = bold;
     }
 
@@ -1008,15 +1010,15 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @throws UnsupportedOperationException
      */
-    public void setSelectedColor(Color selectedColor) {
+    public void setSelectedColor(final Color selectedColor) {
         throw new UnsupportedOperationException();
     }
 
     public Color getHighlightedColor() {
-        return highlightedColor;
+        return this.highlightedColor;
     }
 
-    public void setHighlightedColor(Color highlightedColor) {
+    public void setHighlightedColor(final Color highlightedColor) {
         this.highlightedColor = highlightedColor;
     }
 
@@ -1034,15 +1036,15 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @throws UnsupportedOperationException
      */
-    public void setStrokeWidth(float strokeWidth) {
+    public void setStrokeWidth(final float strokeWidth) {
         throw new UnsupportedOperationException();
     }
 
-    public void setHighlighted(boolean highlighted) {
+    public void setHighlighted(final boolean highlighted) {
         /*
       True iff this edge is highlighted.
      */
-        boolean highlighted1 = highlighted;
+        final boolean highlighted1 = highlighted;
     }
 
     //======================= Event handler class========================//
@@ -1056,7 +1058,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
          * This method captures motion events on the components to which the
          * edge is anchored and repaints the edge accordingly.
          */
-        public final void componentMoved(ComponentEvent e) {
+        public final void componentMoved(final ComponentEvent e) {
             resetBounds();
             repaint();
         }
@@ -1073,8 +1075,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
          * @param evt A PropertyChangeEvent object describing the event source
          *            and the property that has changed.
          */
-        public final void propertyChange(PropertyChangeEvent evt) {
-            String name = evt.getPropertyName();
+        public final void propertyChange(final PropertyChangeEvent evt) {
+            final String name = evt.getPropertyName();
 
             if ("selected".equals(name)) {
                 if (Boolean.FALSE.equals(evt.getNewValue())) {

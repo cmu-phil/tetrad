@@ -37,12 +37,12 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
     /**
      * The data editor.                         -
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
     /**
      * Creates a new action to split by collinear columns.
      */
-    public SubsetSelectedVariablesAction(DataEditor editor) {
+    public SubsetSelectedVariablesAction(final DataEditor editor) {
         super("Copy Selected Columns");
 
         if (editor == null) {
@@ -55,12 +55,12 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        DataModel dataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataModel dataModel = getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
-            int[] selectedIndices = dataSet.getSelectedIndices();
+            final DataSet dataSet = (DataSet) dataModel;
+            final int[] selectedIndices = dataSet.getSelectedIndices();
 
             if (selectedIndices.length == 0) {
                 JOptionPane.showMessageDialog(getDataEditor(),
@@ -68,16 +68,16 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
                 return;
             }
 
-            DataSet selection =
+            final DataSet selection =
                     dataSet.subsetColumns(selectedIndices);
 
-            DataModelList list = new DataModelList();
+            final DataModelList list = new DataModelList();
             list.add(selection);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
         } else if (dataModel instanceof CorrelationMatrix) {
-            CorrelationMatrix corrMatrix = (CorrelationMatrix) dataModel;
-            List<String> selectedNames = corrMatrix.getSelectedVariableNames();
+            final CorrelationMatrix corrMatrix = (CorrelationMatrix) dataModel;
+            final List<String> selectedNames = corrMatrix.getSelectedVariableNames();
 
             if (selectedNames.isEmpty()) {
                 JOptionPane.showMessageDialog(getDataEditor(),
@@ -85,16 +85,16 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
                 return;
             }
 
-            CorrelationMatrix submatrix = corrMatrix.getSubCorrMatrix(
+            final CorrelationMatrix submatrix = corrMatrix.getSubCorrMatrix(
                     selectedNames.toArray(new String[0]));
 
-            DataModelList list = new DataModelList();
+            final DataModelList list = new DataModelList();
             list.add(submatrix);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
         } else if (dataModel instanceof ICovarianceMatrix) {
-            ICovarianceMatrix corrMatrix = (ICovarianceMatrix) dataModel;
-            List<String> selectedNames = corrMatrix.getSelectedVariableNames();
+            final ICovarianceMatrix corrMatrix = (ICovarianceMatrix) dataModel;
+            final List<String> selectedNames = corrMatrix.getSelectedVariableNames();
 
             if (selectedNames.isEmpty()) {
                 JOptionPane.showMessageDialog(getDataEditor(),
@@ -102,10 +102,10 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
                 return;
             }
 
-            ICovarianceMatrix submatrix = corrMatrix.getSubmatrix(
+            final ICovarianceMatrix submatrix = corrMatrix.getSubmatrix(
                     selectedNames.toArray(new String[0]));
 
-            DataModelList list = new DataModelList();
+            final DataModelList list = new DataModelList();
             list.add(submatrix);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
@@ -117,7 +117,7 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 }
 

@@ -54,14 +54,14 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
      *
      * @param params
      */
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         this.params = params;
     }
 
     /**
      * A method required by the interface that does nothing.
      */
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         // Do nothing.
     }
 
@@ -70,26 +70,26 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
      */
     public void setup() {
         // set up text and ties them to the parameters object being edited.
-        IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 8);
+        final IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 8);
         sampleSizeField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
+            public int filter(final int value, final int oldValue) {
                 try {
                     getParams().set("sampleSize", value);
                     return value;
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     return oldValue;
                 }
             }
         });
 
-        IntTextField numDataSetsField = new IntTextField(getParams().getInt("numDataSets", 1), 8);
+        final IntTextField numDataSetsField = new IntTextField(getParams().getInt("numDataSets", 1), 8);
 
         numDataSetsField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
+            public int filter(final int value, final int oldValue) {
                 try {
                     getParams().set("numDataSets", value);
                     return value;
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     return oldValue;
                 }
             }
@@ -98,13 +98,13 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
 
 //        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
 //                Preferences.userRoot().getBoolean("latentDataSaved", getParameters().isIncludeLatents()));
-        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
+        final JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
                 getParams().getBoolean("latentDataSaved", false));
 
         latentDataSaved.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox checkBox = (JCheckBox) e.getSource();
-                params.set("latentDataSaved", checkBox.isSelected());
+            public void actionPerformed(final ActionEvent e) {
+                final JCheckBox checkBox = (JCheckBox) e.getSource();
+                BayesDataParamsEditor.this.params.set("latentDataSaved", checkBox.isSelected());
             }
         });
 
@@ -114,21 +114,21 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
         setLayout(new BorderLayout());
 
         // continue workbench construction.
-        Box b = Box.createVerticalBox();
+        final Box b = Box.createVerticalBox();
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Sample size:  "));
         b1.add(Box.createHorizontalGlue());
         b1.add(sampleSizeField);
         b.add(b1);
 
-        Box b1a = Box.createHorizontalBox();
+        final Box b1a = Box.createHorizontalBox();
         b1a.add(new JLabel("Num data sets:  "));
         b1a.add(Box.createHorizontalGlue());
         b1a.add(numDataSetsField);
         b.add(b1a);
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(latentDataSaved);
         b.add(b2);
 

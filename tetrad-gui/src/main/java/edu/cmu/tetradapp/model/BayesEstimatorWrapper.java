@@ -62,15 +62,15 @@ public class BayesEstimatorWrapper implements SessionModel {
      * @serial Cannot be null.
      */
     private DataSet dataSet;
-    private DataWrapper dataWrapper;
+    private final DataWrapper dataWrapper;
 
     private int numModels = 1;
     private int modelIndex = 0;
-    private List<BayesIm> bayesIms = new ArrayList<>();
+    private final List<BayesIm> bayesIms = new ArrayList<>();
 
     //=================================CONSTRUCTORS========================//
-    public BayesEstimatorWrapper(DataWrapper dataWrapper,
-                                 BayesPmWrapper bayesPmWrapper) {
+    public BayesEstimatorWrapper(final DataWrapper dataWrapper,
+                                 final BayesPmWrapper bayesPmWrapper) {
 
         if (dataWrapper == null) {
             throw new NullPointerException(
@@ -83,36 +83,36 @@ public class BayesEstimatorWrapper implements SessionModel {
             throw new NullPointerException("BayesPmWrapper must not be null");
         }
 
-        DataModelList dataModel = dataWrapper.getDataModelList();
+        final DataModelList dataModel = dataWrapper.getDataModelList();
 
         if (dataModel != null) {
             for (int i = 0; i < dataWrapper.getDataModelList().size(); i++) {
-                DataModel model = dataWrapper.getDataModelList().get(i);
-                DataSet dataSet = (DataSet) model;
+                final DataModel model = dataWrapper.getDataModelList().get(i);
+                final DataSet dataSet = (DataSet) model;
                 bayesPmWrapper.setModelIndex(i);
-                BayesPm bayesPm = bayesPmWrapper.getBayesPm();
+                final BayesPm bayesPm = bayesPmWrapper.getBayesPm();
 
                 estimate(dataSet, bayesPm);
-                bayesIms.add(this.bayesIm);
+                this.bayesIms.add(this.bayesIm);
             }
 
-            this.bayesIm = bayesIms.get(0);
-            log(bayesIm);
+            this.bayesIm = this.bayesIms.get(0);
+            log(this.bayesIm);
 
         } else {
             throw new IllegalArgumentException("Data must consist of discrete data sets.");
         }
 
         this.name = bayesPmWrapper.getName();
-        this.numModels = bayesIms.size();
+        this.numModels = this.bayesIms.size();
         this.modelIndex = 0;
-        this.bayesIm = bayesIms.get(modelIndex);
-        DataModel model = dataModel.get(modelIndex);
+        this.bayesIm = this.bayesIms.get(this.modelIndex);
+        final DataModel model = dataModel.get(this.modelIndex);
         this.dataSet = (DataSet) model;
     }
 
-    public BayesEstimatorWrapper(DataWrapper dataWrapper,
-                                 BayesImWrapper bayesImWrapper) {
+    public BayesEstimatorWrapper(final DataWrapper dataWrapper,
+                                 final BayesImWrapper bayesImWrapper) {
         this(dataWrapper, new BayesPmWrapper(bayesImWrapper));
     }
 
@@ -127,47 +127,47 @@ public class BayesEstimatorWrapper implements SessionModel {
 
     //==============================PUBLIC METHODS========================//
     public BayesIm getEstimatedBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
-    public void setBayesIm(BayesIm bayesIm) {
-        bayesIms.clear();
-        bayesIms.add(bayesIm);
+    public void setBayesIm(final BayesIm bayesIm) {
+        this.bayesIms.clear();
+        this.bayesIms.add(bayesIm);
     }
 
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     public Graph getGraph() {
-        return bayesIm.getBayesPm().getDag();
+        return this.bayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
-    public void setNumModels(int numModels) {
+    public void setNumModels(final int numModels) {
         this.numModels = numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
-    public void setModelIndex(int modelIndex) {
+    public void setModelIndex(final int modelIndex) {
         this.modelIndex = modelIndex;
-        this.bayesIm = bayesIms.get(modelIndex);
+        this.bayesIm = this.bayesIms.get(modelIndex);
 
-        DataModel dataModel = dataWrapper.getDataModelList();
+        final DataModel dataModel = this.dataWrapper.getDataModelList();
 
         this.dataSet = (DataSet) ((DataModelList) dataModel).get(modelIndex);
 
@@ -188,25 +188,25 @@ public class BayesEstimatorWrapper implements SessionModel {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
     }
 
-    private void log(BayesIm im) {
+    private void log(final BayesIm im) {
         TetradLogger.getInstance().log("info", "ML estimated Bayes IM.");
         TetradLogger.getInstance().log("im", im.toString());
     }
 
-    private void estimate(DataSet dataSet, BayesPm bayesPm) {
-        Graph graph = bayesPm.getDag();
+    private void estimate(final DataSet dataSet, final BayesPm bayesPm) {
+        final Graph graph = bayesPm.getDag();
 
-        for (Object o : graph.getNodes()) {
-            Node node = (Node) o;
+        for (final Object o : graph.getNodes()) {
+            final Node node = (Node) o;
             if (node.getNodeType() == NodeType.LATENT) {
                 throw new IllegalArgumentException("Estimation of Bayes IM's "
                         + "with latents is not supported.");
@@ -218,9 +218,9 @@ public class BayesEstimatorWrapper implements SessionModel {
         }
 
         try {
-            MlBayesEstimator estimator = new MlBayesEstimator();
+            final MlBayesEstimator estimator = new MlBayesEstimator();
             this.bayesIm = estimator.estimate(bayesPm, dataSet);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (final ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM "
                     + "and discrete data set do not match.");

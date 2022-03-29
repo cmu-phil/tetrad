@@ -45,13 +45,13 @@ public class MisclassificationsEditor extends JPanel {
     /**
      * Constructs the editor given the model
      */
-    public MisclassificationsEditor(Misclassifications comparison) {
+    public MisclassificationsEditor(final Misclassifications comparison) {
         this.comparison = comparison;
         setup();
     }
 
     //============================ Private Methods =========================//
-    private boolean isLegal(String text) {
+    private boolean isLegal(final String text) {
 //        if (!NamingProtocol.isLegalName(text)) {
 //            JOptionPane.showMessageDialog(this, NamingProtocol.getProtocolDescription() + ": " + text);
 //            return false;
@@ -60,31 +60,31 @@ public class MisclassificationsEditor extends JPanel {
     }
 
     private void setup() {
-        java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
-        JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
+        final java.util.List<Graph> referenceGraphs = this.comparison.getReferenceGraphs();
+        final JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
 
         for (int i = 0; i < referenceGraphs.size(); i++) {
-            JTabbedPane pane2 = new JTabbedPane(JTabbedPane.TOP);
-            String compareString = comparison.getComparisonString(i);
+            final JTabbedPane pane2 = new JTabbedPane(JTabbedPane.TOP);
+            final String compareString = this.comparison.getComparisonString(i);
 
-            JPanel panel = new JPanel();
+            final JPanel panel = new JPanel();
 
-            Font font = new Font("Monospaced", Font.PLAIN, 14);
+            final Font font = new Font("Monospaced", Font.PLAIN, 14);
             final JTextArea textPane = new JTextArea();
             textPane.setText(compareString);
 
             textPane.setFont(font);
 
-            JScrollPane scroll = new JScrollPane(textPane);
+            final JScrollPane scroll = new JScrollPane(textPane);
             scroll.setPreferredSize(new Dimension(400, 400));
 
             panel.add(Box.createVerticalStrut(10));
 
-            Box box = Box.createHorizontalBox();
+            final Box box = Box.createHorizontalBox();
             panel.add(box);
             panel.add(Box.createVerticalStrut(10));
 
-            Box box1 = Box.createHorizontalBox();
+            final Box box1 = Box.createHorizontalBox();
             box1.add(new JLabel("Graph Comparison: "));
             box1.add(Box.createHorizontalGlue());
 
@@ -93,11 +93,11 @@ public class MisclassificationsEditor extends JPanel {
 
             pane2.add("Comparison", scroll);
 
-            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i)));
+            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getTargetGraphs().get(i)));
             graphEditor.enableEditing(false);
             pane2.add("Target Graph", graphEditor.getWorkbench());
 
-            graphEditor = new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i)));
+            graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getReferenceGraphs().get(i)));
             graphEditor.enableEditing(false);
             pane2.add("True Graph", graphEditor.getWorkbench());
 

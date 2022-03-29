@@ -46,9 +46,9 @@ public class AverageOverClusters extends DataWrapper {
     //=============================CONSTRUCTORS==============================//
 
 
-    public AverageOverClusters(DataWrapper dataWrapper, MeasurementModelWrapper measurementModelWrapper,
-                               Parameters parameters) {
-        DataModel dataModel = calcAveragesOverClusters(dataWrapper.getSelectedDataModel(),
+    public AverageOverClusters(final DataWrapper dataWrapper, final MeasurementModelWrapper measurementModelWrapper,
+                               final Parameters parameters) {
+        final DataModel dataModel = calcAveragesOverClusters(dataWrapper.getSelectedDataModel(),
                 measurementModelWrapper);
 
         setDataModel(dataModel);
@@ -56,11 +56,11 @@ public class AverageOverClusters extends DataWrapper {
         LogDataUtils.logDataModelList("Restruct parent data to nodes in the paraent graph only.", getDataModelList());
     }
 
-    public AverageOverClusters(DataWrapper dataWrapper, MeasurementModelWrapper measurementModelWrapper,
-                               GraphWrapper trueGraphWrapper) {
+    public AverageOverClusters(final DataWrapper dataWrapper, final MeasurementModelWrapper measurementModelWrapper,
+                               final GraphWrapper trueGraphWrapper) {
         this.trueGraph = trueGraphWrapper.getGraph();
 
-        DataModel dataModel = calcAveragesOverClusters(dataWrapper.getSelectedDataModel(),
+        final DataModel dataModel = calcAveragesOverClusters(dataWrapper.getSelectedDataModel(),
                 measurementModelWrapper);
 
         setDataModel(dataModel);
@@ -76,25 +76,25 @@ public class AverageOverClusters extends DataWrapper {
         return PcRunner.serializableInstance();
     }
 
-    private DataModel calcAveragesOverClusters(DataModel dataModel, MeasurementModelWrapper measurementModelWrapper) {
+    private DataModel calcAveragesOverClusters(final DataModel dataModel, final MeasurementModelWrapper measurementModelWrapper) {
         if (dataModel instanceof DataSet) {
-            DataSet data = (DataSet) dataModel;
-            Clusters clusters = measurementModelWrapper.getClusters();
+            final DataSet data = (DataSet) dataModel;
+            final Clusters clusters = measurementModelWrapper.getClusters();
 
-            List<Node> avgVars = new ArrayList<>();
+            final List<Node> avgVars = new ArrayList<>();
 
             for (int j = 0; j < clusters.getNumClusters(); j++) {
                 Node latent = null;
 
-                if (trueGraph != null) {
-                    List<String> cluster = clusters.getCluster(j);
+                if (this.trueGraph != null) {
+                    final List<String> cluster = clusters.getCluster(j);
 
                     CLUSTER:
-                    for (String _var : cluster) {
-                        Node node = trueGraph.getNode(_var);
-                        List<Node> parents = trueGraph.getParents(node);
+                    for (final String _var : cluster) {
+                        final Node node = this.trueGraph.getNode(_var);
+                        final List<Node> parents = this.trueGraph.getParents(node);
 
-                        for (Node parent : parents) {
+                        for (final Node parent : parents) {
                             if (parent.getNodeType() == NodeType.LATENT) {
                                 if (latent == null) {
                                     latent = parent;
@@ -114,21 +114,21 @@ public class AverageOverClusters extends DataWrapper {
             }
 
 
-            DataSet avgData = new BoxDataSet(new DoubleDataBox(data.getNumRows(), avgVars.size()), avgVars);
+            final DataSet avgData = new BoxDataSet(new DoubleDataBox(data.getNumRows(), avgVars.size()), avgVars);
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 for (int j = 0; j < clusters.getNumClusters(); j++) {
-                    List<String> cluster = clusters.getCluster(j);
+                    final List<String> cluster = clusters.getCluster(j);
 
                     double sum = 0.0;
 
-                    for (String _node : cluster) {
-                        Node node = data.getVariable(_node);
-                        double d = data.getDouble(i, data.getColumn(node));
+                    for (final String _node : cluster) {
+                        final Node node = data.getVariable(_node);
+                        final double d = data.getDouble(i, data.getColumn(node));
                         sum += d;
                     }
 
-                    double avg = sum / cluster.size();
+                    final double avg = sum / cluster.size();
                     avgData.setDouble(i, j, avg);
                 }
             }
@@ -164,29 +164,29 @@ public class AverageOverClusters extends DataWrapper {
 
     }
 
-    private Graph reidentifyVariables(Graph searchGraph, Graph trueGraph) {
+    private Graph reidentifyVariables(final Graph searchGraph, final Graph trueGraph) {
         if (trueGraph == null) {
             return searchGraph;
         }
 
-        Graph reidentifiedGraph = new EdgeListGraph();
+        final Graph reidentifiedGraph = new EdgeListGraph();
 //        Graph trueGraph = semIm.getSemPm().getGraph();
 
-        for (Node latent : searchGraph.getNodes()) {
+        for (final Node latent : searchGraph.getNodes()) {
             if (latent.getNodeType() != NodeType.LATENT) {
                 continue;
             }
 
             boolean added = false;
 
-            List<Node> searchChildren = searchGraph.getChildren(latent);
+            final List<Node> searchChildren = searchGraph.getChildren(latent);
 
-            for (Node _latent : trueGraph.getNodes()) {
+            for (final Node _latent : trueGraph.getNodes()) {
                 if (_latent.getNodeType() != NodeType.LATENT) ;
 
-                List<Node> trueChildren = trueGraph.getChildren(_latent);
+                final List<Node> trueChildren = trueGraph.getChildren(_latent);
 
-                for (Node node2 : new ArrayList<>(trueChildren)) {
+                for (final Node node2 : new ArrayList<>(trueChildren)) {
                     if (node2.getNodeType() == NodeType.LATENT) {
                         trueChildren.remove(node2);
                     }
@@ -194,10 +194,10 @@ public class AverageOverClusters extends DataWrapper {
 
                 boolean containsAll = true;
 
-                for (Node child : searchChildren) {
+                for (final Node child : searchChildren) {
                     boolean contains = false;
 
-                    for (Node _child : trueChildren) {
+                    for (final Node _child : trueChildren) {
                         if (child.getName().equals(_child.getName())) {
                             contains = true;
                             break;
@@ -213,7 +213,7 @@ public class AverageOverClusters extends DataWrapper {
                 if (containsAll) {
                     reidentifiedGraph.addNode(_latent);
 
-                    for (Node child : searchChildren) {
+                    for (final Node child : searchChildren) {
                         if (!reidentifiedGraph.containsNode(child)) {
                             reidentifiedGraph.addNode(child);
                         }
@@ -229,7 +229,7 @@ public class AverageOverClusters extends DataWrapper {
             if (!added) {
                 reidentifiedGraph.addNode(latent);
 
-                for (Node child : searchChildren) {
+                for (final Node child : searchChildren) {
                     if (!reidentifiedGraph.containsNode(child)) {
                         reidentifiedGraph.addNode(child);
                     }

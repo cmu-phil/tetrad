@@ -34,13 +34,13 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class VariableSubsetterWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    private VariableSubsetterWrapper(DataWrapper wrapper) {
-        DataSet dataSet =
+    private VariableSubsetterWrapper(final DataWrapper wrapper) {
+        final DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
-        DataSet selection =
+        final DataSet selection =
                 dataSet.subsetColumns(dataSet.getSelectedIndices());
 
-        DataSet selectionCopy;
+        final DataSet selectionCopy;
 
         if (selection.isDiscrete()) {
             selectionCopy = selection;

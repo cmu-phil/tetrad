@@ -46,12 +46,12 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
 
     //============================CONSTRUCTORS=============================//
 
-    public ReplaceMissingWithRandomWrapper(DataWrapper wrapper) {
-        DataSet dataSet =
+    public ReplaceMissingWithRandomWrapper(final DataWrapper wrapper) {
+        final DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 
-        outputDataSet = DataUtils.replaceMissingWithRandom(dataSet);
-        setDataModel(outputDataSet);
+        this.outputDataSet = DataUtils.replaceMissingWithRandom(dataSet);
+        setDataModel(this.outputDataSet);
         setSourceGraph(wrapper.getSourceGraph());
 
         LogDataUtils.logDataModelList("Parent data with missing values injected randomly.", getDataModelList());
@@ -86,11 +86,11 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (outputDataSet == null) {
+        if (this.outputDataSet == null) {
             throw new NullPointerException();
         }
     }

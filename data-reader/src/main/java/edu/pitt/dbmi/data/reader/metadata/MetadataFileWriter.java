@@ -35,7 +35,7 @@ import java.nio.file.StandardOpenOption;
 public class MetadataFileWriter implements MetadataWriter {
 
     @Override
-    public String writeAsString(Metadata metadata) throws JsonProcessingException {
+    public String writeAsString(final Metadata metadata) throws JsonProcessingException {
         return new ObjectMapper()
                 .writer()
                 .withDefaultPrettyPrinter()
@@ -43,8 +43,8 @@ public class MetadataFileWriter implements MetadataWriter {
     }
 
     @Override
-    public void write(Metadata metadata, Path outputFile) throws JsonProcessingException, IOException {
-        ObjectWriter writer = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    public void write(final Metadata metadata, final Path outputFile) throws JsonProcessingException, IOException {
+        final ObjectWriter writer = new ObjectMapper().writer().withDefaultPrettyPrinter();
         if (Files.exists(outputFile)) {
             if (Files.deleteIfExists(outputFile)) {
                 Files.write(outputFile, writer.writeValueAsBytes(metadata), StandardOpenOption.CREATE);

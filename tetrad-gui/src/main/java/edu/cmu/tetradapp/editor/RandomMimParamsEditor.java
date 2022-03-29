@@ -64,8 +64,8 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.getInt("numStructuralEdges", 3), 4);
         numStructuralEdges.setFilter((value, oldValue) -> {
             try {
-                int n = parameters.getInt("numStructuralNodes", 3);
-                int maxNumLatentEdges = n * (n - 1) / 2;
+                final int n = parameters.getInt("numStructuralNodes", 3);
+                final int maxNumLatentEdges = n * (n - 1) / 2;
 
                 if (value > maxNumLatentEdges) {
                     value = maxNumLatentEdges;
@@ -73,14 +73,14 @@ class RandomMimParamsEditor extends JPanel {
 
                 parameters.set("numStructuralEdges", value);
                 return value;
-            } catch (Exception exception) {
+            } catch (final Exception exception) {
                 LOGGER.error("", exception);
 
                 return oldValue;
             }
         });
 
-        IntTextField numStructuralNodes = new IntTextField(
+        final IntTextField numStructuralNodes = new IntTextField(
                 parameters.getInt("numStructuralNodes", 3), 4);
         numStructuralNodes.setFilter((value, oldValue) -> {
             try {
@@ -93,7 +93,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("numStructuralNodes", value);
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
                 return value;
-            } catch (Exception exception) {
+            } catch (final Exception exception) {
                 LOGGER.error("", exception);
 
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
@@ -101,7 +101,7 @@ class RandomMimParamsEditor extends JPanel {
             }
         });
 
-        IntTextField numMeasurementsPerLatent = new IntTextField(
+        final IntTextField numMeasurementsPerLatent = new IntTextField(
                 parameters.getInt("measurementModelDegree", 5), 4);
         numMeasurementsPerLatent.setFilter((value, oldValue) -> {
             try {
@@ -111,14 +111,14 @@ class RandomMimParamsEditor extends JPanel {
 
                 parameters.set("measurementModelDegree", value);
                 return value;
-            } catch (Exception exception) {
+            } catch (final Exception exception) {
                 LOGGER.error("", exception);
 
                 return oldValue;
             }
         });
 
-        IntTextField numLatentMeasuredImpureParents = new IntTextField(
+        final IntTextField numLatentMeasuredImpureParents = new IntTextField(
                 parameters.getInt("latentMeasuredImpureParents", 0), 4);
         numLatentMeasuredImpureParents.setFilter((value, oldValue) -> {
             try {
@@ -128,14 +128,14 @@ class RandomMimParamsEditor extends JPanel {
 
                 parameters.set("latentMeasuredImpureParents", value);
                 return value;
-            } catch (Exception exception) {
+            } catch (final Exception exception) {
                 LOGGER.error("", exception);
 
                 return oldValue;
             }
         });
 
-        IntTextField numMeasuredMeasuredImpureParents = new IntTextField(
+        final IntTextField numMeasuredMeasuredImpureParents = new IntTextField(
                 parameters.getInt("measuredMeasuredImpureParents", 0), 4);
         numMeasuredMeasuredImpureParents.setFilter((value, oldValue) -> {
             try {
@@ -145,14 +145,14 @@ class RandomMimParamsEditor extends JPanel {
 
                 parameters.set("measuredMeasuredImpureParents", value);
                 return value;
-            } catch (Exception exception) {
+            } catch (final Exception exception) {
                 LOGGER.error("", exception);
 
                 return oldValue;
             }
         });
 
-        IntTextField numMeasuredMeasuredImpureAssociations = new IntTextField(
+        final IntTextField numMeasuredMeasuredImpureAssociations = new IntTextField(
                 parameters.getInt("measuredMeasuredImpureAssociations", 0), 4);
         numMeasuredMeasuredImpureAssociations.setFilter((value, oldValue) -> {
             try {
@@ -163,7 +163,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("measuredMeasuredImpureAssociations",
                         value);
                 return value;
-            } catch (Exception exception) {
+            } catch (final Exception exception) {
                 LOGGER.error("", exception);
 
                 return oldValue;
@@ -173,28 +173,28 @@ class RandomMimParamsEditor extends JPanel {
         // construct the workbench.
         setLayout(new BorderLayout());
 
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b9 = Box.createHorizontalBox();
+        final Box b9 = Box.createHorizontalBox();
         b9.add(new JLabel("Number of Factors:"));
         b9.add(Box.createHorizontalGlue());
         b9.add(numFactors);
         b1.add(b9);
 
-        Box b10 = Box.createHorizontalBox();
+        final Box b10 = Box.createHorizontalBox();
         b10.add(new JLabel("Number of structural nodes:"));
 //        b10.add(Box.createRigidArea(new Dimension(10, 0)));
         b10.add(Box.createHorizontalGlue());
         b10.add(numStructuralNodes);
         b1.add(b10);
 
-        Box b12 = Box.createHorizontalBox();
+        final Box b12 = Box.createHorizontalBox();
         b12.add(new JLabel("Number of structural edges:"));
         b12.add(Box.createHorizontalGlue());
         b12.add(numStructuralEdges);
         b1.add(b12);
 
-        Box b15 = Box.createHorizontalBox();
+        final Box b15 = Box.createHorizontalBox();
         b15.add(new JLabel("Number of measurements per latent:"));
 //        b15.add(Box.createHorizontalStrut(10));
         b15.add(Box.createHorizontalGlue());
@@ -202,25 +202,25 @@ class RandomMimParamsEditor extends JPanel {
         b1.add(b15);
         b1.add(Box.createVerticalStrut(10));
 
-        Box b16 = Box.createHorizontalBox();
+        final Box b16 = Box.createHorizontalBox();
         b16.add(new JLabel("Add impure edges:"));
         b16.add(Box.createHorizontalGlue());
         b1.add(b16);
 //        b1.add(Box.createVerticalStrut(5));
 
-        Box b17 = Box.createHorizontalBox();
+        final Box b17 = Box.createHorizontalBox();
         b17.add(new JLabel("Latent --> Measured"));
         b17.add(Box.createHorizontalGlue());
         b17.add(numLatentMeasuredImpureParents);
         b1.add(b17);
 
-        Box b18 = Box.createHorizontalBox();
+        final Box b18 = Box.createHorizontalBox();
         b18.add(new JLabel("Measured --> Measured"));
         b18.add(Box.createHorizontalGlue());
         b18.add(numMeasuredMeasuredImpureParents);
         b1.add(b18);
 
-        Box b19 = Box.createHorizontalBox();
+        final Box b19 = Box.createHorizontalBox();
         b19.add(new JLabel("Measured <-> Measured"));
         b19.add(Box.createHorizontalGlue());
         b19.add(numMeasuredMeasuredImpureAssociations);

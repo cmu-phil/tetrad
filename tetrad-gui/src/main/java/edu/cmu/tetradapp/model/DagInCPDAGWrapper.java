@@ -36,7 +36,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 public class DagInCPDAGWrapper extends GraphWrapper implements DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
-    public DagInCPDAGWrapper(GraphSource source, Parameters parameters) {
+    public DagInCPDAGWrapper(final GraphSource source, final Parameters parameters) {
         this(source.getGraph());
     }
 
@@ -46,7 +46,7 @@ public class DagInCPDAGWrapper extends GraphWrapper implements DoNotAddOldModel 
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 
-    private static Graph getGraph(Graph graph) {
+    private static Graph getGraph(final Graph graph) {
         return SearchGraphUtils.dagFromCPDAG(graph);
     }
 

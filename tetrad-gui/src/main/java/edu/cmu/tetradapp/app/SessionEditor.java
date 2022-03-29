@@ -59,7 +59,7 @@ public final class SessionEditor extends JComponent
     /**
      * Constucts a session editor with the given name.
      */
-    public SessionEditor(String name) {
+    public SessionEditor(final String name) {
         this(name, null);
     }
 
@@ -69,12 +69,12 @@ public final class SessionEditor extends JComponent
      *
      * @param name The name of the session.  This is used for saving out
      */
-    public SessionEditor(String name, SessionEditorWorkbench workbench) {
+    public SessionEditor(final String name, SessionEditorWorkbench workbench) {
         setName(name);
 
         if (workbench == null) {
-            Session session = new Session(name);
-            SessionWrapper wrapper = new SessionWrapper(session);
+            final Session session = new Session(name);
+            final SessionWrapper wrapper = new SessionWrapper(session);
             workbench = new SessionEditorWorkbench(wrapper);
         }
 
@@ -91,15 +91,15 @@ public final class SessionEditor extends JComponent
 
         setWorkbench(workbench);
         setToolbar(new SessionEditorToolbar(workbench));
-        JScrollPane workbenchScroll = new JScrollPane(workbench);
+        final JScrollPane workbenchScroll = new JScrollPane(workbench);
 
         setLayout(new BorderLayout());
         add(workbenchScroll, BorderLayout.CENTER);
         add(getToolbar(), BorderLayout.WEST);
 
         workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                String propertyName = e.getPropertyName();
+            public void propertyChange(final PropertyChangeEvent e) {
+                final String propertyName = e.getPropertyName();
 
                 if ("name".equals(propertyName)) {
                     firePropertyChange("name", e.getOldValue(),
@@ -124,17 +124,17 @@ public final class SessionEditor extends JComponent
      * selection.
      */
     public List getSelectedModelComponents() {
-        List selectedComponents = getWorkbench().getSelectedComponents();
-        List selectedModelComponents = new ArrayList();
+        final List selectedComponents = getWorkbench().getSelectedComponents();
+        final List selectedModelComponents = new ArrayList();
 
-        for (Object comp : selectedComponents) {
+        for (final Object comp : selectedComponents) {
             if (comp instanceof SessionEditorNode) {
-                SessionEditorNode editorNode = (SessionEditorNode) comp;
-                Node modelNode = editorNode.getModelNode();
+                final SessionEditorNode editorNode = (SessionEditorNode) comp;
+                final Node modelNode = editorNode.getModelNode();
                 selectedModelComponents.add(modelNode);
             } else if (comp instanceof SessionEditorEdge) {
-                SessionEditorEdge editorEdge = (SessionEditorEdge) comp;
-                Edge modelEdge = getWorkbench().getModelEdge(editorEdge);
+                final SessionEditorEdge editorEdge = (SessionEditorEdge) comp;
+                final Edge modelEdge = getWorkbench().getModelEdge(editorEdge);
                 selectedModelComponents.add(modelEdge);
             }
         }
@@ -150,7 +150,7 @@ public final class SessionEditor extends JComponent
      * @param sessionElements the list of model nodes.
      * @param point           the upper left corner of the first node.
      */
-    public void pasteSubsession(List sessionElements, Point point) {
+    public void pasteSubsession(final List sessionElements, final Point point) {
         getToolbar().setRespondingToEvents(false);
         getWorkbench().pasteSubsession(sessionElements, point);
         getToolbar().setRespondingToEvents(true);
@@ -159,7 +159,7 @@ public final class SessionEditor extends JComponent
     /**
      * Sets the name of the session editor.
      */
-    public final void setName(String name) {
+    public final void setName(final String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -168,27 +168,27 @@ public final class SessionEditor extends JComponent
     }
 
     private SessionEditorToolbar getToolbar() {
-        return toolbar;
+        return this.toolbar;
     }
 
-    private void setToolbar(SessionEditorToolbar toolbar) {
+    private void setToolbar(final SessionEditorToolbar toolbar) {
         this.toolbar = toolbar;
     }
 
     private SessionEditorWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
-    private void setWorkbench(SessionEditorWorkbench workbench) {
+    private void setWorkbench(final SessionEditorWorkbench workbench) {
         this.workbench = workbench;
     }
 
     public void saveSessionImage() {
-        Action action = new SaveComponentImage(workbench, "Save Session Image...");
+        final Action action = new SaveComponentImage(this.workbench, "Save Session Image...");
         action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "Save"));
     }
 
-    public void firePropertyChange(String s, Object o, String name) {
+    public void firePropertyChange(final String s, final Object o, final String name) {
         super.firePropertyChange(s, o, name);
     }
 }

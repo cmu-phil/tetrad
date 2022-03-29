@@ -38,12 +38,12 @@ final class ModeInterpolatorAction extends AbstractAction {
     /**
      * The data editor.                         -
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
     /**
      * Creates a new action to split by collinear columns.
      */
-    public ModeInterpolatorAction(DataEditor editor) {
+    public ModeInterpolatorAction(final DataEditor editor) {
         super("Replace Missing Values with Column Mode");
 
         if (editor == null) {
@@ -56,16 +56,16 @@ final class ModeInterpolatorAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        DataModel dataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataModel dataModel = getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
 
-            DataFilter interpolator = new ModeInterpolator();
-            DataSet newDataSet = interpolator.filter(dataSet);
+            final DataFilter interpolator = new ModeInterpolator();
+            final DataSet newDataSet = interpolator.filter(dataSet);
 
-            DataModelList list = new DataModelList();
+            final DataModelList list = new DataModelList();
             list.add(newDataSet);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
@@ -76,7 +76,7 @@ final class ModeInterpolatorAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 }
 

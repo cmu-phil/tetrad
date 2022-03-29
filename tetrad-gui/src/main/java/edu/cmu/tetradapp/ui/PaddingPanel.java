@@ -34,7 +34,7 @@ public class PaddingPanel extends JPanel {
     private final JComponent innerComponent;
     private final JLayeredPane layeredPane;
 
-    public PaddingPanel(JComponent innerComponent) {
+    public PaddingPanel(final JComponent innerComponent) {
         this.innerComponent = (innerComponent == null) ? new JPanel() : innerComponent;
         this.layeredPane = new JLayeredPane();
 
@@ -42,32 +42,32 @@ public class PaddingPanel extends JPanel {
     }
 
     private void initComponents() {
-        layeredPane.setLayer(innerComponent, JLayeredPane.DEFAULT_LAYER);
+        this.layeredPane.setLayer(this.innerComponent, JLayeredPane.DEFAULT_LAYER);
 
-        GroupLayout layeredPaneLayout = new GroupLayout(layeredPane);
-        layeredPane.setLayout(layeredPaneLayout);
+        final GroupLayout layeredPaneLayout = new GroupLayout(this.layeredPane);
+        this.layeredPane.setLayout(layeredPaneLayout);
         layeredPaneLayout.setHorizontalGroup(layeredPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layeredPaneLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(innerComponent, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(this.innerComponent, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
         );
         layeredPaneLayout.setVerticalGroup(layeredPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layeredPaneLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(innerComponent, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(this.innerComponent, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
         );
 
-        GroupLayout layout = new GroupLayout(this);
+        final GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(layeredPane, GroupLayout.Alignment.TRAILING)
+                        .addComponent(this.layeredPane, GroupLayout.Alignment.TRAILING)
         );
         layout.setVerticalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(layeredPane, GroupLayout.Alignment.TRAILING)
+                        .addComponent(this.layeredPane, GroupLayout.Alignment.TRAILING)
         );
     }
 

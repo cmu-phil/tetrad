@@ -310,14 +310,14 @@ public class PurifySextadBased {
 
             countable = true;
             final double p1;
-            double p2;
-            double p3;
-            double p4;
-            double p5;
-            double p6;
-            double p7;
-            double p8;
-            double p9;
+            final double p2;
+            final double p3;
+            final double p4;
+            final double p5;
+            final double p6;
+            final double p7;
+            final double p8;
+            final double p9;
             final double p10;
 
             final IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);

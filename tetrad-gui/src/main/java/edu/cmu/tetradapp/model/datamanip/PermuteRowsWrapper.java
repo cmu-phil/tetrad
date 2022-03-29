@@ -39,13 +39,13 @@ public class PermuteRowsWrapper extends DataWrapper {
     /**
      * Constructs the wrapper given some data and the params.
      */
-    public PermuteRowsWrapper(DataWrapper data, Parameters params) {
+    public PermuteRowsWrapper(final DataWrapper data, final Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
 
-        DataSet originalData = (DataSet) data.getSelectedDataModel();
-        DataSet copy = originalData.copy();
+        final DataSet originalData = (DataSet) data.getSelectedDataModel();
+        final DataSet copy = originalData.copy();
         copy.permuteRows();
         this.setDataModel(copy);
         this.setSourceGraph(data.getSourceGraph());

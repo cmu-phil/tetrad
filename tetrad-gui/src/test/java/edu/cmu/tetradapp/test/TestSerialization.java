@@ -124,11 +124,11 @@ public class TestSerialization {
      */
 //    @Test
     public void testLoadabilility() {
-        String serializableScope = "target/classes/edu/cmu";
-        String currentDirectory = "build/tetrad/serializable/model";
-        String archiveDirectory = "archives";
+        final String serializableScope = "target/classes/edu/cmu";
+        final String currentDirectory = "build/tetrad/serializable/model";
+        final String archiveDirectory = "archives";
 
-        TetradSerializableUtils utils = new TetradSerializableUtils(
+        final TetradSerializableUtils utils = new TetradSerializableUtils(
                 serializableScope, currentDirectory, archiveDirectory);
 
         try {
@@ -136,7 +136,7 @@ public class TestSerialization {
             utils.serializeCurrentDirectory();
             utils.deserializeCurrentDirectory();
             utils.deserializeArchivedVersions();
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             System.out.println();
             e.printStackTrace();
             fail("TestSerialization.testLoadability() failed! Please fix " +
@@ -145,11 +145,11 @@ public class TestSerialization {
     }
 
     public void doArchive() {
-        String serializableScope = "build/tetrad/classes/edu/cmu";
-        String currentDirectory = "build/tetrad/serializable/model";
-        String archiveDirectory = "archives";
+        final String serializableScope = "build/tetrad/classes/edu/cmu";
+        final String currentDirectory = "build/tetrad/serializable/model";
+        final String archiveDirectory = "archives";
 
-        TetradSerializableUtils utils = new TetradSerializableUtils(
+        final TetradSerializableUtils utils = new TetradSerializableUtils(
                 serializableScope, currentDirectory, archiveDirectory);
 
         utils.checkNestingOfFields();

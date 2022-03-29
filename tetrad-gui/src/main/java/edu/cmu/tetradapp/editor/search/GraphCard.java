@@ -46,7 +46,7 @@ public class GraphCard extends JPanel {
 
     private final GeneralAlgorithmRunner algorithmRunner;
 
-    public GraphCard(GeneralAlgorithmRunner algorithmRunner) {
+    public GraphCard(final GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
 
         initComponents();
@@ -60,11 +60,11 @@ public class GraphCard extends JPanel {
     public void refresh() {
         removeAll();
 
-        setBorder(BorderFactory.createTitledBorder(algorithmRunner.getAlgorithm().getDescription()));
+        setBorder(BorderFactory.createTitledBorder(this.algorithmRunner.getAlgorithm().getDescription()));
 
-        Graph graph = algorithmRunner.getGraph();
+        final Graph graph = this.algorithmRunner.getGraph();
 
-        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
         tabbedPane.addTab("Graph", new PaddingPanel(createGraphPanel(graph)));
         tabbedPane.addTab("Edges", createEdgeTypeTable(graph));
         add(tabbedPane, BorderLayout.CENTER);
@@ -73,19 +73,19 @@ public class GraphCard extends JPanel {
         repaint();
     }
 
-    private EdgeTypeTable createEdgeTypeTable(Graph graph) {
-        EdgeTypeTable edgeTypeTable = new EdgeTypeTable();
+    private EdgeTypeTable createEdgeTypeTable(final Graph graph) {
+        final EdgeTypeTable edgeTypeTable = new EdgeTypeTable();
         edgeTypeTable.setPreferredSize(new Dimension(825, 100));
         edgeTypeTable.update(graph);
 
         return edgeTypeTable;
     }
 
-    private JPanel createGraphPanel(Graph graph) {
-        GraphWorkbench graphWorkbench = new GraphWorkbench(graph);
+    private JPanel createGraphPanel(final Graph graph) {
+        final GraphWorkbench graphWorkbench = new GraphWorkbench(graph);
         graphWorkbench.enableEditing(false);
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        final JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setPreferredSize(new Dimension(825, 406));
         mainPanel.add(new JScrollPane(graphWorkbench), BorderLayout.CENTER);
         mainPanel.add(createInstructionBox(), BorderLayout.SOUTH);
@@ -94,29 +94,29 @@ public class GraphCard extends JPanel {
     }
 
     private Box createInstructionBox() {
-        JLabel label = new JLabel("More information on graph edge types and colorings");
+        final JLabel label = new JLabel("More information on graph edge types and colorings");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
-        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        final JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
         infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
 
         // Clock info button to show edge types instructions - Zhou
         infoBtn.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 // Initialize helpSet
-                String helpHS = "/resources/javahelp/TetradHelp.hs";
+                final String helpHS = "/resources/javahelp/TetradHelp.hs";
 
                 try {
-                    URL url = this.getClass().getResource(helpHS);
-                    HelpSet helpSet = new HelpSet(null, url);
+                    final URL url = this.getClass().getResource(helpHS);
+                    final HelpSet helpSet = new HelpSet(null, url);
 
                     helpSet.setHomeID("graph_edge_types");
-                    HelpBroker broker = helpSet.createHelpBroker();
-                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                    final HelpBroker broker = helpSet.createHelpBroker();
+                    final ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                     listener.actionPerformed(e);
-                } catch (Exception ee) {
+                } catch (final Exception ee) {
                     System.out.println("HelpSet " + ee.getMessage());
                     System.out.println("HelpSet " + helpHS + " not found");
                     throw new IllegalArgumentException();
@@ -124,12 +124,12 @@ public class GraphCard extends JPanel {
             }
         });
 
-        Box instruction = Box.createHorizontalBox();
+        final Box instruction = Box.createHorizontalBox();
         instruction.add(label);
         instruction.add(Box.createHorizontalStrut(5));
         instruction.add(infoBtn);
 
-        Box instructionBox = Box.createVerticalBox();
+        final Box instructionBox = Box.createVerticalBox();
         instructionBox.add(Box.createVerticalStrut(5));
         instructionBox.add(instruction);
         instructionBox.add(Box.createVerticalStrut(5));

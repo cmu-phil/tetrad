@@ -44,7 +44,7 @@ class GeneralizedSemImParamsEditor extends JPanel {
     /**
      * Font size for parameter values in the graph.
      */
-    private static Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
+    private static final Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
 
     /**
      * The SemPm being edited.
@@ -60,12 +60,12 @@ class GeneralizedSemImParamsEditor extends JPanel {
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
      */
-    public GeneralizedSemImParamsEditor(GeneralizedSemIm semIm, Map<Object, EditorWindow> launchedEditors) {
+    public GeneralizedSemImParamsEditor(final GeneralizedSemIm semIm, final Map<Object, EditorWindow> launchedEditors) {
         this.semIm = semIm;
         /*
       The set of launched editors--or rather, the nodes for the launched editors.
      */
-        Map<Object, EditorWindow> launchedEditors1 = launchedEditors;
+        final Map<Object, EditorWindow> launchedEditors1 = launchedEditors;
         this.semPm = semIm.getSemPm();
         freshenDisplay();
     }
@@ -75,22 +75,22 @@ class GeneralizedSemImParamsEditor extends JPanel {
     private void freshenDisplay() {
         removeAll();
         setLayout(new BorderLayout());
-        JScrollPane scroll = new JScrollPane(initialValuesPane());
+        final JScrollPane scroll = new JScrollPane(initialValuesPane());
         scroll.setPreferredSize(new Dimension(450, 450));
         add(scroll, BorderLayout.CENTER);
     }
 
     private JComponent initialValuesPane() {
-        Box b = Box.createVerticalBox();
+        final Box b = Box.createVerticalBox();
 
-        java.util.List<String> parameters = new ArrayList<>(semPm().getParameters());
+        final java.util.List<String> parameters = new ArrayList<>(semPm().getParameters());
         Collections.sort(parameters);
 
         // Need to keep these in a particular order.
         class MyTextField extends DoubleTextField {
-            private String parameter;
+            private final String parameter;
 
-            public MyTextField(String parameter, double value, int width, NumberFormat format) {
+            public MyTextField(final String parameter, final double value, final int width, final NumberFormat format) {
                 super(value, width, format);
                 this.parameter = parameter;
             }
@@ -100,20 +100,20 @@ class GeneralizedSemImParamsEditor extends JPanel {
             }
         }
 
-        List<String> _parameters = new ArrayList(semPm.getParameters());
+        final List<String> _parameters = new ArrayList(this.semPm.getParameters());
         Collections.sort(_parameters);
 
-        for (String parameter : _parameters) {
+        for (final String parameter : _parameters) {
             final String _parameter = parameter;
 
-            Box c = Box.createHorizontalBox();
+            final Box c = Box.createHorizontalBox();
             c.add(new JLabel(parameter + " = "));
-            final MyTextField field = new MyTextField(parameter, semIm.getParameterValue(parameter), 8,
+            final MyTextField field = new MyTextField(parameter, this.semIm.getParameterValue(parameter), 8,
                     NumberFormatUtil.getInstance().getNumberFormat());
 
             field.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
-                    semIm.setParameterValue(_parameter, value);
+                public double filter(final double value, final double oldValue) {
+                    GeneralizedSemImParamsEditor.this.semIm.setParameterValue(_parameter, value);
                     return value;
                 }
             });

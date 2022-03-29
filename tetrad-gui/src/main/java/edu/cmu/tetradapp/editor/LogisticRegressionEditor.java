@@ -65,11 +65,11 @@ public class LogisticRegressionEditor extends JPanel {
     public LogisticRegressionEditor(final LogisticRegressionRunner regressionRunner) {
         final LogisticRegressionRunner regRunner = regressionRunner;
 
-        DataSet dataSet = (DataSet) regressionRunner.getDataModel();
+        final DataSet dataSet = (DataSet) regressionRunner.getDataModel();
 
-        for (Node node : dataSet.getVariables()) {
+        for (final Node node : dataSet.getVariables()) {
             if (node instanceof DiscreteVariable) {
-                DiscreteVariable v = (DiscreteVariable) node;
+                final DiscreteVariable v = (DiscreteVariable) node;
                 if (v.getNumCategories() != 2) {
                     throw new IllegalArgumentException("Logistic regression requires a dataset in which all variables " +
                             "are either continuous or binary.");
@@ -81,30 +81,30 @@ public class LogisticRegressionEditor extends JPanel {
         this.modelParameters = new JTextArea();
         final JButton executeButton = new JButton("Execute");
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        final JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(600, 400));
         tabbedPane.add("Model", new JScrollPane(this.modelParameters));
         tabbedPane.add("Output Graph", new JScrollPane(workbench));
 
-        Parameters params = regRunner.getParams();
-        RegressionParamsEditorPanel paramsPanel
+        final Parameters params = regRunner.getParams();
+        final RegressionParamsEditorPanel paramsPanel
                 = new RegressionParamsEditorPanel(regressionRunner, params, regRunner.getDataModel(), true);
 
-        Box b = Box.createVerticalBox();
-        Box b1 = Box.createHorizontalBox();
+        final Box b = Box.createVerticalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(paramsPanel);
         b1.add(Box.createHorizontalStrut(5));
         b1.add(tabbedPane);
         b.add(b1);
 
-        JPanel buttonPanel = new JPanel();
+        final JPanel buttonPanel = new JPanel();
         buttonPanel.add(executeButton);
         b.add(buttonPanel);
 
         setLayout(new BorderLayout());
         add(b, BorderLayout.CENTER);
 
-        int numModels = regressionRunner.getNumModels();
+        final int numModels = regressionRunner.getNumModels();
 
         if (numModels > 1) {
             final JComboBox<Integer> comp = new JComboBox<>();
@@ -119,7 +119,7 @@ public class LogisticRegressionEditor extends JPanel {
 
             comp.setMaximumSize(comp.getPreferredSize());
 
-            Box c = Box.createHorizontalBox();
+            final Box c = Box.createHorizontalBox();
             c.add(new JLabel("Using model"));
             c.add(comp);
             c.add(new JLabel("from "));
@@ -135,11 +135,11 @@ public class LogisticRegressionEditor extends JPanel {
             regRunner.execute();
             //  modelParameters.setText(regRunner.getReport());
             print(regRunner.getResult(), regRunner.getAlpha());
-            Graph outGraph = regRunner.getOutGraph();
+            final Graph outGraph = regRunner.getOutGraph();
             GraphUtils.circleLayout(outGraph, 200, 200, 150);
             GraphUtils.fruchtermanReingoldLayout(outGraph);
             workbench.setGraph(outGraph);
-            TetradLogger.getInstance().log("result", modelParameters.getText());
+            TetradLogger.getInstance().log("result", this.modelParameters.getText());
         });
     }
 
@@ -147,8 +147,8 @@ public class LogisticRegressionEditor extends JPanel {
      * Sets the name of this editor.
      */
     @Override
-    public void setName(String name) {
-        String oldName = getName();
+    public void setName(final String name) {
+        final String oldName = getName();
         super.setName(name);
         this.firePropertyChange("name", oldName, getName());
     }
@@ -159,7 +159,7 @@ public class LogisticRegressionEditor extends JPanel {
      * Prints the info in the result to the text area (doesn't use the results
      * representation).
      */
-    private void print(LogisticRegression.Result result, double alpha) {
+    private void print(final LogisticRegression.Result result, final double alpha) {
         if (result == null) {
             return;
         }
@@ -170,16 +170,16 @@ public class LogisticRegressionEditor extends JPanel {
         text += "Var\tAvg\tSD\n";
         for (int i = 1; i <= result.getNumRegressors(); i++) {
             text += result.getRegressorNames().get(i - 1) + "\t";
-            text += nf.format(result.getxMeans()[i]) + "\t";
-            text += nf.format(result.getxStdDevs()[i]) + "\n";
+            text += this.nf.format(result.getxMeans()[i]) + "\t";
+            text += this.nf.format(result.getxStdDevs()[i]) + "\n";
         }
         text += "\nCoefficients and Standard Errors:\n";
         text += "Var\tCoeff.\tStdErr\tProb.\tSig.\n";
         for (int i = 1; i <= result.getNumRegressors(); i++) {
             text += result.getRegressorNames().get(i - 1) + "\t";
-            text += nf.format(result.getCoefs()[i]) + "\t";
-            text += nf.format(result.getStdErrs()[i]) + "\t";
-            text += nf.format(result.getProbs()[i]) + "\t";
+            text += this.nf.format(result.getCoefs()[i]) + "\t";
+            text += this.nf.format(result.getStdErrs()[i]) + "\t";
+            text += this.nf.format(result.getProbs()[i]) + "\t";
             if (result.getProbs()[i] < alpha) {
                 text += "*\n";
             } else {
@@ -187,7 +187,7 @@ public class LogisticRegressionEditor extends JPanel {
             }
         }
 
-        text += "\n\nIntercept = " + nf.format(result.getIntercept()) + "\n";
+        text += "\n\nIntercept = " + this.nf.format(result.getIntercept()) + "\n";
 
         this.modelParameters.setText(text);
     }

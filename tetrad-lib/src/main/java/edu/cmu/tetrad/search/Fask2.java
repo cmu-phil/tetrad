@@ -663,7 +663,7 @@ public final class Fask2 implements GraphSearch {
             }
 
             final double pc;
-            double pc1;
+            final double pc1;
             final double pc2;
 
             try {

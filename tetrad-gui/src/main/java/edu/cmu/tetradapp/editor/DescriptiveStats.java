@@ -45,12 +45,12 @@ class DescriptiveStats {
      * Constructs a readable table of normality test results
      */
 
-    public static String generateDescriptiveStats(DataSet dataSet, Node variable) {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    public static String generateDescriptiveStats(final DataSet dataSet, final Node variable) {
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        int col = dataSet.getColumn(variable);
+        final int col = dataSet.getColumn(variable);
 
-        double[] data = new double[dataSet.getNumRows()];
+        final double[] data = new double[dataSet.getNumRows()];
         boolean continuous = false;
 
         if (variable instanceof ContinuousVariable) {
@@ -62,22 +62,22 @@ class DescriptiveStats {
         } else {
             try {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    DiscreteVariable var = (DiscreteVariable) variable;
-                    String category = var.getCategory(dataSet.getInt(i, col));
-                    int value = Integer.parseInt(category);
+                    final DiscreteVariable var = (DiscreteVariable) variable;
+                    final String category = var.getCategory(dataSet.getInt(i, col));
+                    final int value = Integer.parseInt(category);
                     data[i] = value;
                 }
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 return "Not a numerical discrete column.";
             }
         }
 
-        StringBuilder b = new StringBuilder();
+        final StringBuilder b = new StringBuilder();
 
         b.append("Descriptive Statistics for: " + variable.getName() + "\n\n");
 
-        double[] normalValues = normalParams(data);
-        TextTable table;
+        final double[] normalValues = normalParams(data);
+        final TextTable table;
 
         if (continuous) {
             table = new TextTable(10, 2);
@@ -107,7 +107,7 @@ class DescriptiveStats {
 
 
         if (continuous) {
-            double[] median = median(data);
+            final double[] median = median(data);
 
             table.setToken(rowindex, 0, "SE Mean:");
             table.setToken(rowindex++, 1, nf.format(standardErrorMean(normalValues[1], dataSet.getNumRows())));
@@ -130,10 +130,10 @@ class DescriptiveStats {
     /*
         Returns the median in index 0, but also returns the min and max in 1 and 2 respectively.
      */
-    private static double[] median(double[] data) {
+    private static double[] median(final double[] data) {
         Arrays.sort(data);
 
-        double result[] = new double[3];
+        final double[] result = new double[3];
 
         result[1] = data[0];
         result[2] = data[data.length - 1];
@@ -144,8 +144,8 @@ class DescriptiveStats {
             return result;
         } else {
             //average the two middle values
-            double firstValue = data[data.length / 2];
-            double secondValue = data[data.length / 2 - 1];
+            final double firstValue = data[data.length / 2];
+            final double secondValue = data[data.length / 2 - 1];
             result[0] = (firstValue + secondValue) / 2;
             return result;
         }
@@ -157,15 +157,15 @@ class DescriptiveStats {
      * @return Ideal Normal distribution for a variable.
      */
 
-    public static Normal getNormal(double[] data) {
-        double[] paramsForNormal = normalParams(data);
-        double mean = paramsForNormal[0];
-        double sd = paramsForNormal[1];
+    public static Normal getNormal(final double[] data) {
+        final double[] paramsForNormal = normalParams(data);
+        final double mean = paramsForNormal[0];
+        final double sd = paramsForNormal[1];
 
         return new Normal(mean, sd, new MersenneTwister());
     }
 
-    private static double standardErrorMean(double stdDev, double sampleSize) {
+    private static double standardErrorMean(final double stdDev, final double sampleSize) {
         return stdDev / (Math.sqrt(sampleSize));
     }
 
@@ -175,7 +175,7 @@ class DescriptiveStats {
      * @return [0] -&gt; mean, [1] -&gt; standard deviation, [2] -&gt; variance
      */
 
-    private static double[] normalParams(double[] data) {
+    private static double[] normalParams(final double[] data) {
         double mean = 0.0;
         double sd = 0.0;
 
@@ -193,7 +193,7 @@ class DescriptiveStats {
 
         sd /= data.length - 1.0;
 
-        double result[] = new double[3];
+        final double[] result = new double[3];
         result[2] = sd; //this is still the variance at this point
         sd = Math.sqrt(sd);
 

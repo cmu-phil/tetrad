@@ -36,7 +36,7 @@ import java.text.NumberFormat;
  * @see NumberCellEditor
  */
 class NumberCellRenderer extends DefaultTableCellRenderer {
-    private NumberFormat nf;
+    private final NumberFormat nf;
     private String emptyString = "";
 
     public NumberCellRenderer() {
@@ -46,7 +46,7 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
     /**
      * Constructs a new number cell renderer.
      */
-    public NumberCellRenderer(NumberFormat nf) {
+    public NumberCellRenderer(final NumberFormat nf) {
         if (nf == null) {
             throw new NullPointerException();
         }
@@ -63,17 +63,17 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
      *
      * @param value the stored numerical value.
      */
-    public void setValue(Object value) {
+    public void setValue(final Object value) {
         if (value == null) {
             setText(getEmptyString());
         } else if (value instanceof Integer) {
             setText(value.toString());
         } else if (value instanceof Double) {
-            double doubleValue = (Double) value;
+            final double doubleValue = (Double) value;
             if (Double.isNaN(doubleValue)) {
                 setText(getEmptyString());
             } else {
-                setText(nf.format(doubleValue));
+                setText(this.nf.format(doubleValue));
             }
         } else {
             setText("");
@@ -81,10 +81,10 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
     }
 
     private String getEmptyString() {
-        return emptyString;
+        return this.emptyString;
     }
 
-    public void setEmptyString(String emptyString) {
+    public void setEmptyString(final String emptyString) {
         if (emptyString == null) {
             throw new NullPointerException();
         }

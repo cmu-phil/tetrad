@@ -56,44 +56,44 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
 
     //==========================CONSTRUCTORS=========================//
 
-    public ApproximateUpdaterWrapper(BayesImWrapper wrapper, Parameters params) {
+    public ApproximateUpdaterWrapper(final BayesImWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        BayesIm bayesIm = wrapper.getBayesIm();
+        final BayesIm bayesIm = wrapper.getBayesIm();
         setup(bayesIm, params);
     }
 
 
-    public ApproximateUpdaterWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
+    public ApproximateUpdaterWrapper(final DirichletBayesImWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        DirichletBayesIm bayesIm = wrapper.getDirichletBayesIm();
+        final DirichletBayesIm bayesIm = wrapper.getDirichletBayesIm();
         setup(bayesIm, params);
     }
 
-    public ApproximateUpdaterWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
+    public ApproximateUpdaterWrapper(final BayesEstimatorWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        BayesIm bayesIm = wrapper.getEstimatedBayesIm();
+        final BayesIm bayesIm = wrapper.getEstimatedBayesIm();
         setup(bayesIm, params);
     }
 
-    public ApproximateUpdaterWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
+    public ApproximateUpdaterWrapper(final DirichletEstimatorWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        DirichletBayesIm bayesIm = wrapper.getEstimatedBayesIm();
+        final DirichletBayesIm bayesIm = wrapper.getEstimatedBayesIm();
         setup(bayesIm, params);
     }
 
-    public ApproximateUpdaterWrapper(EmBayesEstimatorWrapper wrapper, Parameters params) {
+    public ApproximateUpdaterWrapper(final EmBayesEstimatorWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        BayesIm bayesIm = wrapper.getEstimateBayesIm();
+        final BayesIm bayesIm = wrapper.getEstimateBayesIm();
         setup(bayesIm, params);
     }
 
@@ -110,41 +110,41 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
     //============================PUBLIC METHODS=========================//
 
     public ManipulatingBayesUpdater getBayesUpdater() {
-        return bayesUpdater;
+        return this.bayesUpdater;
     }
 
     //============================PRIVATE METHODS========================//
 
-    private void setup(BayesIm bayesIm, Parameters params) {
+    private void setup(final BayesIm bayesIm, final Parameters params) {
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
-            bayesUpdater = new ApproximateUpdater(bayesIm);
+            this.bayesUpdater = new ApproximateUpdater(bayesIm);
         } else {
-            bayesUpdater = new ApproximateUpdater(bayesIm,
+            this.bayesUpdater = new ApproximateUpdater(bayesIm,
                     (Evidence) params.get("evidence", null));
         }
 
-        Node node = (Node) getParams().get("variable", null);
+        final Node node = (Node) getParams().get("variable", null);
 
         if (node != null) {
-            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+            final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
             TetradLogger.getInstance().log("info", "\nApproximate Updater");
 
-            String nodeName = node.getName();
-            int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
-            double[] priors = getBayesUpdater().calculatePriorMarginals(nodeIndex);
-            double[] marginals = getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
+            final String nodeName = node.getName();
+            final int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
+            final double[] priors = getBayesUpdater().calculatePriorMarginals(nodeIndex);
+            final double[] marginals = getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
 
             TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
             TetradLogger.getInstance().log("details", "\nEvidence:");
-            Evidence evidence = (Evidence) getParams().get("evidence", null);
-            Proposition proposition = evidence.getProposition();
+            final Evidence evidence = (Evidence) getParams().get("evidence", null);
+            final Proposition proposition = evidence.getProposition();
 
             for (int i = 0; i < proposition.getNumVariables(); i++) {
-                Node variable = proposition.getVariableSource().getVariables().get(i);
-                int category = proposition.getSingleCategory(i);
+                final Node variable = proposition.getVariableSource().getVariables().get(i);
+                final int category = proposition.getSingleCategory(i);
 
                 if (category != -1) {
                     TetradLogger.getInstance().log("details", "\t" + variable + " = " + category);
@@ -161,12 +161,12 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
         TetradLogger.getInstance().reset();
     }
 
-    private String category(Evidence evidence, String nodeName, int i) {
-        DiscreteVariable variable = discreteVariable(evidence, nodeName);
+    private String category(final Evidence evidence, final String nodeName, final int i) {
+        final DiscreteVariable variable = discreteVariable(evidence, nodeName);
         return variable.getCategory(i);
     }
 
-    private DiscreteVariable discreteVariable(Evidence evidence, String nodeName) {
+    private DiscreteVariable discreteVariable(final Evidence evidence, final String nodeName) {
         return evidence.getVariable(nodeName);
     }
 
@@ -184,25 +184,25 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesUpdater == null) {
+        if (this.bayesUpdater == null) {
             throw new NullPointerException();
         }
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

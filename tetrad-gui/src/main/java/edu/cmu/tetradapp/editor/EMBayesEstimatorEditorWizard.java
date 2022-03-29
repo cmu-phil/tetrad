@@ -49,16 +49,16 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
 
     private static final long serialVersionUID = -4844735953555314165L;
 
-    private BayesIm bayesIm;
-    private JComboBox<Node> varNamesComboBox;
-    private GraphWorkbench workbench;
+    private final BayesIm bayesIm;
+    private final JComboBox<Node> varNamesComboBox;
+    private final GraphWorkbench workbench;
     private BayesEstimatorNodeEditingTable editingTable;
-    private JPanel tablePanel;
+    private final JPanel tablePanel;
 
     private boolean enableEditing = true;
 
-    public EMBayesEstimatorEditorWizard(BayesIm bayesIm,
-                                        GraphWorkbench workbench) {
+    public EMBayesEstimatorEditorWizard(final BayesIm bayesIm,
+                                        final GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -74,47 +74,47 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
 
         // Set up components.
         this.varNamesComboBox = createVarNamesComboBox(bayesIm.getBayesPm());
-        workbench.scrollWorkbenchToNode((Node) varNamesComboBox.getSelectedItem());
+        workbench.scrollWorkbenchToNode((Node) this.varNamesComboBox.getSelectedItem());
 
-        JButton nextButton = new JButton("Next");
+        final JButton nextButton = new JButton("Next");
         nextButton.setMnemonic('N');
 
-        Node node = (Node) (varNamesComboBox.getSelectedItem());
-        editingTable = new BayesEstimatorNodeEditingTable(node, bayesIm);
-        editingTable.addPropertyChangeListener((evt) -> {
+        final Node node = (Node) (this.varNamesComboBox.getSelectedItem());
+        this.editingTable = new BayesEstimatorNodeEditingTable(node, bayesIm);
+        this.editingTable.addPropertyChangeListener((evt) -> {
             if ("editorValueChanged".equals(evt.getPropertyName())) {
                 firePropertyChange("editorValueChanged", null, null);
             }
         });
 
-        JScrollPane scroll = new JScrollPane(editingTable);
+        final JScrollPane scroll = new JScrollPane(this.editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
-        tablePanel = new JPanel();
-        tablePanel.setLayout(new BorderLayout());
-        tablePanel.add(scroll, BorderLayout.CENTER);
-        editingTable.grabFocus();
+        this.tablePanel = new JPanel();
+        this.tablePanel.setLayout(new BorderLayout());
+        this.tablePanel.add(scroll, BorderLayout.CENTER);
+        this.editingTable.grabFocus();
 
         // Do Layout.
         setLayout(new BorderLayout());
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Probability table for values of "));
-        b2.add(varNamesComboBox);
+        b2.add(this.varNamesComboBox);
         b2.add(new JLabel(" conditional on values of its"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("parents:"));
         b3.add(Box.createHorizontalGlue());
         b1.add(b3);
 
-        Box b4 = Box.createHorizontalBox();
-        b4.add(tablePanel, BorderLayout.CENTER);
+        final Box b4 = Box.createHorizontalBox();
+        b4.add(this.tablePanel, BorderLayout.CENTER);
         b1.add(b4);
 
-        Box b5 = Box.createHorizontalBox();
+        final Box b5 = Box.createHorizontalBox();
         b5.add(new JLabel("Asterisks in table indicate undefined values."));
         b5.add(Box.createHorizontalGlue());
         b1.add(b5);
@@ -123,15 +123,15 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
         add(b1, BorderLayout.CENTER);
 
         // Add listeners.
-        varNamesComboBox.addActionListener((e) -> {
-            Node n = (Node) varNamesComboBox.getSelectedItem();
+        this.varNamesComboBox.addActionListener((e) -> {
+            final Node n = (Node) this.varNamesComboBox.getSelectedItem();
             getWorkbench().scrollWorkbenchToNode(n);
             setCurrentNode(n);
         });
 
         nextButton.addActionListener((e) -> {
-            int current = varNamesComboBox.getSelectedIndex();
-            int max = varNamesComboBox.getItemCount();
+            int current = this.varNamesComboBox.getSelectedIndex();
+            final int max = this.varNamesComboBox.getItemCount();
 
             ++current;
 
@@ -141,16 +141,16 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
                         "There are no more variables.");
             }
 
-            int set = (current < max) ? current : 0;
+            final int set = (current < max) ? current : 0;
 
-            varNamesComboBox.setSelectedIndex(set);
+            this.varNamesComboBox.setSelectedIndex(set);
         });
 
         workbench.addPropertyChangeListener((evt) -> {
             if (evt.getPropertyName().equals("selectedNodes")) {
-                List selection = (List) (evt.getNewValue());
+                final List selection = (List) (evt.getNewValue());
                 if (selection.size() == 1) {
-                    varNamesComboBox.setSelectedItem((Node) selection.get(0));
+                    this.varNamesComboBox.setSelectedItem((Node) selection.get(0));
                 }
             }
         });
@@ -159,13 +159,13 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
         this.workbench = workbench;
     }
 
-    private JComboBox<Node> createVarNamesComboBox(BayesPm bayesPm) {
-        JComboBox<Node> varNameComboBox = new JComboBox<>();
+    private JComboBox<Node> createVarNamesComboBox(final BayesPm bayesPm) {
+        final JComboBox<Node> varNameComboBox = new JComboBox<>();
         varNameComboBox.setBackground(Color.white);
 
-        Graph graph = bayesPm.getDag();
+        final Graph graph = bayesPm.getDag();
 
-        List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
+        final List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
         Collections.sort(nodes);
         nodes.forEach(varNameComboBox::addItem);
 
@@ -180,44 +180,44 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
      * Sets the getModel display to reflect the stored values of the getModel
      * node.
      */
-    private void setCurrentNode(Node node) {
-        TableCellEditor cellEditor = editingTable.getCellEditor();
+    private void setCurrentNode(final Node node) {
+        final TableCellEditor cellEditor = this.editingTable.getCellEditor();
 
         if (cellEditor != null) {
             cellEditor.cancelCellEditing();
         }
 
-        editingTable = new BayesEstimatorNodeEditingTable(node, getBayesIm());
-        editingTable.addPropertyChangeListener((evt) -> {
+        this.editingTable = new BayesEstimatorNodeEditingTable(node, getBayesIm());
+        this.editingTable.addPropertyChangeListener((evt) -> {
             if ("editorValueChanged".equals(evt.getPropertyName())) {
                 firePropertyChange("editorValueChanged", null, null);
             }
         });
 
-        JScrollPane scroll = new JScrollPane(editingTable);
+        final JScrollPane scroll = new JScrollPane(this.editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
 
-        tablePanel.removeAll();
-        tablePanel.add(scroll, BorderLayout.CENTER);
-        tablePanel.revalidate();
-        tablePanel.repaint();
+        this.tablePanel.removeAll();
+        this.tablePanel.add(scroll, BorderLayout.CENTER);
+        this.tablePanel.revalidate();
+        this.tablePanel.repaint();
 
-        editingTable.grabFocus();
+        this.editingTable.grabFocus();
     }
 
     private BayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     private GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     public boolean isEnableEditing() {
-        return enableEditing;
+        return this.enableEditing;
     }
 
-    public void enableEditing(boolean enableEditing) {
+    public void enableEditing(final boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {
             this.workbench.enableEditing(enableEditing);

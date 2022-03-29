@@ -32,7 +32,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
     /**
      * The desktop containing the target session editor.
      */
-    private GraphWorkbench workbench;
+    private final GraphWorkbench workbench;
 
     /**
      * Creates a new copy subsession action for the given desktop and
@@ -40,7 +40,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
      *
      * @param workbench
      */
-    public SelectInterventionalAction(GraphWorkbench workbench) {
+    public SelectInterventionalAction(final GraphWorkbench workbench) {
         super("Highlight Interventional Nodes");
 
         if (workbench == null) {
@@ -57,22 +57,22 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
      * @param e
      */
     @Override
-    public void actionPerformed(ActionEvent e) {
-        workbench.deselectAll();
+    public void actionPerformed(final ActionEvent e) {
+        this.workbench.deselectAll();
 
-        for (Component comp : workbench.getComponents()) {
+        for (final Component comp : this.workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
-                Node node = ((DisplayNode) comp).getModelNode();
+                final Node node = ((DisplayNode) comp).getModelNode();
                 if (node.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || node.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
-                    workbench.selectNode(node);
+                    this.workbench.selectNode(node);
                 }
             }
 
             if (comp instanceof DisplayEdge) {
-                Edge edge = ((DisplayEdge) comp).getModelEdge();
+                final Edge edge = ((DisplayEdge) comp).getModelEdge();
                 if ((edge.getNode1().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode1().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)
                         || (edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)) {
-                    workbench.selectEdge(edge);
+                    this.workbench.selectEdge(edge);
                 }
             }
         }
@@ -83,7 +83,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
      * Required by the AbstractAction interface; does nothing.
      */
     @Override
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 
 }

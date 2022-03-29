@@ -31,19 +31,19 @@ public class ContinuousTabularData implements ContinuousData {
     private final DataColumn[] dataColumns;
     private final double[][] data;
 
-    public ContinuousTabularData(DataColumn[] dataColumns, double[][] data) {
+    public ContinuousTabularData(final DataColumn[] dataColumns, final double[][] data) {
         this.dataColumns = dataColumns;
         this.data = data;
     }
 
     @Override
     public DataColumn[] getDataColumns() {
-        return dataColumns;
+        return this.dataColumns;
     }
 
     @Override
     public double[][] getData() {
-        return data;
+        return this.data;
     }
 
 }

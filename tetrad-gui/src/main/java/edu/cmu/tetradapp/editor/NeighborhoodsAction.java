@@ -48,7 +48,7 @@ class NeighborhoodsAction extends AbstractAction implements ClipboardOwner {
      * Creates a new copy subsession action for the given LayoutEditable and
      * clipboard.
      */
-    public NeighborhoodsAction(GraphWorkbench workbench) {
+    public NeighborhoodsAction(final GraphWorkbench workbench) {
         super("Neighborhoods");
         this.workbench = workbench;
     }
@@ -57,23 +57,23 @@ class NeighborhoodsAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(ActionEvent e) {
-        Box b = Box.createVerticalBox();
-        Graph graph = workbench.getGraph();
+    public void actionPerformed(final ActionEvent e) {
+        final Box b = Box.createVerticalBox();
+        final Graph graph = this.workbench.getGraph();
 
-        JTextArea textArea = new JTextArea();
-        JScrollPane scroll = new JScrollPane(textArea);
+        final JTextArea textArea = new JTextArea();
+        final JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(600, 600));
 
         textArea.append("Neighborhoods:");
 
         for (int i = 0; i < graph.getNodes().size(); i++) {
-            Node node = graph.getNodes().get(i);
+            final Node node = graph.getNodes().get(i);
 
-            List<Node> parents = graph.getParents(node);
-            List<Node> children = graph.getChildren(node);
+            final List<Node> parents = graph.getParents(node);
+            final List<Node> children = graph.getChildren(node);
 
-            List<Node> ambiguous = graph.getAdjacentNodes(node);
+            final List<Node> ambiguous = graph.getAdjacentNodes(node);
             ambiguous.removeAll(parents);
             ambiguous.removeAll(children);
 
@@ -84,17 +84,17 @@ class NeighborhoodsAction extends AbstractAction implements ClipboardOwner {
         }
 
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(scroll);
         textArea.setCaretPosition(0);
         b.add(b2);
 
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b);
 
-        EditorWindow window = new EditorWindow(panel,
-                "Neighborhoods", "Close", false, workbench);
+        final EditorWindow window = new EditorWindow(panel,
+                "Neighborhoods", "Close", false, this.workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -102,14 +102,14 @@ class NeighborhoodsAction extends AbstractAction implements ClipboardOwner {
 //                "Graph Properties", JOptionPane.PLAIN_MESSAGE);
     }
 
-    private String niceList(List<Node> nodes) {
+    private String niceList(final List<Node> nodes) {
         if (nodes.isEmpty()) {
             return "--NONE--";
         }
 
         Collections.sort(nodes);
 
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < nodes.size(); i++) {
             buf.append(nodes.get(i));
@@ -125,7 +125,7 @@ class NeighborhoodsAction extends AbstractAction implements ClipboardOwner {
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 
 

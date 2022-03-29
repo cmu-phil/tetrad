@@ -65,9 +65,9 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * Paints the component.
      */
-    public void paint(Graphics g) {
-        int width = getSize().width;
-        int height = getSize().height;
+    public void paint(final Graphics g) {
+        final int width = getSize().width;
+        final int height = getSize().height;
         g.setColor(BACKGROUND_COLOR);
         g.fillRect(0, 0, width, height);
 
@@ -89,7 +89,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * Sets the acronym of the component.
      */
-    public void setAcronym(String acronym) {
+    public void setAcronym(final String acronym) {
 
     }
 
@@ -99,25 +99,25 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
      * @return true iff the display is selected.
      */
     public boolean isSelected() {
-        return selected;
+        return this.selected;
     }
 
     /**
      * Sets the comp as selected.
      */
-    public void setSelected(boolean selected) {
+    public void setSelected(final boolean selected) {
         this.selected = selected;
     }
 
     /**
      * Does nothing.
      */
-    public void setHasModel(boolean b) {
+    public void setHasModel(final boolean b) {
         // Ignore.
     }
 
 
-    public void setName(String name) {
+    public void setName(final String name) {
         super.setName(name);
         this.name.setText(name);
         //buildComponents();
@@ -132,12 +132,12 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
         setBackground(BACKGROUND_COLOR);
         setFont(DisplayNodeUtils.getFont());
 
-        Box b = Box.createVerticalBox();
+        final Box b = Box.createVerticalBox();
         b.add(Box.createVerticalStrut(2));
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalStrut(5));
-        b2.add(name);
+        b2.add(this.name);
         b2.add(Box.createHorizontalStrut(5));
         b2.add(Box.createHorizontalGlue());
         b.add(b2);

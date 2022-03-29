@@ -60,7 +60,7 @@ public final class IntTextField extends JTextField {
      *              upperBound.
      * @param size  the number of columns in the textfield.
      */
-    public IntTextField(int value, int size) {
+    public IntTextField(final int value, final int size) {
         super(size);
 
         setValue(value);
@@ -74,11 +74,11 @@ public final class IntTextField extends JTextField {
              * attempting to set the value displayed. If the value
              * displayed cannot be set, the set value is reinstated.
              */
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 try {
-                    int n = Integer.parseInt(e.getActionCommand());
+                    final int n = Integer.parseInt(e.getActionCommand());
                     setValue(n);
-                } catch (NumberFormatException e1) {
+                } catch (final NumberFormatException e1) {
                     setText(Integer.toString(getValue()));
                 }
             }
@@ -91,8 +91,8 @@ public final class IntTextField extends JTextField {
              *
              * @param e the event.
              */
-            public void focusGained(FocusEvent e) {
-                IntTextField source = (IntTextField) e.getSource();
+            public void focusGained(final FocusEvent e) {
+                final IntTextField source = (IntTextField) e.getSource();
                 source.selectAll();
             }
 
@@ -101,11 +101,11 @@ public final class IntTextField extends JTextField {
              * displayed as int; if this cannot be done, restore the previous
              * value.
              */
-            public void focusLost(FocusEvent e) {
+            public void focusLost(final FocusEvent e) {
                 try {
-                    int n = Integer.parseInt(getText());
+                    final int n = Integer.parseInt(getText());
                     setValue(n);
-                } catch (NumberFormatException e1) {
+                } catch (final NumberFormatException e1) {
                     setText(Integer.toString(getValue()));
                 }
             }
@@ -114,7 +114,7 @@ public final class IntTextField extends JTextField {
 
     //=============================PUBLIC METHODS=======================//
 
-    public void setUnfilteredValue(int value) {
+    public void setUnfilteredValue(final int value) {
         setText(String.valueOf(value));
     }
 
@@ -122,12 +122,12 @@ public final class IntTextField extends JTextField {
     /**
      * Sets the value of the text field to the given int value.
      */
-    public void setValue(int value) {
+    public void setValue(final int value) {
         if (value == this.value) {
             return;
         }
 
-        int newValue = filter(value, this.value);
+        final int newValue = filter(value, this.value);
 
         if (newValue == this.value) {
             setText(Integer.toString(this.value));
@@ -142,13 +142,13 @@ public final class IntTextField extends JTextField {
      * @return the int value currently displayed.
      */
     public int getValue() {
-        return value;
+        return this.value;
     }
 
     /**
      * Sets whether the given value should be accepted.
      */
-    public void setFilter(Filter filter) {
+    public void setFilter(final Filter filter) {
         this.filter = filter;
     }
 
@@ -183,12 +183,12 @@ public final class IntTextField extends JTextField {
      * setLabel() is overridden in a way that doesn't make a call to
      * checkValue().
      */
-    private int filter(int value, int oldValue) {
-        if (filter == null) {
+    private int filter(final int value, final int oldValue) {
+        if (this.filter == null) {
             return value;
         }
 
-        return filter.filter(value, oldValue);
+        return this.filter.filter(value, oldValue);
     }
 
     //==============================Interfaces============================//

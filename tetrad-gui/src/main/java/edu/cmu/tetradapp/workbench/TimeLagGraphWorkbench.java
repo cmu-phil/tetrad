@@ -66,12 +66,12 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     /**
      * Constructs a new workbench workbench for the given workbench model.
      */
-    public TimeLagGraphWorkbench(TimeLagGraph graph) {
+    public TimeLagGraphWorkbench(final TimeLagGraph graph) {
         super(graph);
         setRightClickPopupAllowed(true);
 
         graph.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("editingFinished".equals(evt.getPropertyName())) {
                     System.out.println("EDITING FINISHED!");
                     timeLagLayout();
@@ -82,20 +82,20 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     private void timeLagLayout() {
 
-        TimeLagGraph graph = (TimeLagGraph) getGraph();
-        rememberedNodes.retainAll(graph.getNodes());
+        final TimeLagGraph graph = (TimeLagGraph) getGraph();
+        this.rememberedNodes.retainAll(graph.getNodes());
 
-        int ySpace = 100;
-        List<Node> lag0Nodes = graph.getLag0Nodes();
+        final int ySpace = 100;
+        final List<Node> lag0Nodes = graph.getLag0Nodes();
 
         System.out.println(lag0Nodes);
 
-        int[] averageY = new int[graph.getMaxLag() + 1];
+        final int[] averageY = new int[graph.getMaxLag() + 1];
 
         int numRememberedLag0 = 0;
 
-        for (Node node : lag0Nodes) {
-            if (!rememberedNodes.contains(node)) {
+        for (final Node node : lag0Nodes) {
+            if (!this.rememberedNodes.contains(node)) {
                 continue;
             }
 
@@ -103,17 +103,17 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
         }
 
 
-        if (rememberedNodes.isEmpty() || numRememberedLag0 == 0) {
+        if (this.rememberedNodes.isEmpty() || numRememberedLag0 == 0) {
             int x = -25;
 
-            for (Node node : lag0Nodes) {
+            for (final Node node : lag0Nodes) {
                 x += 90;
                 int y = 50 - ySpace;
-                TimeLagGraph.NodeId id = graph.getNodeId(node);
+                final TimeLagGraph.NodeId id = graph.getNodeId(node);
 
                 for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
                     y += ySpace;
-                    Node _node = graph.getNode(id.getName(), lag);
+                    final Node _node = graph.getNode(id.getName(), lag);
 
                     if (_node == null) {
                         System.out.println("Couldn't find " + _node);
@@ -126,13 +126,13 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
             }
         } else {
             for (int lag = 0; lag <= graph.getMaxLag(); lag++) {
-                for (Node node : lag0Nodes) {
-                    if (!rememberedNodes.contains(node)) {
+                for (final Node node : lag0Nodes) {
+                    if (!this.rememberedNodes.contains(node)) {
                         continue;
                     }
 
-                    TimeLagGraph.NodeId id = graph.getNodeId(node);
-                    Node _node = graph.getNode(id.getName(), lag);
+                    final TimeLagGraph.NodeId id = graph.getNodeId(node);
+                    final Node _node = graph.getNode(id.getName(), lag);
 
                     if (_node == null) continue;
 
@@ -146,15 +146,15 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
                 averageY[lag] = averageY[lag] / numRememberedLag0;
             }
 
-            for (Node node : lag0Nodes) {
-                if (rememberedNodes.contains(node)) continue;
-                int x = node.getCenterX();
+            for (final Node node : lag0Nodes) {
+                if (this.rememberedNodes.contains(node)) continue;
+                final int x = node.getCenterX();
 
-                TimeLagGraph.NodeId id = graph.getNodeId(node);
+                final TimeLagGraph.NodeId id = graph.getNodeId(node);
 
                 for (int lag = 0; lag <= graph.getMaxLag(); lag++) {
-                    int y = averageY[lag];
-                    Node _node = graph.getNode(id.getName(), lag);
+                    final int y = averageY[lag];
+                    final Node _node = graph.getNode(id.getName(), lag);
 
                     if (_node == null) {
                         System.out.println("Couldn't find " + _node);
@@ -168,7 +168,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
         }
 
         layoutByGraph(graph);
-        rememberedNodes = graph.getNodes();
+        this.rememberedNodes = graph.getNodes();
     }
 
 
@@ -184,7 +184,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
      * @see #BIDIRECTED_EDGE
      */
     public int getEdgeMode() {
-        return edgeMode;
+        return this.edgeMode;
     }
 
     /**
@@ -193,10 +193,10 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     public Node getNewModelNode() {
 
         // select a name and create the model node
-        String name;
-        Node modelNode;
+        final String name;
+        final Node modelNode;
 
-        switch (nodeType) {
+        switch (this.nodeType) {
             case MEASURED_NODE:
                 name = nextVariableName("X");
                 modelNode = new GraphNode(name);
@@ -223,11 +223,11 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
      * @param modelNode the model node.
      * @return the new display node.
      */
-    public DisplayNode getNewDisplayNode(Node modelNode) {
-        DisplayNode displayNode;
+    public DisplayNode getNewDisplayNode(final Node modelNode) {
+        final DisplayNode displayNode;
 
         if (modelNode.getNodeType() == NodeType.MEASURED) {
-            GraphNodeMeasured nodeMeasured = new GraphNodeMeasured(modelNode);
+            final GraphNodeMeasured nodeMeasured = new GraphNodeMeasured(modelNode);
             nodeMeasured.setEditExitingMeasuredVarsAllowed(isEditExistingMeasuredVarsAllowed());
             displayNode = nodeMeasured;
         } else if (modelNode.getNodeType() == NodeType.LATENT) {
@@ -239,7 +239,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
         }
 
         displayNode.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("resetGraph".equals(evt.getPropertyName())) {
                     setGraph(getGraph());
                 } else if ("editingValueChanged".equals(evt.getPropertyName())) {
@@ -258,16 +258,16 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
      * @param modelEdge the model edge.
      * @return the new display edge.
      */
-    public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
-        Node node1 = modelEdge.getNode1();
-        Node node2 = modelEdge.getNode2();
+    public IDisplayEdge getNewDisplayEdge(final Edge modelEdge) {
+        final Node node1 = modelEdge.getNode1();
+        final Node node2 = modelEdge.getNode2();
 
         if (node1 == node2) {
             throw new IllegalArgumentException("Edges to self not supported.");
         }
 
-        DisplayNode displayNodeA = (DisplayNode) getModelNodesToDisplay().get(node1);
-        DisplayNode displayNodeB = (DisplayNode) getModelNodesToDisplay().get(node2);
+        final DisplayNode displayNodeA = (DisplayNode) getModelNodesToDisplay().get(node1);
+        final DisplayNode displayNodeB = (DisplayNode) getModelNodesToDisplay().get(node2);
 
         if ((displayNodeA == null) || (displayNodeB == null)) {
             return null;
@@ -284,8 +284,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
      * @param node2 the other model node.
      * @return the new model edge.
      */
-    public Edge getNewModelEdge(Node node1, Node node2) {
-        switch (edgeMode) {
+    public Edge getNewModelEdge(final Node node1, final Node node2) {
+        switch (this.edgeMode) {
             case DIRECTED_EDGE:
                 return Edges.directedEdge(node1, node2);
 
@@ -312,8 +312,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
      * @param mouseLoc the location of the mouse.
      * @return the new tracking edge (a display edge).
      */
-    public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
-        switch (edgeMode) {
+    public IDisplayEdge getNewTrackingEdge(final DisplayNode node, final Point mouseLoc) {
+        switch (this.edgeMode) {
             case DIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.DIRECTED);
 
@@ -341,7 +341,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
      * @see #LATENT_NODE
      */
     public int getNodeMode() {
-        return nodeType;
+        return this.nodeType;
     }
 
     /**
@@ -352,7 +352,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
      * @param base the base string.
      * @return the first string in the sequence not already being used.
      */
-    public String nextVariableName(String base) {
+    public String nextVariableName(final String base) {
 
         if (base.contains(":")) {
             throw new IllegalArgumentException("Base names may not contain colons: " + base);
@@ -363,9 +363,9 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
         loop:
         while (true) {
-            String name = base + (++i);
+            final String name = base + (++i);
 
-            for (Node node1 : getGraph().getNodes()) {
+            for (final Node node1 : getGraph().getNodes()) {
 
                 if (node1.getName().equals(name)) {
                     continue loop;
@@ -381,7 +381,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     /**
      * Sets the edge mode to the given mode.
      */
-    public void setEdgeMode(int edgeMode) {
+    public void setEdgeMode(final int edgeMode) {
         switch (edgeMode) {
             case DIRECTED_EDGE:
                 // Falls through!
@@ -400,7 +400,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     /**
      * Sets the type of this node to the given type.
      */
-    public void setNodeType(int nodeType) {
+    public void setNodeType(final int nodeType) {
         if (nodeType == MEASURED_NODE || nodeType == LATENT_NODE) {
             this.nodeType = nodeType;
         } else {
@@ -413,19 +413,19 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
      * Pastes a list of session elements (SessionNodeWrappers and SessionEdges)
      * into the workbench.
      */
-    public void pasteSubgraph(List graphElements, Point upperLeft) {
+    public void pasteSubgraph(final List graphElements, final Point upperLeft) {
 
         // Extract the SessionNodes from the SessionNodeWrappers
         // and pass the list of them to the Session.  Choose a unique
         // name for each of the session wrappers.
-        Point oldUpperLeft = EditorUtils.getTopLeftPoint(graphElements);
-        int deltaX = upperLeft.x - oldUpperLeft.x;
-        int deltaY = upperLeft.y - oldUpperLeft.y;
+        final Point oldUpperLeft = EditorUtils.getTopLeftPoint(graphElements);
+        final int deltaX = upperLeft.x - oldUpperLeft.x;
+        final int deltaY = upperLeft.y - oldUpperLeft.y;
 
-        for (Object graphElement : graphElements) {
+        for (final Object graphElement : graphElements) {
 
             if (graphElement instanceof Node) {
-                Node node = (Node) graphElement;
+                final Node node = (Node) graphElement;
                 adjustNameAndPosition(node, deltaX, deltaY);
                 getWorkbench().getGraph().addNode(node);
             } else if (graphElement instanceof Edge) {
@@ -449,11 +449,11 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
      * @param deltaX the shift in x
      * @param deltaY the shift in y.
      */
-    private void adjustNameAndPosition(Node node, int deltaX,
-                                       int deltaY) {
-        String originalName = node.getName();
+    private void adjustNameAndPosition(final Node node, final int deltaX,
+                                       final int deltaY) {
+        final String originalName = node.getName();
         //String base = extractBase(originalName);
-        String uniqueName = nextUniqueName(originalName);
+        final String uniqueName = nextUniqueName(originalName);
 
         if (!uniqueName.equals(originalName)) {
             node.setName(uniqueName);
@@ -470,7 +470,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
         if (base == null) {
             throw new NullPointerException("Base name must be non-null.");
         }
-        List<Node> currentNodes = this.getWorkbench().getGraph().getNodes();
+        final List<Node> currentNodes = this.getWorkbench().getGraph().getNodes();
         if (!containsName(currentNodes, base)) {
             return base;
         }
@@ -484,8 +484,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
         return base + i;
     }
 
-    private static boolean containsName(List<Node> nodes, String name) {
-        for (Node node : nodes) {
+    private static boolean containsName(final List<Node> nodes, final String name) {
+        for (final Node node : nodes) {
             if (name.equals(node.getName())) {
                 return true;
             }

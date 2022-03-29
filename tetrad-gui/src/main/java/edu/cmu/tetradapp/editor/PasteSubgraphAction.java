@@ -43,13 +43,13 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
     /**
      * The desktop containing the target session editor.
      */
-    private GraphEditable graphEditor;
+    private final GraphEditable graphEditor;
 
     /**
      * Constucts an action for loading the session in the given '.tet' file into
      * the desktop.
      */
-    public PasteSubgraphAction(GraphEditable graphEditor) {
+    public PasteSubgraphAction(final GraphEditable graphEditor) {
         super("Paste Selected Graph");
 
         if (graphEditor == null) {
@@ -63,24 +63,24 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(ActionEvent e) {
-        Transferable transferable = InternalClipboard.getInstance()
+    public void actionPerformed(final ActionEvent e) {
+        final Transferable transferable = InternalClipboard.getInstance()
                 .getContents(null);
 
         if (!(transferable instanceof SubgraphSelection)) {
             return;
         }
 
-        SubgraphSelection selection = (SubgraphSelection) transferable;
-        DataFlavor flavor =
+        final SubgraphSelection selection = (SubgraphSelection) transferable;
+        final DataFlavor flavor =
                 new DataFlavor(SubgraphSelection.class, "Subgraph Selection");
 
         try {
-            List modelList = (List) selection.getTransferData(flavor);
-            Point point = EditorUtils.getTopLeftPoint(modelList);
+            final List modelList = (List) selection.getTransferData(flavor);
+            final Point point = EditorUtils.getTopLeftPoint(modelList);
             point.translate(50, 50);
             graphEditor().pasteSubsession(modelList, point);
-        } catch (Exception e1) {
+        } catch (final Exception e1) {
             throw new RuntimeException(e1);
         }
     }
@@ -94,7 +94,7 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
      * @param contents  the contents which this owner had placed on the
      *                  clipboard
      */
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 
     private GraphEditable graphEditor() {

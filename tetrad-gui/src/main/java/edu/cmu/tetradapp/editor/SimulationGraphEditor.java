@@ -55,7 +55,7 @@ public final class SimulationGraphEditor extends JPanel {
     /**
      * Constructs the editor. Edited by Zhou on 8/20/18
      */
-    public SimulationGraphEditor(List<Graph> graphs) {
+    public SimulationGraphEditor(final List<Graph> graphs) {
         this.tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
         this.graphs = graphs;
 
@@ -73,8 +73,8 @@ public final class SimulationGraphEditor extends JPanel {
      *
      * @param graphs - The graphs to display now.
      */
-    public final void replace(List<Graph> graphs) {
-        tabbedPane.removeAll();
+    public final void replace(final List<Graph> graphs) {
+        this.tabbedPane.removeAll();
         setPreferredSize(new Dimension(600, 400));
 
         // now rebuild
@@ -108,10 +108,10 @@ public final class SimulationGraphEditor extends JPanel {
 
         removeAll();
 
-        int selectedIndex = -1;
+        final int selectedIndex = -1;
 
-        for (int i = 0; i < graphs.size(); i++) {
-            Graph graph = graphs.get(i);
+        for (int i = 0; i < this.graphs.size(); i++) {
+            final Graph graph = this.graphs.get(i);
             tabbedPane().addTab(tabName(i + 1), graphDisplay(graph));
         }
 
@@ -123,8 +123,8 @@ public final class SimulationGraphEditor extends JPanel {
     }
 
     public DataModel getSelectedDataModel() {
-        Component selectedComponent = tabbedPane().getSelectedComponent();
-        DataModelContainer scrollPane = (DataModelContainer) selectedComponent;
+        final Component selectedComponent = tabbedPane().getSelectedComponent();
+        final DataModelContainer scrollPane = (DataModelContainer) selectedComponent;
 
         if (scrollPane == null) {
             return null;
@@ -137,26 +137,26 @@ public final class SimulationGraphEditor extends JPanel {
         tabbedPane().setSelectedIndex(0);
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(final PropertyChangeEvent evt) {
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }
 
     //=============================PRIVATE METHODS======================//
-    private static String tabName(int i) {
+    private static String tabName(final int i) {
         return "" + i;
     }
 
     /**
      * @return the data display for the given model.
      */
-    private JComponent graphDisplay(Graph graph) {
-        GraphEditor graphEditor = new GraphEditor(new GraphWrapper(graph));
+    private JComponent graphDisplay(final Graph graph) {
+        final GraphEditor graphEditor = new GraphEditor(new GraphWrapper(graph));
         graphEditor.enableEditing(false);
 
         return graphEditor.getWorkbench();
     }
 
     private JTabbedPane tabbedPane() {
-        return tabbedPane;
+        return this.tabbedPane;
     }
 }

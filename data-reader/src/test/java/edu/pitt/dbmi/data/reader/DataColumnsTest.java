@@ -52,15 +52,15 @@ public class DataColumnsTest {
      */
     @Test
     public void testUpdate() throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
+        final TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
         DataColumn[] dataColumns = columnReader.readInDataColumns(true);
 
         long expected = 10;
         long actual = dataColumns.length;
         Assert.assertEquals(expected, actual);
 
-        MetadataReader metadataReader = new MetadataFileReader(metadataFile);
-        Metadata metadata = metadataReader.read();
+        final MetadataReader metadataReader = new MetadataFileReader(this.metadataFile);
+        final Metadata metadata = metadataReader.read();
         dataColumns = DataColumns.update(dataColumns, metadata);
 
         expected = 11;

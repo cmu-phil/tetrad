@@ -63,8 +63,8 @@ public class KnowledgeModelEdge extends Edge
      * @param node2 the second node
      * @param type  one of FORBIDDEN or REQUIRED.           _
      */
-    public KnowledgeModelEdge(KnowledgeModelNode node1,
-                              KnowledgeModelNode node2, int type) {
+    public KnowledgeModelEdge(final KnowledgeModelNode node1,
+                              final KnowledgeModelNode node2, final int type) {
         super(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
 
         if (node1 == null || node2 == null) {
@@ -91,7 +91,7 @@ public class KnowledgeModelEdge extends Edge
     //==============================PUBLIC METHODS========================//
 
     public int getType() {
-        return type;
+        return this.type;
     }
 }
 

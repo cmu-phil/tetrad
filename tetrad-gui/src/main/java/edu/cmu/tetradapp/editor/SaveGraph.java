@@ -45,7 +45,7 @@ public class SaveGraph extends AbstractAction {
     /**
      * The component whose image is to be saved.
      */
-    private GraphEditable graphEditable;
+    private final GraphEditable graphEditable;
 
     /**
      * A reference to the title, to be used a dialog title.
@@ -59,7 +59,7 @@ public class SaveGraph extends AbstractAction {
 
     public enum Type {text, xml, json, r, dot}
 
-    public SaveGraph(GraphEditable graphEditable, String title, Type type) {
+    public SaveGraph(final GraphEditable graphEditable, final String title, final Type type) {
         super(title);
         this.title = title;
         this.type = type;
@@ -76,68 +76,68 @@ public class SaveGraph extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        Graph graph = getGraphEditable().getGraph();
-        Component parent = (Component) getGraphEditable();
+    public void actionPerformed(final ActionEvent e) {
+        final Graph graph = getGraphEditable().getGraph();
+        final Component parent = (Component) getGraphEditable();
 
-        if (type == Type.xml) {
-            File file = EditorUtils.getSaveFile("graph", "xml", parent, false, title);
-            PrintWriter out = GraphUtils.saveGraph(graph, file, true);
+        if (this.type == Type.xml) {
+            final File file = EditorUtils.getSaveFile("graph", "xml", parent, false, this.title);
+            final PrintWriter out = GraphUtils.saveGraph(graph, file, true);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
-        } else if (type == Type.text) {
-            File file = EditorUtils.getSaveFile("graph", "txt", parent, false, title);
-            PrintWriter out = GraphUtils.saveGraph(graph, file, false);
+        } else if (this.type == Type.text) {
+            final File file = EditorUtils.getSaveFile("graph", "txt", parent, false, this.title);
+            final PrintWriter out = GraphUtils.saveGraph(graph, file, false);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
-        } else if (type == Type.r) {
-            File file = EditorUtils.getSaveFile("graph", "r.txt", parent, false, title);
+        } else if (this.type == Type.r) {
+            final File file = EditorUtils.getSaveFile("graph", "r.txt", parent, false, this.title);
             try {
-                String text = GraphUtils.graphRMatrixTxt(graph);
+                final String text = GraphUtils.graphRMatrixTxt(graph);
 
-                PrintWriter out = new PrintWriter(file);
+                final PrintWriter out = new PrintWriter(file);
                 out.println(text);
                 Preferences.userRoot().put("fileSaveLocation", file.getParent());
                 out.close();
-            } catch (FileNotFoundException e1) {
+            } catch (final FileNotFoundException e1) {
                 e1.printStackTrace();
                 throw new RuntimeException("Not a directed graph.", e1);
-            } catch (IllegalArgumentException e1) {
+            } catch (final IllegalArgumentException e1) {
 
                 // Probably not a directed graph.
                 JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
             }
-        } else if (type == Type.json) {
-            File file = EditorUtils.getSaveFile("graph", "json", parent, false, title);
+        } else if (this.type == Type.json) {
+            final File file = EditorUtils.getSaveFile("graph", "json", parent, false, this.title);
             try {
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                String text = gson.toJson(graph);
+                final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                final String text = gson.toJson(graph);
 
-                PrintWriter out = new PrintWriter(file);
+                final PrintWriter out = new PrintWriter(file);
                 out.println(text);
                 Preferences.userRoot().put("fileSaveLocation", file.getParent());
                 out.close();
-            } catch (FileNotFoundException e1) {
+            } catch (final FileNotFoundException e1) {
                 e1.printStackTrace();
                 throw new RuntimeException("Not a directed graph.", e1);
-            } catch (IllegalArgumentException e1) {
+            } catch (final IllegalArgumentException e1) {
 
                 // Probably not a directed graph.
                 JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
             }
-        } else if (type == Type.dot) {
-            File file = EditorUtils.getSaveFile("graph", "dot", parent, false, title);
+        } else if (this.type == Type.dot) {
+            final File file = EditorUtils.getSaveFile("graph", "dot", parent, false, this.title);
             try {
-                String text = GraphUtils.graphToDot(graph);
+                final String text = GraphUtils.graphToDot(graph);
 
-                PrintWriter out = new PrintWriter(file);
+                final PrintWriter out = new PrintWriter(file);
                 out.println(text);
                 Preferences.userRoot().put("fileSaveLocation", file.getParent());
                 out.close();
-            } catch (FileNotFoundException e1) {
+            } catch (final FileNotFoundException e1) {
                 e1.printStackTrace();
                 throw new RuntimeException("Not a directed graph.", e1);
-            } catch (IllegalArgumentException e1) {
+            } catch (final IllegalArgumentException e1) {
 
                 // Probably not a directed graph.
                 JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
@@ -146,7 +146,7 @@ public class SaveGraph extends AbstractAction {
     }
 
     private GraphEditable getGraphEditable() {
-        return graphEditable;
+        return this.graphEditable;
     }
 }
 

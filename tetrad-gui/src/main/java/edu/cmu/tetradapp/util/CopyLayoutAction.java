@@ -40,13 +40,13 @@ public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
     /**
      * The LayoutEditable containing the target session editor.
      */
-    private LayoutEditable layoutEditable;
+    private final LayoutEditable layoutEditable;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and
      * clipboard.
      */
-    public CopyLayoutAction(LayoutEditable layoutEditable) {
+    public CopyLayoutAction(final LayoutEditable layoutEditable) {
         super("Copy Layout");
 
         if (layoutEditable == null) {
@@ -60,16 +60,16 @@ public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(ActionEvent e) {
-        Graph layoutGraph = layoutEditable.getGraph();
-        LayoutSelection selection = new LayoutSelection(layoutGraph);
+    public void actionPerformed(final ActionEvent e) {
+        final Graph layoutGraph = this.layoutEditable.getGraph();
+        final LayoutSelection selection = new LayoutSelection(layoutGraph);
         InternalClipboard.getInstance().setContents(selection, this);
     }
 
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 }
 

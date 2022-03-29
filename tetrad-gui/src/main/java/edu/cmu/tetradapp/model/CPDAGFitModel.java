@@ -57,7 +57,7 @@ public final class CPDAGFitModel implements SessionModel {
     private List<BayesIm> bayesIms;
     private List<BayesPm> bayesPms;
     private List<Graph> referenceGraphs;
-    private DataModelList dataModelList;
+    private final DataModelList dataModelList;
     private List<SemPm> semPms;
     private List<SemIm> semIms;
 
@@ -69,65 +69,65 @@ public final class CPDAGFitModel implements SessionModel {
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
-    public CPDAGFitModel(Simulation simulation, GeneralAlgorithmRunner algorithmRunner, Parameters params) {
+    public CPDAGFitModel(final Simulation simulation, final GeneralAlgorithmRunner algorithmRunner, final Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }
 
         this.parameters = params;
 
-        DataModelList dataModels = simulation.getDataModelList();
+        final DataModelList dataModels = simulation.getDataModelList();
         this.dataModelList = dataModels;
-        List<Graph> graphs = algorithmRunner.getGraphs();
+        final List<Graph> graphs = algorithmRunner.getGraphs();
 
         if (dataModels.size() != graphs.size()) {
             throw new IllegalArgumentException("Sorry, I was expecting the same number of data sets as result graphs.");
         }
 
         if (((DataSet) dataModels.get(0)).isDiscrete()) {
-            bayesPms = new ArrayList<>();
-            bayesIms = new ArrayList<>();
+            this.bayesPms = new ArrayList<>();
+            this.bayesIms = new ArrayList<>();
 
             for (int i = 0; i < dataModels.size(); i++) {
-                DataSet dataSet = (DataSet) dataModels.get(0);
-                Graph dag = SearchGraphUtils.dagFromCPDAG(graphs.get(0));
-                BayesPm pm = new BayesPmWrapper(dag, new DataWrapper(dataSet)).getBayesPm();
-                bayesPms.add(pm);
-                bayesIms.add(estimate(dataSet, pm));
+                final DataSet dataSet = (DataSet) dataModels.get(0);
+                final Graph dag = SearchGraphUtils.dagFromCPDAG(graphs.get(0));
+                final BayesPm pm = new BayesPmWrapper(dag, new DataWrapper(dataSet)).getBayesPm();
+                this.bayesPms.add(pm);
+                this.bayesIms.add(estimate(dataSet, pm));
             }
         } else if (((DataSet) dataModels.get(0)).isContinuous()) {
-            semPms = new ArrayList<>();
-            semIms = new ArrayList<>();
+            this.semPms = new ArrayList<>();
+            this.semIms = new ArrayList<>();
 
             for (int i = 0; i < dataModels.size(); i++) {
-                DataSet dataSet = (DataSet) dataModels.get(0);
-                Graph dag = SearchGraphUtils.dagFromCPDAG(graphs.get(0));
+                final DataSet dataSet = (DataSet) dataModels.get(0);
+                final Graph dag = SearchGraphUtils.dagFromCPDAG(graphs.get(0));
 
                 try {
-                    SemPm pm = new SemPm(dag);
-                    semPms.add(pm);
-                    semIms.add(estimate(dataSet, pm));
-                } catch (Exception e) {
+                    final SemPm pm = new SemPm(dag);
+                    this.semPms.add(pm);
+                    this.semIms.add(estimate(dataSet, pm));
+                } catch (final Exception e) {
                     e.printStackTrace();
 
-                    Graph mag = SearchGraphUtils.pagToMag(graphs.get(0));
+                    final Graph mag = SearchGraphUtils.pagToMag(graphs.get(0));
 //                    Ricf.RicfResult result = estimatePag(dataSet, mag);
 
-                    SemGraph graph = new SemGraph(mag);
+                    final SemGraph graph = new SemGraph(mag);
                     graph.setShowErrorTerms(false);
-                    SemPm pm = new SemPm(graph);
-                    semPms.add(pm);
-                    semIms.add(estimatePag(dataSet, pm));
+                    final SemPm pm = new SemPm(graph);
+                    this.semPms.add(pm);
+                    this.semIms.add(estimatePag(dataSet, pm));
                 }
             }
         }
     }
 
-    private BayesIm estimate(DataSet dataSet, BayesPm bayesPm) {
-        Graph graph = bayesPm.getDag();
+    private BayesIm estimate(final DataSet dataSet, final BayesPm bayesPm) {
+        final Graph graph = bayesPm.getDag();
 
-        for (Object o : graph.getNodes()) {
-            Node node = (Node) o;
+        for (final Object o : graph.getNodes()) {
+            final Node node = (Node) o;
             if (node.getNodeType() == NodeType.LATENT) {
                 throw new IllegalArgumentException("Estimation of Bayes IM's " +
                         "with latents is not supported.");
@@ -139,20 +139,20 @@ public final class CPDAGFitModel implements SessionModel {
         }
 
         try {
-            MlBayesEstimator estimator = new MlBayesEstimator();
+            final MlBayesEstimator estimator = new MlBayesEstimator();
             return estimator.estimate(bayesPm, dataSet);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (final ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
                     "and discrete data set do not match.");
         }
     }
 
-    private SemIm estimate(DataSet dataSet, SemPm semPm) {
-        Graph graph = semPm.getGraph();
+    private SemIm estimate(final DataSet dataSet, final SemPm semPm) {
+        final Graph graph = semPm.getGraph();
 
-        for (Object o : graph.getNodes()) {
-            Node node = (Node) o;
+        for (final Object o : graph.getNodes()) {
+            final Node node = (Node) o;
             if (node.getNodeType() == NodeType.LATENT) {
                 throw new IllegalArgumentException("Estimation of Bayes IM's " +
                         "with latents is not supported.");
@@ -164,20 +164,20 @@ public final class CPDAGFitModel implements SessionModel {
         }
 
         try {
-            SemEstimator estimator = new SemEstimator(dataSet, semPm);
+            final SemEstimator estimator = new SemEstimator(dataSet, semPm);
             return estimator.estimate();
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (final ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
                     "and discrete data set do not match.");
         }
     }
 
-    private SemIm estimatePag(DataSet dataSet, SemPm pm) {
-        SemGraph graph = pm.getGraph();
+    private SemIm estimatePag(final DataSet dataSet, final SemPm pm) {
+        final SemGraph graph = pm.getGraph();
 
-        for (Object o : graph.getNodes()) {
-            Node node = (Node) o;
+        for (final Object o : graph.getNodes()) {
+            final Node node = (Node) o;
             if (node.getNodeType() == NodeType.LATENT) {
                 throw new IllegalArgumentException("Estimation of Bayes IM's " +
                         "with latents is not supported.");
@@ -189,10 +189,10 @@ public final class CPDAGFitModel implements SessionModel {
         }
 
         try {
-            SemOptimizer optimizer = new SemOptimizerRicf();
-            SemEstimator estimator = new SemEstimator(dataSet, pm, optimizer);
+            final SemOptimizer optimizer = new SemOptimizerRicf();
+            final SemEstimator estimator = new SemEstimator(dataSet, pm, optimizer);
             return estimator.estimate();
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (final ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
                     "and discrete data set do not match.");
@@ -202,15 +202,15 @@ public final class CPDAGFitModel implements SessionModel {
     //==============================PUBLIC METHODS========================//
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
-    public BayesIm getBayesIm(int i) {
-        return bayesIms.get(i);
+    public BayesIm getBayesIm(final int i) {
+        return this.bayesIms.get(i);
     }
 
     /**
@@ -226,33 +226,33 @@ public final class CPDAGFitModel implements SessionModel {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
     public List<Graph> getReferenceGraphs() {
-        return referenceGraphs;
+        return this.referenceGraphs;
     }
 
     public List<BayesIm> getBayesIms() {
-        return bayesIms;
+        return this.bayesIms;
     }
 
     public DataModelList getDataModelList() {
-        return dataModelList;
+        return this.dataModelList;
     }
 
     public List<BayesPm> getBayesPms() {
-        return bayesPms;
+        return this.bayesPms;
     }
 
     public List<SemPm> getSemPms() {
-        return semPms;
+        return this.semPms;
     }
 
     public Parameters getParams() {
-        return parameters;
+        return this.parameters;
     }
 }
 

@@ -39,21 +39,21 @@ public class DecompressibleInputStream extends ObjectInputStream {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DecompressibleInputStream.class);
 
-    public DecompressibleInputStream(InputStream in) throws IOException {
+    public DecompressibleInputStream(final InputStream in) throws IOException {
         super(in);
     }
 
     @Override
     protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
         ObjectStreamClass resultClassDescriptor = super.readClassDescriptor(); // initially streams descriptor
-        Class localClass; // the class in the local JVM that this descriptor represents.
+        final Class localClass; // the class in the local JVM that this descriptor represents.
         try {
             localClass = Class.forName(resultClassDescriptor.getName());
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             LOGGER.error("No local class for " + resultClassDescriptor.getName(), e);
             return resultClassDescriptor;
         }
-        ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
+        final ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
         if (localClassDescriptor != null) { // only if class implements serializable
             final long localSUID = localClassDescriptor.getSerialVersionUID();
             final long streamSUID = resultClassDescriptor.getSerialVersionUID();

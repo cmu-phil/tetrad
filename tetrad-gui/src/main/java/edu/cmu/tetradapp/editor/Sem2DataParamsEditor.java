@@ -48,7 +48,7 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
     public Sem2DataParamsEditor() {
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -56,29 +56,29 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         // Do nothing.
     }
 
     public void setup() {
 
         // set up text and ties them to the parameters object being edited.
-        IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 4);
+        final IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 4);
         sampleSizeField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
+            public int filter(final int value, final int oldValue) {
                 try {
                     getParams().set("sampleSize", value);
                     return value;
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     return oldValue;
                 }
             }
         });
-        JCheckBox latentVarsBox = new JCheckBox("Include Latent Variables");
+        final JCheckBox latentVarsBox = new JCheckBox("Include Latent Variables");
         latentVarsBox.setHorizontalTextPosition(SwingConstants.LEFT);
         latentVarsBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox b = (JCheckBox) e.getSource();
+            public void actionPerformed(final ActionEvent e) {
+                final JCheckBox b = (JCheckBox) e.getSource();
                 getParams().set("includeLatents", b.isSelected());
             }
         });
@@ -96,14 +96,14 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
         setLayout(new BorderLayout());
 
         // continue workbench construction.
-        Box b6 = Box.createVerticalBox();
-        Box b1 = Box.createHorizontalBox();
+        final Box b6 = Box.createVerticalBox();
+        final Box b1 = Box.createHorizontalBox();
 
         b1.add(new JLabel("Sample size:  "));
         b1.add(Box.createHorizontalGlue());
         b1.add(sampleSizeField);
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(latentVarsBox);
         b2.add(Box.createHorizontalGlue());
 

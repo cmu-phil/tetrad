@@ -26,23 +26,23 @@ import java.nio.file.Paths;
  */
 public class FgsApiExample {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(final String[] args) throws Exception {
 
         // Read in the data
         // set path to data
-        Path dataFile = Paths.get("./tetrad-lib/src/test/resources/", "iq_brain_size.tetrad.txt");
+        final Path dataFile = Paths.get("./tetrad-lib/src/test/resources/", "iq_brain_size.tetrad.txt");
 
         // data file settings
-        Delimiter delimiter = Delimiter.WHITESPACE;
-        int numberOfCategories = 2;
-        boolean hasHeader = true;
-        boolean isDiscrete = false;
+        final Delimiter delimiter = Delimiter.WHITESPACE;
+        final int numberOfCategories = 2;
+        final boolean hasHeader = true;
+        final boolean isDiscrete = false;
 
         // tabular data is our input (can also use covariance)
-        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
+        final TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
 
         // create the column  object - describes the data in each column
-        DataColumn[] dataColumns;
+        final DataColumn[] dataColumns;
 
         // optionally skip columns you don't want (e.g., the row id)
         // dataColumns = columnReader.readInDataColumns(new int[]{0},isDiscrete);
@@ -50,14 +50,14 @@ public class FgsApiExample {
         dataColumns = columnReader.readInDataColumns(isDiscrete);
 
         // setup data reader
-        TabularDataReader dataReader = new TabularDataFileReader(dataFile, delimiter);
+        final TabularDataReader dataReader = new TabularDataFileReader(dataFile, delimiter);
 
         // if this is a mixed dataset determine which columns are discrete based on number of unique values in column i.e, updates dataColumns[]
         dataReader.determineDiscreteDataColumns(dataColumns, numberOfCategories, hasHeader);
 
         // actually read in the data
-        Data data = dataReader.read(dataColumns, hasHeader, null);
-        DataModel dataModel = DataConvertUtils.toDataModel(data);
+        final Data data = dataReader.read(dataColumns, hasHeader, null);
+        final DataModel dataModel = DataConvertUtils.toDataModel(data);
 
 
         // Select search algorithm
@@ -71,12 +71,12 @@ public class FgsApiExample {
         //Algorithm fges = AlgorithmFactory.create(Fges.class, null, BdeuScore.class);
 
         // for mixed data can use Conditional Gaussian
-        Algorithm fges = AlgorithmFactory.create(Fges.class, null, ConditionalGaussianBicScore.class);
+        final Algorithm fges = AlgorithmFactory.create(Fges.class, null, ConditionalGaussianBicScore.class);
 
 
         // Set algorithm parameters
         // we've standardized parameters using the manual i.e., the id names in the manual are the names to use, also in Params class
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
 
         // fges parameters
         parameters.set(Params.DEPTH, 100);
@@ -89,7 +89,7 @@ public class FgsApiExample {
         parameters.set(Params.DISCRETIZE, false);
 
         // perform the search
-        Graph graph = fges.search(dataModel, parameters);
+        final Graph graph = fges.search(dataModel, parameters);
 
         // output the graph
         System.out.println();

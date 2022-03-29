@@ -35,17 +35,17 @@ final class GraphFileMenu extends JMenu {
 
     private static final long serialVersionUID = 8003709852565658589L;
 
-    public GraphFileMenu(GraphEditable editable, JComponent comp) {
+    public GraphFileMenu(final GraphEditable editable, final JComponent comp) {
         super("File");
 
-        JMenu load = new JMenu("Load...");
+        final JMenu load = new JMenu("Load...");
         add(load);
 
         load.add(new LoadGraph(editable, "XML..."));
         load.add(new LoadGraphTxt(editable, "Text..."));
         load.add(new LoadGraphJson(editable, "Json..."));
 
-        JMenu save = new JMenu("Save...");
+        final JMenu save = new JMenu("Save...");
         add(save);
 
         save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));

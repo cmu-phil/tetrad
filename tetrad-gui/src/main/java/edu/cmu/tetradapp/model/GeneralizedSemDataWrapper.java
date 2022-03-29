@@ -47,7 +47,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
 
     //==============================CONSTRUCTORS=============================//
 
-    private GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, Parameters params) {
+    private GeneralizedSemDataWrapper(final GeneralizedSemImWrapper wrapper, Parameters params) {
         GeneralizedSemIm semIm = null;
 
         if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
@@ -56,7 +56,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
 
         try {
             semIm = new MarshalledObject<>(wrapper.getSemIms().get(0)).get();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("Could not clone the SEM IM.");
         }
 
@@ -64,7 +64,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
 
         try {
             params = new MarshalledObject<>(params).get();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("Could not clone the Parameters.");
         }
 
@@ -94,21 +94,21 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
     /**
      * Sets the data model.
      */
-    public void setDataModel(DataModel dataModel) {
+    public void setDataModel(final DataModel dataModel) {
         throw new UnsupportedOperationException();
     }
 
-    private DataModelList simulateData(Simulator simulator, Parameters params) {
+    private DataModelList simulateData(final Simulator simulator, final Parameters params) {
         if (this.dataModelList != null) {
             return this.dataModelList;
         }
 
-        DataModelList list = new DataModelList();
-        int sampleSize = params.getInt("sampleSize", 1000);
-        boolean latentDataSaved = params.getBoolean("latentDataSaved", false);
+        final DataModelList list = new DataModelList();
+        final int sampleSize = params.getInt("sampleSize", 1000);
+        final boolean latentDataSaved = params.getBoolean("latentDataSaved", false);
 
         for (int i = 0; i < params.getInt("numDataSets", 1); i++) {
-            DataSet dataSet = simulator.simulateData(sampleSize, seed, latentDataSaved);
+            final DataSet dataSet = simulator.simulateData(sampleSize, this.seed, latentDataSaved);
             list.add(dataSet);
         }
 
@@ -121,15 +121,15 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
      * @return the list of models.
      */
     public DataModelList getDataModelList() {
-        return simulateData(semIm, params);
+        return simulateData(this.semIm, this.params);
 //        return this.dataModelList;
     }
 
-    public void setDataModelList(DataModelList dataModelList) {
+    public void setDataModelList(final DataModelList dataModelList) {
 //        this.dataModelList = dataModelList;
     }
 
-    public void setParameters(Parameters params) {
+    public void setParameters(final Parameters params) {
         this.params = params;
     }
 

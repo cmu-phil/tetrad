@@ -50,20 +50,20 @@ import java.util.List;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 final class UpdatedSemImWizard extends JPanel {
-    private SemEvidence evidence;
-    private GraphWorkbench workbench;
-    private SemUpdater semUpdater;
+    private final SemEvidence evidence;
+    private final GraphWorkbench workbench;
+    private final SemUpdater semUpdater;
 
     /**
      * Last node selected.
      */
     private Node selectedNode;
 
-    private JComboBox varNamesComboBox;
-    private JComboBox varNamesComboBox2;
-    private JPanel marginalsPanel;
+    private final JComboBox varNamesComboBox;
+    private final JComboBox varNamesComboBox2;
+    private final JPanel marginalsPanel;
 
-    public UpdatedSemImWizard(SemUpdater semUpdater, GraphWorkbench workbench,
+    public UpdatedSemImWizard(final SemUpdater semUpdater, final GraphWorkbench workbench,
                               int tab, Node selectedNode) {
         if (semUpdater == null) {
             throw new NullPointerException();
@@ -85,17 +85,17 @@ final class UpdatedSemImWizard extends JPanel {
         this.varNamesComboBox = makeVarNamesDropdown();
         this.varNamesComboBox2 = makeVarNamesDropdown();
 
-        Node modelNode = (Node) (varNamesComboBox.getSelectedItem());
+        final Node modelNode = (Node) (this.varNamesComboBox.getSelectedItem());
         workbench.deselectAll();
         workbench.selectNode(modelNode);
-        selectedNode = (Node) (varNamesComboBox.getSelectedItem());
+        selectedNode = (Node) (this.varNamesComboBox.getSelectedItem());
 
-        marginalsPanel = new JPanel();
-        marginalsPanel.setLayout(new BorderLayout());
-        marginalsPanel.add(createMarginalDisplay(selectedNode),
+        this.marginalsPanel = new JPanel();
+        this.marginalsPanel.setLayout(new BorderLayout());
+        this.marginalsPanel.add(createMarginalDisplay(selectedNode),
                 BorderLayout.CENTER);
 
-        JTabbedPane probsPane = new JTabbedPane(JTabbedPane.TOP);
+        final JTabbedPane probsPane = new JTabbedPane(JTabbedPane.TOP);
 
         setupMarginalsDisplay(probsPane);
 
@@ -105,47 +105,47 @@ final class UpdatedSemImWizard extends JPanel {
         add(probsPane, BorderLayout.CENTER);
 
         // Add listeners.
-        varNamesComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (varNamesComboBox.getSelectedItem());
+        this.varNamesComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                final Node node = (Node) (UpdatedSemImWizard.this.varNamesComboBox.getSelectedItem());
                 setCurrentNode(node);
             }
         });
 
-        varNamesComboBox2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (varNamesComboBox2.getSelectedItem());
+        this.varNamesComboBox2.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                final Node node = (Node) (UpdatedSemImWizard.this.varNamesComboBox2.getSelectedItem());
                 setCurrentNode(node);
             }
         });
 
         workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
+            public void propertyChange(final PropertyChangeEvent e) {
                 if (e.getPropertyName().equals("selectedNodes")) {
-                    List selection = (List) (e.getNewValue());
+                    final List selection = (List) (e.getNewValue());
 
                     if (selection.size() == 1) {
-                        Node node = (Node) (selection.get(0));
-                        varNamesComboBox.setSelectedItem(node);
+                        final Node node = (Node) (selection.get(0));
+                        UpdatedSemImWizard.this.varNamesComboBox.setSelectedItem(node);
                     }
                 }
             }
         });
     }
 
-    private void setupMarginalsDisplay(JTabbedPane probsPane) {
-        probsPane.add("Marginal Probabilities", marginalsPanel);
+    private void setupMarginalsDisplay(final JTabbedPane probsPane) {
+        probsPane.add("Marginal Probabilities", this.marginalsPanel);
         probsPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
-                int tab = tabbedPane.getSelectedIndex();
+            public void stateChanged(final ChangeEvent e) {
+                final JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
+                final int tab = tabbedPane.getSelectedIndex();
                 firePropertyChange("updatedBayesImWizardTab", null, tab);
             }
         });
     }
 
     private JComboBox makeVarNamesDropdown() {
-        JComboBox varNamesComboBox = new SortingComboBox() {
+        final JComboBox varNamesComboBox = new SortingComboBox() {
             public Dimension getMaximumSize() {
                 return getPreferredSize();
             }
@@ -153,14 +153,14 @@ final class UpdatedSemImWizard extends JPanel {
 
         varNamesComboBox.setBackground(Color.white);
 
-        Graph graph = semUpdater.getManipulatedGraph();
+        final Graph graph = this.semUpdater.getManipulatedGraph();
 
-        for (Object o : graph.getNodes()) {
+        for (final Object o : graph.getNodes()) {
             varNamesComboBox.addItem(o);
         }
 
-        if (selectedNode != null) {
-            varNamesComboBox.setSelectedItem(selectedNode);
+        if (this.selectedNode != null) {
+            varNamesComboBox.setSelectedItem(this.selectedNode);
         } else {
             varNamesComboBox.setSelectedIndex(0);
             this.selectedNode = (Node) varNamesComboBox.getSelectedItem();
@@ -169,16 +169,16 @@ final class UpdatedSemImWizard extends JPanel {
         return varNamesComboBox;
     }
 
-    private void addListOfEvidence(Box verticalBox) {
+    private void addListOfEvidence(final Box verticalBox) {
         boolean foundACondition = false;
 
-        for (int i = 0; i < evidence.getNumNodes(); i++) {
+        for (int i = 0; i < this.evidence.getNumNodes(); i++) {
             foundACondition = true;
 
-            Node node = evidence.getNode(i);
-            Box c = Box.createHorizontalBox();
+            final Node node = this.evidence.getNode(i);
+            final Box c = Box.createHorizontalBox();
             c.add(Box.createRigidArea(new Dimension(30, 1)));
-            StringBuilder buf = new StringBuilder();
+            final StringBuilder buf = new StringBuilder();
 
             buf.append("<html>").append(node.getName()).append(" = ");
 //            boolean listedOneAlready = false;
@@ -205,7 +205,7 @@ final class UpdatedSemImWizard extends JPanel {
         }
 
         if (!foundACondition) {
-            Box e = Box.createHorizontalBox();
+            final Box e = Box.createHorizontalBox();
             e.add(Box.createRigidArea(new Dimension(30, 1)));
             e.add(new JLabel("--No Evidence--"));
             e.add(Box.createHorizontalGlue());
@@ -213,21 +213,21 @@ final class UpdatedSemImWizard extends JPanel {
         }
     }
 
-    private JComponent createMarginalDisplay(Node node) {
+    private JComponent createMarginalDisplay(final Node node) {
         if (node == null) {
             throw new NullPointerException();
         }
 
-        Box marginalBox = Box.createVerticalBox();
+        final Box marginalBox = Box.createVerticalBox();
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Marginal probabilities for variable "));
-        b1.add(varNamesComboBox2);
+        b1.add(this.varNamesComboBox2);
         b1.add(new JLabel(", updated"));
         b1.add(Box.createHorizontalGlue());
         marginalBox.add(b1);
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("to reflect the following evidence:"));
         b2.add(Box.createHorizontalGlue());
         marginalBox.add(b2);
@@ -329,7 +329,7 @@ final class UpdatedSemImWizard extends JPanel {
      * selectedNode.
      */
     private void setCurrentNode(final Node node) {
-        Window owner = (Window) getTopLevelAncestor();
+        final Window owner = (Window) getTopLevelAncestor();
 
         if (owner == null) {
             setCurrentNodeSub(node);
@@ -342,36 +342,36 @@ final class UpdatedSemImWizard extends JPanel {
         }
     }
 
-    private void setCurrentNodeSub(Node node) {
-        if (node == selectedNode) {
+    private void setCurrentNodeSub(final Node node) {
+        if (node == this.selectedNode) {
             return;
         }
 
-        selectedNode = node;
+        this.selectedNode = node;
 
         getWorkbench().deselectAll();
-        getWorkbench().selectNode(selectedNode);
+        getWorkbench().selectNode(this.selectedNode);
 
-        if (varNamesComboBox.getSelectedItem() != node) {
-            varNamesComboBox.setSelectedItem(node);
+        if (this.varNamesComboBox.getSelectedItem() != node) {
+            this.varNamesComboBox.setSelectedItem(node);
         }
 
-        if (varNamesComboBox2.getSelectedItem() != node) {
-            varNamesComboBox2.setSelectedItem(node);
+        if (this.varNamesComboBox2.getSelectedItem() != node) {
+            this.varNamesComboBox2.setSelectedItem(node);
         }
 
-        marginalsPanel.removeAll();
-        marginalsPanel.add(createMarginalDisplay(node), BorderLayout.CENTER);
-        marginalsPanel.revalidate();
-        marginalsPanel.repaint();
+        this.marginalsPanel.removeAll();
+        this.marginalsPanel.add(createMarginalDisplay(node), BorderLayout.CENTER);
+        this.marginalsPanel.revalidate();
+        this.marginalsPanel.repaint();
     }
 
     private GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     public Node getSelectedNode() {
-        return selectedNode;
+        return this.selectedNode;
     }
 }
 

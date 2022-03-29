@@ -292,7 +292,7 @@ public class PurifyTetradBased2 implements IPurify {
 
             countable = true;
             final double p1;
-            double p2;
+            final double p2;
             final double p3;
 
             p1 = this.tetradTest.tetradPValue(this.nodes.indexOf(ci), this.nodes.indexOf(cj), this.nodes.indexOf(ck), this.nodes.indexOf(cl));

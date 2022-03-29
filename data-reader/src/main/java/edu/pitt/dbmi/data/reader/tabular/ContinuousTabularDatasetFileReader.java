@@ -38,9 +38,9 @@ public class ContinuousTabularDatasetFileReader extends DatasetFileReader implem
     private boolean hasHeader;
     private char quoteChar;
 
-    public ContinuousTabularDatasetFileReader(Path dataFile, Delimiter delimiter) {
+    public ContinuousTabularDatasetFileReader(final Path dataFile, final Delimiter delimiter) {
         super(dataFile, delimiter);
-        this.hasHeader = hasHeader = true;
+        this.hasHeader = this.hasHeader = true;
         this.quoteChar = '"';
     }
 
@@ -50,50 +50,50 @@ public class ContinuousTabularDatasetFileReader extends DatasetFileReader implem
     }
 
     @Override
-    public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteChar);
+    public Data readInData(final Set<String> namesOfColumnsToExclude) throws IOException {
+        final TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteChar);
 
-        boolean isDiscrete = false;
-        DataColumn[] dataColumns = hasHeader
+        final boolean isDiscrete = false;
+        final DataColumn[] dataColumns = this.hasHeader
                 ? columnReader.readInDataColumns(namesOfColumnsToExclude, isDiscrete)
                 : columnReader.generateColumns(new int[0], isDiscrete);
 
-        TabularDataReader dataReader = new TabularDataFileReader(dataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteChar);
-        dataReader.setMissingDataMarker(missingDataMarker);
+        final TabularDataReader dataReader = new TabularDataFileReader(this.dataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteChar);
+        dataReader.setMissingDataMarker(this.missingDataMarker);
 
-        return dataReader.read(dataColumns, hasHeader);
+        return dataReader.read(dataColumns, this.hasHeader);
     }
 
     @Override
-    public Data readInData(int[] columnsToExclude) throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteChar);
+    public Data readInData(final int[] columnsToExclude) throws IOException {
+        final TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteChar);
 
-        boolean isDiscrete = false;
-        DataColumn[] dataColumns = hasHeader
+        final boolean isDiscrete = false;
+        final DataColumn[] dataColumns = this.hasHeader
                 ? columnReader.readInDataColumns(columnsToExclude, isDiscrete)
                 : columnReader.generateColumns(columnsToExclude, isDiscrete);
 
-        TabularDataReader dataReader = new TabularDataFileReader(dataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteChar);
-        dataReader.setMissingDataMarker(missingDataMarker);
+        final TabularDataReader dataReader = new TabularDataFileReader(this.dataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteChar);
+        dataReader.setMissingDataMarker(this.missingDataMarker);
 
-        return dataReader.read(dataColumns, hasHeader);
+        return dataReader.read(dataColumns, this.hasHeader);
     }
 
     @Override
-    public void setHasHeader(boolean hasHeader) {
+    public void setHasHeader(final boolean hasHeader) {
         this.hasHeader = hasHeader;
     }
 
     @Override
-    public void setQuoteCharacter(char quoteCharacter) {
+    public void setQuoteCharacter(final char quoteCharacter) {
         this.quoteChar = quoteCharacter;
     }
 

@@ -42,34 +42,34 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TabularDataFileReader.class);
 
-    public TabularDataFileReader(Path dataFile, Delimiter delimiter) {
+    public TabularDataFileReader(final Path dataFile, final Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
     @Override
-    public void determineDiscreteDataColumns(DataColumn[] dataColumns, int numberOfCategories, boolean hasHeader) throws IOException {
+    public void determineDiscreteDataColumns(final DataColumn[] dataColumns, final int numberOfCategories, final boolean hasHeader) throws IOException {
         int numOfColsInDataFile = 0;
-        for (DataColumn dataColumn : dataColumns) {
+        for (final DataColumn dataColumn : dataColumns) {
             if (!dataColumn.isGenerated()) {
                 numOfColsInDataFile++;
             }
         }
 
-        Set<String>[] columnCategories = new Set[numOfColsInDataFile];
+        final Set<String>[] columnCategories = new Set[numOfColsInDataFile];
         for (int i = 0; i < numOfColsInDataFile; i++) {
             columnCategories[i] = new HashSet<>();
         }
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -78,11 +78,11 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
             int columnIndex = 0;
 
-            int maxCategoryToAdd = numberOfCategories + 1;
+            final int maxCategoryToAdd = numberOfCategories + 1;
 
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 int i = 0; // buffer array index
@@ -90,7 +90,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 if (skipHeader) {
                     boolean finished = false;
                     for (; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                        byte currChar = buffer[i];
+                        final byte currChar = buffer[i];
 
                         if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                             if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -140,7 +140,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 }
 
                 for (; i < len && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                         if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -151,11 +151,11 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                         if (hasSeenNonblankChar && !skip) {
                             colNum++;
 
-                            DataColumn dataColumn = dataColumns[columnIndex];
+                            final DataColumn dataColumn = dataColumns[columnIndex];
                             if (dataColumn.getColumnNumber() == colNum) {
-                                String value = dataBuilder.toString().trim();
-                                if (!(value.isEmpty() || value.equals(missingDataMarker))) {
-                                    Set<String> categories = columnCategories[columnIndex];
+                                final String value = dataBuilder.toString().trim();
+                                if (!(value.isEmpty() || value.equals(this.missingDataMarker))) {
+                                    final Set<String> categories = columnCategories[columnIndex];
                                     if (categories.size() < maxCategoryToAdd) {
                                         categories.add(value);
                                     }
@@ -166,7 +166,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
-                                String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
+                                final String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
                                 LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
@@ -208,14 +208,14 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
                                         break;
@@ -226,11 +226,11 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                 if (isDelimiter) {
                                     colNum++;
 
-                                    DataColumn dataColumn = dataColumns[columnIndex];
+                                    final DataColumn dataColumn = dataColumns[columnIndex];
                                     if (dataColumn.getColumnNumber() == colNum) {
-                                        String value = dataBuilder.toString().trim();
-                                        if (!(value.isEmpty() || value.equals(missingDataMarker))) {
-                                            Set<String> categories = columnCategories[columnIndex];
+                                        final String value = dataBuilder.toString().trim();
+                                        if (!(value.isEmpty() || value.equals(this.missingDataMarker))) {
+                                            final Set<String> categories = columnCategories[columnIndex];
                                             if (categories.size() < maxCategoryToAdd) {
                                                 categories.add(value);
                                             }
@@ -258,11 +258,11 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
             if (!skipHeader && hasSeenNonblankChar && !skip) {
                 colNum++;
 
-                DataColumn dataColumn = dataColumns[columnIndex];
+                final DataColumn dataColumn = dataColumns[columnIndex];
                 if (dataColumn.getColumnNumber() == colNum) {
-                    String value = dataBuilder.toString().trim();
-                    if (!(value.isEmpty() || value.equals(missingDataMarker))) {
-                        Set<String> categories = columnCategories[columnIndex];
+                    final String value = dataBuilder.toString().trim();
+                    if (!(value.isEmpty() || value.equals(this.missingDataMarker))) {
+                        final Set<String> categories = columnCategories[columnIndex];
                         if (categories.size() < maxCategoryToAdd) {
                             categories.add(value);
                         }
@@ -273,7 +273,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                 // ensure we have enough data
                 if (columnIndex < numOfColsInDataFile) {
-                    String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
+                    final String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
                     LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
@@ -286,7 +286,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
     }
 
     @Override
-    public Data read(DataColumn[] dataColumns, boolean hasHeader) throws IOException {
+    public Data read(final DataColumn[] dataColumns, final boolean hasHeader) throws IOException {
         if (dataColumns == null) {
             return null;
         }
@@ -294,7 +294,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         int numOfColsInDataFile = 0;
         boolean isDiscrete = false;
         boolean isContinuous = false;
-        for (DataColumn dataColumn : dataColumns) {
+        for (final DataColumn dataColumn : dataColumns) {
             if (dataColumn.isDiscrete()) {
                 isDiscrete = true;
             } else {
@@ -318,20 +318,20 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
     }
 
     @Override
-    public Data read(DataColumn[] dataColumns, boolean hasHeader, Metadata metadata) throws IOException {
-        Data data = read(dataColumns, hasHeader);
+    public Data read(final DataColumn[] dataColumns, final boolean hasHeader, final Metadata metadata) throws IOException {
+        final Data data = read(dataColumns, hasHeader);
 
         if (metadata != null) {
             if (data instanceof ContinuousData) {
-                ContinuousData continuousData = (ContinuousData) data;
-                double[][] contData = continuousData.getData();
+                final ContinuousData continuousData = (ContinuousData) data;
+                final double[][] contData = continuousData.getData();
                 metadata.getInterventionalColumns().forEach(column -> {
-                    ColumnMetadata valCol = column.getValueColumn();
-                    ColumnMetadata statCol = column.getStatusColumn();
-                    int valColNum = valCol.getColumnNumber() - 1;
-                    int statColNum = statCol.getColumnNumber() - 1;
-                    double[] val = contData[valColNum];
-                    double[] stat = contData[statColNum];
+                    final ColumnMetadata valCol = column.getValueColumn();
+                    final ColumnMetadata statCol = column.getStatusColumn();
+                    final int valColNum = valCol.getColumnNumber() - 1;
+                    final int statColNum = statCol.getColumnNumber() - 1;
+                    final double[] val = contData[valColNum];
+                    final double[] stat = contData[statColNum];
                     for (int i = 0; i < val.length; i++) {
                         if (Double.isNaN(val[i])) {
                             val[i] = 0.0;
@@ -342,15 +342,15 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                     }
                 });
             } else if (data instanceof DiscreteData) {
-                DiscreteData verticalDiscreteData = (DiscreteData) data;
-                int[][] discreteData = verticalDiscreteData.getData();
+                final DiscreteData verticalDiscreteData = (DiscreteData) data;
+                final int[][] discreteData = verticalDiscreteData.getData();
                 metadata.getInterventionalColumns().forEach(column -> {
-                    ColumnMetadata valCol = column.getValueColumn();
-                    ColumnMetadata statCol = column.getStatusColumn();
-                    int valColNum = valCol.getColumnNumber() - 1;
-                    int statColNum = statCol.getColumnNumber() - 1;
-                    int[] val = discreteData[valColNum];
-                    int[] stat = discreteData[statColNum];
+                    final ColumnMetadata valCol = column.getValueColumn();
+                    final ColumnMetadata statCol = column.getStatusColumn();
+                    final int valColNum = valCol.getColumnNumber() - 1;
+                    final int statColNum = statCol.getColumnNumber() - 1;
+                    final int[] val = discreteData[valColNum];
+                    final int[] stat = discreteData[statColNum];
                     for (int i = 0; i < val.length; i++) {
                         if (val[i] == DISCRETE_MISSING_VALUE) {
                             val[i] = 0;
@@ -361,18 +361,18 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                     }
                 });
             } else if (data instanceof MixedTabularData) {
-                MixedTabularData mixedTabularData = (MixedTabularData) data;
-                double[][] continuousData = mixedTabularData.getContinuousData();
-                int[][] discreteData = mixedTabularData.getDiscreteData();
+                final MixedTabularData mixedTabularData = (MixedTabularData) data;
+                final double[][] continuousData = mixedTabularData.getContinuousData();
+                final int[][] discreteData = mixedTabularData.getDiscreteData();
                 metadata.getInterventionalColumns().forEach(column -> {
-                    ColumnMetadata valCol = column.getValueColumn();
-                    ColumnMetadata statCol = column.getStatusColumn();
-                    int valColNum = valCol.getColumnNumber() - 1;
-                    int statColNum = statCol.getColumnNumber() - 1;
+                    final ColumnMetadata valCol = column.getValueColumn();
+                    final ColumnMetadata statCol = column.getStatusColumn();
+                    final int valColNum = valCol.getColumnNumber() - 1;
+                    final int statColNum = statCol.getColumnNumber() - 1;
                     if (valCol.isDiscrete()) {
-                        int[] val = discreteData[valColNum];
+                        final int[] val = discreteData[valColNum];
                         if (statCol.isDiscrete()) {
-                            int[] stat = discreteData[statColNum];
+                            final int[] stat = discreteData[statColNum];
                             for (int i = 0; i < val.length; i++) {
                                 if (val[i] == DISCRETE_MISSING_VALUE) {
                                     val[i] = 0;
@@ -382,7 +382,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                 }
                             }
                         } else {
-                            double[] stat = continuousData[statColNum];
+                            final double[] stat = continuousData[statColNum];
                             for (int i = 0; i < val.length; i++) {
                                 if (val[i] == DISCRETE_MISSING_VALUE) {
                                     val[i] = 0;
@@ -393,9 +393,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             }
                         }
                     } else {
-                        double[] val = continuousData[valColNum];
+                        final double[] val = continuousData[valColNum];
                         if (statCol.isDiscrete()) {
-                            int[] stat = discreteData[statColNum];
+                            final int[] stat = discreteData[statColNum];
                             for (int i = 0; i < val.length; i++) {
                                 if (Double.isNaN(val[i])) {
                                     val[i] = 0.0;
@@ -405,7 +405,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                 }
                             }
                         } else {
-                            double[] stat = continuousData[statColNum];
+                            final double[] stat = continuousData[statColNum];
                             for (int i = 0; i < val.length; i++) {
                                 if (Double.isNaN(val[i])) {
                                     val[i] = 0.0;
@@ -423,15 +423,15 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         return data;
     }
 
-    private Data readInMixedData(DataColumn[] dataColumns, boolean hasHeader, int numOfColsInDataFile) throws IOException {
-        int numOfCols = dataColumns.length;
-        int numOfRows = hasHeader ? countNumberOfLines() - 1 : countNumberOfLines();
+    private Data readInMixedData(final DataColumn[] dataColumns, final boolean hasHeader, final int numOfColsInDataFile) throws IOException {
+        final int numOfCols = dataColumns.length;
+        final int numOfRows = hasHeader ? countNumberOfLines() - 1 : countNumberOfLines();
 
-        DiscreteDataColumn[] discreteDataColumns = new DiscreteDataColumn[numOfCols];
-        double[][] continuousData = new double[numOfCols][];
-        int[][] discreteData = new int[numOfCols][];
+        final DiscreteDataColumn[] discreteDataColumns = new DiscreteDataColumn[numOfCols];
+        final double[][] continuousData = new double[numOfCols][];
+        final int[][] discreteData = new int[numOfCols][];
         for (int i = 0; i < numOfCols; i++) {
-            DataColumn dataColumn = dataColumns[i];
+            final DataColumn dataColumn = dataColumns[i];
 
             // initialize data
             if (dataColumn.isDiscrete()) {
@@ -450,18 +450,18 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         return new MixedTabularData(numOfRows, discreteDataColumns, continuousData, discreteData);
     }
 
-    private void readInMixedData(DiscreteDataColumn[] dataColumns, boolean hasHeader, double[][] continuousData, int[][] discreteData, int numOfColsInDataFile) throws IOException {
-        int numOfCols = dataColumns.length;
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+    private void readInMixedData(final DiscreteDataColumn[] dataColumns, final boolean hasHeader, final double[][] continuousData, final int[][] discreteData, final int numOfColsInDataFile) throws IOException {
+        final int numOfCols = dataColumns.length;
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -473,9 +473,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
             int row = 0;  // array row number
             int col = 0;  // array column number
 
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 int i = 0; // buffer array index
@@ -483,7 +483,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 if (skipHeader) {
                     boolean finished = false;
                     for (; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                        byte currChar = buffer[i];
+                        final byte currChar = buffer[i];
 
                         if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                             if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -533,7 +533,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 }
 
                 for (; i < len && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                         if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -544,24 +544,24 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                         if (hasSeenNonblankChar && !skip) {
                             colNum++;
 
-                            DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
-                            DataColumn dataColumn = discreteDataColumn.getDataColumn();
+                            final DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
+                            final DataColumn dataColumn = discreteDataColumn.getDataColumn();
                             if (dataColumn.getColumnNumber() == colNum) {
-                                String value = dataBuilder.toString().trim();
+                                final String value = dataBuilder.toString().trim();
                                 if (dataColumn.isDiscrete()) {
-                                    if (value.isEmpty() || value.equals(missingDataMarker)) {
+                                    if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                                         discreteData[col++][row] = DISCRETE_MISSING_VALUE;
                                     } else {
                                         discreteData[col++][row] = discreteDataColumn.getEncodeValue(value);
                                     }
                                 } else {
-                                    if (value.isEmpty() || value.equals(missingDataMarker)) {
+                                    if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                                         continuousData[col++][row] = CONTINUOUS_MISSING_VALUE;
                                     } else {
                                         try {
                                             continuousData[col++][row] = Double.parseDouble(value);
-                                        } catch (NumberFormatException exception) {
-                                            String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
+                                        } catch (final NumberFormatException exception) {
+                                            final String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
                                             LOGGER.error(errMsg, exception);
                                             throw new DataReaderException(errMsg);
                                         }
@@ -573,7 +573,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
-                                String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
+                                final String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
                                 LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
@@ -618,14 +618,14 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
                                         break;
@@ -636,24 +636,24 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                 if (isDelimiter) {
                                     colNum++;
 
-                                    DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
-                                    DataColumn dataColumn = discreteDataColumn.getDataColumn();
+                                    final DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
+                                    final DataColumn dataColumn = discreteDataColumn.getDataColumn();
                                     if (dataColumn.getColumnNumber() == colNum) {
-                                        String value = dataBuilder.toString().trim();
+                                        final String value = dataBuilder.toString().trim();
                                         if (dataColumn.isDiscrete()) {
-                                            if (value.isEmpty() || value.equals(missingDataMarker)) {
+                                            if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                                                 discreteData[col++][row] = DISCRETE_MISSING_VALUE;
                                             } else {
                                                 discreteData[col++][row] = discreteDataColumn.getEncodeValue(value);
                                             }
                                         } else {
-                                            if (value.isEmpty() || value.equals(missingDataMarker)) {
+                                            if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                                                 continuousData[col++][row] = CONTINUOUS_MISSING_VALUE;
                                             } else {
                                                 try {
                                                     continuousData[col++][row] = Double.parseDouble(value);
-                                                } catch (NumberFormatException exception) {
-                                                    String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
+                                                } catch (final NumberFormatException exception) {
+                                                    final String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
                                                     LOGGER.error(errMsg, exception);
                                                     throw new DataReaderException(errMsg);
                                                 }
@@ -683,24 +683,24 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
             if (!skipHeader && hasSeenNonblankChar && !skip) {
                 colNum++;
 
-                DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
-                DataColumn dataColumn = discreteDataColumn.getDataColumn();
+                final DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
+                final DataColumn dataColumn = discreteDataColumn.getDataColumn();
                 if (dataColumn.getColumnNumber() == colNum) {
-                    String value = dataBuilder.toString().trim();
+                    final String value = dataBuilder.toString().trim();
                     if (dataColumn.isDiscrete()) {
-                        if (value.isEmpty() || value.equals(missingDataMarker)) {
+                        if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                             discreteData[col++][row] = DISCRETE_MISSING_VALUE;
                         } else {
                             discreteData[col++][row] = discreteDataColumn.getEncodeValue(value);
                         }
                     } else {
-                        if (value.isEmpty() || value.equals(missingDataMarker)) {
+                        if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                             continuousData[col++][row] = CONTINUOUS_MISSING_VALUE;
                         } else {
                             try {
                                 continuousData[col++][row] = Double.parseDouble(value);
-                            } catch (NumberFormatException exception) {
-                                String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
+                            } catch (final NumberFormatException exception) {
+                                final String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
                                 LOGGER.error(errMsg, exception);
                                 throw new DataReaderException(errMsg);
                             }
@@ -712,7 +712,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                 // ensure we have enough data
                 if (columnIndex < numOfColsInDataFile) {
-                    String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
+                    final String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
                     LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
@@ -720,21 +720,21 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         }
     }
 
-    private Data readInContinuousData(DataColumn[] dataColumns, boolean hasHeader, int numOfColsInDataFile) throws IOException {
-        int numOfCols = dataColumns.length;
-        int numOfRows = hasHeader ? countNumberOfLines() - 1 : countNumberOfLines();
-        double[][] data = new double[numOfRows][numOfCols];
+    private Data readInContinuousData(final DataColumn[] dataColumns, final boolean hasHeader, final int numOfColsInDataFile) throws IOException {
+        final int numOfCols = dataColumns.length;
+        final int numOfRows = hasHeader ? countNumberOfLines() - 1 : countNumberOfLines();
+        final double[][] data = new double[numOfRows][numOfCols];
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -746,9 +746,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
             int row = 0;  // array row number
             int col = 0;  // array column number
 
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 int i = 0; // buffer array index
@@ -756,7 +756,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 if (skipHeader) {
                     boolean finished = false;
                     for (; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                        byte currChar = buffer[i];
+                        final byte currChar = buffer[i];
 
                         if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                             if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -806,7 +806,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 }
 
                 for (; i < len && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                         if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -817,16 +817,16 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                         if (hasSeenNonblankChar && !skip) {
                             colNum++;
 
-                            DataColumn dataColumn = dataColumns[columnIndex];
+                            final DataColumn dataColumn = dataColumns[columnIndex];
                             if (dataColumn.getColumnNumber() == colNum) {
-                                String value = dataBuilder.toString().trim();
-                                if (value.isEmpty() || value.equals(missingDataMarker)) {
+                                final String value = dataBuilder.toString().trim();
+                                if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                                     data[row][col++] = CONTINUOUS_MISSING_VALUE;
                                 } else {
                                     try {
                                         data[row][col++] = Double.parseDouble(value);
-                                    } catch (NumberFormatException exception) {
-                                        String errMsg = String.format("Non-continuous number %s on line %d at column %d.", value, lineNum, colNum);
+                                    } catch (final NumberFormatException exception) {
+                                        final String errMsg = String.format("Non-continuous number %s on line %d at column %d.", value, lineNum, colNum);
                                         LOGGER.error(errMsg, exception);
                                         throw new DataReaderException(errMsg);
                                     }
@@ -837,7 +837,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
-                                String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
+                                final String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
                                 LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
@@ -882,14 +882,14 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
                                         break;
@@ -900,16 +900,16 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                 if (isDelimiter) {
                                     colNum++;
 
-                                    DataColumn dataColumn = dataColumns[columnIndex];
+                                    final DataColumn dataColumn = dataColumns[columnIndex];
                                     if (dataColumn.getColumnNumber() == colNum) {
-                                        String value = dataBuilder.toString().trim();
-                                        if (value.isEmpty() || value.equals(missingDataMarker)) {
+                                        final String value = dataBuilder.toString().trim();
+                                        if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                                             data[row][col++] = CONTINUOUS_MISSING_VALUE;
                                         } else {
                                             try {
                                                 data[row][col++] = Double.parseDouble(value);
-                                            } catch (NumberFormatException exception) {
-                                                String errMsg = String.format("Non-continuous number %s on line %d at column %d.", value, lineNum, colNum);
+                                            } catch (final NumberFormatException exception) {
+                                                final String errMsg = String.format("Non-continuous number %s on line %d at column %d.", value, lineNum, colNum);
                                                 LOGGER.error(errMsg, exception);
                                                 throw new DataReaderException(errMsg);
                                             }
@@ -938,16 +938,16 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
             if (!skipHeader && hasSeenNonblankChar && !skip) {
                 colNum++;
 
-                DataColumn dataColumn = dataColumns[columnIndex];
+                final DataColumn dataColumn = dataColumns[columnIndex];
                 if (dataColumn.getColumnNumber() == colNum) {
-                    String value = dataBuilder.toString().trim();
-                    if (value.isEmpty() || value.equals(missingDataMarker)) {
+                    final String value = dataBuilder.toString().trim();
+                    if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                         data[row][col++] = CONTINUOUS_MISSING_VALUE;
                     } else {
                         try {
                             data[row][col++] = Double.parseDouble(value);
-                        } catch (NumberFormatException exception) {
-                            String errMsg = String.format("Non-continuous number %s on line %d at column %d.", value, lineNum, colNum);
+                        } catch (final NumberFormatException exception) {
+                            final String errMsg = String.format("Non-continuous number %s on line %d at column %d.", value, lineNum, colNum);
                             LOGGER.error(errMsg, exception);
                             throw new DataReaderException(errMsg);
                         }
@@ -958,7 +958,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                 // ensure we have enough data
                 if (columnIndex < numOfColsInDataFile) {
-                    String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
+                    final String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
                     LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
@@ -968,32 +968,32 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         return new ContinuousTabularData(dataColumns, data);
     }
 
-    private Data readInDiscreteData(DataColumn[] dataColumns, boolean hasHeader, int numOfColsInDataFile) throws IOException {
-        DiscreteDataColumn[] discreteDataColumns = Arrays.stream(dataColumns)
+    private Data readInDiscreteData(final DataColumn[] dataColumns, final boolean hasHeader, final int numOfColsInDataFile) throws IOException {
+        final DiscreteDataColumn[] discreteDataColumns = Arrays.stream(dataColumns)
                 .map(DiscreteTabularDataColumn::new)
                 .toArray(DiscreteDataColumn[]::new);
         readInDiscreteCategorizes(discreteDataColumns, hasHeader, numOfColsInDataFile);
 
-        int[][] data = readInDiscreteData(discreteDataColumns, hasHeader, numOfColsInDataFile);
+        final int[][] data = readInDiscreteData(discreteDataColumns, hasHeader, numOfColsInDataFile);
 
         return new VerticalDiscreteTabularData(discreteDataColumns, data);
     }
 
-    private int[][] readInDiscreteData(DiscreteDataColumn[] dataColumns, boolean hasHeader, int numOfColsInDataFile) throws IOException {
-        int numOfCols = dataColumns.length;
-        int numOfRows = hasHeader ? countNumberOfLines() - 1 : countNumberOfLines();
-        int[][] data = new int[numOfCols][numOfRows];
+    private int[][] readInDiscreteData(final DiscreteDataColumn[] dataColumns, final boolean hasHeader, final int numOfColsInDataFile) throws IOException {
+        final int numOfCols = dataColumns.length;
+        final int numOfRows = hasHeader ? countNumberOfLines() - 1 : countNumberOfLines();
+        final int[][] data = new int[numOfCols][numOfRows];
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -1005,9 +1005,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
             int row = 0;  // array row number
             int col = 0;  // array column number
 
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 int i = 0; // buffer array index
@@ -1015,7 +1015,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 if (skipHeader) {
                     boolean finished = false;
                     for (; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                        byte currChar = buffer[i];
+                        final byte currChar = buffer[i];
 
                         if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                             if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -1065,7 +1065,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 }
 
                 for (; i < len && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                         if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -1076,11 +1076,11 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                         if (hasSeenNonblankChar && !skip) {
                             colNum++;
 
-                            DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
-                            DataColumn dataColumn = discreteDataColumn.getDataColumn();
+                            final DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
+                            final DataColumn dataColumn = discreteDataColumn.getDataColumn();
                             if (dataColumn.getColumnNumber() == colNum) {
-                                String value = dataBuilder.toString().trim();
-                                if (value.isEmpty() || value.equals(missingDataMarker)) {
+                                final String value = dataBuilder.toString().trim();
+                                if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                                     data[col++][row] = DISCRETE_MISSING_VALUE;
                                 } else {
                                     data[col++][row] = discreteDataColumn.getEncodeValue(value);
@@ -1091,7 +1091,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
-                                String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
+                                final String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
                                 LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
@@ -1136,14 +1136,14 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
                                         break;
@@ -1154,11 +1154,11 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                 if (isDelimiter) {
                                     colNum++;
 
-                                    DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
-                                    DataColumn dataColumn = discreteDataColumn.getDataColumn();
+                                    final DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
+                                    final DataColumn dataColumn = discreteDataColumn.getDataColumn();
                                     if (dataColumn.getColumnNumber() == colNum) {
-                                        String value = dataBuilder.toString().trim();
-                                        if (value.isEmpty() || value.equals(missingDataMarker)) {
+                                        final String value = dataBuilder.toString().trim();
+                                        if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                                             data[col++][row] = DISCRETE_MISSING_VALUE;
                                         } else {
                                             data[col++][row] = discreteDataColumn.getEncodeValue(value);
@@ -1187,11 +1187,11 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
             if (!skipHeader && hasSeenNonblankChar && !skip) {
                 colNum++;
 
-                DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
-                DataColumn dataColumn = discreteDataColumn.getDataColumn();
+                final DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
+                final DataColumn dataColumn = discreteDataColumn.getDataColumn();
                 if (dataColumn.getColumnNumber() == colNum) {
-                    String value = dataBuilder.toString().trim();
-                    if (value.isEmpty() || value.equals(missingDataMarker)) {
+                    final String value = dataBuilder.toString().trim();
+                    if (value.isEmpty() || value.equals(this.missingDataMarker)) {
                         data[col++][row] = DISCRETE_MISSING_VALUE;
                     } else {
                         data[col++][row] = discreteDataColumn.getEncodeValue(value);
@@ -1202,7 +1202,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                 // ensure we have enough data
                 if (columnIndex < numOfColsInDataFile) {
-                    String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
+                    final String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
                     LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
@@ -1212,18 +1212,18 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         return data;
     }
 
-    private void readInDiscreteCategorizes(DiscreteDataColumn[] dataColumns, boolean hasHeader, int numOfColsInDataFile) throws IOException {
-        int numOfCols = dataColumns.length;
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+    private void readInDiscreteCategorizes(final DiscreteDataColumn[] dataColumns, final boolean hasHeader, final int numOfColsInDataFile) throws IOException {
+        final int numOfCols = dataColumns.length;
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -1232,9 +1232,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
             int columnIndex = 0;
 
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 int i = 0; // buffer array index
@@ -1242,7 +1242,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 if (skipHeader) {
                     boolean finished = false;
                     for (; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                        byte currChar = buffer[i];
+                        final byte currChar = buffer[i];
 
                         if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                             if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -1292,7 +1292,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 }
 
                 for (; i < len && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                         if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -1303,12 +1303,12 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                         if (hasSeenNonblankChar && !skip) {
                             colNum++;
 
-                            DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
-                            DataColumn dataColumn = discreteDataColumn.getDataColumn();
+                            final DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
+                            final DataColumn dataColumn = discreteDataColumn.getDataColumn();
                             if (dataColumn.getColumnNumber() == colNum) {
                                 if (dataColumn.isDiscrete()) {
-                                    String value = dataBuilder.toString().trim();
-                                    if (value.length() > 0 && !value.equals(missingDataMarker)) {
+                                    final String value = dataBuilder.toString().trim();
+                                    if (value.length() > 0 && !value.equals(this.missingDataMarker)) {
                                         discreteDataColumn.setValue(value);
                                     }
                                 }
@@ -1318,7 +1318,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
-                                String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
+                                final String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
                                 LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
@@ -1360,14 +1360,14 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
                                         break;
@@ -1378,12 +1378,12 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                 if (isDelimiter) {
                                     colNum++;
 
-                                    DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
-                                    DataColumn dataColumn = discreteDataColumn.getDataColumn();
+                                    final DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
+                                    final DataColumn dataColumn = discreteDataColumn.getDataColumn();
                                     if (dataColumn.getColumnNumber() == colNum) {
                                         if (dataColumn.isDiscrete()) {
-                                            String value = dataBuilder.toString().trim();
-                                            if (value.length() > 0 && !value.equals(missingDataMarker)) {
+                                            final String value = dataBuilder.toString().trim();
+                                            if (value.length() > 0 && !value.equals(this.missingDataMarker)) {
                                                 discreteDataColumn.setValue(value);
                                             }
                                         }
@@ -1410,12 +1410,12 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
             if (!skipHeader && hasSeenNonblankChar && !skip) {
                 colNum++;
 
-                DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
-                DataColumn dataColumn = discreteDataColumn.getDataColumn();
+                final DiscreteDataColumn discreteDataColumn = dataColumns[columnIndex];
+                final DataColumn dataColumn = discreteDataColumn.getDataColumn();
                 if (dataColumn.getColumnNumber() == colNum) {
                     if (dataColumn.isDiscrete()) {
-                        String value = dataBuilder.toString().trim();
-                        if (value.length() > 0 && !value.equals(missingDataMarker)) {
+                        final String value = dataBuilder.toString().trim();
+                        if (value.length() > 0 && !value.equals(this.missingDataMarker)) {
                             discreteDataColumn.setValue(value);
                         }
                     }
@@ -1425,7 +1425,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                 // ensure we have enough data
                 if (columnIndex < numOfColsInDataFile) {
-                    String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
+                    final String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
                     LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
@@ -1433,7 +1433,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         }
 
         // recategorize values
-        for (DiscreteDataColumn discreteDataColumn : dataColumns) {
+        for (final DiscreteDataColumn discreteDataColumn : dataColumns) {
             if (discreteDataColumn.getDataColumn().isGenerated()) {
                 discreteDataColumn.setValue("0");
                 discreteDataColumn.setValue("1");

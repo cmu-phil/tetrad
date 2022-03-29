@@ -38,12 +38,12 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public RemoveSelectedVariablesWrapper(DataWrapper data, Parameters params) {
+    public RemoveSelectedVariablesWrapper(final DataWrapper data, final Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
 
-        DataModel model = data.getSelectedDataModel();
+        final DataModel model = data.getSelectedDataModel();
 
         if (model instanceof DataSet) {
             this.setDataModel(createRectangularModel(((DataSet) model).copy()));
@@ -73,7 +73,7 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
     //=========================== Private Methods =================================//
 
 
-    private static DataModel createRectangularModel(DataSet data) {
+    private static DataModel createRectangularModel(final DataSet data) {
         for (int i = data.getNumColumns() - 1; i >= 0; i--) {
             if (data.isSelected(data.getVariable(i))) {
                 data.removeColumn(i);
@@ -82,21 +82,21 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
         return data;
     }
 
-    private static DataModel createCovarianceModel(ICovarianceMatrix data) {
+    private static DataModel createCovarianceModel(final ICovarianceMatrix data) {
         int numSelected = 0;
 
-        for (Node node : data.getVariables()) {
+        for (final Node node : data.getVariables()) {
             if (data.isSelected(node)) {
                 numSelected++;
             }
         }
 
-        int[] selectedIndices = new int[numSelected];
-        String[] nodeNames = new String[numSelected];
+        final int[] selectedIndices = new int[numSelected];
+        final String[] nodeNames = new String[numSelected];
         int index = -1;
 
         for (int i = 0; i < data.getVariables().size(); i++) {
-            Node node = data.getVariables().get(i);
+            final Node node = data.getVariables().get(i);
             if (!data.isSelected(node)) {
                 ++index;
                 selectedIndices[index] = i;
@@ -104,13 +104,13 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
             }
         }
 
-        Matrix matrix = data.getMatrix();
+        final Matrix matrix = data.getMatrix();
 
-        Matrix newMatrix = matrix.getSelection(
+        final Matrix newMatrix = matrix.getSelection(
                 selectedIndices, selectedIndices).copy();
 
 
-        ICovarianceMatrix newCov = new CovarianceMatrix(DataUtils.createContinuousVariables(nodeNames), newMatrix, data.getSampleSize());
+        final ICovarianceMatrix newCov = new CovarianceMatrix(DataUtils.createContinuousVariables(nodeNames), newMatrix, data.getSampleSize());
 
         return newCov;
     }

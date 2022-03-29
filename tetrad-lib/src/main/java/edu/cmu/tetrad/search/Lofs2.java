@@ -2137,8 +2137,8 @@ public class Lofs2 {
 
     double psi(double x) {
         double result = 0;
-        double xx;
-        double xx2;
+        final double xx;
+        final double xx2;
         final double xx4;
         assert (x > 0);
         for (; x < 7; ++x)

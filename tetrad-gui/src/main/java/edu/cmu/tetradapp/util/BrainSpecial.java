@@ -51,34 +51,34 @@ final class BrainSpecial {
 
     //==============================CONSTRUCTORS===========================//
 
-    public BrainSpecial(LayoutEditable layoutEditable) {
+    public BrainSpecial(final LayoutEditable layoutEditable) {
         this.graph = layoutEditable.getGraph();
 
-        for (Node node : graph.getNodes()) {
-            if (graph.getAdjacentNodes(node).isEmpty()) {
-                graph.removeNode(node);
+        for (final Node node : this.graph.getNodes()) {
+            if (this.graph.getAdjacentNodes(node).isEmpty()) {
+                this.graph.removeNode(node);
             }
         }
     }
 
-    public BrainSpecial(Graph graph) {
+    public BrainSpecial(final Graph graph) {
         this.graph = graph;
     }
 
     //============================PUBLIC METHODS==========================//
 
     public void doLayout() {
-        for (Node node : graph.getNodes()) {
-            if (graph.getEdges(node).isEmpty()) {
-                graph.removeNode(node);
+        for (final Node node : this.graph.getNodes()) {
+            if (this.graph.getEdges(node).isEmpty()) {
+                this.graph.removeNode(node);
             }
         }
 
-        Map<String, Coord> map = loadMap();
+        final Map<String, Coord> map = loadMap();
 
-        for (Node node : graph.getNodes()) {
-            String name = node.getName();
-            Coord coord = map.get(name);
+        for (final Node node : this.graph.getNodes()) {
+            final String name = node.getName();
+            final Coord coord = map.get(name);
             node.setCenterX(transform(coord.getX()));
             node.setCenterY(transform(coord.getY()));
         }
@@ -90,35 +90,35 @@ final class BrainSpecial {
 //        }
     }
 
-    private int transform(int x) {
+    private int transform(final int x) {
         return 6 * (x + 100);
     }
 
     private Map<String, Coord> loadMap() {
-        Map<String, Coord> map = new HashMap<>();
+        final Map<String, Coord> map = new HashMap<>();
 
         try {
-            File file = new File("/Users/josephramsey/Documents/proj/tetrad2/docs/notes/extended_power_labels_283.txt");
+            final File file = new File("/Users/josephramsey/Documents/proj/tetrad2/docs/notes/extended_power_labels_283.txt");
 
-            BufferedReader in = new BufferedReader(new FileReader(file));
+            final BufferedReader in = new BufferedReader(new FileReader(file));
 
             String line;
 
             while ((line = in.readLine()) != null) {
 //                System.out.println(line);
 
-                String[] tokens = line.split("\t");
+                final String[] tokens = line.split("\t");
 
-                String var = "X" + tokens[0];
-                int index = Integer.parseInt(tokens[0]);
-                int x = Integer.parseInt(tokens[1]);
-                int y = Integer.parseInt(tokens[2]);
-                int z = Integer.parseInt(tokens[3]);
-                String area = tokens[4];
+                final String var = "X" + tokens[0];
+                final int index = Integer.parseInt(tokens[0]);
+                final int x = Integer.parseInt(tokens[1]);
+                final int y = Integer.parseInt(tokens[2]);
+                final int z = Integer.parseInt(tokens[3]);
+                final String area = tokens[4];
 
                 map.put(var, new Coord(index, x, y, z, area));
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
@@ -133,7 +133,7 @@ final class BrainSpecial {
         private final int z;
         private final String area;
 
-        public Coord(int index, int x, int y, int z, String area) {
+        public Coord(final int index, final int x, final int y, final int z, final String area) {
             this.index = index;
             this.x = x;
             this.y = y;
@@ -142,23 +142,23 @@ final class BrainSpecial {
         }
 
         public int getIndex() {
-            return index;
+            return this.index;
         }
 
         public int getX() {
-            return x;
+            return this.x;
         }
 
         public int getY() {
-            return y;
+            return this.y;
         }
 
         public int getZ() {
-            return z;
+            return this.z;
         }
 
         private String getArea() {
-            return area;
+            return this.area;
         }
     }
 }

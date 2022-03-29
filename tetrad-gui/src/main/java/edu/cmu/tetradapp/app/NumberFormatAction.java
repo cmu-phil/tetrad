@@ -70,7 +70,7 @@ final class NumberFormatAction extends AbstractAction
      * Pops up a dialog that lets the user decide how to render real numbers.
      * A basic and an advanced version are available.
      */
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
 
         // Set up basic tab.
         final double sample = 23.5;
@@ -80,102 +80,102 @@ final class NumberFormatAction extends AbstractAction
         renderFieldBasic.setEditable(false);
         renderFieldBasic.setBackground(Color.WHITE);
 
-        JCheckBox scientific = new JCheckBox(
+        final JCheckBox scientific = new JCheckBox(
                 "Use scientific notation",
                 Preferences.userRoot().getBoolean("scientificNotation", false));
 
         scientific.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox checkBox = (JCheckBox) e.getSource();
+            public void actionPerformed(final ActionEvent e) {
+                final JCheckBox checkBox = (JCheckBox) e.getSource();
                 Preferences.userRoot().putBoolean("scientificNotation",
                         checkBox.isSelected());
                 renderFieldBasic.setText(new DecimalFormat(constructSimpleFormatString()).format(sample));
-                formatField.setText(constructSimpleFormatString());
+                NumberFormatAction.this.formatField.setText(constructSimpleFormatString());
             }
         });
 
-        SpinnerModel model = new SpinnerNumberModel(
+        final SpinnerModel model = new SpinnerNumberModel(
                 Preferences.userRoot().getInt("numDecimals", 4), 0, 300, 1);
-        JSpinner numDecimals = new JSpinner(model);
+        final JSpinner numDecimals = new JSpinner(model);
 
         numDecimals.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JSpinner spinner = (JSpinner) e.getSource();
-                SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
-                int value = (Integer) model.getValue();
+            public void stateChanged(final ChangeEvent e) {
+                final JSpinner spinner = (JSpinner) e.getSource();
+                final SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+                final int value = (Integer) model.getValue();
 
                 Preferences.userRoot().putInt("numDecimals", value);
                 renderFieldBasic.setText(new DecimalFormat(constructSimpleFormatString()).format(sample));
-                formatField.setText(constructSimpleFormatString());
+                NumberFormatAction.this.formatField.setText(constructSimpleFormatString());
             }
         });
 
         numDecimals.setMaximumSize(numDecimals.getPreferredSize());
-        boolean decimalsOptional = Preferences.userRoot().getBoolean("decimalsOptimal", false);
+        final boolean decimalsOptional = Preferences.userRoot().getBoolean("decimalsOptimal", false);
 
-        JRadioButton optional = new JRadioButton("Optional", decimalsOptional);
-        JRadioButton fixed = new JRadioButton("Fixed", !decimalsOptional);
+        final JRadioButton optional = new JRadioButton("Optional", decimalsOptional);
+        final JRadioButton fixed = new JRadioButton("Fixed", !decimalsOptional);
 
-        ButtonGroup group = new ButtonGroup();
+        final ButtonGroup group = new ButtonGroup();
         group.add(optional);
         group.add(fixed);
 
         optional.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 Preferences.userRoot().putBoolean("decimalsOptional", true);
                 renderFieldBasic.setText(new DecimalFormat(constructSimpleFormatString()).format(sample));
-                formatField.setText(constructSimpleFormatString());
+                NumberFormatAction.this.formatField.setText(constructSimpleFormatString());
             }
         });
 
         fixed.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 Preferences.userRoot().putBoolean("decimalsOptional", false);
                 renderFieldBasic.setText(new DecimalFormat(constructSimpleFormatString()).format(sample));
-                formatField.setText(constructSimpleFormatString());
+                NumberFormatAction.this.formatField.setText(constructSimpleFormatString());
             }
         });
 
         if (!Preferences.userRoot().getBoolean("numFormatAdvanced", false)) {
-            formatField.setText(constructSimpleFormatString());
+            this.formatField.setText(constructSimpleFormatString());
         }
 
         // Set up basic panel.
-        Box a = Box.createVerticalBox();
+        final Box a = Box.createVerticalBox();
         a.setBorder(new TitledBorder("Simple Formats"));
 
-        Box a2 = Box.createHorizontalBox();
+        final Box a2 = Box.createHorizontalBox();
         a2.add(scientific);
         a2.add(Box.createHorizontalGlue());
         a.add(a2);
 
-        Box a3 = Box.createHorizontalBox();
+        final Box a3 = Box.createHorizontalBox();
         a3.add(new JLabel("Number of decimal places = "));
         a3.add(numDecimals);
         a3.add(Box.createHorizontalGlue());
         a.add(a3);
 
-        Box a4 = Box.createHorizontalBox();
+        final Box a4 = Box.createHorizontalBox();
         a4.add(Box.createRigidArea(new Dimension(20, 0)));
         a4.add(optional);
         a4.add(Box.createHorizontalGlue());
         a.add(a4);
 
-        Box a5 = Box.createHorizontalBox();
+        final Box a5 = Box.createHorizontalBox();
         a5.add(Box.createRigidArea(new Dimension(20, 0)));
         a5.add(fixed);
         a5.add(Box.createHorizontalGlue());
         a.add(a5);
         a.add(Box.createVerticalStrut(20));
 
-        Box a6 = Box.createHorizontalBox();
+        final Box a6 = Box.createHorizontalBox();
         a6.add(new JLabel("Renders as: "));
         a6.add(renderFieldBasic);
         a.add(a6);
 
         a.add(Box.createVerticalGlue());
 
-        Box basic = Box.createVerticalBox();
+        final Box basic = Box.createVerticalBox();
         basic.add(a);
 
         final JPanel basicPanel = new JPanel();
@@ -188,56 +188,56 @@ final class NumberFormatAction extends AbstractAction
         renderFieldAdvanced.setEditable(false);
         renderFieldAdvanced.setBackground(Color.WHITE);
 
-        formatField.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent e) {
+        this.formatField.addKeyListener(new KeyAdapter() {
+            public void keyReleased(final KeyEvent e) {
                 updateAdvancedFields(sampleFieldAdvanced, renderFieldAdvanced);
             }
         });
 
         sampleFieldAdvanced.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent e) {
+            public void keyReleased(final KeyEvent e) {
                 updateAdvancedFields(sampleFieldAdvanced, renderFieldAdvanced);
             }
         });
 
-        Box z = Box.createVerticalBox();
+        final Box z = Box.createVerticalBox();
 
-        Box z1 = Box.createHorizontalBox();
+        final Box z1 = Box.createHorizontalBox();
         z1.add(new JLabel("Refer to DecimalFormat in the "));
         z1.add(Box.createHorizontalGlue());
         z.add(z1);
 
-        Box z2 = Box.createHorizontalBox();
+        final Box z2 = Box.createHorizontalBox();
         z2.add(new JLabel("documentation for Java."));
         z2.add(Box.createHorizontalGlue());
         z.add(z2);
         z.add(Box.createVerticalStrut(10));
 
-        Box advanced = Box.createVerticalBox();
+        final Box advanced = Box.createVerticalBox();
         advanced.add(z);
 
-        Box f = Box.createVerticalBox();
+        final Box f = Box.createVerticalBox();
         f.setBorder(new TitledBorder("Format String"));
 
-        Box f1 = Box.createHorizontalBox();
-        f1.add(formatField);
+        final Box f1 = Box.createHorizontalBox();
+        f1.add(this.formatField);
         f.add(f1);
 
         advanced.add(f);
 
-        Box c = Box.createVerticalBox();
+        final Box c = Box.createVerticalBox();
         c.setBorder(new TitledBorder("Example"));
 
-        Box c1 = Box.createHorizontalBox();
+        final Box c1 = Box.createHorizontalBox();
         c1.add(sampleFieldAdvanced);
         c.add(c1);
 
-        Box c2 = Box.createHorizontalBox();
+        final Box c2 = Box.createHorizontalBox();
         c2.add(new JLabel("Renders as: "));
         c2.add(Box.createHorizontalGlue());
         c.add(c2);
 
-        Box c3 = Box.createHorizontalBox();
+        final Box c3 = Box.createHorizontalBox();
         c3.add(renderFieldAdvanced);
         c.add(c3);
 
@@ -247,7 +247,7 @@ final class NumberFormatAction extends AbstractAction
         advancedPanel.setLayout(new BorderLayout());
         advancedPanel.add(advanced, BorderLayout.CENTER);
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        final JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Basic", basicPanel);
         tabbedPane.addTab("Advanced", advancedPanel);
 
@@ -256,20 +256,20 @@ final class NumberFormatAction extends AbstractAction
         }
 
         tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
-                JPanel panel = (JPanel) tabbedPane.getSelectedComponent();
+            public void stateChanged(final ChangeEvent e) {
+                final JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
+                final JPanel panel = (JPanel) tabbedPane.getSelectedComponent();
                 Preferences.userRoot().putBoolean("numFormatAdvanced", panel == advancedPanel);
 
                 if (panel == basicPanel) {
-                    String format = constructSimpleFormatString();
-                    formatField.setText(format);
+                    final String format = constructSimpleFormatString();
+                    NumberFormatAction.this.formatField.setText(format);
                     renderFieldBasic.setText(new DecimalFormat(format).format(sample));
                 }
             }
         });
 
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(tabbedPane, BorderLayout.CENTER);
 
@@ -296,11 +296,11 @@ final class NumberFormatAction extends AbstractAction
      *                          accepted by DecimalFormat.
      */
     private String getFormatString() throws RuntimeException {
-        String format = formatField.getText();
+        final String format = this.formatField.getText();
 
         try {
             new DecimalFormat(format);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("Illegal format string: " + format);
         }
 
@@ -310,7 +310,7 @@ final class NumberFormatAction extends AbstractAction
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 
     //============================PRIVATE METHODS=====================//
@@ -323,40 +323,40 @@ final class NumberFormatAction extends AbstractAction
      * @param sampleFieldAdvanced The example field.
      * @param renderFieldAdvanced The render field.
      */
-    private void updateAdvancedFields(JTextField sampleFieldAdvanced, JTextField renderFieldAdvanced) {
+    private void updateAdvancedFields(final JTextField sampleFieldAdvanced, final JTextField renderFieldAdvanced) {
         try {
             Double.parseDouble(sampleFieldAdvanced.getText());
-        } catch (Exception e1) {
+        } catch (final Exception e1) {
             sampleFieldAdvanced.setForeground(Color.RED);
             return;
         }
 
-        String format = formatField.getText();
+        final String format = this.formatField.getText();
 
         try {
             new DecimalFormat(format);
-        } catch (Exception e2) {
-            formatField.setForeground(Color.RED);
+        } catch (final Exception e2) {
+            this.formatField.setForeground(Color.RED);
             return;
         }
 
-        double sample = Double.parseDouble(sampleFieldAdvanced.getText());
-        NumberFormat nf = new DecimalFormat(format);
+        final double sample = Double.parseDouble(sampleFieldAdvanced.getText());
+        final NumberFormat nf = new DecimalFormat(format);
         renderFieldAdvanced.setText(nf.format(sample));
         sampleFieldAdvanced.setForeground(Color.BLACK);
-        formatField.setForeground(Color.BLACK);
+        this.formatField.setForeground(Color.BLACK);
         Preferences.userRoot().put("numberFormat", format);
     }
 
     private String constructSimpleFormatString() {
-        boolean scientificNotation = Preferences.userRoot()
+        final boolean scientificNotation = Preferences.userRoot()
                 .getBoolean("scientificNotation", false);
-        int numDecimals = Preferences.userRoot()
+        final int numDecimals = Preferences.userRoot()
                 .getInt("numDecimals", 4);
-        boolean optional = Preferences.userRoot()
+        final boolean optional = Preferences.userRoot()
                 .getBoolean("decimalsOptional", false);
 
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("0.");
 
         if (optional) {
@@ -373,7 +373,7 @@ final class NumberFormatAction extends AbstractAction
             buf.append("E0");
         }
 
-        String formatString = buf.toString();
+        final String formatString = buf.toString();
 //        formatField.setText(formatString);
         Preferences.userRoot().put("numberFormat", formatString);
         return formatString;

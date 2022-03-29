@@ -68,11 +68,11 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
      */
-    public GeneralizedSemImGraphicalEditor(GeneralizedSemIm semIm, Map<Object, EditorWindow> launchedEditors) {
+    public GeneralizedSemImGraphicalEditor(final GeneralizedSemIm semIm, final Map<Object, EditorWindow> launchedEditors) {
         this.semIm = semIm;
         this.launchedEditors = launchedEditors;
         setLayout(new BorderLayout());
-        JScrollPane scroll = new JScrollPane(workbench());
+        final JScrollPane scroll = new JScrollPane(workbench());
         scroll.setPreferredSize(new Dimension(450, 450));
 
         add(scroll, BorderLayout.CENTER);
@@ -82,9 +82,9 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
 
     //============================================PUBLIC======================================================//
     public void refreshLabels() {
-        List nodes = graph().getNodes();
+        final List nodes = graph().getNodes();
 
-        for (Object node : nodes) {
+        for (final Object node : nodes) {
             resetNodeLabel((Node) node);
         }
 
@@ -92,19 +92,19 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     }
 
     public GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     //============================================PRIVATE=====================================================//
     private void beginNodeEdit(final Node node) {
-        if (launchedEditors.keySet().contains(node)) {
-            launchedEditors.get(node).moveToFront();
+        if (this.launchedEditors.keySet().contains(node)) {
+            this.launchedEditors.get(node).moveToFront();
             return;
         }
 
-        final GeneralizedExpressionParameterizer paramEditor = new GeneralizedExpressionParameterizer(semIm, node);
+        final GeneralizedExpressionParameterizer paramEditor = new GeneralizedExpressionParameterizer(this.semIm, node);
 
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(paramEditor, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -116,14 +116,14 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         editorWindow.pack();
         editorWindow.setVisible(true);
 
-        launchedEditors.put(node, editorWindow);
+        this.launchedEditors.put(node, editorWindow);
 
         editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-            public void internalFrameClosing(InternalFrameEvent internalFrameEvent) {
+            public void internalFrameClosing(final InternalFrameEvent internalFrameEvent) {
                 if (!editorWindow.isCanceled()) {
-                    semIm.setSubstitutions(paramEditor.getParameterValues());
+                    GeneralizedSemImGraphicalEditor.this.semIm.setSubstitutions(paramEditor.getParameterValues());
                     refreshLabels();
-                    launchedEditors.remove(node);
+                    GeneralizedSemImGraphicalEditor.this.launchedEditors.remove(node);
                     firePropertyChange("modelChanged", null, null);
                 }
             }
@@ -148,10 +148,10 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         return getWorkbench();
     }
 
-    private void resetNodeLabel(Node node) {
-        int maxExpressionLength = Preferences.userRoot().getInt("maxExpressionLength", 25);
+    private void resetNodeLabel(final Node node) {
+        final int maxExpressionLength = Preferences.userRoot().getInt("maxExpressionLength", 25);
 
-        String expressionString = semIm.getNodeSubstitutedString(node);
+        String expressionString = this.semIm.getNodeSubstitutedString(node);
         if (expressionString == null) {
             workbench().setNodeLabel(node, null, 0, 0);
             firePropertyChange("modelChanged", null, null);
@@ -162,7 +162,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
             expressionString = "- long formula -";
         }
 
-        JLabel label = new JLabel();
+        final JLabel label = new JLabel();
         label.setForeground(Color.BLACK);
         label.setBackground(Color.WHITE);
         label.setText(expressionString);
@@ -173,7 +173,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         if (node.getNodeType() == NodeType.ERROR) {
             label.setOpaque(false);
 
-            Node error = workbench.getGraph().getNode(node.getName());
+            final Node error = this.workbench.getGraph().getNode(node.getName());
 
             if (error != null) {
                 workbench().setNodeLabel(error, label, -10, -10);
@@ -181,7 +181,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         } else {
             label.setOpaque(false);
 
-            if (workbench.getGraph().containsNode(node)) {
+            if (this.workbench.getGraph().containsNode(node)) {
                 workbench().setNodeLabel(node, label, 0, 0);
             }
         }
@@ -190,10 +190,10 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     }
 
     public boolean isEnableEditing() {
-        return enableEditing;
+        return this.enableEditing;
     }
 
-    public void enableEditing(boolean enableEditing) {
+    public void enableEditing(final boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {
             this.workbench.enableEditing(enableEditing);
@@ -205,20 +205,20 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         private final Node node;
         private final GeneralizedSemImGraphicalEditor editor;
 
-        public NodeMouseListener(Node node, GeneralizedSemImGraphicalEditor editor) {
+        public NodeMouseListener(final Node node, final GeneralizedSemImGraphicalEditor editor) {
             this.node = node;
             this.editor = editor;
         }
 
         private Node getNode() {
-            return node;
+            return this.node;
         }
 
         private GeneralizedSemImGraphicalEditor getEditor() {
-            return editor;
+            return this.editor;
         }
 
-        public void mouseClicked(MouseEvent e) {
+        public void mouseClicked(final MouseEvent e) {
             if (e.getClickCount() == 2) {
                 getEditor().beginNodeEdit(getNode());
             }

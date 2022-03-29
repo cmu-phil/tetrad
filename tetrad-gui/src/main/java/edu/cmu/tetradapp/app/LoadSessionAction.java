@@ -56,20 +56,20 @@ final class LoadSessionAction extends AbstractAction {
     /**
      * Performs the action of opening a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
 
-        Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
+        final Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
 
 
         // select a file to open using the file chooser
-        JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation =
+        final JFileChooser chooser = new JFileChooser();
+        final String sessionSaveLocation =
                 Preferences.userRoot().get("sessionSaveLocation", "");
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.addChoosableFileFilter(new TetFileFilter());
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-        int ret1 = chooser.showOpenDialog(JOptionUtils.centeringComp());
+        final int ret1 = chooser.showOpenDialog(JOptionUtils.centeringComp());
 
         if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
             return;
@@ -84,13 +84,13 @@ final class LoadSessionAction extends AbstractAction {
 
         Preferences.userRoot().put("sessionSaveLocation", file.getParent());
 
-        Session session = DesktopController.getInstance().getSessionByName(file.getName());
+        final Session session = DesktopController.getInstance().getSessionByName(file.getName());
 
         if (session != null) {
             if (session.isEmpty()) {
                 DesktopController.getInstance().closeSessionByName(file.getName());
             } else {
-                int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                final int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                         "Replace existing session by that name?.", "Confirm", JOptionPane.YES_NO_OPTION);
 
                 if (ret == JOptionPane.YES_OPTION) {
@@ -106,9 +106,9 @@ final class LoadSessionAction extends AbstractAction {
         new WatchedProcess(owner) {
             public void watch() {
                 try {
-                    FileInputStream in = new FileInputStream(file);
-                    DecompressibleInputStream objIn = new DecompressibleInputStream(in);
-                    Object o = objIn.readObject();
+                    final FileInputStream in = new FileInputStream(file);
+                    final DecompressibleInputStream objIn = new DecompressibleInputStream(in);
+                    final Object o = objIn.readObject();
 
                     TetradMetadata metadata = null;
                     SessionWrapper sessionWrapper = null;
@@ -118,9 +118,9 @@ final class LoadSessionAction extends AbstractAction {
 
                         try {
                             sessionWrapper = (SessionWrapper) objIn.readObject();
-                        } catch (ClassNotFoundException e1) {
+                        } catch (final ClassNotFoundException e1) {
                             throw e1;
-                        } catch (Exception e2) {
+                        } catch (final Exception e2) {
                             e2.printStackTrace();
                             sessionWrapper = null;
                         }
@@ -136,9 +136,9 @@ final class LoadSessionAction extends AbstractAction {
                     }
 
                     if (sessionWrapper == null) {
-                        Version version = metadata.getVersion();
-                        Date date = metadata.getDate();
-                        SimpleDateFormat df = new SimpleDateFormat("MMM dd, yyyy");
+                        final Version version = metadata.getVersion();
+                        final Date date = metadata.getDate();
+                        final SimpleDateFormat df = new SimpleDateFormat("MMM dd, yyyy");
 
                         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                                 "Could not load this session file into Tetrad " + Version.currentViewableVersion() + "! \n" +
@@ -147,20 +147,20 @@ final class LoadSessionAction extends AbstractAction {
                         return;
                     }
 
-                    SessionEditorWorkbench graph =
+                    final SessionEditorWorkbench graph =
                             new SessionEditorWorkbench(sessionWrapper);
 
-                    String name = file.getName();
+                    final String name = file.getName();
                     sessionWrapper.setName(name);
 
-                    SessionEditor editor = new SessionEditor(name, graph);
+                    final SessionEditor editor = new SessionEditor(name, graph);
 
                     DesktopController.getInstance().addSessionEditor(editor);
                     DesktopController.getInstance().closeEmptySessions();
                     DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
-                } catch (FileNotFoundException ex) {
+                } catch (final FileNotFoundException ex) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
@@ -171,21 +171,21 @@ final class LoadSessionAction extends AbstractAction {
 
     public class DecompressibleInputStream extends ObjectInputStream {
 
-        public DecompressibleInputStream(InputStream in) throws IOException {
+        public DecompressibleInputStream(final InputStream in) throws IOException {
             super(in);
         }
 
         protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
             ObjectStreamClass resultClassDescriptor = super.readClassDescriptor(); // initially streams descriptor
-            Class localClass; // the class in the local JVM that this descriptor represents.
+            final Class localClass; // the class in the local JVM that this descriptor represents.
             try {
                 localClass = Class.forName(resultClassDescriptor.getName());
-            } catch (ClassNotFoundException e) {
+            } catch (final ClassNotFoundException e) {
                 e.printStackTrace();
                 TetradLogger.getInstance().forceLogMessage("No local class for " + resultClassDescriptor.getName());
                 return resultClassDescriptor;
             }
-            ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
+            final ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
             if (localClassDescriptor != null) { // only if class implements serializable
                 final long localSUID = localClassDescriptor.getSerialVersionUID();
                 final long streamSUID = resultClassDescriptor.getSerialVersionUID();

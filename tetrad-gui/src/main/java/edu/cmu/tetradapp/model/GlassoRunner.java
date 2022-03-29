@@ -53,7 +53,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    private GlassoRunner(DataWrapper dataWrapper, Parameters params) {
+    private GlassoRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -68,7 +68,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
+        final MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
@@ -82,15 +82,15 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        Object dataModel = getDataModel();
-        Parameters params = getParams();
+        final Object dataModel = getDataModel();
+        final Parameters params = getParams();
 
         if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
 
-            DoubleMatrix2D cov = new DenseDoubleMatrix2D(dataSet.getCovarianceMatrix().toArray());
+            final DoubleMatrix2D cov = new DenseDoubleMatrix2D(dataSet.getCovarianceMatrix().toArray());
 
-            Glasso glasso = new Glasso(cov);
+            final Glasso glasso = new Glasso(cov);
             glasso.setMaxit((int) params.get("maxit", 10000));
             glasso.setIa(params.getBoolean("ia", false));
             glasso.setIs(params.getBoolean("is", false));
@@ -99,11 +99,11 @@ public class GlassoRunner extends AbstractAlgorithmRunner
             glasso.setThr(params.getDouble("thr", 1e-4));
             glasso.setRhoAllEqual(1.0);
 
-            Glasso.Result result = glasso.search();
-            Matrix wwi = new Matrix(result.getWwi().toArray());
+            final Glasso.Result result = glasso.search();
+            final Matrix wwi = new Matrix(result.getWwi().toArray());
 
-            List<Node> variables = dataSet.getVariables();
-            Graph resultGraph = new EdgeListGraph(variables);
+            final List<Node> variables = dataSet.getVariables();
+            final Graph resultGraph = new EdgeListGraph(variables);
 
             for (int i = 0; i < variables.size(); i++) {
                 for (int j = i + 1; j < variables.size(); j++) {
@@ -124,7 +124,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -136,7 +136,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
 //        names.add("ColliderDiscovery");
 //        names.add("Noncolliders");
         return names;
@@ -146,8 +146,8 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
+    public List<List<Triple>> getTriplesLists(final Node node) {
+        final List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -161,7 +161,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        Parameters params = getParams();
+        final Parameters params = getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }

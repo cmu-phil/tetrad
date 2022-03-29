@@ -37,9 +37,9 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class ModeInterpolatorWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public ModeInterpolatorWrapper(DataWrapper wrapper, Parameters params) {
-        DataFilter interpolator = new ModeInterpolator();
-        DataSet dataSet =
+    public ModeInterpolatorWrapper(final DataWrapper wrapper, final Parameters params) {
+        final DataFilter interpolator = new ModeInterpolator();
+        final DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
         setDataModel(interpolator.filter(dataSet));
         setSourceGraph(wrapper.getSourceGraph());

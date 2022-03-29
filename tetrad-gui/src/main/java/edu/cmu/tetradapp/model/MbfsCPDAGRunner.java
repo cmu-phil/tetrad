@@ -50,11 +50,11 @@ public class MbfsCPDAGRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public MbfsCPDAGRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public MbfsCPDAGRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public MbfsCPDAGRunner(DataWrapper dataWrapper, Parameters params) {
+    public MbfsCPDAGRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, new KnowledgeBoxModel(new KnowledgeBoxInput[]{dataWrapper}, new Parameters()));
     }
 
@@ -66,7 +66,7 @@ public class MbfsCPDAGRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbfsCPDAGRunner(Graph graph, Parameters params) {
+    public MbfsCPDAGRunner(final Graph graph, final Parameters params) {
         super(graph, params);
     }
 
@@ -77,7 +77,7 @@ public class MbfsCPDAGRunner extends AbstractAlgorithmRunner
 //        super(graphWrapper.getGraph(), params);
 //    }
 
-    public MbfsCPDAGRunner(DagWrapper dagWrapper, Parameters params) {
+    public MbfsCPDAGRunner(final DagWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
@@ -95,7 +95,7 @@ public class MbfsCPDAGRunner extends AbstractAlgorithmRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
+        final MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
@@ -109,13 +109,13 @@ public class MbfsCPDAGRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        final IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
 
-        Mbfs search = new Mbfs(getIndependenceTest(), -1);
+        final Mbfs search = new Mbfs(getIndependenceTest(), -1);
         search.setDepth(getParams().getInt("depth", -1));
 //        search.setTrueGraph(trueGraph);
 
-        Graph graph = search.search();
+        final Graph graph = search.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
@@ -135,7 +135,7 @@ public class MbfsCPDAGRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -156,7 +156,7 @@ public class MbfsCPDAGRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new LinkedList<>();
     }
 
@@ -167,7 +167,7 @@ public class MbfsCPDAGRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        Parameters params = getParams();
+        final Parameters params = getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }

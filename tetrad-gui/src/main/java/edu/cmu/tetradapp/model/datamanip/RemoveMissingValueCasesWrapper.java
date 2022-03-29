@@ -40,15 +40,15 @@ public class RemoveMissingValueCasesWrapper extends DataWrapper {
     /**
      * Constructs the missing value cases wrapper.
      */
-    public RemoveMissingValueCasesWrapper(DataWrapper data, Parameters params) {
+    public RemoveMissingValueCasesWrapper(final DataWrapper data, final Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
-        DataModel model = data.getSelectedDataModel();
+        final DataModel model = data.getSelectedDataModel();
         if ((!(model instanceof DataSet))) {
             throw new IllegalArgumentException("Data must be tabular");
         }
-        RemoveMissingCasesDataFilter filter = new RemoveMissingCasesDataFilter();
+        final RemoveMissingCasesDataFilter filter = new RemoveMissingCasesDataFilter();
         this.setDataModel(filter.filter((DataSet) model));
         this.setSourceGraph(data.getSourceGraph());
 

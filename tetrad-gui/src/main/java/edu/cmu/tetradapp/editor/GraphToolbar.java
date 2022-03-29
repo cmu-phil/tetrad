@@ -52,7 +52,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
     /**
      * The mutually exclusive button group for the buttons.
      */
-    private ButtonGroup group;
+    private final ButtonGroup group;
 
     /**
      * The panel that the buttons are in.
@@ -60,45 +60,45 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
     private final Box buttonsPanel = Box.createVerticalBox();
 
     // The buttons in the toolbar.
-    private JToggleButton move;
-    private JToggleButton addObserved;
-    private JToggleButton addLatent;
-    private JToggleButton addDirectedEdge;
-    private JToggleButton addNondirectedEdge;
-    private JToggleButton addUndirectedEdge;
-    private JToggleButton addPartiallyOrientedEdge;
-    private JToggleButton addBidirectedEdge;
+    private final JToggleButton move;
+    private final JToggleButton addObserved;
+    private final JToggleButton addLatent;
+    private final JToggleButton addDirectedEdge;
+    private final JToggleButton addNondirectedEdge;
+    private final JToggleButton addUndirectedEdge;
+    private final JToggleButton addPartiallyOrientedEdge;
+    private final JToggleButton addBidirectedEdge;
 
     /**
      * The workbench this toolbar governs.
      */
-    private GraphWorkbench workbench;
+    private final GraphWorkbench workbench;
 
     /**
      * Constructs a new Graph toolbar governing the modes of the given
      * GraphWorkbench.
      */
-    public GraphToolbar(GraphWorkbench workbench) {
+    public GraphToolbar(final GraphWorkbench workbench) {
         if (workbench == null) {
             throw new NullPointerException();
         }
 
         this.workbench = workbench;
-        group = new ButtonGroup();
+        this.group = new ButtonGroup();
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        buttonsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        add(buttonsPanel);
+        this.buttonsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        add(this.buttonsPanel);
 
         // construct the bottons.
-        move = new JToggleButton();
-        addObserved = new JToggleButton();
-        addLatent = new JToggleButton();
-        addNondirectedEdge = new JToggleButton();
-        addDirectedEdge = new JToggleButton();
-        addUndirectedEdge = new JToggleButton();
-        addPartiallyOrientedEdge = new JToggleButton();
-        addBidirectedEdge = new JToggleButton();
+        this.move = new JToggleButton();
+        this.addObserved = new JToggleButton();
+        this.addLatent = new JToggleButton();
+        this.addNondirectedEdge = new JToggleButton();
+        this.addDirectedEdge = new JToggleButton();
+        this.addUndirectedEdge = new JToggleButton();
+        this.addPartiallyOrientedEdge = new JToggleButton();
+        this.addBidirectedEdge = new JToggleButton();
 
         // Apparently it's not acting like this anymore, and recently the
         // focus listeners have caused some weird behavior, so commenting
@@ -123,84 +123,84 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
 //        addBidirectedEdge.addFocusListener(focusListener);
 
         // add listeners
-        move.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                move.getModel().setSelected(true);
+        this.move.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                GraphToolbar.this.move.getModel().setSelected(true);
                 setWorkbenchMode(GraphWorkbench.SELECT_MOVE);
             }
         });
 
-        addObserved.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addObserved.getModel().setSelected(true);
+        this.addObserved.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                GraphToolbar.this.addObserved.getModel().setSelected(true);
                 setWorkbenchMode(GraphWorkbench.ADD_NODE);
                 setNodeMode(GraphWorkbench.MEASURED_NODE);
             }
         });
 
-        addLatent.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addLatent.getModel().setSelected(true);
+        this.addLatent.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                GraphToolbar.this.addLatent.getModel().setSelected(true);
                 setWorkbenchMode(GraphWorkbench.ADD_NODE);
                 setNodeMode(GraphWorkbench.LATENT_NODE);
             }
         });
 
-        addDirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addDirectedEdge.getModel().setSelected(true);
+        this.addDirectedEdge.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                GraphToolbar.this.addDirectedEdge.getModel().setSelected(true);
                 setWorkbenchMode(GraphWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
             }
         });
 
-        addNondirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addNondirectedEdge.getModel().setSelected(true);
+        this.addNondirectedEdge.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                GraphToolbar.this.addNondirectedEdge.getModel().setSelected(true);
                 setWorkbenchMode(GraphWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.NONDIRECTED_EDGE);
             }
         });
 
-        addUndirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addUndirectedEdge.getModel().setSelected(true);
+        this.addUndirectedEdge.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                GraphToolbar.this.addUndirectedEdge.getModel().setSelected(true);
                 setWorkbenchMode(GraphWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.UNDIRECTED_EDGE);
             }
         });
 
-        addPartiallyOrientedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addPartiallyOrientedEdge.getModel().setSelected(true);
+        this.addPartiallyOrientedEdge.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                GraphToolbar.this.addPartiallyOrientedEdge.getModel().setSelected(true);
                 setWorkbenchMode(GraphWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.PARTIALLY_ORIENTED_EDGE);
             }
         });
 
-        addBidirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addBidirectedEdge.getModel().setSelected(true);
+        this.addBidirectedEdge.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                GraphToolbar.this.addBidirectedEdge.getModel().setSelected(true);
                 setWorkbenchMode(GraphWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.BIDIRECTED_EDGE);
             }
         });
 
         // add buttons to the toolbar.
-        addButton(move, "move");
-        addButton(addObserved, "variable");
-        addButton(addLatent, "latent");
-        addButton(addDirectedEdge, "directed");
-        addButton(addNondirectedEdge, "nondirected");
-        addButton(addUndirectedEdge, "undirected");
-        addButton(addPartiallyOrientedEdge, "partiallyoriented");
-        addButton(addBidirectedEdge, "bidirected");
+        addButton(this.move, "move");
+        addButton(this.addObserved, "variable");
+        addButton(this.addLatent, "latent");
+        addButton(this.addDirectedEdge, "directed");
+        addButton(this.addNondirectedEdge, "nondirected");
+        addButton(this.addUndirectedEdge, "undirected");
+        addButton(this.addPartiallyOrientedEdge, "partiallyoriented");
+        addButton(this.addBidirectedEdge, "bidirected");
         workbench.addPropertyChangeListener(this);
         selectArrowTools();
 
-        buttonsPanel.add(Box.createGlue());
+        this.buttonsPanel.add(Box.createGlue());
 
-        move.setSelected(true);
+        this.move.setSelected(true);
 
     }
 
@@ -209,14 +209,14 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * Java will not allow access to the variable 'workbench' from inner
      * classes.
      */
-    private void setWorkbenchMode(int mode) {
-        workbench.setWorkbenchMode(mode);
+    private void setWorkbenchMode(final int mode) {
+        this.workbench.setWorkbenchMode(mode);
 //        Toolkit toolkit = Toolkit.getDefaultToolkit();
 //        Image image = ImageUtils.getImage(this, "cursorImage.png");
 //        Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
 //        setCursor(c);
 
-        setCursor(workbench.getCursor());
+        setCursor(this.workbench.getCursor());
     }
 
     /**
@@ -224,8 +224,8 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * Java will not allow access to the variable 'workbench' from inner
      * classes.
      */
-    private void setEdgeMode(int mode) {
-        workbench.setEdgeMode(mode);
+    private void setEdgeMode(final int mode) {
+        this.workbench.setEdgeMode(mode);
     }
 
     /**
@@ -233,27 +233,27 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * Java will not allow access to the variable 'workbench' from inner
      * classes.
      */
-    private void setNodeMode(int mode) {
-        workbench.setNodeType(mode);
+    private void setNodeMode(final int mode) {
+        this.workbench.setNodeType(mode);
     }
 
     /**
      * Adds the various buttons to the toolbar, setting their properties
      * appropriately.
      */
-    private void addButton(JToggleButton button, String name) {
+    private void addButton(final JToggleButton button, final String name) {
         button.setIcon(new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
         button.setMaximumSize(new Dimension(80, 40));
         button.setPreferredSize(new Dimension(80, 40));
-        buttonsPanel.add(button);
-        buttonsPanel.add(Box.createVerticalStrut(5));
-        group.add(button);
+        this.buttonsPanel.add(button);
+        this.buttonsPanel.add(Box.createVerticalStrut(5));
+        this.group.add(button);
     }
 
     /**
      * Responds to property change events.
      */
-    public void propertyChange(PropertyChangeEvent e) {
+    public void propertyChange(final PropertyChangeEvent e) {
         if ("graph".equals(e.getPropertyName())) {
             selectArrowTools();
         }
@@ -264,11 +264,11 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * use and disables all others.
      */
     private void selectArrowTools() {
-        addDirectedEdge.setEnabled(true);
-        addNondirectedEdge.setEnabled(true);
-        addPartiallyOrientedEdge.setEnabled(true);
-        addBidirectedEdge.setEnabled(true);
-        addUndirectedEdge.setEnabled(true);
+        this.addDirectedEdge.setEnabled(true);
+        this.addNondirectedEdge.setEnabled(true);
+        this.addPartiallyOrientedEdge.setEnabled(true);
+        this.addBidirectedEdge.setEnabled(true);
+        this.addUndirectedEdge.setEnabled(true);
     }
 
 //    /**

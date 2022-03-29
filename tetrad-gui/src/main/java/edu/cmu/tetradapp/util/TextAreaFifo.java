@@ -33,12 +33,12 @@ import javax.swing.text.Element;
 class TextAreaFifo extends JTextArea implements DocumentListener {
     private final int maxLines;
 
-    public TextAreaFifo(int maxLines) {
+    public TextAreaFifo(final int maxLines) {
         this.maxLines = maxLines;
         getDocument().addDocumentListener(this);
     }
 
-    public void insertUpdate(DocumentEvent e) {
+    public void insertUpdate(final DocumentEvent e) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 removeLines();
@@ -46,21 +46,21 @@ class TextAreaFifo extends JTextArea implements DocumentListener {
         });
     }
 
-    public void removeUpdate(DocumentEvent e) {
+    public void removeUpdate(final DocumentEvent e) {
     }
 
-    public void changedUpdate(DocumentEvent e) {
+    public void changedUpdate(final DocumentEvent e) {
     }
 
     private void removeLines() {
-        Element root = getDocument().getDefaultRootElement();
+        final Element root = getDocument().getDefaultRootElement();
 
-        while (root.getElementCount() > maxLines) {
-            Element firstLine = root.getElement(0);
+        while (root.getElementCount() > this.maxLines) {
+            final Element firstLine = root.getElement(0);
 
             try {
                 getDocument().remove(0, firstLine.getEndOffset());
-            } catch (BadLocationException ble) {
+            } catch (final BadLocationException ble) {
                 ble.printStackTrace();
             }
         }

@@ -38,17 +38,17 @@ public class InvertCovMatrixWrapper extends DataWrapper {
     /**
      * Splits the given data set by collinear columns.
      */
-    public InvertCovMatrixWrapper(DataWrapper wrapper) {
+    public InvertCovMatrixWrapper(final DataWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
-        DataModel model = wrapper.getSelectedDataModel();
+        final DataModel model = wrapper.getSelectedDataModel();
         if (model instanceof ICovarianceMatrix) {
-            ICovarianceMatrix dataSet = (ICovarianceMatrix) model;
-            Matrix data = dataSet.getMatrix();
-            Matrix inverse = data.inverse();
-            String[] varNames = dataSet.getVariableNames().toArray(new String[0]);
-            ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), inverse,
+            final ICovarianceMatrix dataSet = (ICovarianceMatrix) model;
+            final Matrix data = dataSet.getMatrix();
+            final Matrix inverse = data.inverse();
+            final String[] varNames = dataSet.getVariableNames().toArray(new String[0]);
+            final ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), inverse,
                     ((ICovarianceMatrix) model).getSampleSize());
             setDataModel(covarianceMatrix);
             setSourceGraph(wrapper.getSourceGraph());

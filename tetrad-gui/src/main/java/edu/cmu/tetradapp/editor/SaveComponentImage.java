@@ -41,14 +41,14 @@ public class SaveComponentImage extends AbstractAction {
     /**
      * The component whose image is to be saved.
      */
-    private JComponent comp;
+    private final JComponent comp;
 
     /**
      * The action name, to be used as a title to the save dialog.
      */
     private String actionName = "Save";
 
-    public SaveComponentImage(JComponent comp, String actionName) {
+    public SaveComponentImage(final JComponent comp, final String actionName) {
         super(actionName);
         this.actionName = actionName;
 
@@ -62,26 +62,26 @@ public class SaveComponentImage extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        File file = EditorUtils.getSaveFile("image", "png", getComp(), false, actionName);
+    public void actionPerformed(final ActionEvent e) {
+        final File file = EditorUtils.getSaveFile("image", "png", getComp(), false, this.actionName);
 
         // Create the image.
-        Dimension size = getComp().getSize();
-        BufferedImage image = new BufferedImage(size.width, size.height,
+        final Dimension size = getComp().getSize();
+        final BufferedImage image = new BufferedImage(size.width, size.height,
                 BufferedImage.TYPE_INT_ARGB_PRE);
-        Graphics graphics = image.getGraphics();
+        final Graphics graphics = image.getGraphics();
         getComp().paint(graphics);
 
         // Write the image to file.
         try {
             ImageIO.write(image, "png", file);
-        } catch (IOException e1) {
+        } catch (final IOException e1) {
             throw new RuntimeException(e1);
         }
     }
 
     private Component getComp() {
-        return comp;
+        return this.comp;
     }
 
 //    /**

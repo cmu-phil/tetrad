@@ -54,11 +54,11 @@ final class DeleteSubsessionAction extends AbstractAction
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(ActionEvent e) {
-        SessionEditor sessionEditor = this.desktop.getFrontmostSessionEditor();
-        SessionEditorWorkbench graph = sessionEditor.getSessionWorkbench();
+    public void actionPerformed(final ActionEvent e) {
+        final SessionEditor sessionEditor = this.desktop.getFrontmostSessionEditor();
+        final SessionEditorWorkbench graph = sessionEditor.getSessionWorkbench();
 
-        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+        final int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                 "Delete nodes?", "Confirm", JOptionPane.OK_CANCEL_OPTION);
 
         if (ret == JOptionPane.OK_OPTION) {
@@ -74,7 +74,7 @@ final class DeleteSubsessionAction extends AbstractAction
      * @param contents  the contents which this owner had placed on the
      *                  clipboard
      */
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 }
 

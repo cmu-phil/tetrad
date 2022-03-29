@@ -59,23 +59,23 @@ public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput
     private boolean showErrors;
 
     //============================CONSTRUCTORS==========================//
-    public StandardizedSemImWrapper(SemImWrapper semImWrapper, Parameters parameters) {
+    public StandardizedSemImWrapper(final SemImWrapper semImWrapper, final Parameters parameters) {
         if (semImWrapper == null) {
             throw new NullPointerException();
         }
 
         this.standardizedSemIm = new StandardizedSemIm(semImWrapper.getSemIm(), parameters);
-        log(standardizedSemIm);
+        log(this.standardizedSemIm);
     }
 
-    public StandardizedSemImWrapper(SemPmWrapper semPmWrapper, Parameters parameters) {
+    public StandardizedSemImWrapper(final SemPmWrapper semPmWrapper, final Parameters parameters) {
         if (semPmWrapper == null) {
             throw new NullPointerException();
         }
 
-        SemIm semIm = new SemIm(semPmWrapper.getSemPm());
+        final SemIm semIm = new SemIm(semPmWrapper.getSemPm());
         this.standardizedSemIm = new StandardizedSemIm(semIm, parameters);
-        log(standardizedSemIm);
+        log(this.standardizedSemIm);
     }
 
     /**
@@ -94,22 +94,22 @@ public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput
     }
 
     public Graph getGraph() {
-        return standardizedSemIm.getSemPm().getGraph();
+        return this.standardizedSemIm.getSemPm().getGraph();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     public boolean isShowErrors() {
-        return showErrors;
+        return this.showErrors;
     }
 
-    public void setShowErrors(boolean showErrors) {
+    public void setShowErrors(final boolean showErrors) {
         this.showErrors = showErrors;
     }
 
@@ -128,11 +128,11 @@ public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (standardizedSemIm == null) {
+        if (this.standardizedSemIm == null) {
             throw new NullPointerException();
         }
     }
@@ -153,7 +153,7 @@ public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput
         return getGraph().getNodes();
     }
 
-    private void log(StandardizedSemIm pm) {
+    private void log(final StandardizedSemIm pm) {
         TetradLogger.getInstance().log("info", "Standardized SEM IM");
         TetradLogger.getInstance().log("im", pm.toString());
     }

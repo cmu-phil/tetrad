@@ -62,9 +62,9 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
      * The component that displays.
      */
     private DisplayComp displayComp;
-    private int uniqueId = AbstractVariable.LAST_ID++;
+    private final int uniqueId = AbstractVariable.LAST_ID++;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //===========================CONSTRUCTORS==============================//
     protected DisplayNode() {
@@ -72,7 +72,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     }
 
     //===========================PUBLIC METHODS============================//
-    protected final void setModelNode(Node modelNode) {
+    protected final void setModelNode(final Node modelNode) {
         if (modelNode == null) {
             throw new NullPointerException();
         }
@@ -81,7 +81,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         setName(modelNode.getName());
 
         modelNode.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("name".equals(evt.getPropertyName())) {
                     setName((String) (evt.getNewValue()));
                 }
@@ -93,21 +93,21 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
      * @return the model node corresponding to this workbench node. May be null.
      */
     public final Node getModelNode() {
-        return modelNode;
+        return this.modelNode;
     }
 
     /**
      * Sets the name of the node.
      */
-    public final void setName(String name) {
+    public final void setName(final String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
 
         super.setName(name);
 
-        if (displayComp != null) {
-            displayComp.setName(name);
+        if (this.displayComp != null) {
+            this.displayComp.setName(name);
         }
 
         repaint();
@@ -116,13 +116,13 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     /**
      * Sets the selection status of the node.
      */
-    public void setSelected(boolean selected) {
-        boolean oldSelected = this.selected;
+    public void setSelected(final boolean selected) {
+        final boolean oldSelected = this.selected;
         this.selected = selected;
         firePropertyChange("selected", oldSelected, selected);
 
-        if (displayComp != null) {
-            displayComp.setSelected(selected);
+        if (this.displayComp != null) {
+            this.displayComp.setSelected(selected);
         }
 
         repaint();
@@ -135,7 +135,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         return this.selected;
     }
 
-    public final void setLocation(int x, int y) {
+    public final void setLocation(final int x, final int y) {
         super.setLocation(x, y);
 
         if (getModelNode() != null) {
@@ -147,13 +147,13 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
      * @return the center point for this node.
      */
     public final Point getCenterPoint() {
-        Rectangle bounds = getBounds();
-        int centerX = bounds.x + bounds.width / 2;
-        int centerY = bounds.y + bounds.height / 2;
+        final Rectangle bounds = getBounds();
+        final int centerX = bounds.x + bounds.width / 2;
+        final int centerY = bounds.y + bounds.height / 2;
         return new Point(centerX, centerY);
     }
 
-    public boolean contains(int x, int y) {
+    public boolean contains(final int x, final int y) {
         if (getDisplayComp() != null) {
             return getDisplayComp().contains(x, y);
         }
@@ -164,14 +164,14 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     public void doDoubleClickAction() {
     }
 
-    public void doDoubleClickAction(Graph graph) {
+    public void doDoubleClickAction(final Graph graph) {
     }
 
     protected DisplayComp getDisplayComp() {
-        return displayComp;
+        return this.displayComp;
     }
 
-    protected void setDisplayComp(DisplayComp displayComp) {
+    protected void setDisplayComp(final DisplayComp displayComp) {
         this.displayComp = displayComp;
 
         removeAll();
@@ -183,7 +183,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setNodeType(NodeType nodeType) {
+    public void setNodeType(final NodeType nodeType) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -191,7 +191,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setCenterX(int centerX) {
+    public void setCenterX(final int centerX) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -199,23 +199,23 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setCenterY(int centerY) {
+    public void setCenterY(final int centerY) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setCenter(int centerX, int centerY) {
+    public void setCenter(final int centerX, final int centerY) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Node like(String name) {
-        DisplayNode node = new DisplayNode();
+    public Node like(final String name) {
+        final DisplayNode node = new DisplayNode();
         node.setName(name);
         node.setNodeType(getNodeType());
         return node;
     }
 
     @Override
-    public int compareTo(Node node) {
+    public int compareTo(final Node node) {
         final String name = getName();
         String[] tokens1 = name.split(":");
         final String _name = node.getName();
@@ -229,8 +229,8 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
             tokens2 = new String[]{tokens2[0], "0"};
         }
 
-        int i1 = tokens1[1].compareTo(tokens2[1]);
-        int i2 = tokens1[0].compareTo(tokens2[0]);
+        final int i1 = tokens1[1].compareTo(tokens2[1]);
+        final int i2 = tokens1[0].compareTo(tokens2[0]);
 
         if (i1 == 0) {
             return i2;
@@ -245,28 +245,28 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     }
 
     @Override
-    public void setNodeVariableType(NodeVariableType nodeVariableType) {
+    public void setNodeVariableType(final NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
-    public Object getAttribute(String key) {
-        return attributes.get(key);
+    public Object getAttribute(final String key) {
+        return this.attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(String key) {
-        attributes.remove(key);
+    public void removeAttribute(final String key) {
+        this.attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+    public void addAttribute(final String key, final Object value) {
+        this.attributes.put(key, value);
     }
 
 }

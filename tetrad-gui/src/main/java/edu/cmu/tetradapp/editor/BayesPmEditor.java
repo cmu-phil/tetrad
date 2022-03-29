@@ -67,12 +67,12 @@ public class BayesPmEditor extends JPanel
         this.wrapper = wrapper;
         setLayout(new BorderLayout());
 
-        targetPanel = new JPanel();
-        targetPanel.setLayout(new BorderLayout());
+        this.targetPanel = new JPanel();
+        this.targetPanel.setLayout(new BorderLayout());
 
         setEditorPanel();
 
-        add(targetPanel, BorderLayout.CENTER);
+        add(this.targetPanel, BorderLayout.CENTER);
         validate();
 
         if (wrapper.getNumModels() > 1) {
@@ -84,7 +84,7 @@ public class BayesPmEditor extends JPanel
 
             comp.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
                     setEditorPanel();
                     validate();
@@ -93,7 +93,7 @@ public class BayesPmEditor extends JPanel
 
             comp.setMaximumSize(comp.getPreferredSize());
 
-            Box b = Box.createHorizontalBox();
+            final Box b = Box.createHorizontalBox();
             b.add(new JLabel("Using model"));
             b.add(comp);
             b.add(new JLabel("from "));
@@ -105,34 +105,34 @@ public class BayesPmEditor extends JPanel
     }
 
     private void setEditorPanel() {
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        if (wrapper.getBayesPm().getDag().getNumNodes() == 0) {
+        if (this.wrapper.getBayesPm().getDag().getNumNodes() == 0) {
             throw new IllegalArgumentException("There are no nodes in that Bayes PM.");
         }
 
         setLayout(new BorderLayout());
 
-        Graph graph = wrapper.getBayesPm().getDag();
-        GraphWorkbench workbench = new GraphWorkbench(graph);
+        final Graph graph = this.wrapper.getBayesPm().getDag();
+        final GraphWorkbench workbench = new GraphWorkbench(graph);
         workbench.enableEditing(false);
-        BayesPmEditorWizard wizard = new BayesPmEditorWizard(wrapper.getBayesPm(), workbench);
+        final BayesPmEditorWizard wizard = new BayesPmEditorWizard(this.wrapper.getBayesPm(), workbench);
 
-        JScrollPane workbenchScroll = new JScrollPane(workbench);
-        JScrollPane wizardScroll = new JScrollPane(wizard);
+        final JScrollPane workbenchScroll = new JScrollPane(workbench);
+        final JScrollPane wizardScroll = new JScrollPane(wizard);
 
         workbenchScroll.setPreferredSize(new Dimension(450, 450));
         wizardScroll.setPreferredSize(new Dimension(450, 450));
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, wizardScroll);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
         panel.add(splitPane, BorderLayout.CENTER);
 
-        JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
+        final JMenuBar menuBar = new JMenuBar();
+        final JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
@@ -145,14 +145,14 @@ public class BayesPmEditor extends JPanel
         wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
         this.wizard = wizard;
 
-        targetPanel.add(panel, BorderLayout.CENTER);
+        this.targetPanel.add(panel, BorderLayout.CENTER);
     }
 
     /**
      * G
      * Reacts to property change events.
      */
-    public void propertyChange(PropertyChangeEvent e) {
+    public void propertyChange(final PropertyChangeEvent e) {
         if ("editorClosing".equals(e.getPropertyName())) {
             firePropertyChange("editorClosing", null, getName());
         }
@@ -171,44 +171,44 @@ public class BayesPmEditor extends JPanel
     /**
      * Sets the name fo the Bayes PM.
      */
-    public void setName(String name) {
-        String oldName = getName();
+    public void setName(final String name) {
+        final String oldName = getName();
         super.setName(name);
         firePropertyChange("name", oldName, getName());
     }
 
     public JComponent getEditDelegate() {
-        return wizard;
+        return this.wizard;
     }
 
     /**
      * True iff the editing of measured variables is allowed.
      */
     private boolean isEditingMeasuredVariablesAllowed() {
-        return editingMeasuredVariablesAllowed;
+        return this.editingMeasuredVariablesAllowed;
     }
 
     /**
      * True iff the editing of measured variables is allowed.
      */
-    public void setEditingMeasuredVariablesAllowed(boolean editingMeasuredVariablesAllowed) {
+    public void setEditingMeasuredVariablesAllowed(final boolean editingMeasuredVariablesAllowed) {
         this.editingMeasuredVariablesAllowed = editingMeasuredVariablesAllowed;
-        wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
+        this.wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
     }
 
     /**
      * True iff the editing of latent variables is allowed.
      */
     private boolean isEditingLatentVariablesAllowed() {
-        return editingLatentVariablesAllowed;
+        return this.editingLatentVariablesAllowed;
     }
 
     /**
      * True iff the editing of latent variables is allowed.
      */
-    public void setEditingLatentVariablesAllowed(boolean editingLatentVariablesAllowed) {
+    public void setEditingLatentVariablesAllowed(final boolean editingLatentVariablesAllowed) {
         this.editingLatentVariablesAllowed = editingLatentVariablesAllowed;
-        wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
+        this.wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
     }
 
 }

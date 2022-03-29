@@ -45,16 +45,16 @@ class MimBuildIndTestParamsEditor extends JComponent {
     public MimBuildIndTestParamsEditor(final Parameters params) {
         this.params = params;
 
-        NumberFormat smallNumberFormat = new DecimalFormat("0E00");
+        final NumberFormat smallNumberFormat = new DecimalFormat("0E00");
         final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
         alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+            public double filter(final double value, final double oldValue) {
                 try {
                     getParams().set("alpha", 0.001);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -158,7 +158,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
 //        add(b3);
 //        add(Box.createVerticalStrut(2));
 
-        Box b4 = Box.createHorizontalBox();
+        final Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Alpha:"));
         b4.add(Box.createHorizontalStrut(10));
         b4.add(Box.createHorizontalGlue());
@@ -167,23 +167,23 @@ class MimBuildIndTestParamsEditor extends JComponent {
     }
 
     private Graph getSourceGraph() {
-        return (Graph) params.get("sourceGraph", null);
+        return (Graph) this.params.get("sourceGraph", null);
     }
 
     private IKnowledge getKnowledge() {
-        return (IKnowledge) params.get("knowledge", new Knowledge2());
+        return (IKnowledge) this.params.get("knowledge", new Knowledge2());
     }
 
     private Clusters getClusters() {
-        return (Clusters) params.get("clusters", null);
+        return (Clusters) this.params.get("clusters", null);
     }
 
     private List getVarNames() {
-        return (List<String>) params.get("varNames", null);
+        return (List<String>) this.params.get("varNames", null);
     }
 
     private Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

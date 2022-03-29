@@ -23,7 +23,10 @@ package edu.cmu.tetradapp.model;
 
 //package
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Ccd;
@@ -46,8 +49,8 @@ import java.util.List;
  */
 
 public class YeastPcCcdSearchWrapper {
-    public static void main(String[] args) {
-        int[][] yeastReg = {{1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0},
+    public static void main(final String[] args) {
+        final int[][] yeastReg = {{1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0},
                 {0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0},
                 {1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1},
                 {0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1},
@@ -59,7 +62,7 @@ public class YeastPcCcdSearchWrapper {
                 {1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
                 {0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1}};
 
-        List listOfNames = new ArrayList();
+        final List listOfNames = new ArrayList();
 
         // get the file containing the file names
 
@@ -68,35 +71,35 @@ public class YeastPcCcdSearchWrapper {
         try {
             cds = DataUtils.loadContinuousData(new File(args[0]), "//", '\"',
                     "*", true, Delimiter.TAB);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
 
-        String outfileprefix = args[1];
-        String outverbosefile = outfileprefix + ".doc";
-        String outsummaryfile = outfileprefix + ".xls";
+        final String outfileprefix = args[1];
+        final String outverbosefile = outfileprefix + ".doc";
+        final String outsummaryfile = outfileprefix + ".xls";
 
         OutputStream s1 = null;
         OutputStream s2 = null;
-        boolean verbose = true;
+        final boolean verbose = true;
 
         try {
             s1 = new FileOutputStream(outverbosefile);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.out.println("Cannot open file file " + outverbosefile);
             System.exit(0);
         }
 
-        DataOutputStream d1 = new DataOutputStream(s1);
+        final DataOutputStream d1 = new DataOutputStream(s1);
 
         try {
             s2 = new FileOutputStream(outsummaryfile);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.out.println("Cannot open file file " + outsummaryfile);
             System.exit(0);
         }
 
-        DataOutputStream d2 = new DataOutputStream(s2);
+        final DataOutputStream d2 = new DataOutputStream(s2);
 
         try {
 
@@ -117,8 +120,8 @@ public class YeastPcCcdSearchWrapper {
 //            );
 
             //int ngenes = 6;
-            int ngenes = Integer.valueOf(args[2]);
-            IKnowledge bk = new Knowledge2();
+            final int ngenes = Integer.valueOf(args[2]);
+            final IKnowledge bk = new Knowledge2();
             bk.addToTiersByVarNames(listOfNames);
 
             //if(verbose) {
@@ -128,43 +131,43 @@ public class YeastPcCcdSearchWrapper {
             //}
 
 
-            int[] PC05Accuracy;
+            final int[] PC05Accuracy;
             PC05Accuracy = PCAccuracy(0.05, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
-            int[] PC10Accuracy;
+            final int[] PC10Accuracy;
             PC10Accuracy = PCAccuracy(0.10, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
-            int[] PC15Accuracy;
+            final int[] PC15Accuracy;
             PC15Accuracy = PCAccuracy(0.15, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
-            int[] PC20Accuracy;
+            final int[] PC20Accuracy;
             PC20Accuracy = PCAccuracy(0.20, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
-            int[] PC30Accuracy;
+            final int[] PC30Accuracy;
             PC30Accuracy = PCAccuracy(0.30, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
-            int[] CCD05Accuracy;
+            final int[] CCD05Accuracy;
             CCD05Accuracy = CcdAccuracy(0.05, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
-            int[] CCD10Accuracy;
+            final int[] CCD10Accuracy;
             CCD10Accuracy = CcdAccuracy(0.10, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
-            int[] CCD15Accuracy;
+            final int[] CCD15Accuracy;
             CCD15Accuracy = CcdAccuracy(0.15, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
-            int[] CCD20Accuracy;
+            final int[] CCD20Accuracy;
             CCD20Accuracy = CcdAccuracy(0.20, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
-            int[] CCD30Accuracy;
+            final int[] CCD30Accuracy;
             CCD30Accuracy = CcdAccuracy(0.30, ngenes, cds, bk, yeastReg,
                     listOfNames, d1, verbose);
 
@@ -243,27 +246,27 @@ public class YeastPcCcdSearchWrapper {
             d2.writeBytes(CCD30Accuracy[1] + "\n");
             //}
 
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    private static int[] CcdAccuracy(double alpha, int ngenes,
-                                     DataSet cds, IKnowledge bk, int[][] yeastReg, List names,
-                                     DataOutputStream d, boolean v) {
+    private static int[] CcdAccuracy(final double alpha, final int ngenes,
+                                     final DataSet cds, final IKnowledge bk, final int[][] yeastReg, final List names,
+                                     final DataOutputStream d, final boolean v) {
 
-        int[] falsePosNeg = new int[2];
+        final int[] falsePosNeg = new int[2];
 
         //CcdSearchV ccd = new CcdSearchV(new IndTestCramerT(cds, alpha), bk);
         //CcdSearchVAC ccd = new CcdSearchVAC(new IndTestCramerT(cds, alpha), bk);
-        IndTestCramerT indTestCramerT = new IndTestCramerT(cds, alpha);
-        Ccd ccd = new Ccd(indTestCramerT);
-        Graph ccdModel = ccd.search();
+        final IndTestCramerT indTestCramerT = new IndTestCramerT(cds, alpha);
+        final Ccd ccd = new Ccd(indTestCramerT);
+        final Graph ccdModel = ccd.search();
         int falsePositives = 0;
         int falseNegatives = 0;
 
-        int[][] ccdModelAdj = new int[ngenes][ngenes];
+        final int[][] ccdModelAdj = new int[ngenes][ngenes];
 
         /*
         for(int i = 0; i < ngenes; i++) {
@@ -289,19 +292,19 @@ public class YeastPcCcdSearchWrapper {
         }
         */
 
-        int nvariables = names.size();
+        final int nvariables = names.size();
 //        int ntimes = nvariables / ngenes;
 
         for (int i = 0; i < nvariables; i++) {
-            String namei = (String) names.get(i);
+            final String namei = (String) names.get(i);
 
             for (int j = 0; j < nvariables; j++) {
-                String namej = (String) names.get(j);
+                final String namej = (String) names.get(j);
 
                 ccdModelAdj[i][j] = 0;
 
-                Node vari = indTestCramerT.getVariable(namei);
-                Node varj = indTestCramerT.getVariable(namej);
+                final Node vari = indTestCramerT.getVariable(namei);
+                final Node varj = indTestCramerT.getVariable(namej);
 
                 if (!ccdModel.isAdjacentTo(vari, varj)) {
                     continue;
@@ -333,7 +336,7 @@ public class YeastPcCcdSearchWrapper {
                 d.writeBytes("  false+ " + falsePositives + "\t");
                 d.writeBytes("false- " + falseNegatives + "\n");
                 d.writeBytes("  Adjacency matrix of estimated model:  \n");
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 e.printStackTrace();
             }
         }
@@ -345,20 +348,20 @@ public class YeastPcCcdSearchWrapper {
         return falsePosNeg;
     }
 
-    private static int[] PCAccuracy(double alpha, int ngenes,
-                                    DataSet cds, IKnowledge bk, int[][] yeastReg, List names,
-                                    DataOutputStream d, boolean v) {
+    private static int[] PCAccuracy(final double alpha, final int ngenes,
+                                    final DataSet cds, final IKnowledge bk, final int[][] yeastReg, final List names,
+                                    final DataOutputStream d, final boolean v) {
 
-        int[] falsePosNeg = new int[2];
+        final int[] falsePosNeg = new int[2];
 
-        IndTestCramerT indTestCramerT = new IndTestCramerT(cds, alpha);
-        Pc pcs = new Pc(indTestCramerT);
+        final IndTestCramerT indTestCramerT = new IndTestCramerT(cds, alpha);
+        final Pc pcs = new Pc(indTestCramerT);
         pcs.setKnowledge(bk);
-        Graph pcModel = pcs.search();
+        final Graph pcModel = pcs.search();
         int falsePositives = 0;
         int falseNegatives = 0;
 
-        int[][] pcModelAdj = new int[ngenes][ngenes];
+        final int[][] pcModelAdj = new int[ngenes][ngenes];
 
         /*
         for(int i = 0; i < ngenes; i++) {
@@ -384,19 +387,19 @@ public class YeastPcCcdSearchWrapper {
         }
         */
 
-        int nvariables = names.size();
+        final int nvariables = names.size();
 //        int ntimes = nvariables / ngenes;
 
         for (int i = 0; i < nvariables; i++) {
-            String namei = (String) names.get(i);
+            final String namei = (String) names.get(i);
 
             for (int j = 0; j < nvariables; j++) {
-                String namej = (String) names.get(j);
+                final String namej = (String) names.get(j);
 
                 pcModelAdj[i][j] = 0;
 
-                Node vari = indTestCramerT.getVariable(namei);
-                Node varj = indTestCramerT.getVariable(namej);
+                final Node vari = indTestCramerT.getVariable(namei);
+                final Node varj = indTestCramerT.getVariable(namej);
 
                 if (!pcModel.isAdjacentTo(vari, varj)) {
                     continue;
@@ -429,7 +432,7 @@ public class YeastPcCcdSearchWrapper {
                 d.writeBytes("  false+ " + falsePositives + "\t");
                 d.writeBytes("false- " + falseNegatives + "\n");
                 d.writeBytes("  Adjacency matrix of estimated model:  \n");
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 e.printStackTrace();
             }
         }
@@ -544,8 +547,8 @@ public class YeastPcCcdSearchWrapper {
 //        return falsePosNeg;
 //    }
 
-    private static void printAdjMatrix(int[][] adjMat, List listOfNames,
-                                       DataOutputStream d) {
+    private static void printAdjMatrix(final int[][] adjMat, final List listOfNames,
+                                       final DataOutputStream d) {
         for (int i = 0; i < adjMat.length; i++) {
             try {
                 d.writeBytes("  " + listOfNames.get(i) + "\t");
@@ -553,7 +556,7 @@ public class YeastPcCcdSearchWrapper {
                     d.writeBytes(adjMat[i][j] + "\t");
                 }
                 d.writeBytes("\n");
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 e.printStackTrace();
             }
         }

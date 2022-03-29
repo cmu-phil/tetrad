@@ -70,51 +70,51 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         setup();
     }
 
-    public ScoredGraphsDisplay(Graph graph, GraphScorer scorer) {
+    public ScoredGraphsDisplay(final Graph graph, final GraphScorer scorer) {
         final List<Graph> _dags = SearchGraphUtils.generateCpdagDags(graph, true);
 
-        for (Graph _graph : _dags) {
+        for (final Graph _graph : _dags) {
             double score = Double.NaN;
 
             if (scorer != null) {
                 score = scorer.scoreDag(_graph);
             }
 
-            dagsToScores.put(_graph, score);
+            this.dagsToScores.put(_graph, score);
         }
 
         setup();
     }
 
     private void setup() {
-        if (dagsToScores.isEmpty()) {
+        if (this.dagsToScores.isEmpty()) {
             throw new IllegalArgumentException("Empty map.");
         }
 
         double max = Double.NEGATIVE_INFINITY;
 
-        for (Graph dag : dagsToScores.keySet()) {
-            if (dagsToScores.get(dag) > max) max = dagsToScores.get(dag);
+        for (final Graph dag : this.dagsToScores.keySet()) {
+            if (this.dagsToScores.get(dag) > max) max = this.dagsToScores.get(dag);
         }
 
         final List<Graph> dags = new ArrayList<>();
 
-        if (max != Double.NEGATIVE_INFINITY && showHighestScoreOnly) {
-            for (Graph dag : dagsToScores.keySet()) {
-                if (dagsToScores.get(dag) == max) {
+        if (max != Double.NEGATIVE_INFINITY && this.showHighestScoreOnly) {
+            for (final Graph dag : this.dagsToScores.keySet()) {
+                if (this.dagsToScores.get(dag) == max) {
                     dags.add(dag);
                 }
             }
         } else {
-            for (Graph dag : dagsToScores.keySet()) {
+            for (final Graph dag : this.dagsToScores.keySet()) {
                 dags.add(dag);
             }
         }
 
         if (max != Double.NEGATIVE_INFINITY) {
             Collections.sort(dags, new Comparator<Graph>() {
-                public int compare(Graph graph, Graph graph1) {
-                    return (int) Math.signum(dagsToScores.get(graph) - dagsToScores.get(graph1));
+                public int compare(final Graph graph, final Graph graph1) {
+                    return (int) Math.signum(ScoredGraphsDisplay.this.dagsToScores.get(graph) - ScoredGraphsDisplay.this.dagsToScores.get(graph1));
                 }
             });
         }
@@ -127,11 +127,11 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
 
         int index = -1;
 
-        Graph dag = scoredGraphsWrapper.getGraph();
+        Graph dag = this.scoredGraphsWrapper.getGraph();
 
         if (dag == null) {
-            scoredGraphsWrapper.setSelectedGraph(dags.get(0));
-            dag = scoredGraphsWrapper.getGraph();
+            this.scoredGraphsWrapper.setSelectedGraph(dags.get(0));
+            dag = this.scoredGraphsWrapper.getGraph();
         }
 
         index = dags.indexOf(dag);
@@ -141,18 +141,18 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
             index = 0;
         }
 
-        workbench = new GraphWorkbench(dag);
+        this.workbench = new GraphWorkbench(dag);
 
         final SpinnerNumberModel model =
                 new SpinnerNumberModel(index + 1, 1, dags.size(), 1);
         model.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                int index = model.getNumber().intValue() - 1;
+            public void stateChanged(final ChangeEvent e) {
+                final int index = model.getNumber().intValue() - 1;
 
-                workbench.setGraph(dags.get(index));
+                ScoredGraphsDisplay.this.workbench.setGraph(dags.get(index));
 
-                if (scoredGraphsWrapper != null) {
-                    scoredGraphsWrapper.setSelectedGraph(dags.get(index));
+                if (ScoredGraphsDisplay.this.scoredGraphsWrapper != null) {
+                    ScoredGraphsDisplay.this.scoredGraphsWrapper.setSelectedGraph(dags.get(index));
                 }
 
                 setScore(index - 1);
@@ -164,32 +164,32 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         spinner.setModel(model);
         final JLabel totalLabel = new JLabel(" of " + dags.size() + " ");
 
-        scoreLabel = new JLabel();
+        this.scoreLabel = new JLabel();
         setScore(dags.size() - 1);
 
         spinner.setPreferredSize(new Dimension(50, 20));
         spinner.setMaximumSize(spinner.getPreferredSize());
 
 
-        Box b = Box.createVerticalBox();
-        Box b1 = Box.createHorizontalBox();
+        final Box b = Box.createVerticalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("DAG "));
         b1.add(spinner);
         b1.add(totalLabel);
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("Score =  "));
-        b1.add(scoreLabel);
+        b1.add(this.scoreLabel);
         b1.add(Box.createHorizontalStrut(10));
         b1.add(Box.createHorizontalGlue());
         b1.add(new JButton(new CopySubgraphAction(this)));
 
         b.add(b1);
 
-        Box b2 = Box.createHorizontalBox();
-        JPanel graphPanel = new JPanel();
+        final Box b2 = Box.createHorizontalBox();
+        final JPanel graphPanel = new JPanel();
         graphPanel.setLayout(new BorderLayout());
-        JScrollPane jScrollPane = new JScrollPane(workbench);
+        final JScrollPane jScrollPane = new JScrollPane(this.workbench);
         jScrollPane.setPreferredSize(new Dimension(400, 400));
         graphPanel.add(jScrollPane);
         graphPanel.setBorder(new TitledBorder("Maximum Scoring DAGs in forbid_latent_common_causes"));
@@ -201,25 +201,25 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         add(b, BorderLayout.CENTER);
     }
 
-    private void setScore(int i) {
-        Double score = dagsToScores.get(dags.get(i));
-        String text;
+    private void setScore(final int i) {
+        final Double score = this.dagsToScores.get(this.dags.get(i));
+        final String text;
 
         if (Double.isNaN(score)) {
             text = "Not provided";
         } else {
-            text = nf.format(score);
+            text = this.nf.format(score);
         }
 
-        scoreLabel.setText(text);
+        this.scoreLabel.setText(text);
     }
 
     public List getSelectedModelComponents() {
-        Component[] components = getWorkbench().getComponents();
-        List<TetradSerializable> selectedModelComponents =
+        final Component[] components = getWorkbench().getComponents();
+        final List<TetradSerializable> selectedModelComponents =
                 new ArrayList<>();
 
-        for (Component comp : components) {
+        for (final Component comp : components) {
             if (comp instanceof DisplayNode) {
                 selectedModelComponents.add(
                         ((DisplayNode) comp).getModelNode());
@@ -232,16 +232,16 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         return selectedModelComponents;
     }
 
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
+    public void pasteSubsession(final List sessionElements, final Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
         for (int i = 0; i < sessionElements.size(); i++) {
 
-            Object o = sessionElements.get(i);
+            final Object o = sessionElements.get(i);
 
             if (o instanceof GraphNode) {
-                Node modelNode = (Node) o;
+                final Node modelNode = (Node) o;
                 getWorkbench().selectNode(modelNode);
             }
         }
@@ -250,15 +250,15 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
     }
 
     public GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     public Graph getGraph() {
-        return workbench.getGraph();
+        return this.workbench.getGraph();
     }
 
-    public void setGraph(Graph graph) {
-        workbench.setGraph(graph);
+    public void setGraph(final Graph graph) {
+        this.workbench.setGraph(graph);
     }
 
     /**
@@ -268,19 +268,19 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
      * @return this menu.
      */
     private JMenuBar menuBar() {
-        JMenu edit = new JMenu("Edit");
-        JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
+        final JMenu edit = new JMenu("Edit");
+        final JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
         copy.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
         edit.add(copy);
 
-        JMenuBar menuBar = new JMenuBar();
+        final JMenuBar menuBar = new JMenuBar();
         menuBar.add(edit);
 
         return menuBar;
     }
 
-    public void setShowHighestScoreOnly(boolean showHighestScoreOnly) {
+    public void setShowHighestScoreOnly(final boolean showHighestScoreOnly) {
         this.showHighestScoreOnly = showHighestScoreOnly;
 
     }

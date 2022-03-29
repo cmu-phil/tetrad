@@ -52,7 +52,7 @@ public class ScatterPlotOld {
     /**
      * Constructs the scatter plot given the dataset to wrap and the node that should be viewed.
      */
-    public ScatterPlotOld(DataSet dataSet, ContinuousVariable yVariable, ContinuousVariable xVariable) {
+    public ScatterPlotOld(final DataSet dataSet, final ContinuousVariable yVariable, final ContinuousVariable xVariable) {
 
         setDrawRegLine(false);
 
@@ -96,19 +96,19 @@ public class ScatterPlotOld {
 //        xMin = xMax = dataSet.getDouble(0, xIndex);
 //        yMin = yMax = dataSet.getDouble(0, yIndex);
 
-        xMin = Double.MAX_VALUE;
-        xMax = Double.MIN_VALUE;
-        yMin = Double.MAX_VALUE;
-        yMax = Double.MIN_VALUE;
+        this.xMin = Double.MAX_VALUE;
+        this.xMax = Double.MIN_VALUE;
+        this.yMin = Double.MAX_VALUE;
+        this.yMax = Double.MIN_VALUE;
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             getyData()[i] = dataSet.getDouble(i, yIndex);
             getxData()[i] = dataSet.getDouble(i, xIndex);
 
-            if (getyData()[i] < yMin) yMin = getyData()[i];
-            if (getyData()[i] > yMax) yMax = getyData()[i];
-            if (getxData()[i] < xMin) xMin = getxData()[i];
-            if (getxData()[i] > xMax) xMax = getxData()[i];
+            if (getyData()[i] < this.yMin) this.yMin = getyData()[i];
+            if (getyData()[i] > this.yMax) this.yMax = getyData()[i];
+            if (getxData()[i] < this.xMin) this.xMin = getxData()[i];
+            if (getxData()[i] > this.xMax) this.xMax = getxData()[i];
         }
 
         this.setDataSet(dataSet);
@@ -124,8 +124,8 @@ public class ScatterPlotOld {
      * @return the max sample value between the y and x variables.
      */
     public double getMaxSample() {
-        if (xMax > yMax) return xMax;
-        else return yMax;
+        if (this.xMax > this.yMax) return this.xMax;
+        else return this.yMax;
     }
 
 
@@ -133,12 +133,12 @@ public class ScatterPlotOld {
      * @return the min sample value.
      */
     public double getMinSample() {
-        if (xMin < yMin) return xMin;
-        else return yMin;
+        if (this.xMin < this.yMin) return this.xMin;
+        else return this.yMin;
     }
 
     public ContinuousVariable getXVariable() {
-        return xVariable;
+        return this.xVariable;
     }
 
     public ContinuousVariable getYVariable() {
@@ -161,22 +161,22 @@ public class ScatterPlotOld {
     }
 
     public double[] getyData() {
-        return yData;
+        return this.yData;
     }
 
-    private void setyData(double[] yData) {
+    private void setyData(final double[] yData) {
         this.yData = yData;
     }
 
     public double[] getxData() {
-        return xData;
+        return this.xData;
     }
 
-    private void setxData(double[] xData) {
+    private void setxData(final double[] xData) {
         this.xData = xData;
     }
 
-    private void setDataSet(DataSet dataSet) {
+    private void setDataSet(final DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -190,34 +190,34 @@ public class ScatterPlotOld {
      * numbers (0, ..., (n - 1)) (all of the indices).
      */
     public Vector getIndexSet() {
-        return indexSet;
+        return this.indexSet;
     }
 
-    public void setIndexSet(Vector indexSet) {
+    public void setIndexSet(final Vector indexSet) {
         this.indexSet = indexSet;
     }
 
     public Vector getComplementIndexSet() {
-        return complementIndexSet;
+        return this.complementIndexSet;
     }
 
-    public void setComplementIndexSet(Vector complementIndexSet) {
+    public void setComplementIndexSet(final Vector complementIndexSet) {
         this.complementIndexSet = complementIndexSet;
     }
 
     public boolean isDrawRegLine() {
-        return drawRegLine;
+        return this.drawRegLine;
     }
 
-    public void setDrawRegLine(boolean drawRegLine) {
+    public void setDrawRegLine(final boolean drawRegLine) {
         this.drawRegLine = drawRegLine;
     }
 
     private ContinuousVariable getyVariable() {
-        return yVariable;
+        return this.yVariable;
     }
 
-    private void setyVariable(ContinuousVariable yVariable) {
+    private void setyVariable(final ContinuousVariable yVariable) {
         this.yVariable = yVariable;
     }
 }

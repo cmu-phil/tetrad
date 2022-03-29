@@ -53,23 +53,23 @@ class FgesIndTestParamsEditor extends JComponent {
      */
     private final JCheckBox faithfulnessAssumed;
 
-    public FgesIndTestParamsEditor(Parameters params, FgesRunner.Type type) {
+    public FgesIndTestParamsEditor(final Parameters params, final FgesRunner.Type type) {
         this.params = params;
         this.type = type;
 
-        NumberFormat nf = new DecimalFormat("0.0####");
-        NumberFormat smallNf = new DecimalFormat("0.0E0");
+        final NumberFormat nf = new DecimalFormat("0.0####");
+        final NumberFormat smallNf = new DecimalFormat("0.0E0");
 
         if (type == FgesRunner.Type.DISCRETE) {
             this.cellPriorField = new DoubleTextField(
                     getFgesIndTestParams().getDouble("samplePrior", 1), 5, nf, smallNf, 1e-4);
 
             this.cellPriorField.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
+                public double filter(final double value, final double oldValue) {
                     try {
                         getFgesIndTestParams().set("samplePrior", value);
                         return value;
-                    } catch (IllegalArgumentException e) {
+                    } catch (final IllegalArgumentException e) {
                         return oldValue;
                     }
                 }
@@ -78,11 +78,11 @@ class FgesIndTestParamsEditor extends JComponent {
             this.structurePriorField = new DoubleTextField(
                     getFgesIndTestParams().getDouble("structurePrior", 1), 5, nf);
             this.structurePriorField.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
+                public double filter(final double value, final double oldValue) {
                     try {
                         getFgesIndTestParams().set("structurePrior", value);
                         return value;
-                    } catch (IllegalArgumentException e) {
+                    } catch (final IllegalArgumentException e) {
                         return oldValue;
                     }
                 }
@@ -90,7 +90,7 @@ class FgesIndTestParamsEditor extends JComponent {
 
 //            this.defaultStructurePrior =
 //                    new JButton("Default structure prior = 0.05");
-            Font font = new Font("Dialog", Font.BOLD, 10);
+            final Font font = new Font("Dialog", Font.BOLD, 10);
 //            this.defaultStructurePrior.setFont(font);
 //            this.defaultStructurePrior.setBorder(null);
 //            this.defaultStructurePrior.addActionListener(new ActionListener() {
@@ -104,19 +104,19 @@ class FgesIndTestParamsEditor extends JComponent {
             this.uniformStructurePrior.setFont(font);
             this.uniformStructurePrior.setBorder(null);
             this.uniformStructurePrior.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    structurePriorField.setValue(1.0);
+                public void actionPerformed(final ActionEvent e) {
+                    FgesIndTestParamsEditor.this.structurePriorField.setValue(1.0);
                 }
             });
         } else {
             this.penaltyDiscount = new DoubleTextField(
                     getFgesIndTestParams().getDouble("penaltyDiscount", 4), 5, nf);
             this.penaltyDiscount.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
+                public double filter(final double value, final double oldValue) {
                     try {
                         getFgesIndTestParams().set("penaltyDiscount", value);
                         return value;
-                    } catch (IllegalArgumentException e) {
+                    } catch (final IllegalArgumentException e) {
                         return oldValue;
                     }
                 }
@@ -126,11 +126,11 @@ class FgesIndTestParamsEditor extends JComponent {
         this.numCPDAGsToSave = new IntTextField(
                 getFgesIndTestParams().getInt("numCPDAGsToSave", 1), 5);
         this.numCPDAGsToSave.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
+            public int filter(final int value, final int oldValue) {
                 try {
                     getFgesIndTestParams().set("numCPDAGToSave", value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -138,21 +138,21 @@ class FgesIndTestParamsEditor extends JComponent {
 
         this.depth = new IntTextField(getFgesIndTestParams().getInt("depth", -1), 4);
         this.depth.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
+            public int filter(final int value, final int oldValue) {
                 try {
                     getFgesIndTestParams().set("depth", value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        faithfulnessAssumed = new JCheckBox();
-        faithfulnessAssumed.setSelected(getFgesIndTestParams().getBoolean("faithfulnessAssumed", true));
-        faithfulnessAssumed.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox source = (JCheckBox) actionEvent.getSource();
+        this.faithfulnessAssumed = new JCheckBox();
+        this.faithfulnessAssumed.setSelected(getFgesIndTestParams().getBoolean("faithfulnessAssumed", true));
+        this.faithfulnessAssumed.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent actionEvent) {
+                final JCheckBox source = (JCheckBox) actionEvent.getSource();
                 getFgesIndTestParams().set("faithfulnessAssumed", source.isSelected());
             }
         });
@@ -163,14 +163,14 @@ class FgesIndTestParamsEditor extends JComponent {
     private void buildGui() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (type == FgesRunner.Type.DISCRETE) {
-            Box b0 = Box.createHorizontalBox();
+        if (this.type == FgesRunner.Type.DISCRETE) {
+            final Box b0 = Box.createHorizontalBox();
             b0.add(new JLabel("BDeu:"));
             b0.add(Box.createHorizontalGlue());
             add(b0);
             add(Box.createVerticalStrut(5));
 
-            Box b2 = Box.createHorizontalBox();
+            final Box b2 = Box.createHorizontalBox();
             b2.add(Box.createHorizontalStrut(5));
             b2.add(new JLabel("Sample prior:"));
             b2.add(Box.createHorizontalGlue());
@@ -178,86 +178,86 @@ class FgesIndTestParamsEditor extends JComponent {
             add(b2);
             add(Box.createVerticalStrut(5));
 
-            Box b3 = Box.createHorizontalBox();
+            final Box b3 = Box.createHorizontalBox();
             b3.add(Box.createHorizontalStrut(5));
             b3.add(new JLabel("Structure prior:"));
             b3.add(Box.createHorizontalGlue());
             b3.add(this.structurePriorField);
             add(b3);
 
-            Box b5 = Box.createHorizontalBox();
+            final Box b5 = Box.createHorizontalBox();
             b5.add(Box.createHorizontalGlue());
             b5.add(this.uniformStructurePrior);
             add(b5);
             add(Box.createVerticalStrut(10));
 
-            Box b8 = Box.createHorizontalBox();
+            final Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num CPDAGs to Save"));
             b8.add(Box.createHorizontalGlue());
             b8.add(this.numCPDAGsToSave);
             add(b8);
 
-            Box b4a = Box.createHorizontalBox();
+            final Box b4a = Box.createHorizontalBox();
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
             b4a.add(Box.createHorizontalGlue());
-            b4a.add(faithfulnessAssumed);
+            b4a.add(this.faithfulnessAssumed);
             add(b4a);
 
-            Box b4b = Box.createHorizontalBox();
+            final Box b4b = Box.createHorizontalBox();
             b4b.add(new JLabel("Depth "));
             b4b.add(Box.createHorizontalGlue());
-            b4b.add(depth);
+            b4b.add(this.depth);
             add(b4b);
-        } else if (type == FgesRunner.Type.CONTINUOUS || type == FgesRunner.Type.MIXED) {
-            Box b7 = Box.createHorizontalBox();
+        } else if (this.type == FgesRunner.Type.CONTINUOUS || this.type == FgesRunner.Type.MIXED) {
+            final Box b7 = Box.createHorizontalBox();
             b7.add(new JLabel("Penalty Discount"));
             b7.add(Box.createHorizontalGlue());
 
             b7.add(this.penaltyDiscount);
             add(b7);
 
-            Box b4a = Box.createHorizontalBox();
+            final Box b4a = Box.createHorizontalBox();
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
-            b4a.add(faithfulnessAssumed);
+            b4a.add(this.faithfulnessAssumed);
             add(b4a);
 
-            Box b8 = Box.createHorizontalBox();
+            final Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num CPDAGs to Save"));
             b8.add(Box.createHorizontalGlue());
             b8.add(this.numCPDAGsToSave);
             add(b8);
 
-            Box b4b = Box.createHorizontalBox();
+            final Box b4b = Box.createHorizontalBox();
             b4b.add(new JLabel("Depth "));
             b4b.add(Box.createHorizontalGlue());
-            b4b.add(depth);
+            b4b.add(this.depth);
             add(b4b);
-        } else if (type == FgesRunner.Type.GRAPH) {
-            Box b8 = Box.createHorizontalBox();
+        } else if (this.type == FgesRunner.Type.GRAPH) {
+            final Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num CPDAGs to Save"));
             b8.add(Box.createHorizontalGlue());
             b8.add(this.numCPDAGsToSave);
             add(b8);
 
-            Box b4a = Box.createHorizontalBox();
+            final Box b4a = Box.createHorizontalBox();
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
-            b4a.add(faithfulnessAssumed);
+            b4a.add(this.faithfulnessAssumed);
             add(b4a);
 
-            Box b4b = Box.createHorizontalBox();
+            final Box b4b = Box.createHorizontalBox();
             b4b.add(new JLabel("Depth "));
             b4b.add(Box.createHorizontalGlue());
-            b4b.add(depth);
+            b4b.add(this.depth);
             add(b4b);
 
         } else {
-            throw new IllegalStateException("Unrecognized type: " + type);
+            throw new IllegalStateException("Unrecognized type: " + this.type);
         }
 
     }
 
     private Parameters getFgesIndTestParams() {
-        return params;
+        return this.params;
     }
 
 }

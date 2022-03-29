@@ -43,27 +43,27 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TabularColumnFileReader.class);
 
-    public TabularColumnFileReader(Path dataFile, Delimiter delimiter) {
+    public TabularColumnFileReader(final Path dataFile, final Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
     @Override
-    public DataColumn[] readInDataColumns(boolean isDiscrete) throws IOException {
+    public DataColumn[] readInDataColumns(final boolean isDiscrete) throws IOException {
         return readInDataColumns(Collections.EMPTY_SET, isDiscrete);
     }
 
     @Override
-    public DataColumn[] readInDataColumns(Set<String> namesOfColumnsToExclude, boolean isDiscrete) throws IOException {
+    public DataColumn[] readInDataColumns(final Set<String> namesOfColumnsToExclude, final boolean isDiscrete) throws IOException {
         if (namesOfColumnsToExclude == null || namesOfColumnsToExclude.isEmpty()) {
             return getColumns(new int[0], isDiscrete);
         } else {
-            Set<String> cleanedColumnNames = new HashSet<>();
-            if (Character.isDefined(quoteCharacter)) {
+            final Set<String> cleanedColumnNames = new HashSet<>();
+            if (Character.isDefined(this.quoteCharacter)) {
                 namesOfColumnsToExclude.stream()
                         .filter(Objects::nonNull)
                         .map(String::trim)
                         .filter(e -> !e.isEmpty())
-                        .map(e -> stripCharacter(e, quoteCharacter))
+                        .map(e -> stripCharacter(e, this.quoteCharacter))
                         .forEach(cleanedColumnNames::add);
             } else {
                 namesOfColumnsToExclude.stream()
@@ -73,28 +73,28 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                         .forEach(cleanedColumnNames::add);
             }
 
-            int[] columnsToExclude = toColumnNumbers(cleanedColumnNames);
+            final int[] columnsToExclude = toColumnNumbers(cleanedColumnNames);
 
             return getColumns(columnsToExclude, isDiscrete);
         }
     }
 
     @Override
-    public DataColumn[] readInDataColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
-        int numOfCols = countNumberOfColumns();
-        int[] sortedColsToExclude = Columns.sortNew(columnsToExclude);
-        int[] validColsToExclude = Columns.extractValidColumnNumbers(numOfCols, sortedColsToExclude);
+    public DataColumn[] readInDataColumns(final int[] columnsToExclude, final boolean isDiscrete) throws IOException {
+        final int numOfCols = countNumberOfColumns();
+        final int[] sortedColsToExclude = Columns.sortNew(columnsToExclude);
+        final int[] validColsToExclude = Columns.extractValidColumnNumbers(numOfCols, sortedColsToExclude);
 
         return getColumns(validColsToExclude, isDiscrete);
     }
 
     @Override
-    public DataColumn[] generateColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
-        List<DataColumn> columns = new LinkedList<>();
+    public DataColumn[] generateColumns(final int[] columnsToExclude, final boolean isDiscrete) throws IOException {
+        final List<DataColumn> columns = new LinkedList<>();
 
-        int[] sortedColsToExclude = Columns.sortNew(columnsToExclude);
-        int numOfCols = countNumberOfColumns();
-        String prefix = "C";
+        final int[] sortedColsToExclude = Columns.sortNew(columnsToExclude);
+        final int numOfCols = countNumberOfColumns();
+        final String prefix = "C";
         int index = 0;
         for (int col = 1; col <= numOfCols && !Thread.currentThread().isInterrupted(); col++) {
             if (index < sortedColsToExclude.length && col == sortedColsToExclude[index]) {
@@ -107,47 +107,47 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
         return columns.toArray(new DataColumn[columns.size()]);
     }
 
-    private DataColumn[] getColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
-        List<DataColumn> columns = new LinkedList<>();
+    private DataColumn[] getColumns(final int[] columnsToExclude, final boolean isDiscrete) throws IOException {
+        final List<DataColumn> columns = new LinkedList<>();
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
             boolean finished = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
             byte prevChar = -1;
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
             // excluded columns check
-            int numOfExCols = columnsToExclude.length;
+            final int numOfExCols = columnsToExclude.length;
             int exColsIndex = 0;
 
             int colNum = 0;
             int lineNum = 1;
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
 
-            byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                         finished = hasSeenNonblankChar && !skip;
                         if (finished) {
-                            String value = dataBuilder.toString().trim();
+                            final String value = dataBuilder.toString().trim();
                             dataBuilder.delete(0, dataBuilder.length());
 
                             colNum++;
                             if (numOfExCols == 0 || exColsIndex >= numOfExCols || colNum != columnsToExclude[exColsIndex]) {
                                 if (value.isEmpty()) {
-                                    String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
+                                    final String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
                                     LOGGER.error(errMsg);
                                     throw new DataReaderException(errMsg);
                                 } else {
@@ -189,14 +189,14 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
                                         break;
@@ -205,7 +205,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                                 }
 
                                 if (isDelimiter) {
-                                    String value = dataBuilder.toString().trim();
+                                    final String value = dataBuilder.toString().trim();
                                     dataBuilder.delete(0, dataBuilder.length());
 
                                     colNum++;
@@ -213,7 +213,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                                         exColsIndex++;
                                     } else {
                                         if (value.isEmpty()) {
-                                            String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
+                                            final String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
                                             LOGGER.error(errMsg);
                                             throw new DataReaderException(errMsg);
                                         } else {
@@ -234,13 +234,13 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
 
             finished = hasSeenNonblankChar && !skip;
             if (finished) {
-                String value = dataBuilder.toString().trim();
+                final String value = dataBuilder.toString().trim();
                 dataBuilder.delete(0, dataBuilder.length());
 
                 colNum++;
                 if (numOfExCols == 0 || exColsIndex >= numOfExCols || colNum != columnsToExclude[exColsIndex]) {
                     if (value.isEmpty()) {
-                        String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
+                        final String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
                         LOGGER.error(errMsg);
                         throw new DataReaderException(errMsg);
                     } else {

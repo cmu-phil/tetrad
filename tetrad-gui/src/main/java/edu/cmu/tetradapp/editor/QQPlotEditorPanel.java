@@ -58,23 +58,23 @@ class QQPlotEditorPanel extends JPanel {
     /**
      * The discrete variables of the data set (may be empty).
      */
-    private LinkedList<DiscreteVariable> variables = new LinkedList<>();
+    private final LinkedList<DiscreteVariable> variables = new LinkedList<>();
 
 
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
      */
-    public QQPlotEditorPanel(QQPlot qqPlot, DataSet dataSet) {
+    public QQPlotEditorPanel(final QQPlot qqPlot, final DataSet dataSet) {
         //   construct components
         this.setLayout(new BorderLayout());
         // first build histogram and components used in the editor.
         this.qqPlot = qqPlot;
-        Node selected = qqPlot.getSelectedVariable();
+        final Node selected = qqPlot.getSelectedVariable();
         this.dataSet = dataSet;
         this.variableBox = new JComboBox();
-        ListCellRenderer renderer = new VariableBoxRenderer();
+        final ListCellRenderer renderer = new VariableBoxRenderer();
         this.variableBox.setRenderer(renderer);
-        for (Node node : dataSet.getVariables()) {
+        for (final Node node : dataSet.getVariables()) {
             if (node instanceof ContinuousVariable) {
                 this.variableBox.addItem(node);
                 if (node == selected) {
@@ -83,10 +83,10 @@ class QQPlotEditorPanel extends JPanel {
             }
         }
         this.variableBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
+            public void itemStateChanged(final ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    Node node = (Node) e.getItem();
-                    QQPlot newValue = new QQPlot(QQPlotEditorPanel.this.dataSet, node);
+                    final Node node = (Node) e.getItem();
+                    final QQPlot newValue = new QQPlot(QQPlotEditorPanel.this.dataSet, node);
                     //numBarsSelector.setValue(newValue.getNumberOfCategories());
                     //   numBarsSelector.setMax(getMaxCategoryValue(newValue));
                     //System.out.println(node.getNode());
@@ -101,14 +101,14 @@ class QQPlotEditorPanel extends JPanel {
 
     //========================== Private Methods ================================//
 
-    private void changeQQPlot(QQPlot qqPlot) {
+    private void changeQQPlot(final QQPlot qqPlot) {
         this.qqPlot = qqPlot;
         // fire event
         this.firePropertyChange("histogramChange", null, qqPlot);
     }
 
 
-    private static void setPreferredAsMax(JComponent component) {
+    private static void setPreferredAsMax(final JComponent component) {
         component.setMaximumSize(component.getPreferredSize());
 
     }
@@ -117,8 +117,8 @@ class QQPlotEditorPanel extends JPanel {
     private Box buildEditArea() {
         setPreferredAsMax(this.variableBox);
 
-        Box main = Box.createVerticalBox();
-        Box hBox = Box.createHorizontalBox();
+        final Box main = Box.createVerticalBox();
+        final Box hBox = Box.createHorizontalBox();
         hBox.add(Box.createHorizontalStrut(10));
         hBox.add(new JLabel("Select Variable: "));
         hBox.add(Box.createHorizontalStrut(10));
@@ -126,7 +126,7 @@ class QQPlotEditorPanel extends JPanel {
         hBox.add(Box.createHorizontalGlue());
         main.add(hBox);
         main.add(Box.createVerticalStrut(5));
-        Box hBox2 = Box.createHorizontalBox();
+        final Box hBox2 = Box.createHorizontalBox();
         hBox2.add(Box.createHorizontalStrut(10));
         //hBox2.add(this.categoryField);
         hBox2.add(Box.createHorizontalGlue());
@@ -144,8 +144,8 @@ class QQPlotEditorPanel extends JPanel {
 
     private static class VariableBoxRenderer extends DefaultListCellRenderer {
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Node node = (Node) value;
+        public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
+            final Node node = (Node) value;
             if (node == null) {
                 this.setText("");
             } else {

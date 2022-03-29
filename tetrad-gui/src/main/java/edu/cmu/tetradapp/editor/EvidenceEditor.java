@@ -43,8 +43,8 @@ import java.util.HashMap;
  * @author Joseph Ramsey
  */
 class EvidenceEditor extends JPanel {
-    private Evidence evidence;
-    private JToggleButton[][] buttons;
+    private final Evidence evidence;
+    private final JToggleButton[][] buttons;
 
     private final HashMap<JToggleButton, Integer> buttonsToVariables =
             new HashMap<>();
@@ -55,7 +55,7 @@ class EvidenceEditor extends JPanel {
     private final HashMap<Integer, JCheckBox> variablesToCheckboxes =
             new HashMap<>();
 
-    public EvidenceEditor(Evidence evidence) {
+    public EvidenceEditor(final Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
@@ -64,28 +64,28 @@ class EvidenceEditor extends JPanel {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        Box d = Box.createHorizontalBox();
+        final Box d = Box.createHorizontalBox();
         d.add(new JLabel("Variable/Categories"));
         d.add(Box.createHorizontalGlue());
         d.add(new JLabel("Manipulated"));
         add(d);
 
-        buttons = new JToggleButton[evidence.getNumNodes()][];
+        this.buttons = new JToggleButton[evidence.getNumNodes()][];
 
         for (int i = 0; i < evidence.getNumNodes(); i++) {
-            Box c = Box.createHorizontalBox();
+            final Box c = Box.createHorizontalBox();
             c.add(new JLabel(evidence.getNode(i).getName() + ":  ") {
                 public Dimension getMaximumSize() {
                     return getPreferredSize();
                 }
             });
 
-            buttons[i] = new JToggleButton[evidence.getNumCategories(i)];
-            Node node = evidence.getNode(i);
+            this.buttons[i] = new JToggleButton[evidence.getNumCategories(i)];
+            final Node node = evidence.getNode(i);
 
             for (int j = 0; j < evidence.getNumCategories(i); j++) {
-                String name = evidence.getCategory(node, j);
-                JToggleButton button = new JToggleButton(" " + name + " ") {
+                final String name = evidence.getCategory(node, j);
+                final JToggleButton button = new JToggleButton(" " + name + " ") {
                     public Dimension getMaximumSize() {
                         return getPreferredSize();
                     }
@@ -98,18 +98,18 @@ class EvidenceEditor extends JPanel {
                 button.setUI(new BasicButtonUI());
                 button.setFont(new Font("Serif", Font.BOLD, 12));
 
-                buttonsToVariables.put(button, i);
-                buttonsToCategories.put(button, j);
+                this.buttonsToVariables.put(button, i);
+                this.buttonsToCategories.put(button, j);
 
-                buttons[i][j] = button;
+                this.buttons[i][j] = button;
 
                 button.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        JToggleButton button = (JToggleButton) e.getSource();
-                        int i = buttonsToVariables.get(button);
-                        int j = buttonsToCategories.get(button);
+                    public void actionPerformed(final ActionEvent e) {
+                        final JToggleButton button = (JToggleButton) e.getSource();
+                        final int i = EvidenceEditor.this.buttonsToVariables.get(button);
+                        final int j = EvidenceEditor.this.buttonsToCategories.get(button);
 
-                        Proposition proposition =
+                        final Proposition proposition =
                                 getEvidence().getProposition();
 
                         if (proposition.getNumAllowed(i) ==
@@ -147,20 +147,20 @@ class EvidenceEditor extends JPanel {
             }
 
             c.add(Box.createHorizontalGlue());
-            JCheckBox checkbox = new JCheckBox() {
+            final JCheckBox checkbox = new JCheckBox() {
                 public Dimension getMaximumSize() {
                     return getPreferredSize();
                 }
             };
             checkbox.setSelected(getEvidence().isManipulated(i));
-            checkBoxesToVariables.put(checkbox, i);
-            variablesToCheckboxes.put(i, checkbox);
+            this.checkBoxesToVariables.put(checkbox, i);
+            this.variablesToCheckboxes.put(i, checkbox);
             checkbox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JCheckBox checkbox = (JCheckBox) e.getSource();
-                    boolean selected = checkbox.isSelected();
-                    Object o = checkBoxesToVariables.get(checkbox);
-                    int variable = (Integer) o;
+                public void actionPerformed(final ActionEvent e) {
+                    final JCheckBox checkbox = (JCheckBox) e.getSource();
+                    final boolean selected = checkbox.isSelected();
+                    final Object o = EvidenceEditor.this.checkBoxesToVariables.get(checkbox);
+                    final int variable = (Integer) o;
 
                     if (getEvidence().getProposition().getSingleCategory(
                             variable) == -1) {
@@ -183,10 +183,10 @@ class EvidenceEditor extends JPanel {
         }
     }
 
-    private void highlightCorrectly(Proposition proposition) {
-        for (JToggleButton _button : buttonsToVariables.keySet()) {
-            int _i = buttonsToVariables.get(_button);
-            int _j = buttonsToCategories.get(_button);
+    private void highlightCorrectly(final Proposition proposition) {
+        for (final JToggleButton _button : this.buttonsToVariables.keySet()) {
+            final int _i = this.buttonsToVariables.get(_button);
+            final int _j = this.buttonsToCategories.get(_button);
 
             if (!!proposition.isConditioned(_i) && proposition.isAllowed(_i, _j)) {
                 _button.setBackground(Color.LIGHT_GRAY);
@@ -197,29 +197,29 @@ class EvidenceEditor extends JPanel {
     }
 
     public Evidence getEvidence() {
-        return evidence;
+        return this.evidence;
     }
 
-    private void resetSelected(int variable) {
-        if (evidence.hasNoEvidence(variable)) {
-            for (int j = 0; j < buttons[variable].length; j++) {
-                buttons[variable][j].setSelected(false);
+    private void resetSelected(final int variable) {
+        if (this.evidence.hasNoEvidence(variable)) {
+            for (int j = 0; j < this.buttons[variable].length; j++) {
+                this.buttons[variable][j].setSelected(false);
             }
         } else {
-            for (int j = 0; j < buttons[variable].length; j++) {
-                buttons[variable][j].setSelected(
-                        evidence.getProposition().isAllowed(variable, j));
+            for (int j = 0; j < this.buttons[variable].length; j++) {
+                this.buttons[variable][j].setSelected(
+                        this.evidence.getProposition().isAllowed(variable, j));
             }
         }
 
-        if (evidence.getProposition().getSingleCategory(variable) == -1) {
-            JCheckBox checkbox = variablesToCheckboxes.get(variable);
+        if (this.evidence.getProposition().getSingleCategory(variable) == -1) {
+            final JCheckBox checkbox = this.variablesToCheckboxes.get(variable);
             checkbox.setSelected(false);
             getEvidence().setManipulated(variable, false);
         }
 
 
-        highlightCorrectly(evidence.getProposition());
+        highlightCorrectly(this.evidence.getProposition());
     }
 }
 

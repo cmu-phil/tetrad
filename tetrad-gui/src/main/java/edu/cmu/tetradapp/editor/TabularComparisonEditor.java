@@ -17,25 +17,25 @@ public class TabularComparisonEditor extends JPanel {
 
     private final TabularComparison comparison;
 
-    public TabularComparisonEditor(TabularComparison comparison) {
+    public TabularComparisonEditor(final TabularComparison comparison) {
         this.comparison = comparison;
         setup();
     }
 
     private void setup() {
-        JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
+        final JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
 
         pane.addTab("Comparison", getTableDisplay());
 
-        JTabbedPane pane2 = new JTabbedPane(JTabbedPane.LEFT);
+        final JTabbedPane pane2 = new JTabbedPane(JTabbedPane.LEFT);
 
-        JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
+        final JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
 
-        GraphEditor graphEditor = new GraphEditor(new GraphWrapper(comparison.getTargetGraph()));
+        GraphEditor graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getTargetGraph()));
         graphEditor.enableEditing(false);
         pane3.add("Target Graph", graphEditor.getWorkbench());
 
-        graphEditor = new GraphEditor(new GraphWrapper(comparison.getReferenceGraph()));
+        graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getReferenceGraph()));
         graphEditor.enableEditing(false);
         pane3.add("True Graph", graphEditor.getWorkbench());
 
@@ -48,42 +48,42 @@ public class TabularComparisonEditor extends JPanel {
 
     private Box getTableDisplay() {
 
-        DataSet dataSet = comparison.getDataSet();
+        final DataSet dataSet = this.comparison.getDataSet();
 
-        TextTable table = getTextTable(dataSet, new DecimalFormat("0.00"));
+        final TextTable table = getTextTable(dataSet, new DecimalFormat("0.00"));
 
-        StringBuilder b0 = new StringBuilder();
-        String trueGraphAndTarget = "Target graphs from " + comparison.getTargetName()
-                + "\nTrue graphs from " + comparison.getReferenceName();
+        final StringBuilder b0 = new StringBuilder();
+        final String trueGraphAndTarget = "Target graphs from " + this.comparison.getTargetName()
+                + "\nTrue graphs from " + this.comparison.getReferenceName();
         b0.append(trueGraphAndTarget).append("\n\n");
         b0.append(table);
 
-        Map<String, String> allParamsSettings = comparison.getAllParamSettings();
+        final Map<String, String> allParamsSettings = this.comparison.getAllParamSettings();
 
         if (allParamsSettings != null) {
-            for (String key : allParamsSettings.keySet()) {
+            for (final String key : allParamsSettings.keySet()) {
                 b0.append(key).append(" = ").append(allParamsSettings.get(key)).append("\n");
             }
         }
 
-        JTextArea area = new JTextArea(
+        final JTextArea area = new JTextArea(
                 b0.toString()
         );
 
         area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 12));
 //        area.setPreferredSize(area.getMaximumSize());
 
-        JScrollPane pane = new JScrollPane(area);
+        final JScrollPane pane = new JScrollPane(area);
         pane.setPreferredSize(new Dimension(700, 400));
 
-        Box b = Box.createVerticalBox();
+        final Box b = Box.createVerticalBox();
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Tabular Comparison\b"));
         b.add(b1);
         b.add(Box.createVerticalStrut(10));
 
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(pane);
         b.add(b3);
 
@@ -91,8 +91,8 @@ public class TabularComparisonEditor extends JPanel {
         return b;
     }
 
-    private TextTable getTextTable(DataSet dataSet, NumberFormat nf) {
-        TextTable table = new TextTable(dataSet.getNumRows() + 2, dataSet.getNumColumns() + 1);
+    private TextTable getTextTable(final DataSet dataSet, final NumberFormat nf) {
+        final TextTable table = new TextTable(dataSet.getNumRows() + 2, dataSet.getNumColumns() + 1);
         table.setTabDelimited(true);
         table.setToken(0, 0, "Run");
 
@@ -106,7 +106,7 @@ public class TabularComparisonEditor extends JPanel {
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                double d = dataSet.getDouble(i, j);
+                final double d = dataSet.getDouble(i, j);
 
                 if (Double.isNaN(d)) {
                     table.setToken(i + 1, j + 1, "*");
@@ -116,14 +116,14 @@ public class TabularComparisonEditor extends JPanel {
             }
         }
 
-        NumberFormat nf2 = new DecimalFormat("0.00");
+        final NumberFormat nf2 = new DecimalFormat("0.00");
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             double sum = 0.0;
             int count = 0;
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
-                double d = dataSet.getDouble(i, j);
+                final double d = dataSet.getDouble(i, j);
 
                 if (!Double.isNaN(d)) {
                     sum += d;
@@ -131,7 +131,7 @@ public class TabularComparisonEditor extends JPanel {
                 }
             }
 
-            double avg = sum / count;
+            final double avg = sum / count;
 
             if (Double.isNaN(avg)) {
                 table.setToken(dataSet.getNumRows() + 2 - 1, j + 1, "*");

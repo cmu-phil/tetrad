@@ -46,7 +46,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     static final long serialVersionUID = 23L;
 
     public FgesRunner.Type getType() {
-        return type;
+        return this.type;
     }
 
     private transient List<PropertyChangeListener> listeners;
@@ -58,36 +58,36 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
 
     //============================CONSTRUCTORS============================//
 
-    public ImagesRunner(DataWrapper[] dataWrappers, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public ImagesRunner(final DataWrapper[] dataWrappers, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
-        type = computeType();
+        this.type = computeType();
     }
 
-    public ImagesRunner(DataWrapper[] dataWrappers, Parameters params) {
+    public ImagesRunner(final DataWrapper[] dataWrappers, final Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
-        type = computeType();
+        this.type = computeType();
     }
 
-    public ImagesRunner(DataWrapper[] dataWrappers, GraphWrapper graph, Parameters params) {
+    public ImagesRunner(final DataWrapper[] dataWrappers, final GraphWrapper graph, final Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
         this.graph = graph.getGraph();
-        type = computeType();
+        this.type = computeType();
     }
 
-    public ImagesRunner(DataWrapper[] dataWrappers, GraphWrapper graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public ImagesRunner(final DataWrapper[] dataWrappers, final GraphWrapper graph, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
         this.graph = graph.getGraph();
-        type = computeType();
+        this.type = computeType();
     }
 
-    public ImagesRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public ImagesRunner(final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
-        type = computeType();
+        this.type = computeType();
     }
 
-    public ImagesRunner(GraphWrapper graphWrapper, Parameters params) {
+    public ImagesRunner(final GraphWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params, null);
-        type = computeType();
+        this.type = computeType();
     }
 
     /**
@@ -119,36 +119,36 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        Parameters params = getParams();
+        final Parameters params = getParams();
 
         if (model instanceof Graph) {
-            GraphScore gesScore = new GraphScore((Graph) model);
-            fges = new Fges(gesScore);
+            final GraphScore gesScore = new GraphScore((Graph) model);
+            this.fges = new Fges(gesScore);
         } else if (model instanceof DataSet) {
-            DataSet dataSet = (DataSet) model;
+            final DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
+                final SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
                 gesScore.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
-                fges = new Fges(gesScore);
+                this.fges = new Fges(gesScore);
             } else if (dataSet.isDiscrete()) {
-                double samplePrior = getParams().getDouble("samplePrior", 1);
-                double structurePrior = getParams().getDouble("structurePrior", 1);
-                BDeuScore score = new BDeuScore(dataSet);
+                final double samplePrior = getParams().getDouble("samplePrior", 1);
+                final double structurePrior = getParams().getDouble("structurePrior", 1);
+                final BDeuScore score = new BDeuScore(dataSet);
                 score.setSamplePrior(samplePrior);
                 score.setStructurePrior(structurePrior);
-                fges = new Fges(score);
+                this.fges = new Fges(score);
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
+            final SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
             gesScore.setPenaltyDiscount(params.getDouble("penaltyDiscount", 4));
-            fges = new Fges(gesScore);
+            this.fges = new Fges(gesScore);
         } else if (model instanceof DataModelList) {
-            DataModelList list = (DataModelList) model;
+            final DataModelList list = (DataModelList) model;
 
-            for (DataModel dataModel : list) {
+            for (final DataModel dataModel : list) {
                 if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
                     throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
                             "covariance matrices, or else all discrete data sets, or else a single graph.");
@@ -161,29 +161,29 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
 //            }
 
             if (allContinuous(list)) {
-                double penalty = getParams().getDouble("penaltyDiscount", 4);
+                final double penalty = getParams().getDouble("penaltyDiscount", 4);
 
                 if (params.getBoolean("firstNontriangular", false)) {
-                    SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                    final SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                     fgesScore.setPenaltyDiscount(penalty);
-                    fges = new Fges(fgesScore);
+                    this.fges = new Fges(fgesScore);
                 } else {
-                    SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                    final SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                     fgesScore.setPenaltyDiscount(penalty);
-                    fges = new Fges(fgesScore);
+                    this.fges = new Fges(fgesScore);
                 }
             } else if (allDiscrete(list)) {
-                double structurePrior = getParams().getDouble("structurePrior", 1);
-                double samplePrior = getParams().getDouble("samplePrior", 1);
+                final double structurePrior = getParams().getDouble("structurePrior", 1);
+                final double samplePrior = getParams().getDouble("samplePrior", 1);
 
-                BdeuScoreImages fgesScore = new BdeuScoreImages(list);
+                final BdeuScoreImages fgesScore = new BdeuScoreImages(list);
                 fgesScore.setSamplePrior(samplePrior);
                 fgesScore.setStructurePrior(structurePrior);
 
                 if (params.getBoolean("firstNontriangular", false)) {
-                    fges = new Fges(fgesScore);
+                    this.fges = new Fges(fgesScore);
                 } else {
-                    fges = new Fges(fgesScore);
+                    this.fges = new Fges(fgesScore);
                 }
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
@@ -192,10 +192,10 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
             System.out.println("No viable input.");
         }
 
-        fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-        fges.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
-        fges.setVerbose(true);
-        Graph graph = fges.search();
+        this.fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        this.fges.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
+        this.fges.setVerbose(true);
+        final Graph graph = this.fges.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
@@ -207,19 +207,19 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
 
         setResultGraph(graph);
 
-        this.topGraphs = new ArrayList<>(fges.getTopGraphs());
-
-        if (topGraphs.isEmpty()) {
-            topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
-        }
-
-        this.topGraphs = new ArrayList<>(fges.getTopGraphs());
+        this.topGraphs = new ArrayList<>(this.fges.getTopGraphs());
 
         if (this.topGraphs.isEmpty()) {
             this.topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
         }
 
-        setIndex(topGraphs.size() - 1);
+        this.topGraphs = new ArrayList<>(this.fges.getTopGraphs());
+
+        if (this.topGraphs.isEmpty()) {
+            this.topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
+        }
+
+        setIndex(this.topGraphs.size() - 1);
     }
 
     /**
@@ -241,36 +241,36 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         }
 
         if (model instanceof Graph) {
-            type = FgesRunner.Type.GRAPH;
+            this.type = FgesRunner.Type.GRAPH;
         } else if (model instanceof DataSet) {
-            DataSet dataSet = (DataSet) model;
+            final DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                type = FgesRunner.Type.CONTINUOUS;
+                this.type = FgesRunner.Type.CONTINUOUS;
             } else if (dataSet.isDiscrete()) {
-                type = FgesRunner.Type.DISCRETE;
+                this.type = FgesRunner.Type.DISCRETE;
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            type = FgesRunner.Type.CONTINUOUS;
+            this.type = FgesRunner.Type.CONTINUOUS;
         } else if (model instanceof DataModelList) {
-            DataModelList list = (DataModelList) model;
+            final DataModelList list = (DataModelList) model;
 
             if (allContinuous(list)) {
-                type = FgesRunner.Type.CONTINUOUS;
+                this.type = FgesRunner.Type.CONTINUOUS;
             } else if (allDiscrete(list)) {
-                type = FgesRunner.Type.DISCRETE;
+                this.type = FgesRunner.Type.DISCRETE;
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
             }
         }
 
-        return type;
+        return this.type;
     }
 
-    private boolean allContinuous(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
+    private boolean allContinuous(final List<DataModel> dataModels) {
+        for (final DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!((DataSet) dataModel).isContinuous() || dataModel instanceof ICovarianceMatrix) {
                     return false;
@@ -281,8 +281,8 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return true;
     }
 
-    private boolean allDiscrete(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
+    private boolean allDiscrete(final List<DataModel> dataModels) {
+        for (final DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!((DataSet) dataModel).isDiscrete()) {
                     return false;
@@ -293,7 +293,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return true;
     }
 
-    public void setIndex(int index) {
+    public void setIndex(final int index) {
         if (index < -1) {
             throw new IllegalArgumentException("Must be in >= -1: " + index);
         }
@@ -302,7 +302,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     }
 
     public int getIndex() {
-        return index;
+        return this.index;
     }
 
     public Graph getGraph() {
@@ -320,7 +320,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new ArrayList<>();
     }
 
@@ -329,7 +329,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
+        final MeekRules rules = new MeekRules();
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
@@ -339,24 +339,24 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return "IMaGES";
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(final PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }
 
-    private void firePropertyChange(PropertyChangeEvent evt) {
-        for (PropertyChangeListener l : getListeners()) {
+    private void firePropertyChange(final PropertyChangeEvent evt) {
+        for (final PropertyChangeListener l : getListeners()) {
             l.propertyChange(evt);
         }
     }
 
     private List<PropertyChangeListener> getListeners() {
-        if (listeners == null) {
-            listeners = new ArrayList<>();
+        if (this.listeners == null) {
+            this.listeners = new ArrayList<>();
         }
-        return listeners;
+        return this.listeners;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
         if (!getListeners().contains(l)) getListeners().add(l);
     }
 
@@ -364,16 +364,16 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return this.topGraphs;
     }
 
-    public String getBayesFactorsReport(Graph dag) {
-        if (fges == null) {
+    public String getBayesFactorsReport(final Graph dag) {
+        if (this.fges == null) {
             return "Please re-run IMaGES.";
         } else {
-            return fges.logEdgeBayesFactorsString(dag);
+            return this.fges.logEdgeBayesFactorsString(dag);
         }
     }
 
     public GraphScorer getGraphScorer() {
-        return fges;
+        return this.fges;
     }
 
 }

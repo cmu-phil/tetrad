@@ -38,26 +38,26 @@ public class CovMatrixWrapper extends DataWrapper {
     /**
      * Splits the given data set by collinear columns.
      */
-    public CovMatrixWrapper(DataWrapper wrapper, Parameters params) {
+    public CovMatrixWrapper(final DataWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
 
-        DataModelList models = wrapper.getDataModelList();
-        DataModelList out = new DataModelList();
+        final DataModelList models = wrapper.getDataModelList();
+        final DataModelList out = new DataModelList();
 
-        for (DataModel model : models) {
+        for (final DataModel model : models) {
             if (model instanceof DataSet) {
-                DataSet dataSet = (DataSet) model;
+                final DataSet dataSet = (DataSet) model;
 
                 if (!(dataSet.isContinuous())) {
                     throw new IllegalArgumentException("The data must be continuous");
                 }
 
-                ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
+                final ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
                 out.add(covarianceMatrix);
             } else if (model instanceof ICovarianceMatrix) {
-                ICovarianceMatrix covarianceMatrix = new CovarianceMatrix((CovarianceMatrix) model);
+                final ICovarianceMatrix covarianceMatrix = new CovarianceMatrix((CovarianceMatrix) model);
                 out.add(covarianceMatrix);
             }
         }

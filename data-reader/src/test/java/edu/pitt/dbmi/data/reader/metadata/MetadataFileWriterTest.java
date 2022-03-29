@@ -47,17 +47,17 @@ public class MetadataFileWriterTest {
      */
     @Test
     public void testWriteAsString() throws JsonProcessingException, IOException {
-        List<ColumnMetadata> domainCols = new LinkedList<>();
+        final List<ColumnMetadata> domainCols = new LinkedList<>();
         domainCols.add(new ColumnMetadata("X3", false));
         domainCols.add(new ColumnMetadata("X5", true));
 
-        List<InterventionalColumn> intervCols = new LinkedList<>();
+        final List<InterventionalColumn> intervCols = new LinkedList<>();
         intervCols.add(new InterventionalColumn(new ColumnMetadata("X9", true), new ColumnMetadata("X10", false)));
         intervCols.add(new InterventionalColumn(new ColumnMetadata("X8", false), null));
 
-        Metadata metadata = new Metadata(domainCols, intervCols);
+        final Metadata metadata = new Metadata(domainCols, intervCols);
 
-        String json = (new MetadataFileWriter()).writeAsString(metadata);
+        final String json = (new MetadataFileWriter()).writeAsString(metadata);
         Assert.assertTrue(!(json == null || json.isEmpty()));
     }
 

@@ -37,12 +37,12 @@ final class MeanInterpolatorAction extends AbstractAction {
     /**
      * The data editor.                         -
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
     /**
      * Creates a new action to split by collinear columns.
      */
-    public MeanInterpolatorAction(DataEditor editor) {
+    public MeanInterpolatorAction(final DataEditor editor) {
         super("Replace Missing Values with Column Mean");
 
         if (editor == null) {
@@ -55,16 +55,16 @@ final class MeanInterpolatorAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        DataModel dataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataModel dataModel = getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
 
-            DataFilter interpolator = new MeanInterpolator();
-            DataSet newDataSet = interpolator.filter(dataSet);
+            final DataFilter interpolator = new MeanInterpolator();
+            final DataSet newDataSet = interpolator.filter(dataSet);
 
-            DataModelList list = new DataModelList();
+            final DataModelList list = new DataModelList();
             list.add(newDataSet);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
@@ -75,7 +75,7 @@ final class MeanInterpolatorAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 }
 

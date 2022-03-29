@@ -48,7 +48,7 @@ public final class ImageUtils {
      *                          exception contains the path of the image that
      *                          could not be loaded.
      */
-    public static Image getImage(Object anchor, String path) {
+    public static Image getImage(final Object anchor, final String path) {
         if (anchor == null) {
             throw new NullPointerException("Anchor must not be null.");
         }
@@ -57,8 +57,8 @@ public final class ImageUtils {
             throw new NullPointerException("Path must not be null.");
         }
 
-        String fullPath = "/resources/images/" + path;
-        URL url = anchor.getClass().getResource(fullPath);
+        final String fullPath = "/resources/images/" + path;
+        final URL url = anchor.getClass().getResource(fullPath);
 
         if (url == null) {
             System.out.println("Couldn't find image at " + fullPath);

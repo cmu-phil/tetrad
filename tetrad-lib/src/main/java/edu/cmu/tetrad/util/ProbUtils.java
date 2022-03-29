@@ -170,12 +170,12 @@ public class ProbUtils {
         final double h;
         final int j;
         double dcphi;
-        double x;
-        double z;
-        double f1;
-        double f2;
-        double f3;
-        double f4;
+        final double x;
+        final double z;
+        final double f1;
+        final double f2;
+        final double f3;
+        final double f4;
         final double f5;
 
         x = y;
@@ -309,8 +309,8 @@ public class ProbUtils {
         final double p1;
         int i, n, ib;
         final double eps;
-        double alneps;
-        double sml;
+        final double alneps;
+        final double sml;
         final double alnsml;
 
         if (x <= 0.0) {
@@ -433,7 +433,7 @@ public class ProbUtils {
     public static double binomialCdf(final int k, final int n, final double p) {
 
         final double da;
-        double db;
+        final double db;
         final double dp;
         //        int ia, ib;
 
@@ -634,8 +634,8 @@ public class ProbUtils {
 
                 /* beta integral aproximation for small df */
                 final double da = 0.5;
-                double db = 0.5 * n;
-                double dx;
+                final double db = 0.5 * n;
+                final double dx;
                 final double dp;
                 //                int ia = 0, ib = (int) Math.floor(db);
 
@@ -742,16 +742,16 @@ public class ProbUtils {
         // Local variables
         final boolean indx;
         double prev;
-        double a;
+        final double a;
         double g;
-        double h;
+        final double h;
         double r;
-        double s;
+        final double s;
         double t;
-        double w;
+        final double w;
         double y;
         double yprev;
-        double pp;
+        final double pp;
         final double qq;
         double sq;
         double tx;
@@ -1033,8 +1033,8 @@ public class ProbUtils {
         // Local variables
         double a;
         double b;
-        double c;
-        double g;
+        final double c;
+        final double g;
         double q;
         double t;
         final double x;
@@ -1265,9 +1265,9 @@ public class ProbUtils {
     public static double tQuantile(final double pp, final double n) {
 
         double sq;
-        double p;
-        double a;
-        double b;
+        final double p;
+        final double a;
+        final double b;
         double c;
         final double d;
         double x;
@@ -1433,8 +1433,8 @@ public class ProbUtils {
     public static int poissonRand(final double xm) {
 
         final double sqrt2xm;
-        double logxm;
-        double expxm;
+        final double logxm;
+        final double expxm;
         final double g;
         double t, y;
         int k;
@@ -1476,14 +1476,14 @@ public class ProbUtils {
         int j, k;
         final double am;
         double em;
-        double g;
-        double p;
+        final double g;
+        final double p;
         final double sq;
         double t;
         double y;
         final double pc;
-        double plog;
-        double pclog;
+        final double plog;
+        final double pclog;
         final double en;
 
         p = (pp <= 0.5) ? pp : 1.0 - pp;
@@ -1600,11 +1600,11 @@ public class ProbUtils {
         double u2;
         double v;
         double w;
-        double c;
-        double c1;
-        double c2;
-        double c3;
-        double c4;
+        final double c;
+        final double c1;
+        final double c2;
+        final double c3;
+        final double c4;
         final double c5;
         boolean done;
 
@@ -1731,7 +1731,7 @@ public class ProbUtils {
                         0;
         double h2;
         double h4;
-        double rr;
+        final double rr;
         double s1;
         double s2;
         double sgn;
@@ -1907,9 +1907,9 @@ public class ProbUtils {
         System.exit(0);*/
         final double[][] c = MatrixUtils.cholesky(new Matrix(cov)).toArray();
         final double[] d = new double[a.length];
-        double[] e = new double[a.length];
+        final double[] e = new double[a.length];
         final double[] f =
-                        new double[a.length];
+                new double[a.length];
         final double[] w = new double[a.length - 1];
         final double[] y = new double[a.length - 1];
         double intSum = 0., varSum = 0., error, auxSum;

@@ -48,7 +48,7 @@ public class InverseCorrelationRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    private InverseCorrelationRunner(DataWrapper dataWrapper) {
+    private InverseCorrelationRunner(final DataWrapper dataWrapper) {
         super(dataWrapper, new Parameters(), null);
     }
 
@@ -64,15 +64,15 @@ public class InverseCorrelationRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        Object dataModel = getDataModel();
+        final Object dataModel = getDataModel();
 
         if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
 
-            Parameters params = getParams();
+            final Parameters params = getParams();
 
-            InverseCorrelation search = new InverseCorrelation(dataSet, params.getDouble("thr", 1e-4));
-            Graph graph = search.search();
+            final InverseCorrelation search = new InverseCorrelation(dataSet, params.getDouble("thr", 1e-4));
+            final Graph graph = search.search();
 
             setResultGraph(graph);
         }
@@ -88,7 +88,7 @@ public class InverseCorrelationRunner extends AbstractAlgorithmRunner
     }
 
     @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

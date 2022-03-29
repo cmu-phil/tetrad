@@ -34,17 +34,17 @@ public abstract class AbstractDataPreviewer {
 
     protected final Path dataFile;
 
-    public AbstractDataPreviewer(Path dataFile) {
+    public AbstractDataPreviewer(final Path dataFile) {
         this.dataFile = dataFile;
     }
 
-    protected void checkCharacterNumberParameter(int numOfCharacters) {
+    protected void checkCharacterNumberParameter(final int numOfCharacters) {
         if (numOfCharacters < 0) {
             throw new IllegalArgumentException("Parameter numOfCharacters must be positive integer.");
         }
     }
 
-    protected void checkLineNumberParameter(int fromLine, int toLine) {
+    protected void checkLineNumberParameter(final int fromLine, final int toLine) {
         if (fromLine < 0) {
             throw new IllegalArgumentException("Parameter fromLine must be positive integer.");
         }

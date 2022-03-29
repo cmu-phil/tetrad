@@ -43,18 +43,18 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
     private int maxNumOfMsg;
 
-    public TabularDataFileValidation(Path dataFile, Delimiter delimiter) {
+    public TabularDataFileValidation(final Path dataFile, final Delimiter delimiter) {
         super(dataFile, delimiter);
         this.maxNumOfMsg = Integer.MAX_VALUE;
     }
 
     @Override
-    public List<ValidationResult> validate(DataColumn[] dataColumns, boolean hasHeader) {
-        List<ValidationResult> results = new LinkedList<>();
+    public List<ValidationResult> validate(final DataColumn[] dataColumns, final boolean hasHeader) {
+        final List<ValidationResult> results = new LinkedList<>();
 
         boolean isDiscrete = false;
         boolean isContinuous = false;
-        for (DataColumn dataColumn : dataColumns) {
+        for (final DataColumn dataColumn : dataColumns) {
             if (dataColumn.isDiscrete()) {
                 isDiscrete = true;
             } else {
@@ -76,11 +76,11 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
             } else {
                 // do nothing because dataColumns is empty
             }
-        } catch (IOException exception) {
-            if (results.size() <= maxNumOfMsg) {
-                String errMsg = String.format("Unable to read file %s.", dataFile.getFileName());
-                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, errMsg);
-                result.setAttribute(ValidationAttribute.FILE_NAME, dataFile.getFileName());
+        } catch (final IOException exception) {
+            if (results.size() <= this.maxNumOfMsg) {
+                final String errMsg = String.format("Unable to read file %s.", this.dataFile.getFileName());
+                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, errMsg);
+                result.setAttribute(ValidationAttribute.FILE_NAME, this.dataFile.getFileName());
                 results.add(result);
             }
         }
@@ -88,19 +88,19 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
         return results;
     }
 
-    private void validateDiscreteData(DataColumn[] dataColumns, boolean hasHeader, List<ValidationResult> results) throws IOException {
-        int numOfCols = dataColumns.length;
+    private void validateDiscreteData(final DataColumn[] dataColumns, final boolean hasHeader, final List<ValidationResult> results) throws IOException {
+        final int numOfCols = dataColumns.length;
         int numOfRows = 0;
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -109,9 +109,9 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
             int columnIndex = 0;
 
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 int i = 0; // buffer array index
@@ -119,7 +119,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                 if (skipHeader) {
                     boolean finished = false;
                     for (; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                        byte currChar = buffer[i];
+                        final byte currChar = buffer[i];
 
                         if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                             if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -169,7 +169,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                 }
 
                 for (; i < len && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                         if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -180,12 +180,12 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                         if (hasSeenNonblankChar && !skip) {
                             colNum++;
 
-                            DataColumn dataColumn = dataColumns[columnIndex];
+                            final DataColumn dataColumn = dataColumns[columnIndex];
                             if (dataColumn.getColumnNumber() == colNum) {
-                                String value = dataBuilder.toString().trim();
+                                final String value = dataBuilder.toString().trim();
                                 if (value.isEmpty()) {
-                                    String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
-                                    ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
+                                    final String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
+                                    final ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
                                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                     results.add(result);
@@ -196,11 +196,11 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
                             // ensure we have enough data
                             if (columnIndex < numOfCols) {
-                                int numOfValues = columnIndex + 1;
-                                String errMsg = String.format(
+                                final int numOfValues = columnIndex + 1;
+                                final String errMsg = String.format(
                                         "Line %d, column %d: Insufficient data.  Expect %d value(s) but encounter %d.",
                                         lineNum, colNum, numOfCols, numOfValues);
-                                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
+                                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
                                 result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                 result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                 result.setAttribute(ValidationAttribute.EXPECTED_COUNT, numOfCols);
@@ -247,14 +247,14 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
                                         break;
@@ -265,12 +265,12 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                                 if (isDelimiter) {
                                     colNum++;
 
-                                    DataColumn dataColumn = dataColumns[columnIndex];
+                                    final DataColumn dataColumn = dataColumns[columnIndex];
                                     if (dataColumn.getColumnNumber() == colNum) {
-                                        String value = dataBuilder.toString().trim();
+                                        final String value = dataBuilder.toString().trim();
                                         if (value.isEmpty()) {
-                                            String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
-                                            ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
+                                            final String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
+                                            final ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
                                             result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                             results.add(result);
@@ -299,12 +299,12 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
             if (!skipHeader && hasSeenNonblankChar && !skip) {
                 colNum++;
 
-                DataColumn dataColumn = dataColumns[columnIndex];
+                final DataColumn dataColumn = dataColumns[columnIndex];
                 if (dataColumn.getColumnNumber() == colNum) {
-                    String value = dataBuilder.toString().trim();
+                    final String value = dataBuilder.toString().trim();
                     if (value.isEmpty()) {
-                        String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
-                        ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
+                        final String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
+                        final ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
                         result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                         result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                         results.add(result);
@@ -315,11 +315,11 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
                 // ensure we have enough data
                 if (columnIndex < numOfCols) {
-                    int numOfValues = columnIndex + 1;
-                    String errMsg = String.format(
+                    final int numOfValues = columnIndex + 1;
+                    final String errMsg = String.format(
                             "Line %d, column %d: Insufficient data.  Expect %d value(s) but encounter %d.",
                             lineNum, colNum, numOfCols, numOfValues);
-                    ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
+                    final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                     result.setAttribute(ValidationAttribute.EXPECTED_COUNT, numOfCols);
@@ -331,26 +331,26 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
             }
         }
 
-        String infoMsg = String.format("There are %d cases and %d variables.", numOfRows, numOfCols);
-        ValidationResult result = new ValidationResult(ValidationCode.INFO, MessageType.FILE_SUMMARY, infoMsg);
+        final String infoMsg = String.format("There are %d cases and %d variables.", numOfRows, numOfCols);
+        final ValidationResult result = new ValidationResult(ValidationCode.INFO, MessageType.FILE_SUMMARY, infoMsg);
         result.setAttribute(ValidationAttribute.ROW_NUMBER, numOfRows);
         result.setAttribute(ValidationAttribute.COLUMN_NUMBER, numOfCols);
         results.add(result);
     }
 
-    private void validateContinuousData(DataColumn[] dataColumns, boolean hasHeader, List<ValidationResult> results) throws IOException {
-        int numOfCols = dataColumns.length;
+    private void validateContinuousData(final DataColumn[] dataColumns, final boolean hasHeader, final List<ValidationResult> results) throws IOException {
+        final int numOfCols = dataColumns.length;
         int numOfRows = 0;
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -359,9 +359,9 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
             int columnIndex = 0;
 
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 int i = 0; // buffer array index
@@ -369,7 +369,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                 if (skipHeader) {
                     boolean finished = false;
                     for (; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                        byte currChar = buffer[i];
+                        final byte currChar = buffer[i];
 
                         if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                             if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -419,7 +419,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                 }
 
                 for (; i < len && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                         if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -430,21 +430,21 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                         if (hasSeenNonblankChar && !skip) {
                             colNum++;
 
-                            DataColumn dataColumn = dataColumns[columnIndex];
+                            final DataColumn dataColumn = dataColumns[columnIndex];
                             if (dataColumn.getColumnNumber() == colNum) {
-                                String value = dataBuilder.toString().trim();
+                                final String value = dataBuilder.toString().trim();
                                 if (value.isEmpty()) {
-                                    String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
-                                    ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
+                                    final String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
+                                    final ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
                                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                     results.add(result);
-                                } else if (!value.equals(missingDataMarker)) {
+                                } else if (!value.equals(this.missingDataMarker)) {
                                     try {
                                         Double.parseDouble(value);
-                                    } catch (NumberFormatException exception) {
-                                        String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
-                                        ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
+                                    } catch (final NumberFormatException exception) {
+                                        final String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
+                                        final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
                                         result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                         result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                         result.setAttribute(ValidationAttribute.VALUE, value);
@@ -457,11 +457,11 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
                             // ensure we have enough data
                             if (columnIndex < numOfCols) {
-                                int numOfValues = columnIndex + 1;
-                                String errMsg = String.format(
+                                final int numOfValues = columnIndex + 1;
+                                final String errMsg = String.format(
                                         "Line %d, column %d: Insufficient data.  Expect %d value(s) but encounter %d.",
                                         lineNum, colNum, numOfCols, numOfValues);
-                                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
+                                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
                                 result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                 result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                 result.setAttribute(ValidationAttribute.EXPECTED_COUNT, numOfCols);
@@ -508,14 +508,14 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
                                         break;
@@ -526,21 +526,21 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                                 if (isDelimiter) {
                                     colNum++;
 
-                                    DataColumn dataColumn = dataColumns[columnIndex];
+                                    final DataColumn dataColumn = dataColumns[columnIndex];
                                     if (dataColumn.getColumnNumber() == colNum) {
-                                        String value = dataBuilder.toString().trim();
+                                        final String value = dataBuilder.toString().trim();
                                         if (value.isEmpty()) {
-                                            String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
-                                            ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
+                                            final String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
+                                            final ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
                                             result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                             results.add(result);
-                                        } else if (!value.equals(missingDataMarker)) {
+                                        } else if (!value.equals(this.missingDataMarker)) {
                                             try {
                                                 Double.parseDouble(value);
-                                            } catch (NumberFormatException exception) {
-                                                String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
-                                                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
+                                            } catch (final NumberFormatException exception) {
+                                                final String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
+                                                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
                                                 result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                                 result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                                 result.setAttribute(ValidationAttribute.VALUE, value);
@@ -571,21 +571,21 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
             if (!skipHeader && hasSeenNonblankChar && !skip) {
                 colNum++;
 
-                DataColumn dataColumn = dataColumns[columnIndex];
+                final DataColumn dataColumn = dataColumns[columnIndex];
                 if (dataColumn.getColumnNumber() == colNum) {
-                    String value = dataBuilder.toString().trim();
+                    final String value = dataBuilder.toString().trim();
                     if (value.isEmpty()) {
-                        String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
-                        ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
+                        final String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
+                        final ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
                         result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                         result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                         results.add(result);
-                    } else if (!value.equals(missingDataMarker)) {
+                    } else if (!value.equals(this.missingDataMarker)) {
                         try {
                             Double.parseDouble(value);
-                        } catch (NumberFormatException exception) {
-                            String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
-                            ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
+                        } catch (final NumberFormatException exception) {
+                            final String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
+                            final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
                             result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                             result.setAttribute(ValidationAttribute.VALUE, value);
@@ -598,11 +598,11 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
                 // ensure we have enough data
                 if (columnIndex < numOfCols) {
-                    int numOfValues = columnIndex + 1;
-                    String errMsg = String.format(
+                    final int numOfValues = columnIndex + 1;
+                    final String errMsg = String.format(
                             "Line %d, column %d: Insufficient data.  Expect %d value(s) but encounter %d.",
                             lineNum, colNum, numOfCols, numOfValues);
-                    ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
+                    final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                     result.setAttribute(ValidationAttribute.EXPECTED_COUNT, numOfCols);
@@ -614,26 +614,26 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
             }
         }
 
-        String infoMsg = String.format("There are %d cases and %d variables.", numOfRows, numOfCols);
-        ValidationResult result = new ValidationResult(ValidationCode.INFO, MessageType.FILE_SUMMARY, infoMsg);
+        final String infoMsg = String.format("There are %d cases and %d variables.", numOfRows, numOfCols);
+        final ValidationResult result = new ValidationResult(ValidationCode.INFO, MessageType.FILE_SUMMARY, infoMsg);
         result.setAttribute(ValidationAttribute.ROW_NUMBER, numOfRows);
         result.setAttribute(ValidationAttribute.COLUMN_NUMBER, numOfCols);
         results.add(result);
     }
 
-    private void validateMixedData(DataColumn[] dataColumns, boolean hasHeader, List<ValidationResult> results) throws IOException {
-        int numOfCols = dataColumns.length;
+    private void validateMixedData(final DataColumn[] dataColumns, final boolean hasHeader, final List<ValidationResult> results) throws IOException {
+        final int numOfCols = dataColumns.length;
         int numOfRows = 0;
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -642,9 +642,9 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
             int columnIndex = 0;
 
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            final byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 int i = 0; // buffer array index
@@ -652,7 +652,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                 if (skipHeader) {
                     boolean finished = false;
                     for (; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                        byte currChar = buffer[i];
+                        final byte currChar = buffer[i];
 
                         if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                             if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -702,7 +702,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                 }
 
                 for (; i < len && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                         if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
@@ -713,22 +713,22 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                         if (hasSeenNonblankChar && !skip) {
                             colNum++;
 
-                            DataColumn dataColumn = dataColumns[columnIndex];
+                            final DataColumn dataColumn = dataColumns[columnIndex];
                             if (dataColumn.getColumnNumber() == colNum) {
-                                String value = dataBuilder.toString().trim();
+                                final String value = dataBuilder.toString().trim();
                                 if (value.isEmpty()) {
-                                    String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
-                                    ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
+                                    final String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
+                                    final ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
                                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                     results.add(result);
-                                } else if (!value.equals(missingDataMarker)) {
+                                } else if (!value.equals(this.missingDataMarker)) {
                                     if (!dataColumn.isDiscrete()) {
                                         try {
                                             Double.parseDouble(value);
-                                        } catch (NumberFormatException exception) {
-                                            String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
-                                            ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
+                                        } catch (final NumberFormatException exception) {
+                                            final String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
+                                            final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
                                             result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                             result.setAttribute(ValidationAttribute.VALUE, value);
@@ -742,11 +742,11 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
                             // ensure we have enough data
                             if (columnIndex < numOfCols) {
-                                int numOfValues = columnIndex + 1;
-                                String errMsg = String.format(
+                                final int numOfValues = columnIndex + 1;
+                                final String errMsg = String.format(
                                         "Line %d, column %d: Insufficient data.  Expect %d value(s) but encounter %d.",
                                         lineNum, colNum, numOfCols, numOfValues);
-                                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
+                                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
                                 result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                 result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                 result.setAttribute(ValidationAttribute.EXPECTED_COUNT, numOfCols);
@@ -793,14 +793,14 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
                                         break;
@@ -811,22 +811,22 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                                 if (isDelimiter) {
                                     colNum++;
 
-                                    DataColumn dataColumn = dataColumns[columnIndex];
+                                    final DataColumn dataColumn = dataColumns[columnIndex];
                                     if (dataColumn.getColumnNumber() == colNum) {
-                                        String value = dataBuilder.toString().trim();
+                                        final String value = dataBuilder.toString().trim();
                                         if (value.isEmpty()) {
-                                            String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
-                                            ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
+                                            final String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
+                                            final ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
                                             result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                             results.add(result);
-                                        } else if (!value.equals(missingDataMarker)) {
+                                        } else if (!value.equals(this.missingDataMarker)) {
                                             if (!dataColumn.isDiscrete()) {
                                                 try {
                                                     Double.parseDouble(value);
-                                                } catch (NumberFormatException exception) {
-                                                    String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
-                                                    ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
+                                                } catch (final NumberFormatException exception) {
+                                                    final String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
+                                                    final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
                                                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                                     result.setAttribute(ValidationAttribute.VALUE, value);
@@ -858,22 +858,22 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
             if (!skipHeader && hasSeenNonblankChar && !skip) {
                 colNum++;
 
-                DataColumn dataColumn = dataColumns[columnIndex];
+                final DataColumn dataColumn = dataColumns[columnIndex];
                 if (dataColumn.getColumnNumber() == colNum) {
-                    String value = dataBuilder.toString().trim();
+                    final String value = dataBuilder.toString().trim();
                     if (value.isEmpty()) {
-                        String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
-                        ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
+                        final String errMsg = String.format("Line %d, column %d: Missing value.  No missing marker was found. Assumed value is missing.", lineNum, colNum);
+                        final ValidationResult result = new ValidationResult(ValidationCode.WARNING, MessageType.FILE_MISSING_VALUE, errMsg);
                         result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                         result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                         results.add(result);
-                    } else if (!value.equals(missingDataMarker)) {
+                    } else if (!value.equals(this.missingDataMarker)) {
                         if (!dataColumn.isDiscrete()) {
                             try {
                                 Double.parseDouble(value);
-                            } catch (NumberFormatException exception) {
-                                String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
-                                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
+                            } catch (final NumberFormatException exception) {
+                                final String errMsg = String.format("Line %d, column %d: Non-continuous number %s.", lineNum, colNum, value);
+                                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
                                 result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                 result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                 result.setAttribute(ValidationAttribute.VALUE, value);
@@ -887,11 +887,11 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
                 // ensure we have enough data
                 if (columnIndex < numOfCols) {
-                    int numOfValues = columnIndex + 1;
-                    String errMsg = String.format(
+                    final int numOfValues = columnIndex + 1;
+                    final String errMsg = String.format(
                             "Line %d, column %d: Insufficient data.  Expect %d value(s) but encounter %d.",
                             lineNum, colNum, numOfCols, numOfValues);
-                    ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
+                    final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                     result.setAttribute(ValidationAttribute.EXPECTED_COUNT, numOfCols);
@@ -903,15 +903,15 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
             }
         }
 
-        String infoMsg = String.format("There are %d cases and %d variables.", numOfRows, numOfCols);
-        ValidationResult result = new ValidationResult(ValidationCode.INFO, MessageType.FILE_SUMMARY, infoMsg);
+        final String infoMsg = String.format("There are %d cases and %d variables.", numOfRows, numOfCols);
+        final ValidationResult result = new ValidationResult(ValidationCode.INFO, MessageType.FILE_SUMMARY, infoMsg);
         result.setAttribute(ValidationAttribute.ROW_NUMBER, numOfRows);
         result.setAttribute(ValidationAttribute.COLUMN_NUMBER, numOfCols);
         results.add(result);
     }
 
     @Override
-    public void setMaximumNumberOfMessages(int maxNumOfMsg) {
+    public void setMaximumNumberOfMessages(final int maxNumOfMsg) {
         this.maxNumOfMsg = maxNumOfMsg;
     }
 

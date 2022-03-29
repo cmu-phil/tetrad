@@ -34,13 +34,13 @@ public class MetadataFileReader implements MetadataReader {
 
     protected final Path metadataFile;
 
-    public MetadataFileReader(Path metadataFile) {
+    public MetadataFileReader(final Path metadataFile) {
         this.metadataFile = metadataFile;
     }
 
     @Override
     public Metadata read() throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(metadataFile)) {
+        try (final BufferedReader reader = Files.newBufferedReader(this.metadataFile)) {
             return (new ObjectMapper()).readValue(reader, Metadata.class);
         }
     }

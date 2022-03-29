@@ -55,8 +55,8 @@ public class SessionFileTransferHandler extends TransferHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionFileTransferHandler.class);
 
     @Override
-    public boolean canImport(TransferSupport support) {
-        for (DataFlavor flavor : support.getDataFlavors()) {
+    public boolean canImport(final TransferSupport support) {
+        for (final DataFlavor flavor : support.getDataFlavors()) {
             if (flavor.isFlavorJavaFileListType()) {
                 return true;
             }
@@ -66,17 +66,17 @@ public class SessionFileTransferHandler extends TransferHandler {
     }
 
     @Override
-    public boolean importData(TransferSupport support) {
+    public boolean importData(final TransferSupport support) {
         try {
-            List<File> files = (List<File>) support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
-            for (File file : files) {
+            final List<File> files = (List<File>) support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+            for (final File file : files) {
                 Preferences.userRoot().put("sessionSaveLocation", file.getParent());
-                Session session = DesktopController.getInstance().getSessionByName(file.getName());
+                final Session session = DesktopController.getInstance().getSessionByName(file.getName());
                 if (session != null) {
                     if (session.isEmpty()) {
                         DesktopController.getInstance().closeSessionByName(file.getName());
                     } else {
-                        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                        final int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                                 "Replace existing session by that name?.", "Confirm", JOptionPane.YES_NO_OPTION);
 
                         if (ret == JOptionPane.YES_OPTION) {
@@ -87,9 +87,9 @@ public class SessionFileTransferHandler extends TransferHandler {
                     }
                 }
 
-                try (InputStream in = Files.newInputStream(file.toPath())) {
-                    DecompressibleInputStream objIn = new DecompressibleInputStream(in);
-                    Object o = objIn.readObject();
+                try (final InputStream in = Files.newInputStream(file.toPath())) {
+                    final DecompressibleInputStream objIn = new DecompressibleInputStream(in);
+                    final Object o = objIn.readObject();
 
                     TetradMetadata metadata = null;
                     SessionWrapper sessionWrapper = null;
@@ -99,9 +99,9 @@ public class SessionFileTransferHandler extends TransferHandler {
 
                         try {
                             sessionWrapper = (SessionWrapper) objIn.readObject();
-                        } catch (ClassNotFoundException e1) {
+                        } catch (final ClassNotFoundException e1) {
                             throw e1;
-                        } catch (Exception e2) {
+                        } catch (final Exception e2) {
                             e2.printStackTrace();
                             sessionWrapper = null;
                         }
@@ -117,9 +117,9 @@ public class SessionFileTransferHandler extends TransferHandler {
                     }
 
                     if (sessionWrapper == null) {
-                        Version version = metadata.getVersion();
-                        Date date = metadata.getDate();
-                        SimpleDateFormat df = new SimpleDateFormat("MMM dd, yyyy");
+                        final Version version = metadata.getVersion();
+                        final Date date = metadata.getDate();
+                        final SimpleDateFormat df = new SimpleDateFormat("MMM dd, yyyy");
 
                         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                                 "Could not load this session file into Tetrad " + Version.currentViewableVersion() + "! \n" +
@@ -128,26 +128,26 @@ public class SessionFileTransferHandler extends TransferHandler {
                         return false;
                     }
 
-                    SessionEditorWorkbench graph
+                    final SessionEditorWorkbench graph
                             = new SessionEditorWorkbench(sessionWrapper);
 
-                    String name = file.getName();
+                    final String name = file.getName();
                     sessionWrapper.setName(name);
 
-                    SessionEditor editor = new SessionEditor(name, graph);
+                    final SessionEditor editor = new SessionEditor(name, graph);
 
                     DesktopController.getInstance().addSessionEditor(editor);
                     DesktopController.getInstance().closeEmptySessions();
                     DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
-                } catch (FileNotFoundException exception) {
+                } catch (final FileNotFoundException exception) {
                     LOGGER.error("", exception);
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);
-                } catch (Exception exception) {
+                } catch (final Exception exception) {
                     LOGGER.error("", exception);
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
             }
-        } catch (UnsupportedFlavorException | IOException exception) {
+        } catch (final UnsupportedFlavorException | IOException exception) {
             LOGGER.error("", exception);
         }
 

@@ -41,43 +41,43 @@ public class ReorderColumnsWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public ReorderColumnsWrapper(DataWrapper data, Parameters params) {
+    public ReorderColumnsWrapper(final DataWrapper data, final Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
 
-        DataModelList dataModelList = data.getDataModelList();
+        final DataModelList dataModelList = data.getDataModelList();
 
         List<Node> variables = dataModelList.get(0).getVariables();
 
-        DataModelList newData = new DataModelList();
+        final DataModelList newData = new DataModelList();
         variables = new ArrayList<>(variables);
         Collections.shuffle(variables);
 
         if (dataModelList.get(0) instanceof DataSet) {
-            List<DataSet> dataSets = new ArrayList<>();
+            final List<DataSet> dataSets = new ArrayList<>();
             for (int i = 0; i < dataModelList.size(); i++) {
                 dataSets.add((DataSet) dataModelList.get(i));
             }
             newData.addAll((DataUtils.shuffleColumns2(dataSets)));
         } else {
 
-            for (DataModel dataModel : dataModelList) {
+            for (final DataModel dataModel : dataModelList) {
 //            if (dataModel instanceof DataSet) {
 //                DataSet _newData = shuffleColumns((DataSet) dataModel);
 //                newData.add(_newData);
 //            }
 //            else
                 if (dataModel instanceof CovarianceMatrix) {
-                    CovarianceMatrix cov = (CovarianceMatrix) dataModel;
+                    final CovarianceMatrix cov = (CovarianceMatrix) dataModel;
 
-                    List<String> vars = new ArrayList<>();
+                    final List<String> vars = new ArrayList<>();
 
-                    for (Node node : variables) {
+                    for (final Node node : variables) {
                         vars.add(node.getName());
                     }
 
-                    ICovarianceMatrix _newData = cov.getSubmatrix(vars);
+                    final ICovarianceMatrix _newData = cov.getSubmatrix(vars);
                     newData.add(_newData);
                 }
             }
@@ -90,13 +90,13 @@ public class ReorderColumnsWrapper extends DataWrapper {
 
     }
 
-    public static DataSet shuffleColumns(DataSet dataModel) {
-        DataSet dataSet = dataModel;
+    public static DataSet shuffleColumns(final DataSet dataModel) {
+        final DataSet dataSet = dataModel;
 
-        List<Node> vars = new ArrayList<>();
+        final List<Node> vars = new ArrayList<>();
 
-        for (Node node : dataSet.getVariables()) {
-            Node _node = dataSet.getVariable(node.getName());
+        for (final Node node : dataSet.getVariables()) {
+            final Node _node = dataSet.getVariable(node.getName());
 
             if (_node != null) {
                 vars.add(_node);

@@ -69,8 +69,7 @@ public final class Tetrad implements PropertyChangeListener {
      * The main application title.
      */
     private final String mainTitle
-            = "Tetrad " + Version.currentViewableVersion()
-            .toString();
+            = "Tetrad " + Version.currentViewableVersion();
 
     public static boolean enableExperimental;
 
@@ -129,7 +128,7 @@ public final class Tetrad implements PropertyChangeListener {
     //===============================PRIVATE METHODS=======================//
     private static void setLookAndFeel() {
         try {
-            String os = System.getProperties().getProperty("os.name");
+            final String os = System.getProperties().getProperty("os.name");
             if (os.equals("Windows XP")) {
                 // The only system look and feel that seems to work well is the
                 // one for Windows XP. When running on Mac the mac look and
@@ -140,7 +139,7 @@ public final class Tetrad implements PropertyChangeListener {
                 UIManager.setLookAndFeel(
                         UIManager.getSystemLookAndFeelClassName());
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
     }
@@ -171,10 +170,10 @@ public final class Tetrad implements PropertyChangeListener {
 
             @Override
             public Dimension getPreferredSize() {
-                Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-                double minLength = Math.min(size.getWidth(), size.getHeight());
-                double height = minLength * 0.8;
-                double width = height * (4.0 / 3);
+                final Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+                final double minLength = Math.min(size.getWidth(), size.getHeight());
+                final double height = minLength * 0.8;
+                final double width = height * (4.0 / 3);
 
                 return new Dimension((int) width, (int) height);
 //                return Toolkit.getDefaultToolkit().getScreenSize();
@@ -206,7 +205,7 @@ public final class Tetrad implements PropertyChangeListener {
 
         // This doesn't let the user resize the main window.
 //        getFrame().setExtendedState(Frame.MAXIMIZED_BOTH);
-        Image image = ImageUtils.getImage(this, "tyler16.png");
+        final Image image = ImageUtils.getImage(this, "tyler16.png");
         getFrame().setIconImage(image);
 
         // Add an initial session editor to the desktop. Must be done
@@ -236,7 +235,7 @@ public final class Tetrad implements PropertyChangeListener {
      * Exits the application gracefully.
      */
     private void exitApplication() {
-        boolean succeeded = getDesktop().closeAllSessions();
+        final boolean succeeded = getDesktop().closeAllSessions();
 
         if (!succeeded) {
             return;
@@ -248,17 +247,17 @@ public final class Tetrad implements PropertyChangeListener {
 
         try {
             System.exit(0);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     private JFrame getFrame() {
-        return frame;
+        return this.frame;
     }
 
     private TetradDesktop getDesktop() {
-        return desktop;
+        return this.desktop;
     }
 
 }

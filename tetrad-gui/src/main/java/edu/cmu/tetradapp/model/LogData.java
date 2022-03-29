@@ -22,12 +22,8 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-
-import java.util.List;
 
 /**
  * Applies a logarithmic transform
@@ -39,26 +35,26 @@ public class LogData extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    public LogData(DataWrapper wrapper, Parameters params) {
-        DataModelList inList = wrapper.getDataModelList();
-        DataModelList outList = new DataModelList();
+    public LogData(final DataWrapper wrapper, final Parameters params) {
+        final DataModelList inList = wrapper.getDataModelList();
+        final DataModelList outList = new DataModelList();
 
-        for (DataModel model : inList) {
+        for (final DataModel model : inList) {
             if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            DataSet dataSet = (DataSet) model;
+            final DataSet dataSet = (DataSet) model;
 
 //            if (!(dataSet.isContinuous())) {
 //                throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
 //            }
 
-            double a = params.getDouble("a");
-            boolean isUnlog = params.getBoolean("unlog");
-            int base = params.getInt("base");
+            final double a = params.getDouble("a");
+            final boolean isUnlog = params.getBoolean("unlog");
+            final int base = params.getInt("base");
 
-            DataSet dataSet2 = DataUtils.logData(dataSet, a, isUnlog, base);
+            final DataSet dataSet2 = DataUtils.logData(dataSet, a, isUnlog, base);
             outList.add(dataSet2);
         }
 

@@ -60,7 +60,7 @@ public class RegressionEditor extends JPanel {
      * The workbench used to display the graph of significant regression into
      * the target.
      */
-    private GraphWorkbench workbench;
+    private final GraphWorkbench workbench;
 
     /**
      * A large text area into which the (String) output of the regression result
@@ -85,49 +85,49 @@ public class RegressionEditor extends JPanel {
      *
      * @throws NullPointerException if <code>regressionRunner</code> is null.
      */
-    public RegressionEditor(RegressionRunner regressionRunner) {
+    public RegressionEditor(final RegressionRunner regressionRunner) {
         if (regressionRunner == null) {
             throw new NullPointerException("The regression runner is required.");
         }
 
         this.runner = regressionRunner;
-        Graph outGraph = new EdgeListGraph();
+        final Graph outGraph = new EdgeListGraph();
 
         final JButton executeButton = new JButton("Execute");
         executeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 runRegression();
-                TetradLogger.getInstance().log("result", reportText.getText());
+                TetradLogger.getInstance().log("result", RegressionEditor.this.reportText.getText());
             }
         });
 
-        workbench = new GraphWorkbench(outGraph);
+        this.workbench = new GraphWorkbench(outGraph);
 
-        JScrollPane workbenchScroll = new JScrollPane(workbench);
+        final JScrollPane workbenchScroll = new JScrollPane(this.workbench);
         workbenchScroll.setPreferredSize(new Dimension(400, 400));
 
-        reportText = new JTextArea();
-        reportText.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        reportText.setTabSize(10);
+        this.reportText = new JTextArea();
+        this.reportText.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        this.reportText.setTabSize(10);
 
-        if (runner != null && runner.getResult() != null) {
-            reportText.setText(runner.getResult().toString());
+        if (this.runner != null && this.runner.getResult() != null) {
+            this.reportText.setText(this.runner.getResult().toString());
         }
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        final JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(600, 400));
-        tabbedPane.add("Model", new JScrollPane(reportText));
+        tabbedPane.add("Model", new JScrollPane(this.reportText));
 //        tabbedPane.add("Tabularized Model", new JScrollPane(textWithTable));
         tabbedPane.add("Output Graph", workbenchScroll);
 
-        Box b = Box.createVerticalBox();
-        Box b1 = Box.createHorizontalBox();
-        RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(runner, runner.getParams(),
+        final Box b = Box.createVerticalBox();
+        final Box b1 = Box.createHorizontalBox();
+        final RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(this.runner, this.runner.getParams(),
                 this.runner.getDataModel(), false);
 
         editorPanel.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
+            public void propertyChange(final PropertyChangeEvent evt) {
+                final String propertyName = evt.getPropertyName();
 
                 if ("significanceChanged".equals(propertyName)) {
                     runRegression();
@@ -139,7 +139,7 @@ public class RegressionEditor extends JPanel {
         b1.add(tabbedPane);
         b.add(b1);
 
-        JPanel buttonPanel = new JPanel();
+        final JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
         buttonPanel.add(executeButton);
         b.add(buttonPanel, BorderLayout.SOUTH);
@@ -147,7 +147,7 @@ public class RegressionEditor extends JPanel {
         setLayout(new BorderLayout());
         add(b, BorderLayout.CENTER);
 
-        int numModels = runner.getNumModels();
+        final int numModels = this.runner.getNumModels();
 
         if (numModels > 1) {
             final JComboBox<Integer> comp = new JComboBox<>();
@@ -158,18 +158,18 @@ public class RegressionEditor extends JPanel {
 
             comp.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
-                    runner.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
+                public void actionPerformed(final ActionEvent e) {
+                    RegressionEditor.this.runner.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
                 }
             });
 
             comp.setMaximumSize(comp.getPreferredSize());
 
-            Box c = Box.createHorizontalBox();
+            final Box c = Box.createHorizontalBox();
             c.add(new JLabel("Using model"));
             c.add(comp);
             c.add(new JLabel("from "));
-            c.add(new JLabel(runner.getModelSourceName()));
+            c.add(new JLabel(this.runner.getModelSourceName()));
             c.add(Box.createHorizontalGlue());
 
             add(c, BorderLayout.NORTH);
@@ -181,8 +181,8 @@ public class RegressionEditor extends JPanel {
     /**
      * Sets the name of this editor.
      */
-    public void setName(String name) {
-        String oldName = getName();
+    public void setName(final String name) {
+        final String oldName = getName();
         super.setName(name);
         this.firePropertyChange("name", oldName, getName());
     }
@@ -193,19 +193,19 @@ public class RegressionEditor extends JPanel {
      * Runs the regression, resetting the text output and graph output.
      */
     private void runRegression() {
-        runner.execute();
-        Graph graph = runner.getOutGraph();
+        this.runner.execute();
+        final Graph graph = this.runner.getOutGraph();
         GraphUtils.circleLayout(graph, 200, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(graph);
-        workbench.setGraph(graph);
-        RegressionResult report = runner.getResult();
-        reportText.setText(report.toString());
-        textWithTable.removeAll();
-        textWithTable.setLayout(new BorderLayout());
-        textWithTable.add(TextWithTable.component(report.getPreamble(),
+        this.workbench.setGraph(graph);
+        final RegressionResult report = this.runner.getResult();
+        this.reportText.setText(report.toString());
+        this.textWithTable.removeAll();
+        this.textWithTable.setLayout(new BorderLayout());
+        this.textWithTable.add(TextWithTable.component(report.getPreamble(),
                 report.getResultsTable()));
-        textWithTable.revalidate();
-        textWithTable.repaint();
+        this.textWithTable.revalidate();
+        this.textWithTable.repaint();
 
     }
 
@@ -224,25 +224,25 @@ public class RegressionEditor extends JPanel {
         }
 
         public static JComponent emptyCompoenent() {
-            JPanel jPanel = new JPanel();
+            final JPanel jPanel = new JPanel();
             jPanel.setBackground(Color.WHITE);
             return jPanel;
         }
 
-        public static JComponent component(String preamble, TextTable textTable) {
-            TextWithTable textWithTable = new TextWithTable();
+        public static JComponent component(final String preamble, final TextTable textTable) {
+            final TextWithTable textWithTable = new TextWithTable();
 
-            JPanel panel = new JPanel();
+            final JPanel panel = new JPanel();
             panel.setBackground(Color.WHITE);
 
-            Box b = Box.createVerticalBox();
+            final Box b = Box.createVerticalBox();
 
-            Box b1 = Box.createHorizontalBox();
+            final Box b1 = Box.createHorizontalBox();
             b1.add(new JTextArea(preamble));
             b.add(b1);
 
-            Box b2 = Box.createHorizontalBox();
-            JScrollPane pane = new JScrollPane(textWithTable.getJTableFor(textTable));
+            final Box b2 = Box.createHorizontalBox();
+            final JScrollPane pane = new JScrollPane(textWithTable.getJTableFor(textTable));
             b2.add(pane);
             b.add(b2);
 
@@ -254,7 +254,7 @@ public class RegressionEditor extends JPanel {
 
         private JTable getJTableFor(final TextTable textTable) {
 
-            TableModel model = new AbstractTableModel() {
+            final TableModel model = new AbstractTableModel() {
 
                 public int getRowCount() {
                     return textTable.getNumRows();
@@ -264,25 +264,25 @@ public class RegressionEditor extends JPanel {
                     return textTable.getNumColumns();
                 }
 
-                public Object getValueAt(int rowIndex, int columnIndex) {
+                public Object getValueAt(final int rowIndex, final int columnIndex) {
                     return textTable.getTokenAt(rowIndex, columnIndex);
                 }
 
-                public String getColumnName(int column) {
+                public String getColumnName(final int column) {
                     return null;
                 }
             };
 
-            JTable table = new JTable(model);
+            final JTable table = new JTable(model);
 
             for (int j = 0; j < 6; j++) {
-                TableColumn column = table.getColumnModel().getColumn(j);
+                final TableColumn column = table.getColumnModel().getColumn(j);
 
                 column.setCellRenderer(new DefaultTableCellRenderer() {
 
                     // implements javax.swing.table.TableCellRenderer
-                    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                        Component renderer = super.getTableCellRendererComponent(table,
+                    public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row, final int column) {
+                        final Component renderer = super.getTableCellRendererComponent(table,
                                 value, isSelected, hasFocus, row, column);
                         setText((String) value);
                         setHorizontalAlignment(JLabel.RIGHT);

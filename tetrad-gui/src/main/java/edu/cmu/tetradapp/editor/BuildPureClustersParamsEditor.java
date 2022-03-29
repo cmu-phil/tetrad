@@ -60,7 +60,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
     public BuildPureClustersParamsEditor() {
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -68,7 +68,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException();
         }
@@ -77,39 +77,39 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
     }
 
     public void setup() {
-        DoubleTextField alphaField = new DoubleTextField(
-                params.getDouble("alpha", 0.001), 4, NumberFormatUtil.getInstance().getNumberFormat());
+        final DoubleTextField alphaField = new DoubleTextField(
+                this.params.getDouble("alpha", 0.001), 4, NumberFormatUtil.getInstance().getNumberFormat());
         alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+            public double filter(final double value, final double oldValue) {
                 try {
                     getParams().set("alpha", 0.001);
                     return value;
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     return oldValue;
                 }
             }
         });
 
         final TestType[] descriptions = TestType.getTestDescriptions();
-        JComboBox testSelector = new JComboBox(descriptions);
+        final JComboBox testSelector = new JComboBox(descriptions);
         testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
         testSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                TestType testType = (TestType) combo.getSelectedItem();
+            public void actionPerformed(final ActionEvent e) {
+                final JComboBox combo = (JComboBox) e.getSource();
+                final TestType testType = (TestType) combo.getSelectedItem();
                 getParams().set("tetradTestType", testType);
             }
         });
 
         final TestType[] purifyDescriptions = TestType.getPurifyTestDescriptions();
-        JComboBox purifySelector = new JComboBox(purifyDescriptions);
+        final JComboBox purifySelector = new JComboBox(purifyDescriptions);
         purifySelector.setSelectedItem(getParams().get("purifyTestType", TestType.NONE));
 
         purifySelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                TestType testType = (TestType) combo.getSelectedItem();
+            public void actionPerformed(final ActionEvent e) {
+                final JComboBox combo = (JComboBox) e.getSource();
+                final TestType testType = (TestType) combo.getSelectedItem();
                 getParams().set("purifyTestType", testType);
             }
         });
@@ -117,9 +117,9 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
         //Where is it setting the appropriate knowledge for the search?
         DataModel dataModel = null;
 
-        for (Object parentModel : this.parentModels) {
+        for (final Object parentModel : this.parentModels) {
             if (parentModel instanceof DataWrapper) {
-                DataWrapper dataWrapper = (DataWrapper) parentModel;
+                final DataWrapper dataWrapper = (DataWrapper) parentModel;
                 dataModel = dataWrapper.getSelectedDataModel();
             }
         }
@@ -128,14 +128,14 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
             throw new IllegalStateException("Null data model.");
         }
 
-        List<String> varNames =
+        final List<String> varNames =
                 new ArrayList<>(dataModel.getVariableNames());
 
-        boolean isDiscreteModel;
+        final boolean isDiscreteModel;
         if (dataModel instanceof ICovarianceMatrix) {
             isDiscreteModel = false;
         } else {
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
             isDiscreteModel = dataSet.isDiscrete();
 
             //            try {
@@ -147,25 +147,25 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
             //            }
         }
 
-        params.set("varNames", varNames);
-        alphaField.setValue(params.getDouble("alpha", 0.001));
+        this.params.set("varNames", varNames);
+        alphaField.setValue(this.params.getDouble("alpha", 0.001));
 
-        Box b = Box.createVerticalBox();
+        final Box b = Box.createVerticalBox();
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Alpha:"));
         b1.add(Box.createHorizontalGlue());
         b1.add(alphaField);
         b.add(b1);
 
         if (!isDiscreteModel) {
-            Box b2 = Box.createHorizontalBox();
+            final Box b2 = Box.createHorizontalBox();
             b2.add(new JLabel("Statistical Test:"));
             b2.add(Box.createHorizontalGlue());
             b2.add(testSelector);
             b.add(b2);
 
-            Box b3 = Box.createHorizontalBox();
+            final Box b3 = Box.createHorizontalBox();
             b3.add(new JLabel("Purify Test:"));
             b3.add(Box.createHorizontalGlue());
             b3.add(purifySelector);
@@ -184,7 +184,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
     }
 
     private Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

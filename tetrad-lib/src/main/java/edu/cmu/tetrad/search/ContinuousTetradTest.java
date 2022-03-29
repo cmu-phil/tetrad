@@ -392,7 +392,7 @@ public final class ContinuousTetradTest implements TetradTest {
 
     private void wishartEvalTetradDifferences(final int i, final int j, final int k, final int l) {
         final double TAUijkl;
-        double TAUijlk;
+        final double TAUijlk;
         final double TAUiklj;
         double ratio;
 

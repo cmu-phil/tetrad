@@ -34,20 +34,20 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class MergeDatasetsWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public MergeDatasetsWrapper(DataWrapper[] data, Parameters params) {
+    public MergeDatasetsWrapper(final DataWrapper[] data, final Parameters params) {
         construct(data);
     }
 
-    private void construct(DataWrapper... dataWrappers) {
-        for (DataWrapper wrapper : dataWrappers) {
+    private void construct(final DataWrapper... dataWrappers) {
+        for (final DataWrapper wrapper : dataWrappers) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");
             }
         }
 
-        DataModelList merged = new DataModelList();
+        final DataModelList merged = new DataModelList();
 
-        for (DataWrapper wrapper : dataWrappers) {
+        for (final DataWrapper wrapper : dataWrappers) {
             merged.addAll(wrapper.getDataModelList());
         }
 

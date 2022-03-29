@@ -21,9 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
@@ -70,37 +68,37 @@ public final class SemEstimatorEditor extends JPanel {
     private final JPanel targetPanel;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final DataSet dataSet;
-    private SemEstimatorWrapper wrapper;
+    private final SemEstimatorWrapper wrapper;
     private OneEditor oneEditorPanel;
 
-    private String graphicalEditorTitle = "Graphical Editor";
-    private String tabularEditorTitle = "Tabular Editor";
-    private boolean editable = true;
+    private final String graphicalEditorTitle = "Graphical Editor";
+    private final String tabularEditorTitle = "Tabular Editor";
+    private final boolean editable = true;
 
 
-    public SemEstimatorEditor(SemIm semIm, DataSet dataSet) {
+    public SemEstimatorEditor(final SemIm semIm, final DataSet dataSet) {
         this(new SemEstimatorWrapper(dataSet, semIm.getSemPm(), new Parameters()));
     }
 
 
-    public SemEstimatorEditor(SemPm semPm, DataSet dataSet) {
+    public SemEstimatorEditor(final SemPm semPm, final DataSet dataSet) {
         this(new SemEstimatorWrapper(dataSet, semPm, new Parameters()));
     }
 
-    public SemEstimatorEditor(SemEstimatorWrapper wrapper) {
+    public SemEstimatorEditor(final SemEstimatorWrapper wrapper) {
         setLayout(new BorderLayout());
-        targetPanel = new JPanel();
-        targetPanel.setLayout(new BorderLayout());
-        add(targetPanel, BorderLayout.CENTER);
+        this.targetPanel = new JPanel();
+        this.targetPanel.setLayout(new BorderLayout());
+        add(this.targetPanel, BorderLayout.CENTER);
 
         this.wrapper = wrapper;
         this.dataSet = wrapper.getSemEstimator().getDataSet();
 
-        oneEditorPanel = new OneEditor(wrapper, graphicalEditorTitle, tabularEditorTitle, TabbedPaneDefault.GRAPHICAL);
-        targetPanel.add(oneEditorPanel, BorderLayout.CENTER);
+        this.oneEditorPanel = new OneEditor(wrapper, this.graphicalEditorTitle, this.tabularEditorTitle, TabbedPaneDefault.GRAPHICAL);
+        this.targetPanel.add(this.oneEditorPanel, BorderLayout.CENTER);
 
 
-        JComboBox<Object> optimizerCombo = new JComboBox<>();
+        final JComboBox<Object> optimizerCombo = new JComboBox<>();
         optimizerCombo.addItem("Regression");
         optimizerCombo.addItem("EM");
         optimizerCombo.addItem("Powell");
@@ -108,19 +106,19 @@ public final class SemEstimatorEditor extends JPanel {
         optimizerCombo.addItem("RICF");
 
         optimizerCombo.addActionListener((e) -> {
-            JComboBox box = (JComboBox) e.getSource();
+            final JComboBox box = (JComboBox) e.getSource();
             wrapper.setSemOptimizerType((String) box.getSelectedItem());
         });
 
-        JComboBox<Object> scoreBox = new JComboBox();
-        IntTextField restarts = new IntTextField(1, 2);
+        final JComboBox<Object> scoreBox = new JComboBox();
+        final IntTextField restarts = new IntTextField(1, 2);
 
         scoreBox.addItem("Fgls");
         scoreBox.addItem("Fml");
 
         scoreBox.addActionListener((e) -> {
-            JComboBox box = (JComboBox) e.getSource();
-            String type = (String) box.getSelectedItem();
+            final JComboBox box = (JComboBox) e.getSource();
+            final String type = (String) box.getSelectedItem();
             if ("Fgls".equals(type)) {
                 wrapper.setScoreType(ScoreType.Fgls);
             } else if ("Fml".equals(type)) {
@@ -132,12 +130,12 @@ public final class SemEstimatorEditor extends JPanel {
             try {
                 wrapper.setNumRestarts(value);
                 return value;
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 return oldValue;
             }
         });
 
-        String semOptimizerType = wrapper.getParams().getString("semOptimizerType", "Regression");
+        final String semOptimizerType = wrapper.getParams().getString("semOptimizerType", "Regression");
 
         optimizerCombo.setSelectedItem(semOptimizerType);
         ScoreType scoreType = (ScoreType) wrapper.getParams().get("scoreType", ScoreType.Fgls);
@@ -147,10 +145,10 @@ public final class SemEstimatorEditor extends JPanel {
         scoreBox.setSelectedItem(scoreType.toString());
         restarts.setValue(wrapper.getParams().getInt("numRestarts", 1));
 
-        JButton estimateButton = new JButton("Estimate Again");
+        final JButton estimateButton = new JButton("Estimate Again");
 
         estimateButton.addActionListener((e) -> {
-            Window owner = (Window) getTopLevelAncestor();
+            final Window owner = (Window) getTopLevelAncestor();
 
             new WatchedProcess(owner) {
                 @Override
@@ -160,43 +158,43 @@ public final class SemEstimatorEditor extends JPanel {
             };
         });
 
-        JButton report = new JButton("Report");
+        final JButton report = new JButton("Report");
 
         report.addActionListener((e) -> {
             final JTextArea textArea = new JTextArea();
-            JScrollPane scroll = new JScrollPane(textArea);
+            final JScrollPane scroll = new JScrollPane(textArea);
 
             textArea.append(compileReport());
 
-            Box b = Box.createVerticalBox();
-            Box b2 = Box.createHorizontalBox();
+            final Box b = Box.createVerticalBox();
+            final Box b2 = Box.createHorizontalBox();
             b2.add(scroll);
             textArea.setCaretPosition(0);
             b.add(b2);
 
-            JPanel editorPanel = new JPanel(new BorderLayout());
+            final JPanel editorPanel = new JPanel(new BorderLayout());
             editorPanel.add(b);
 
-            EditorWindow window = new EditorWindow(editorPanel,
+            final EditorWindow window = new EditorWindow(editorPanel,
                     "All Paths", "Close", false, SemEstimatorEditor.this);
             DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
             window.setVisible(true);
         });
 
-        Box lowerBarA = Box.createHorizontalBox();
+        final Box lowerBarA = Box.createHorizontalBox();
         lowerBarA.add(new JLabel("Score"));
         lowerBarA.add(scoreBox);
         lowerBarA.add(Box.createHorizontalGlue());
         lowerBarA.add(new JLabel("Random Restarts"));
         lowerBarA.add(restarts);
 
-        Box lowerBarB = Box.createHorizontalBox();
+        final Box lowerBarB = Box.createHorizontalBox();
         lowerBarB.add(new JLabel("Choose Optimizer:  "));
         lowerBarB.add(optimizerCombo);
         lowerBarB.add(Box.createHorizontalGlue());
         lowerBarB.add(estimateButton);
 
-        Box lowerBar = Box.createVerticalBox();
+        final Box lowerBar = Box.createVerticalBox();
         lowerBar.add(lowerBarA);
         lowerBar.add(lowerBarB);
 
@@ -206,7 +204,7 @@ public final class SemEstimatorEditor extends JPanel {
     }
 
     private String compileReport() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
 
         builder.append("Datset\tFrom\tTo\tType\tValue\tSE\tT\tP");
 
@@ -214,8 +212,8 @@ public final class SemEstimatorEditor extends JPanel {
 //       be calculated. (Calculating standard errors is high
 //       complexity.) Set this to zero to turn off statistics
 //       calculations (which can be problematic sometimes).
-        SemIm estSem = wrapper.getEstimatedSemIm();
-        String dataName = dataSet.getName();
+        final SemIm estSem = this.wrapper.getEstimatedSemIm();
+        final String dataName = this.dataSet.getName();
 
         estSem.getFreeParameters().forEach(parameter -> {
             builder.append("\n");
@@ -229,7 +227,7 @@ public final class SemEstimatorEditor extends JPanel {
 //            be calculated.(Calculating standard errors is high
 //            complexity.)Set this to zero to turn off statistics
 //            calculations (which can be problematic sometimes).
-            int maxFreeParamsForStatistics = 200;
+            final int maxFreeParamsForStatistics = 200;
             builder.append(asString(estSem.getStandardError(parameter,
                     maxFreeParamsForStatistics))).append("\t");
             builder.append(asString(estSem.getTValue(parameter,
@@ -238,16 +236,16 @@ public final class SemEstimatorEditor extends JPanel {
                     maxFreeParamsForStatistics))).append("\t");
         });
 
-        List<Node> nodes = estSem.getVariableNodes();
+        final List<Node> nodes = estSem.getVariableNodes();
 
         nodes.forEach(node -> {
-            int n = estSem.getSampleSize();
-            int df = n - 1;
-            double mean = estSem.getMean(node);
-            double stdDev = estSem.getMeanStdDev(node);
-            double stdErr = stdDev / Math.sqrt(n);
-            double tValue = mean / stdErr;
-            double p = 2.0 * (1.0 - ProbUtils.tCdf(Math.abs(tValue), df));
+            final int n = estSem.getSampleSize();
+            final int df = n - 1;
+            final double mean = estSem.getMean(node);
+            final double stdDev = estSem.getMeanStdDev(node);
+            final double stdErr = stdDev / Math.sqrt(n);
+            final double tValue = mean / stdErr;
+            final double p = 2.0 * (1.0 - ProbUtils.tCdf(Math.abs(tValue), df));
             builder.append("\n");
             builder.append(dataName).append("\t");
             builder.append(node).append("\t");
@@ -262,16 +260,16 @@ public final class SemEstimatorEditor extends JPanel {
         return builder.toString();
     }
 
-    private String asString(double value) {
+    private String asString(final double value) {
         if (Double.isNaN(value)) {
             return " * ";
         } else {
-            return nf.format(value);
+            return this.nf.format(value);
         }
     }
 
-    private String typeString(Parameter parameter) {
-        ParamType type = parameter.getType();
+    private String typeString(final Parameter parameter) {
+        final ParamType type = parameter.getType();
 
         if (type == ParamType.COEF) {
             return "Coef";
@@ -289,7 +287,7 @@ public final class SemEstimatorEditor extends JPanel {
         throw new IllegalStateException("Unknown param type.");
     }
 
-    private double paramValue(SemIm im, Parameter parameter) {
+    private double paramValue(final SemIm im, final Parameter parameter) {
         double paramValue = im.getParamValue(parameter);
 
         if (parameter.getType() == ParamType.VAR) {
@@ -300,9 +298,9 @@ public final class SemEstimatorEditor extends JPanel {
     }
 
     private void reestimate() {
-        SemOptimizer optimizer;
+        final SemOptimizer optimizer;
 
-        String type = wrapper.getSemOptimizerType();
+        final String type = this.wrapper.getSemOptimizerType();
 
         switch (type) {
             case "Regression":
@@ -325,28 +323,28 @@ public final class SemEstimatorEditor extends JPanel {
                         + type);
         }
 
-        int numRestarts = wrapper.getNumRestarts();
+        final int numRestarts = this.wrapper.getNumRestarts();
         optimizer.setNumRestarts(numRestarts);
 
-        SemEstimator estimator = wrapper.getSemEstimator();
+        final SemEstimator estimator = this.wrapper.getSemEstimator();
         estimator.setSemOptimizer(optimizer);
 
         estimator.setNumRestarts(numRestarts);
-        estimator.setScoreType(wrapper.getScoreType());
+        estimator.setScoreType(this.wrapper.getScoreType());
 
         estimator.estimate();
         resetSemImEditor();
     }
 
     private void resetSemImEditor() {
-        oneEditorPanel = new OneEditor(wrapper, graphicalEditorTitle, tabularEditorTitle, TabbedPaneDefault.GRAPHICAL);
-        targetPanel.removeAll();
-        targetPanel.add(oneEditorPanel, BorderLayout.CENTER);
+        this.oneEditorPanel = new OneEditor(this.wrapper, this.graphicalEditorTitle, this.tabularEditorTitle, TabbedPaneDefault.GRAPHICAL);
+        this.targetPanel.removeAll();
+        this.targetPanel.add(this.oneEditorPanel, BorderLayout.CENTER);
         validate();
     }
 
     private Component getComp() {
-        EditorWindow editorWindow =
+        final EditorWindow editorWindow =
                 (EditorWindow) SwingUtilities.getAncestorOfClass(
                         EditorWindow.class, this);
 
@@ -402,12 +400,12 @@ public final class SemEstimatorEditor extends JPanel {
         private String graphicalEditorTitle = "Graphical Editor";
         private String tabularEditorTitle = "Tabular Editor";
         private boolean editable = true;
-        private int matrixSelection = 0;
+        private final int matrixSelection = 0;
         private JCheckBoxMenuItem meansItem;
         private JCheckBoxMenuItem interceptsItem;
         private JMenuItem errorTerms;
 
-        public OneEditor(SemEstimatorWrapper wrapper, String graphicalEditorTitle, String tabularEditorTitle,
+        public OneEditor(final SemEstimatorWrapper wrapper, final String graphicalEditorTitle, final String tabularEditorTitle,
                          final TabbedPaneDefault tabbedPaneDefault) {
             this.semImWrapper = wrapper;
             this.graphicalEditorTitle = graphicalEditorTitle;
@@ -415,70 +413,70 @@ public final class SemEstimatorEditor extends JPanel {
             displaySemIm(graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
         }
 
-        private void displaySemIm(String graphicalEditorTitle, String tabularEditorTitle, TabbedPaneDefault tabbedPaneDefault) {
-            tabbedPane = new JTabbedPane();
-            tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        private void displaySemIm(final String graphicalEditorTitle, final String tabularEditorTitle, final TabbedPaneDefault tabbedPaneDefault) {
+            this.tabbedPane = new JTabbedPane();
+            this.tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
             setLayout(new BorderLayout());
 
             if (tabbedPaneDefault == TabbedPaneDefault.GRAPHICAL) {
-                tabbedPane.add(graphicalEditorTitle, graphicalEditor());
-                tabbedPane.add(tabularEditorTitle, tabularEditor());
-                tabbedPane.add("Implied Matrices", impliedMatricesPanel());
-                tabbedPane.add("Model Statistics", modelStatisticsPanel());
+                this.tabbedPane.add(graphicalEditorTitle, graphicalEditor());
+                this.tabbedPane.add(tabularEditorTitle, tabularEditor());
+                this.tabbedPane.add("Implied Matrices", impliedMatricesPanel());
+                this.tabbedPane.add("Model Statistics", modelStatisticsPanel());
             } else if (tabbedPaneDefault == TabbedPaneDefault.TABULAR) {
-                tabbedPane.add(tabularEditorTitle, tabularEditor());
-                tabbedPane.add(graphicalEditorTitle, graphicalEditor());
-                tabbedPane.add("Implied Matrices", impliedMatricesPanel());
-                tabbedPane.add("Model Statistics", modelStatisticsPanel());
+                this.tabbedPane.add(tabularEditorTitle, tabularEditor());
+                this.tabbedPane.add(graphicalEditorTitle, graphicalEditor());
+                this.tabbedPane.add("Implied Matrices", impliedMatricesPanel());
+                this.tabbedPane.add("Model Statistics", modelStatisticsPanel());
             } else if (tabbedPaneDefault == TabbedPaneDefault.COVMATRIX) {
-                tabbedPane.add("Implied Matrices", impliedMatricesPanel());
-                tabbedPane.add("Model Statistics", modelStatisticsPanel());
-                tabbedPane.add(graphicalEditorTitle, graphicalEditor());
-                tabbedPane.add(tabularEditorTitle, tabularEditor());
+                this.tabbedPane.add("Implied Matrices", impliedMatricesPanel());
+                this.tabbedPane.add("Model Statistics", modelStatisticsPanel());
+                this.tabbedPane.add(graphicalEditorTitle, graphicalEditor());
+                this.tabbedPane.add(tabularEditorTitle, tabularEditor());
             } else if (tabbedPaneDefault == TabbedPaneDefault.STATS) {
-                tabbedPane.add("Model Statistics", modelStatisticsPanel());
-                tabbedPane.add(graphicalEditorTitle, graphicalEditor());
-                tabbedPane.add(tabularEditorTitle, tabularEditor());
-                tabbedPane.add("Implied Matrices", impliedMatricesPanel());
+                this.tabbedPane.add("Model Statistics", modelStatisticsPanel());
+                this.tabbedPane.add(graphicalEditorTitle, graphicalEditor());
+                this.tabbedPane.add(tabularEditorTitle, tabularEditor());
+                this.tabbedPane.add("Implied Matrices", impliedMatricesPanel());
             }
 
-            targetPanel.add(tabbedPane, BorderLayout.CENTER);
+            SemEstimatorEditor.this.targetPanel.add(this.tabbedPane, BorderLayout.CENTER);
 
-            JMenuBar menuBar = new JMenuBar();
-            JMenu file = new JMenu("File");
+            final JMenuBar menuBar = new JMenuBar();
+            final JMenu file = new JMenu("File");
             menuBar.add(file);
-            file.add(new SaveComponentImage(semImGraphicalEditor.getWorkbench(),
+            file.add(new SaveComponentImage(this.semImGraphicalEditor.getWorkbench(),
                     "Save Graph Image..."));
             file.add(this.getCopyMatrixMenuItem());
-            JMenuItem saveSemAsXml = new JMenuItem("Save SEM as XML");
+            final JMenuItem saveSemAsXml = new JMenuItem("Save SEM as XML");
             file.add(saveSemAsXml);
 
             saveSemAsXml.addActionListener(e -> {
                 try {
-                    File outfile = EditorUtils.getSaveFile("semIm", "xml", getComp(),
+                    final File outfile = EditorUtils.getSaveFile("semIm", "xml", getComp(),
                             false, "Save SEM IM as XML...");
 
-                    SemIm im = (SemIm) oneEditorPanel.getSemIm();
-                    FileOutputStream out = new FileOutputStream(outfile);
+                    final SemIm im = (SemIm) SemEstimatorEditor.this.oneEditorPanel.getSemIm();
+                    final FileOutputStream out = new FileOutputStream(outfile);
 
-                    Element element = SemXmlRenderer.getElement(im);
-                    Document document = new Document(element);
-                    Serializer serializer = new Serializer(out);
+                    final Element element = SemXmlRenderer.getElement(im);
+                    final Document document = new Document(element);
+                    final Serializer serializer = new Serializer(out);
                     serializer.setLineSeparator("\n");
                     serializer.setIndent(2);
                     serializer.write(document);
                     out.close();
-                } catch (IOException ioException) {
+                } catch (final IOException ioException) {
                     ioException.printStackTrace();
                 }
             });
 
-            JCheckBoxMenuItem covariances
+            final JCheckBoxMenuItem covariances
                     = new JCheckBoxMenuItem("Show standard deviations");
-            JCheckBoxMenuItem correlations
+            final JCheckBoxMenuItem correlations
                     = new JCheckBoxMenuItem("Show correlations");
 
-            ButtonGroup correlationGroup = new ButtonGroup();
+            final ButtonGroup correlationGroup = new ButtonGroup();
             correlationGroup.add(covariances);
             correlationGroup.add(correlations);
             covariances.setSelected(true);
@@ -491,17 +489,17 @@ public final class SemEstimatorEditor extends JPanel {
                 setEditCovariancesAsCorrelations(true);
             });
 
-            errorTerms = new JMenuItem();
+            this.errorTerms = new JMenuItem();
 
             // By default, hide the error terms.
             if (getSemGraph().isShowErrorTerms()) {
-                errorTerms.setText("Hide Error Terms");
+                this.errorTerms.setText("Hide Error Terms");
             } else {
-                errorTerms.setText("Show Error Terms");
+                this.errorTerms.setText("Show Error Terms");
             }
 
-            errorTerms.addActionListener((e) -> {
-                JMenuItem menuItem = (JMenuItem) e.getSource();
+            this.errorTerms.addActionListener((e) -> {
+                final JMenuItem menuItem = (JMenuItem) e.getSource();
 
                 if ("Hide Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Show Error Terms");
@@ -514,48 +512,48 @@ public final class SemEstimatorEditor extends JPanel {
                 }
             });
 
-            meansItem = new JCheckBoxMenuItem("Show means");
-            interceptsItem = new JCheckBoxMenuItem("Show intercepts");
+            this.meansItem = new JCheckBoxMenuItem("Show means");
+            this.interceptsItem = new JCheckBoxMenuItem("Show intercepts");
 
-            ButtonGroup meansGroup = new ButtonGroup();
-            meansGroup.add(meansItem);
-            meansGroup.add(interceptsItem);
-            meansItem.setSelected(true);
+            final ButtonGroup meansGroup = new ButtonGroup();
+            meansGroup.add(this.meansItem);
+            meansGroup.add(this.interceptsItem);
+            this.meansItem.setSelected(true);
 
-            meansItem.addActionListener((e) -> {
-                if (meansItem.isSelected()) {
+            this.meansItem.addActionListener((e) -> {
+                if (this.meansItem.isSelected()) {
                     setEditIntercepts(false);
                 }
             });
 
-            interceptsItem.addActionListener((e) -> {
-                if (interceptsItem.isSelected()) {
+            this.interceptsItem.addActionListener((e) -> {
+                if (this.interceptsItem.isSelected()) {
                     setEditIntercepts(true);
                 }
             });
 
-            JMenu params = new JMenu("Parameters");
-            params.add(errorTerms);
+            final JMenu params = new JMenu("Parameters");
+            params.add(this.errorTerms);
             params.addSeparator();
             params.add(covariances);
             params.add(correlations);
             params.addSeparator();
 
-            if (!wrapper.getEstimatedSemIm().isCyclic()) {
-                params.add(meansItem);
-                params.add(interceptsItem);
+            if (!SemEstimatorEditor.this.wrapper.getEstimatedSemIm().isCyclic()) {
+                params.add(this.meansItem);
+                params.add(this.interceptsItem);
             }
 
             menuBar.add(params);
             menuBar.add(new LayoutMenu(this));
 
-            targetPanel.add(menuBar, BorderLayout.NORTH);
-            add(tabbedPane, BorderLayout.CENTER);
+            SemEstimatorEditor.this.targetPanel.add(menuBar, BorderLayout.NORTH);
+            add(this.tabbedPane, BorderLayout.CENTER);
         }
 
         @Override
         public Graph getGraph() {
-            return semImGraphicalEditor.getWorkbench().getGraph();
+            return this.semImGraphicalEditor.getWorkbench().getGraph();
         }
 
         @Override
@@ -570,39 +568,39 @@ public final class SemEstimatorEditor extends JPanel {
 
         @Override
         public IKnowledge getKnowledge() {
-            return semImGraphicalEditor.getWorkbench().getKnowledge();
+            return this.semImGraphicalEditor.getWorkbench().getKnowledge();
         }
 
         @Override
         public Graph getSourceGraph() {
-            return semImGraphicalEditor.getWorkbench().getSourceGraph();
+            return this.semImGraphicalEditor.getWorkbench().getSourceGraph();
         }
 
         @Override
-        public void layoutByGraph(Graph graph) {
-            SemGraph _graph = (SemGraph) semImGraphicalEditor.getWorkbench().getGraph();
+        public void layoutByGraph(final Graph graph) {
+            final SemGraph _graph = (SemGraph) this.semImGraphicalEditor.getWorkbench().getGraph();
             _graph.setShowErrorTerms(false);
-            semImGraphicalEditor.getWorkbench().layoutByGraph(graph);
+            this.semImGraphicalEditor.getWorkbench().layoutByGraph(graph);
             _graph.resetErrorPositions();
 //        semImGraphicalEditor.getWorkbench().setGraph(_graph);
-            errorTerms.setText("Show Error Terms");
+            this.errorTerms.setText("Show Error Terms");
         }
 
         @Override
         public void layoutByKnowledge() {
-            SemGraph _graph = (SemGraph) semImGraphicalEditor.getWorkbench().getGraph();
+            final SemGraph _graph = (SemGraph) this.semImGraphicalEditor.getWorkbench().getGraph();
             _graph.setShowErrorTerms(false);
-            semImGraphicalEditor.getWorkbench().layoutByKnowledge();
+            this.semImGraphicalEditor.getWorkbench().layoutByKnowledge();
             _graph.resetErrorPositions();
 //        semImGraphicalEditor.getWorkbench().setGraph(_graph);
-            errorTerms.setText("Show Error Terms");
+            this.errorTerms.setText("Show Error Terms");
         }
 
-        private void checkForUnmeasuredLatents(ISemIm semIm) {
-            List<Node> unmeasuredLatents = semIm.listUnmeasuredLatents();
+        private void checkForUnmeasuredLatents(final ISemIm semIm) {
+            final List<Node> unmeasuredLatents = semIm.listUnmeasuredLatents();
 
             if (!unmeasuredLatents.isEmpty()) {
-                StringBuilder buf = new StringBuilder();
+                final StringBuilder buf = new StringBuilder();
                 buf.append("This model has the following latent(s) without measured children: ");
 
                 for (int i = 0; i < unmeasuredLatents.size(); i++) {
@@ -629,7 +627,7 @@ public final class SemEstimatorEditor extends JPanel {
          * new SemImEditor in the same state as a previous one.
          */
         public int getTabSelectionIndex() {
-            return tabbedPane.getSelectedIndex();
+            return this.tabbedPane.getSelectedIndex();
         }
 
         /**
@@ -642,28 +640,28 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         public GraphWorkbench getWorkbench() {
-            return semImGraphicalEditor.getWorkbench();
+            return this.semImGraphicalEditor.getWorkbench();
         }
 
         //========================PRIVATE METHODS===========================//
         private JMenuItem getCopyMatrixMenuItem() {
-            JMenuItem item = new JMenuItem("Copy Implied Covariance Matrix");
+            final JMenuItem item = new JMenuItem("Copy Implied Covariance Matrix");
             item.addActionListener((e) -> {
-                String s = impliedMatricesPanel.getMatrixInTabDelimitedForm();
-                Clipboard board = Toolkit.getDefaultToolkit().getSystemClipboard();
-                StringSelection selection = new StringSelection(s);
+                final String s = this.impliedMatricesPanel.getMatrixInTabDelimitedForm();
+                final Clipboard board = Toolkit.getDefaultToolkit().getSystemClipboard();
+                final StringSelection selection = new StringSelection(s);
                 board.setContents(selection, selection);
             });
             return item;
         }
 
         private ISemIm getSemIm() {
-            return semImWrapper.getEstimatedSemIm();
+            return this.semImWrapper.getEstimatedSemIm();
         }
 
         private SemImGraphicalEditor graphicalEditor() {
             if (this.semImGraphicalEditor == null) {
-                this.semImGraphicalEditor = new SemImGraphicalEditor(wrapper,
+                this.semImGraphicalEditor = new SemImGraphicalEditor(SemEstimatorEditor.this.wrapper,
                         this, this.maxFreeParamsForStatistics);
                 this.semImGraphicalEditor.addPropertyChangeListener((evt) -> {
                     SemEstimatorEditor.this.firePropertyChange(evt.getPropertyName(), null, null);
@@ -674,7 +672,7 @@ public final class SemEstimatorEditor extends JPanel {
 
         private SemEstimatorEditor.SemImTabularEditor tabularEditor() {
             if (this.semImTabularEditor == null) {
-                this.semImTabularEditor = new SemImTabularEditor(wrapper, this,
+                this.semImTabularEditor = new SemImTabularEditor(SemEstimatorEditor.this.wrapper, this,
                         this.maxFreeParamsForStatistics);
             }
             this.semImTabularEditor.addPropertyChangeListener((evt) -> {
@@ -686,55 +684,55 @@ public final class SemEstimatorEditor extends JPanel {
         private ImpliedMatricesPanel impliedMatricesPanel() {
             if (this.impliedMatricesPanel == null) {
                 this.impliedMatricesPanel
-                        = new ImpliedMatricesPanel(wrapper, this.matrixSelection);
+                        = new ImpliedMatricesPanel(SemEstimatorEditor.this.wrapper, this.matrixSelection);
             }
             return this.impliedMatricesPanel;
         }
 
         private ModelStatisticsPanel modelStatisticsPanel() {
             if (this.modelStatisticsPanel == null) {
-                this.modelStatisticsPanel = new ModelStatisticsPanel(wrapper);
+                this.modelStatisticsPanel = new ModelStatisticsPanel(SemEstimatorEditor.this.wrapper);
             }
             return this.modelStatisticsPanel;
         }
 
         public boolean isEditCovariancesAsCorrelations() {
-            return editCovariancesAsCorrelations;
+            return this.editCovariancesAsCorrelations;
         }
 
         private void setEditCovariancesAsCorrelations(
-                boolean editCovariancesAsCorrelations) {
+                final boolean editCovariancesAsCorrelations) {
             this.editCovariancesAsCorrelations = editCovariancesAsCorrelations;
             graphicalEditor().resetLabels();
             tabularEditor().getTableModel().fireTableDataChanged();
         }
 
         public boolean isEditIntercepts() {
-            return editIntercepts;
+            return this.editIntercepts;
         }
 
-        private void setEditIntercepts(boolean editIntercepts) {
+        private void setEditIntercepts(final boolean editIntercepts) {
             this.editIntercepts = editIntercepts;
             graphicalEditor().resetLabels();
             tabularEditor().getTableModel().fireTableDataChanged();
 
-            meansItem.setSelected(!editIntercepts);
-            interceptsItem.setSelected(editIntercepts);
+            this.meansItem.setSelected(!editIntercepts);
+            this.interceptsItem.setSelected(editIntercepts);
         }
 
         private String getGraphicalEditorTitle() {
-            return graphicalEditorTitle;
+            return this.graphicalEditorTitle;
         }
 
         private String getTabularEditorTitle() {
-            return tabularEditorTitle;
+            return this.tabularEditorTitle;
         }
 
         public boolean isEditable() {
-            return editable;
+            return this.editable;
         }
 
-        public void setEditable(boolean editable) {
+        public void setEditable(final boolean editable) {
             graphicalEditor().setEditable(editable);
             tabularEditor().setEditable(editable);
             this.editable = editable;
@@ -754,7 +752,7 @@ public final class SemEstimatorEditor extends JPanel {
         private int matrixSelection = 0;
         private JComboBox selector;
 
-        public ImpliedMatricesPanel(SemEstimatorWrapper wrapper, int matrixSelection) {
+        public ImpliedMatricesPanel(final SemEstimatorWrapper wrapper, final int matrixSelection) {
             this.wrapper = wrapper;
 
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -771,11 +769,11 @@ public final class SemEstimatorEditor extends JPanel {
          * @return the matrix in tab delimited form.
          */
         public String getMatrixInTabDelimitedForm() {
-            StringBuilder builder = new StringBuilder();
-            TableModel model = impliedJTable().getModel();
+            final StringBuilder builder = new StringBuilder();
+            final TableModel model = impliedJTable().getModel();
             for (int row = 0; row < model.getRowCount(); row++) {
                 for (int col = 0; col < model.getColumnCount(); col++) {
-                    Object o = model.getValueAt(row, col);
+                    final Object o = model.getValueAt(row, col);
                     if (o != null) {
                         builder.append(o);
                     }
@@ -795,23 +793,23 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         private JComboBox selector() {
-            if (selector == null) {
-                selector = new JComboBox();
-                List<String> selections = getImpliedSelections();
+            if (this.selector == null) {
+                this.selector = new JComboBox();
+                final List<String> selections = getImpliedSelections();
 
-                for (Object selection : selections) {
-                    selector.addItem(selection);
+                for (final Object selection : selections) {
+                    this.selector.addItem(selection);
                 }
 
-                selector.addItemListener((e) -> {
-                    String item = (String) e.getItem();
+                this.selector.addItemListener((e) -> {
+                    final String item = (String) e.getItem();
                     setMatrixSelection(getImpliedSelections().indexOf(item));
                 });
             }
-            return selector;
+            return this.selector;
         }
 
-        private void switchView(int index) {
+        private void switchView(final int index) {
             if (index < 0 || index > 3) {
                 throw new IllegalArgumentException(
                         "Matrix selection must be 0, 1, 2, or 3.");
@@ -835,8 +833,8 @@ public final class SemEstimatorEditor extends JPanel {
             }
         }
 
-        private void switchView(boolean a, boolean b) {
-            impliedJTable().setModel(new ImpliedCovTable(wrapper, a, b));
+        private void switchView(final boolean a, final boolean b) {
+            impliedJTable().setModel(new ImpliedCovTable(this.wrapper, a, b));
             //     impliedJTable().getTableHeader().setReorderingAllowed(false);
             impliedJTable().setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             impliedJTable().setRowSelectionAllowed(false);
@@ -845,7 +843,7 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         private List<String> getImpliedSelections() {
-            List<String> list = new ArrayList<>();
+            final List<String> list = new ArrayList<>();
             list.add("Implied covariance matrix (all variables)");
             list.add("Implied covariance matrix (measured variables only)");
             list.add("Implied correlation matrix (all variables)");
@@ -854,14 +852,14 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         private ISemIm getSemIm() {
-            return wrapper.getEstimatedSemIm();
+            return this.wrapper.getEstimatedSemIm();
         }
 
         public int getMatrixSelection() {
             return this.matrixSelection;
         }
 
-        public void setMatrixSelection(int index) {
+        public void setMatrixSelection(final int index) {
             selector().setSelectedIndex(index);
             switchView(index);
         }
@@ -878,8 +876,8 @@ public final class SemEstimatorEditor extends JPanel {
         private final SemEstimatorWrapper wrapper;
         private boolean editable = true;
 
-        public SemImTabularEditor(SemEstimatorWrapper wrapper, OneEditor editor,
-                                  int maxFreeParamsForStatistics) {
+        public SemImTabularEditor(final SemEstimatorWrapper wrapper, final OneEditor editor,
+                                  final int maxFreeParamsForStatistics) {
             this.wrapper = wrapper;
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 //        setBorder(new TitledBorder("Click parameter values to edit"));
@@ -890,17 +888,17 @@ public final class SemEstimatorEditor extends JPanel {
                 setBorder(new TitledBorder("Click parameter values to edit"));
             }
 
-            JTable table = new JTable() {
+            final JTable table = new JTable() {
                 private static final long serialVersionUID = -530774590911763214L;
 
                 @Override
-                public TableCellEditor getCellEditor(int row, int col) {
+                public TableCellEditor getCellEditor(final int row, final int col) {
                     return new DataCellEditor();
                 }
             };
-            tableModel = new ParamTableModel(wrapper, editor, maxFreeParamsForStatistics);
+            this.tableModel = new ParamTableModel(wrapper, editor, maxFreeParamsForStatistics);
             table.setModel(getTableModel());
-            tableModel.addTableModelListener((e) -> {
+            this.tableModel.addTableModelListener((e) -> {
                 SemImTabularEditor.this.firePropertyChange("modelChanged", null, null);
             });
 
@@ -908,21 +906,21 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         private ISemIm semIm() {
-            return wrapper.getEstimatedSemIm();
+            return this.wrapper.getEstimatedSemIm();
         }
 
         public ParamTableModel getTableModel() {
-            return tableModel;
+            return this.tableModel;
         }
 
         public boolean isEditable() {
-            return editable;
+            return this.editable;
         }
 
-        public void setEditable(boolean editable) {
-            tableModel.setEditable(editable);
+        public void setEditable(final boolean editable) {
+            this.tableModel.setEditable(editable);
             this.editable = editable;
-            tableModel.fireTableStructureChanged();
+            this.tableModel.fireTableStructureChanged();
         }
     }
 
@@ -936,8 +934,8 @@ public final class SemEstimatorEditor extends JPanel {
         private int maxFreeParamsForStatistics = 50;
         private boolean editable = true;
 
-        public ParamTableModel(SemEstimatorWrapper wrapper, OneEditor editor,
-                               int maxFreeParamsForStatistics) {
+        public ParamTableModel(final SemEstimatorWrapper wrapper, final OneEditor editor,
+                               final int maxFreeParamsForStatistics) {
             this.wrapper = wrapper;
 
             if (maxFreeParamsForStatistics < 0) {
@@ -955,7 +953,7 @@ public final class SemEstimatorEditor extends JPanel {
 
         @Override
         public int getRowCount() {
-            int numNodes = semIm().getVariableNodes().size();
+            final int numNodes = semIm().getVariableNodes().size();
             return semIm().getNumFreeParams() + semIm().getFixedParameters().size() + numNodes;
         }
 
@@ -965,7 +963,7 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         @Override
-        public String getColumnName(int column) {
+        public String getColumnName(final int column) {
             switch (column) {
                 case 0:
                     return "From";
@@ -987,15 +985,15 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         @Override
-        public Object getValueAt(int row, int column) {
-            List nodes = semIm().getVariableNodes();
-            List parameters = new ArrayList<>(semIm().getFreeParameters());
+        public Object getValueAt(final int row, final int column) {
+            final List nodes = semIm().getVariableNodes();
+            final List parameters = new ArrayList<>(semIm().getFreeParameters());
             parameters.addAll(semIm().getFixedParameters());
 
-            int numParams = semIm().getNumFreeParams() + semIm().getFixedParameters().size();
+            final int numParams = semIm().getNumFreeParams() + semIm().getFixedParameters().size();
 
             if (row < numParams) {
-                Parameter parameter = ((Parameter) parameters.get(row));
+                final Parameter parameter = ((Parameter) parameters.get(row));
 
                 switch (column) {
                     case 0:
@@ -1011,35 +1009,35 @@ public final class SemEstimatorEditor extends JPanel {
                             return "*";
                         } else {
                             return asString(semIm().getStandardError(parameter,
-                                    maxFreeParamsForStatistics));
+                                    this.maxFreeParamsForStatistics));
                         }
                     case 5:
                         if (parameter.isFixed()) {
                             return "*";
                         } else {
                             return asString(semIm().getTValue(parameter,
-                                    maxFreeParamsForStatistics));
+                                    this.maxFreeParamsForStatistics));
                         }
                     case 6:
                         if (parameter.isFixed()) {
                             return "*";
                         } else {
                             return asString(semIm().getPValue(parameter,
-                                    maxFreeParamsForStatistics));
+                                    this.maxFreeParamsForStatistics));
                         }
                 }
             } else if (row < numParams + nodes.size()) {
-                int index = row - numParams;
-                Node node = semIm().getVariableNodes().get(index);
-                int n = semIm().getSampleSize();
-                int df = n - 1;
-                double mean = semIm().getMean(node);
-                double stdDev = semIm().getMeanStdDev(node);
-                double stdErr = stdDev / Math.sqrt(n);
+                final int index = row - numParams;
+                final Node node = semIm().getVariableNodes().get(index);
+                final int n = semIm().getSampleSize();
+                final int df = n - 1;
+                final double mean = semIm().getMean(node);
+                final double stdDev = semIm().getMeanStdDev(node);
+                final double stdErr = stdDev / Math.sqrt(n);
 //            double tValue = mean * Math.sqrt(n - 1) / stdDev;
 
-                double tValue = mean / stdErr;
-                double p = 2.0 * (1.0 - ProbUtils.tCdf(Math.abs(tValue), df));
+                final double tValue = mean / stdErr;
+                final double p = 2.0 * (1.0 - ProbUtils.tCdf(Math.abs(tValue), df));
 
 //            double ar = covars.get(index, index);
 //            stdDev = Math.sqrt(ar);
@@ -1050,14 +1048,14 @@ public final class SemEstimatorEditor extends JPanel {
                     case 1:
                         return nodes.get(index);
                     case 2:
-                        if (editor.isEditIntercepts()) {
+                        if (this.editor.isEditIntercepts()) {
                             return "Intercept";
                         } else {
                             return "Mean";
                         }
                     case 3:
-                        if (editor.isEditIntercepts()) {
-                            double intercept = semIm().getIntercept(node);
+                        if (this.editor.isEditIntercepts()) {
+                            final double intercept = semIm().getIntercept(node);
                             return asString(intercept);
                         } else {
                             return asString(mean);
@@ -1074,19 +1072,19 @@ public final class SemEstimatorEditor extends JPanel {
             return null;
         }
 
-        private double paramValue(Parameter parameter) {
+        private double paramValue(final Parameter parameter) {
             double paramValue = semIm().getParamValue(parameter);
 
-            if (editor.isEditCovariancesAsCorrelations()) {
+            if (this.editor.isEditCovariancesAsCorrelations()) {
                 if (parameter.getType() == ParamType.VAR) {
                     paramValue = 1.0;
                 }
                 if (parameter.getType() == ParamType.COVAR) {
-                    Node nodeA = parameter.getNodeA();
-                    Node nodeB = parameter.getNodeB();
+                    final Node nodeA = parameter.getNodeA();
+                    final Node nodeB = parameter.getNodeB();
 
-                    double varA = semIm().getParamValue(nodeA, nodeA);
-                    double varB = semIm().getParamValue(nodeB, nodeB);
+                    final double varA = semIm().getParamValue(nodeA, nodeA);
+                    final double varB = semIm().getParamValue(nodeB, nodeB);
 
                     paramValue *= Math.sqrt(varA * varB);
                 }
@@ -1100,7 +1098,7 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
+        public boolean isCellEditable(final int rowIndex, final int columnIndex) {
             return isEditable() && columnIndex == 3;
         }
 
@@ -1108,58 +1106,58 @@ public final class SemEstimatorEditor extends JPanel {
             return this.editable;
         }
 
-        public void setEditable(boolean editable) {
+        public void setEditable(final boolean editable) {
             this.editable = editable;
         }
 
         @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        public void setValueAt(final Object aValue, final int rowIndex, final int columnIndex) {
 
             if (columnIndex == 3) {
                 try {
                     double value = Double.parseDouble((String) aValue);
 
                     if (rowIndex < semIm().getNumFreeParams()) {
-                        Parameter parameter = semIm().getFreeParameters().get(rowIndex);
+                        final Parameter parameter = semIm().getFreeParameters().get(rowIndex);
 
                         if (parameter.getType() == ParamType.VAR) {
                             value = value * value;
                             semIm().setErrVar(parameter.getNodeA(), value);
                         } else if (parameter.getType() == ParamType.COEF) {
-                            Node x = parameter.getNodeA();
-                            Node y = parameter.getNodeB();
+                            final Node x = parameter.getNodeA();
+                            final Node y = parameter.getNodeB();
 
                             semIm().setEdgeCoef(x, y, value);
 
-                            double intercept = semIm().getIntercept(y);
+                            final double intercept = semIm().getIntercept(y);
 
-                            if (editor.isEditIntercepts()) {
+                            if (this.editor.isEditIntercepts()) {
                                 semIm().setIntercept(y, intercept);
                             }
                         }
 
-                        editor.firePropertyChange("modelChanged", 0, 0);
+                        this.editor.firePropertyChange("modelChanged", 0, 0);
 
 //                    if (semIm().getParamValue(parameter) != value) {
 //                        semIm().setParamValue(parameter, value);
 //                        editor.firePropertyChange("modelChanged", 0, 0);
 //                    }
                     } else {
-                        int index = rowIndex - semIm().getNumFreeParams();
-                        Node node = semIm().getVariableNodes().get(index);
+                        final int index = rowIndex - semIm().getNumFreeParams();
+                        final Node node = semIm().getVariableNodes().get(index);
 
                         if (semIm().getMean(semIm().getVariableNodes().get(index)) != value) {
-                            if (editor.isEditIntercepts()) {
+                            if (this.editor.isEditIntercepts()) {
                                 semIm().setIntercept(node, value);
-                                editor.firePropertyChange("modelChanged", 0, 0);
+                                this.editor.firePropertyChange("modelChanged", 0, 0);
                             } else {
                                 semIm().setMean(node, value);
-                                editor.firePropertyChange("modelChanged", 0, 0);
+                                this.editor.firePropertyChange("modelChanged", 0, 0);
                             }
 
                         }
                     }
-                } catch (Exception exception) {
+                } catch (final Exception exception) {
                     // The old value will be reinstated automatically.
                 }
 
@@ -1167,22 +1165,22 @@ public final class SemEstimatorEditor extends JPanel {
             }
         }
 
-        private String asString(double value) {
+        private String asString(final double value) {
             if (Double.isNaN(value)) {
                 return " * ";
             } else {
-                return nf.format(value);
+                return this.nf.format(value);
             }
         }
 
-        private String typeString(Parameter parameter) {
-            ParamType type = parameter.getType();
+        private String typeString(final Parameter parameter) {
+            final ParamType type = parameter.getType();
 
             if (type == ParamType.COEF) {
                 return "Edge Coef.";
             }
 
-            if (editor.isEditCovariancesAsCorrelations()) {
+            if (this.editor.isEditCovariancesAsCorrelations()) {
                 if (type == ParamType.VAR) {
                     return "Correlation";
                 }
@@ -1205,7 +1203,7 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         private ISemIm semIm() {
-            return wrapper.getEstimatedSemIm();
+            return this.wrapper.getEstimatedSemIm();
         }
     }
 
@@ -1229,7 +1227,7 @@ public final class SemEstimatorEditor extends JPanel {
         /**
          * Background color of the edit panel when you click on the parameters.
          */
-        private Color LIGHT_YELLOW = new Color(255, 255, 215);
+        private final Color LIGHT_YELLOW = new Color(255, 255, 215);
         /**
          * w
          * Workbench for the graphical editor.
@@ -1257,20 +1255,20 @@ public final class SemEstimatorEditor extends JPanel {
         /**
          * Constructs a SemIm graphical editor for the given SemIm.
          */
-        public SemImGraphicalEditor(SemEstimatorWrapper semImWrapper, OneEditor editor,
-                                    int maxFreeParamsForStatistics) {
+        public SemImGraphicalEditor(final SemEstimatorWrapper semImWrapper, final OneEditor editor,
+                                    final int maxFreeParamsForStatistics) {
             this.wrapper = semImWrapper;
             this.editor = editor;
             this.maxFreeParamsForStatistics = maxFreeParamsForStatistics;
 
             setLayout(new BorderLayout());
-            JScrollPane scroll = new JScrollPane(workbench());
+            final JScrollPane scroll = new JScrollPane(workbench());
 
             add(scroll, BorderLayout.CENTER);
 
             setBorder(new TitledBorder("Click parameter values to edit"));
 
-            ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+            final ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
             setSavedTooltipDelay(toolTipManager.getInitialDelay());
 
             // Laborious code that follows is intended to make sure tooltips come
@@ -1278,22 +1276,22 @@ public final class SemEstimatorEditor extends JPanel {
             // Ugh.
             workbench().addComponentListener(new ComponentAdapter() {
                 @Override
-                public void componentShown(ComponentEvent e) {
+                public void componentShown(final ComponentEvent e) {
                     resetLabels();
-                    ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+                    final ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
                     toolTipManager.setInitialDelay(100);
                 }
 
                 @Override
-                public void componentHidden(ComponentEvent e) {
-                    ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+                public void componentHidden(final ComponentEvent e) {
+                    final ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
                     toolTipManager.setInitialDelay(getSavedTooltipDelay());
                 }
             });
 
             workbench().addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseEntered(MouseEvent e) {
+                public void mouseEntered(final MouseEvent e) {
                     if (workbench().contains(e.getPoint())) {
 
                         // Commenting out the resetLabels, since it seems to make
@@ -1301,15 +1299,15 @@ public final class SemEstimatorEditor extends JPanel {
                         // from the text field they are editing without the
                         // textfield disappearing. jdramsey 3/16/2005.
 //                    resetLabels();
-                        ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+                        final ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
                         toolTipManager.setInitialDelay(100);
                     }
                 }
 
                 @Override
-                public void mouseExited(MouseEvent e) {
+                public void mouseExited(final MouseEvent e) {
                     if (!workbench().contains(e.getPoint())) {
-                        ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+                        final ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
                         toolTipManager.setInitialDelay(getSavedTooltipDelay());
                     }
                 }
@@ -1319,7 +1317,7 @@ public final class SemEstimatorEditor extends JPanel {
             // in other editors.
             addComponentListener(new ComponentAdapter() {
                 @Override
-                public void componentShown(ComponentEvent e) {
+                public void componentShown(final ComponentEvent e) {
                     resetLabels();
                 }
             });
@@ -1333,16 +1331,16 @@ public final class SemEstimatorEditor extends JPanel {
                 return;
             }
 
-            Parameter parameter = getEdgeParameter(edge);
+            final Parameter parameter = getEdgeParameter(edge);
             double d = semIm().getParamValue(parameter);
 
-            if (editor.isEditCovariancesAsCorrelations()
+            if (this.editor.isEditCovariancesAsCorrelations()
                     && parameter.getType() == ParamType.COVAR) {
-                Node nodeA = parameter.getNodeA();
-                Node nodeB = parameter.getNodeB();
+                final Node nodeA = parameter.getNodeA();
+                final Node nodeB = parameter.getNodeB();
 
-                double varA = semIm().getParamValue(nodeA, nodeA);
-                double varB = semIm().getParamValue(nodeB, nodeB);
+                final double varA = semIm().getParamValue(nodeA, nodeA);
+                final double varB = semIm().getParamValue(nodeB, nodeB);
 
                 d /= Math.sqrt(varA * varB);
             }
@@ -1352,12 +1350,12 @@ public final class SemEstimatorEditor extends JPanel {
                 try {
                     setEdgeValue(edge, new Double(value).toString());
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             });
 
-            Box box = Box.createHorizontalBox();
+            final Box box = Box.createHorizontalBox();
             box.add(Box.createHorizontalGlue());
             box.add(new JLabel("New value: "));
             box.add(field);
@@ -1365,16 +1363,16 @@ public final class SemEstimatorEditor extends JPanel {
 
             field.addAncestorListener(new AncestorListener() {
                 @Override
-                public void ancestorMoved(AncestorEvent ancestorEvent) {
+                public void ancestorMoved(final AncestorEvent ancestorEvent) {
                 }
 
                 @Override
-                public void ancestorRemoved(AncestorEvent ancestorEvent) {
+                public void ancestorRemoved(final AncestorEvent ancestorEvent) {
                 }
 
                 @Override
-                public void ancestorAdded(AncestorEvent ancestorEvent) {
-                    Container ancestor = ancestorEvent.getAncestor();
+                public void ancestorAdded(final AncestorEvent ancestorEvent) {
+                    final Container ancestor = ancestorEvent.getAncestor();
 
                     if (ancestor instanceof JDialog) {
                         SemImGraphicalEditor.this.dialog = ancestor;
@@ -1391,7 +1389,7 @@ public final class SemEstimatorEditor extends JPanel {
                 }
             });
 
-            JOptionPane.showMessageDialog(workbench.getComponent(edge), box, "Coefficient for " + edge, JOptionPane.PLAIN_MESSAGE);
+            JOptionPane.showMessageDialog(this.workbench.getComponent(edge), box, "Coefficient for " + edge, JOptionPane.PLAIN_MESSAGE);
 
 //        final DoubleTextField doubleTextField = new DoubleTextField(d, 7, NumberFormatUtil.getInstance().getNumberFormat());
 //        doubleTextField.setPreferredSize(new Dimension(60, 20));
@@ -1444,18 +1442,18 @@ public final class SemEstimatorEditor extends JPanel {
 //        if (!semIm().getSemPm().getGraph().isParameterizable(node)) {
 //            return;
 //        }
-            Parameter parameter = getNodeParameter(node);
-            if (editor.isEditCovariancesAsCorrelations()
+            final Parameter parameter = getNodeParameter(node);
+            if (this.editor.isEditCovariancesAsCorrelations()
                     && parameter.getType() == ParamType.VAR) {
                 return;
             }
 
-            double d;
-            String prefix;
+            final double d;
+            final String prefix;
             String postfix = "";
 
             if (parameter.getType() == ParamType.MEAN) {
-                if (editor.isEditIntercepts()) {
+                if (this.editor.isEditIntercepts()) {
                     d = semIm().getIntercept(node);
                     prefix = "B0_" + node.getName() + " = ";
                 } else {
@@ -1473,12 +1471,12 @@ public final class SemEstimatorEditor extends JPanel {
                 try {
                     setNodeValue(node, new Double(value).toString());
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             });
 
-            Box box = Box.createHorizontalBox();
+            final Box box = Box.createHorizontalBox();
             box.add(Box.createHorizontalGlue());
             box.add(new JLabel("New value: "));
             box.add(field);
@@ -1486,16 +1484,16 @@ public final class SemEstimatorEditor extends JPanel {
 
             field.addAncestorListener(new AncestorListener() {
                 @Override
-                public void ancestorMoved(AncestorEvent ancestorEvent) {
+                public void ancestorMoved(final AncestorEvent ancestorEvent) {
                 }
 
                 @Override
-                public void ancestorRemoved(AncestorEvent ancestorEvent) {
+                public void ancestorRemoved(final AncestorEvent ancestorEvent) {
                 }
 
                 @Override
-                public void ancestorAdded(AncestorEvent ancestorEvent) {
-                    Container ancestor = ancestorEvent.getAncestor();
+                public void ancestorAdded(final AncestorEvent ancestorEvent) {
+                    final Container ancestor = ancestorEvent.getAncestor();
 
                     if (ancestor instanceof JDialog) {
                         SemImGraphicalEditor.this.dialog = ancestor;
@@ -1509,10 +1507,10 @@ public final class SemEstimatorEditor extends JPanel {
                 }
             });
 
-            String s;
+            final String s;
 
             if (parameter.getType() == ParamType.MEAN) {
-                if (editor.isEditIntercepts()) {
+                if (this.editor.isEditIntercepts()) {
                     s = "Intercept for " + node;
                 } else {
                     s = "Mean for " + node;
@@ -1521,7 +1519,7 @@ public final class SemEstimatorEditor extends JPanel {
                 s = "Standard Deviation for " + node;
             }
 
-            JOptionPane.showMessageDialog(workbench.getComponent(node), box, s, JOptionPane.PLAIN_MESSAGE);
+            JOptionPane.showMessageDialog(this.workbench.getComponent(node), box, s, JOptionPane.PLAIN_MESSAGE);
 
 //        DoubleTextField field = new DoubleTextField(d, 7, NumberFormatUtil.getInstance().getNumberFormat());
 //        field.setPreferredSize(new Dimension(60, 20));
@@ -1569,11 +1567,11 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         private ISemIm semIm() {
-            return wrapper.getEstimatedSemIm();
+            return this.wrapper.getEstimatedSemIm();
         }
 
         private Graph graph() {
-            return wrapper.getEstimatedSemIm().getSemPm().getGraph();
+            return this.wrapper.getEstimatedSemIm().getSemPm().getGraph();
         }
 
         private GraphWorkbench workbench() {
@@ -1593,32 +1591,32 @@ public final class SemEstimatorEditor extends JPanel {
             return getWorkbench();
         }
 
-        private void setLastEditedObject(Object o) {
+        private void setLastEditedObject(final Object o) {
             this.lastEditedObject = o;
         }
 
         private Object lastEditedObject() {
-            return lastEditedObject;
+            return this.lastEditedObject;
         }
 
         public void resetLabels() {
-            Matrix implCovar = semIm().getImplCovar(false);
+            final Matrix implCovar = semIm().getImplCovar(false);
 
-            for (Object o : graph().getEdges()) {
+            for (final Object o : graph().getEdges()) {
                 resetEdgeLabel((Edge) (o), implCovar);
             }
 
-            List<Node> nodes = graph().getNodes();
+            final List<Node> nodes = graph().getNodes();
 
-            for (Object node : nodes) {
+            for (final Object node : nodes) {
                 resetNodeLabel((Node) node, implCovar);
             }
 
             workbench().repaint();
         }
 
-        private void resetEdgeLabel(Edge edge, Matrix implCovar) {
-            Parameter parameter = getEdgeParameter(edge);
+        private void resetEdgeLabel(final Edge edge, final Matrix implCovar) {
+            final Parameter parameter = getEdgeParameter(edge);
 
             if (parameter != null) {
                 double val = semIm().getParamValue(parameter);
@@ -1626,38 +1624,38 @@ public final class SemEstimatorEditor extends JPanel {
 
                 try {
                     standardError = semIm().getStandardError(parameter,
-                            maxFreeParamsForStatistics);
-                } catch (Exception exception) {
+                            this.maxFreeParamsForStatistics);
+                } catch (final Exception exception) {
                     standardError = Double.NaN;
                 }
 
                 double tValue;
                 try {
-                    tValue = semIm().getTValue(parameter, maxFreeParamsForStatistics);
-                } catch (Exception exception) {
+                    tValue = semIm().getTValue(parameter, this.maxFreeParamsForStatistics);
+                } catch (final Exception exception) {
                     tValue = Double.NaN;
                 }
 
                 double pValue;
 
                 try {
-                    pValue = semIm().getPValue(parameter, maxFreeParamsForStatistics);
-                } catch (Exception exception) {
+                    pValue = semIm().getPValue(parameter, this.maxFreeParamsForStatistics);
+                } catch (final Exception exception) {
                     pValue = Double.NaN;
                 }
 
-                if (editor.isEditCovariancesAsCorrelations()
+                if (this.editor.isEditCovariancesAsCorrelations()
                         && parameter.getType() == ParamType.COVAR) {
-                    Node nodeA = edge.getNode1();
-                    Node nodeB = edge.getNode2();
+                    final Node nodeA = edge.getNode1();
+                    final Node nodeB = edge.getNode2();
 
-                    double varA = semIm().getVariance(nodeA, implCovar);
-                    double varB = semIm().getVariance(nodeB, implCovar);
+                    final double varA = semIm().getVariance(nodeA, implCovar);
+                    final double varB = semIm().getVariance(nodeB, implCovar);
 
                     val /= Math.sqrt(varA * varB);
                 }
 
-                JLabel label = new JLabel();
+                final JLabel label = new JLabel();
 
                 if (parameter.getType() == ParamType.COVAR) {
                     label.setForeground(Color.GREEN.darker().darker());
@@ -1669,7 +1667,7 @@ public final class SemEstimatorEditor extends JPanel {
 
                 label.setBackground(Color.white);
                 label.setOpaque(true);
-                label.setFont(SMALL_FONT);
+                label.setFont(this.SMALL_FONT);
 
                 label.setText(" " + asString(val) + " ");
 
@@ -1686,24 +1684,24 @@ public final class SemEstimatorEditor extends JPanel {
             }
         }
 
-        private void resetNodeLabel(Node node, Matrix implCovar) {
+        private void resetNodeLabel(final Node node, final Matrix implCovar) {
             if (!semIm().getSemPm().getGraph().isParameterizable(node)) {
                 return;
             }
 
-            Parameter parameter = semIm().getSemPm().getVarianceParameter(node);
+            final Parameter parameter = semIm().getSemPm().getVarianceParameter(node);
             double meanOrIntercept = Double.NaN;
 
-            JLabel label = new JLabel();
+            final JLabel label = new JLabel();
             label.setBackground(Color.WHITE);
             label.addMouseListener(new SemImGraphicalEditor.NodeMouseListener(node, this));
-            label.setFont(SMALL_FONT);
+            label.setFont(this.SMALL_FONT);
 
             String tooltip = "";
-            NodeType nodeType = node.getNodeType();
+            final NodeType nodeType = node.getNodeType();
 
             if (nodeType == NodeType.MEASURED || nodeType == NodeType.LATENT) {
-                if (editor.isEditIntercepts()) {
+                if (this.editor.isEditIntercepts()) {
                     meanOrIntercept = semIm().getIntercept(node);
                 } else {
                     meanOrIntercept = semIm().getMean(node);
@@ -1712,17 +1710,17 @@ public final class SemEstimatorEditor extends JPanel {
 
             double stdDev = semIm().getStdDev(node, implCovar);
 
-            if (editor.isEditCovariancesAsCorrelations() && !Double.isNaN(stdDev)) {
+            if (this.editor.isEditCovariancesAsCorrelations() && !Double.isNaN(stdDev)) {
                 stdDev = 1.0;
             }
 
             if (parameter != null) {
-                double standardError = semIm().getStandardError(parameter,
-                        maxFreeParamsForStatistics);
-                double tValue
-                        = semIm().getTValue(parameter, maxFreeParamsForStatistics);
-                double pValue
-                        = semIm().getPValue(parameter, maxFreeParamsForStatistics);
+                final double standardError = semIm().getStandardError(parameter,
+                        this.maxFreeParamsForStatistics);
+                final double tValue
+                        = semIm().getTValue(parameter, this.maxFreeParamsForStatistics);
+                final double pValue
+                        = semIm().getPValue(parameter, this.maxFreeParamsForStatistics);
 
                 tooltip = "SE=" + asString(standardError) + ", T="
                         + asString(tValue) + ", P=" + asString(pValue);
@@ -1732,14 +1730,14 @@ public final class SemEstimatorEditor extends JPanel {
                 label.setForeground(Color.GREEN.darker());
                 label.setText(asString(meanOrIntercept));
 
-                if (editor.isEditIntercepts()) {
+                if (this.editor.isEditIntercepts()) {
                     tooltip = "<html>" + "B0_" + node.getName() + " = "
                             + asString(meanOrIntercept) + "</html>";
                 } else {
                     tooltip = "<html>" + "Mean(" + node.getName() + ") = "
                             + asString(meanOrIntercept) + "</html>";
                 }
-            } else if (!editor.isEditCovariancesAsCorrelations()
+            } else if (!this.editor.isEditCovariancesAsCorrelations()
                     && !Double.isNaN(stdDev)) {
                 label.setForeground(Color.BLUE);
                 label.setText(asString(stdDev));
@@ -1747,7 +1745,7 @@ public final class SemEstimatorEditor extends JPanel {
                 tooltip = "<html>" + node.getName() + " ~ N(0," + asString(stdDev)
                         + ")" + "<br><br>" + tooltip + "</html>";
 
-            } else if (editor.isEditCovariancesAsCorrelations()) {
+            } else if (this.editor.isEditCovariancesAsCorrelations()) {
                 label.setForeground(Color.GRAY);
                 label.setText(asString(stdDev));
             }
@@ -1769,7 +1767,7 @@ public final class SemEstimatorEditor extends JPanel {
             }
         }
 
-        private Parameter getNodeParameter(Node node) {
+        private Parameter getNodeParameter(final Node node) {
             Parameter parameter = semIm().getSemPm().getMeanParameter(node);
 
             if (parameter == null) {
@@ -1787,7 +1785,7 @@ public final class SemEstimatorEditor extends JPanel {
          * and returns the correct parameter. @throws IllegalArgumentException
          * if the edge is neither directed nor bidirected.
          */
-        private Parameter getEdgeParameter(Edge edge) {
+        private Parameter getEdgeParameter(final Edge edge) {
             if (Edges.isDirectedEdge(edge)) {
                 return semIm().getSemPm().getCoefficientParameter(edge.getNode1(), edge.getNode2());
             } else if (Edges.isBidirectedEdge(edge)) {
@@ -1798,26 +1796,26 @@ public final class SemEstimatorEditor extends JPanel {
                     "This is not a directed or bidirected edge: " + edge);
         }
 
-        private void setEdgeValue(Edge edge, String text) {
+        private void setEdgeValue(final Edge edge, final String text) {
             try {
-                Parameter parameter = getEdgeParameter(edge);
+                final Parameter parameter = getEdgeParameter(edge);
                 double d = new Double(text);
 
-                if (editor.isEditCovariancesAsCorrelations()
+                if (this.editor.isEditCovariancesAsCorrelations()
                         && parameter.getType() == ParamType.COVAR) {
-                    Node nodeA = edge.getNode1();
-                    Node nodeB = edge.getNode2();
+                    final Node nodeA = edge.getNode1();
+                    final Node nodeB = edge.getNode2();
 
-                    Matrix implCovar = semIm().getImplCovar(false);
+                    final Matrix implCovar = semIm().getImplCovar(false);
 
-                    double varA = semIm().getVariance(nodeA, implCovar);
-                    double varB = semIm().getVariance(nodeB, implCovar);
+                    final double varA = semIm().getVariance(nodeA, implCovar);
+                    final double varB = semIm().getVariance(nodeB, implCovar);
 
                     d *= Math.sqrt(varA * varB);
 
                     semIm().setParamValue(parameter, d);
                     SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
-                } else if (!editor.isEditCovariancesAsCorrelations()
+                } else if (!this.editor.isEditCovariancesAsCorrelations()
                         && parameter.getType() == ParamType.COVAR) {
                     semIm().setParamValue(parameter, d);
                     SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
@@ -1825,19 +1823,19 @@ public final class SemEstimatorEditor extends JPanel {
 //                semIm().setParamValue(parameter, d);
 //                firePropertyChange("modelChanged", null, null);
 
-                    Node x = parameter.getNodeA();
-                    Node y = parameter.getNodeB();
+                    final Node x = parameter.getNodeA();
+                    final Node y = parameter.getNodeB();
 
                     semIm().setEdgeCoef(x, y, d);
 
-                    if (editor.isEditIntercepts()) {
-                        double intercept = semIm().getIntercept(y);
+                    if (this.editor.isEditIntercepts()) {
+                        final double intercept = semIm().getIntercept(y);
                         semIm().setIntercept(y, intercept);
                     }
 
                     SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
                 }
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 // Let the old value be reinstated.
             }
 
@@ -1846,16 +1844,16 @@ public final class SemEstimatorEditor extends JPanel {
             setLastEditedObject(null);
         }
 
-        private void setNodeValue(Node node, String text) {
+        private void setNodeValue(final Node node, final String text) {
             try {
-                Parameter parameter = getNodeParameter(node);
-                double d = new Double(text);
+                final Parameter parameter = getNodeParameter(node);
+                final double d = new Double(text);
 
                 if (parameter.getType() == ParamType.VAR && d >= 0) {
                     semIm().setParamValue(node, node, d * d);
                     SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
                 } else if (parameter.getType() == ParamType.MEAN) {
-                    if (editor.isEditIntercepts()) {
+                    if (this.editor.isEditIntercepts()) {
                         semIm().setIntercept(node, d);
                     } else {
                         semIm().setMean(node, d);
@@ -1863,7 +1861,7 @@ public final class SemEstimatorEditor extends JPanel {
 
                     SemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
                 }
-            } catch (Exception exception) {
+            } catch (final Exception exception) {
                 exception.printStackTrace(System.err);
                 // Let the old value be reinstated.
             }
@@ -1874,17 +1872,17 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         private int getSavedTooltipDelay() {
-            return savedTooltipDelay;
+            return this.savedTooltipDelay;
         }
 
-        private void setSavedTooltipDelay(int savedTooltipDelay) {
+        private void setSavedTooltipDelay(final int savedTooltipDelay) {
             if (this.savedTooltipDelay == 0) {
                 this.savedTooltipDelay = savedTooltipDelay;
             }
         }
 
-        private String asString(double value) {
-            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        private String asString(final double value) {
+            final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
             if (Double.isNaN(value)) {
                 return " * ";
@@ -1903,13 +1901,13 @@ public final class SemEstimatorEditor extends JPanel {
 //        }
 //    }
         private void addMouseListenerToGraphNodesMeasured() {
-            List nodes = graph().getNodes();
+            final List nodes = graph().getNodes();
 
-            for (Object node : nodes) {
-                Object displayNode = workbench().getModelNodesToDisplay().get(node);
+            for (final Object node : nodes) {
+                final Object displayNode = workbench().getModelNodesToDisplay().get(node);
 
                 if (displayNode instanceof GraphNodeMeasured) {
-                    DisplayNode _displayNode = (DisplayNode) displayNode;
+                    final DisplayNode _displayNode = (DisplayNode) displayNode;
                     _displayNode.setToolTipText(
                             getEquationOfNode(_displayNode.getModelNode())
                     );
@@ -1917,17 +1915,17 @@ public final class SemEstimatorEditor extends JPanel {
             }
         }
 
-        private String getEquationOfNode(Node node) {
+        private String getEquationOfNode(final Node node) {
             String eqn = node.getName() + " = B0_" + node.getName();
 
-            SemGraph semGraph = semIm().getSemPm().getGraph();
-            List parentNodes = semGraph.getParents(node);
+            final SemGraph semGraph = semIm().getSemPm().getGraph();
+            final List parentNodes = semGraph.getParents(node);
 
-            for (Object parentNodeObj : parentNodes) {
-                Node parentNode = (Node) parentNodeObj;
+            for (final Object parentNodeObj : parentNodes) {
+                final Node parentNode = (Node) parentNodeObj;
 //            Parameter edgeParam = semIm().getEstIm().getEdgeParameter(
 //                    semGraph.getEdge(parentNode, node));
-                Parameter edgeParam = getEdgeParameter(
+                final Parameter edgeParam = getEdgeParameter(
                         semGraph.getDirectedEdge(parentNode, node));
 
                 if (edgeParam != null) {
@@ -1941,14 +1939,14 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         public GraphWorkbench getWorkbench() {
-            return workbench;
+            return this.workbench;
         }
 
         private boolean isEditable() {
-            return editable;
+            return this.editable;
         }
 
-        public void setEditable(boolean editable) {
+        public void setEditable(final boolean editable) {
             workbench().setAllowEdgeReorientations(editable);
 //        workbench().setAllowMultipleSelection(editable);
 //        workbench().setAllowNodeDragging(false);
@@ -1962,20 +1960,20 @@ public final class SemEstimatorEditor extends JPanel {
             private final Edge edge;
             private final SemImGraphicalEditor editor;
 
-            public EdgeMouseListener(Edge edge, SemImGraphicalEditor editor) {
+            public EdgeMouseListener(final Edge edge, final SemImGraphicalEditor editor) {
                 this.edge = edge;
                 this.editor = editor;
             }
 
             private Edge getEdge() {
-                return edge;
+                return this.edge;
             }
 
             private SemImGraphicalEditor getEditor() {
-                return editor;
+                return this.editor;
             }
 
-            public void mouseClicked(MouseEvent e) {
+            public void mouseClicked(final MouseEvent e) {
                 getEditor().beginEdgeEdit(getEdge());
             }
         }
@@ -1985,21 +1983,21 @@ public final class SemEstimatorEditor extends JPanel {
             private final Node node;
             private final SemImGraphicalEditor editor;
 
-            public NodeMouseListener(Node node, SemImGraphicalEditor editor) {
+            public NodeMouseListener(final Node node, final SemImGraphicalEditor editor) {
                 this.node = node;
                 this.editor = editor;
             }
 
             private Node getNode() {
-                return node;
+                return this.node;
             }
 
             private SemImGraphicalEditor getEditor() {
-                return editor;
+                return this.editor;
             }
 
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mouseClicked(final MouseEvent e) {
                 getEditor().beginNodeEdit(getNode());
             }
         }
@@ -2009,24 +2007,24 @@ public final class SemEstimatorEditor extends JPanel {
             private final SemImGraphicalEditor editor;
             private final Edge edge;
 
-            public EdgeActionListener(SemImGraphicalEditor editor, Edge edge) {
+            public EdgeActionListener(final SemImGraphicalEditor editor, final Edge edge) {
                 this.editor = editor;
                 this.edge = edge;
             }
 
             @Override
-            public void actionPerformed(ActionEvent ev) {
-                DoubleTextField doubleTextField = (DoubleTextField) ev.getSource();
-                String s = doubleTextField.getText();
+            public void actionPerformed(final ActionEvent ev) {
+                final DoubleTextField doubleTextField = (DoubleTextField) ev.getSource();
+                final String s = doubleTextField.getText();
                 getEditor().setEdgeValue(getEdge(), s);
             }
 
             private SemImGraphicalEditor getEditor() {
-                return editor;
+                return this.editor;
             }
 
             private Edge getEdge() {
-                return edge;
+                return this.edge;
             }
         }
 
@@ -2035,24 +2033,24 @@ public final class SemEstimatorEditor extends JPanel {
             private final SemImGraphicalEditor editor;
             private final Node node;
 
-            public NodeActionListener(SemImGraphicalEditor editor, Node node) {
+            public NodeActionListener(final SemImGraphicalEditor editor, final Node node) {
                 this.editor = editor;
                 this.node = node;
             }
 
             @Override
-            public void actionPerformed(ActionEvent ev) {
-                DoubleTextField doubleTextField = (DoubleTextField) ev.getSource();
-                String s = doubleTextField.getText();
+            public void actionPerformed(final ActionEvent ev) {
+                final DoubleTextField doubleTextField = (DoubleTextField) ev.getSource();
+                final String s = doubleTextField.getText();
                 getEditor().setNodeValue(getNode(), s);
             }
 
             private SemImGraphicalEditor getEditor() {
-                return editor;
+                return this.editor;
             }
 
             private Node getNode() {
-                return node;
+                return this.node;
             }
         }
     }
@@ -2064,13 +2062,13 @@ public final class SemEstimatorEditor extends JPanel {
         private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         private final SemEstimatorWrapper wrapper;
 
-        public ModelStatisticsPanel(SemEstimatorWrapper wrapper) {
+        public ModelStatisticsPanel(final SemEstimatorWrapper wrapper) {
             this.wrapper = wrapper;
             reset();
 
             addComponentListener(new ComponentAdapter() {
                 @Override
-                public void componentShown(ComponentEvent e) {
+                public void componentShown(final ComponentEvent e) {
                     reset();
                 }
             });
@@ -2081,14 +2079,14 @@ public final class SemEstimatorEditor extends JPanel {
             setLineWrap(true);
             setWrapStyleWord(true);
 
-            double modelChiSquare;
-            double modelDof;
-            double modelPValue;
+            final double modelChiSquare;
+            final double modelDof;
+            final double modelPValue;
 
-            SemPm semPm = semIm().getSemPm();
-            List<Node> variables = semPm.getVariableNodes();
+            final SemPm semPm = semIm().getSemPm();
+            final List<Node> variables = semPm.getVariableNodes();
             boolean containsLatent = false;
-            for (Node node : variables) {
+            for (final Node node : variables) {
                 if (node.getNodeType() == NodeType.LATENT) {
                     containsLatent = true;
                     break;
@@ -2099,7 +2097,7 @@ public final class SemEstimatorEditor extends JPanel {
                 modelChiSquare = semIm().getChiSquare();
                 modelDof = semIm().getSemPm().getDof();
                 modelPValue = semIm().getPValue();
-            } catch (Exception exception) {
+            } catch (final Exception exception) {
                 append("Model statistics not available.");
                 return;
             }
@@ -2111,15 +2109,15 @@ public final class SemEstimatorEditor extends JPanel {
             }
 //        append("\n(If the model is latent, this is the estimated degrees of freedom.)");
 
-            append("\nChi Square = " + nf.format(modelChiSquare));
+            append("\nChi Square = " + this.nf.format(modelChiSquare));
 
             if (modelDof >= 0) {
-                String pValueString = modelPValue > 0.001 ? nf.format(modelPValue)
+                final String pValueString = modelPValue > 0.001 ? this.nf.format(modelPValue)
                         : new DecimalFormat("0.0000E0").format(modelPValue);
                 append("\nP Value = " + (Double.isNaN(modelPValue) || modelDof == 0 ? "undefined" : pValueString));
-                append("\nBIC Score = " + nf.format(semIm().getBicScore()));
-                append("\nCFI = " + nf.format(semIm().getCfi()));
-                append("\nRMSEA = " + nf.format(semIm().getRmsea()));
+                append("\nBIC Score = " + this.nf.format(semIm().getBicScore()));
+                append("\nCFI = " + this.nf.format(semIm().getCfi()));
+                append("\nRMSEA = " + this.nf.format(semIm().getRmsea()));
 
 //            append("\n(Experimental!) KIC Score = " + nf.format(semIm().getKicScore()));
 //            append("\n\nThe null hypothesis for the above chi square test is that " +
@@ -2128,7 +2126,7 @@ public final class SemEstimatorEditor extends JPanel {
 //                    "written as a function of the free model parameters (Bollen, " +
 //                    "Structural Equations with Latent Variables, 110).");
             } else {
-                int numToFix = (int) Math.abs(modelDof);
+                final int numToFix = (int) Math.abs(modelDof);
                 append("\n\nA SEM with negative degrees of freedom is underidentified, "
                         + "\nand other model statistics are meaningless.  Please increase "
                         + "\nthe degrees of freedom to 0 or above by fixing at least "
@@ -2156,7 +2154,7 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         private ISemIm semIm() {
-            return wrapper.getEstimatedSemIm();
+            return this.wrapper.getEstimatedSemIm();
         }
     }
 
@@ -2195,8 +2193,8 @@ public final class SemEstimatorEditor extends JPanel {
          * Constructs a new table for the given covariance matrix, the nodes for
          * which are as specified (in the order they appear in the matrix).
          */
-        public ImpliedCovTable(SemEstimatorWrapper wrapper, boolean measured,
-                               boolean correlations) {
+        public ImpliedCovTable(final SemEstimatorWrapper wrapper, final boolean measured,
+                               final boolean correlations) {
             this.wrapper = wrapper;
             this.measured = measured;
             this.correlations = correlations;
@@ -2204,15 +2202,15 @@ public final class SemEstimatorEditor extends JPanel {
             this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
             if (measured() && covariances()) {
-                matrix = getSemIm().getImplCovarMeas().toArray();
+                this.matrix = getSemIm().getImplCovarMeas().toArray();
             } else if (measured() && !covariances()) {
-                matrix = corr(getSemIm().getImplCovarMeas().toArray());
+                this.matrix = corr(getSemIm().getImplCovarMeas().toArray());
             } else if (!measured() && covariances()) {
-                Matrix implCovarC = getSemIm().getImplCovar(false);
-                matrix = implCovarC.toArray();
+                final Matrix implCovarC = getSemIm().getImplCovar(false);
+                this.matrix = implCovarC.toArray();
             } else if (!measured() && !covariances()) {
-                Matrix implCovarC = getSemIm().getImplCovar(false);
-                matrix = corr(implCovarC.toArray());
+                final Matrix implCovarC = getSemIm().getImplCovar(false);
+                this.matrix = corr(implCovarC.toArray());
             }
         }
 
@@ -2251,17 +2249,17 @@ public final class SemEstimatorEditor extends JPanel {
          * 0 and the name of the variable for the other columns.
          */
         @Override
-        public String getColumnName(int columnIndex) {
+        public String getColumnName(final int columnIndex) {
             if (columnIndex == 0) {
                 return "";
             } else {
                 if (measured()) {
-                    List nodes = getSemIm().getMeasuredNodes();
-                    Node node = ((Node) nodes.get(columnIndex - 1));
+                    final List nodes = getSemIm().getMeasuredNodes();
+                    final Node node = ((Node) nodes.get(columnIndex - 1));
                     return node.getName();
                 } else {
-                    List nodes = getSemIm().getVariableNodes();
-                    Node node = ((Node) nodes.get(columnIndex - 1));
+                    final List nodes = getSemIm().getVariableNodes();
+                    final Node node = ((Node) nodes.get(columnIndex - 1));
                     return node.getName();
                 }
             }
@@ -2272,7 +2270,7 @@ public final class SemEstimatorEditor extends JPanel {
          * or a Double.
          */
         @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
+        public Object getValueAt(final int rowIndex, final int columnIndex) {
             if (rowIndex == 0) {
                 return getColumnName(columnIndex);
             }
@@ -2281,7 +2279,7 @@ public final class SemEstimatorEditor extends JPanel {
             } else if (rowIndex < columnIndex) {
                 return null;
             } else {
-                return nf.format(matrix[rowIndex - 1][columnIndex - 1]);
+                return this.nf.format(this.matrix[rowIndex - 1][columnIndex - 1]);
             }
         }
 
@@ -2289,16 +2287,16 @@ public final class SemEstimatorEditor extends JPanel {
             return !correlations();
         }
 
-        private double[][] corr(double[][] implCovar) {
-            int length = implCovar.length;
-            double[][] corr = new double[length][length];
+        private double[][] corr(final double[][] implCovar) {
+            final int length = implCovar.length;
+            final double[][] corr = new double[length][length];
 
             for (int i = 1; i < length; i++) {
                 for (int j = 0; j < i; j++) {
-                    double d1 = implCovar[i][j];
-                    double d2 = implCovar[i][i];
-                    double d3 = implCovar[j][j];
-                    double d4 = d1 / Math.pow(d2 * d3, 0.5);
+                    final double d1 = implCovar[i][j];
+                    final double d2 = implCovar[i][i];
+                    final double d3 = implCovar[j][j];
+                    final double d4 = d1 / Math.pow(d2 * d3, 0.5);
 
                     if (d4 <= 1.0 || Double.isNaN(d4)) {
                         corr[i][j] = d4;
@@ -2323,7 +2321,7 @@ public final class SemEstimatorEditor extends JPanel {
          * @return true iff only observed variables are displayed.
          */
         private boolean measured() {
-            return measured;
+            return this.measured;
         }
 
         /**
@@ -2331,11 +2329,11 @@ public final class SemEstimatorEditor extends JPanel {
          * displayed.
          */
         private boolean correlations() {
-            return correlations;
+            return this.correlations;
         }
 
         private ISemIm getSemIm() {
-            return wrapper.getEstimatedSemIm();
+            return this.wrapper.getEstimatedSemIm();
         }
     }
 }

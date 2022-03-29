@@ -42,16 +42,16 @@ class RemoveConstantColumnsDataFilter implements DataFilter {
      *
      * @return - new dataset with constant columns removed.
      */
-    public DataSet filter(DataSet dataSet) {
+    public DataSet filter(final DataSet dataSet) {
         return DataUtils.removeConstantColumns(dataSet);
     }
 
     //==================== Private Methods ========================================//
 
 
-    public static List<Node> getNodes(List<NodeWrapper> wrappers) {
-        List<Node> nodes = new ArrayList<>(wrappers.size());
-        for (NodeWrapper wrapper : wrappers) {
+    public static List<Node> getNodes(final List<NodeWrapper> wrappers) {
+        final List<Node> nodes = new ArrayList<>(wrappers.size());
+        for (final NodeWrapper wrapper : wrappers) {
             nodes.add(wrapper.node);
         }
         return nodes;
@@ -67,13 +67,13 @@ class RemoveConstantColumnsDataFilter implements DataFilter {
         private final int column;
         private final Node node;
 
-        public NodeWrapper(int column, Node node) {
+        public NodeWrapper(final int column, final Node node) {
             this.column = column;
             this.node = node;
         }
 
         public int getColumn() {
-            return column;
+            return this.column;
         }
     }
 

@@ -70,8 +70,8 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         this.setWrapper(wrapper);
         this.params = wrapper.getParams();
 
-        panel = new JPanel();
-        panel.setLayout(new BorderLayout());
+        this.panel = new JPanel();
+        this.panel.setLayout(new BorderLayout());
 
         if (wrapper.getGraph() != null && wrapper.getResultGraph() != null && getOriginalSemIm() != null) {
             GraphUtils.circleLayout(wrapper.getGraph(), 200, 200, 150);
@@ -79,10 +79,10 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
             setOriginalSemIm(wrapper.getOriginalSemIm());
             setNewSemIm(wrapper.getNewSemIm());
         } else {
-            EdgeListGraph graph = new EdgeListGraph();
-            SemPm pm = new SemPm(graph);
-            SemIm im = new SemIm(pm);
-            SemIm im2 = new SemIm(pm);
+            final EdgeListGraph graph = new EdgeListGraph();
+            final SemPm pm = new SemPm(graph);
+            final SemIm im = new SemIm(pm);
+            final SemIm im2 = new SemIm(pm);
             GraphUtils.circleLayout(graph, 200, 200, 150);
             setGraphWorkbench(new GraphWorkbench(graph));
             setOriginalSemIm(im);
@@ -90,14 +90,14 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         }
 
         final Parameters params = getParams();
-        double alpha = params.getDouble("alpha", 0.001);
-        int beamWidth = params.getInt("beamWidth", 5);
-        double zeroEdgeP = params.getDouble("zeroEdgeP", 0.05);
+        final double alpha = params.getDouble("alpha", 0.001);
+        final int beamWidth = params.getInt("beamWidth", 5);
+        final double zeroEdgeP = params.getDouble("zeroEdgeP", 0.05);
 
-        alphaField = new DoubleTextField(alpha, 6,
+        this.alphaField = new DoubleTextField(alpha, 6,
                 new DecimalFormat("0.0########"));
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+        this.alphaField.setFilter(new DoubleTextField.Filter() {
+            public double filter(final double value, final double oldValue) {
                 if (value >= 0 && value <= 1) {
                     params.set("alpha", 0.001);
                     return value;
@@ -107,9 +107,9 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
             }
         });
 
-        beamWidthField = new IntTextField(beamWidth, 6);
-        beamWidthField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
+        this.beamWidthField = new IntTextField(beamWidth, 6);
+        this.beamWidthField.setFilter(new IntTextField.Filter() {
+            public int filter(final int value, final int oldValue) {
                 if (value >= 1) {
                     params.set("beamwidth", value);
                     return value;
@@ -120,10 +120,10 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         });
 
 
-        DoubleTextField zeroEdgePField = new DoubleTextField(zeroEdgeP, 6,
+        final DoubleTextField zeroEdgePField = new DoubleTextField(zeroEdgeP, 6,
                 new DecimalFormat("0.0########"));
         zeroEdgePField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+            public double filter(final double value, final double oldValue) {
                 if (value >= 0 && value <= 1) {
                     params.set("zeroEdgeP", value);
                     return value;
@@ -136,13 +136,13 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         final JButton search = new JButton("Search");
 
         search.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
+            public void actionPerformed(final ActionEvent e) {
+                final Window owner = (Window) getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
                         getWrapper().execute();
-                        Graph graph = getWrapper().getGraph();
+                        final Graph graph = getWrapper().getGraph();
                         GraphUtils.circleLayout(graph, 200, 200, 150);
                         setGraphWorkbench(new GraphWorkbench(graph));
                     }
@@ -150,91 +150,91 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
             }
         });
 
-        alphaField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        this.alphaField.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
                 search.doClick();
             }
         });
 
         zeroEdgePField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 search.doClick();
             }
         });
 
-        beamWidthField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        this.beamWidthField.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
                 search.doClick();
             }
         });
 
-        JRadioButton beamRadioButton = new JRadioButton("Beam Search");
-        JRadioButton gesRadioButton = new JRadioButton("GES Search");
+        final JRadioButton beamRadioButton = new JRadioButton("Beam Search");
+        final JRadioButton gesRadioButton = new JRadioButton("GES Search");
 
-        ButtonGroup group = new ButtonGroup();
+        final ButtonGroup group = new ButtonGroup();
         group.add(beamRadioButton);
         group.add(gesRadioButton);
 
-        JCheckBox shuffleCheckbox = new JCheckBox("Shuffle Moves");
+        final JCheckBox shuffleCheckbox = new JCheckBox("Shuffle Moves");
         shuffleCheckbox.setSelected(wrapper.isShuffleMoves());
 
         beamRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 wrapper.setAlgorithmType(PValueImproverWrapper.AlgorithmType.BEAM);
-                alphaField.setEnabled(true);
-                beamWidthField.setEnabled(true);
+                PValueImproverEditor.this.alphaField.setEnabled(true);
+                PValueImproverEditor.this.beamWidthField.setEnabled(true);
             }
         });
 
         shuffleCheckbox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox checkbox = (JCheckBox) actionEvent.getSource();
+            public void actionPerformed(final ActionEvent actionEvent) {
+                final JCheckBox checkbox = (JCheckBox) actionEvent.getSource();
 //                wrapper.setShuffleMoves(checkbox.isSelected());
             }
         });
 
         gesRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 wrapper.setAlgorithmType(PValueImproverWrapper.AlgorithmType.FGES);
-                alphaField.setEnabled(false);
-                beamWidthField.setEnabled(false);
+                PValueImproverEditor.this.alphaField.setEnabled(false);
+                PValueImproverEditor.this.beamWidthField.setEnabled(false);
             }
         });
 
         if (getWrapper().getAlgorithmType() == PValueImproverWrapper.AlgorithmType.BEAM) {
             beamRadioButton.setSelected(true);
-            alphaField.setEnabled(true);
-            beamWidthField.setEnabled(true);
+            this.alphaField.setEnabled(true);
+            this.beamWidthField.setEnabled(true);
         } else if (getWrapper().getAlgorithmType() == PValueImproverWrapper.AlgorithmType.FGES) {
             gesRadioButton.setSelected(true);
-            alphaField.setEnabled(false);
-            beamWidthField.setEnabled(false);
+            this.alphaField.setEnabled(false);
+            this.beamWidthField.setEnabled(false);
         } else {
             throw new IllegalStateException();
         }
 
-        Box b = Box.createHorizontalBox();
+        final Box b = Box.createHorizontalBox();
 
-        Box b2 = Box.createVerticalBox();
-        Box b2a = Box.createHorizontalBox();
+        final Box b2 = Box.createVerticalBox();
+        final Box b2a = Box.createHorizontalBox();
         b2a.add(new JLabel("Search Alpha"));
         b2a.add(Box.createHorizontalGlue());
-        b2a.add(alphaField);
+        b2a.add(this.alphaField);
         b2.add(b2a);
 
-        Box b2e = Box.createHorizontalBox();
+        final Box b2e = Box.createHorizontalBox();
         b2e.add(new JLabel("Zero Edge Alpha"));
         b2e.add(Box.createHorizontalGlue());
         b2e.add(zeroEdgePField);
         b2.add(b2e);
 
-        Box b2b = Box.createHorizontalBox();
+        final Box b2b = Box.createHorizontalBox();
         b2b.add(new JLabel("Beam Width"));
         b2b.add(Box.createHorizontalGlue());
-        b2b.add(beamWidthField);
+        b2b.add(this.beamWidthField);
         b2.add(b2b);
 
-        Box b2c = Box.createHorizontalBox();
+        final Box b2c = Box.createHorizontalBox();
         b2c.add(beamRadioButton);
         b2c.add(Box.createHorizontalGlue());
         b2.add(b2c);
@@ -245,7 +245,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
 //        b2c2.add(Box.createHorizontalGlue());
 //        b2.add(b2c2);
 
-        Box b2d = Box.createHorizontalBox();
+        final Box b2d = Box.createHorizontalBox();
         b2d.add(gesRadioButton);
         b2d.add(Box.createHorizontalGlue());
         b2.add(b2d);
@@ -253,7 +253,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         b2.setBorder(new TitledBorder("Parameters"));
         b2.add(Box.createVerticalStrut(30));
 
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(Box.createHorizontalGlue());
         b3.add(search);
         b2.add(b3);
@@ -261,7 +261,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
 
         b.add(b2);
 
-        b.add(panel);
+        b.add(this.panel);
 
         setLayout(new BorderLayout());
 
@@ -272,11 +272,11 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
     }
 
 
-    private void setNewSemIm(SemIm newSemIm) {
+    private void setNewSemIm(final SemIm newSemIm) {
         this.newSemIm = newSemIm;
     }
 
-    private void setOriginalSemIm(SemIm originalSemIm) {
+    private void setOriginalSemIm(final SemIm originalSemIm) {
         if (this.originalSemIm == null) {
             this.originalSemIm = originalSemIm;
         }
@@ -288,11 +288,11 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return graphWorkbench.getModelEdgesToDisplay();
+        return this.graphWorkbench.getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return graphWorkbench.getModelNodesToDisplay();
+        return this.graphWorkbench.getModelNodesToDisplay();
     }
 
     public IKnowledge getKnowledge() {
@@ -303,7 +303,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         return getWrapper().getSourceGraph();
     }
 
-    public void layoutByGraph(Graph graph) {
+    public void layoutByGraph(final Graph graph) {
         getGraphWorkbench().layoutByGraph(graph);
     }
 
@@ -312,19 +312,19 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
     }
 
     private PValueImproverWrapper getWrapper() {
-        return wrapper;
+        return this.wrapper;
     }
 
-    private void setWrapper(PValueImproverWrapper wrapper) {
+    private void setWrapper(final PValueImproverWrapper wrapper) {
         this.wrapper = wrapper;
     }
 
     private GraphWorkbench getGraphWorkbench() {
-        return graphWorkbench;
+        return this.graphWorkbench;
     }
 
     private void setGraphWorkbench(final GraphWorkbench graphWorkbench) {
-        JTabbedPane tabbedPane = new JTabbedPane();
+        final JTabbedPane tabbedPane = new JTabbedPane();
 
         this.graphWorkbench = graphWorkbench;
         if (getOriginalSemIm() != null) {
@@ -333,24 +333,24 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         this.newSemIm = getWrapper().getNewSemIm();
 
         if (getNewSemIm() != null) {
-            SemImEditor newEditor = new SemImEditor(new SemImWrapper(getNewSemIm()));
+            final SemImEditor newEditor = new SemImEditor(new SemImWrapper(getNewSemIm()));
             final GraphWorkbench workbench = newEditor.getWorkbench();
 
             workbench.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+                public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
                     if ("modelChanged".equals(propertyChangeEvent.getPropertyName())) {
                         System.out.println(propertyChangeEvent);
-                        Graph graph = workbench.getGraph();
+                        final Graph graph = workbench.getGraph();
 
                         System.out.println(graph);
 
                         try {
                             new Dag(graph);
-                        } catch (IllegalArgumentException e) {
+                        } catch (final IllegalArgumentException e) {
                             return;
                         }
 
-                        Scorer scorer = new DagScorer((DataSet) getWrapper().getDataModel());
+                        final Scorer scorer = new DagScorer((DataSet) getWrapper().getDataModel());
                         scorer.score(graph);
                         getWrapper().setNewSemIm(scorer.getEstSem());
                         setGraphWorkbench(graphWorkbench);
@@ -362,7 +362,7 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
         }
 
         if (getOriginalSemIm() != null) {
-            SemImEditor originalEditor = new SemImEditor(new SemImWrapper(getOriginalSemIm()));
+            final SemImEditor originalEditor = new SemImEditor(new SemImWrapper(getOriginalSemIm()));
             tabbedPane.addTab("Original Model", originalEditor);
         }
 
@@ -370,24 +370,24 @@ public class PValueImproverEditor extends JPanel implements LayoutEditable {
             tabbedPane.addTab("forbid_latent_common_causes", graphWorkbench);
         }
 
-        panel.removeAll();
-        panel.add(tabbedPane, BorderLayout.CENTER);
-        panel.revalidate();
-        panel.repaint();
+        this.panel.removeAll();
+        this.panel.add(tabbedPane, BorderLayout.CENTER);
+        this.panel.revalidate();
+        this.panel.repaint();
 
         firePropertyChange("modelChanged", null, null);
     }
 
     private Parameters getParams() {
-        return params;
+        return this.params;
     }
 
     private SemIm getOriginalSemIm() {
-        return originalSemIm;
+        return this.originalSemIm;
     }
 
     private SemIm getNewSemIm() {
-        return newSemIm;
+        return this.newSemIm;
     }
 }
 

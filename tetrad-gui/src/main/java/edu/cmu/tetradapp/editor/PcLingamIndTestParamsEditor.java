@@ -54,18 +54,18 @@ class PcLingamIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public PcLingamIndTestParamsEditor(Parameters params) {
+    public PcLingamIndTestParamsEditor(final Parameters params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
+        this.alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), new DecimalFormat("0.0#####E0"), 1e-4);
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+        this.alphaField.setFilter(new DoubleTextField.Filter() {
+            public double filter(final double value, final double oldValue) {
                 try {
                     params().set("alpha", 0.001);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -95,12 +95,12 @@ class PcLingamIndTestParamsEditor extends JComponent {
     private void buildGui() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (alphaField != null) {
-            Box b1 = Box.createHorizontalBox();
+        if (this.alphaField != null) {
+            final Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Alpha:"));
             b1.add(Box.createHorizontalStrut(10));
             b1.add(Box.createHorizontalGlue());
-            b1.add(alphaField);
+            b1.add(this.alphaField);
             add(b1);
         }
 
@@ -119,7 +119,7 @@ class PcLingamIndTestParamsEditor extends JComponent {
      * public, but it is needed so that the textfields can edit the model.)
      */
     private Parameters params() {
-        return params;
+        return this.params;
     }
 }
 

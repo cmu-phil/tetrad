@@ -50,43 +50,43 @@ public class TestLogisticRegression {
     public void test1() {
 
 
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
                 3, 3, 3, false));
 
         System.out.println(graph);
 
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateDataRecursive(1000, false);
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        final DataSet data = im.simulateDataRecursive(1000, false);
 
-        Node x1 = data.getVariable("X1");
-        Node x2 = data.getVariable("X2");
-        Node x3 = data.getVariable("X3");
-        Node x4 = data.getVariable("X4");
-        Node x5 = data.getVariable("X5");
+        final Node x1 = data.getVariable("X1");
+        final Node x2 = data.getVariable("X2");
+        final Node x3 = data.getVariable("X3");
+        final Node x4 = data.getVariable("X4");
+        final Node x5 = data.getVariable("X5");
 
-        Discretizer discretizer = new Discretizer(data);
+        final Discretizer discretizer = new Discretizer(data);
 
         discretizer.equalCounts(x1, 2);
 
-        DataSet d2 = discretizer.discretize();
+        final DataSet d2 = discretizer.discretize();
 
-        LogisticRegression regression = new LogisticRegression(d2);
+        final LogisticRegression regression = new LogisticRegression(d2);
 
-        List<Node> regressors = new ArrayList<>();
+        final List<Node> regressors = new ArrayList<>();
 
         regressors.add(x2);
         regressors.add(x3);
         regressors.add(x4);
         regressors.add(x5);
 
-        DiscreteVariable x1b = (DiscreteVariable) d2.getVariable("X1");
+        final DiscreteVariable x1b = (DiscreteVariable) d2.getVariable("X1");
 
         regression.regress(x1b, regressors);
 

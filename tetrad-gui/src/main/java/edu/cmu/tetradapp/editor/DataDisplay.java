@@ -43,9 +43,9 @@ public class DataDisplay extends JPanel implements DataModelContainer,
     /**
      * Constructor. Takes a DataSet as a model.
      */
-    public DataDisplay(DataSet dataSet) {
-        tabularDataJTable = new TabularDataJTable(dataSet);
-        tabularDataJTable.addPropertyChangeListener(this);
+    public DataDisplay(final DataSet dataSet) {
+        this.tabularDataJTable = new TabularDataJTable(dataSet);
+        this.tabularDataJTable.addPropertyChangeListener(this);
         setLayout(new BorderLayout());
         add(new JScrollPane(getDataDisplayJTable()), BorderLayout.CENTER);
     }
@@ -55,22 +55,22 @@ public class DataDisplay extends JPanel implements DataModelContainer,
     }
 
     public TabularDataJTable getDataDisplayJTable() {
-        return tabularDataJTable;
+        return this.tabularDataJTable;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(final PropertyChangeListener listener) {
 
         // For some reason openjdk leaves this null at this point first call. Not sure why. 4/23/2009 jdr
-        if (pcs == null) {
-            pcs = new PropertyChangeSupport(this);
+        if (this.pcs == null) {
+            this.pcs = new PropertyChangeSupport(this);
         }
 
-        pcs.addPropertyChangeListener(listener);
+        this.pcs.addPropertyChangeListener(listener);
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(final PropertyChangeEvent evt) {
 //        System.out.println("DataDisplay: " + evt.getPropertyName());
-        pcs.firePropertyChange(evt);
+        this.pcs.firePropertyChange(evt);
     }
 }
 

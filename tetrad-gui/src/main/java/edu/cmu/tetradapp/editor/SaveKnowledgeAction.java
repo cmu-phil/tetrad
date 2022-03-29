@@ -44,14 +44,14 @@ final class SaveKnowledgeAction extends AbstractAction {
     /**
      * The component that file choosers will be centered on.
      */
-    private KnowledgeEditable knowledgeEditable;
+    private final KnowledgeEditable knowledgeEditable;
 
     /**
      * Creates a new load data action for the given knowledgeEditable.
      *
      * @param knowledgeEditable The component to center the wizard on.
      */
-    public SaveKnowledgeAction(KnowledgeEditable knowledgeEditable) {
+    public SaveKnowledgeAction(final KnowledgeEditable knowledgeEditable) {
         super("Save Knowledge...");
 
         if (knowledgeEditable == null) {
@@ -64,21 +64,21 @@ final class SaveKnowledgeAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        Component comp =
+    public void actionPerformed(final ActionEvent e) {
+        final Component comp =
                 (this.knowledgeEditable instanceof Component) ? (Component) this.knowledgeEditable : null;
-        File file = EditorUtils.getSaveFile("knowledge", "txt", comp, false, "Save Knowledge...");
+        final File file = EditorUtils.getSaveFile("knowledge", "txt", comp, false, "Save Knowledge...");
 
         if (file != null) {
             try {
-                FileWriter writer = new FileWriter(file);
-                IKnowledge knowledge = this.knowledgeEditable.getKnowledge();
+                final FileWriter writer = new FileWriter(file);
+                final IKnowledge knowledge = this.knowledgeEditable.getKnowledge();
                 DataWriter.saveKnowledge(knowledge, writer);
                 writer.close();
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Saved knowledge as " + file.getAbsoluteFile() + ".");
-            } catch (IOException e1) {
-                String message = e1.getMessage() ==
+            } catch (final IOException e1) {
+                final String message = e1.getMessage() ==
                         null ? e1.getClass().getName() : e1.getMessage();
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         message);

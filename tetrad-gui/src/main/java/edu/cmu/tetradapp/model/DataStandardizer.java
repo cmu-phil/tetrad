@@ -39,25 +39,25 @@ public class DataStandardizer extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    public DataStandardizer(DataWrapper wrapper, Parameters params) {
-        DataModelList inList = wrapper.getDataModelList();
-        DataModelList outList = new DataModelList();
+    public DataStandardizer(final DataWrapper wrapper, final Parameters params) {
+        final DataModelList inList = wrapper.getDataModelList();
+        final DataModelList outList = new DataModelList();
 
-        for (DataModel model : inList) {
+        for (final DataModel model : inList) {
             if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            DataSet dataSet = (DataSet) model;
+            final DataSet dataSet = (DataSet) model;
 
             if (!(dataSet.isContinuous())) {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
             }
 
-            Matrix data2 = DataUtils.standardizeData(dataSet.getDoubleData());
-            List<Node> list = dataSet.getVariables();
+            final Matrix data2 = DataUtils.standardizeData(dataSet.getDoubleData());
+            final List<Node> list = dataSet.getVariables();
 
-            DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
+            final DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
             dataSet2.setName(dataSet.getName());
             outList.add(dataSet2);
         }

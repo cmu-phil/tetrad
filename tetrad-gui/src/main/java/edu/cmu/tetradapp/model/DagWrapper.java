@@ -63,7 +63,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     private Dag graph;
 
     //=============================CONSTRUCTORS==========================//
-    public DagWrapper(Dag graph) {
+    public DagWrapper(final Dag graph) {
         if (graph == null) {
             throw new NullPointerException("Tetrad dag must not be null.");
         }
@@ -73,7 +73,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
-    public DagWrapper(Parameters params) {
+    public DagWrapper(final Parameters params) {
         this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             setDag(new Dag());
@@ -84,18 +84,18 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         log();
     }
 
-    public DagWrapper(GraphSource graphSource, Parameters parameters) {
+    public DagWrapper(final GraphSource graphSource, final Parameters parameters) {
         if (graphSource instanceof Simulation) {
-            Simulation simulation = (Simulation) graphSource;
-            List<Graph> graphs = simulation.getGraphs();
+            final Simulation simulation = (Simulation) graphSource;
+            final List<Graph> graphs = simulation.getGraphs();
 
             this.dags = new ArrayList<>();
 
-            for (Graph graph : graphs) {
+            for (final Graph graph : graphs) {
                 this.dags.add(new Dag(graph));
             }
 
-            this.numModels = dags.size();
+            this.numModels = this.dags.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
@@ -105,51 +105,51 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         log();
     }
 
-    public DagWrapper(AbstractAlgorithmRunner wrapper) {
+    public DagWrapper(final AbstractAlgorithmRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(PcRunner wrapper) {
+    public DagWrapper(final PcRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(CcdRunner2 wrapper) {
+    public DagWrapper(final CcdRunner2 wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(MimBuildRunner wrapper) {
+    public DagWrapper(final MimBuildRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(PurifyRunner wrapper) {
+    public DagWrapper(final PurifyRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(BuildPureClustersRunner wrapper) {
+    public DagWrapper(final BuildPureClustersRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(MbfsRunner wrapper) {
+    public DagWrapper(final MbfsRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(CeFanSearchRunner wrapper) {
+    public DagWrapper(final CeFanSearchRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(DataWrapper wrapper) {
+    public DagWrapper(final DataWrapper wrapper) {
         if (wrapper instanceof Simulation) {
-            Simulation simulation = (Simulation) wrapper;
+            final Simulation simulation = (Simulation) wrapper;
 
-            List<Graph> graphs = simulation.getGraphs();
+            final List<Graph> graphs = simulation.getGraphs();
 
             this.dags = new ArrayList<>();
 
-            for (Graph graph : graphs) {
+            for (final Graph graph : graphs) {
                 this.dags.add(new Dag(graph));
             }
 
-            this.numModels = dags.size();
+            this.numModels = this.dags.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
@@ -159,36 +159,36 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
         GraphUtils.circleLayout(getGraph(), 200, 200, 150);
     }
 
-    public DagWrapper(BayesPmWrapper wrapper) {
+    public DagWrapper(final BayesPmWrapper wrapper) {
         this(new Dag(wrapper.getBayesPm().getDag()));
     }
 
-    public DagWrapper(BayesImWrapper wrapper) {
+    public DagWrapper(final BayesImWrapper wrapper) {
         this(new Dag(wrapper.getBayesIm().getBayesPm().getDag()));
     }
 
-    public DagWrapper(BayesEstimatorWrapper wrapper) {
+    public DagWrapper(final BayesEstimatorWrapper wrapper) {
         this(new Dag(wrapper.getEstimatedBayesIm().getBayesPm().getDag()));
     }
 
-    public DagWrapper(CptInvariantUpdaterWrapper wrapper) {
+    public DagWrapper(final CptInvariantUpdaterWrapper wrapper) {
         this(new Dag(wrapper.getBayesUpdater().getManipulatedGraph()));
     }
 
-    public DagWrapper(SemPmWrapper wrapper) {
+    public DagWrapper(final SemPmWrapper wrapper) {
         this(new Dag(wrapper.getSemPm().getGraph()));
     }
 
-    public DagWrapper(SemImWrapper wrapper) {
+    public DagWrapper(final SemImWrapper wrapper) {
         this(new Dag(wrapper.getSemIm().getSemPm().getGraph()));
     }
 
-    public DagWrapper(SemEstimatorWrapper wrapper) {
+    public DagWrapper(final SemEstimatorWrapper wrapper) {
         this(new Dag(wrapper.getSemEstimator().getEstimatedSem().getSemPm()
                 .getGraph()));
     }
 
-    public DagWrapper(RegressionRunner wrapper) {
+    public DagWrapper(final RegressionRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
@@ -203,12 +203,12 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 
     //================================PUBLIC METHODS=======================//
     public Graph getDag() {
-        return dags.get(getModelIndex());
+        return this.dags.get(getModelIndex());
     }
 
-    public void setDag(Dag graph) {
+    public void setDag(final Dag graph) {
         this.dags = new ArrayList<>();
-        dags.add(graph);
+        this.dags.add(graph);
         log();
     }
 
@@ -231,7 +231,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -246,10 +246,10 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -271,50 +271,50 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 
     @Override
     public Map<String, String> getParamSettings() {
-        Map<String, String> paramSettings = new HashMap<>();
+        final Map<String, String> paramSettings = new HashMap<>();
         paramSettings.put("# Nodes", Integer.toString(getDag().getNumNodes()));
         paramSettings.put("# Edges", Integer.toString(getDag().getNumEdges()));
         return paramSettings;
     }
 
     @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
+    public void setAllParamSettings(final Map<String, String> paramSettings) {
         this.allParamSettings = paramSettings;
     }
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
+        return this.allParamSettings;
     }
 
     public Parameters getParameters() {
-        return parameters;
+        return this.parameters;
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
-    public void setModelIndex(int modelIndex) {
+    public void setModelIndex(final int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
-    public void setGraph(Graph graph) {
+    public void setGraph(final Graph graph) {
         this.dags = new ArrayList<>();
         this.dags.add(new Dag(graph));
     }
 
     public List<Graph> getGraphs() {
-        List<Graph> graphs = new ArrayList<>();
-        graphs.addAll(dags);
+        final List<Graph> graphs = new ArrayList<>();
+        graphs.addAll(this.dags);
         return graphs;
     }
 }

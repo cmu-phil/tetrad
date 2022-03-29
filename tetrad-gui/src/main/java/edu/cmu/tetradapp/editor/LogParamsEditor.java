@@ -48,19 +48,19 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
     private Parameters params = null;
 
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
-        for (Object parentModel : parentModels) {
+    public void setParentModels(final Object[] parentModels) {
+        for (final Object parentModel : parentModels) {
             //            System.out.println(parentModel);
             //
             if (parentModel instanceof DataWrapper) {
-                DataModel dataModel = ((DataWrapper) parentModel).getSelectedDataModel();
+                final DataModel dataModel = ((DataWrapper) parentModel).getSelectedDataModel();
                 //
                 if (dataModel instanceof DataSet) {
-                    DataSet parentDataSet = (DataSet) dataModel;
+                    final DataSet parentDataSet = (DataSet) dataModel;
                 }
             }
         }
@@ -84,60 +84,60 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
     private void buildGui() {
         setLayout(new BorderLayout());
 
-        final DoubleTextField aField = new DoubleTextField(params.getDouble("a", 10.0), 6, NumberFormatUtil.getInstance().getNumberFormat());
+        final DoubleTextField aField = new DoubleTextField(this.params.getDouble("a", 10.0), 6, NumberFormatUtil.getInstance().getNumberFormat());
         aField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+            public double filter(final double value, final double oldValue) {
                 try {
-                    params.set("a", value);
+                    LogParamsEditor.this.params.set("a", value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        final IntTextField baseField = new IntTextField(params.getInt("base", 0), 4);
+        final IntTextField baseField = new IntTextField(this.params.getInt("base", 0), 4);
         baseField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
+            public int filter(final int value, final int oldValue) {
                 try {
-                    params.set("base", value);
+                    LogParamsEditor.this.params.set("base", value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "The input dataset will be logarithmically transformed by applying f(x) = ln(a + x) to each data point x." +
                 "<br> Can also 'unlog' the data i.e., apply g(x) = exp(x) - a, or override the base"));
 
 
-        Box b9 = Box.createHorizontalBox();
+        final Box b9 = Box.createHorizontalBox();
         b9.add(Box.createHorizontalGlue());
         b9.add(new JLabel("<html> base (use 0 for natural log and base <i>e</i>): </html>"));
         b9.add(baseField);
 
-        Box b7 = Box.createHorizontalBox();
+        final Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html><i>a =  </i></html>"));
         b7.add(aField);
 
 
-        JCheckBox unlog = new JCheckBox();
-        unlog.setSelected(params.getBoolean("unlog", false));
+        final JCheckBox unlog = new JCheckBox();
+        unlog.setSelected(this.params.getBoolean("unlog", false));
         unlog.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox box = (JCheckBox) e.getSource();
-                params.set("unlog", box.isSelected());
+            public void actionPerformed(final ActionEvent e) {
+                final JCheckBox box = (JCheckBox) e.getSource();
+                LogParamsEditor.this.params.set("unlog", box.isSelected());
             }
         });
 
-        Box b8 = Box.createHorizontalBox();
+        final Box b8 = Box.createHorizontalBox();
         b8.add(Box.createHorizontalGlue());
         b8.add(new JLabel("<html>Unlog: </html>"));
         b8.add(unlog);

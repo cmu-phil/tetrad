@@ -51,7 +51,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    private FactorAnalysisRunner(DataWrapper dataWrapper, Parameters pc) {
+    private FactorAnalysisRunner(final DataWrapper dataWrapper, final Parameters pc) {
         super(dataWrapper, pc, null);
     }
 
@@ -67,43 +67,43 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        DataSet selectedModel = (DataSet) getDataModel();
+        final DataSet selectedModel = (DataSet) getDataModel();
 
         if (selectedModel == null) {
             throw new NullPointerException("Data not specified.");
         }
 
-        FactorAnalysis analysis = new FactorAnalysis(selectedModel);
+        final FactorAnalysis analysis = new FactorAnalysis(selectedModel);
 
-        threshold = .2;
+        this.threshold = .2;
 
-        Matrix unrotatedSolution = analysis.successiveResidual();
-        rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
+        final Matrix unrotatedSolution = analysis.successiveResidual();
+        this.rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
 
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        output = "Unrotated Factor Loading Matrix:\n";
+        this.output = "Unrotated Factor Loading Matrix:\n";
 
-        output += tableString(unrotatedSolution, nf, Double.POSITIVE_INFINITY);
+        this.output += tableString(unrotatedSolution, nf, Double.POSITIVE_INFINITY);
 
         if (unrotatedSolution.columns() != 1) {
-            output += "\n\nRotated Matrix (using sequential varimax):\n";
-            output += tableString(rotatedSolution, nf, threshold);
+            this.output += "\n\nRotated Matrix (using sequential varimax):\n";
+            this.output += tableString(this.rotatedSolution, nf, this.threshold);
         }
 
-        SemGraph graph = new SemGraph();
+        final SemGraph graph = new SemGraph();
 
-        Vector<Node> observedVariables = new Vector<>();
+        final Vector<Node> observedVariables = new Vector<>();
 
-        for (Node a : selectedModel.getVariables()) {
+        for (final Node a : selectedModel.getVariables()) {
             graph.addNode(a);
             observedVariables.add(a);
         }
 
-        Vector<Node> factors = new Vector<>();
+        final Vector<Node> factors = new Vector<>();
 
         for (int i = 0; i < getRotatedSolution().columns(); i++) {
-            ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
+            final ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
             factor.setNodeType(NodeType.LATENT);
             graph.addNode(factor);
             factors.add(factor);
@@ -120,8 +120,8 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
         setResultGraph(graph);
     }
 
-    private String tableString(Matrix matrix, NumberFormat nf, double threshold) {
-        TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
+    private String tableString(final Matrix matrix, final NumberFormat nf, final double threshold) {
+        final TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
 
         for (int i = 0; i < matrix.rows() + 1; i++) {
             for (int j = 0; j < matrix.columns() + 1; j++) {
@@ -130,7 +130,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
                 } else if (i == 0 && j > 0) {
                     table.setToken(i, j, "Factor " + j);
                 } else if (i > 0 && j > 0) {
-                    double coefficient = matrix.get(i - 1, j - 1);
+                    final double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
                     token += Math.abs(coefficient) > threshold ? "*" : " ";
                     table.setToken(i, j, token);
@@ -138,7 +138,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
             }
         }
 
-        return "\n" + table.toString();
+        return "\n" + table;
 
     }
 
@@ -157,7 +157,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new ArrayList<>();
     }
 
@@ -171,15 +171,15 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     }
 
     public String getOutput() {
-        return output;
+        return this.output;
     }
 
     private Matrix getRotatedSolution() {
-        return rotatedSolution;
+        return this.rotatedSolution;
     }
 
     private double getThreshold() {
-        return threshold;
+        return this.threshold;
     }
 }
 

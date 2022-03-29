@@ -61,8 +61,8 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public MbfsRunner(DataWrapper dataWrapper, Parameters params,
-                      KnowledgeBoxModel knowledgeBoxModel) {
+    public MbfsRunner(final DataWrapper dataWrapper, final Parameters params,
+                      final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -71,58 +71,58 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public MbfsRunner(DataWrapper dataWrapper, Parameters params) {
+    public MbfsRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbfsRunner(Graph graph, Parameters params) {
+    public MbfsRunner(final Graph graph, final Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbfsRunner(GraphWrapper dagWrapper, Parameters params) {
+    public MbfsRunner(final GraphWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbfsRunner(GraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
+    public MbfsRunner(final GraphWrapper dagWrapper, final KnowledgeBoxModel knowledgeBoxModel, final Parameters params) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbfsRunner(DagWrapper dagWrapper, Parameters params) {
+    public MbfsRunner(final DagWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
     /**
      * Constructs a wrapper for the given EdgeListGraph.
      */
-    public MbfsRunner(DagWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
+    public MbfsRunner(final DagWrapper dagWrapper, final KnowledgeBoxModel knowledgeBoxModel, final Parameters params) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
 
-    public MbfsRunner(SemGraphWrapper dagWrapper, Parameters params) {
+    public MbfsRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public MbfsRunner(SemGraphWrapper dagWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
+    public MbfsRunner(final SemGraphWrapper dagWrapper, final KnowledgeBoxModel knowledgeBoxModel, final Parameters params) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public MbfsRunner(IndependenceFactsModel model, Parameters params) {
+    public MbfsRunner(final IndependenceFactsModel model, final Parameters params) {
         super(model, params, null);
     }
 
-    public MbfsRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public MbfsRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -150,19 +150,19 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 //			mbfs.setAggressivelyPreventCycles(((Parameters) params)
 //					.isAggressivelyPreventCycles());
 //		}
-        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        final IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
 //		mbfs.setKnowledge(knowledge);
-        String targetName = getParams().getString("targetName", null);
+        final String targetName = getParams().getString("targetName", null);
 //		Graph searchGraph = mbfs.search(targetName);
 //		setResultGraph(searchGraph);
 
-        DataSet dataSet = (DataSet) getDataModelList().get(0);
+        final DataSet dataSet = (DataSet) getDataModelList().get(0);
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+        final SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
         score.setPenaltyDiscount(getParams().getDouble("alpha", 0.001));
-        FgesMb search = new FgesMb(score);
+        final FgesMb search = new FgesMb(score);
         search.setFaithfulnessAssumed(true);
-        Graph searchGraph = search.search(dataSet.getVariable(targetName));
+        final Graph searchGraph = search.search(dataSet.getVariable(targetName));
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(searchGraph, getSourceGraph());
@@ -184,17 +184,17 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
             dataModel = getSourceGraph();
         }
 
-        Parameters params = getParams();
-        IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
+        final Parameters params = getParams();
+        final IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 
     public Mbfs getMbFanSearch() {
-        if (mbfs == null) {
+        if (this.mbfs == null) {
             execute();
         }
 
-        return mbfs;
+        return this.mbfs;
     }
 
     /**
@@ -210,7 +210,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s) throws IOException,
+    private void readObject(final ObjectInputStream s) throws IOException,
             ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -223,7 +223,7 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
         names.add("ColliderDiscovery");
         names.add("Noncolliders");
         names.add("Ambiguous Triples");
@@ -234,9 +234,9 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
      * @return the list of triples corresponding to
      * <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-        Graph graph = getGraph();
+    public List<List<Triple>> getTriplesLists(final Node node) {
+        final List<List<Triple>> triplesList = new ArrayList<>();
+        final Graph graph = getGraph();
         triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));

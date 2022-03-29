@@ -33,12 +33,12 @@ public class PointPair {
     /**
      * The from point.
      */
-    private Point from;
+    private final Point from;
 
     /**
      * The to point.
      */
-    private Point to;
+    private final Point to;
 
     /**
      * This creates a PointPair with each Point at (0, 0).
@@ -54,7 +54,7 @@ public class PointPair {
      * @param p1 The <code>from</code> Point
      * @param p2 The <code>to</code> Point
      */
-    public PointPair(Point p1, Point p2) {
+    public PointPair(final Point p1, final Point p2) {
         if (p1 == null || p2 == null) {
             throw new NullPointerException(
                     "Points p1 and p2 must be non-null.");
@@ -65,15 +65,15 @@ public class PointPair {
     }
 
     public Point getFrom() {
-        return from;
+        return this.from;
     }
 
     public Point getTo() {
-        return to;
+        return this.to;
     }
 
     public String toString() {
-        return "<From " + from + " to " + to + ">";
+        return "<From " + this.from + " to " + this.to + ">";
     }
 }
 

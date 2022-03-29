@@ -68,100 +68,100 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     /**
      * Opens up an editor to let the user view the given PcRunner.
      */
-    public PcGesSearchEditor(PcRunner runner) {
+    public PcGesSearchEditor(final PcRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(PcStableMaxRunner runner) {
+    public PcGesSearchEditor(final PcStableMaxRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(PcStableRunner runner) {
+    public PcGesSearchEditor(final PcStableRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(PcCPDAGRunner runner) {
+    public PcGesSearchEditor(final PcCPDAGRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(CpcRunner runner) {
+    public PcGesSearchEditor(final CpcRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(VcpcRunner runner) {
+    public PcGesSearchEditor(final VcpcRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(SampleVcpcRunner runner) {
+    public PcGesSearchEditor(final SampleVcpcRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(VcpcFastRunner runner) {
+    public PcGesSearchEditor(final VcpcFastRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(SampleVcpcFastRunner runner) {
+    public PcGesSearchEditor(final SampleVcpcFastRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(VcpcAltRunner runner) {
+    public PcGesSearchEditor(final VcpcAltRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(MbfsCPDAGRunner runner) {
+    public PcGesSearchEditor(final MbfsCPDAGRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
     /**
      * Opens up an editor to let the user view the given PcRunner.
      */
-    public PcGesSearchEditor(PcdRunner runner) {
+    public PcGesSearchEditor(final PcdRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(KpcRunner runner) {
+    public PcGesSearchEditor(final KpcRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(PValueImproverWrapper runner) {
+    public PcGesSearchEditor(final PValueImproverWrapper runner) {
         super(runner, "Result Graph");
 
         runner.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            public void propertyChange(final PropertyChangeEvent evt) {
 
                 if ("graph".equals(evt.getPropertyName())) {
-                    Graph graph = (Graph) evt.getNewValue();
+                    final Graph graph = (Graph) evt.getNewValue();
                     getWorkbench().setGraph(graph);
                 }
             }
         });
     }
 
-    public PcGesSearchEditor(MmhcRunner runner) {
+    public PcGesSearchEditor(final MmhcRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(LingamCPDAGRunner runner) {
+    public PcGesSearchEditor(final LingamCPDAGRunner runner) {
         super(runner, "Result Graph");
     }
 
-    public PcGesSearchEditor(LofsRunner runner) {
+    public PcGesSearchEditor(final LofsRunner runner) {
         super(runner, "Result Graph");
     }
 
-    public PcGesSearchEditor(LingamStructureRunner runner) {
+    public PcGesSearchEditor(final LingamStructureRunner runner) {
         super(runner, "Result Graph");
     }
 
-    public PcGesSearchEditor(FasRunner runner) {
+    public PcGesSearchEditor(final FasRunner runner) {
         super(runner, "Result Graph");
     }
 
-    public PcGesSearchEditor(InverseCorrelationRunner runner) {
+    public PcGesSearchEditor(final InverseCorrelationRunner runner) {
         super(runner, "Result Graph");
     }
 
-    public PcGesSearchEditor(RandomMixedRunner runner) {
+    public PcGesSearchEditor(final RandomMixedRunner runner) {
         super(runner, "Result Graph");
     }
 
@@ -184,14 +184,14 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         return getWorkbench().getModelNodesToDisplay();
     }
 
-    public void layoutByGraph(Graph graph) {
+    public void layoutByGraph(final Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        GraphWorkbench resultWorkbench = getWorkbench();
-        Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        final GraphWorkbench resultWorkbench = getWorkbench();
+        final Graph graph = resultWorkbench.getGraph();
+        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
     }
 
@@ -205,20 +205,20 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(String resultLabel) {
+    protected void setup(final String resultLabel) {
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
         //JTabbedPane tabbedPane = new JTabbedPane();
-        modelStatsText = new JTextArea();
-        tabbedPane = new JTabbedPane();
-        tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
+        this.modelStatsText = new JTextArea();
+        this.tabbedPane = new JTabbedPane();
+        this.tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
             tabbedPane.add("Model Statistics", modelStatsText);
             tabbedPane.add("DAG in CPDAG", dagWorkbench);
         }*/
 
-        add(tabbedPane, BorderLayout.CENTER);
+        add(this.tabbedPane, BorderLayout.CENTER);
         add(menuBar(), BorderLayout.NORTH);
     }
 
@@ -226,20 +226,20 @@ public class PcGesSearchEditor extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        JPanel toolbar = new JPanel();
+        final JPanel toolbar = new JPanel();
 
         getExecuteButton().setText("Execute*");
         getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 removeStatsTabs();
                 execute();
             }
         });
 
-        JButton statsButton = new JButton("Calc Stats");
+        final JButton statsButton = new JButton("Calc Stats");
         statsButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
+            public void actionPerformed(final ActionEvent e) {
+                final Window owner = (Window) getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
@@ -250,11 +250,11 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         });
 
 
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
         b1.add(getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
         b2.add(getExecuteButton());
         b1.add(b2);
@@ -262,36 +262,36 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
         if (getAlgorithmRunner().getDataModel() instanceof DataSet ||
                 getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix) {
-            Box b3 = Box.createHorizontalBox();
+            final Box b3 = Box.createHorizontalBox();
             b3.add(Box.createGlue());
             b3.add(statsButton);
             b1.add(b3);
         }
 
         if (getAlgorithmRunner().getParams() instanceof Parameters) {
-            Parameters params = getAlgorithmRunner().getParams();
-            JCheckBox preventCycles = new JCheckBox("Aggressively Prevent Cycles");
+            final Parameters params = getAlgorithmRunner().getParams();
+            final JCheckBox preventCycles = new JCheckBox("Aggressively Prevent Cycles");
             preventCycles.setHorizontalTextPosition(AbstractButton.RIGHT);
             preventCycles.setSelected(params.getBoolean("aggressivelyPreventCycles", false));
 
             preventCycles.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JCheckBox box = (JCheckBox) e.getSource();
-                    Parameters params = getAlgorithmRunner().getParams();
+                public void actionPerformed(final ActionEvent e) {
+                    final JCheckBox box = (JCheckBox) e.getSource();
+                    final Parameters params = getAlgorithmRunner().getParams();
                     params.set("aggressivelyPreventCycles", box.isSelected());
                 }
             });
 
             b1.add(Box.createVerticalStrut(5));
-            Box hBox = Box.createHorizontalBox();
+            final Box hBox = Box.createHorizontalBox();
             hBox.add(Box.createHorizontalGlue());
             hBox.add(preventCycles);
             b1.add(hBox);
             b1.add(Box.createVerticalStrut(5));
         }
 
-        Box b4 = Box.createHorizontalBox();
-        JLabel label = new JLabel("<html>" + "*Please note that some" +
+        final Box b4 = Box.createHorizontalBox();
+        final JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -319,7 +319,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 
 
     private void calcStats() {
-        Graph resultGraph = getAlgorithmRunner().getGraph();
+        final Graph resultGraph = getAlgorithmRunner().getGraph();
 
         if (getAlgorithmRunner().getDataModel() instanceof DataSet) {
 
@@ -327,9 +327,9 @@ public class PcGesSearchEditor extends AbstractSearchEditor
             //Such graphs sometimes contain doubly directed edges.
             //We convert such edges to directed edges here.
             //For the time being an orientation is arbitrarily selected.
-            Set<Edge> allEdges = resultGraph.getEdges();
+            final Set<Edge> allEdges = resultGraph.getEdges();
 
-            for (Edge edge : allEdges) {
+            for (final Edge edge : allEdges) {
                 if (edge.getEndpoint1() == Endpoint.ARROW &&
                         edge.getEndpoint2() == Endpoint.ARROW) {
                     //Option 1 orient it from node1 to node2
@@ -341,10 +341,10 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
+            final Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
 
-            DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
-            String report;
+            final DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
+            final String report;
 
             if (dataSet.isContinuous()) {
                 report = reportIfContinuous(dag, dataSet);
@@ -354,22 +354,22 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 throw new IllegalArgumentException("");
             }
 
-            JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
-            modelStatsText.setLineWrap(true);
-            modelStatsText.setWrapStyleWord(true);
-            modelStatsText.setText(report);
+            final JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
+            this.modelStatsText.setLineWrap(true);
+            this.modelStatsText.setWrapStyleWord(true);
+            this.modelStatsText.setText(report);
 
             removeStatsTabs();
-            tabbedPane.addTab("DAG in CPDAG", dagWorkbenchScroll);
-            tabbedPane.addTab("DAG Model Statistics", modelStatsText);
+            this.tabbedPane.addTab("DAG in CPDAG", dagWorkbenchScroll);
+            this.tabbedPane.addTab("DAG Model Statistics", this.modelStatsText);
         } else if (getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix) {
             //resultGraph may be the output of a PC search.
             //Such graphs sometimes contain doubly directed edges.
             //We converte such edges to directed edges here.
             //For the time being an orientation is arbitrarily selected.
-            Set<Edge> allEdges = resultGraph.getEdges();
+            final Set<Edge> allEdges = resultGraph.getEdges();
 
-            for (Edge edge : allEdges) {
+            for (final Edge edge : allEdges) {
                 if (edge.getEndpoint1() == Endpoint.ARROW &&
                         edge.getEndpoint2() == Endpoint.ARROW) {
                     //Option 1 orient it from node1 to node2
@@ -381,35 +381,35 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            Graph CPDAG = new EdgeListGraph(resultGraph);
-            Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
+            final Graph CPDAG = new EdgeListGraph(resultGraph);
+            final Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
 
-            ICovarianceMatrix dataSet = (ICovarianceMatrix) getAlgorithmRunner().getDataModel();
-            String report = reportIfCovMatrix(dag, dataSet);
+            final ICovarianceMatrix dataSet = (ICovarianceMatrix) getAlgorithmRunner().getDataModel();
+            final String report = reportIfCovMatrix(dag, dataSet);
 
-            JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
-            modelStatsText.setLineWrap(true);
-            modelStatsText.setWrapStyleWord(true);
-            modelStatsText.setText(report);
+            final JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
+            this.modelStatsText.setLineWrap(true);
+            this.modelStatsText.setWrapStyleWord(true);
+            this.modelStatsText.setText(report);
 
             removeStatsTabs();
-            tabbedPane.addTab("DAG in CPDAG", dagWorkbenchScroll);
-            tabbedPane.addTab("DAG Model Statistics", modelStatsText);
+            this.tabbedPane.addTab("DAG in CPDAG", dagWorkbenchScroll);
+            this.tabbedPane.addTab("DAG Model Statistics", this.modelStatsText);
 
         }
     }
 
-    private String reportIfContinuous(Graph dag, DataSet dataSet) {
-        SemPm semPm = new SemPm(dag);
+    private String reportIfContinuous(final Graph dag, final DataSet dataSet) {
+        final SemPm semPm = new SemPm(dag);
 
-        SemEstimator estimator = new SemEstimator(dataSet, semPm);
+        final SemEstimator estimator = new SemEstimator(dataSet, semPm);
         estimator.estimate();
-        SemIm semIm = estimator.getEstimatedSem();
+        final SemIm semIm = estimator.getEstimatedSem();
 
-        NumberFormat nf = NumberFormat.getInstance();
+        final NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(4);
 
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("\nDegrees of Freedom = ").append(semPm.getDof())
                 .append(" Chi-Square = ").append(nf.format(semIm.getChiSquare()))
                 .append("\nP Value = ").append(nf.format(semIm.getPValue()))
@@ -431,17 +431,17 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         return buf.toString();
     }
 
-    private String reportIfCovMatrix(Graph dag, ICovarianceMatrix dataSet) {
-        SemPm semPm = new SemPm(dag);
+    private String reportIfCovMatrix(final Graph dag, final ICovarianceMatrix dataSet) {
+        final SemPm semPm = new SemPm(dag);
 
-        SemEstimator estimator = new SemEstimator(dataSet, semPm);
+        final SemEstimator estimator = new SemEstimator(dataSet, semPm);
         estimator.estimate();
-        SemIm semIm = estimator.getEstimatedSem();
+        final SemIm semIm = estimator.getEstimatedSem();
 
-        NumberFormat nf = NumberFormat.getInstance();
+        final NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(4);
 
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("\nDegrees of Freedom = ").append(semPm.getDof())
                 .append(" Chi-Square = ").append(nf.format(semIm.getChiSquare()))
                 .append("\nP Value = ").append(nf.format(semIm.getPValue()))
@@ -463,27 +463,27 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         return buf.toString();
     }
 
-    private String reportIfDiscrete(Graph dag, DataSet dataSet) {
-        List vars = dataSet.getVariables();
-        Map<String, DiscreteVariable> nodesToVars =
+    private String reportIfDiscrete(final Graph dag, final DataSet dataSet) {
+        final List vars = dataSet.getVariables();
+        final Map<String, DiscreteVariable> nodesToVars =
                 new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            DiscreteVariable var = (DiscreteVariable) vars.get(i);
-            String name = var.getName();
-            Node node = new GraphNode(name);
+            final DiscreteVariable var = (DiscreteVariable) vars.get(i);
+            final String name = var.getName();
+            final Node node = new GraphNode(name);
             nodesToVars.put(node.getName(), var);
         }
 
-        BayesPm bayesPm = new BayesPm(new Dag(dag));
-        List<Node> nodes = bayesPm.getDag().getNodes();
+        final BayesPm bayesPm = new BayesPm(new Dag(dag));
+        final List<Node> nodes = bayesPm.getDag().getNodes();
 
-        for (Node node : nodes) {
-            Node var = nodesToVars.get(node.getName());
+        for (final Node node : nodes) {
+            final Node var = nodesToVars.get(node.getName());
 
             if (var instanceof DiscreteVariable) {
-                DiscreteVariable var2 = nodesToVars.get(node.getName());
-                int numCategories = var2.getNumCategories();
-                List<String> categories = new ArrayList<>();
+                final DiscreteVariable var2 = nodesToVars.get(node.getName());
+                final int numCategories = var2.getNumCategories();
+                final List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }
@@ -492,17 +492,17 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         }
 
 
-        NumberFormat nf = NumberFormat.getInstance();
+        final NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(4);
 
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
 
-        BayesProperties properties = new BayesProperties(dataSet);
+        final BayesProperties properties = new BayesProperties(dataSet);
 
-        double p = properties.getLikelihoodRatioP(dag);
-        double chisq = properties.getChisq();
-        double bic = properties.getBic();
-        double dof = properties.getDof();
+        final double p = properties.getLikelihoodRatioP(dag);
+        final double chisq = properties.getChisq();
+        final double bic = properties.getBic();
+        final double dof = properties.getDof();
 
         buf.append("\nP  = ").append(p);
         buf.append("\nDOF = ").append(dof);
@@ -514,20 +514,20 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     }
 
     private void removeStatsTabs() {
-        for (int i = tabbedPane.getTabCount() - 1; i >= 0; i--) {
-            String name = tabbedPane.getTitleAt(i);
+        for (int i = this.tabbedPane.getTabCount() - 1; i >= 0; i--) {
+            final String name = this.tabbedPane.getTitleAt(i);
 
             if (name.equals("Model Statistics")) {
-                tabbedPane.removeTabAt(i);
+                this.tabbedPane.removeTabAt(i);
             } else if (name.equals("DAG in CPDAG")) {
-                tabbedPane.removeTabAt(i);
+                this.tabbedPane.removeTabAt(i);
             }
         }
     }
 
-    protected void addSpecialMenus(JMenuBar menuBar) {
+    protected void addSpecialMenus(final JMenuBar menuBar) {
         if (!(getAlgorithmRunner() instanceof IGesRunner)) {
-            JMenu test = new JMenu("Independence");
+            final JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
             IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -544,13 +544,13 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 //            }
         }
 
-        JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
+        final JMenu graph = new JMenu("Graph");
+        final JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
-        JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
-        JMenuItem nextGraph = new JMenuItem("Next Graph");
-        JMenuItem previousGraph = new JMenuItem("Previous Graph");
+        final JMenuItem dagInPattern = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        final JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
+        final JMenuItem nextGraph = new JMenuItem("Next Graph");
+        final JMenuItem previousGraph = new JMenuItem("Previous Graph");
 
 //        graph.add(new LayoutMenu(this));
         graph.add(new GraphPropertiesAction(getWorkbench()));
@@ -580,8 +580,8 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         menuBar.add(graph);
 
         showDags.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
+            public void actionPerformed(final ActionEvent e) {
+                final Window owner = (Window) getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
@@ -589,8 +589,8 @@ public class PcGesSearchEditor extends AbstractSearchEditor
                         // Needs to be a pattern search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
-                        AlgorithmRunner runner = getAlgorithmRunner();
-                        Graph graph = runner.getGraph();
+                        final AlgorithmRunner runner = getAlgorithmRunner();
+                        final Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -614,10 +614,10 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 //                            editorWindow.setVisible(true);
 //                        }
 //                        else {
-                        CPDAGDisplay display = new CPDAGDisplay(graph);
-                        GraphWorkbench workbench = getWorkbench();
+                        final CPDAGDisplay display = new CPDAGDisplay(graph);
+                        final GraphWorkbench workbench = getWorkbench();
 
-                        EditorWindow editorWindow =
+                        final EditorWindow editorWindow =
                                 new EditorWindow(display, "Independence Facts",
                                         "Close", false, workbench);
                         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -640,8 +640,8 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 //        });
 
         dagInPattern.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph graph = new EdgeListGraph(getGraph());
+            public void actionPerformed(final ActionEvent e) {
+                final Graph graph = new EdgeListGraph(getGraph());
 
 //                // Removing bidirected edges from the pattern before selecting a DAG.                                   4
 //                for (Edge edge : graph.getEdges()) {
@@ -650,7 +650,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
 //                    }
 //                }
 
-                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
+                final Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
 //                PatternToDag search = new PatternToDag(new forbid_latent_common_causes(graph));
 //                Graph dag = search.patternToDagMeek();
@@ -664,8 +664,8 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         });
 
         gesOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DataModel dataModel = getAlgorithmRunner().getDataModel();
+            public void actionPerformed(final ActionEvent e) {
+                final DataModel dataModel = getAlgorithmRunner().getDataModel();
 
                 final Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
 
@@ -677,8 +677,8 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         });
 
         nextGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph next = getGraphHistory().next();
+            public void actionPerformed(final ActionEvent e) {
+                final Graph next = getGraphHistory().next();
                 getWorkbench().setGraph(next);
                 ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(next);
                 firePropertyChange("modelChanged", null, null);
@@ -686,8 +686,8 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         });
 
         previousGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph previous = getGraphHistory().previous();
+            public void actionPerformed(final ActionEvent e) {
+                final Graph previous = getGraphHistory().previous();
                 getWorkbench().setGraph(previous);
                 ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(previous);
                 firePropertyChange("modelChanged", null, null);
@@ -711,30 +711,30 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        Parameters params = getAlgorithmRunner().getParams();
+        final Parameters params = getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
-    private void addMixedTestMenuItems(JMenu test) {
-        IndTestType testType = getTestType();
+    private void addMixedTestMenuItems(final JMenu test) {
+        final IndTestType testType = getTestType();
         if (testType != IndTestType.MIXED_MLR) {
             setTestType(IndTestType.MIXED_MLR);
         }
 
-        ButtonGroup group = new ButtonGroup();
-        JCheckBoxMenuItem logr = new JCheckBoxMenuItem("Multinomial Logistic Regression");
+        final ButtonGroup group = new ButtonGroup();
+        final JCheckBoxMenuItem logr = new JCheckBoxMenuItem("Multinomial Logistic Regression");
         group.add(logr);
         test.add(logr);
         logr.setSelected(true);
 
         logr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setTestType(IndTestType.MIXED_MLR);
             }
         });
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
@@ -745,11 +745,11 @@ public class PcGesSearchEditor extends AbstractSearchEditor
     //================================PRIVATE METHODS====================//
 
     private JPanel getParamsPanel() {
-        JPanel paramsPanel = new JPanel();
+        final JPanel paramsPanel = new JPanel();
 
-        Box b2 = Box.createVerticalBox();
+        final Box b2 = Box.createVerticalBox();
 
-        JComponent indTestParamBox = getIndTestParamBox();
+        final JComponent indTestParamBox = getIndTestParamBox();
         if (indTestParamBox != null) {
             b2.add(indTestParamBox);
         }
@@ -767,7 +767,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Parameters params) {
+    private JComponent getIndTestParamBox(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -807,7 +807,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         return new IndTestParamsEditor(params);
     }
 
-    protected void doDefaultArrangement(Graph resultGraph) {
+    protected void doDefaultArrangement(final Graph resultGraph) {
         if (getLatestWorkbenchGraph() != null) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
                     getLatestWorkbenchGraph());
@@ -819,16 +819,16 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         }
     }
 
-    private JScrollPane dagWorkbenchScroll(Graph dag) {
+    private JScrollPane dagWorkbenchScroll(final Graph dag) {
 
-        GraphWorkbench dagWorkbench = new GraphWorkbench(dag);
+        final GraphWorkbench dagWorkbench = new GraphWorkbench(dag);
         dagWorkbench.setAllowDoubleClickActions(false);
         dagWorkbench.setAllowNodeEdgeSelection(true);
-        JScrollPane dagWorkbenchScroll = new JScrollPane(dagWorkbench);
+        final JScrollPane dagWorkbenchScroll = new JScrollPane(dagWorkbench);
         dagWorkbenchScroll.setPreferredSize(new Dimension(450, 450));
 
         dagWorkbench.addMouseListener(new MouseAdapter() {
-            public void mouseExited(MouseEvent e) {
+            public void mouseExited(final MouseEvent e) {
                 storeLatestWorkbenchGraph();
             }
         });

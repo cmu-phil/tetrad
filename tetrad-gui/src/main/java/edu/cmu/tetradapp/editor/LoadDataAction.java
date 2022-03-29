@@ -45,12 +45,12 @@ final class LoadDataAction extends AbstractAction {
     /**
      * The dataEditor into which data is loaded. -
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
     /**
      * Creates a new load data action for the given dataEditor.
      */
-    public LoadDataAction(DataEditor editor) {
+    public LoadDataAction(final DataEditor editor) {
         super("Load Data...");
 
         if (editor == null) {
@@ -64,7 +64,7 @@ final class LoadDataAction extends AbstractAction {
      * Performs the action of loading a session from a file.
      */
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
 
         // first warn user about other datasets being removed.
 //        if (!isDataEmpty()) {
@@ -77,46 +77,46 @@ final class LoadDataAction extends AbstractAction {
 //                return;
 //            }
 //        }
-        JFileChooser chooser = getJFileChooser();
+        final JFileChooser chooser = getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         // Sets the file chooser to allow multiple file selections
         chooser.setMultiSelectionEnabled(true);
         // Customize dialog title bar text
         chooser.setDialogTitle("Choose data files (choose multiple files with Ctrl or Shift key)");
         // The second argument sets both the title for the dialog window and the label for the approve button
-        int _ret = chooser.showDialog(this.dataEditor, "Choose");
+        final int _ret = chooser.showDialog(this.dataEditor, "Choose");
 
         if (_ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
 
         // Files array
-        File[] files = chooser.getSelectedFiles();
+        final File[] files = chooser.getSelectedFiles();
 
         Preferences.userRoot().put("fileSaveLocation", files[0].getParent());
 
-        DataModelList dataModelList;
+        final DataModelList dataModelList;
 
         // Show the data loader dialog to preview data ata and set their parameters
-        LoadDataDialog loadData = new LoadDataDialog(files);
+        final LoadDataDialog loadData = new LoadDataDialog(files);
         try {
             loadData.showDataLoaderDialog();
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             Logger.getLogger(LoadDataAction.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         boolean keepData = false;
 
         if (!isDataEmpty()) {
-            String message = "Would you like to replace the model data?";
-            int option = JOptionPane.showOptionDialog(this.dataEditor, message, "Data Replacement",
+            final String message = "Would you like to replace the model data?";
+            final int option = JOptionPane.showOptionDialog(this.dataEditor, message, "Data Replacement",
                     0, JOptionPane.QUESTION_MESSAGE,
                     null, new String[]{"Replace", "Keep"}, "Replace");
 
             keepData = option == 1;
         }
 
-        DataModelList _dataModelList = loadData.getDataModels();
+        final DataModelList _dataModelList = loadData.getDataModels();
 
         if (_dataModelList.isEmpty()) {
 //            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -125,15 +125,15 @@ final class LoadDataAction extends AbstractAction {
         }
 
         if (keepData) {
-            dataModelList = dataEditor.getDataModelList();
+            dataModelList = this.dataEditor.getDataModelList();
         } else {
             dataModelList = new DataModelList();
         }
 
         dataModelList.addAll(_dataModelList);
 
-        dataEditor.replace(dataModelList);
-        dataEditor.selectFirstTab();
+        this.dataEditor.replace(dataModelList);
+        this.dataEditor.selectFirstTab();
         firePropertyChange("modelChanged", null, null);
     }
 
@@ -143,9 +143,9 @@ final class LoadDataAction extends AbstractAction {
      * States whether the data is empty.
      */
     private boolean isDataEmpty() {
-        DataWrapper wrapper = this.dataEditor.getDataWrapper();
-        DataModelList dataModels = wrapper.getDataModelList();
-        for (DataModel model : dataModels) {
+        final DataWrapper wrapper = this.dataEditor.getDataWrapper();
+        final DataModelList dataModels = wrapper.getDataModelList();
+        for (final DataModel model : dataModels) {
             if (model instanceof DataSet) {
                 return ((DataSet) model).getNumRows() == 0;
             } else {
@@ -157,8 +157,8 @@ final class LoadDataAction extends AbstractAction {
     }
 
     private static JFileChooser getJFileChooser() {
-        JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation
+        final JFileChooser chooser = new JFileChooser();
+        final String sessionSaveLocation
                 = Preferences.userRoot().get("fileSaveLocation", "");
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.resetChoosableFileFilters();

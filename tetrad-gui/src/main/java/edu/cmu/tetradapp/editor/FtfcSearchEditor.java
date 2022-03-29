@@ -56,7 +56,7 @@ public class FtfcSearchEditor extends JPanel {
     /**
      * The algorithm wrapper being viewed.
      */
-    private FtfcRunner mimRunner;
+    private final FtfcRunner mimRunner;
 
     /**
      * The workbench displaying the result workbench.
@@ -87,7 +87,7 @@ public class FtfcSearchEditor extends JPanel {
     /**
      * The label for the result graph workbench.
      */
-    private String resultLabel;
+    private final String resultLabel;
 
     /**
      * The scrollpange for the result workbench.
@@ -97,7 +97,7 @@ public class FtfcSearchEditor extends JPanel {
 
     //============================CONSTRUCTORS===========================//
 
-    private FtfcSearchEditor(FtfcRunner mimRunner, String resultLabel) {
+    private FtfcSearchEditor(final FtfcRunner mimRunner, final String resultLabel) {
         if (mimRunner == null) {
             throw new NullPointerException();
         }
@@ -115,7 +115,7 @@ public class FtfcSearchEditor extends JPanel {
     /**
      * Allows the user to pop up an editor for a MimBuildRunner.
      */
-    public FtfcSearchEditor(FtfcRunner runner) {
+    public FtfcSearchEditor(final FtfcRunner runner) {
         this(runner, "Result MAG");
     }
 
@@ -125,24 +125,24 @@ public class FtfcSearchEditor extends JPanel {
      * Construct the toolbar panel.
      */
     private JPanel getToolbar() {
-        JPanel toolbar = new JPanel();
+        final JPanel toolbar = new JPanel();
         getExecuteButton().setText("Execute*");
         getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 execute();
             }
         });
 
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
         b1.add(getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
         b2.add(getExecuteButton());
         b1.add(b2);
 
-        Box b3 = Box.createHorizontalBox();
-        JLabel label = new JLabel("<html>" + "*Please note that some" +
+        final Box b3 = Box.createHorizontalBox();
+        final JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -154,7 +154,7 @@ public class FtfcSearchEditor extends JPanel {
         b1.add(b3);
 
         addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("algorithmFinished".equals(evt.getPropertyName())) {
                     specialToolbarSetup();
                 }
@@ -169,7 +169,7 @@ public class FtfcSearchEditor extends JPanel {
      * Executes the algorithm.
      */
     private void execute() {
-        Runnable runnable = new Runnable() {
+        final Runnable runnable = new Runnable() {
             public void run() {
                 getExecuteButton().setEnabled(false);
                 setErrorMessage(null);
@@ -177,11 +177,11 @@ public class FtfcSearchEditor extends JPanel {
                 try {
 //                    mimRunner.getParameters().setClusters(clusterEditor.getClusters());
                     getMimRunner().execute();
-                } catch (Exception e) {
-                    CharArrayWriter writer1 = new CharArrayWriter();
-                    PrintWriter writer2 = new PrintWriter(writer1);
+                } catch (final Exception e) {
+                    final CharArrayWriter writer1 = new CharArrayWriter();
+                    final PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
-                    String message = writer1.toString();
+                    final String message = writer1.toString();
                     writer2.close();
 
                     e.printStackTrace(System.out);
@@ -204,7 +204,7 @@ public class FtfcSearchEditor extends JPanel {
 
                 getWorkbenchScroll().setBorder(
                         new TitledBorder(getResultLabel()));
-                Graph resultGraph = resultGraph();
+                final Graph resultGraph = resultGraph();
 
                 doDefaultArrangement(resultGraph);
 
@@ -227,13 +227,13 @@ public class FtfcSearchEditor extends JPanel {
         this.thread = thread;
         thread.start();
 
-        Thread watcher = new Thread() {
+        final Thread watcher = new Thread() {
             public void run() {
                 TaskManager.getInstance().setCanceled(false);
 
                 try {
-                    sleep(delay);
-                } catch (InterruptedException e) {
+                    sleep(FtfcSearchEditor.this.delay);
+                } catch (final InterruptedException e) {
                     return;
                 }
 
@@ -243,13 +243,13 @@ public class FtfcSearchEditor extends JPanel {
                     return;
                 }
 
-                JProgressBar progressBar = new JProgressBar(0, 100);
+                final JProgressBar progressBar = new JProgressBar(0, 100);
                 progressBar.setIndeterminate(true);
 
-                JButton stopButton = new JButton("Stop");
+                final JButton stopButton = new JButton("Stop");
 
                 stopButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(final ActionEvent e) {
                         if (thread() != null) {
                             thread().stop();
                             TaskManager.getInstance().setCanceled(true);
@@ -264,13 +264,13 @@ public class FtfcSearchEditor extends JPanel {
                     }
                 });
 
-                Box b = Box.createHorizontalBox();
+                final Box b = Box.createHorizontalBox();
                 b.add(progressBar);
                 b.add(stopButton);
 
-                Frame ancestor =
+                final Frame ancestor =
                         (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
-                JDialog dialog = new JDialog(ancestor, "Searching...", false);
+                final JDialog dialog = new JDialog(ancestor, "Searching...", false);
 
                 dialog.getContentPane().add(b);
                 dialog.pack();
@@ -280,7 +280,7 @@ public class FtfcSearchEditor extends JPanel {
                 while (thread().isAlive()) {
                     try {
                         sleep(200);
-                    } catch (InterruptedException e) {
+                    } catch (final InterruptedException e) {
                         return;
                     }
                 }
@@ -300,7 +300,7 @@ public class FtfcSearchEditor extends JPanel {
         watcher.start();
     }
 
-    private void doDefaultArrangement(Graph graph) {
+    private void doDefaultArrangement(final Graph graph) {
         GraphUtils.circleLayout(graph, 200, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(graph);
     }
@@ -313,42 +313,42 @@ public class FtfcSearchEditor extends JPanel {
     }
 
     private JButton getExecuteButton() {
-        return executeButton;
+        return this.executeButton;
     }
 
     private MimRunner getMimRunner() {
-        return mimRunner;
+        return this.mimRunner;
     }
 
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    private void setup(String resultLabel) {
+    private void setup(final String resultLabel) {
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
         add(workbenchScroll(resultLabel), BorderLayout.CENTER);
 
-        displayPanel = new JPanel();
-        displayPanel.setLayout(new BorderLayout());
-        displayPanel.setPreferredSize(new Dimension(500, 500));
+        this.displayPanel = new JPanel();
+        this.displayPanel.setLayout(new BorderLayout());
+        this.displayPanel.setPreferredSize(new Dimension(500, 500));
 
         updateDisplayPanel();
 
-        add(displayPanel, BorderLayout.CENTER);
+        add(this.displayPanel, BorderLayout.CENTER);
         add(menuBar(), BorderLayout.NORTH);
     }
 
     private void updateDisplayPanel() {
-        displayPanel.removeAll();
+        this.displayPanel.removeAll();
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        final JTabbedPane tabbedPane = new JTabbedPane();
 
         if (getMimRunner().getStructureGraph() != null) {
             if (getMimRunner().getStructureGraph() != null) {
 //                DataGraphUtils.circleLayout(structureGraph, 200, 200, 150);
-                Graph structureGraph = getMimRunner().getStructureGraph();
+                final Graph structureGraph = getMimRunner().getStructureGraph();
                 doDefaultArrangement(structureGraph);
-                GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
+                final GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
                 structureWorkbench.setAllowDoubleClickActions(false);
 
                 tabbedPane.add("Structure Model",
@@ -357,23 +357,23 @@ public class FtfcSearchEditor extends JPanel {
         }
 
         if (getMimRunner().getClusters() != null) {
-            ClusterEditor editor = new ClusterEditor(getMimRunner().getClusters(),
+            final ClusterEditor editor = new ClusterEditor(getMimRunner().getClusters(),
                     getMimRunner().getData().getVariableNames());
             tabbedPane.add("Measurement Model", editor);
         }
 
         if (getMimRunner().getFullGraph() != null) {
-            Graph fullGraph = getMimRunner().getFullGraph();
+            final Graph fullGraph = getMimRunner().getFullGraph();
             doDefaultArrangement(fullGraph);
             GraphUtils.fruchtermanReingoldLayout(fullGraph);
 
-            GraphWorkbench fullGraphBench = new GraphWorkbench(fullGraph);
+            final GraphWorkbench fullGraphBench = new GraphWorkbench(fullGraph);
             tabbedPane.add("Full Graph", new JScrollPane(fullGraphBench));
         }
 
-        displayPanel.add(tabbedPane, BorderLayout.CENTER);
-        displayPanel.revalidate();
-        displayPanel.repaint();
+        this.displayPanel.add(tabbedPane, BorderLayout.CENTER);
+        this.displayPanel.revalidate();
+        this.displayPanel.repaint();
     }
 
     private Graph resultGraph() {
@@ -386,14 +386,14 @@ public class FtfcSearchEditor extends JPanel {
         return resultGraph;
     }
 
-    private JScrollPane workbenchScroll(String resultLabel) {
-        Graph resultGraph = resultGraph();
+    private JScrollPane workbenchScroll(final String resultLabel) {
+        final Graph resultGraph = resultGraph();
 
-        Graph sourceGraph = getMimRunner().getSourceGraph();
-        Graph latestWorkbenchGraph =
+        final Graph sourceGraph = getMimRunner().getSourceGraph();
+        final Graph latestWorkbenchGraph =
                 (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
-        boolean arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph,
+        final boolean arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph,
                 latestWorkbenchGraph);
 
         if (!arrangedAll) {
@@ -407,7 +407,7 @@ public class FtfcSearchEditor extends JPanel {
         getWorkbenchScroll().setBorder(new TitledBorder(resultLabel));
 
         this.workbench.addMouseListener(new MouseAdapter() {
-            public void mouseExited(MouseEvent e) {
+            public void mouseExited(final MouseEvent e) {
                 storeLatestWorkbenchGraph();
             }
         });
@@ -416,34 +416,34 @@ public class FtfcSearchEditor extends JPanel {
     }
 
     private JMenuBar menuBar() {
-        JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
+        final JMenuBar menuBar = new JMenuBar();
+        final JMenu file = new JMenu("File");
         menuBar.add(file);
         return menuBar;
     }
 
     private Thread thread() {
-        return thread;
+        return this.thread;
     }
 
     private String getErrorMessage() {
-        return errorMessage;
+        return this.errorMessage;
     }
 
-    private void setErrorMessage(String errorMessage) {
+    private void setErrorMessage(final String errorMessage) {
         this.errorMessage = errorMessage;
     }
 
     private String getResultLabel() {
-        return resultLabel;
+        return this.resultLabel;
     }
 
     private JScrollPane getWorkbenchScroll() {
-        return workbenchScroll;
+        return this.workbenchScroll;
     }
 
     public Graph getLatestWorkbenchGraph() {
-        Graph graph = (Graph) getMimRunner().getParams().get("sourceGraph", null);
+        final Graph graph = (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         if (graph == null) {
             return getMimRunner().getSourceGraph();
@@ -453,25 +453,25 @@ public class FtfcSearchEditor extends JPanel {
     }
 
     private void storeLatestWorkbenchGraph() {
-        Graph latestWorkbenchGraph = getWorkbench().getGraph();
+        final Graph latestWorkbenchGraph = getWorkbench().getGraph();
 
         if (latestWorkbenchGraph.getNumNodes() == 0) {
             return;
         }
 
         try {
-            Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
+            final Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
             getMimRunner().getParams().set("sourceGraph", graph);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             getMimRunner().getParams().set("sourceGraph", (Graph) null);
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             getMimRunner().getParams().set("sourceGraph", (Graph) null);
             e.printStackTrace();
         }
     }
 
     private Box getParamsPanel() {
-        Box b2 = Box.createVerticalBox();
+        final Box b2 = Box.createVerticalBox();
         b2.add(getIndTestParamBox());
         b2.setBorder(new TitledBorder("Parameters"));
         return b2;
@@ -481,7 +481,7 @@ public class FtfcSearchEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        Parameters params = getMimRunner().getParams();
+        final Parameters params = getMimRunner().getParams();
         return getIndTestParamBox(params);
     }
 
@@ -489,12 +489,12 @@ public class FtfcSearchEditor extends JPanel {
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Parameters params) {
+    private JComponent getIndTestParamBox(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        MimRunner runner = getMimRunner();
+        final MimRunner runner = getMimRunner();
         params.set("varNames", runner.getParams().get("varNames", null));
         return new FtfcIndTestParamsEditor(params);
     }

@@ -57,23 +57,23 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     /**
      * The min value of the data.
      */
-    private double min;
+    private final double min;
 
     /**
      * The max value of the data.
      */
-    private double max;
+    private final double max;
 
     /**
      * The panel that contains the range editor.
      */
-    private JPanel rangeEditorPanel;
+    private final JPanel rangeEditorPanel;
 
 
     /**
      * The selection buttons box.
      */
-    private Box selectionButtonsBox;
+    private final Box selectionButtonsBox;
 
 
     /**
@@ -84,7 +84,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     /**
      * A spinner used to select the number of categories.
      */
-    private IntSpinner categorySpinner;
+    private final IntSpinner categorySpinner;
 
 
     /**
@@ -96,7 +96,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     /**
      * The data that is being discretized.
      */
-    private double[] data;
+    private final double[] data;
 
 
     /**
@@ -116,54 +116,54 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
      * @param dataSet  The dataset containing the data for the variable.
      * @param variable The variable to be edited.
      */
-    public ContinuousDiscretizationEditor(DataSet dataSet,
-                                          ContinuousVariable variable) {
+    public ContinuousDiscretizationEditor(final DataSet dataSet,
+                                          final ContinuousVariable variable) {
         if (variable == null) {
             throw new NullPointerException();
         }
 
         this.method = Method.NONE;
         this.data = new double[dataSet.getNumRows()];
-        int col = dataSet.getColumn(variable);
+        final int col = dataSet.getColumn(variable);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             this.data[i] = dataSet.getDouble(i, col);
         }
 
-        this.min = Descriptive.min(new DoubleArrayList(data));
-        this.max = Descriptive.max(new DoubleArrayList(data));
+        this.min = Descriptive.min(new DoubleArrayList(this.data));
+        this.max = Descriptive.max(new DoubleArrayList(this.data));
         this.numberOfCategories = 2;
 
         this.categorySpinner = new IntSpinner(2, 1, 2);
-        categorySpinner.setMin(2);
-        categorySpinner.setMaximumSize(categorySpinner.getPreferredSize());
-        categorySpinner.setSize(categorySpinner.getPreferredSize());
-        categorySpinner.setMinimumSize(categorySpinner.getPreferredSize());
-        categorySpinner.setFilter(new MyFilter());
-        categorySpinner.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JSpinner spinner = (JSpinner) e.getSource();
-                if (!spinner.getValue().equals(numberOfCategories)) {
+        this.categorySpinner.setMin(2);
+        this.categorySpinner.setMaximumSize(this.categorySpinner.getPreferredSize());
+        this.categorySpinner.setSize(this.categorySpinner.getPreferredSize());
+        this.categorySpinner.setMinimumSize(this.categorySpinner.getPreferredSize());
+        this.categorySpinner.setFilter(new MyFilter());
+        this.categorySpinner.addChangeListener(new ChangeListener() {
+            public void stateChanged(final ChangeEvent e) {
+                final JSpinner spinner = (JSpinner) e.getSource();
+                if (!spinner.getValue().equals(ContinuousDiscretizationEditor.this.numberOfCategories)) {
                     setNumCategories((Integer) spinner.getValue());
                 }
             }
         });
 
 
-        rangeEditorPanel = new JPanel();
-        rangeEditorPanel.setLayout(new BorderLayout());
+        this.rangeEditorPanel = new JPanel();
+        this.rangeEditorPanel.setLayout(new BorderLayout());
         setNumCategories(2);
 
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
         b1.add(Box.createVerticalStrut(10));
 
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(Box.createRigidArea(new Dimension(10, 0)));
         /*
       The decimal format to use.
      */
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        String label = "Min = " + nf.format(min) + " , Max = " + nf.format(max);
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final String label = "Min = " + nf.format(this.min) + " , Max = " + nf.format(this.max);
         b3.add(new JLabel(label));
         b3.add(Box.createHorizontalGlue());
         b1.add(b3);
@@ -174,17 +174,17 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
         b1.add(this.selectionButtonsBox);
         b1.add(Box.createVerticalStrut(5));
 
-        Box b5 = Box.createHorizontalBox();
+        final Box b5 = Box.createHorizontalBox();
         b5.add(Box.createRigidArea(new Dimension(10, 0)));
         b5.add(new JLabel("Use "));
-        b5.add(categorySpinner);
+        b5.add(this.categorySpinner);
         b5.add(new JLabel(" categories to discretize."));
         b5.add(Box.createHorizontalGlue());
         b1.add(b5);
 
         b1.add(Box.createVerticalStrut(10));
 
-        Box b6 = Box.createHorizontalBox();
+        final Box b6 = Box.createHorizontalBox();
         b6.add(Box.createRigidArea(new Dimension(10, 0)));
         b6.add(new JLabel("Edit category names and breakpoints:"));
         b6.add(Box.createHorizontalGlue());
@@ -192,7 +192,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
         b1.add(Box.createVerticalStrut(10));
 
-        b1.add(rangeEditorPanel);
+        b1.add(this.rangeEditorPanel);
         b1.add(Box.createVerticalGlue());
 
         setLayout(new BorderLayout());
@@ -214,12 +214,12 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
      * @return the discretization spec created by the user.
      */
     public ContinuousDiscretizationSpec getDiscretizationSpec() {
-        ContinuousDiscretizationSpec spec = this.rangeEditor.getDiscretizationSpec();
-        if (method == Method.EQUAL_SIZE_BUCKETS) {
+        final ContinuousDiscretizationSpec spec = this.rangeEditor.getDiscretizationSpec();
+        if (this.method == Method.EQUAL_SIZE_BUCKETS) {
             spec.setMethod(ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES);
-        } else if (method == Method.EVENLY_DIVIDED_INTERNVALS) {
+        } else if (this.method == Method.EVENLY_DIVIDED_INTERNVALS) {
             spec.setMethod(ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
-        } else if (method == Method.NONE) {
+        } else if (this.method == Method.NONE) {
             spec.setMethod(ContinuousDiscretizationSpec.NONE);
         }
         return spec;
@@ -229,7 +229,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     /**
      * Changes the method.
      */
-    public void setMethod(Method method) {
+    public void setMethod(final Method method) {
         this.method = method;
         this.buildSelectionBox();
         this.setNumCategories(this.numberOfCategories);
@@ -247,35 +247,35 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     /**
      * Sets the discretization spec that should be used by the editor.
      */
-    public void setDiscretizationSpec(DiscretizationSpec _spec) {
-        ContinuousDiscretizationSpec spec = (ContinuousDiscretizationSpec) _spec;
+    public void setDiscretizationSpec(final DiscretizationSpec _spec) {
+        final ContinuousDiscretizationSpec spec = (ContinuousDiscretizationSpec) _spec;
 
-        rangeEditorPanel.removeAll();
+        this.rangeEditorPanel.removeAll();
         if (spec.getMethod() == ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS) {
             this.method = Method.EVENLY_DIVIDED_INTERNVALS;
         } else if (spec.getMethod() == ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES) {
             this.method = Method.EQUAL_SIZE_BUCKETS;
         }
         this.buildSelectionBox();
-        rangeEditor = createRangeEditor(spec);
+        this.rangeEditor = createRangeEditor(spec);
         this.numberOfCategories = spec.getCategories().size();
         this.categorySpinner.setValue(this.numberOfCategories);
-        rangeEditorPanel.add(rangeEditor, BorderLayout.CENTER);
-        rangeEditorPanel.revalidate();
-        rangeEditorPanel.repaint();
+        this.rangeEditorPanel.add(this.rangeEditor, BorderLayout.CENTER);
+        this.rangeEditorPanel.revalidate();
+        this.rangeEditorPanel.repaint();
     }
 
 
     /**
      * Sets the number of categories to use.
      */
-    public void setNumCategories(int numCategories) {
+    public void setNumCategories(final int numCategories) {
         if (numCategories < 2) {
             throw new IllegalArgumentException();
         }
         this.numberOfCategories = numCategories;
-        rangeEditorPanel.removeAll();
-        ContinuousDiscretizationSpec defaultDiscretizationSpec;
+        this.rangeEditorPanel.removeAll();
+        final ContinuousDiscretizationSpec defaultDiscretizationSpec;
         if (this.method == Method.EVENLY_DIVIDED_INTERNVALS) {
             defaultDiscretizationSpec = getEvenlyDividedDiscretizationSpec(numCategories);
         } else if (this.method == Method.EQUAL_SIZE_BUCKETS) {
@@ -283,12 +283,12 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
         } else if (this.method == Method.NONE) {
             defaultDiscretizationSpec = getDontDiscretizeSpec(numCategories);
         } else {
-            throw new IllegalStateException("Unknown method " + method);
+            throw new IllegalStateException("Unknown method " + this.method);
         }
-        rangeEditor = createRangeEditor(defaultDiscretizationSpec);
-        rangeEditorPanel.add(rangeEditor, BorderLayout.CENTER);
-        rangeEditorPanel.revalidate();
-        rangeEditorPanel.repaint();
+        this.rangeEditor = createRangeEditor(defaultDiscretizationSpec);
+        this.rangeEditorPanel.add(this.rangeEditor, BorderLayout.CENTER);
+        this.rangeEditorPanel.revalidate();
+        this.rangeEditorPanel.repaint();
 
         this.categorySpinner.setValue(numCategories);
 
@@ -300,53 +300,53 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
     private void buildSelectionBox() {
         this.selectionButtonsBox.removeAll();
-        Box vBox = Box.createVerticalBox();
+        final Box vBox = Box.createVerticalBox();
 
         vBox.add(new JLabel("Discretization Method: "));
 
-        JRadioButton none = new JRadioButton("Don't Discretize",
-                method == Method.NONE);
-        JRadioButton equalInterval = new JRadioButton("Evenly Distributed Intervals",
-                method == Method.EVENLY_DIVIDED_INTERNVALS);
-        JRadioButton equalBuckets = new JRadioButton("Evenly Distributed Values",
-                method == Method.EQUAL_SIZE_BUCKETS);
+        final JRadioButton none = new JRadioButton("Don't Discretize",
+                this.method == Method.NONE);
+        final JRadioButton equalInterval = new JRadioButton("Evenly Distributed Intervals",
+                this.method == Method.EVENLY_DIVIDED_INTERNVALS);
+        final JRadioButton equalBuckets = new JRadioButton("Evenly Distributed Values",
+                this.method == Method.EQUAL_SIZE_BUCKETS);
         none.setHorizontalTextPosition(AbstractButton.RIGHT);
         equalInterval.setHorizontalTextPosition(AbstractButton.RIGHT);
         equalBuckets.setHorizontalTextPosition(AbstractButton.RIGHT);
 
-        ButtonGroup group = new ButtonGroup();
+        final ButtonGroup group = new ButtonGroup();
         group.add(equalBuckets);
         group.add(equalInterval);
         group.add(none);
 
         none.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                method = Method.NONE;
-                setNumCategories(numberOfCategories);
+            public void actionPerformed(final ActionEvent e) {
+                ContinuousDiscretizationEditor.this.method = Method.NONE;
+                setNumCategories(ContinuousDiscretizationEditor.this.numberOfCategories);
             }
         });
 
         equalInterval.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                method = Method.EVENLY_DIVIDED_INTERNVALS;
-                setNumCategories(numberOfCategories);
+            public void actionPerformed(final ActionEvent e) {
+                ContinuousDiscretizationEditor.this.method = Method.EVENLY_DIVIDED_INTERNVALS;
+                setNumCategories(ContinuousDiscretizationEditor.this.numberOfCategories);
             }
         });
 
         equalBuckets.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                method = Method.EQUAL_SIZE_BUCKETS;
-                setNumCategories(numberOfCategories);
+            public void actionPerformed(final ActionEvent e) {
+                ContinuousDiscretizationEditor.this.method = Method.EQUAL_SIZE_BUCKETS;
+                setNumCategories(ContinuousDiscretizationEditor.this.numberOfCategories);
             }
         });
 
 //        System.out.println("Method = " + method);
 
-        if (method == Method.EQUAL_SIZE_BUCKETS) {
+        if (this.method == Method.EQUAL_SIZE_BUCKETS) {
             equalBuckets.setSelected(true);
-        } else if (method == Method.EVENLY_DIVIDED_INTERNVALS) {
+        } else if (this.method == Method.EVENLY_DIVIDED_INTERNVALS) {
             equalInterval.setSelected(true);
-        } else if (method == Method.NONE) {
+        } else if (this.method == Method.NONE) {
             none.setSelected(true);
         } else {
             none.setSelected(true);
@@ -365,25 +365,25 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
 
     private RangeEditor createRangeEditor(
-            ContinuousDiscretizationSpec discretizationSpec) {
+            final ContinuousDiscretizationSpec discretizationSpec) {
         return new RangeEditor(discretizationSpec);
     }
 
     /**
      * Calculates the equal freq discretization spec
      */
-    private ContinuousDiscretizationSpec getEqualFreqDiscretizationSpec(int numCategories) {
-        double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(this.data, numCategories);
-        List<String> cats = defaultCategories(numCategories);
+    private ContinuousDiscretizationSpec getEqualFreqDiscretizationSpec(final int numCategories) {
+        final double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(this.data, numCategories);
+        final List<String> cats = defaultCategories(numCategories);
         return new ContinuousDiscretizationSpec(breakpoints, cats);
     }
 
     /**
      * Calculates the equal freq discretization spec
      */
-    private ContinuousDiscretizationSpec getDontDiscretizeSpec(int numCategories) {
-        double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(this.data, numCategories);
-        List<String> cats = defaultCategories(numCategories);
+    private ContinuousDiscretizationSpec getDontDiscretizeSpec(final int numCategories) {
+        final double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(this.data, numCategories);
+        final List<String> cats = defaultCategories(numCategories);
         return new ContinuousDiscretizationSpec(breakpoints, cats, ContinuousDiscretizationSpec.NONE);
     }
 
@@ -391,19 +391,19 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
      * Calculates the default discretization spec.
      */
     private ContinuousDiscretizationSpec getEvenlyDividedDiscretizationSpec(
-            int numCategories) {
-        double[] breakpoints = defaultBreakpoints(max, min, numCategories);
-        List<String> categories = defaultCategories(numCategories);
+            final int numCategories) {
+        final double[] breakpoints = defaultBreakpoints(this.max, this.min, numCategories);
+        final List<String> categories = defaultCategories(numCategories);
         return new ContinuousDiscretizationSpec(breakpoints, categories);
     }
 
     /**
      * Calcultes the default break points.
      */
-    private static double[] defaultBreakpoints(double max, double min,
-                                               int numCategories) {
-        double interval = (max - min) / numCategories;
-        double[] breakpoints = new double[numCategories - 1];
+    private static double[] defaultBreakpoints(final double max, final double min,
+                                               final int numCategories) {
+        final double interval = (max - min) / numCategories;
+        final double[] breakpoints = new double[numCategories - 1];
         for (int i = 0; i < breakpoints.length; i++) {
             breakpoints[i] = min + (i + 1) * interval;
         }
@@ -411,8 +411,8 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     }
 
 
-    private static List<String> defaultCategories(int numCategories) {
-        List<String> categories = new LinkedList<>();
+    private static List<String> defaultCategories(final int numCategories) {
+        final List<String> categories = new LinkedList<>();
         for (int i = 0; i < numCategories; i++) {
             categories.add(DataUtils.defaultCategory(i));
         }
@@ -425,7 +425,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     private static class MyFilter implements IntSpinner.Filter {
 
 
-        public int filter(int oldValue, int newValue) {
+        public int filter(final int oldValue, int newValue) {
             if (newValue < 2) {
                 newValue = oldValue;
             }

@@ -45,15 +45,15 @@ final class LicenseAction extends AbstractAction {
     /**
      * Closes the frontmost session of this action's desktop.
      */
-    public void actionPerformed(ActionEvent e) {
-        String license = LicenseUtils.license();
+    public void actionPerformed(final ActionEvent e) {
+        final String license = LicenseUtils.license();
 
-        JTextArea textArea = new JTextArea(license);
+        final JTextArea textArea = new JTextArea(license);
         textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        JScrollPane scroll = new JScrollPane(textArea);
+        final JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(600, 400));
 
-        Box b = Box.createVerticalBox();
+        final Box b = Box.createVerticalBox();
         b.add(scroll);
 
         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), b,

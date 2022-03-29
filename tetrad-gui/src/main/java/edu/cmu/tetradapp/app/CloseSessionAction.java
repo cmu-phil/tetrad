@@ -48,27 +48,27 @@ final class CloseSessionAction extends AbstractAction {
     /**
      * Closes the frontmost session of this action's desktop.
      */
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
 
         // Get the frontmost SessionWrapper.
-        SessionEditorIndirectRef sessionEditorRef =
+        final SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench graph = sessionEditor.getSessionWorkbench();
-        SessionWrapper sessionWrapper = graph.getSessionWrapper();
+        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        final SessionEditorWorkbench graph = sessionEditor.getSessionWorkbench();
+        final SessionWrapper sessionWrapper = graph.getSessionWrapper();
 
         if (sessionWrapper.isSessionChanged()) {
-            String name = sessionWrapper.getName();
+            final String name = sessionWrapper.getName();
 
             // check to make sure user wants to evaporate this window...
-            String msg =
+            final String msg =
                     "Do you want to save the changes you made to " + name + "?";
-            int response = JOptionPane.showConfirmDialog(
+            final int response = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(), msg, "Fair Warning",
                     JOptionPane.YES_NO_CANCEL_OPTION);
 
             if (response == JOptionPane.YES_OPTION) {
-                SaveSessionAction saveSessionAction = new SaveSessionAction();
+                final SaveSessionAction saveSessionAction = new SaveSessionAction();
                 saveSessionAction.actionPerformed(e);
                 this.saved = saveSessionAction.isSaved();
             } else if (response == JOptionPane.CANCEL_OPTION) {
@@ -87,7 +87,7 @@ final class CloseSessionAction extends AbstractAction {
     }
 
     public boolean isSaved() {
-        return saved;
+        return this.saved;
     }
 }
 

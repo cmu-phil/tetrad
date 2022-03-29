@@ -43,11 +43,11 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 class GeneralizedExpressionParameterizer extends JComponent {
-    private Node node;
-    private GeneralizedSemPm semPm;
+    private final Node node;
+    private final GeneralizedSemPm semPm;
 
-    private Map<String, Double> substitutedValues;
-    private JTextArea resultTextPane;
+    private final Map<String, Double> substitutedValues;
+    private final JTextArea resultTextPane;
 
     public GeneralizedExpressionParameterizer(final GeneralizedSemIm semIm, final Node node) {
         if (semIm == null) {
@@ -63,15 +63,15 @@ class GeneralizedExpressionParameterizer extends JComponent {
         }
 
         this.semPm = semIm.getSemPm();
-        GeneralizedSemIm semIm1 = semIm;
+        final GeneralizedSemIm semIm1 = semIm;
         this.node = node;
 
-        Node errorNode = this.semPm.getErrorNode(node);
-        String expressionString1 = this.semPm.getNodeExpressionString(node);
+        final Node errorNode = this.semPm.getErrorNode(node);
+        final String expressionString1 = this.semPm.getNodeExpressionString(node);
 
-        Set<String> otherVariables = new LinkedHashSet<>();
+        final Set<String> otherVariables = new LinkedHashSet<>();
 
-        for (Node _node : this.semPm.getNodes()) {
+        for (final Node _node : this.semPm.getNodes()) {
             if (this.semPm.getParents(node).contains(_node)) {
                 continue;
             }
@@ -79,39 +79,39 @@ class GeneralizedExpressionParameterizer extends JComponent {
             otherVariables.add(_node.getName());
         }
 
-        ExpressionParser parser = new ExpressionParser(otherVariables, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
+        final ExpressionParser parser = new ExpressionParser(otherVariables, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
 
         try {
             parser.parseExpression(expressionString1);
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
             throw new RuntimeException("Cannot parser the stored expression.", e);
         }
 
 
-        Expression expression = semPm.getNodeExpression(node);
-        String expressionString = semPm.getNodeExpressionString(node);
-        final Set<String> referencedParameters = semPm.getReferencedParameters(node);
+        final Expression expression = this.semPm.getNodeExpression(node);
+        final String expressionString = this.semPm.getNodeExpressionString(node);
+        final Set<String> referencedParameters = this.semPm.getReferencedParameters(node);
 
-        substitutedValues = new HashMap<>();
+        this.substitutedValues = new HashMap<>();
 
-        for (String parameter : referencedParameters) {
-            substitutedValues.put(parameter, semIm.getParameterValue(parameter));
+        for (final String parameter : referencedParameters) {
+            this.substitutedValues.put(parameter, semIm.getParameterValue(parameter));
         }
 
-        String substitutedString = semIm.getNodeSubstitutedString(node, this.substitutedValues);
+        final String substitutedString = semIm.getNodeSubstitutedString(node, this.substitutedValues);
 
         if (node.getNodeType() == NodeType.ERROR) {
-            resultTextPane = new JTextArea(node + " ~ " + substitutedString);
+            this.resultTextPane = new JTextArea(node + " ~ " + substitutedString);
         } else {
-            resultTextPane = new JTextArea(node + " = " + substitutedString);
+            this.resultTextPane = new JTextArea(node + " = " + substitutedString);
         }
 
-        resultTextPane.setEditable(false);
-        resultTextPane.setBackground(Color.LIGHT_GRAY);
+        this.resultTextPane.setEditable(false);
+        this.resultTextPane.setBackground(Color.LIGHT_GRAY);
 
-        Box b = Box.createVerticalBox();
+        final Box b = Box.createVerticalBox();
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
 
         if (node.getNodeType() == NodeType.ERROR) {
             b1.add(new JLabel(node + " ~ " + expressionString));
@@ -122,12 +122,12 @@ class GeneralizedExpressionParameterizer extends JComponent {
         b.add(b1);
         b.add(Box.createVerticalStrut(5));
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         String parameterString = parameterString(parser);
 
         if ("".equals(parameterString)) parameterString = "--NONE--";
 
-        JLabel referencedParametersLabel = new JLabel("Parameters:  " + parameterString);
+        final JLabel referencedParametersLabel = new JLabel("Parameters:  " + parameterString);
         b2.add(referencedParametersLabel);
         b2.add(Box.createHorizontalGlue());
         b.add(b2);
@@ -135,9 +135,9 @@ class GeneralizedExpressionParameterizer extends JComponent {
 
         // Need to keep these in a particular order.
         class MyTextField extends DoubleTextField {
-            private String parameter;
+            private final String parameter;
 
-            public MyTextField(String parameter, double value, int width, NumberFormat format) {
+            public MyTextField(final String parameter, final double value, final int width, final NumberFormat format) {
                 super(value, width, format);
                 this.parameter = parameter;
             }
@@ -147,16 +147,16 @@ class GeneralizedExpressionParameterizer extends JComponent {
             }
         }
 
-        for (String parameter : referencedParameters) {
-            Box c = Box.createHorizontalBox();
+        for (final String parameter : referencedParameters) {
+            final Box c = Box.createHorizontalBox();
             c.add(new JLabel(parameter + " = "));
             final MyTextField field = new MyTextField(parameter, semIm.getParameterValue(parameter), 8,
                     NumberFormatUtil.getInstance().getNumberFormat());
 
             field.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
+                public double filter(final double value, final double oldValue) {
                     GeneralizedExpressionParameterizer.this.substitutedValues.put(field.getParameter(), value);
-                    resultTextPane.setText(node + " = " + semIm.getNodeSubstitutedString(node,
+                    GeneralizedExpressionParameterizer.this.resultTextPane.setText(node + " = " + semIm.getNodeSubstitutedString(node,
                             GeneralizedExpressionParameterizer.this.substitutedValues));
                     return value;
                 }
@@ -168,20 +168,20 @@ class GeneralizedExpressionParameterizer extends JComponent {
             b.add(Box.createVerticalStrut(5));
         }
 
-        Box b6 = Box.createHorizontalBox();
+        final Box b6 = Box.createHorizontalBox();
         b6.add(new JLabel("Result:"));
         b6.add(Box.createHorizontalGlue());
         b.add(b6);
         b.add(Box.createVerticalStrut(5));
 
-        JScrollPane resultScroll = new JScrollPane(resultTextPane);
+        final JScrollPane resultScroll = new JScrollPane(this.resultTextPane);
         resultScroll.setPreferredSize(new Dimension(500, 50));
-        Box b7 = Box.createHorizontalBox();
+        final Box b7 = Box.createHorizontalBox();
         b7.add(resultScroll);
         b.add(b7);
         b.add(Box.createVerticalStrut(5));
 
-        Box b8 = Box.createHorizontalBox();
+        final Box b8 = Box.createHorizontalBox();
         b8.add(Box.createHorizontalGlue());
         b8.add(new JLabel("* Parameter appears in other expressions."));
         b.add(b8);
@@ -191,24 +191,24 @@ class GeneralizedExpressionParameterizer extends JComponent {
     }
 
     public Map<String, Double> getParameterValues() {
-        return substitutedValues;
+        return this.substitutedValues;
     }
 
-    private String parameterString(ExpressionParser parser) {
-        Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
+    private String parameterString(final ExpressionParser parser) {
+        final Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
 
-        for (Node _node : semPm.getNodes()) {
+        for (final Node _node : this.semPm.getNodes()) {
             parameters.remove(_node.getName());
         }
 
-        List<String> parametersList = new ArrayList<>(parameters);
-        StringBuilder buf = new StringBuilder();
+        final List<String> parametersList = new ArrayList<>(parameters);
+        final StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < parametersList.size(); i++) {
             buf.append(parametersList.get(i));
 
-            Set<Node> referencingNodes = semPm.getReferencingNodes(parametersList.get(i));
-            referencingNodes.remove(node);
+            final Set<Node> referencingNodes = this.semPm.getReferencingNodes(parametersList.get(i));
+            referencingNodes.remove(this.node);
 
             if (referencingNodes.size() > 0) {
                 buf.append("*");

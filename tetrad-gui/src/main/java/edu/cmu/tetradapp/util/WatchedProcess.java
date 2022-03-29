@@ -64,7 +64,7 @@ public abstract class WatchedProcess {
     /**
      * The anstor Window in front of which the stop dialog is being displayed.
      */
-    private Window owner;
+    private final Window owner;
 
     /**
      * True iff the "watch process" dialogs should display. These threads block,
@@ -81,7 +81,7 @@ public abstract class WatchedProcess {
     /**
      * The object on which the watch dialog should be centered.
      */
-    private Component centeringComp;
+    private final Component centeringComp;
 
     /**
      * Constructs a new watched process.
@@ -89,7 +89,7 @@ public abstract class WatchedProcess {
      * @param owner The ancestor window in front of which the stop dialog is
      *              being displayed.
      */
-    public WatchedProcess(Window owner) {
+    public WatchedProcess(final Window owner) {
         this(owner, JOptionUtils.centeringComp());
     }
 
@@ -99,7 +99,7 @@ public abstract class WatchedProcess {
      * @param owner The ancestor window in front of which the stop dialog is
      *              being displayed.
      */
-    private WatchedProcess(Window owner, Component centeringComp) {
+    private WatchedProcess(final Window owner, final Component centeringComp) {
         if (owner == null) {
             throw new NullPointerException();
         }
@@ -127,44 +127,44 @@ public abstract class WatchedProcess {
     public abstract void watch();
 
     private String getErrorMessage() {
-        return errorMessage;
+        return this.errorMessage;
     }
 
-    public void setErrorMessage(String errorMessage) {
+    public void setErrorMessage(final String errorMessage) {
         this.errorMessage = errorMessage;
     }
 
     private JDialog getStopDialog() {
-        return stopDialog;
+        return this.stopDialog;
     }
 
-    private void setStopDialog(JDialog stopDialog) {
+    private void setStopDialog(final JDialog stopDialog) {
         this.stopDialog = stopDialog;
     }
 
     private Window getOwner() {
-        return owner;
+        return this.owner;
     }
 
     private boolean isShowDialog() {
         return SHOW_DIALOG;
     }
 
-    public void setShowDialog(boolean showDialog) {
+    public void setShowDialog(final boolean showDialog) {
         SHOW_DIALOG = showDialog;
     }
 
     public boolean isAlive() {
-        return thread.isAlive();
+        return this.thread.isAlive();
     }
 
     //================================PRIVATE METHODS====================//
     private void watchProcess() {
-        Runnable runnable = new Runnable() {
+        final Runnable runnable = new Runnable() {
             public void run() {
                 try {
                     watch();
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     e.printStackTrace();
                     String message = e.getMessage();
 
@@ -178,33 +178,33 @@ public abstract class WatchedProcess {
             }
         };
 
-        Thread thread = new Thread(runnable);
+        final Thread thread = new Thread(runnable);
         setThread(thread);
         thread.setPriority(7);
         thread.start();
 
         if (isShowDialog()) {
-            Thread watcher = new Thread() {
+            final Thread watcher = new Thread() {
                 public void run() {
                     try {
-                        sleep(delay);
-                    } catch (InterruptedException e) {
+                        sleep(WatchedProcess.this.delay);
+                    } catch (final InterruptedException e) {
                         return;
                     }
 
                     if (getErrorMessage() != null) {
                         JOptionPane.showMessageDialog(
-                                centeringComp, getErrorMessage());
+                                WatchedProcess.this.centeringComp, getErrorMessage());
                         return;
                     }
 
-                    JProgressBar progressBar = new JProgressBar(0, 100);
+                    final JProgressBar progressBar = new JProgressBar(0, 100);
                     progressBar.setIndeterminate(true);
 
-                    JButton stopButton = new JButton("Stop");
+                    final JButton stopButton = new JButton("Stop");
 
                     stopButton.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
+                        public void actionPerformed(final ActionEvent e) {
                             if (getThread() != null) {
                                 while (getThread().isAlive()) {
                                     TaskManager.getInstance().setCanceled(true);
@@ -212,9 +212,9 @@ public abstract class WatchedProcess {
 
                                     try {
                                         sleep(500);
-                                    } catch (InterruptedException e1) {
+                                    } catch (final InterruptedException e1) {
                                         JOptionPane.showMessageDialog(
-                                                centeringComp,
+                                                WatchedProcess.this.centeringComp,
                                                 "Could not stop thread.");
                                         return;
                                     }
@@ -227,8 +227,8 @@ public abstract class WatchedProcess {
                         }
                     });
 
-                    Box b = Box.createVerticalBox();
-                    Box b1 = Box.createHorizontalBox();
+                    final Box b = Box.createVerticalBox();
+                    final Box b1 = Box.createHorizontalBox();
                     b1.add(progressBar);
                     b1.add(stopButton);
                     b.add(b1);
@@ -243,16 +243,16 @@ public abstract class WatchedProcess {
 //                    b2.add(scroll);
 //                    b.add(b2);
                     if (isShowDialog()) {
-                        Frame ancestor = (Frame) JOptionUtils.centeringComp()
+                        final Frame ancestor = (Frame) JOptionUtils.centeringComp()
                                 .getTopLevelAncestor();
-                        JDialog dialog
+                        final JDialog dialog
                                 = new JDialog(ancestor, "Executing...", false);
                         setStopDialog(dialog);
 
                         dialog.getContentPane().add(b);
                         dialog.pack();
                         dialog.setLocationRelativeTo(
-                                centeringComp);
+                                WatchedProcess.this.centeringComp);
 
 //                        LogUtils.getInstance().add(out, Level.FINER);
                         while (getThread().isAlive()) {
@@ -266,7 +266,7 @@ public abstract class WatchedProcess {
                                 }
 
 //                                anomaliesTextArea.setCaretPosition(out.getLengthWritten());
-                            } catch (InterruptedException e) {
+                            } catch (final InterruptedException e) {
                                 return;
                             }
                         }
@@ -277,7 +277,7 @@ public abstract class WatchedProcess {
 
                         if (getErrorMessage() != null) {
                             JOptionPane.showMessageDialog(
-                                    centeringComp,
+                                    WatchedProcess.this.centeringComp,
                                     "Stopped with error:\n"
                                             + getErrorMessage());
                         }
@@ -290,23 +290,23 @@ public abstract class WatchedProcess {
     }
 
     private Thread getThread() {
-        return thread;
+        return this.thread;
     }
 
-    private void setThread(Thread thread) {
+    private void setThread(final Thread thread) {
         this.thread = thread;
     }
 
     private boolean existsOtherDialog() {
-        Frame ancestor = (Frame) JOptionUtils.centeringComp()
+        final Frame ancestor = (Frame) JOptionUtils.centeringComp()
                 .getTopLevelAncestor();
-        Window[] ownedWindows = ancestor.getOwnedWindows();
+        final Window[] ownedWindows = ancestor.getOwnedWindows();
 
-        for (Window window : ownedWindows) {
+        for (final Window window : ownedWindows) {
             if (window instanceof Dialog
                     && !(window == getStopDialog())
                     && !(window == getOwner())) {
-                Dialog dialog = (Dialog) window;
+                final Dialog dialog = (Dialog) window;
                 if (dialog.isVisible()) {
                     return true;
                 }
@@ -321,7 +321,7 @@ public abstract class WatchedProcess {
      * check for this periodically and respond gracefully.
      */
     public boolean isCanceled() {
-        boolean isCanceled = false;
+        final boolean isCanceled = false;
         return isCanceled;
     }
 }

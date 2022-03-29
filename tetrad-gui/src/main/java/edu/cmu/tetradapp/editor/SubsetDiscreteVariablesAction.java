@@ -40,12 +40,12 @@ final class SubsetDiscreteVariablesAction extends AbstractAction {
     /**
      * The data editor.                         -
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
     /**
      * Creates a new action to remove discrete columns.
      */
-    public SubsetDiscreteVariablesAction(DataEditor editor) {
+    public SubsetDiscreteVariablesAction(final DataEditor editor) {
         super("Copy Discrete Variables");
 
         if (editor == null) {
@@ -58,11 +58,11 @@ final class SubsetDiscreteVariablesAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        DataModel selectedDataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataModel selectedDataModel = getDataEditor().getSelectedDataModel();
 
         if (selectedDataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) selectedDataModel;
+            final DataSet dataSet = (DataSet) selectedDataModel;
 
             for (int i = dataSet.getNumColumns(); i >= 0; i--) {
                 if (dataSet.getVariable(i) instanceof DiscreteVariable) {
@@ -70,7 +70,7 @@ final class SubsetDiscreteVariablesAction extends AbstractAction {
                 }
             }
 
-            DataModelList list = new DataModelList();
+            final DataModelList list = new DataModelList();
             list.add(dataSet);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
@@ -81,7 +81,7 @@ final class SubsetDiscreteVariablesAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 }
 

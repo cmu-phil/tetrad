@@ -49,14 +49,14 @@ final class AboutTetradAction extends AbstractAction {
     /**
      * Closes the frontmost session of this action's desktop.
      */
-    public void actionPerformed(ActionEvent e) {
-        Box b1 = Box.createVerticalBox();
-        Version currentVersion = Version.currentViewableVersion();
+    public void actionPerformed(final ActionEvent e) {
+        final Box b1 = Box.createVerticalBox();
+        final Version currentVersion = Version.currentViewableVersion();
 
         String copyright = LicenseUtils.copyright();
         copyright = copyright.replaceAll("\n", "<br>");
 
-        JLabel label = new JLabel();
+        final JLabel label = new JLabel();
         label.setText("<html>" + "<b>Tetrad " + currentVersion + "</b>" +
                 "<br>" +
                 "<br>Laboratory for Symbolic and Educational Computing" +

@@ -33,7 +33,7 @@ public class TestDisplayNode {
         // When constructing a display node without a model node, must check
         // make sure its position can be set. This at one point threw a
         // null pointer exception.
-        DisplayNode displayNode = new GraphNodeMeasured("X");
+        final DisplayNode displayNode = new GraphNodeMeasured("X");
         displayNode.setLocation(10, 10);
     }
 }

@@ -47,7 +47,7 @@ public class GraphNodeLatent extends DisplayNode {
      * Constructs a new node for representing latent variables in the
      * graph workbench.
      */
-    public GraphNodeLatent(Node modelNode) {
+    public GraphNodeLatent(final Node modelNode) {
         setModelNode(modelNode);
         if (modelNode.getNodeType() != NodeType.LATENT) {
             throw new IllegalArgumentException("GraphNodeLatent requires " +
@@ -57,10 +57,10 @@ public class GraphNodeLatent extends DisplayNode {
         setDisplayComp(new LatentDisplayComp(modelNode.getName()));
     }
 
-    public void doDoubleClickAction(Graph graph) {
-        String newName;
-        List<Node> nodes = graph.getNodes();
-        JCheckBox latentCheckBox = new JCheckBox("Latent", true);
+    public void doDoubleClickAction(final Graph graph) {
+        final String newName;
+        final List<Node> nodes = graph.getNodes();
+        final JCheckBox latentCheckBox = new JCheckBox("Latent", true);
 
         newName = chooseNewVariableName(latentCheckBox, nodes);
 
@@ -84,13 +84,13 @@ public class GraphNodeLatent extends DisplayNode {
         }
     }
 
-    private String chooseNewVariableName(JCheckBox latentCheckBox,
-                                         List<Node> nodes) {
+    private String chooseNewVariableName(final JCheckBox latentCheckBox,
+                                         final List<Node> nodes) {
         String newName;
 
         LOOP:
         while (true) {
-            JTextField nameField = new JTextField(8);
+            final JTextField nameField = new JTextField(8);
 
             // This makes sure the name field has focus when the dialog (below)
             // is made visible, but that after this it allows other gadgets
@@ -98,11 +98,11 @@ public class GraphNodeLatent extends DisplayNode {
             nameField.addFocusListener(new FocusAdapter() {
                 boolean alreadyLostFocus = false;
 
-                public void focusLost(FocusEvent e) {
-                    if (alreadyLostFocus) return;
-                    JTextField field = (JTextField) e.getSource();
+                public void focusLost(final FocusEvent e) {
+                    if (this.alreadyLostFocus) return;
+                    final JTextField field = (JTextField) e.getSource();
                     field.grabFocus();
-                    alreadyLostFocus = true;
+                    this.alreadyLostFocus = true;
                 }
             });
 
@@ -110,16 +110,16 @@ public class GraphNodeLatent extends DisplayNode {
             nameField.setCaretPosition(0);
             nameField.moveCaretPosition(getName().length());
 
-            JPanel message = new JPanel();
+            final JPanel message = new JPanel();
 
             message.add(new JLabel("Name:"));
             message.add(nameField);
 
             message.add(latentCheckBox);
 
-            JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
+            final JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
-            JDialog dialog = pane.createDialog(this, "Node Properties");
+            final JDialog dialog = pane.createDialog(this, "Node Properties");
 
             dialog.pack();
             dialog.setVisible(true);
@@ -134,7 +134,7 @@ public class GraphNodeLatent extends DisplayNode {
             }
             // Tests that newName is not in the nodes list.
             else if (nodes != null) {
-                for (Node node : nodes) {
+                for (final Node node : nodes) {
                     if (newName.equals(node.toString()) &&
                             !newName.equals(super.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(

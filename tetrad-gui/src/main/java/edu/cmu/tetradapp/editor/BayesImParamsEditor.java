@@ -26,8 +26,6 @@ import edu.cmu.tetrad.util.Parameters;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Edits the parameters for simulating data from Bayes nets.
@@ -48,7 +46,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     public BayesImParamsEditor() {
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -56,7 +54,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         // Do nothing.
     }
 
@@ -68,17 +66,17 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     public void setup() {
         setLayout(new BorderLayout());
 
-        JRadioButton manually = new JRadioButton();
+        final JRadioButton manually = new JRadioButton();
         final JRadioButton randomly = new JRadioButton();
 
         manually.setText("Manually: Probability tables initially blank");
         randomly.setText("Randomly: Random probabilties are assigned, which can then be edited");
 
-        ButtonGroup group = new ButtonGroup();
+        final ButtonGroup group = new ButtonGroup();
         group.add(manually);
         group.add(randomly);
 
-        String string = getParams().getString("initializationMode", "randomOverwrite");
+        final String string = getParams().getString("initializationMode", "randomOverwrite");
 
         if ("manualRetain".equals(string)) {
             manually.setSelected(true);
@@ -92,18 +90,18 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         randomly.addActionListener(e -> getParams().set("initializationMode", "randomOverwrite"));
 
         // continue workbench construction.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel(
                 "Probability values for this Bayes IM should be filled in: "));
         b2.add(Box.createHorizontalGlue());
 
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(manually);
         b3.add(Box.createHorizontalGlue());
 
-        Box b4 = Box.createHorizontalBox();
+        final Box b4 = Box.createHorizontalBox();
         b4.add(randomly);
         b4.add(Box.createHorizontalGlue());
 

@@ -63,19 +63,19 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
         return new Knowledge2();
     }
 
-    public void add(IndependenceFact fact) {
+    public void add(final IndependenceFact fact) {
         this.facts.add(fact);
     }
 
     public String toString() {
-        return facts.toString();
+        return this.facts.toString();
     }
 
-    public void remove(IndependenceFact fact) {
+    public void remove(final IndependenceFact fact) {
         this.facts.remove(fact);
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -84,25 +84,25 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
     }
 
     public IndependenceFacts getFacts() {
-        return facts;
+        return this.facts;
     }
 
-    public static IndependenceFactsModel loadFacts(Reader reader) throws IOException {
-        IndependenceFactsModel facts = new IndependenceFactsModel();
-        Set<String> names = new HashSet<>();
-        Map<String, Node> nodes = new HashMap<>();
+    public static IndependenceFactsModel loadFacts(final Reader reader) throws IOException {
+        final IndependenceFactsModel facts = new IndependenceFactsModel();
+        final Set<String> names = new HashSet<>();
+        final Map<String, Node> nodes = new HashMap<>();
 
-        BufferedReader in = new BufferedReader(reader);
+        final BufferedReader in = new BufferedReader(reader);
         String line;
 
         while ((line = in.readLine()) != null) {
-            String[] tokens = line.split("[ ,;_|]+");
+            final String[] tokens = line.split("[ ,;_|]+");
 
             if (tokens.length == 0) continue;
             if (tokens.length < 2) throw new IllegalArgumentException(
                     "Must specify at least two variables--e.g. X1 X2, for X1 _||_ X2.");
 
-            for (String token : tokens) {
+            for (final String token : tokens) {
                 names.add(token);
 
                 if (!nodes.containsKey(token)) {
@@ -110,7 +110,7 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
                 }
             }
 
-            List<Node> z = new ArrayList<>();
+            final List<Node> z = new ArrayList<>();
 
             for (int i = 2; i < tokens.length; i++) {
                 z.add(nodes.get(tokens[i]));
@@ -122,7 +122,7 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
         return facts;
     }
 
-    public void setFacts(IndependenceFacts facts) {
+    public void setFacts(final IndependenceFacts facts) {
         this.facts = facts;
     }
 
@@ -135,11 +135,11 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
     }
 
     public List<Node> getVariables() {
-        return facts.getVariables();
+        return this.facts.getVariables();
     }
 
     public List<String> getVariableNames() {
-        return facts.getVariableNames();
+        return this.facts.getVariableNames();
     }
 }
 

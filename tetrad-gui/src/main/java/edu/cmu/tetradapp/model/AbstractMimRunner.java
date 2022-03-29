@@ -49,7 +49,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      *
      * @serial Cannot be null.
      */
-    private transient DataModel dataModel;
+    private final transient DataModel dataModel;
 
     /**
      * The parameters guiding this search (when executed).
@@ -94,7 +94,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    AbstractMimRunner(DataWrapper dataWrapper, Clusters clusters, Parameters params) {
+    AbstractMimRunner(final DataWrapper dataWrapper, final Clusters clusters, final Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -108,14 +108,14 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         setClusters(clusters);
         this.sourceGraph = dataWrapper.getSourceGraph();
 
-        DataModel data = getDataModel(dataWrapper);
+        final DataModel data = getDataModel(dataWrapper);
         getParams().set("knowledge", dataWrapper.getKnowledge());
-        List names = data.getVariableNames();
+        final List names = data.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = data;
     }
 
-    AbstractMimRunner(MeasurementModelWrapper wrapper, Clusters clusters, Parameters params) {
+    AbstractMimRunner(final MeasurementModelWrapper wrapper, final Clusters clusters, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -127,13 +127,13 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         setClusters(clusters);
 //        this.sourceGraph = wrapper.getSourceGraph();
 
-        DataModel data = wrapper.getData();
-        List names = data.getVariableNames();
+        final DataModel data = wrapper.getData();
+        final List names = data.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = data;
     }
 
-    AbstractMimRunner(MimRunner runner, Parameters params) {
+    AbstractMimRunner(final MimRunner runner, final Parameters params) {
         if (runner == null) {
             throw new NullPointerException();
         }
@@ -142,8 +142,8 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.params.set("clusters", runner.getClusters());
         this.sourceGraph = runner.getSourceGraph();
 
-        DataModel dataSource = runner.getData();
-        List names = dataSource.getVariableNames();
+        final DataModel dataSource = runner.getData();
+        final List names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = dataSource;
     }
@@ -171,16 +171,16 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     }
 
     public final DataModel getData() {
-        if (dataWrapper != null) {
-            DataModelList dataModelList = dataWrapper.getDataModelList();
+        if (this.dataWrapper != null) {
+            final DataModelList dataModelList = this.dataWrapper.getDataModelList();
 
             if (dataModelList.size() == 1) {
                 return dataModelList.get(0);
             } else {
                 return dataModelList;
             }
-        } else if (dataModel != null) {
-            return dataModel;
+        } else if (this.dataModel != null) {
+            return this.dataModel;
         } else {
             throw new IllegalArgumentException();
         }
@@ -190,7 +190,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         return this.params;
     }
 
-    public void resetParams(Object params) {
+    public void resetParams(final Object params) {
         this.params = (Parameters) params;
     }
 
@@ -200,11 +200,11 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
     //===========================PROTECTED METHODS========================//
 
-    void setResultGraph(Graph graph) {
+    void setResultGraph(final Graph graph) {
         this.resultGraph = graph;
     }
 
-    void setClusters(Clusters clusters) {
+    void setClusters(final Clusters clusters) {
         if (clusters == null) {
             throw new NullPointerException();
         }
@@ -212,7 +212,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.clusters = clusters;
     }
 
-    void setStructureGraph(Graph graph) {
+    void setStructureGraph(final Graph graph) {
         this.structureGraph = graph;
     }
 
@@ -222,17 +222,17 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      * Find the dataModel model. (If it's a list, take the one that's
      * selected.)
      */
-    private DataModel getDataModel(DataWrapper dataWrapper) {
+    private DataModel getDataModel(final DataWrapper dataWrapper) {
         DataModel dataModel = dataWrapper.getSelectedDataModel();
 
         if (dataModel instanceof DataModelList) {
-            DataModelList dataModelList = (DataModelList) dataModel;
+            final DataModelList dataModelList = (DataModelList) dataModel;
             dataModel = dataModelList.getSelectedModel();
 
         }
 
         if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
 
             if (dataSet.isDiscrete()) {
                 return dataSet;
@@ -254,15 +254,15 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
                 "Unexpected dataModel source: " + dataModel);
     }
 
-    private void transferVarNamesToParams(List names) {
+    private void transferVarNamesToParams(final List names) {
         getParams().set("varNames", names);
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 

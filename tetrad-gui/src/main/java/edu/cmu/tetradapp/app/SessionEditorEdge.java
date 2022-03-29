@@ -54,8 +54,8 @@ final class SessionEditorEdge extends DisplayEdge {
      * @param sessionEdgeMode the sessionEdgeMode of the edge, either
      *                        UNRANDOMIZED or RANDOMIZED.
      */
-    public SessionEditorEdge(SessionEditorNode node1, SessionEditorNode node2,
-                             int sessionEdgeMode) {
+    public SessionEditorEdge(final SessionEditorNode node1, final SessionEditorNode node2,
+                             final int sessionEdgeMode) {
 
         super(node1, node2, DisplayEdge.SESSION);
 
@@ -79,7 +79,7 @@ final class SessionEditorEdge extends DisplayEdge {
      * @param mouseTrackPoint the initial value of the mouse track point.
      * @see #updateTrackPoint
      */
-    public SessionEditorEdge(SessionEditorNode node1, Point mouseTrackPoint) {
+    public SessionEditorEdge(final SessionEditorNode node1, final Point mouseTrackPoint) {
         super(node1, mouseTrackPoint, DisplayEdge.SESSION);
     }
 
@@ -97,8 +97,8 @@ final class SessionEditorEdge extends DisplayEdge {
      * @param mode            ??
      * @see #updateTrackPoint
      */
-    public SessionEditorEdge(SessionEditorNode node1, Point mouseTrackPoint,
-                             int mode) {
+    public SessionEditorEdge(final SessionEditorNode node1, final Point mouseTrackPoint,
+                             final int mode) {
         super(node1, mouseTrackPoint, DisplayEdge.SESSION);
         this.sessionEdgeMode = mode;
     }
@@ -109,10 +109,10 @@ final class SessionEditorEdge extends DisplayEdge {
      * @param dice the four points defining the die.
      * @return the sleeve
      */
-    private static Polygon calcDiceSleeve(Point[] dice) {
+    private static Polygon calcDiceSleeve(final Point[] dice) {
 
-        int[] xpoint = new int[4];
-        int[] ypoint = new int[4];
+        final int[] xpoint = new int[4];
+        final int[] ypoint = new int[4];
 
         xpoint[0] = dice[0].x;
         xpoint[1] = dice[1].x;
@@ -126,24 +126,24 @@ final class SessionEditorEdge extends DisplayEdge {
         return new Polygon(xpoint, ypoint, 4);
     }
 
-    private void drawDice(Graphics g, boolean erase, Color c) {
+    private void drawDice(final Graphics g, final boolean erase, final Color c) {
 
-        Polygon dice = getDiceSleeve();
+        final Polygon dice = getDiceSleeve();
 
         if (erase) {
             g.setColor(Color.white);
             g.fillPolygon(dice);
         } else {
-            Circle[] dicedot = getDiceDot();
+            final Circle[] dicedot = getDiceDot();
 
             g.setColor(c);
             g.fillPolygon(dice);
             g.setColor(DIE_DOT);
             g.drawPolygon(dice);
 
-            int height = dicedot[0].radius * 2;
+            final int height = dicedot[0].radius * 2;
 
-            for (Circle aDicedot : dicedot) {
+            for (final Circle aDicedot : dicedot) {
                 g.fillOval(aDicedot.center.x, aDicedot.center.y, height,
                         height);
             }
@@ -157,10 +157,10 @@ final class SessionEditorEdge extends DisplayEdge {
      */
     private Point[] getDiceArea() {
 
-        int[] xpoint = new int[4];
-        int[] ypoint = new int[4];
-        PointPair pp = getConnectedPoints();
-        Point midPoint = new Point((pp.getFrom().x + pp.getTo().x) / 2,
+        final int[] xpoint = new int[4];
+        final int[] ypoint = new int[4];
+        final PointPair pp = getConnectedPoints();
+        final Point midPoint = new Point((pp.getFrom().x + pp.getTo().x) / 2,
                 (pp.getFrom().y + pp.getTo().y) / 2);
         double d = distance(pp.getFrom(), pp.getTo());
 
@@ -168,8 +168,8 @@ final class SessionEditorEdge extends DisplayEdge {
             d = 1;
         }
 
-        double sin = (pp.getFrom().y - pp.getTo().y) / d;
-        double cos = (pp.getFrom().x - pp.getTo().x) / d;
+        final double sin = (pp.getFrom().y - pp.getTo().y) / d;
+        final double cos = (pp.getFrom().x - pp.getTo().x) / d;
 
         xpoint[0] = (int) (midPoint.x - 10 * cos);
         xpoint[1] = (int) (midPoint.x - 10 * sin);
@@ -180,7 +180,7 @@ final class SessionEditorEdge extends DisplayEdge {
         ypoint[2] = (int) (midPoint.y - 10 * sin);
         ypoint[3] = (int) (midPoint.y + 10 * cos);
 
-        Point[] dice = new Point[4];
+        final Point[] dice = new Point[4];
 
         dice[0] = new Point(xpoint[0], ypoint[0]);
         dice[1] = new Point(xpoint[1], ypoint[1]);
@@ -191,11 +191,11 @@ final class SessionEditorEdge extends DisplayEdge {
     }
 
     private Circle[] getDiceDot() {
-        PointPair pp = getConnectedPoints();
-        Point midPoint = new Point((pp.getFrom().x + pp.getTo().x) / 2,
+        final PointPair pp = getConnectedPoints();
+        final Point midPoint = new Point((pp.getFrom().x + pp.getTo().x) / 2,
                 (pp.getFrom().y + pp.getTo().y) / 2);
-        Point[] dice = getDiceArea();
-        Circle[] dot = new Circle[5];
+        final Point[] dice = getDiceArea();
+        final Circle[] dot = new Circle[5];
 
         dot[0] = new Circle(new Point(midPoint.x - 1, midPoint.y - 1), 2);
         dot[1] = new Circle(new Point((dice[0].x + midPoint.x) / 2 - 1,
@@ -218,7 +218,7 @@ final class SessionEditorEdge extends DisplayEdge {
      * @return the mode of this edge, RANDOMIZED or UNRANDOMIZED.
      */
     public int getSessionEdgeMode() {
-        return sessionEdgeMode;
+        return this.sessionEdgeMode;
     }
 
     /**
@@ -230,9 +230,9 @@ final class SessionEditorEdge extends DisplayEdge {
      */
     public boolean isRandomized() {
 
-        if (sessionEdgeMode == RANDOMIZED) {
+        if (this.sessionEdgeMode == RANDOMIZED) {
             return true;
-        } else if (sessionEdgeMode == UNRANDOMIZED) {
+        } else if (this.sessionEdgeMode == UNRANDOMIZED) {
             return false;
         } else {
             throw new IllegalStateException();
@@ -244,11 +244,11 @@ final class SessionEditorEdge extends DisplayEdge {
      *
      * @param g the graphics context.
      */
-    public void paint(Graphics g) {
+    public void paint(final Graphics g) {
 
         // NOTE:  For this component, the resetBounds() methods should ALWAYS
         // be called before repaint().
-        PointPair pp;
+        final PointPair pp;
 
         switch (getMode()) {
             case HALF_ANCHORED:
@@ -310,8 +310,8 @@ final class SessionEditorEdge extends DisplayEdge {
 
         setConnectedPoints(pp);
 
-        if (sessionEdgeMode == RANDOMIZED) {
-            drawDice(g, false, curr_color);
+        if (this.sessionEdgeMode == RANDOMIZED) {
+            drawDice(g, false, this.curr_color);
         }
     }
 
@@ -328,9 +328,9 @@ final class SessionEditorEdge extends DisplayEdge {
          * @param c the center of the circle.
          * @param r the radius of the circle.
          */
-        public Circle(Point c, int r) {
-            radius = r;
-            center = c;
+        public Circle(final Point c, final int r) {
+            this.radius = r;
+            this.center = c;
         }
     }
 }

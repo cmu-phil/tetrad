@@ -68,13 +68,13 @@ public class TabularColumnFileReaderTest {
      */
     @Test
     public void testReadInDataColumnsWithSetOfColumnsToExclude() throws IOException {
-        Set<String> columnNames = new HashSet<>(Arrays.asList("X1", "\"X3\"", "X5", " ", "X7", "X9", "", "X10", "X11"));
-        for (Path dataFile : dataFiles) {
-            TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, delimiter);
-            fileReader.setCommentMarker(commentMarker);
-            fileReader.setQuoteCharacter(quoteCharacter);
+        final Set<String> columnNames = new HashSet<>(Arrays.asList("X1", "\"X3\"", "X5", " ", "X7", "X9", "", "X10", "X11"));
+        for (final Path dataFile : this.dataFiles) {
+            final TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, this.delimiter);
+            fileReader.setCommentMarker(this.commentMarker);
+            fileReader.setQuoteCharacter(this.quoteCharacter);
 
-            boolean isDiscrete = false;
+            final boolean isDiscrete = false;
             DataColumn[] dataColumns = fileReader.readInDataColumns(Collections.EMPTY_SET, isDiscrete);
 
             long expected = 10;
@@ -96,13 +96,13 @@ public class TabularColumnFileReaderTest {
      */
     @Test
     public void testReadInDataColumnsWithColumnsToExclude() throws IOException {
-        int[] columnsToExclude = new int[]{0, 1, 5, 3, 7, -1};
-        for (Path dataFile : dataFiles) {
-            TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, delimiter);
-            fileReader.setCommentMarker(commentMarker);
-            fileReader.setQuoteCharacter(quoteCharacter);
+        final int[] columnsToExclude = new int[]{0, 1, 5, 3, 7, -1};
+        for (final Path dataFile : this.dataFiles) {
+            final TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, this.delimiter);
+            fileReader.setCommentMarker(this.commentMarker);
+            fileReader.setQuoteCharacter(this.quoteCharacter);
 
-            boolean isDiscrete = false;
+            final boolean isDiscrete = false;
             DataColumn[] dataColumns = fileReader.readInDataColumns(new int[0], isDiscrete);
 
             long expected = 10;
@@ -124,12 +124,12 @@ public class TabularColumnFileReaderTest {
      */
     @Test
     public void testGenerateColumns() throws IOException {
-        for (Path dataFile : dataFiles) {
-            TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, delimiter);
-            fileReader.setCommentMarker(commentMarker);
-            fileReader.setQuoteCharacter(quoteCharacter);
+        for (final Path dataFile : this.dataFiles) {
+            final TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, this.delimiter);
+            fileReader.setCommentMarker(this.commentMarker);
+            fileReader.setQuoteCharacter(this.quoteCharacter);
 
-            boolean isDiscrete = true;
+            final boolean isDiscrete = true;
             DataColumn[] dataColumns = fileReader.generateColumns(new int[0], isDiscrete);
             long expected = 10;
             long actual = dataColumns.length;

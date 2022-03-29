@@ -67,7 +67,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     /**
      * @deprecated
      */
-    private double alpha = 0.05;
+    private final double alpha = 0.05;
     private SemIm originalSemIm;
     private SemIm newSemIm;
 
@@ -78,93 +78,93 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     //============================CONSTRUCTORS============================//
 
-    public PValueImproverWrapper(DataWrapper dataWrapper,
-                                 Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PValueImproverWrapper(final DataWrapper dataWrapper,
+                                 final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
         this.graph = new EdgeListGraph(dataWrapper.getSelectedDataModel().getVariables());
     }
 
-    public PValueImproverWrapper(DataWrapper dataWrapper,
-                                 Parameters params) {
+    public PValueImproverWrapper(final DataWrapper dataWrapper,
+                                 final Parameters params) {
         super(dataWrapper, params, null);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
         setGraph(new EdgeListGraph(dataWrapper.getSelectedDataModel().getVariables()));
     }
 
-    private void setGraph(EdgeListGraph graph) {
+    private void setGraph(final EdgeListGraph graph) {
         this.graph = new EdgeListGraph(graph);
         this.externalGraph = new EdgeListGraph(graph);
     }
 
-    public PValueImproverWrapper(GraphWrapper graphWrapper,
-                                 DataWrapper dataWrapper,
-                                 Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PValueImproverWrapper(final GraphWrapper graphWrapper,
+                                 final DataWrapper dataWrapper,
+                                 final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
-    public PValueImproverWrapper(GraphWrapper graphWrapper,
-                                 DataWrapper dataWrapper,
-                                 Parameters params) {
+    public PValueImproverWrapper(final GraphWrapper graphWrapper,
+                                 final DataWrapper dataWrapper,
+                                 final Parameters params) {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
-    public PValueImproverWrapper(DagWrapper graphWrapper,
-                                 DataWrapper dataWrapper,
-                                 Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PValueImproverWrapper(final DagWrapper graphWrapper,
+                                 final DataWrapper dataWrapper,
+                                 final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
-    public PValueImproverWrapper(DagWrapper graphWrapper,
-                                 DataWrapper dataWrapper,
-                                 Parameters params) {
+    public PValueImproverWrapper(final DagWrapper graphWrapper,
+                                 final DataWrapper dataWrapper,
+                                 final Parameters params) {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
-    public PValueImproverWrapper(SemGraphWrapper graphWrapper,
-                                 DataWrapper dataWrapper,
-                                 Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PValueImproverWrapper(final SemGraphWrapper graphWrapper,
+                                 final DataWrapper dataWrapper,
+                                 final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
-    public PValueImproverWrapper(SemGraphWrapper graphWrapper,
-                                 DataWrapper dataWrapper,
-                                 Parameters params) {
+    public PValueImproverWrapper(final SemGraphWrapper graphWrapper,
+                                 final DataWrapper dataWrapper,
+                                 final Parameters params) {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
-    public PValueImproverWrapper(AbstractAlgorithmRunner graphWrapper,
-                                 DataWrapper dataWrapper,
-                                 Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PValueImproverWrapper(final AbstractAlgorithmRunner graphWrapper,
+                                 final DataWrapper dataWrapper,
+                                 final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
-    public PValueImproverWrapper(AbstractAlgorithmRunner graphWrapper,
-                                 DataWrapper dataWrapper,
-                                 Parameters params) {
+    public PValueImproverWrapper(final AbstractAlgorithmRunner graphWrapper,
+                                 final DataWrapper dataWrapper,
+                                 final Parameters params) {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
@@ -184,10 +184,10 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
 
     public AlgorithmType getAlgorithmType() {
-        return algorithmType;
+        return this.algorithmType;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -196,7 +196,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     }
 
     public boolean isShuffleMoves() {
-        boolean shuffleMoves = false;
+        final boolean shuffleMoves = false;
         return shuffleMoves;
     }
 
@@ -205,21 +205,21 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
      */
 
     public void execute() {
-        DataModel dataModel = getDataModel();
+        final DataModel dataModel = getDataModel();
 
-        IKnowledge knowledge = (IKnowledge) params2.get("knowledge", new Knowledge2());
+        final IKnowledge knowledge = (IKnowledge) this.params2.get("knowledge", new Knowledge2());
 
-        if (externalGraph == null) {
-            externalGraph = new EdgeListGraph(dataModel.getVariables());
+        if (this.externalGraph == null) {
+            this.externalGraph = new EdgeListGraph(dataModel.getVariables());
         }
 
-        Graph graph2 = new EdgeListGraph(externalGraph);
+        Graph graph2 = new EdgeListGraph(this.externalGraph);
         graph2 = GraphUtils.replaceNodes(graph2, dataModel.getVariables());
 
-        Bff search;
+        final Bff search;
 
         if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
                 search = new BffBeam(graph2, dataSet, knowledge);
@@ -230,7 +230,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
                 throw new IllegalStateException();
             }
         } else if (dataModel instanceof CovarianceMatrix) {
-            CovarianceMatrix covarianceMatrix = (CovarianceMatrix) dataModel;
+            final CovarianceMatrix covarianceMatrix = (CovarianceMatrix) dataModel;
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
                 search = new BffBeam(graph2, covarianceMatrix, knowledge);
@@ -245,7 +245,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             throw new IllegalStateException();
         }
 
-        Parameters params = getParams();
+        final Parameters params = getParams();
 
         search.setAlpha(params.getDouble("alpha", 0.001));
         search.setBeamWidth(params.getInt("beamWidth", 5));
@@ -256,17 +256,17 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
         setOriginalSemIm(search.getOriginalSemIm());
         this.newSemIm = search.getNewSemIm();
-        fireGraphChange(graph);
+        fireGraphChange(this.graph);
 
         if (getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+            GraphUtils.arrangeBySourceGraph(this.graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
+            SearchGraphUtils.arrangeByKnowledgeTiers(this.graph, knowledge);
         } else {
-            GraphUtils.circleLayout(graph, 200, 200, 150);
+            GraphUtils.circleLayout(this.graph, 200, 200, 150);
         }
 
-        setResultGraph(SearchGraphUtils.cpdagForDag(graph));
+        setResultGraph(SearchGraphUtils.cpdagForDag(this.graph));
     }
 
     public boolean supportsKnowledge() {
@@ -274,8 +274,8 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
-        rules.setKnowledge((IKnowledge) params.get("knowledge", new Knowledge2()));
+        final MeekRules rules = new MeekRules();
+        rules.setKnowledge((IKnowledge) this.params.get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -284,20 +284,20 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
         return "BFF";
     }
 
-    public void setAlgorithmType(AlgorithmType algorithmType) {
+    public void setAlgorithmType(final AlgorithmType algorithmType) {
         this.algorithmType = algorithmType;
     }
 
     private boolean isAggressivelyPreventCycles() {
-        return params.getBoolean("aggressivelyPreventCycles", false);
+        return this.params.getBoolean("aggressivelyPreventCycles", false);
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
         if (!getListeners().contains(l)) getListeners().add(l);
     }
 
-    private void fireGraphChange(Graph graph) {
-        for (PropertyChangeListener l : getListeners()) {
+    private void fireGraphChange(final Graph graph) {
+        for (final PropertyChangeListener l : getListeners()) {
             l.propertyChange(new PropertyChangeEvent(this, "graph", null, graph));
         }
     }
@@ -318,45 +318,45 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
      *             this node through the given node will be considered.
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new LinkedList<>();
     }
 
 
     private List<PropertyChangeListener> getListeners() {
-        if (listeners == null) {
-            listeners = new ArrayList<>();
+        if (this.listeners == null) {
+            this.listeners = new ArrayList<>();
         }
-        return listeners;
+        return this.listeners;
     }
 
 
-    public DataSet simulateDataCholesky(int sampleSize, Matrix covar, List<Node> variableNodes) {
-        List<Node> variables = new LinkedList<>();
+    public DataSet simulateDataCholesky(final int sampleSize, final Matrix covar, final List<Node> variableNodes) {
+        final List<Node> variables = new LinkedList<>();
 
-        for (Node node : variableNodes) {
+        for (final Node node : variableNodes) {
             variables.add(node);
         }
 
-        List<Node> newVariables = new ArrayList<>();
+        final List<Node> newVariables = new ArrayList<>();
 
-        for (Node node : variables) {
-            ContinuousVariable continuousVariable = new ContinuousVariable(node.getName());
+        for (final Node node : variables) {
+            final ContinuousVariable continuousVariable = new ContinuousVariable(node.getName());
             continuousVariable.setNodeType(node.getNodeType());
             newVariables.add(continuousVariable);
         }
 
-        Matrix impliedCovar = covar;
+        final Matrix impliedCovar = covar;
 
-        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, newVariables.size()), newVariables);
-        Matrix cholesky = MatrixUtils.cholesky(impliedCovar);
+        final DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, newVariables.size()), newVariables);
+        final Matrix cholesky = MatrixUtils.cholesky(impliedCovar);
 
         // Simulate the data by repeatedly calling the Cholesky.exogenousData
         // method. Store only the data for the measured variables.
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            double exoData[] = new double[cholesky.rows()];
+            final double[] exoData = new double[cholesky.rows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
@@ -364,7 +364,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             }
 
             // Step 2. Multiply by cholesky to get correct covariance.
-            double point[] = new double[exoData.length];
+            final double[] point = new double[exoData.length];
 
             for (int i = 0; i < exoData.length; i++) {
                 double sum = 0.0;
@@ -376,11 +376,11 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
                 point[i] = sum;
             }
 
-            double rowData[] = point;
+            final double[] rowData = point;
 
             for (int col = 0; col < variables.size(); col++) {
-                int index = variableNodes.indexOf(variables.get(col));
-                double value = rowData[index];
+                final int index = variableNodes.indexOf(variables.get(col));
+                final double value = rowData[index];
 
                 if (Double.isNaN(value) || Double.isInfinite(value)) {
                     throw new IllegalArgumentException("Value out of range: " + value);
@@ -393,7 +393,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
         return DataUtils.restrictToMeasured(fullDataSet);
     }
 
-    private void setOriginalSemIm(SemIm originalSemIm) {
+    private void setOriginalSemIm(final SemIm originalSemIm) {
         if (this.originalSemIm == null) {
             this.originalSemIm = originalSemIm;
         }
@@ -411,24 +411,24 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (params2 == null) {
-            params2 = new Parameters();
+        if (this.params2 == null) {
+            this.params2 = new Parameters();
         }
     }
 
     public SemIm getOriginalSemIm() {
-        return originalSemIm;
+        return this.originalSemIm;
     }
 
     public SemIm getNewSemIm() {
-        return newSemIm;
+        return this.newSemIm;
     }
 
-    public void setNewSemIm(SemIm newSemIm) {
+    public void setNewSemIm(final SemIm newSemIm) {
         this.newSemIm = newSemIm;
     }
 }

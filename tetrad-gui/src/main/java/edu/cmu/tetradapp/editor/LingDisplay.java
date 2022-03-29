@@ -57,54 +57,54 @@ public class LingDisplay extends JPanel implements GraphEditable {
         this.storedGraphs = storedGraphs;
 
         if (storedGraphs.getNumGraphs() == 0) {
-            workbench = new GraphWorkbench();
+            this.workbench = new GraphWorkbench();
         } else {
-            workbench = new GraphWorkbench(storedGraphs.getGraph(0));
+            this.workbench = new GraphWorkbench(storedGraphs.getGraph(0));
         }
 
-        subsetIndices = getStableIndices(storedGraphs);
+        this.subsetIndices = getStableIndices(storedGraphs);
 
         final SpinnerNumberModel model =
-                new SpinnerNumberModel(subsetIndices.size() == 0 ? 0 : 1, 0, subsetIndices.size(), 1);
+                new SpinnerNumberModel(this.subsetIndices.size() == 0 ? 0 : 1, 0, this.subsetIndices.size(), 1);
         model.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                int index = model.getNumber().intValue();
-                workbench.setGraph(storedGraphs.getGraph(subsetIndices.get(index - 1)));
+            public void stateChanged(final ChangeEvent e) {
+                final int index = model.getNumber().intValue();
+                LingDisplay.this.workbench.setGraph(storedGraphs.getGraph(LingDisplay.this.subsetIndices.get(index - 1)));
             }
         });
 
-        spinner = new JSpinner();
-        subsetCombo = new JComboBox(
+        this.spinner = new JSpinner();
+        this.subsetCombo = new JComboBox(
                 new String[]{"Show Stable", "Show Unstable", "Show All"});
-        subsetCombo.setSelectedItem("Show Stable");
-        spinner.setModel(model);
-        totalLabel = new JLabel(" of " + subsetIndices.size());
+        this.subsetCombo.setSelectedItem("Show Stable");
+        this.spinner.setModel(model);
+        this.totalLabel = new JLabel(" of " + this.subsetIndices.size());
 
-        subsetCombo.setMaximumSize(subsetCombo.getPreferredSize());
-        subsetCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        this.subsetCombo.setMaximumSize(this.subsetCombo.getPreferredSize());
+        this.subsetCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
                 resetDisplay();
             }
         });
 
-        spinner.setPreferredSize(new Dimension(50, 20));
-        spinner.setMaximumSize(spinner.getPreferredSize());
-        Box b = Box.createVerticalBox();
-        Box b1 = Box.createHorizontalBox();
+        this.spinner.setPreferredSize(new Dimension(50, 20));
+        this.spinner.setMaximumSize(this.spinner.getPreferredSize());
+        final Box b = Box.createVerticalBox();
+        final Box b1 = Box.createHorizontalBox();
 //        b1.add(Box.createHorizontalGlue());
 //        b1.add(Box.createHorizontalStrut(10));
-        b1.add(subsetCombo);
+        b1.add(this.subsetCombo);
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("DAG "));
-        b1.add(spinner);
-        b1.add(totalLabel);
+        b1.add(this.spinner);
+        b1.add(this.totalLabel);
 
         b.add(b1);
 
-        Box b2 = Box.createHorizontalBox();
-        JPanel graphPanel = new JPanel();
+        final Box b2 = Box.createHorizontalBox();
+        final JPanel graphPanel = new JPanel();
         graphPanel.setLayout(new BorderLayout());
-        JScrollPane jScrollPane = new JScrollPane(workbench);
+        final JScrollPane jScrollPane = new JScrollPane(this.workbench);
 //        jScrollPane.setPreferredSize(new Dimension(400, 400));
         graphPanel.add(jScrollPane);
 //        graphPanel.setBorder(new TitledBorder("DAG"));
@@ -117,84 +117,84 @@ public class LingDisplay extends JPanel implements GraphEditable {
     }
 
     private void resetDisplay() {
-        String option = (String) subsetCombo.getSelectedItem();
+        final String option = (String) this.subsetCombo.getSelectedItem();
 
         if ("Show All".equals(option)) {
             final List<Integer> _subsetIndices = getAllIndices(getStoredGraphs());
-            subsetIndices.clear();
-            subsetIndices.addAll(_subsetIndices);
+            this.subsetIndices.clear();
+            this.subsetIndices.addAll(_subsetIndices);
 
-            int min = subsetIndices.size() == 0 ? 0 : 1;
-            final SpinnerNumberModel model = new SpinnerNumberModel(min, min, subsetIndices.size(), 1);
+            final int min = this.subsetIndices.size() == 0 ? 0 : 1;
+            final SpinnerNumberModel model = new SpinnerNumberModel(min, min, this.subsetIndices.size(), 1);
             model.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    int index = model.getNumber().intValue();
-                    workbench.setGraph(storedGraphs.getGraph(subsetIndices.get(index - 1)));
+                public void stateChanged(final ChangeEvent e) {
+                    final int index = model.getNumber().intValue();
+                    LingDisplay.this.workbench.setGraph(LingDisplay.this.storedGraphs.getGraph(LingDisplay.this.subsetIndices.get(index - 1)));
                 }
             });
 
-            spinner.setModel(model);
-            totalLabel.setText(" of " + _subsetIndices.size());
+            this.spinner.setModel(model);
+            this.totalLabel.setText(" of " + _subsetIndices.size());
 
-            if (subsetIndices.isEmpty()) {
-                workbench.setGraph(new EdgeListGraph());
+            if (this.subsetIndices.isEmpty()) {
+                this.workbench.setGraph(new EdgeListGraph());
             } else {
-                workbench.setGraph(storedGraphs.getGraph(subsetIndices.get(0)));
+                this.workbench.setGraph(this.storedGraphs.getGraph(this.subsetIndices.get(0)));
             }
         } else if ("Show Stable".equals(option)) {
             final List<Integer> _subsetIndices = getStableIndices(getStoredGraphs());
-            subsetIndices.clear();
-            subsetIndices.addAll(_subsetIndices);
+            this.subsetIndices.clear();
+            this.subsetIndices.addAll(_subsetIndices);
 
-            int min = subsetIndices.size() == 0 ? 0 : 1;
-            final SpinnerNumberModel model = new SpinnerNumberModel(min, min, subsetIndices.size(), 1);
+            final int min = this.subsetIndices.size() == 0 ? 0 : 1;
+            final SpinnerNumberModel model = new SpinnerNumberModel(min, min, this.subsetIndices.size(), 1);
             model.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    int index = model.getNumber().intValue();
-                    workbench.setGraph(storedGraphs.getGraph(subsetIndices.get(index - 1)));
+                public void stateChanged(final ChangeEvent e) {
+                    final int index = model.getNumber().intValue();
+                    LingDisplay.this.workbench.setGraph(LingDisplay.this.storedGraphs.getGraph(LingDisplay.this.subsetIndices.get(index - 1)));
                 }
             });
 
-            spinner.setModel(model);
-            totalLabel.setText(" of " + _subsetIndices.size());
+            this.spinner.setModel(model);
+            this.totalLabel.setText(" of " + _subsetIndices.size());
 
-            if (subsetIndices.isEmpty()) {
-                workbench.setGraph(new EdgeListGraph());
+            if (this.subsetIndices.isEmpty()) {
+                this.workbench.setGraph(new EdgeListGraph());
             } else {
-                workbench.setGraph(storedGraphs.getGraph(subsetIndices.get(0)));
+                this.workbench.setGraph(this.storedGraphs.getGraph(this.subsetIndices.get(0)));
             }
         } else if ("Show Unstable".equals(option)) {
             final List<Integer> _subsetIndices = getUnstableIndices(getStoredGraphs());
-            subsetIndices.clear();
-            subsetIndices.addAll(_subsetIndices);
+            this.subsetIndices.clear();
+            this.subsetIndices.addAll(_subsetIndices);
 
-            int min = subsetIndices.size() == 0 ? 0 : 1;
-            final SpinnerNumberModel model = new SpinnerNumberModel(min, min, subsetIndices.size(), 1);
+            final int min = this.subsetIndices.size() == 0 ? 0 : 1;
+            final SpinnerNumberModel model = new SpinnerNumberModel(min, min, this.subsetIndices.size(), 1);
             model.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    int index = model.getNumber().intValue();
-                    workbench.setGraph(storedGraphs.getGraph(subsetIndices.get(index - 1)));
+                public void stateChanged(final ChangeEvent e) {
+                    final int index = model.getNumber().intValue();
+                    LingDisplay.this.workbench.setGraph(LingDisplay.this.storedGraphs.getGraph(LingDisplay.this.subsetIndices.get(index - 1)));
                 }
             });
 
-            spinner.setModel(model);
-            totalLabel.setText(" of " + _subsetIndices.size());
+            this.spinner.setModel(model);
+            this.totalLabel.setText(" of " + _subsetIndices.size());
 
-            if (subsetIndices.isEmpty()) {
-                workbench.setGraph(new EdgeListGraph());
+            if (this.subsetIndices.isEmpty()) {
+                this.workbench.setGraph(new EdgeListGraph());
             } else {
-                workbench.setGraph(storedGraphs.getGraph(subsetIndices.get(0)));
+                this.workbench.setGraph(this.storedGraphs.getGraph(this.subsetIndices.get(0)));
             }
         }
     }
 
-    public void resetGraphs(Ling.StoredGraphs storedGraphs) {
+    public void resetGraphs(final Ling.StoredGraphs storedGraphs) {
         this.storedGraphs = storedGraphs;
         resetDisplay();
     }
 
-    private List<Integer> getAllIndices(Ling.StoredGraphs storedGraphs) {
-        List<Integer> indices = new ArrayList<>();
+    private List<Integer> getAllIndices(final Ling.StoredGraphs storedGraphs) {
+        final List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.getNumGraphs(); i++) {
             indices.add(i);
@@ -203,8 +203,8 @@ public class LingDisplay extends JPanel implements GraphEditable {
         return indices;
     }
 
-    private List<Integer> getStableIndices(Ling.StoredGraphs storedGraphs) {
-        List<Integer> indices = new ArrayList<>();
+    private List<Integer> getStableIndices(final Ling.StoredGraphs storedGraphs) {
+        final List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.getNumGraphs(); i++) {
             if (storedGraphs.isStable(i)) {
@@ -215,8 +215,8 @@ public class LingDisplay extends JPanel implements GraphEditable {
         return indices;
     }
 
-    private List<Integer> getUnstableIndices(Ling.StoredGraphs storedGraphs) {
-        List<Integer> indices = new ArrayList<>();
+    private List<Integer> getUnstableIndices(final Ling.StoredGraphs storedGraphs) {
+        final List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.getNumGraphs(); i++) {
             if (!storedGraphs.isStable(i)) {
@@ -229,11 +229,11 @@ public class LingDisplay extends JPanel implements GraphEditable {
 
 
     public List getSelectedModelComponents() {
-        Component[] components = getWorkbench().getComponents();
-        List<TetradSerializable> selectedModelComponents =
+        final Component[] components = getWorkbench().getComponents();
+        final List<TetradSerializable> selectedModelComponents =
                 new ArrayList<>();
 
-        for (Component comp : components) {
+        for (final Component comp : components) {
             if (comp instanceof DisplayNode) {
                 selectedModelComponents.add(
                         ((DisplayNode) comp).getModelNode());
@@ -246,16 +246,16 @@ public class LingDisplay extends JPanel implements GraphEditable {
         return selectedModelComponents;
     }
 
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
+    public void pasteSubsession(final List sessionElements, final Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
         for (int i = 0; i < sessionElements.size(); i++) {
 
-            Object o = sessionElements.get(i);
+            final Object o = sessionElements.get(i);
 
             if (o instanceof GraphNode) {
-                Node modelNode = (Node) o;
+                final Node modelNode = (Node) o;
                 getWorkbench().selectNode(modelNode);
             }
         }
@@ -264,15 +264,15 @@ public class LingDisplay extends JPanel implements GraphEditable {
     }
 
     public GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     public Graph getGraph() {
-        return workbench.getGraph();
+        return this.workbench.getGraph();
     }
 
-    public void setGraph(Graph graph) {
-        workbench.setGraph(graph);
+    public void setGraph(final Graph graph) {
+        this.workbench.setGraph(graph);
     }
 
     /**
@@ -294,7 +294,7 @@ public class LingDisplay extends JPanel implements GraphEditable {
 //        return menuBar;
 //    }
     private Ling.StoredGraphs getStoredGraphs() {
-        return storedGraphs;
+        return this.storedGraphs;
     }
 }
 

@@ -47,7 +47,7 @@ class GeneralizedSemImListEditor extends JPanel {
     /**
      * Font size for parameter values in the graph.
      */
-    private static Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
+    private static final Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
 
     /**
      * The SemPm being edited.
@@ -68,7 +68,7 @@ class GeneralizedSemImListEditor extends JPanel {
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
      */
-    public GeneralizedSemImListEditor(GeneralizedSemIm semIm, Map<Object, EditorWindow> launchedEditors) {
+    public GeneralizedSemImListEditor(final GeneralizedSemIm semIm, final Map<Object, EditorWindow> launchedEditors) {
         System.out.println("List editor : " + semIm);
 
         this.semIm = semIm;
@@ -76,11 +76,11 @@ class GeneralizedSemImListEditor extends JPanel {
         /*
       The PM being edited.
      */
-        GeneralizedSemPm semPm = semIm.getSemPm();
+        final GeneralizedSemPm semPm = semIm.getSemPm();
         setLayout(new BorderLayout());
-        formulasBox = Box.createVerticalBox();
+        this.formulasBox = Box.createVerticalBox();
         refreshLabels();
-        JScrollPane scroll = new JScrollPane(formulasBox);
+        final JScrollPane scroll = new JScrollPane(this.formulasBox);
         scroll.setPreferredSize(new Dimension(450, 450));
 
         add(scroll, BorderLayout.CENTER);
@@ -89,16 +89,16 @@ class GeneralizedSemImListEditor extends JPanel {
     //========================PUBLIC PROTECTED METHODS======================//
 
     private JComponent refreshLabels() {
-        formulasBox.removeAll();
+        this.formulasBox.removeAll();
 
-        for (Node node : semIm().getSemPm().getVariableNodes()) {
-            Box c = Box.createHorizontalBox();
+        for (final Node node : semIm().getSemPm().getVariableNodes()) {
+            final Box c = Box.createHorizontalBox();
 
-            final JLabel label = new JLabel(node + " := " + semIm.getNodeSubstitutedString(node));
+            final JLabel label = new JLabel(node + " := " + this.semIm.getNodeSubstitutedString(node));
             final Node _node = node;
 
             label.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent mouseEvent) {
+                public void mouseClicked(final MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() == 2) {
                         beginNodeEdit(_node, label, label);
                     }
@@ -108,18 +108,18 @@ class GeneralizedSemImListEditor extends JPanel {
             c.add(label);
             c.add(Box.createHorizontalGlue());
 
-            formulasBox.add(c);
-            formulasBox.add(Box.createVerticalStrut(5));
+            this.formulasBox.add(c);
+            this.formulasBox.add(Box.createVerticalStrut(5));
         }
 
-        for (Node node : semIm().getSemPm().getErrorNodes()) {
-            Box c = Box.createHorizontalBox();
+        for (final Node node : semIm().getSemPm().getErrorNodes()) {
+            final Box c = Box.createHorizontalBox();
 
-            final JLabel label = new JLabel(node + " ~ " + semIm.getNodeSubstitutedString(node));
+            final JLabel label = new JLabel(node + " ~ " + this.semIm.getNodeSubstitutedString(node));
             final Node _node = node;
 
             label.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent mouseEvent) {
+                public void mouseClicked(final MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() == 2) {
                         beginNodeEdit(_node, label, label);
                     }
@@ -129,30 +129,30 @@ class GeneralizedSemImListEditor extends JPanel {
             c.add(label);
             c.add(Box.createHorizontalGlue());
 
-            formulasBox.add(c);
-            formulasBox.add(Box.createVerticalStrut(5));
+            this.formulasBox.add(c);
+            this.formulasBox.add(Box.createVerticalStrut(5));
         }
 
-        formulasBox.add(Box.createVerticalGlue());
+        this.formulasBox.add(Box.createVerticalGlue());
 
-        formulasBox.setBorder(new CompoundBorder(new TitledBorder("Double click expressions to edit."),
+        this.formulasBox.setBorder(new CompoundBorder(new TitledBorder("Double click expressions to edit."),
                 new EmptyBorder(5, 5, 5, 5)));
 
-        formulasBox.revalidate();
-        formulasBox.repaint();
+        this.formulasBox.revalidate();
+        this.formulasBox.repaint();
 
-        return formulasBox;
+        return this.formulasBox;
     }
 
-    private void beginNodeEdit(final Node node, final JLabel label, JComponent centering) {
-        if (launchedEditors.keySet().contains(node)) {
-            launchedEditors.get(node).moveToFront();
+    private void beginNodeEdit(final Node node, final JLabel label, final JComponent centering) {
+        if (this.launchedEditors.keySet().contains(node)) {
+            this.launchedEditors.get(node).moveToFront();
             return;
         }
 
-        final GeneralizedExpressionParameterizer paramEditor = new GeneralizedExpressionParameterizer(semIm, node);
+        final GeneralizedExpressionParameterizer paramEditor = new GeneralizedExpressionParameterizer(this.semIm, node);
 
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(paramEditor, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -164,12 +164,12 @@ class GeneralizedSemImListEditor extends JPanel {
         editorWindow.pack();
         editorWindow.setVisible(true);
 
-        launchedEditors.put(node, editorWindow);
+        this.launchedEditors.put(node, editorWindow);
 
         editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-            public void internalFrameClosing(InternalFrameEvent internalFrameEvent) {
+            public void internalFrameClosing(final InternalFrameEvent internalFrameEvent) {
                 if (!editorWindow.isCanceled()) {
-                    semIm.setSubstitutions(paramEditor.getParameterValues());
+                    GeneralizedSemImListEditor.this.semIm.setSubstitutions(paramEditor.getParameterValues());
 
 //                    if (node.getNodeType() == NodeType.ERROR) {
 //                        label.setText(node + " = " + semIm.getNodeSubstitutedString(node));
@@ -180,7 +180,7 @@ class GeneralizedSemImListEditor extends JPanel {
 
                     refreshLabels();
 
-                    launchedEditors.remove(node);
+                    GeneralizedSemImListEditor.this.launchedEditors.remove(node);
                     firePropertyChange("modelChanged", null, null);
                 }
             }

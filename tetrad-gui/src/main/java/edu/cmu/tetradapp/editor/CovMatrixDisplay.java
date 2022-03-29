@@ -49,16 +49,16 @@ public class CovMatrixDisplay extends JPanel implements DataModelContainer {
      *
      * @see edu.cmu.tetrad.data.CovarianceMatrix
      */
-    public CovMatrixDisplay(ICovarianceMatrix covMatrix) {
-        covMatrixJTable = new CovMatrixJTable(covMatrix);
-        label = new JLabel(" ");
-        restoreButton = new JButton("Restore");
-        restoreButton.setEnabled(false);
+    public CovMatrixDisplay(final ICovarianceMatrix covMatrix) {
+        this.covMatrixJTable = new CovMatrixJTable(covMatrix);
+        this.label = new JLabel(" ");
+        this.restoreButton = new JButton("Restore");
+        this.restoreButton.setEnabled(false);
 
         setLayout(new BorderLayout());
         add(new JScrollPane(getCovMatrixJTable()), BorderLayout.CENTER);
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
 
         if (covMatrix instanceof CorrelationMatrix) {
             b1.add(new JLabel("Correlation Matrix"));
@@ -69,44 +69,44 @@ public class CovMatrixDisplay extends JPanel implements DataModelContainer {
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.NORTH);
 
-        Box b2 = Box.createHorizontalBox();
-        b2.add(label);
+        final Box b2 = Box.createHorizontalBox();
+        b2.add(this.label);
         b2.add(Box.createHorizontalGlue());
-        b2.add(restoreButton);
+        b2.add(this.restoreButton);
         add(b2, BorderLayout.SOUTH);
 
-        if (!covMatrixJTable.isEditingMatrixPositiveDefinite()) {
-            label.setText("Matrix not positive definite.");
-            restoreButton.setEnabled(true);
+        if (!this.covMatrixJTable.isEditingMatrixPositiveDefinite()) {
+            this.label.setText("Matrix not positive definite.");
+            this.restoreButton.setEnabled(true);
         } else {
-            label.setText(" ");
-            restoreButton.setEnabled(false);
+            this.label.setText(" ");
+            this.restoreButton.setEnabled(false);
         }
 
         getCovMatrixJTable().addPropertyChangeListener(
                 new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
+                    public void propertyChange(final PropertyChangeEvent evt) {
                         if ("modelChanged".equals(evt.getPropertyName())) {
                             firePropertyChange("modelChanged", null, null);
                         }
 
                         if ("tableChanged".equals(evt.getPropertyName())) {
-                            CovMatrixJTable source =
+                            final CovMatrixJTable source =
                                     (CovMatrixJTable) evt.getSource();
 
                             if (!source.isEditingMatrixPositiveDefinite()) {
-                                label.setText("Matrix not positive definite.");
-                                restoreButton.setEnabled(true);
+                                CovMatrixDisplay.this.label.setText("Matrix not positive definite.");
+                                CovMatrixDisplay.this.restoreButton.setEnabled(true);
                             } else {
-                                label.setText(" ");
-                                restoreButton.setEnabled(false);
+                                CovMatrixDisplay.this.label.setText(" ");
+                                CovMatrixDisplay.this.restoreButton.setEnabled(false);
                             }
                         }
                     }
                 });
 
-        restoreButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        this.restoreButton.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
                 getCovMatrixJTable().restore();
             }
         });
@@ -117,11 +117,11 @@ public class CovMatrixDisplay extends JPanel implements DataModelContainer {
     }
 
     public CovMatrixJTable getCovMatrixJTable() {
-        return covMatrixJTable;
+        return this.covMatrixJTable;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        pcs.firePropertyChange(evt);
+    public void propertyChange(final PropertyChangeEvent evt) {
+        this.pcs.firePropertyChange(evt);
     }
 }
 

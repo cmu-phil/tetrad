@@ -156,7 +156,7 @@ public final class StatUtils {
         long v, t;
         int i, j, l = 0;
         int r = N - 1;
-        int k1 = r / 2;
+        final int k1 = r / 2;
         final int k2 = r - k1;
 
         while (r > l) {
@@ -211,7 +211,7 @@ public final class StatUtils {
         double v, t;
         int i, j, l = 0;
         int r = N - 1;
-        int k1 = r / 2;
+        final int k1 = r / 2;
         final int k2 = r - k1;
 
         while (r > l) {

@@ -44,20 +44,20 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
     private List<Graph> graphs;
     private String name = "";
 
-    public GraphAdjacencyIntersectionWrapper(GraphSource[] data1, Parameters parameters) {
+    public GraphAdjacencyIntersectionWrapper(final GraphSource[] data1, final Parameters parameters) {
         construct(data1);
     }
 
-    private void construct(GraphSource... GraphSources) {
-        for (GraphSource wrapper : GraphSources) {
+    private void construct(final GraphSource... GraphSources) {
+        for (final GraphSource wrapper : GraphSources) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");
             }
         }
 
-        List<Graph> graphs = new ArrayList<>();
+        final List<Graph> graphs = new ArrayList<>();
 
-        for (GraphSource wrapper : GraphSources) {
+        for (final GraphSource wrapper : GraphSources) {
             graphs.add(wrapper.getGraph());
         }
 
@@ -75,14 +75,14 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
 
 
     public List<Graph> getGraphs() {
-        return graphs;
+        return this.graphs;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 }

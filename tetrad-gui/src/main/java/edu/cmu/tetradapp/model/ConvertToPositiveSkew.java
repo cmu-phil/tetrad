@@ -40,40 +40,40 @@ public class ConvertToPositiveSkew extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    private ConvertToPositiveSkew(DataWrapper wrapper) {
-        DataModelList inList1 = wrapper.getDataModelList();
-        DataModelList outList = new DataModelList();
+    private ConvertToPositiveSkew(final DataWrapper wrapper) {
+        final DataModelList inList1 = wrapper.getDataModelList();
+        final DataModelList outList = new DataModelList();
 
-        for (DataModel model : inList1) {
+        for (final DataModel model : inList1) {
             if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            DataSet dataSet = (DataSet) model;
+            final DataSet dataSet = (DataSet) model;
 
             if (!(dataSet.isContinuous())) {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
             }
 
-            Matrix matrix2D = dataSet.getDoubleData();
+            final Matrix matrix2D = dataSet.getDoubleData();
 
             for (int j = 0; j < matrix2D.columns(); j++) {
-                double[] c = matrix2D.getColumn(j).toArray();
-                double skew = StatUtils.skewness(c);
+                final double[] c = matrix2D.getColumn(j).toArray();
+                final double skew = StatUtils.skewness(c);
 
                 for (int i = 0; i < matrix2D.rows(); i++) {
                     matrix2D.set(i, j, matrix2D.get(i, j) * Math.signum(skew));
                 }
             }
 
-            List<Node> list = dataSet.getVariables();
-            List<Node> list2 = new ArrayList<>();
+            final List<Node> list = dataSet.getVariables();
+            final List<Node> list2 = new ArrayList<>();
 
-            for (Node node : list) {
+            for (final Node node : list) {
                 list2.add(node);
             }
 
-            DataSet dataSet2 = new BoxDataSet(new DoubleDataBox(matrix2D.toArray()), list2);
+            final DataSet dataSet2 = new BoxDataSet(new DoubleDataBox(matrix2D.toArray()), list2);
             outList.add(dataSet2);
         }
 

@@ -53,33 +53,33 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
 
     //============================CONSTRUCTORS============================//
 
-    public LingamRunner(DataWrapper dataWrapper) {
+    public LingamRunner(final DataWrapper dataWrapper) {
         super(dataWrapper, new Parameters(), null);
     }
 
-    public LingamRunner(DataWrapper dataWrapper, Parameters params) {
+    public LingamRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public LingamRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingamRunner(final DataWrapper dataWrapper, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, new Parameters(), knowledgeBoxModel);
     }
 
-    public LingamRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
+    public LingamRunner(final DataWrapper dataWrapper, final KnowledgeBoxModel knowledgeBoxModel, final Parameters params) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingamRunner(final GraphSource graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingamRunner(GraphSource graphWrapper, Parameters params) {
+    public LingamRunner(final GraphSource graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
@@ -100,13 +100,13 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
      */
 
     public void execute() {
-        DataModel source = getDataModel();
+        final DataModel source = getDataModel();
 
         if (!(source instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting a rectangular data set.");
         }
 
-        DataSet data = (DataSet) source;
+        final DataSet data = (DataSet) source;
 
         if (!data.isContinuous()) {
             throw new IllegalArgumentException("Expecting a continuous data set.");
@@ -121,8 +121,8 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
 //        lingam.setAlternativePenalty(lingamPruningAlpha);
 //        Graph graph = lingam.lingam(data).getGraph();
 
-        Lingam lingam = new Lingam();
-        Graph graph = lingam.search(data);
+        final Lingam lingam = new Lingam();
+        final Graph graph = lingam.search(data);
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
@@ -142,7 +142,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
         names.add("ColliderDiscovery");
         names.add("Noncolliders");
         return names;
@@ -152,9 +152,9 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-        Graph graph = getGraph();
+    public List<List<Triple>> getTriplesLists(final Node node) {
+        final List<List<Triple>> triplesList = new ArrayList<>();
+        final Graph graph = getGraph();
         triplesList.add(GraphUtils.getCollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getNoncollidersFromGraph(node, graph));
         return triplesList;
@@ -165,7 +165,7 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
+        final MeekRules rules = new MeekRules();
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
@@ -175,24 +175,24 @@ public class LingamRunner extends AbstractAlgorithmRunner implements GraphSource
         return "LiNGAM";
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(final PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }
 
-    private void firePropertyChange(PropertyChangeEvent evt) {
-        for (PropertyChangeListener l : getListeners()) {
+    private void firePropertyChange(final PropertyChangeEvent evt) {
+        for (final PropertyChangeListener l : getListeners()) {
             l.propertyChange(evt);
         }
     }
 
     private List<PropertyChangeListener> getListeners() {
-        if (listeners == null) {
-            listeners = new ArrayList<>();
+        if (this.listeners == null) {
+            this.listeners = new ArrayList<>();
         }
-        return listeners;
+        return this.listeners;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
         if (!getListeners().contains(l)) getListeners().add(l);
     }
 }

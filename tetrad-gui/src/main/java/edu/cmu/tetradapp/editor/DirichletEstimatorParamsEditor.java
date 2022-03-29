@@ -47,7 +47,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
     public DirichletEstimatorParamsEditor() {
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -55,7 +55,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         // Does nothing.
     }
 
@@ -72,22 +72,22 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
         setLayout(new BorderLayout());
 
         final DoubleTextField symmetricAlphaField = new DoubleTextField(
-                params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
+                this.params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
         symmetricAlphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+            public double filter(final double value, final double oldValue) {
                 try {
-                    params.set("symmetricAlpha", value);
+                    DirichletEstimatorParamsEditor.this.params.set("symmetricAlpha", value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "If you make a Dirichlet estimator using a Bayes PM and a " +
                 "<br>discrete data set as parents, a Dirichlet Bayes IM will" +
@@ -100,7 +100,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
                 "<br>prior you want as a Dirichlet Bayes IM in the IM box." +
                 "</html>"));
 
-        Box b7 = Box.createHorizontalBox();
+        final Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" +
                 "<i>Estimate using a prior with all pseudocounts =</i>" +

@@ -41,7 +41,7 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
     private final boolean requiredScore;
     private final boolean requiredTest;
 
-    public AlgorithmModel(AnnotatedClass<Algorithm> algorithm) {
+    public AlgorithmModel(final AnnotatedClass<Algorithm> algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("Algorithm annotation cannot be null.");
         }
@@ -54,7 +54,7 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
     }
 
     @Override
-    public int compareTo(AlgorithmModel other) {
+    public int compareTo(final AlgorithmModel other) {
         return this.name.compareTo(other.name);
     }
 
@@ -64,23 +64,23 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
     }
 
     public AnnotatedClass<Algorithm> getAlgorithm() {
-        return algorithm;
+        return this.algorithm;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     public boolean isRequiredScore() {
-        return requiredScore;
+        return this.requiredScore;
     }
 
     public boolean isRequiredTest() {
-        return requiredTest;
+        return this.requiredTest;
     }
 
 }

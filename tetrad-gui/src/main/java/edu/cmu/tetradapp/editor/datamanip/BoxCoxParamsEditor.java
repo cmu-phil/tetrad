@@ -54,14 +54,14 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
      *
      * @param params
      */
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         this.params = params;
     }
 
     /**
      * Does nothing
      */
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
 
     }
 
@@ -69,12 +69,12 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
      * Builds the panel.
      */
     public void setup() {
-        DoubleTextField lambda = new DoubleTextField(params.getDouble("lambda", 0), 8, new DecimalFormat("0.0"));
+        final DoubleTextField lambda = new DoubleTextField(this.params.getDouble("lambda", 0), 8, new DecimalFormat("0.0"));
 
         lambda.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+            public double filter(final double value, final double oldValue) {
                 if (value >= 0) {
-                    params.set("lambda", value);
+                    BoxCoxParamsEditor.this.params.set("lambda", value);
                     return value;
                 } else {
                     return oldValue;
@@ -83,7 +83,7 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
         });
 
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Lambda: "));
         b1.add(Box.createHorizontalGlue());
         b1.add(Box.createHorizontalStrut(15));

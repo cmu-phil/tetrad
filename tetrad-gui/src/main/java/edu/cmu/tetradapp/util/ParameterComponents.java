@@ -41,11 +41,11 @@ public final class ParameterComponents {
     private ParameterComponents() {
     }
 
-    public static final Box[] toArray(Map<String, Box> parameterComponents) {
-        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+    public static final Box[] toArray(final Map<String, Box> parameterComponents) {
+        final ParamDescriptions paramDescs = ParamDescriptions.getInstance();
 
-        List<Box> boolComps = new LinkedList<>();
-        List<Box> otherComps = new LinkedList<>();
+        final List<Box> boolComps = new LinkedList<>();
+        final List<Box> otherComps = new LinkedList<>();
         parameterComponents.forEach((k, v) -> {
             if (paramDescs.get(k).getDefaultValue() instanceof Boolean) {
                 boolComps.add(v);
@@ -58,8 +58,8 @@ public final class ParameterComponents {
                 .toArray(Box[]::new);
     }
 
-    public static final Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
-        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+    public static final Map<String, Box> createParameterComponents(final Set<String> params, final Parameters parameters) {
+        final ParamDescriptions paramDescs = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
@@ -71,7 +71,7 @@ public final class ParameterComponents {
     }
 
     public static final DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
-                                                       double defaultValue, final double lowerBound, final double upperBound) {
+                                                       final double defaultValue, final double lowerBound, final double upperBound) {
         final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -90,7 +90,7 @@ public final class ParameterComponents {
 
             try {
                 parameters.set(parameter, value);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 // Ignore.
             }
 
@@ -119,7 +119,7 @@ public final class ParameterComponents {
 
             try {
                 parameters.set(parameter, value);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 // Ignore.
             }
 
@@ -129,18 +129,18 @@ public final class ParameterComponents {
         return field;
     }
 
-    public static final Box getBooleanSelectionBox(final String parameter, final Parameters parameters, boolean defaultValue) {
-        Box selectionBox = Box.createHorizontalBox();
+    public static final Box getBooleanSelectionBox(final String parameter, final Parameters parameters, final boolean defaultValue) {
+        final Box selectionBox = Box.createHorizontalBox();
 
-        JRadioButton yesButton = new JRadioButton("Yes");
-        JRadioButton noButton = new JRadioButton("No");
+        final JRadioButton yesButton = new JRadioButton("Yes");
+        final JRadioButton noButton = new JRadioButton("No");
 
         // Button group to ensure only only one option can be selected
-        ButtonGroup selectionBtnGrp = new ButtonGroup();
+        final ButtonGroup selectionBtnGrp = new ButtonGroup();
         selectionBtnGrp.add(yesButton);
         selectionBtnGrp.add(noButton);
 
-        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+        final boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
 
         // Set default selection
         if (aBoolean) {
@@ -155,7 +155,7 @@ public final class ParameterComponents {
 
         // Event listener
         yesButton.addActionListener((e) -> {
-            JRadioButton button = (JRadioButton) e.getSource();
+            final JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
                 parameters.set(parameter, true);
             }
@@ -163,7 +163,7 @@ public final class ParameterComponents {
 
         // Event listener
         noButton.addActionListener((e) -> {
-            JRadioButton button = (JRadioButton) e.getSource();
+            final JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
                 parameters.set(parameter, false);
             }
@@ -172,7 +172,7 @@ public final class ParameterComponents {
         return selectionBox;
     }
 
-    public static final StringTextField getStringField(final String parameter, final Parameters parameters, String defaultValue) {
+    public static final StringTextField getStringField(final String parameter, final Parameters parameters, final String defaultValue) {
         final StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
         field.setFilter((value, oldValue) -> {
@@ -182,7 +182,7 @@ public final class ParameterComponents {
 
             try {
                 parameters.set(parameter, value);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 // Ignore.
             }
 
@@ -192,16 +192,16 @@ public final class ParameterComponents {
         return field;
     }
 
-    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
-        JComponent component;
-        Object defaultValue = paramDesc.getDefaultValue();
+    private static Box createParameterComponent(final String parameter, final Parameters parameters, final ParamDescription paramDesc) {
+        final JComponent component;
+        final Object defaultValue = paramDesc.getDefaultValue();
         if (defaultValue instanceof Double) {
-            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
-            double upperBoundDouble = paramDesc.getUpperBoundDouble();
+            final double lowerBoundDouble = paramDesc.getLowerBoundDouble();
+            final double upperBoundDouble = paramDesc.getUpperBoundDouble();
             component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
         } else if (defaultValue instanceof Integer) {
-            int lowerBoundInt = paramDesc.getLowerBoundInt();
-            int upperBoundInt = paramDesc.getUpperBoundInt();
+            final int lowerBoundInt = paramDesc.getLowerBoundInt();
+            final int upperBoundInt = paramDesc.getUpperBoundInt();
             component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
         } else if (defaultValue instanceof Boolean) {
             component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
@@ -211,10 +211,10 @@ public final class ParameterComponents {
             throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
 
-        Box paramRow = Box.createHorizontalBox();
+        final Box paramRow = Box.createHorizontalBox();
 
-        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
-        String longDescription = paramDesc.getLongDescription();
+        final JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
+        final String longDescription = paramDesc.getLongDescription();
         if (longDescription != null) {
             paramLabel.setToolTipText(longDescription);
         }

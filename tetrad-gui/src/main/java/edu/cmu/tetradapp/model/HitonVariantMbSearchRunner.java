@@ -31,13 +31,13 @@ public class HitonVariantMbSearchRunner extends AbstractMBSearchRunner {
     static final long serialVersionUID = 23L;
 
 
-    public HitonVariantMbSearchRunner(DataWrapper data, Parameters params) {
+    public HitonVariantMbSearchRunner(final DataWrapper data, final Parameters params) {
         super(data.getSelectedDataModel(), params);
     }
 
 
     public void execute() throws Exception {
-        HitonVariant search = new HitonVariant(getIndependenceTest(),
+        final HitonVariant search = new HitonVariant(getIndependenceTest(),
                 getParams().getInt("depth", -1));
         this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());

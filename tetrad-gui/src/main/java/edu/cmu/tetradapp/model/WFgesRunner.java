@@ -58,7 +58,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
 
     //============================CONSTRUCTORS============================//
 
-    public WFgesRunner(DataWrapper[] dataWrappers, Parameters params) {
+    public WFgesRunner(final DataWrapper[] dataWrappers, final Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
@@ -80,15 +80,15 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     public void execute() {
         System.out.println("A");
 
-        DataSet dataSet = (DataSet) getDataModel();
+        final DataSet dataSet = (DataSet) getDataModel();
 
-        Parameters params = getParams();
+        final Parameters params = getParams();
 
-        double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
+        final double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
-        WFges fges = new WFges(dataSet);
+        final WFges fges = new WFges(dataSet);
         fges.setPenaltyDiscount(penaltyDiscount);
-        Graph graph = fges.search();
+        final Graph graph = fges.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
@@ -101,8 +101,8 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         setResultGraph(graph);
 
         this.topGraphs = new ArrayList<>();
-        topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
-        setIndex(topGraphs.size() - 1);
+        this.topGraphs.add(new ScoredGraph(getResultGraph(), Double.NaN));
+        setIndex(this.topGraphs.size() - 1);
     }
 
     /**
@@ -127,12 +127,12 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        FgesRunner.Type type;
+        final FgesRunner.Type type;
 
         if (model instanceof Graph) {
             type = FgesRunner.Type.GRAPH;
         } else if (model instanceof DataSet) {
-            DataSet dataSet = (DataSet) model;
+            final DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
                 type = FgesRunner.Type.CONTINUOUS;
@@ -145,7 +145,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         } else if (model instanceof ICovarianceMatrix) {
             type = FgesRunner.Type.CONTINUOUS;
         } else if (model instanceof DataModelList) {
-            DataModelList list = (DataModelList) model;
+            final DataModelList list = (DataModelList) model;
 
             if (allContinuous(list)) {
                 type = FgesRunner.Type.CONTINUOUS;
@@ -162,8 +162,8 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return type;
     }
 
-    private boolean allContinuous(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
+    private boolean allContinuous(final List<DataModel> dataModels) {
+        for (final DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!((DataSet) dataModel).isContinuous() || dataModel instanceof ICovarianceMatrix) {
                     return false;
@@ -174,8 +174,8 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return true;
     }
 
-    private boolean allDiscrete(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
+    private boolean allDiscrete(final List<DataModel> dataModels) {
+        for (final DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!((DataSet) dataModel).isDiscrete()) {
                     return false;
@@ -186,7 +186,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return true;
     }
 
-    public void setIndex(int index) {
+    public void setIndex(final int index) {
         if (index < -1) {
             throw new IllegalArgumentException("Must be in >= -1: " + index);
         }
@@ -195,7 +195,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     }
 
     public int getIndex() {
-        return index;
+        return this.index;
     }
 
     public Graph getGraph() {
@@ -217,7 +217,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new ArrayList<>();
     }
 
@@ -226,7 +226,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
+        final MeekRules rules = new MeekRules();
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
@@ -234,9 +234,9 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        Parameters params = getParams();
-        paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getDouble("penaltyDiscount", 4)));
-        return paramSettings;
+        final Parameters params = getParams();
+        this.paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getDouble("penaltyDiscount", 4)));
+        return this.paramSettings;
     }
 
     @Override
@@ -244,24 +244,24 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return "FGES";
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(final PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }
 
-    private void firePropertyChange(PropertyChangeEvent evt) {
-        for (PropertyChangeListener l : getListeners()) {
+    private void firePropertyChange(final PropertyChangeEvent evt) {
+        for (final PropertyChangeListener l : getListeners()) {
             l.propertyChange(evt);
         }
     }
 
     private List<PropertyChangeListener> getListeners() {
-        if (listeners == null) {
-            listeners = new ArrayList<>();
+        if (this.listeners == null) {
+            this.listeners = new ArrayList<>();
         }
-        return listeners;
+        return this.listeners;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
         if (!getListeners().contains(l)) getListeners().add(l);
     }
 

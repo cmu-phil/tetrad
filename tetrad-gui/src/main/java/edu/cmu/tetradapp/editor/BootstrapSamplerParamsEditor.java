@@ -44,19 +44,19 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
     private Parameters params = null;
 
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
-        for (Object parentModel : parentModels) {
+    public void setParentModels(final Object[] parentModels) {
+        for (final Object parentModel : parentModels) {
             //            System.out.println(parentModel);
             //
             if (parentModel instanceof DataWrapper) {
-                DataModel dataModel = ((DataWrapper) parentModel).getSelectedDataModel();
+                final DataModel dataModel = ((DataWrapper) parentModel).getSelectedDataModel();
                 //
                 if (dataModel instanceof DataSet) {
-                    DataSet parentDataSet = (DataSet) dataModel;
+                    final DataSet parentDataSet = (DataSet) dataModel;
                 }
             }
         }
@@ -80,27 +80,27 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
     private void buildGui() {
         setLayout(new BorderLayout());
 
-        final IntTextField sampleSizeField = new IntTextField(params.getInt("sampleSize", 1000), 6);
+        final IntTextField sampleSizeField = new IntTextField(this.params.getInt("sampleSize", 1000), 6);
         sampleSizeField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
+            public int filter(final int value, final int oldValue) {
                 try {
-                    params.set("sampleSize", value);
+                    BootstrapSamplerParamsEditor.this.params.set("sampleSize", value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "The input dataset will be sampled with replacement to create a new" +
                 "<br>dataset with the number of samples entered below."));
 
-        Box b7 = Box.createHorizontalBox();
+        final Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" + "<i>Sample size:  </i>" + "</html>"));
         b7.add(sampleSizeField);

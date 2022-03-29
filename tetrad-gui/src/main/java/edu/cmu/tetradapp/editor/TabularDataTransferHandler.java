@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
  */
 class TabularDataTransferHandler extends TransferHandler {
 
-    public int getSourceActions(JComponent c) {
+    public int getSourceActions(final JComponent c) {
         return COPY_OR_MOVE;
     }
 
@@ -57,13 +57,13 @@ class TabularDataTransferHandler extends TransferHandler {
      *          components.
      * @return The representation of the data to be transfered.
      */
-    protected Transferable createTransferable(JComponent c) {
+    protected Transferable createTransferable(final JComponent c) {
         if (c instanceof TabularDataJTable) {
-            TabularDataJTable tabularData = (TabularDataJTable) c;
-            DataSet dataSet = tabularData.getDataSet();
+            final TabularDataJTable tabularData = (TabularDataJTable) c;
+            final DataSet dataSet = tabularData.getDataSet();
 
-            int[] rows;
-            int[] cols;
+            final int[] rows;
+            final int[] cols;
 
             if (!tabularData.getRowSelectionAllowed() &&
                     !tabularData.getColumnSelectionAllowed()) {
@@ -72,7 +72,7 @@ class TabularDataTransferHandler extends TransferHandler {
 
             // Column selection.
             if (!tabularData.getRowSelectionAllowed()) {
-                int rowCount = tabularData.getDataSet().getNumRows();
+                final int rowCount = tabularData.getDataSet().getNumRows();
                 rows = new int[rowCount + 1];
 
                 // Need to include the variable names.
@@ -80,7 +80,7 @@ class TabularDataTransferHandler extends TransferHandler {
                     rows[i] = i + getNumLeadingRows() - 1;
                 }
             } else {
-                int[] _rows = tabularData.getSelectedRows();
+                final int[] _rows = tabularData.getSelectedRows();
 
                 if (Arrays.binarySearch(_rows, 1) == -1) {
                     rows = new int[_rows.length + 1];
@@ -93,7 +93,7 @@ class TabularDataTransferHandler extends TransferHandler {
 
             // Row selection.
             if (!tabularData.getColumnSelectionAllowed()) {
-                int colCount = tabularData.getDataSet().getNumColumns();
+                final int colCount = tabularData.getDataSet().getNumColumns();
                 cols = new int[colCount];
 
                 for (int j = 0; j < colCount; j++) {
@@ -108,19 +108,19 @@ class TabularDataTransferHandler extends TransferHandler {
                 return null;
             }
 
-            StringBuilder buf = new StringBuilder();
+            final StringBuilder buf = new StringBuilder();
 
-            for (int displayRow : rows) {
+            for (final int displayRow : rows) {
                 if (displayRow == 0) {
                     continue;
                 }
 
-                for (int displayCol : cols) {
+                for (final int displayCol : cols) {
                     if (displayCol == 0) {
                         continue;
                     }
 
-                    String name = (String) (tabularData.getValueAt(1, displayCol));
+                    final String name = (String) (tabularData.getValueAt(1, displayCol));
 
                     if (name == null) {
                         continue;
@@ -141,8 +141,8 @@ class TabularDataTransferHandler extends TransferHandler {
 
                         buf.append(val).append("\t");
                     } else {
-                        int dataRow = displayRow - getNumLeadingRows();
-                        int dataCol = displayCol - getNumLeadingCols();
+                        final int dataRow = displayRow - getNumLeadingRows();
+                        final int dataCol = displayCol - getNumLeadingCols();
 
                         if (dataCol < 0) {
                             continue;
@@ -150,7 +150,7 @@ class TabularDataTransferHandler extends TransferHandler {
 
                         if (dataCol < dataSet.getNumColumns()) {
                             if (dataRow < dataSet.getNumRows()) {
-                                Object datumObj = dataSet.getObject(dataRow, dataCol);
+                                final Object datumObj = dataSet.getObject(dataRow, dataCol);
                                 String datumString = "";
 
                                 if (datumObj != null) {
@@ -159,7 +159,7 @@ class TabularDataTransferHandler extends TransferHandler {
                                     } else if (datumObj instanceof String) {
 
                                         // Let's quote all Strings...
-                                        datumString = "\"" + datumObj.toString() + "\"";
+                                        datumString = "\"" + datumObj + "\"";
 
 //                                        // This is done to prevent integer discrete
 //                                        // columns from being reinterpreted,
@@ -201,11 +201,11 @@ class TabularDataTransferHandler extends TransferHandler {
         return null;
     }
 
-    public boolean importData(JComponent c, Transferable t) {
+    public boolean importData(final JComponent c, final Transferable t) {
         if (c instanceof TabularDataJTable) {
             try {
-                TabularDataJTable tabularData = (TabularDataJTable) c;
-                String s = (String) t.getTransferData(DataFlavor.stringFlavor);
+                final TabularDataJTable tabularData = (TabularDataJTable) c;
+                final String s = (String) t.getTransferData(DataFlavor.stringFlavor);
 
                 int startRow = tabularData.getSelectedRow();
                 int startCol = tabularData.getSelectedColumn();
@@ -225,16 +225,16 @@ class TabularDataTransferHandler extends TransferHandler {
                 boolean shouldAsk = false;
                 boolean shiftDown = true;
 
-                BufferedReader preReader = new BufferedReader(
+                final BufferedReader preReader = new BufferedReader(
                         new CharArrayReader(s.toCharArray()));
 
-                String preLine = preReader.readLine();
-                StringTokenizer preTokenizer =
+                final String preLine = preReader.readLine();
+                final StringTokenizer preTokenizer =
                         new StringTokenizer(preLine, "\t");
-                int numTokens = preTokenizer.countTokens();
+                final int numTokens = preTokenizer.countTokens();
 
                 for (int col = startCol; col < startCol + numTokens; col++) {
-                    Object value = tabularData.getValueAt(startRow, col);
+                    final Object value = tabularData.getValueAt(startRow, col);
                     if (!"".equals(value) && !(null == value)) {
                         shouldAsk = true;
                     }
@@ -247,11 +247,11 @@ class TabularDataTransferHandler extends TransferHandler {
                 }
 
                 if (shouldAsk) {
-                    String[] choices = new String[]{
+                    final String[] choices = new String[]{
                             "Shift corresponding cells down to make room",
                             "Replace corresponding cells"};
 
-                    Object choice = JOptionPane.showInputDialog(
+                    final Object choice = JOptionPane.showInputDialog(
                             JOptionUtils.centeringComp(),
                             "How should the clipboard contents be pasted?",
                             "Paste Contents", JOptionPane.INFORMATION_MESSAGE,
@@ -266,9 +266,9 @@ class TabularDataTransferHandler extends TransferHandler {
                 }
 
                 doPaste(s, startRow, startCol, shiftDown, tabularData);
-            } catch (UnsupportedFlavorException e) {
+            } catch (final UnsupportedFlavorException e) {
                 e.printStackTrace();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 e.printStackTrace();
             }
 
@@ -278,21 +278,21 @@ class TabularDataTransferHandler extends TransferHandler {
         return false;
     }
 
-    private boolean checkRanges(String s, int startCol,
-                                TabularDataJTable tabularData) {
-        RegexTokenizer lines = new RegexTokenizer(s, Pattern.compile("\n"), '"');
+    private boolean checkRanges(final String s, final int startCol,
+                                final TabularDataJTable tabularData) {
+        final RegexTokenizer lines = new RegexTokenizer(s, Pattern.compile("\n"), '"');
         lines.nextToken();
 
         while (lines.hasMoreTokens()) {
-            String line = lines.nextToken();
-            RegexTokenizer tokens = new RegexTokenizer(line, Pattern.compile("\t"), '"');
+            final String line = lines.nextToken();
+            final RegexTokenizer tokens = new RegexTokenizer(line, Pattern.compile("\t"), '"');
             int col = startCol;
 
             while (tokens.hasMoreTokens()) {
-                String token = tokens.nextToken();
+                final String token = tokens.nextToken();
 
                 if (!tabularData.checkValueAt(token, col)) {
-                    int dataCol = col - getNumLeadingCols();
+                    final int dataCol = col - getNumLeadingCols();
 
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "<html>" +
@@ -310,8 +310,8 @@ class TabularDataTransferHandler extends TransferHandler {
         return true;
     }
 
-    private void doPaste(String s, int startRow, int startCol,
-                         boolean shiftDown, TabularDataJTable tabularData) {
+    private void doPaste(final String s, int startRow, int startCol,
+                         final boolean shiftDown, final TabularDataJTable tabularData) {
 
         startRow -= getNumLeadingRows();
         startCol -= getNumLeadingCols();
@@ -328,8 +328,8 @@ class TabularDataTransferHandler extends TransferHandler {
 
         // Read the variable names.
         String line = lines.nextToken();
-        RegexTokenizer _names = new RegexTokenizer(line, Pattern.compile("\t"), '"');
-        List<String> varNames = new ArrayList<>();
+        final RegexTokenizer _names = new RegexTokenizer(line, Pattern.compile("\t"), '"');
+        final List<String> varNames = new ArrayList<>();
 
         while (_names.hasMoreTokens()) {
             varNames.add(_names.nextToken());
@@ -346,7 +346,7 @@ class TabularDataTransferHandler extends TransferHandler {
             System.out.println("line = " + line);
             pasteRows++;
 
-            RegexTokenizer numbers = new RegexTokenizer(line, Pattern.compile("\t"), '"');
+            final RegexTokenizer numbers = new RegexTokenizer(line, Pattern.compile("\t"), '"');
             int _cols = 0;
 
             while (numbers.hasMoreTokens()) {
@@ -368,8 +368,8 @@ class TabularDataTransferHandler extends TransferHandler {
         }
 
         // Resize the dataset if necessary to accomodate the new data.
-        DataSet dataSet = tabularData.getDataSet();
-        int originalCols = dataSet.getNumColumns();
+        final DataSet dataSet = tabularData.getDataSet();
+        final int originalCols = dataSet.getNumColumns();
 
         // Make the dataset big enough, making sure not to use the parsed
         // variable names to create new columns.
@@ -381,19 +381,19 @@ class TabularDataTransferHandler extends TransferHandler {
             dataSet.ensureRows(startRow + pasteRows);
         }
 
-        int newCols = dataSet.getNumColumns();
+        final int newCols = dataSet.getNumColumns();
 
         // Use variable names from the paste where possible, without changing
         // any existing variable names. If necessary, append numbers.
         for (int j = originalCols; j < newCols; j++) {
-            Node node = dataSet.getVariable(j);
-            int index = (j - (originalCols - 1)) + ((originalCols - 1) - startCol);
+            final Node node = dataSet.getVariable(j);
+            final int index = (j - (originalCols - 1)) + ((originalCols - 1) - startCol);
 
             if (index < 0) {
                 continue;
             }
 
-            String name = varNames.get(index);
+            final String name = varNames.get(index);
 
             if (dataSet.getVariable(name) == null) {
                 node.setName(name);
@@ -414,13 +414,13 @@ class TabularDataTransferHandler extends TransferHandler {
         if (shiftDown) {
             for (int i = pasteRows - 1; i >= 0; i--) {
                 for (int j = 0; j < pasteCols; j++) {
-                    int oldRow = startRow + i;
-                    int newRow = oldRow + pasteRows;
-                    int col = startCol + j;
+                    final int oldRow = startRow + i;
+                    final int newRow = oldRow + pasteRows;
+                    final int col = startCol + j;
 
-                    int numRows = dataSet.getNumRows();
+                    final int numRows = dataSet.getNumRows();
                     if (newRow < numRows) {
-                        Object value = tabularData.getValueAt(
+                        final Object value = tabularData.getValueAt(
                                 oldRow + getNumLeadingRows(),
                                 col + getNumLeadingCols());
                         tabularData.setValueAt(value,
@@ -439,25 +439,25 @@ class TabularDataTransferHandler extends TransferHandler {
             line = lines.nextToken();
             if (line.length() == 0) continue;
 
-            RegexTokenizer tokens = new RegexTokenizer(line, Pattern.compile("\t"), '"');
+            final RegexTokenizer tokens = new RegexTokenizer(line, Pattern.compile("\t"), '"');
 
             for (int j = 0; j < pasteCols; j++) {
-                int row = startRow + i;
-                int col = startCol + j;
-                String token = tokens.nextToken();
+                final int row = startRow + i;
+                final int col = startCol + j;
+                final String token = tokens.nextToken();
 
                 tabularData.setValueAt(token, row + getNumLeadingRows(),
                         col + getNumLeadingCols());
             }
         }
 
-        TabularDataTable tableModel = (TabularDataTable) tabularData.getModel();
+        final TabularDataTable tableModel = (TabularDataTable) tabularData.getModel();
         tableModel.fireTableDataChanged();
     }
 
-    public void exportDone(JComponent source, Transferable data, int action) {
+    public void exportDone(final JComponent source, final Transferable data, final int action) {
         if (action == MOVE && source instanceof TabularDataJTable) {
-            TabularDataJTable tableTabular = (TabularDataJTable) source;
+            final TabularDataJTable tableTabular = (TabularDataJTable) source;
             tableTabular.deleteSelected();
         }
     }
@@ -467,7 +467,7 @@ class TabularDataTransferHandler extends TransferHandler {
       The number of initial "special" columns not used to display the data
       set.
      */
-        int numLeadingCols = 1;
+        final int numLeadingCols = 1;
         return numLeadingCols;
     }
 
@@ -476,7 +476,7 @@ class TabularDataTransferHandler extends TransferHandler {
       The number of initial "special" rows not used to display the data
       set.
      */
-        int numLeadingRows = 2;
+        final int numLeadingRows = 2;
         return numLeadingRows;
     }
 }

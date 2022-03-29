@@ -31,23 +31,23 @@ import java.awt.geom.Ellipse2D;
 public class LatentDisplayComp extends JComponent implements DisplayComp {
     private boolean selected = false;
 
-    public LatentDisplayComp(String name) {
+    public LatentDisplayComp(final String name) {
         setBackground(DisplayNodeUtils.getNodeFillColor());
         setFont(DisplayNodeUtils.getFont());
         setName(name);
         super.setSize(getPreferredSize());
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         super.setName(name);
         setSize(getPreferredSize());
     }
 
-    public void setSelected(boolean selected) {
+    public void setSelected(final boolean selected) {
         this.selected = selected;
     }
 
-    public boolean contains(int x, int y) {
+    public boolean contains(final int x, final int y) {
         return getShape().contains(x, y);
     }
 
@@ -64,13 +64,13 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
      *
      * @param g the graphics context.
      */
-    public void paint(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        int width = getPreferredSize().width;
-        int stringWidth = fm.stringWidth(getName());
-        int stringX = (width - stringWidth) / 2;
-        int stringY = fm.getAscent() + DisplayNodeUtils.getPixelGap();
+    public void paint(final Graphics g) {
+        final Graphics2D g2 = (Graphics2D) g;
+        final FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
+        final int width = getPreferredSize().width;
+        final int stringWidth = fm.stringWidth(getName());
+        final int stringX = (width - stringWidth) / 2;
+        final int stringY = fm.getAscent() + DisplayNodeUtils.getPixelGap();
 
         g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() :
                 DisplayNodeUtils.getNodeFillColor());
@@ -87,12 +87,12 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
      * Calculates the size of the component based on its name.
      */
     public Dimension getPreferredSize() {
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        String name1 = getName();
-        int textWidth = fm.stringWidth(name1);
-        int textHeight = fm.getAscent();
+        final FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
+        final String name1 = getName();
+        final int textWidth = fm.stringWidth(name1);
+        final int textHeight = fm.getAscent();
         int width = textWidth + fm.getMaxAdvance() + 5;
-        int height = 2 * DisplayNodeUtils.getPixelGap() + textHeight + 5;
+        final int height = 2 * DisplayNodeUtils.getPixelGap() + textHeight + 5;
 
         width = (width < 60) ? 60 : width;
 
@@ -100,7 +100,7 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
     }
 
     private boolean isSelected() {
-        return selected;
+        return this.selected;
     }
 }
 

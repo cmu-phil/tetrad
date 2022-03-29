@@ -33,7 +33,7 @@ public class GrowShrinkRunner extends AbstractMBSearchRunner {
     static final long serialVersionUID = 23L;
 
 
-    public GrowShrinkRunner(DataWrapper data, Parameters params) {
+    public GrowShrinkRunner(final DataWrapper data, final Parameters params) {
         super(data.getSelectedDataModel(), params);
     }
 
@@ -43,7 +43,7 @@ public class GrowShrinkRunner extends AbstractMBSearchRunner {
      */
     public void execute() throws Exception {
         validate();
-        GrowShrink search = new GrowShrink(this.getIndependenceTest());
+        final GrowShrink search = new GrowShrink(this.getIndependenceTest());
         setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         setSearchName(search.getAlgorithmName());
     }

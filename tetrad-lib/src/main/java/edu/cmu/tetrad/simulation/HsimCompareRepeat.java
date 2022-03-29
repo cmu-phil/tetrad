@@ -124,12 +124,12 @@ public class HsimCompareRepeat {
         System.out.println(" ");
 
         final double fMSE_AR = fSE_ART / count;
-        double fMSE_AP = fSE_APT / count;
-        double fMSE_OR = fSE_ORT / count;
+        final double fMSE_AP = fSE_APT / count;
+        final double fMSE_OR = fSE_ORT / count;
         final double fMSE_OP = fSE_OPT / (count - fSE_OPT_CountCorrection);
         final double hMSE_AR = hSE_ART / count;
-        double hMSE_AP = hSE_APT / count;
-        double hMSE_OR = hSE_ORT / count;
+        final double hMSE_AP = hSE_APT / count;
+        final double hMSE_OR = hSE_ORT / count;
         final double hMSE_OP = hSE_OPT / (count - hSE_OPT_CountCorrection);
 
         final String FMSE = "F-MSE: AR=" + fMSE_AR + " AP=" + fMSE_AP + " OR=" + fMSE_OR + " OP=" + fMSE_OP;

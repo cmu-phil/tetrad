@@ -62,21 +62,21 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
 
     //=============================CONSTRUCTORS==========================//
 
-    public MeasurementModelWrapper(Parameters params) {
+    public MeasurementModelWrapper(final Parameters params) {
         this.setVarNames(new ArrayList<String>());
         this.setClusters((Clusters) params.get("clusters", null));
         this.params = params;
     }
 
-    public MeasurementModelWrapper(KnowledgeBoxInput knowledgeInput, Parameters params) {
+    public MeasurementModelWrapper(final KnowledgeBoxInput knowledgeInput, final Parameters params) {
         if (knowledgeInput instanceof GraphSource) {
-            GraphSource graphWrapper = (GraphSource) knowledgeInput;
-            Graph mim = graphWrapper.getGraph();
+            final GraphSource graphWrapper = (GraphSource) knowledgeInput;
+            final Graph mim = graphWrapper.getGraph();
 
-            Clusters clusters = ClusterUtils.mimClusters(mim);
-            List<String> nodeNames = new ArrayList<>();
+            final Clusters clusters = ClusterUtils.mimClusters(mim);
+            final List<String> nodeNames = new ArrayList<>();
 
-            for (Node node : mim.getNodes()) {
+            for (final Node node : mim.getNodes()) {
                 if (node.getNodeType() != NodeType.LATENT) {
                     nodeNames.add(node.getName());
                 }
@@ -95,11 +95,11 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         }
     }
 
-    public MeasurementModelWrapper(DataWrapper dataWrapper, Parameters params) {
+    public MeasurementModelWrapper(final DataWrapper dataWrapper, final Parameters params) {
         this.setVarNames(dataWrapper.getVarNames());
         this.setClusters(new Clusters());
 
-        DataModel selectedDataModel = dataWrapper.getSelectedDataModel();
+        final DataModel selectedDataModel = dataWrapper.getSelectedDataModel();
 
         if (!(selectedDataModel instanceof DataSet)) {
             throw new IllegalArgumentException("That data box did not contain a dataset.");
@@ -113,7 +113,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
         return PcRunner.serializableInstance();
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -134,45 +134,45 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
     }
 
     public Clusters getClusters() {
-        return clusters;
+        return this.clusters;
     }
 
-    private void setClusters(Clusters clusters) {
+    private void setClusters(final Clusters clusters) {
         this.clusters = clusters;
     }
 
     public List<String> getVarNames() {
-        return varNames;
+        return this.varNames;
     }
 
-    private void setVarNames(List<String> varNames) {
+    private void setVarNames(final List<String> varNames) {
         this.varNames = varNames;
     }
 
     public DataSet getData() {
-        return data;
+        return this.data;
     }
 
     public Graph getSourceGraph() {
-        return sourceGraph;
+        return this.sourceGraph;
     }
 
     public Graph getResultGraph() {
-        return sourceGraph;
+        return this.sourceGraph;
     }
 
     private Parameters getParams() {
-        return params;
+        return this.params;
     }
 
-    public void resetParams(Object params) {
+    public void resetParams(final Object params) {
         this.params = (Parameters) params;
     }
 
@@ -181,10 +181,10 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     }
 
     public java.util.List<Node> getVariables() {
-        List<Node> latents = new ArrayList<>();
+        final List<Node> latents = new ArrayList<>();
 
-        for (String name : getVariableNames()) {
-            Node node = new ContinuousVariable(name);
+        for (final String name : getVariableNames()) {
+            final Node node = new ContinuousVariable(name);
             node.setNodeType(NodeType.LATENT);
             latents.add(node);
         }
@@ -193,7 +193,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     }
 
     public List<String> getVariableNames() {
-        List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
+        final List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
                 getData().getVariables());
         return ClusterUtils.generateLatentNames(partition.size());
     }

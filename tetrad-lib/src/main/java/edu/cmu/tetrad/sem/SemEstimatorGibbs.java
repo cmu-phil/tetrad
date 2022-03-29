@@ -194,7 +194,7 @@ public final class SemEstimatorGibbs {
                             : this.startIm.getParamValue(constraint.getParam2());
 
                     final double ax;
-                    double bx;
+                    final double bx;
                     final double cx;
 
                     // Mark - these constraints follow pascal code

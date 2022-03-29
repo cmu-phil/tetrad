@@ -52,7 +52,7 @@ public final class StringTextField extends JTextField {
     /**
      * Constructs a new text field displaying the given default value.
      */
-    public StringTextField(String value, int size) {
+    public StringTextField(final String value, final int size) {
         super(size);
 
         setHorizontalAlignment(JTextField.LEFT);
@@ -64,10 +64,10 @@ public final class StringTextField extends JTextField {
              * attempting to set the value displayed. If the value
              * displayed cannot be set, the set value is reinstated.
              */
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 try {
                     setValue(e.getActionCommand());
-                } catch (NumberFormatException e1) {
+                } catch (final NumberFormatException e1) {
                     setValue(StringTextField.this.value);
                 }
             }
@@ -79,7 +79,7 @@ public final class StringTextField extends JTextField {
              * Nothing need be done when focus is gained, but this method is
              * required by the FocusListener interface.
              */
-            public void focusGained(FocusEvent e) {
+            public void focusGained(final FocusEvent e) {
                 if (isEditable()) {
                     selectAll();
                 }
@@ -92,7 +92,7 @@ public final class StringTextField extends JTextField {
              *
              * @param e the event.
              */
-            public void focusLost(FocusEvent e) {
+            public void focusLost(final FocusEvent e) {
 
                 // Dehighlight text.
                 setCaretPosition(0);
@@ -108,12 +108,12 @@ public final class StringTextField extends JTextField {
     /**
      * Sets the value of the text field to the given String value.
      */
-    public void setValue(String value) {
+    public void setValue(final String value) {
         if (value.equals(this.value)) {
             return;
         }
 
-        String newValue = filter(value, this.value);
+        final String newValue = filter(value, this.value);
 
         if (!newValue.equals(this.value)) {
             this.value = newValue;
@@ -132,7 +132,7 @@ public final class StringTextField extends JTextField {
     /**
      * Sets whether the given value should be accepted.
      */
-    public void setFilter(Filter filter) {
+    public void setFilter(final Filter filter) {
         this.filter = filter;
     }
 
@@ -146,12 +146,12 @@ public final class StringTextField extends JTextField {
 
     //=============================PRIVATE METHODS=======================//
 
-    private String filter(String value, String oldValue) {
-        if (filter == null) {
+    private String filter(final String value, final String oldValue) {
+        if (this.filter == null) {
             return value;
         }
 
-        return filter.filter(value, oldValue);
+        return this.filter.filter(value, oldValue);
     }
 
     //==============================INTERFACES===========================//

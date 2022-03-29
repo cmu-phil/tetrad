@@ -48,7 +48,7 @@ public class TetradApplicationConfig {
      */
     private final static TetradApplicationConfig instance = new TetradApplicationConfig();
 
-    private Map<String, SessionNodeConfig> configs;
+    private final Map<String, SessionNodeConfig> configs;
 
     /**
      * A map from model classes to the configurations that handle them.
@@ -60,42 +60,42 @@ public class TetradApplicationConfig {
      */
     private TetradApplicationConfig() {
         // Tetrad-Gui properties file, use absolute path with leading "/"
-        InputStream tetradGuiPropertiesStream = this.getClass().getResourceAsStream("/tetrad-gui.properties");
+        final InputStream tetradGuiPropertiesStream = this.getClass().getResourceAsStream("/tetrad-gui.properties");
 
-        Properties tetradGuiProperties = new Properties();
+        final Properties tetradGuiProperties = new Properties();
 
         try {
             tetradGuiProperties.load(tetradGuiPropertiesStream);
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             throw new IllegalStateException("Could not load tetrad-gui.properties file", ex);
         }
 
         try {
             tetradGuiPropertiesStream.close();
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             throw new IllegalStateException("Could not close the tetradGuiPropertiesStream", ex);
         }
 
         // Load different config xml files based config setting - development or production- Zhou
-        String configXml = tetradGuiProperties.getProperty("tetrad-gui.config");
+        final String configXml = tetradGuiProperties.getProperty("tetrad-gui.config");
 
         System.out.println("config file: " + configXml);
 
-        InputStream stream = this.getClass().getResourceAsStream(configXml);
-        Builder builder = new Builder(true);
+        final InputStream stream = this.getClass().getResourceAsStream(configXml);
+        final Builder builder = new Builder(true);
         try {
-            Document doc = builder.build(stream);
+            final Document doc = builder.build(stream);
             this.configs = buildConfiguration(doc.getRootElement());
-            for (SessionNodeConfig config : this.configs.values()) {
-                Class[] models = config.getModels();
-                for (Class model : models) {
-                    if (classMap.containsKey(model)) {
+            for (final SessionNodeConfig config : this.configs.values()) {
+                final Class[] models = config.getModels();
+                for (final Class model : models) {
+                    if (this.classMap.containsKey(model)) {
                         throw new IllegalStateException("Model " + model + " has two configurations");
                     }
                     this.classMap.put(model, config);
                 }
             }
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             throw new IllegalStateException("Could not load configuration", ex);
         }
     }
@@ -114,7 +114,7 @@ public class TetradApplicationConfig {
      * @return the <code>SessionNodeConfig</code> to be used for the given id,
      * or null if there isn't one defined for the given id.
      */
-    public SessionNodeConfig getSessionNodeConfig(String id) {
+    public SessionNodeConfig getSessionNodeConfig(final String id) {
         return this.configs.get(id);
     }
 
@@ -122,7 +122,7 @@ public class TetradApplicationConfig {
      * @return the <code>SessionNodeConfig</code> that the given model is part
      * of.
      */
-    public SessionNodeConfig getSessionNodeConfig(Class model) {
+    public SessionNodeConfig getSessionNodeConfig(final Class model) {
         return this.classMap.get(model);
     }
 
@@ -133,28 +133,28 @@ public class TetradApplicationConfig {
      * file. It is assumed that the document has been validated against its dtd
      * already.
      */
-    private static Map<String, SessionNodeConfig> buildConfiguration(Element root) {
-        Elements elements = root.getChildElements();
-        ClassLoader loader = getClassLoader();
-        Map<String, SessionNodeConfig> configs = new LinkedHashMap<>();
+    private static Map<String, SessionNodeConfig> buildConfiguration(final Element root) {
+        final Elements elements = root.getChildElements();
+        final ClassLoader loader = getClassLoader();
+        final Map<String, SessionNodeConfig> configs = new LinkedHashMap<>();
         for (int i = 0; i < elements.size(); i++) {
-            Element node = elements.get(i);
-            String id = node.getAttributeValue("id");
-            DefaultNodeConfig nodeConfig = new DefaultNodeConfig(id);
-            Elements nodeElements = node.getChildElements();
+            final Element node = elements.get(i);
+            final String id = node.getAttributeValue("id");
+            final DefaultNodeConfig nodeConfig = new DefaultNodeConfig(id);
+            final Elements nodeElements = node.getChildElements();
             for (int k = 0; k < nodeElements.size(); k++) {
-                Element child = nodeElements.get(k);
+                final Element child = nodeElements.get(k);
                 if ("models".equals(child.getQualifiedName())) {
                     nodeConfig.setSessionNodeModelConfig(buildModelConfigs(child));
                 } else if ("display-component".equals(child.getQualifiedName())) {
-                    String image = child.getAttributeValue("image");
-                    String value = getValue(child);
-                    Class compClass = value == null ? null : loadClass(loader, value);
+                    final String image = child.getAttributeValue("image");
+                    final String value = getValue(child);
+                    final Class compClass = value == null ? null : loadClass(loader, value);
                     nodeConfig.setDisplayComp(image, compClass);
                 } else if ("model-chooser".equals(child.getQualifiedName())) {
-                    String title = child.getAttributeValue("title");
-                    String value = getValue(child);
-                    Class chooserClass = value == null ? null : loadClass(loader, value);
+                    final String title = child.getAttributeValue("title");
+                    final String value = getValue(child);
+                    final Class chooserClass = value == null ? null : loadClass(loader, value);
                     nodeConfig.setChooser(title, chooserClass);
                 } else if ("node-specific-message".equals(child.getQualifiedName())) {
                     nodeConfig.setNodeSpecificMessage(child.getValue());
@@ -170,8 +170,8 @@ public class TetradApplicationConfig {
     /**
      * @return the value of the elemnt, will return null if its an empty string.
      */
-    private static String getValue(Element value) {
-        String v = value.getValue();
+    private static String getValue(final Element value) {
+        final String v = value.getValue();
         if (v != null && v.length() == 0) {
             return null;
         }
@@ -181,24 +181,24 @@ public class TetradApplicationConfig {
     /**
      * Builds the model configs from the models element.
      */
-    private static List<SessionNodeModelConfig> buildModelConfigs(Element models) {
-        Elements modelElements = models.getChildElements();
-        List<SessionNodeModelConfig> configs = new LinkedList<>();
-        ClassLoader loader = getClassLoader();
+    private static List<SessionNodeModelConfig> buildModelConfigs(final Element models) {
+        final Elements modelElements = models.getChildElements();
+        final List<SessionNodeModelConfig> configs = new LinkedList<>();
+        final ClassLoader loader = getClassLoader();
         for (int i = 0; i < modelElements.size(); i++) {
-            Element model = modelElements.get(i);
-            String name = model.getAttributeValue("name");
-            String acronym = model.getAttributeValue("acronym");
-            String help = model.getAttributeValue("help");
-            String category = model.getAttributeValue("category");
+            final Element model = modelElements.get(i);
+            final String name = model.getAttributeValue("name");
+            final String acronym = model.getAttributeValue("acronym");
+            final String help = model.getAttributeValue("help");
+            final String category = model.getAttributeValue("category");
             Class modelClass = null;
             Class editorClass = null;
-            Class paramsClass = null;
+            final Class paramsClass = null;
             Class paramsEditorClass = null;
             TetradLoggerConfig loggerConfig = null;
-            Elements elements = model.getChildElements();
+            final Elements elements = model.getChildElements();
             for (int k = 0; k < elements.size(); k++) {
-                Element element = elements.get(k);
+                final Element element = elements.get(k);
                 if ("model-class".equals(element.getQualifiedName())) {
                     modelClass = loadClass(loader, element.getValue());
                 } else if ("editor-class".equals(element.getQualifiedName())) {
@@ -218,7 +218,7 @@ public class TetradApplicationConfig {
                 TetradLogger.getInstance().addTetradLoggerConfig(modelClass, loggerConfig);
             }
 
-            SessionNodeModelConfig config = new DefaultModelConfig(modelClass, paramsClass,
+            final SessionNodeModelConfig config = new DefaultModelConfig(modelClass, paramsClass,
                     paramsEditorClass, editorClass, name, acronym, help, category);
             configs.add(config);
         }
@@ -229,23 +229,23 @@ public class TetradApplicationConfig {
      * Configures the logger that the given element represents and returns its
      * id.
      */
-    private static TetradLoggerConfig configureLogger(Element logger) {
-        Elements elements = logger.getChildElements();
-        List<TetradLoggerConfig.Event> events = new LinkedList<>();
-        List<String> defaultLog = new LinkedList<>();
+    private static TetradLoggerConfig configureLogger(final Element logger) {
+        final Elements elements = logger.getChildElements();
+        final List<TetradLoggerConfig.Event> events = new LinkedList<>();
+        final List<String> defaultLog = new LinkedList<>();
         for (int i = 0; i < elements.size(); i++) {
-            Element event = elements.get(i);
-            String eventId = event.getAttributeValue("id");
-            String description = event.getAttributeValue("description");
-            String defaultOption = event.getAttributeValue("default");
+            final Element event = elements.get(i);
+            final String eventId = event.getAttributeValue("id");
+            final String description = event.getAttributeValue("description");
+            final String defaultOption = event.getAttributeValue("default");
             if (defaultOption != null && defaultOption.equals("on")) {
                 defaultLog.add(eventId);
             }
             events.add(new DefaultTetradLoggerConfig.DefaultEvent(eventId, description));
         }
-        TetradLoggerConfig config = new DefaultTetradLoggerConfig(events);
+        final TetradLoggerConfig config = new DefaultTetradLoggerConfig(events);
         // set any defaults
-        for (String event : defaultLog) {
+        for (final String event : defaultLog) {
             config.setEventActive(event, true);
         }
         return config;
@@ -256,7 +256,7 @@ public class TetradApplicationConfig {
      * it is given as an argument to the constructor of the given class. IF the
      * givne comp is null then the default is used.
      */
-    private static SessionDisplayComp createDisplayComp(String image, Class compClass) {
+    private static SessionDisplayComp createDisplayComp(final String image, final Class compClass) {
         if (compClass == null) {
             return new StdDisplayComp(image);
         }
@@ -264,17 +264,17 @@ public class TetradApplicationConfig {
             if (image == null) {
                 return (SessionDisplayComp) compClass.newInstance();
             }
-            Constructor constructor = compClass.getConstructor(String.class);
+            final Constructor constructor = compClass.getConstructor(String.class);
             return (SessionDisplayComp) constructor.newInstance(image);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             throw new IllegalStateException("Could not create display component", ex);
         }
     }
 
-    private static Class loadClass(ClassLoader loader, String className) {
+    private static Class loadClass(final ClassLoader loader, final String className) {
         try {
             return loader.loadClass(className.trim());
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             throw new IllegalStateException("The class name " + className + " could not be found", e);
         }
     }
@@ -298,10 +298,10 @@ public class TetradApplicationConfig {
      * removes newline and extra white space (Seems to be sensitive to this,
      * when its html)
      */
-    private static String pruneNodeSpecificMessage(String text) {
-        int size = text.length();
+    private static String pruneNodeSpecificMessage(final String text) {
+        final int size = text.length();
         int i = 0;
-        StringBuilder builder = new StringBuilder(size);
+        final StringBuilder builder = new StringBuilder(size);
         while (i < size) {
             char c = text.charAt(i);
             if (c == ' ') {
@@ -320,13 +320,13 @@ public class TetradApplicationConfig {
         return builder.toString().trim();
     }
 
-    private static boolean matches(Class[] params, Object[] arguments) {
+    private static boolean matches(final Class[] params, final Object[] arguments) {
         if (params.length != arguments.length) {
             return false;
         }
 
         for (int i = 0; i < params.length; i++) {
-            Class param = params[i];
+            final Class param = params[i];
             if (!param.isInstance(arguments[i])) {
                 return false;
             }
@@ -339,7 +339,7 @@ public class TetradApplicationConfig {
      * A map from ids to node configs.
      */
     public Map<String, SessionNodeConfig> getConfigs() {
-        return configs;
+        return this.configs;
     }
 
     //============================== Inner classes =======================================//
@@ -358,23 +358,23 @@ public class TetradApplicationConfig {
         private String image;
         private Class compClass;
         private String nodeSpecificMessage;
-        private String id;
+        private final String id;
         private String chooserTitle;
         private Class chooserClass;
 
-        public DefaultNodeConfig(String id) {
+        public DefaultNodeConfig(final String id) {
             if (id == null) {
                 throw new NullPointerException("The given id must not be null");
             }
             this.id = id;
         }
 
-        public SessionNodeModelConfig getModelConfig(Class model) {
+        public SessionNodeModelConfig getModelConfig(final Class model) {
             return this.modelMap.get(model);
         }
 
         public Class[] getModels() {
-            Class[] modelClasses = new Class[this.models.size()];
+            final Class[] modelClasses = new Class[this.models.size()];
             for (int i = 0; i < this.models.size(); i++) {
                 modelClasses[i] = this.models.get(i).getModel();
             }
@@ -385,31 +385,31 @@ public class TetradApplicationConfig {
             return this.nodeSpecificMessage;
         }
 
-        public ModelChooser getModelChooserInstance(SessionNode sessionNode) {
-            ModelChooser chooser;
+        public ModelChooser getModelChooserInstance(final SessionNode sessionNode) {
+            final ModelChooser chooser;
             if (this.chooserClass == null) {
                 chooser = new DefaultModelChooser();
             } else {
                 try {
                     chooser = (ModelChooser) this.chooserClass.newInstance();
                     chooser.setSessionNode(sessionNode);
-                } catch (InstantiationException e) {
+                } catch (final InstantiationException e) {
                     throw new IllegalStateException("Model chooser must have empty constructor", e);
-                } catch (IllegalAccessException e) {
+                } catch (final IllegalAccessException e) {
                     throw new IllegalStateException("Model chooser must have empty constructor", e);
                 }
             }
 
-            Class[] consistentClasses = sessionNode.getConsistentModelClasses(false);
+            final Class[] consistentClasses = sessionNode.getConsistentModelClasses(false);
 
-            List<SessionNodeModelConfig> filteredModels = new ArrayList<>();
+            final List<SessionNodeModelConfig> filteredModels = new ArrayList<>();
 
-            for (SessionNodeModelConfig config : this.models) {
-                Class clazz = config.getModel();
+            for (final SessionNodeModelConfig config : this.models) {
+                final Class clazz = config.getModel();
 
                 boolean exists = false;
 
-                for (Class clazz2 : consistentClasses) {
+                for (final Class clazz2 : consistentClasses) {
                     if (clazz.equals(clazz2)) {
                         exists = true;
                         break;
@@ -436,7 +436,7 @@ public class TetradApplicationConfig {
         }
 
         //========================= Private Methods ===============================//
-        private void setChooser(String title, Class chooserClass) {
+        private void setChooser(final String title, final Class chooserClass) {
             if (title == null) {
                 throw new NullPointerException("The chooser title must not be null");
             }
@@ -444,14 +444,14 @@ public class TetradApplicationConfig {
             this.chooserClass = chooserClass;
         }
 
-        private void setNodeSpecificMessage(String text) {
+        private void setNodeSpecificMessage(final String text) {
             if (text == null) {
                 throw new NullPointerException("The node specific message text must not be null");
             }
             this.nodeSpecificMessage = pruneNodeSpecificMessage(text);
         }
 
-        private void setDisplayComp(String image, Class comp) {
+        private void setDisplayComp(final String image, final Class comp) {
             if (image == null && comp == null) {
                 throw new NullPointerException("Must have an image or a display component class defined");
             }
@@ -459,9 +459,9 @@ public class TetradApplicationConfig {
             this.compClass = comp;
         }
 
-        private void setSessionNodeModelConfig(List<SessionNodeModelConfig> configs) {
+        private void setSessionNodeModelConfig(final List<SessionNodeModelConfig> configs) {
             this.models = configs;
-            for (SessionNodeModelConfig config : configs) {
+            for (final SessionNodeModelConfig config : configs) {
                 this.modelMap.put(config.getModel(), config);
             }
         }
@@ -472,17 +472,17 @@ public class TetradApplicationConfig {
      */
     private static class DefaultModelConfig implements SessionNodeModelConfig {
 
-        private Class model;
-        private Class params;
-        private Class paramsEditor;
-        private Class editor;
-        private String name;
-        private String acronym;
-        private String help;
-        private String category;
+        private final Class model;
+        private final Class params;
+        private final Class paramsEditor;
+        private final Class editor;
+        private final String name;
+        private final String acronym;
+        private final String help;
+        private final String category;
 
-        public DefaultModelConfig(Class model, Class params, Class paramsEditor, Class editor,
-                                  String name, String acronym, String help, String category
+        public DefaultModelConfig(final Class model, final Class params, final Class paramsEditor, final Class editor,
+                                  final String name, final String acronym, final String help, final String category
         ) {
             if (model == null || editor == null || name == null || acronym == null) {
                 throw new NullPointerException("Values must not be null");
@@ -517,8 +517,8 @@ public class TetradApplicationConfig {
             return this.acronym;
         }
 
-        public JPanel getEditorInstance(Object[] arguments) {
-            Class[] parameters = new Class[arguments.length];
+        public JPanel getEditorInstance(final Object[] arguments) {
+            final Class[] parameters = new Class[arguments.length];
 
             for (int i = 0; i < arguments.length; i++) {
                 parameters[i] = arguments[i].getClass();
@@ -527,16 +527,16 @@ public class TetradApplicationConfig {
             Constructor constructor = null;
 
             try {
-                constructor = editor.getConstructor(parameters);
-            } catch (Exception ex) {
+                constructor = this.editor.getConstructor(parameters);
+            } catch (final Exception ex) {
                 // do nothing, try to find a constructor below.
             }
 
             if (constructor == null) {
                 // try to find object-compatable constructor.
-                Constructor[] constructors = editor.getConstructors();
-                for (Constructor _constructor : constructors) {
-                    Class[] params = _constructor.getParameterTypes();
+                final Constructor[] constructors = this.editor.getConstructors();
+                for (final Constructor _constructor : constructors) {
+                    final Class[] params = _constructor.getParameterTypes();
                     if (matches(params, arguments)) {
                         constructor = _constructor;
                         break;
@@ -545,12 +545,12 @@ public class TetradApplicationConfig {
             }
 
             if (constructor == null) {
-                throw new NullPointerException("Could not find constructor in " + editor + " for model: " + this.model);
+                throw new NullPointerException("Could not find constructor in " + this.editor + " for model: " + this.model);
             }
 
             try {
                 return (JPanel) constructor.newInstance(arguments);
-            } catch (Exception ex) {
+            } catch (final Exception ex) {
                 throw new IllegalStateException("Could not construct editor", ex);
             }
         }
@@ -573,9 +573,9 @@ public class TetradApplicationConfig {
             if (this.paramsEditor != null) {
                 try {
                     return (ParameterEditor) this.paramsEditor.newInstance();
-                } catch (ClassCastException e) {
+                } catch (final ClassCastException e) {
                     throw new IllegalStateException("Parameters editor must implement ParameterEditor", e);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     throw new IllegalStateException("Error intatiating params editor, must have empty constructor", e);
                 }
             }

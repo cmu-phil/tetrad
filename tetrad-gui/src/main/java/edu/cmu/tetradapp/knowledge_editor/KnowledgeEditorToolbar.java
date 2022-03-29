@@ -58,8 +58,8 @@ class KnowledgeEditorToolbar extends JPanel {
     /**
      * The workbench this toolbar controls.
      */
-    private KnowledgeWorkbench workbench;
-    private Graph sourceGraph;
+    private final KnowledgeWorkbench workbench;
+    private final Graph sourceGraph;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -68,8 +68,8 @@ class KnowledgeEditorToolbar extends JPanel {
      *
      * @param workbench the workbench this toolbar controls.
      */
-    public KnowledgeEditorToolbar(KnowledgeWorkbench workbench,
-                                  Graph sourceGraph) {
+    public KnowledgeEditorToolbar(final KnowledgeWorkbench workbench,
+                                  final Graph sourceGraph) {
         if (workbench == null) {
             throw new NullPointerException("Workbench must not be null.");
         }
@@ -78,12 +78,12 @@ class KnowledgeEditorToolbar extends JPanel {
         this.sourceGraph = sourceGraph;
 
         // Set up panel.
-        Box buttonsPanel = Box.createVerticalBox();
+        final Box buttonsPanel = Box.createVerticalBox();
 
         //setMinimumSize(new Dimension(200, 10));
-        Border insideBorder =
+        final Border insideBorder =
                 new MatteBorder(10, 10, 10, 10, this.getBackground());
-        Border outsideBorder = new EtchedBorder();
+        final Border outsideBorder = new EtchedBorder();
 
         buttonsPanel.setBorder(new CompoundBorder(outsideBorder, insideBorder));
 
@@ -91,7 +91,7 @@ class KnowledgeEditorToolbar extends JPanel {
         /*
       Node infos for all of the nodes.
      */
-        ButtonInfo[] buttonInfos = new ButtonInfo[]{new ButtonInfo("Select",
+        final ButtonInfo[] buttonInfos = new ButtonInfo[]{new ButtonInfo("Select",
                 "Select and Move", "move",
                 "<html>Select and move nodes or groups of nodes " +
                         "<br>on the workbench.</html>"), new ButtonInfo("Forbidden",
@@ -107,14 +107,14 @@ class KnowledgeEditorToolbar extends JPanel {
                 "<html>Lays out the nodes according to the source graph.</html>"),
                 new ButtonInfo("Knowledge Layout", "Knowledge Layout", "flow",
                         "<html>Lays out the nodes according to knowledge tiers.</html>")};
-        JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
+        final JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
 
         for (int i = 0; i < buttonInfos.length; i++) {
             buttons[i] = constructButton(buttonInfos[i]);
         }
 
         // Add all buttons to a button group.
-        ButtonGroup buttonGroup = new ButtonGroup();
+        final ButtonGroup buttonGroup = new ButtonGroup();
 
         for (int i = 0; i < buttonInfos.length; i++) {
             buttonGroup.add(buttons[i]);
@@ -124,9 +124,9 @@ class KnowledgeEditorToolbar extends JPanel {
 
         // Add a focus listener to help buttons not deselect when the
         // mouse slides away from the button.
-        FocusListener focusListener = new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                JToggleButton component = (JToggleButton) e.getComponent();
+        final FocusListener focusListener = new FocusAdapter() {
+            public void focusGained(final FocusEvent e) {
+                final JToggleButton component = (JToggleButton) e.getComponent();
                 component.getModel().setSelected(true);
             }
         };
@@ -137,9 +137,9 @@ class KnowledgeEditorToolbar extends JPanel {
 
         // Add an action listener to help send messages to the
         // workbench.
-        ActionListener changeListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JToggleButton _button = (JToggleButton) e.getSource();
+        final ActionListener changeListener = new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                final JToggleButton _button = (JToggleButton) e.getSource();
 
                 if (_button.getModel().isSelected()) {
                     setWorkbenchMode(_button);
@@ -159,7 +159,7 @@ class KnowledgeEditorToolbar extends JPanel {
 
         // Put the panel in a scrollpane.
         this.setLayout(new BorderLayout());
-        JScrollPane scroll = new JScrollPane(buttonsPanel,
+        final JScrollPane scroll = new JScrollPane(buttonsPanel,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setPreferredSize(new Dimension(130, 1000));
@@ -183,14 +183,14 @@ class KnowledgeEditorToolbar extends JPanel {
      *
      * @param buttonInfo contains the info needed to construct the button.
      */
-    private JToggleButton constructButton(ButtonInfo buttonInfo) {
-        String imagePrefix = buttonInfo.getImagePrefix();
+    private JToggleButton constructButton(final ButtonInfo buttonInfo) {
+        final String imagePrefix = buttonInfo.getImagePrefix();
 
         if (imagePrefix == null) {
             throw new NullPointerException("Image prefix must not be null.");
         }
 
-        JToggleButton button = new JToggleButton();
+        final JToggleButton button = new JToggleButton();
 
         if ("Select".equals(buttonInfo.getNodeTypeName())) {
             button.setIcon(
@@ -213,28 +213,28 @@ class KnowledgeEditorToolbar extends JPanel {
      *
      * @param button the JToggleButton whose workbench state is to be set.
      */
-    private void setWorkbenchMode(JToggleButton button) {
-        String nodeType = this.nodeTypes.get(button);
+    private void setWorkbenchMode(final JToggleButton button) {
+        final String nodeType = this.nodeTypes.get(button);
 
         if ("Select".equals(nodeType)) {
-            workbench.setWorkbenchMode(KnowledgeWorkbench.SELECT_MOVE);
+            this.workbench.setWorkbenchMode(KnowledgeWorkbench.SELECT_MOVE);
         } else if ("Forbidden".equals(nodeType)) {
-            workbench.setWorkbenchMode(KnowledgeWorkbench.ADD_EDGE);
-            workbench.setEdgeMode(KnowledgeWorkbench.FORBIDDEN_EDGE);
+            this.workbench.setWorkbenchMode(KnowledgeWorkbench.ADD_EDGE);
+            this.workbench.setEdgeMode(KnowledgeWorkbench.FORBIDDEN_EDGE);
         } else if ("Required".equals(nodeType)) {
-            workbench.setWorkbenchMode(KnowledgeWorkbench.ADD_EDGE);
-            workbench.setEdgeMode(KnowledgeWorkbench.REQUIRED_EDGE);
+            this.workbench.setWorkbenchMode(KnowledgeWorkbench.ADD_EDGE);
+            this.workbench.setEdgeMode(KnowledgeWorkbench.REQUIRED_EDGE);
         } else if ("Source Layout".equals(nodeType)) {
-            KnowledgeGraph graph = (KnowledgeGraph) workbench.getGraph();
+            final KnowledgeGraph graph = (KnowledgeGraph) this.workbench.getGraph();
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-            workbench.setGraph(graph);
+            this.workbench.setGraph(graph);
         } else if ("Knowledge Layout".equals(nodeType)) {
-            KnowledgeGraph graph = (KnowledgeGraph) workbench.getGraph();
-            IKnowledge knowledge = graph.getKnowledge();
+            final KnowledgeGraph graph = (KnowledgeGraph) this.workbench.getGraph();
+            final IKnowledge knowledge = graph.getKnowledge();
             try {
                 SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-                workbench.setGraph(graph);
-            } catch (IllegalArgumentException ex) {
+                this.workbench.setGraph(graph);
+            } catch (final IllegalArgumentException ex) {
                 System.out.print(ex.getMessage());
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), ex.getMessage());
             }
@@ -242,7 +242,7 @@ class KnowledgeEditorToolbar extends JPanel {
     }
 
     private Graph getSourceGraph() {
-        return sourceGraph;
+        return this.sourceGraph;
     }
 
     /**
@@ -274,8 +274,8 @@ class KnowledgeEditorToolbar extends JPanel {
          */
         private final String toolTipText;
 
-        public ButtonInfo(String nodeTypeName, String displayName,
-                          String imagePrefix, String toolTipText) {
+        public ButtonInfo(final String nodeTypeName, final String displayName,
+                          final String imagePrefix, final String toolTipText) {
             this.nodeTypeName = nodeTypeName;
             this.displayName = displayName;
             this.imagePrefix = imagePrefix;
@@ -283,23 +283,23 @@ class KnowledgeEditorToolbar extends JPanel {
         }
 
         public String getNodeTypeName() {
-            return nodeTypeName;
+            return this.nodeTypeName;
         }
 
         public String getDisplayName() {
-            return displayName;
+            return this.displayName;
         }
 
-        public void setNodeTypeName(String nodeTypeName) {
+        public void setNodeTypeName(final String nodeTypeName) {
             this.nodeTypeName = nodeTypeName;
         }
 
         public String getImagePrefix() {
-            return imagePrefix;
+            return this.imagePrefix;
         }
 
         public String getToolTipText() {
-            return toolTipText;
+            return this.toolTipText;
         }
     }
 }

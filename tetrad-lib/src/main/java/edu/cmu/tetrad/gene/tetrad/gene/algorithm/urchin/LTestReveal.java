@@ -234,8 +234,8 @@ public class LTestReveal {
 
         final double[][] p = new double[2][2];
         final double lp00;
-        double lp01;
-        double lp10;
+        final double lp01;
+        final double lp10;
         final double lp11;
 
         p[0][0] = (double) ns[0][0] / (double) ntot;

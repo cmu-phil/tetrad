@@ -41,7 +41,7 @@ class KnowledgeSelection implements Transferable {
     /**
      * The list of session nodes that constitutes the selection.
      */
-    private IKnowledge knowledge;
+    private final IKnowledge knowledge;
 
     /**
      * Supported dataflavors--only one.
@@ -52,15 +52,15 @@ class KnowledgeSelection implements Transferable {
     /**
      * Constructs a new selection with the given list of session nodes.
      */
-    public KnowledgeSelection(IKnowledge knowledge) {
+    public KnowledgeSelection(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Knowledge must not be null.");
         }
 
-        Object result;
+        final Object result;
         try {
             result = new MarshalledObject(knowledge).get();
-        } catch (Exception e1) {
+        } catch (final Exception e1) {
             e1.printStackTrace();
             throw new IllegalStateException("Could not clone.");
         }
@@ -78,13 +78,13 @@ class KnowledgeSelection implements Transferable {
      *                                                          supported.
      * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
      */
-    public Object getTransferData(DataFlavor flavor)
+    public Object getTransferData(final DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
         if (!isDataFlavorSupported(flavor)) {
             throw new UnsupportedFlavorException(flavor);
         }
 
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -92,7 +92,7 @@ class KnowledgeSelection implements Transferable {
      * @return whether or not the specified data flavor is supported for this
      * object.
      */
-    public boolean isDataFlavorSupported(DataFlavor flavor) {
+    public boolean isDataFlavorSupported(final DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
     }
 

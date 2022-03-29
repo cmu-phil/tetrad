@@ -52,25 +52,25 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
 
     //============================CONSTRUCTORS============================//
 
-    public LingRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingRunner(final DataWrapper dataWrapper, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, new Parameters(), knowledgeBoxModel);
     }
 
-    public LingRunner(DataWrapper dataWrapper) {
+    public LingRunner(final DataWrapper dataWrapper) {
         super(dataWrapper, new Parameters(), null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingRunner(final GraphSource graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingRunner(GraphSource graphWrapper, Parameters params) {
+    public LingRunner(final GraphSource graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
@@ -137,22 +137,22 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
 //
 //    }
     public void execute() {
-        DataModel source = getDataModel();
+        final DataModel source = getDataModel();
 
         if (!(source instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting a rectangular data set.");
         }
 
-        DataSet data = (DataSet) source;
+        final DataSet data = (DataSet) source;
 
         if (!data.isContinuous()) {
             throw new IllegalArgumentException("Expecting a continuous data set.");
         }
 
-        Ling ling = new Ling(data);
-        Parameters searchParams = getParams();
+        final Ling ling = new Ling(data);
+        final Parameters searchParams = getParams();
         ling.setThreshold(searchParams.getDouble("threshold", 0.5));
-        Ling.StoredGraphs graphs = ling.search();
+        final Ling.StoredGraphs graphs = ling.search();
         Graph graph = null;
 
         for (int i = 0; i < graphs.getNumGraphs(); i++) {
@@ -182,7 +182,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
 
     }
 
-    private void setStoredGraphs(Ling.StoredGraphs graphs) {
+    private void setStoredGraphs(final Ling.StoredGraphs graphs) {
         this.storedGraphs = graphs;
     }
 
@@ -207,7 +207,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new LinkedList<>();
     }
 
@@ -216,7 +216,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
+        final MeekRules rules = new MeekRules();
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
@@ -227,31 +227,31 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
     }
 
     private boolean isAggressivelyPreventCycles() {
-        Parameters params = getParams();
+        final Parameters params = getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(final PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }
 
-    private void firePropertyChange(PropertyChangeEvent evt) {
-        for (PropertyChangeListener l : getListeners()) {
+    private void firePropertyChange(final PropertyChangeEvent evt) {
+        for (final PropertyChangeListener l : getListeners()) {
             l.propertyChange(evt);
         }
     }
 
     private List<PropertyChangeListener> getListeners() {
-        if (listeners == null) {
-            listeners = new ArrayList<>();
+        if (this.listeners == null) {
+            this.listeners = new ArrayList<>();
         }
-        return listeners;
+        return this.listeners;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
         if (!getListeners().contains(l)) getListeners().add(l);
     }
 }

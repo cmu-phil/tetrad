@@ -36,23 +36,23 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
     static final long serialVersionUID = 23L;
 
 
-    public PagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
+    public PagFromDagGraphWrapper(final GraphSource source, final Parameters parameters) {
         this(source.getGraph());
     }
 
 
-    public PagFromDagGraphWrapper(Graph graph) {
+    public PagFromDagGraphWrapper(final Graph graph) {
         super(new EdgeListGraph());
 
         // make sure the given graph is a dag.
         try {
             new Dag(graph);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        DagToPag2 p = new DagToPag2(graph);
-        Graph pag = p.convert();
+        final DagToPag2 p = new DagToPag2(graph);
+        final Graph pag = p.convert();
         setGraph(pag);
 
         TetradLogger.getInstance().log("info", "\nGenerating allow_latent_common_causes from DAG.");

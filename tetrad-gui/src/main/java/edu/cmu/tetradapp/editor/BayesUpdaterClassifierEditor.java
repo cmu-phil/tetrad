@@ -49,7 +49,7 @@ import java.util.List;
  * @author Jossph Ramsey
  */
 public class BayesUpdaterClassifierEditor extends JPanel {
-    private BayesUpdaterClassifier classifier;
+    private final BayesUpdaterClassifier classifier;
     private JComboBox variableDropdown;
     private JTabbedPane tabbedPane;
     private JComboBox categoryDropdown;
@@ -57,9 +57,9 @@ public class BayesUpdaterClassifierEditor extends JPanel {
 //    private DoubleTextField binaryCutoffField;
     private GraphWorkbench workbench;
     private RocPlot rocPlot;
-    private JMenuItem saveRoc;
+    private final JMenuItem saveRoc;
 
-    private BayesUpdaterClassifierEditor(BayesUpdaterClassifier classifier) {
+    private BayesUpdaterClassifierEditor(final BayesUpdaterClassifier classifier) {
         if (classifier == null) {
             throw new NullPointerException();
         }
@@ -69,27 +69,27 @@ public class BayesUpdaterClassifierEditor extends JPanel {
 
         setPreferredSize(new Dimension(600, 600));
 
-        Box b = Box.createVerticalBox();
+        final Box b = Box.createVerticalBox();
         b.add(getToolbar());
         b.add(getDisplayPanel());
         add(b, BorderLayout.CENTER);
 
-        JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
+        final JMenuBar menuBar = new JMenuBar();
+        final JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-        file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
+        file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
 
-        saveRoc = new JMenuItem("Save ROC Plot Image...");
-        saveRoc.setEnabled(false);
+        this.saveRoc = new JMenuItem("Save ROC Plot Image...");
+        this.saveRoc.setEnabled(false);
 
-        saveRoc.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        this.saveRoc.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
                 saveRocImage();
             }
         });
 
-        file.add(saveRoc);
+        file.add(this.saveRoc);
         add(menuBar, BorderLayout.NORTH);
 
         if (classifier.getClassifications() != null) {
@@ -100,22 +100,22 @@ public class BayesUpdaterClassifierEditor extends JPanel {
     }
 
     private void saveRocImage() {
-        if (rocPlot == null) {
+        if (this.rocPlot == null) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Nothing to save.");
             return;
         }
 
-        Action action = new SaveComponentImage(rocPlot, "");
+        final Action action = new SaveComponentImage(this.rocPlot, "");
         action.actionPerformed(
                 new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "Save"));
     }
 
     private Component getDisplayPanel() {
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        tabbedPane = new JTabbedPane();
+        this.tabbedPane = new JTabbedPane();
         getTabbedPane().add("Graph", getGraphPanel());
         getTabbedPane().add("Test Data", getDataPanel());
         panel.add(getTabbedPane(), BorderLayout.CENTER);
@@ -124,23 +124,23 @@ public class BayesUpdaterClassifierEditor extends JPanel {
     }
 
     private Component getDataPanel() {
-        DataSet dataSet = getClassifier().getTestData();
-        DataDisplay jTable = new DataDisplay(dataSet);
+        final DataSet dataSet = getClassifier().getTestData();
+        final DataDisplay jTable = new DataDisplay(dataSet);
         return new JScrollPane(jTable);
     }
 
     private Component getGraphPanel() {
-        Graph graph = getClassifier().getBayesIm().getDag();
-        workbench = new GraphWorkbench(graph);
-        return new JScrollPane(workbench);
+        final Graph graph = getClassifier().getBayesIm().getDag();
+        this.workbench = new GraphWorkbench(graph);
+        return new JScrollPane(this.workbench);
     }
 
     private Component getToolbar() {
-        JButton classifyButton = new JButton("Classify");
+        final JButton classifyButton = new JButton("Classify");
 
         classifyButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
+            public void actionPerformed(final ActionEvent e) {
+                final Window owner = (Window) getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
@@ -153,13 +153,13 @@ public class BayesUpdaterClassifierEditor extends JPanel {
             }
         });
 
-        List<Node> nodes = getClassifier().getBayesImVars();
-        Node[] variables = nodes.toArray(new Node[0]);
+        final List<Node> nodes = getClassifier().getBayesImVars();
+        final Node[] variables = nodes.toArray(new Node[0]);
         this.variableDropdown = new JComboBox(variables);
         getVariableDropdown().setBackground(Color.WHITE);
         getVariableDropdown().setMaximumSize(new Dimension(200, 50));
 
-        DiscreteVariable variable = (DiscreteVariable) getVariableDropdown()
+        final DiscreteVariable variable = (DiscreteVariable) getVariableDropdown()
                 .getSelectedItem();
         this.categoryDropdown =
                 new JComboBox(variable.getCategories().toArray(new String[0]));
@@ -167,12 +167,12 @@ public class BayesUpdaterClassifierEditor extends JPanel {
         getCategoryDropdown().setMaximumSize(new Dimension(200, 50));
 
         this.variableDropdown.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                JComboBox comboBox = (JComboBox) e.getSource();
-                Object selectedItem = comboBox.getSelectedItem();
-                DiscreteVariable variable = (DiscreteVariable) selectedItem;
-                List<String> categories = variable.getCategories();
-                DefaultComboBoxModel newModel = new DefaultComboBoxModel(
+            public void itemStateChanged(final ItemEvent e) {
+                final JComboBox comboBox = (JComboBox) e.getSource();
+                final Object selectedItem = comboBox.getSelectedItem();
+                final DiscreteVariable variable = (DiscreteVariable) selectedItem;
+                final List<String> categories = variable.getCategories();
+                final DefaultComboBoxModel newModel = new DefaultComboBoxModel(
                         categories.toArray(new String[0]));
                 getCategoryDropdown().setModel(newModel);
 
@@ -188,7 +188,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
         });
 
         this.categoryDropdown.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
+            public void itemStateChanged(final ItemEvent e) {
                 showRocCurve();
             }
         });
@@ -220,9 +220,9 @@ public class BayesUpdaterClassifierEditor extends JPanel {
 //        }
 
 
-        Box toolbar = Box.createVerticalBox();
+        final Box toolbar = Box.createVerticalBox();
 
-        Box row1 = Box.createHorizontalBox();
+        final Box row1 = Box.createHorizontalBox();
         row1.add(Box.createHorizontalStrut(5));
         row1.add(new JLabel("Target = "));
         row1.add(getVariableDropdown());
@@ -249,12 +249,12 @@ public class BayesUpdaterClassifierEditor extends JPanel {
     }
 
     private void doClassify() {
-        DiscreteVariable variable = (DiscreteVariable) getVariableDropdown()
+        final DiscreteVariable variable = (DiscreteVariable) getVariableDropdown()
                 .getSelectedItem();
-        String varName = variable.getName();
+        final String varName = variable.getName();
 
-        String category = (String) getCategoryDropdown().getSelectedItem();
-        int catIndex = variable.getIndex(category);
+        final String category = (String) getCategoryDropdown().getSelectedItem();
+        final int catIndex = variable.getIndex(category);
 
         getClassifier().setTarget(varName, catIndex);
         getClassifier().classify();
@@ -271,34 +271,34 @@ public class BayesUpdaterClassifierEditor extends JPanel {
         }
 
         // Put the class information into a DataSet.
-        int[] classifications = getClassifier().getClassifications();
-        double[][] marginals = getClassifier().getMarginals();
+        final int[] classifications = getClassifier().getClassifications();
+        final double[][] marginals = getClassifier().getMarginals();
 
         int maxCategory = 0;
 
-        for (int classification : classifications) {
+        for (final int classification : classifications) {
             if (classification > maxCategory) {
                 maxCategory = classification;
             }
         }
 
-        List<Node> variables = new LinkedList<>();
+        final List<Node> variables = new LinkedList<>();
 
-        DiscreteVariable targetVariable = classifier.getTargetVariable();
-        DiscreteVariable classVar =
+        final DiscreteVariable targetVariable = this.classifier.getTargetVariable();
+        final DiscreteVariable classVar =
                 new DiscreteVariable(targetVariable.getName(), maxCategory + 1);
 
         variables.add(classVar);
 
         for (int i = 0; i < marginals.length; i++) {
-            String name = "P(" + targetVariable + "=" + i + ")";
-            ContinuousVariable scoreVar = new ContinuousVariable(name);
+            final String name = "P(" + targetVariable + "=" + i + ")";
+            final ContinuousVariable scoreVar = new ContinuousVariable(name);
             variables.add(scoreVar);
         }
 
         classVar.setName("Result");
 
-        DataSet dataSet =
+        final DataSet dataSet =
                 new BoxDataSet(new DoubleDataBox(classifications.length, variables.size()), variables);
 
         for (int i = 0; i < classifications.length; i++) {
@@ -309,8 +309,8 @@ public class BayesUpdaterClassifierEditor extends JPanel {
             }
         }
 
-        DataDisplay jTable = new DataDisplay(dataSet);
-        JScrollPane scroll = new JScrollPane(jTable);
+        final DataDisplay jTable = new DataDisplay(dataSet);
+        final JScrollPane scroll = new JScrollPane(jTable);
 
         if (tabIndex == -1) {
             getTabbedPane().add("Classification", scroll);
@@ -332,44 +332,44 @@ public class BayesUpdaterClassifierEditor extends JPanel {
             }
         }
 
-        double[][] marginals = getClassifier().getMarginals();
-        int ncases = getClassifier().getNumCases();
+        final double[][] marginals = getClassifier().getMarginals();
+        final int ncases = getClassifier().getNumCases();
 
-        boolean[] inCategory = new boolean[ncases];
+        final boolean[] inCategory = new boolean[ncases];
 
-        DataSet testData = getClassifier().getTestData();
-        DiscreteVariable targetVariable = classifier.getTargetVariable();
-        String targetName = targetVariable.getName();
-        Node variable2 = testData.getVariable(targetName);
-        int varIndex = testData.getVariables().indexOf(variable2);
+        final DataSet testData = getClassifier().getTestData();
+        final DiscreteVariable targetVariable = this.classifier.getTargetVariable();
+        final String targetName = targetVariable.getName();
+        final Node variable2 = testData.getVariable(targetName);
+        final int varIndex = testData.getVariables().indexOf(variable2);
 
         // If the target is not in the data set, don't compute a ROC plot.
         if (varIndex == -1) {
             return;
         }
 
-        String category = (String) getCategoryDropdown().getSelectedItem();
-        DiscreteVariable variable = (DiscreteVariable) variable2;
-        int catIndex = variable.getIndex(category);
+        final String category = (String) getCategoryDropdown().getSelectedItem();
+        final DiscreteVariable variable = (DiscreteVariable) variable2;
+        final int catIndex = variable.getIndex(category);
 
         for (int i = 0; i < inCategory.length; i++) {
             inCategory[i] = (testData.getInt(i, varIndex) == catIndex);
         }
 
-        double[] scores = marginals[catIndex];
+        final double[] scores = marginals[catIndex];
 
-        RocCalculator rocc =
+        final RocCalculator rocc =
                 new RocCalculator(scores, inCategory, RocCalculator.ASCENDING);
-        double[][] points = rocc.getScaledRocPlot();
-        double area = rocc.getAuc();
+        final double[][] points = rocc.getScaledRocPlot();
+        final double area = rocc.getAuc();
 
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        String info = "AUC = " + nf.format(area);
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final String info = "AUC = " + nf.format(area);
 
-        String title = "ROC Plot, " + classifier.getTargetVariable() + " = " +
+        final String title = "ROC Plot, " + this.classifier.getTargetVariable() + " = " +
                 category;
 
-        RocPlot plot = new RocPlot(points, title, info);
+        final RocPlot plot = new RocPlot(points, title, info);
         this.rocPlot = plot;
         this.saveRoc.setEnabled(true);
 
@@ -391,9 +391,9 @@ public class BayesUpdaterClassifierEditor extends JPanel {
             }
         }
 
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
 
-        int[][] crossTabs = getClassifier().crossTabulation();
+        final int[][] crossTabs = getClassifier().crossTabulation();
 
         // Crosstabs will be null if the target is not in the test data. In
         // this case, don't put the confusion matrix back in.
@@ -401,11 +401,11 @@ public class BayesUpdaterClassifierEditor extends JPanel {
             return;
         }
 
-        DiscreteVariable targetVariable = getClassifier().getTargetVariable();
-        int nvalues = targetVariable.getNumCategories();
+        final DiscreteVariable targetVariable = getClassifier().getTargetVariable();
+        final int nvalues = targetVariable.getNumCategories();
 
-        int ncases = getClassifier().getNumCases();
-        int ntot = getClassifier().getTotalUsableCases();
+        final int ncases = getClassifier().getNumCases();
+        final int ntot = getClassifier().getTotalUsableCases();
 
         //System.out.println("Number correct = " + numCorrect);
         //        buf.append("<html><pre>");
@@ -440,15 +440,15 @@ public class BayesUpdaterClassifierEditor extends JPanel {
         buf.append(getClassifier().getPercentCorrect());
         //        buf.append("</pre></html>");
 
-        JTextArea label = new JTextArea(buf.toString());
+        final JTextArea label = new JTextArea(buf.toString());
         //        label.setFocusable(false);
         label.setFont(new Font("SansSerif", Font.PLAIN, 14));
 
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.setBackground(Color.WHITE);
-        Box b1 = Box.createVerticalBox();
-        Box b2 = Box.createHorizontalBox();
+        final Box b1 = Box.createVerticalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalStrut(5));
         b2.add(label);
         b2.add(Box.createHorizontalGlue());
@@ -457,7 +457,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
         b1.add(Box.createVerticalGlue());
         panel.add(b1, BorderLayout.CENTER);
 
-        JScrollPane scroll = new JScrollPane(panel);
+        final JScrollPane scroll = new JScrollPane(panel);
 
         if (tabIndex == -1) {
             getTabbedPane().add("Confusion Matrix", scroll);
@@ -470,24 +470,24 @@ public class BayesUpdaterClassifierEditor extends JPanel {
     /**
      * Constructs a new instanted model editor from a Bayes IM wrapper.
      */
-    public BayesUpdaterClassifierEditor(BayesUpdaterClassifierWrapper wrapper) {
+    public BayesUpdaterClassifierEditor(final BayesUpdaterClassifierWrapper wrapper) {
         this(wrapper.getClassifier());
     }
 
     private BayesUpdaterClassifier getClassifier() {
-        return classifier;
+        return this.classifier;
     }
 
     private JComboBox getVariableDropdown() {
-        return variableDropdown;
+        return this.variableDropdown;
     }
 
     private JTabbedPane getTabbedPane() {
-        return tabbedPane;
+        return this.tabbedPane;
     }
 
     private JComboBox getCategoryDropdown() {
-        return categoryDropdown;
+        return this.categoryDropdown;
     }
 
 //    private double getBinaryCutoff() {

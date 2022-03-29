@@ -43,19 +43,19 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
 
     public BuildPureClustersIndTestParamsEditor(
             final Parameters paramsPureClusters,
-            boolean discreteData) {
+            final boolean discreteData) {
         this.paramsPureClusters = paramsPureClusters;
 
-        NumberFormat smallNumberFormat = new DecimalFormat("0E00");
+        final NumberFormat smallNumberFormat = new DecimalFormat("0E00");
         final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
         alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+            public double filter(final double value, final double oldValue) {
                 try {
                     getParams().set("alpha", 0.001);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -73,9 +73,9 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
             testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
             testSelector.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JComboBox combo = (JComboBox) e.getSource();
-                    TestType index = (TestType) combo.getSelectedItem();
+                public void actionPerformed(final ActionEvent e) {
+                    final JComboBox combo = (JComboBox) e.getSource();
+                    final TestType index = (TestType) combo.getSelectedItem();
                     getParams().set("tetradTestType", index);
                 }
             });
@@ -89,9 +89,9 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
         algorithmSelector.setSelectedItem(getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS));
 
         algorithmSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                BpcAlgorithmType type = (BpcAlgorithmType) combo.getSelectedItem();
+            public void actionPerformed(final ActionEvent e) {
+                final JComboBox combo = (JComboBox) e.getSource();
+                final BpcAlgorithmType type = (BpcAlgorithmType) combo.getSelectedItem();
                 getParams().set("bpcAlgorithmType", type);
 
                 if (type == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
@@ -119,7 +119,7 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         if (!discreteData) {
-            Box b1 = Box.createHorizontalBox();
+            final Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Test:"));
             b1.add(Box.createHorizontalGlue());
             b1.add(testSelector);
@@ -127,14 +127,14 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
             add(Box.createHorizontalGlue());
         }
 
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Alpha:"));
         b3.add(Box.createHorizontalGlue());
         b3.add(alphaField);
         add(b3);
         add(Box.createHorizontalGlue());
 
-        Box b4 = Box.createHorizontalBox();
+        final Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Algorithm:"));
         b4.add(Box.createHorizontalGlue());
         b4.add(algorithmSelector);

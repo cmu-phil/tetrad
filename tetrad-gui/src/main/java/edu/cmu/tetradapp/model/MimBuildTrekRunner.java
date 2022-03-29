@@ -52,28 +52,28 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
     //============================CONSTRUCTORS===========================//
 
-    public MimBuildTrekRunner(DataWrapper dataWrapper,
-                              MeasurementModelWrapper mmWrapper,
-                              Parameters params) {
+    public MimBuildTrekRunner(final DataWrapper dataWrapper,
+                              final MeasurementModelWrapper mmWrapper,
+                              final Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
         params.set("clusters", mmWrapper.getClusters());
     }
 
-    public MimBuildTrekRunner(DataWrapper dataWrapper,
-                              BuildPureClustersRunner mmWrapper,
-                              Parameters params) {
+    public MimBuildTrekRunner(final DataWrapper dataWrapper,
+                              final BuildPureClustersRunner mmWrapper,
+                              final Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
         params.set("clusters", mmWrapper.getClusters());
     }
 
-    public MimBuildTrekRunner(DataWrapper dataWrapper,
-                              MeasurementModelWrapper mmWrapper,
-                              Parameters params,
-                              KnowledgeBoxModel knowledgeBoxModel) {
+    public MimBuildTrekRunner(final DataWrapper dataWrapper,
+                              final MeasurementModelWrapper mmWrapper,
+                              final Parameters params,
+                              final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
         setClusters(mmWrapper.getClusters());
@@ -81,22 +81,22 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         params.set("knowledge", knowledgeBoxModel.getKnowledge());
     }
 
-    public MimBuildTrekRunner(MeasurementModelWrapper mmWrapper,
-                              DataWrapper dataWrapper,
-                              Parameters params) {
+    public MimBuildTrekRunner(final MeasurementModelWrapper mmWrapper,
+                              final DataWrapper dataWrapper,
+                              final Parameters params) {
         super(mmWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
         setClusters(mmWrapper.getClusters());
         params.set("clusters", mmWrapper.getClusters());
     }
 
-    public MimBuildTrekRunner(MimBuildTrekRunner runner, Parameters params) {
+    public MimBuildTrekRunner(final MimBuildTrekRunner runner, final Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
         setClusters((Clusters) params.get("clusters", null));
     }
 
-    public MimBuildTrekRunner(MimBuildTrekRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
+    public MimBuildTrekRunner(final MimBuildTrekRunner runner, final KnowledgeBoxModel knowledgeBox, final Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
         setClusters((Clusters) params.get("clusters", null));
@@ -123,9 +123,9 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
      * implemented in the extending class.
      */
     public void execute() throws Exception {
-        DataSet data = this.dataSet;
+        final DataSet data = this.dataSet;
 
-        MimbuildTrek mimbuild = new MimbuildTrek();
+        final MimbuildTrek mimbuild = new MimbuildTrek();
         mimbuild.setAlpha(getParams().getDouble("alpha", 0.001));
         mimbuild.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
 
@@ -135,26 +135,26 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
             mimbuild.setMinClusterSize(4);
         }
 
-        Clusters clusters = (Clusters) getParams().get("clusters", null);
+        final Clusters clusters = (Clusters) getParams().get("clusters", null);
 
-        List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, data.getVariables());
-        List<String> latentNames = new ArrayList<>();
+        final List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, data.getVariables());
+        final List<String> latentNames = new ArrayList<>();
 
         for (int i = 0; i < clusters.getNumClusters(); i++) {
             latentNames.add(clusters.getClusterName(i));
         }
 
-        CovarianceMatrix cov = new CovarianceMatrix(data);
+        final CovarianceMatrix cov = new CovarianceMatrix(data);
 
-        Graph structureGraph = mimbuild.search(partition, latentNames, cov);
+        final Graph structureGraph = mimbuild.search(partition, latentNames, cov);
         GraphUtils.circleLayout(structureGraph, 200, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(structureGraph);
 
-        ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+        final ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
         TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
 
-        Graph fullGraph = mimbuild.getFullGraph();
+        final Graph fullGraph = mimbuild.getFullGraph();
         GraphUtils.circleLayout(fullGraph, 200, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(fullGraph);
 
@@ -170,7 +170,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
         this.covMatrix = latentsCov;
 
-        double p = mimbuild.getpValue();
+        final double p = mimbuild.getpValue();
 
         TetradLogger.getInstance().log("details", "\nStructure graph = " + structureGraph);
         TetradLogger.getInstance().log("details", getLatentClustersString(fullGraph).toString());
@@ -198,15 +198,15 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         }
     }
 
-    private StringBuilder getLatentClustersString(Graph graph) {
-        StringBuilder builder = new StringBuilder();
+    private StringBuilder getLatentClustersString(final Graph graph) {
+        final StringBuilder builder = new StringBuilder();
         builder.append("Latent Clusters:\n");
 
-        List<Node> latents = ReidentifyVariables.getLatents(graph);
+        final List<Node> latents = ReidentifyVariables.getLatents(graph);
         Collections.sort(latents);
 
-        for (Node latent : latents) {
-            List<Node> children = graph.getChildren(latent);
+        for (final Node latent : latents) {
+            final List<Node> children = graph.getChildren(latent);
             children.removeAll(latents);
             Collections.sort(children);
 
@@ -222,7 +222,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         return builder;
     }
 
-    private void setFullGraph(Graph fullGraph) {
+    private void setFullGraph(final Graph fullGraph) {
         this.fullGraph = fullGraph;
     }
 
@@ -233,12 +233,12 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
     }
 
     public SemPm getSemPm() {
-        Graph graph = getResultGraph();
+        final Graph graph = getResultGraph();
         return new SemPm(graph);
     }
 
     public Graph getFullGraph() {
-        return fullGraph;
+        return this.fullGraph;
     }
 }
 

@@ -48,15 +48,15 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidate() {
-        TabularColumnValidation validation = new TabularColumnFileValidation(dataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
+        final TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
 
-        List<ValidationResult> results = validation.validate();
-        List<ValidationResult> infos = new LinkedList<>();
-        List<ValidationResult> warnings = new LinkedList<>();
-        List<ValidationResult> errors = new LinkedList<>();
-        for (ValidationResult result : results) {
+        final List<ValidationResult> results = validation.validate();
+        final List<ValidationResult> infos = new LinkedList<>();
+        final List<ValidationResult> warnings = new LinkedList<>();
+        final List<ValidationResult> errors = new LinkedList<>();
+        for (final ValidationResult result : results) {
             switch (result.getCode()) {
                 case INFO:
                     infos.add(result);
@@ -87,17 +87,17 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidateWithExcludedColumnSet() {
-        TabularColumnValidation validation = new TabularColumnFileValidation(dataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
+        final TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
 
-        Set<String> columnNames = new HashSet<>(Arrays.asList("\"X3\"", "X5", "X1", " ", "X7", "X9", "", "X10", "X11"));
+        final Set<String> columnNames = new HashSet<>(Arrays.asList("\"X3\"", "X5", "X1", " ", "X7", "X9", "", "X10", "X11"));
 
-        List<ValidationResult> results = validation.validate(columnNames);
-        List<ValidationResult> infos = new LinkedList<>();
-        List<ValidationResult> warnings = new LinkedList<>();
-        List<ValidationResult> errors = new LinkedList<>();
-        for (ValidationResult result : results) {
+        final List<ValidationResult> results = validation.validate(columnNames);
+        final List<ValidationResult> infos = new LinkedList<>();
+        final List<ValidationResult> warnings = new LinkedList<>();
+        final List<ValidationResult> errors = new LinkedList<>();
+        for (final ValidationResult result : results) {
             switch (result.getCode()) {
                 case INFO:
                     infos.add(result);
@@ -128,17 +128,17 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidateWithExcludedColumnArray() {
-        TabularColumnValidation validation = new TabularColumnFileValidation(dataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
+        final TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
 
-        int[] excludedColumns = {7, 5};
+        final int[] excludedColumns = {7, 5};
 
-        List<ValidationResult> results = validation.validate(excludedColumns);
-        List<ValidationResult> infos = new LinkedList<>();
-        List<ValidationResult> warnings = new LinkedList<>();
-        List<ValidationResult> errors = new LinkedList<>();
-        for (ValidationResult result : results) {
+        final List<ValidationResult> results = validation.validate(excludedColumns);
+        final List<ValidationResult> infos = new LinkedList<>();
+        final List<ValidationResult> warnings = new LinkedList<>();
+        final List<ValidationResult> errors = new LinkedList<>();
+        for (final ValidationResult result : results) {
             switch (result.getCode()) {
                 case INFO:
                     infos.add(result);

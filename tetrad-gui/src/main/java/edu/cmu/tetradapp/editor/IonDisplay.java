@@ -55,57 +55,57 @@ public class IonDisplay extends JPanel implements GraphEditable {
         int graphIndex = runner.getParams().getInt("graphIndex", 1);
 
         if (storedGraphs.size() == 0) {
-            workbench = new GraphWorkbench();
+            this.workbench = new GraphWorkbench();
         } else {
-            workbench = new GraphWorkbench(storedGraphs.get(0));
+            this.workbench = new GraphWorkbench(storedGraphs.get(0));
         }
 
-        indices = getAllIndices(storedGraphs);
+        this.indices = getAllIndices(storedGraphs);
 
         final SpinnerNumberModel model =
-                new SpinnerNumberModel(indices.size() == 0 ? 0 : 1, indices.size() == 0 ? 0 : 1,
-                        indices.size(), 1);
+                new SpinnerNumberModel(this.indices.size() == 0 ? 0 : 1, this.indices.size() == 0 ? 0 : 1,
+                        this.indices.size(), 1);
         model.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                int index = (Integer) model.getValue();
-                workbench.setGraph(storedGraphs.get(indices.get(index - 1)));
+            public void stateChanged(final ChangeEvent e) {
+                final int index = (Integer) model.getValue();
+                IonDisplay.this.workbench.setGraph(storedGraphs.get(IonDisplay.this.indices.get(index - 1)));
                 firePropertyChange("modelChanged", null, null);
-                runner.setResultGraph(workbench.getGraph());
+                runner.setResultGraph(IonDisplay.this.workbench.getGraph());
                 runner.getParams().set("graphIndex", index - 1);
             }
         });
 
-        if (graphIndex >= indices.size()) {
+        if (graphIndex >= this.indices.size()) {
             graphIndex = 0;
             runner.getParams().set("graphIndex", 0);
         }
 
-        if (indices.size() > 0) {
+        if (this.indices.size() > 0) {
             model.setValue(graphIndex + 1);
         }
 
-        spinner = new JSpinner();
-        spinner.setModel(model);
-        totalLabel = new JLabel(" of " + indices.size());
+        this.spinner = new JSpinner();
+        this.spinner.setModel(model);
+        this.totalLabel = new JLabel(" of " + this.indices.size());
 
 
-        spinner.setPreferredSize(new Dimension(50, 20));
-        spinner.setMaximumSize(spinner.getPreferredSize());
-        Box b = Box.createVerticalBox();
-        Box b1 = Box.createHorizontalBox();
+        this.spinner.setPreferredSize(new Dimension(50, 20));
+        this.spinner.setMaximumSize(this.spinner.getPreferredSize());
+        final Box b = Box.createVerticalBox();
+        final Box b1 = Box.createHorizontalBox();
 //        b1.add(Box.createHorizontalGlue());
 //        b1.add(Box.createHorizontalStrut(10));
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("DAG "));
-        b1.add(spinner);
-        b1.add(totalLabel);
+        b1.add(this.spinner);
+        b1.add(this.totalLabel);
 
         b.add(b1);
 
-        Box b2 = Box.createHorizontalBox();
-        JPanel graphPanel = new JPanel();
+        final Box b2 = Box.createHorizontalBox();
+        final JPanel graphPanel = new JPanel();
         graphPanel.setLayout(new BorderLayout());
-        JScrollPane jScrollPane = new JScrollPane(workbench);
+        final JScrollPane jScrollPane = new JScrollPane(this.workbench);
 //        jScrollPane.setPreferredSize(new Dimension(400, 400));
         graphPanel.add(jScrollPane);
 //        graphPanel.setBorder(new TitledBorder("DAG"));
@@ -119,35 +119,35 @@ public class IonDisplay extends JPanel implements GraphEditable {
 
     private void resetDisplay() {
         final List<Integer> _subsetIndices = getAllIndices(getStoredGraphs());
-        indices.clear();
-        indices.addAll(_subsetIndices);
+        this.indices.clear();
+        this.indices.addAll(_subsetIndices);
 
-        int min = indices.size() == 0 ? 0 : 1;
-        final SpinnerNumberModel model = new SpinnerNumberModel(min, min, indices.size(), 1);
+        final int min = this.indices.size() == 0 ? 0 : 1;
+        final SpinnerNumberModel model = new SpinnerNumberModel(min, min, this.indices.size(), 1);
         model.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                int index = model.getNumber().intValue();
-                workbench.setGraph(storedGraphs.get(indices.get(index - 1)));
+            public void stateChanged(final ChangeEvent e) {
+                final int index = model.getNumber().intValue();
+                IonDisplay.this.workbench.setGraph(IonDisplay.this.storedGraphs.get(IonDisplay.this.indices.get(index - 1)));
             }
         });
 
-        spinner.setModel(model);
-        totalLabel.setText(" of " + _subsetIndices.size());
+        this.spinner.setModel(model);
+        this.totalLabel.setText(" of " + _subsetIndices.size());
 
-        if (indices.isEmpty()) {
-            workbench.setGraph(new EdgeListGraph());
+        if (this.indices.isEmpty()) {
+            this.workbench.setGraph(new EdgeListGraph());
         } else {
-            workbench.setGraph(storedGraphs.get(indices.get(0)));
+            this.workbench.setGraph(this.storedGraphs.get(this.indices.get(0)));
         }
     }
 
-    public void resetGraphs(List<Graph> storedGraphs) {
+    public void resetGraphs(final List<Graph> storedGraphs) {
         this.storedGraphs = storedGraphs;
         resetDisplay();
     }
 
-    private List<Integer> getAllIndices(List<Graph> storedGraphs) {
-        List<Integer> indices = new ArrayList<>();
+    private List<Integer> getAllIndices(final List<Graph> storedGraphs) {
+        final List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.size(); i++) {
             indices.add(i);
@@ -157,11 +157,11 @@ public class IonDisplay extends JPanel implements GraphEditable {
     }
 
     public List getSelectedModelComponents() {
-        Component[] components = getWorkbench().getComponents();
-        List<TetradSerializable> selectedModelComponents =
+        final Component[] components = getWorkbench().getComponents();
+        final List<TetradSerializable> selectedModelComponents =
                 new ArrayList<>();
 
-        for (Component comp : components) {
+        for (final Component comp : components) {
             if (comp instanceof DisplayNode) {
                 selectedModelComponents.add(
                         ((DisplayNode) comp).getModelNode());
@@ -174,16 +174,16 @@ public class IonDisplay extends JPanel implements GraphEditable {
         return selectedModelComponents;
     }
 
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
+    public void pasteSubsession(final List sessionElements, final Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
         for (int i = 0; i < sessionElements.size(); i++) {
 
-            Object o = sessionElements.get(i);
+            final Object o = sessionElements.get(i);
 
             if (o instanceof GraphNode) {
-                Node modelNode = (Node) o;
+                final Node modelNode = (Node) o;
                 getWorkbench().selectNode(modelNode);
             }
         }
@@ -192,19 +192,19 @@ public class IonDisplay extends JPanel implements GraphEditable {
     }
 
     public GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     public Graph getGraph() {
-        return workbench.getGraph();
+        return this.workbench.getGraph();
     }
 
-    public void setGraph(Graph graph) {
-        workbench.setGraph(graph);
+    public void setGraph(final Graph graph) {
+        this.workbench.setGraph(graph);
     }
 
     private List<Graph> getStoredGraphs() {
-        return storedGraphs;
+        return this.storedGraphs;
     }
 }
 

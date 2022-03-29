@@ -47,11 +47,11 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
         buildGui();
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
 
     }
 
@@ -70,28 +70,28 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
         setLayout(new BorderLayout());
 
         final DoubleTextField probField =
-                new DoubleTextField(params.getDouble("prob", 0.02), 6, NumberFormatUtil.getInstance().getNumberFormat());
+                new DoubleTextField(this.params.getDouble("prob", 0.02), 6, NumberFormatUtil.getInstance().getNumberFormat());
         probField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+            public double filter(final double value, final double oldValue) {
                 try {
-                    params.set("prob", value);
+                    MissingDataInjectorParamsEditor.this.params.set("prob", value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "The input dataset will have missing data values inserted " +
                 "<br>independently for each variable in each case with the" +
                 "<br>probability specified." + "</html>"));
 
-        Box b7 = Box.createHorizontalBox();
+        final Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" + "<i>Probability:  </i>" + "</html>"));
         b7.add(probField);

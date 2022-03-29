@@ -40,17 +40,17 @@ public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransfer
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    public TimeSeriesWrapper2(DataWrapper data, Parameters params) {
-        DataModelList dataSets = data.getDataModelList();
-        DataModelList timeSeriesDataSets = new DataModelList();
+    public TimeSeriesWrapper2(final DataWrapper data, final Parameters params) {
+        final DataModelList dataSets = data.getDataModelList();
+        final DataModelList timeSeriesDataSets = new DataModelList();
 
-        for (DataModel dataModel : dataSets) {
+        for (final DataModel dataModel : dataSets) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("Can only add an index to tabular data.");
             }
 
-            DataSet dataSet = (DataSet) dataModel;
-            DataSet timeSeries = TimeSeriesUtils.addIndex(dataSet);
+            final DataSet dataSet = (DataSet) dataModel;
+            final DataSet timeSeries = TimeSeriesUtils.addIndex(dataSet);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }

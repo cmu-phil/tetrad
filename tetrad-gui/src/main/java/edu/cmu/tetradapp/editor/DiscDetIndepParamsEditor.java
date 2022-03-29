@@ -55,31 +55,31 @@ class DiscDetIndepParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public DiscDetIndepParamsEditor(Parameters params) {
+    public DiscDetIndepParamsEditor(final Parameters params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 5,
+        this.alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 5,
                 NumberFormatUtil.getInstance().getNumberFormat());
 
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+        this.alphaField.setFilter(new DoubleTextField.Filter() {
+            public double filter(final double value, final double oldValue) {
                 try {
                     params().set("alpha", 0.001);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        depthField = new IntTextField(params.getInt("depth", -1), 5);
-        depthField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
+        this.depthField = new IntTextField(params.getInt("depth", -1), 5);
+        this.depthField.setFilter(new IntTextField.Filter() {
+            public int filter(final int value, final int oldValue) {
                 try {
                     params().set("depth", value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -96,18 +96,18 @@ class DiscDetIndepParamsEditor extends JComponent {
     private void buildGui() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (alphaField != null) {
-            Box b1 = Box.createHorizontalBox();
+        if (this.alphaField != null) {
+            final Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Alpha:"));
             b1.add(Box.createHorizontalGlue());
-            b1.add(alphaField);
+            b1.add(this.alphaField);
             add(b1);
         }
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Depth:"));
         b2.add(Box.createHorizontalGlue());
-        b2.add(depthField);
+        b2.add(this.depthField);
         add(b2);
 
         add(Box.createHorizontalGlue());
@@ -118,7 +118,7 @@ class DiscDetIndepParamsEditor extends JComponent {
      * public, but it is needed so that the textfields can edit the model.)
      */
     private Parameters params() {
-        return params;
+        return this.params;
     }
 }
 

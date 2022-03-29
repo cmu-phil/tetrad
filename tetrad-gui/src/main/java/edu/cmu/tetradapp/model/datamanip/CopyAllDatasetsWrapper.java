@@ -39,14 +39,14 @@ public class CopyAllDatasetsWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public CopyAllDatasetsWrapper(DataWrapper wrapper, Parameters params) {
+    public CopyAllDatasetsWrapper(final DataWrapper wrapper, final Parameters params) {
         LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
 
 
-        DataModelList inList = wrapper.getDataModelList();
-        DataModelList outList = new DataModelList();
+        final DataModelList inList = wrapper.getDataModelList();
+        final DataModelList outList = new DataModelList();
 
-        for (DataModel model : inList) {
+        for (final DataModel model : inList) {
             if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }

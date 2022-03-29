@@ -56,34 +56,34 @@ final class PasteSubsessionAction extends AbstractAction
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(ActionEvent e) {
-        Transferable transferable = InternalClipboard.getInstance()
+    public void actionPerformed(final ActionEvent e) {
+        final Transferable transferable = InternalClipboard.getInstance()
                 .getContents(null);
 
         if (!(transferable instanceof SubsessionSelection)) {
             return;
         }
 
-        SubsessionSelection selection = (SubsessionSelection) transferable;
-        DataFlavor flavor = new DataFlavor(SubsessionSelection.class,
+        final SubsessionSelection selection = (SubsessionSelection) transferable;
+        final DataFlavor flavor = new DataFlavor(SubsessionSelection.class,
                 "Subsession Selection");
 
         try {
-            List modelList = (List) selection.getTransferData(flavor);
+            final List modelList = (List) selection.getTransferData(flavor);
 
             if (modelList != null) {
-                SessionEditorIndirectRef sessionEditorRef =
+                final SessionEditorIndirectRef sessionEditorRef =
                         DesktopController.getInstance().getFrontmostSessionEditor();
-                SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-                Point point = EditorUtils.getTopLeftPoint(modelList);
-                int numPastes = selection.getNumPastes();
+                final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+                final Point point = EditorUtils.getTopLeftPoint(modelList);
+                final int numPastes = selection.getNumPastes();
                 point.translate(50 * numPastes, 50 * numPastes);
 
 //                Point point = sessionEditor.getSessionWorkbench().getCurrentMouseLocation();
 //
                 sessionEditor.pasteSubsession(modelList, point);
             }
-        } catch (Exception e1) {
+        } catch (final Exception e1) {
             throw new RuntimeException(e1);
         }
     }
@@ -96,7 +96,7 @@ final class PasteSubsessionAction extends AbstractAction
      * @param contents  the contents which this owner had placed on the
      *                  clipboard
      */
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 }
 
