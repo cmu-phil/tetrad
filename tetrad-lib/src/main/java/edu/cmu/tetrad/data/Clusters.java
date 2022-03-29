@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * Stores clusters of variables for MimBuild, Purify, etc.
@@ -116,12 +117,7 @@ public final class Clusters implements TetradSerializable {
      */
     public List<String> getVarsNotInCluster(List<String> varNames) {
         List<String> notInCluster = new ArrayList<>(varNames);
-
-        for (int i = 0; i < getNumClusters(); i++) {
-            List<String> tier = getCluster(i);
-            notInCluster.removeAll(tier);
-        }
-
+        IntStream.range(0, getNumClusters()).mapToObj(this::getCluster).forEach(notInCluster::removeAll);
         return notInCluster;
     }
 

@@ -93,7 +93,7 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      */
     @SuppressWarnings("ZeroLengthArrayAllocation")
     public static DiscretizationSpec serializableInstance() {
-        return new ContinuousDiscretizationSpec(new double[0], new ArrayList<String>());
+        return new ContinuousDiscretizationSpec(new double[0], new ArrayList<>());
     }
 
     //============================PUBLIC METHODS========================//
@@ -128,8 +128,6 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

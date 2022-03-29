@@ -102,6 +102,7 @@ public final class ContinuousVariable extends AbstractVariable {
         this.nodeType = variable.nodeType;
         this.centerX = variable.centerX;
         this.centerY = variable.centerY;
+        this.nodeVariableType = getNodeVariableType();
     }
 
     /**
@@ -285,8 +286,6 @@ public final class ContinuousVariable extends AbstractVariable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

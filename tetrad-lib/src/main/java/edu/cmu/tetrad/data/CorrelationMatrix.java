@@ -56,13 +56,7 @@ public final class CorrelationMatrix extends CovarianceMatrix {
                 dataSet.getCorrelationMatrix(), dataSet.getNumRows());
 
         // These checks break testwise deletion
-//        if (!dataSet.isContinuous()) {
-//            throw new IllegalArgumentException("Data set not continuous.");
-//        }
 
-//        if (DataUtils.containsMissingValue(dataSet)) {
-//            throw new IllegalArgumentException("Please remove or impute missing values.");
-//        }
     }
 
     /**
@@ -78,13 +72,13 @@ public final class CorrelationMatrix extends CovarianceMatrix {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static CorrelationMatrix serializableInstance() {
-        return new CorrelationMatrix(new LinkedList<Node>(),
+        return new CorrelationMatrix(new LinkedList<>(),
                 new Matrix(0, 0), 1);
     }
 
     //=================================PUBLIC METHODS======================//
 
-    public final void setMatrix(Matrix matrix) {
+    public void setMatrix(Matrix matrix) {
         if (!matrix.isSquare()) {
             throw new IllegalArgumentException("Matrix must be square.");
         }
@@ -114,14 +108,6 @@ public final class CorrelationMatrix extends CovarianceMatrix {
         return new CorrelationMatrix(covarianceMatrix);
     }
 
-    /**
-     * @return a submatrix, returning as a correlation matrix, with variables
-     * in the given order.
-     */
-    public CorrelationMatrix getSubCorrMatrix(int[] indices) {
-        ICovarianceMatrix covarianceMatrix = getSubmatrix(indices);
-        return new CorrelationMatrix(covarianceMatrix);
-    }
 }
 
 
