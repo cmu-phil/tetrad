@@ -556,13 +556,9 @@ public final class LoadDataDialog extends JPanel {
                     loadButton.setVisible(true);
 
                     // Determine if enable the finish button or not
-                    if (failedFiles.size() > 0) {
-                        // Disable it
-                        loadButton.setEnabled(false);
-                    } else {
-                        // Enable it
-                        loadButton.setEnabled(true);
-                    }
+                    // Disable it
+                    // Enable it
+                    loadButton.setEnabled(failedFiles.size() <= 0);
 
                     // Enable the button and hange back the button text
                     validateButton.setEnabled(true);

@@ -1205,12 +1205,9 @@ public class Purify {
                 for (int v1 = 0; v1 < cluster1.length; v1++) {
                     for (int v2 = 0; v2 < cluster2.length; v2++) {
                         if (relations[cluster1[v1]][cluster2[v2]] == UNDEFINED) {
-                            boolean found1 = false;
+                            boolean found1 = cluster1.length < 3;
                             //Try first to find a 3x1 foursome, with 3 elements
                             //in cluster1
-                            if (cluster1.length < 3) {
-                                found1 = true;
-                            }
                             for (int v3 = 0;
                                  v3 < cluster1.length && !found1; v3++) {
                                 if (v3 == v1 ||
@@ -1290,11 +1287,7 @@ public class Purify {
         boolean[][] impurities = new boolean[numVars][numVars];
         for (int i = 0; i < numVars; i++) {
             for (int j = 0; j < numVars; j++) {
-                if (relations[i][j] == UNDEFINED) {
-                    impurities[i][j] = true;
-                } else {
-                    impurities[i][j] = false;
-                }
+                impurities[i][j] = relations[i][j] == UNDEFINED;
             }
         }
         return impurities;

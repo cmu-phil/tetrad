@@ -155,11 +155,7 @@ class OtherGroupsEditor extends JPanel {
 
         // Don't allow to create forbidden group from this required group if 
         // no variables in the from or to boxes - Zhou
-        if (fromGroup.isEmpty() || toGroup.isEmpty()) {
-            forbiddenButton.setEnabled(false);
-        } else {
-            forbiddenButton.setEnabled(true);
-        }
+        forbiddenButton.setEnabled(!fromGroup.isEmpty() && !toGroup.isEmpty());
 
         // Add skinny hand
         forbiddenButton.addActionListener((e) -> {

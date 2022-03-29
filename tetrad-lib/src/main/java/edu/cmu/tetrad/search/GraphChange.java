@@ -184,9 +184,7 @@ public class GraphChange {
         if (!removes.containsAll(gc.removes)) return false;
         if (!colliders.containsAll(gc.colliders)) return false;
         if (!nonColliders.containsAll(gc.nonColliders)) return false;
-        if (!orients.containsAll(gc.orients)) return false;
-
-        return true;
+        return orients.containsAll(gc.orients);
     }
 
 
@@ -246,13 +244,10 @@ public class GraphChange {
             return false;
         GraphChange otherGC = (GraphChange) other;
 
-        if (!otherGC.removes.equals(removes) ||
-                !otherGC.colliders.equals(colliders) ||
-                !otherGC.nonColliders.equals(nonColliders) ||
-                !otherGC.orients.equals(orients))
-            return false;
-
-        return true;
+        return otherGC.removes.equals(removes) &&
+                otherGC.colliders.equals(colliders) &&
+                otherGC.nonColliders.equals(nonColliders) &&
+                otherGC.orients.equals(orients);
     }
 
 

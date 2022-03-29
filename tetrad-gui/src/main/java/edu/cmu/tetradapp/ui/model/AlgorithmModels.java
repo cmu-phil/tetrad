@@ -84,9 +84,7 @@ public final class AlgorithmModels {
                 ? algorithmModels
                 : algorithmModels.stream()
                 .filter(e -> {
-                    return multiDataSetAlgorithm
-                            ? algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz())
-                            : true;
+                    return !multiDataSetAlgorithm || algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz());
                 })
                 .filter(e -> {
                     for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {

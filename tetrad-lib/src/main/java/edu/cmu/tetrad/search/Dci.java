@@ -1373,10 +1373,7 @@ public class Dci {
             boolean necessary = false;
             for (Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> necessaryTrek : currentNecessaryTreks) {
                 necessary = true;
-                boolean size1 = false;
-                if (necessaryTrek.size() == 1) {
-                    size1 = true;
-                }
+                boolean size1 = necessaryTrek.size() == 1;
                 for (Set<Edge> path : necessaryTrek.keySet()) {
                     if (!path.contains(oldGraph.getEdge(triple.getX(), triple.getY())) ||
                             !path.contains(oldGraph.getEdge(triple.getZ(), triple.getY())) ||

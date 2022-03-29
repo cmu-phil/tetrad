@@ -84,8 +84,7 @@ final class SessionUtils {
             }
         }
 
-        int messageType = warning ? JOptionPane.INFORMATION_MESSAGE :
-                JOptionPane.INFORMATION_MESSAGE;
+        int messageType = JOptionPane.INFORMATION_MESSAGE;
 
         JOptionPane.showMessageDialog(centeringComp, b.toString(),
                 "Information on \"" + modelConfig.getName() + "\"", messageType);

@@ -62,13 +62,8 @@ public class GraphEditorUtils {
             public void actionPerformed(ActionEvent e) {
                 JComboBox combo = (JComboBox) e.getSource();
                 String selection = (String) combo.getSelectedItem();
-                if ("No".equals(selection)) {
-                    Preferences.userRoot().putBoolean(
-                            "kamadaKawaiLayoutInitializeRandomly", false);
-                } else {
-                    Preferences.userRoot().putBoolean(
-                            "kamadaKawaiLayoutInitializeRandomly", true);
-                }
+                Preferences.userRoot().putBoolean(
+                        "kamadaKawaiLayoutInitializeRandomly", !"No".equals(selection));
             }
         });
 

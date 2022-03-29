@@ -343,9 +343,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         if (x instanceof ContinuousVariable) {
             double v = internalData.getDouble(i, j);
 
-            if (Double.isNaN(v)) {
-                return true;
-            }
+            return Double.isNaN(v);
         }
 
         return false;

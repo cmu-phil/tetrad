@@ -418,9 +418,7 @@ public class TestFci {
                     }
                 }
 
-                if (found) {
-                    return true;
-                }
+                return found;
             }
         }
 
@@ -440,11 +438,7 @@ public class TestFci {
             }
         }
 
-        if (this.uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>()).isEmpty()) {
-            return true;
-        }
-
-        return false;
+        return this.uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>()).isEmpty();
     }
 
     private Graph getPag(double alpha, double penaltyDiscount, DataSet data) {

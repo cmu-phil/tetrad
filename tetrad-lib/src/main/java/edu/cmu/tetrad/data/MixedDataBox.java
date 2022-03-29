@@ -105,7 +105,7 @@ public class MixedDataBox implements DataBox {
 
         for (int i = 0; i < numOfVars; i++) {
             // ensure there is data for either dataset, not both
-            if (!(continuousData[i] == null ^ discreteData[i] == null)) {
+            if ((continuousData[i] == null) == (discreteData[i] == null)) {
                 String errMsg = String.format("Variable at index %d either has data for both discrete and continuous or has no data for both.", i);
                 throw new IllegalArgumentException(errMsg);
             }

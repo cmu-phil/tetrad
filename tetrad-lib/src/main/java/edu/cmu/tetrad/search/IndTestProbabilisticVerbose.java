@@ -161,11 +161,7 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
 
         out.println();
 
-        if (dsep) {
-            return true;
-        } else {
-            return false;
-        }
+        return dsep;
     }
 
     public double probConstraint(OP op, Node x, Node y, Node[] z) {

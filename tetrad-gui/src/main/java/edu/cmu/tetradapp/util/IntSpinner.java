@@ -113,11 +113,7 @@ public class IntSpinner extends JSpinner {
         if (this.min != min) {
             this.min = min;
             SpinnerNumberModel model = (SpinnerNumberModel) getModel();
-            if (min == null) {
-                model.setMinimum(null);
-            } else {
-                model.setMinimum(min);
-            }
+            model.setMinimum(min);
             // update the text filed by resetting value
             editor.setValue(editor.getValue());
         }
@@ -131,11 +127,7 @@ public class IntSpinner extends JSpinner {
         if (this.max != max) {
             this.max = max;
             SpinnerNumberModel model = (SpinnerNumberModel) getModel();
-            if (max == null) {
-                model.setMaximum(null);
-            } else {
-                model.setMaximum(max);
-            }
+            model.setMaximum(max);
             // update the text filed by resetting value
             editor.setValue(editor.getValue());
         }

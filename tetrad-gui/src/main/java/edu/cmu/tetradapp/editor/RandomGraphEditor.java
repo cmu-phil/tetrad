@@ -242,13 +242,9 @@ class RandomGraphEditor extends JPanel {
             connectedBox.setEnabled(false);
         }
 
-        if (this.isAddCycles()) {
-//            numTwoCyclesField.setEnabled(true);
-            minCycleLengthField.setEnabled(true);
-        } else {
-//            numTwoCyclesField.setEnabled(false);
-            minCycleLengthField.setEnabled(false);
-        }
+        //            numTwoCyclesField.setEnabled(true);
+        //            numTwoCyclesField.setEnabled(false);
+        minCycleLengthField.setEnabled(this.isAddCycles());
 
         connectedBox.setMaximumSize(connectedBox.getPreferredSize());
         connectedBox.addActionListener(new ActionListener() {

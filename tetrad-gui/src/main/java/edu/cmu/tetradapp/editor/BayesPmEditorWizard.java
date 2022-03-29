@@ -239,11 +239,8 @@ final class BayesPmEditorWizard extends JPanel {
     private void enableByNodeType() {
         if (!this.isEditingMeasuredVariablesAllowed() && categoryEditor.getNode().getNodeType() == NodeType.MEASURED) {
             this.setEnabled(false);
-        } else if (!this.isEditingLatentVariablesAllowed() && categoryEditor.getNode().getNodeType() == NodeType.LATENT) {
-            this.setEnabled(false);
-        } else {
-            this.setEnabled(true);
-        }
+        } else
+            this.setEnabled(this.isEditingLatentVariablesAllowed() || categoryEditor.getNode().getNodeType() != NodeType.LATENT);
     }
 
     public void setEnabled(boolean enabled) {
@@ -419,11 +416,7 @@ final class BayesPmEditorWizard extends JPanel {
         this.editingMeasuredVariablesAllowed = editingMeasuredVariablesAllowed;
         this.setNode(categoryEditor.getNode());
 
-        if (!editingMeasuredVariablesAllowed) {
-            presetMenu.setEnabled(false);
-        } else {
-            presetMenu.setEnabled(true);
-        }
+        presetMenu.setEnabled(editingMeasuredVariablesAllowed);
     }
 
     private boolean isEditingLatentVariablesAllowed() {

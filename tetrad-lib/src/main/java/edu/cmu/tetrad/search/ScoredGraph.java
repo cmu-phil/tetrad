@@ -63,11 +63,7 @@ public class ScoredGraph implements Comparable, TetradSerializable {
             return false;
         }
 
-        if (!graph.equals(_scoredGraph.getGraph())) {
-            return false;
-        }
-
-        return true;
+        return graph.equals(_scoredGraph.getGraph());
     }
 
     public int compareTo(Object o) {

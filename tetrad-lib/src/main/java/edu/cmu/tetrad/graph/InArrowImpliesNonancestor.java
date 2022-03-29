@@ -61,9 +61,7 @@ public final class InArrowImpliesNonancestor implements GraphConstraint {
         }
 
         if (edge.getEndpoint2() == Endpoint.ARROW) {
-            if (graph.isProperAncestorOf(edge.getNode2(), edge.getNode1())) {
-                return false;
-            }
+            return !graph.isProperAncestorOf(edge.getNode2(), edge.getNode1());
         }
 
         return true;

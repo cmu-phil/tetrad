@@ -685,9 +685,7 @@ public class TestDM {
                     return (this.cycleExists(graph, adjacentNodes, path, currentNode));
                 }
             }
-            if (this.listHasDuplicates(path)) {
-                return (true);
-            }
+            return this.listHasDuplicates(path);
         }
         return (false);
     }

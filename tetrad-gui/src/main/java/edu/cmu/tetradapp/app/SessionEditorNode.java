@@ -148,11 +148,7 @@ public final class SessionEditorNode extends DisplayNode {
         String acronym = this.getAcronym();
 
         // Set the color.
-        if ("No model".equals(acronym)) {
-            this.getSessionDisplayComp().setHasModel(false);
-        } else {
-            this.getSessionDisplayComp().setHasModel(true);
-        }
+        this.getSessionDisplayComp().setHasModel(!"No model".equals(acronym));
 
         // Set the text for the model acronym.
         this.getSessionDisplayComp().setAcronym(acronym);

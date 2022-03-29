@@ -309,7 +309,7 @@ public class BooleanGlassFunction implements UpdateFunction {
             for (int i = 0; i < parentValues.length; i++) {
                 IndexedParent parent = (IndexedParent) parents[i];
                 double histVal = history[parent.getLag()][parent.getIndex()];
-                parentValues[i] = histVal > basalExpression ? true : false;
+                parentValues[i] = histVal > basalExpression;
             }
 
             int row = booleanFunction.getRow(parentValues);

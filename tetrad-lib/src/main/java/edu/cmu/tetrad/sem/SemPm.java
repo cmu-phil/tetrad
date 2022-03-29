@@ -524,11 +524,7 @@ public final class SemPm implements PM, TetradSerializable {
                     return compareFirst;
                 }
 
-                if (compareSecond != 0) {
-                    return compareSecond;
-                }
-
-                return 0;
+                return compareSecond;
             }
         });
 

@@ -224,13 +224,11 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
                     " | " + z + " is undefined.");
         }
 
-        boolean indFisher = true;
+        boolean indFisher = !(Math.abs(fishersZ) > thresh);
 
         //System.out.println("thresh = " + thresh);
         //if(Math.abs(fishersZ) > 1.96) indFisher = false; //Two sided with alpha = 0.05
-        if (Math.abs(fishersZ) > thresh) {
-            indFisher = false;  //Two sided
-        }
+        //Two sided
 
         if (verbose) {
             if (indFisher) {

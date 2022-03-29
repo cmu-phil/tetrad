@@ -93,13 +93,9 @@ public final class Edges {
      */
     public static boolean isDirectedEdge(Edge edge) {
         if (edge.getEndpoint1() == Endpoint.TAIL) {
-            if (edge.getEndpoint2() == Endpoint.ARROW) {
-                return true;
-            }
+            return edge.getEndpoint2() == Endpoint.ARROW;
         } else if (edge.getEndpoint2() == Endpoint.TAIL) {
-            if (edge.getEndpoint1() == Endpoint.ARROW) {
-                return true;
-            }
+            return edge.getEndpoint1() == Endpoint.ARROW;
         }
 
         return false;
@@ -110,13 +106,9 @@ public final class Edges {
      */
     public static boolean isPartiallyOrientedEdge(Edge edge) {
         if (edge.getEndpoint1() == Endpoint.CIRCLE) {
-            if (edge.getEndpoint2() == Endpoint.ARROW) {
-                return true;
-            }
+            return edge.getEndpoint2() == Endpoint.ARROW;
         } else if (edge.getEndpoint2() == Endpoint.CIRCLE) {
-            if (edge.getEndpoint1() == Endpoint.ARROW) {
-                return true;
-            }
+            return edge.getEndpoint1() == Endpoint.ARROW;
         }
 
         return false;

@@ -455,10 +455,7 @@ public final class SearchGraphUtils {
         if (graph.getEdge(b, a).getDistalEndpoint(b) == Endpoint.ARROW) {
             return true;
         }
-        if (graph.getEdge(b, c).getDistalEndpoint(b) == Endpoint.ARROW) {
-            return true;
-        }
-        return false;
+        return graph.getEdge(b, c).getDistalEndpoint(b) == Endpoint.ARROW;
     }
 
     // Tests whether adding a for b--a--c to the sepset (if it's not there) yields independence. Poor man's CPC.

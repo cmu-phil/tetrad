@@ -445,17 +445,9 @@ public final class GraspFci implements GraphSearch {
         }
 
         if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return false;
-            } else {
-                return true;
-            }
+            return !knowledge.isForbidden(x.getName(), y.getName());
         } else if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return false;
-            } else {
-                return true;
-            }
+            return !knowledge.isForbidden(x.getName(), y.getName());
         }
 
         return graph.getEndpoint(x, y) == Endpoint.CIRCLE;

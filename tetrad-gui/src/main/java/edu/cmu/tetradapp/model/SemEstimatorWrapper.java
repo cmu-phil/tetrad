@@ -140,9 +140,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
                             + "\nEstimation will be uninformative. Are you sure you want to proceed?",
                     "Please confirm", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
-            if (ret != JOptionPane.YES_OPTION) {
-                return false;
-            }
+            return ret == JOptionPane.YES_OPTION;
         }
 
         return true;
