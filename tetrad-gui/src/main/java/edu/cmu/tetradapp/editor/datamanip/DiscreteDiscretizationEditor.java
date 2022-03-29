@@ -42,17 +42,17 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
     private RemapEditor remapEditor;
     private final DiscreteVariable variable;
 
-    public DiscreteDiscretizationEditor(final DiscreteVariable variable) {
+    public DiscreteDiscretizationEditor(DiscreteVariable variable) {
         if (variable == null) {
             throw new NullPointerException();
         }
 
-        final int numCategories = variable.getNumCategories();
+        int numCategories = variable.getNumCategories();
         this.variable = variable;
 
         //String name = variable.getNode();
 
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
 //        Box b2 = Box.createHorizontalBox();
 //        b2.add(Box.createRigidArea(new Dimension(5, 0)));
@@ -62,7 +62,7 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
 
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b6 = Box.createHorizontalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(Box.createRigidArea(new Dimension(10, 0)));
         b6.add(new JLabel(
                 "Edit new categories that old categories should map to:"));
@@ -84,31 +84,31 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
         return this.remapEditor.getDiscretizationSpec();
     }
 
-    public void setDiscretizationSpec(final DiscretizationSpec spec) {
+    public void setDiscretizationSpec(DiscretizationSpec spec) {
         this.remapEditor.setDiscretizationSpec((DiscreteDiscretizationSpec) spec);
     }
 
     //===========================PRIVATE METHODS=========================//
 
     private RemapEditor createRemapEditor() {
-        final List<String> categories = DiscreteDiscretizationEditor.defaultCategories(this.variable);
-        final int[] remap = DiscreteDiscretizationEditor.defaultRemap(categories);
-        final DiscreteDiscretizationSpec discretizationSpec =
+        List<String> categories = DiscreteDiscretizationEditor.defaultCategories(this.variable);
+        int[] remap = DiscreteDiscretizationEditor.defaultRemap(categories);
+        DiscreteDiscretizationSpec discretizationSpec =
                 new DiscreteDiscretizationSpec(remap, categories);
         this.remapEditor = new RemapEditor(this.variable, discretizationSpec);
         return this.remapEditor;
     }
 
-    private static int[] defaultRemap(final List<String> categories) {
-        final int[] remap = new int[categories.size()];
+    private static int[] defaultRemap(List<String> categories) {
+        int[] remap = new int[categories.size()];
         for (int i = 0; i < remap.length; i++) {
             remap[i] = i;
         }
         return remap;
     }
 
-    private static List<String> defaultCategories(final DiscreteVariable variable) {
-        final List<String> categories = new LinkedList<>();
+    private static List<String> defaultCategories(DiscreteVariable variable) {
+        List<String> categories = new LinkedList<>();
         for (int i = 0; i < variable.getNumCategories(); i++) {
             categories.add(variable.getCategory(i));
         }
@@ -137,8 +137,8 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
                 new LinkedList<>();
         private final DiscreteVariable oldVariable;
 
-        public RemapEditor(final DiscreteVariable variable,
-                           final DiscreteDiscretizationSpec spec) {
+        public RemapEditor(DiscreteVariable variable,
+                           DiscreteDiscretizationSpec spec) {
             this.variable = variable;
 
             if (variable == null) {
@@ -151,20 +151,20 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
 
             this.oldVariable = variable;
 
-            final int[] remap = spec.getRemap();
-            final List<String> categories = spec.getCategories();
+            int[] remap = spec.getRemap();
+            List<String> categories = spec.getCategories();
 
             for (int i = 0; i < this.oldVariable.getNumCategories(); i++) {
                 this.newCategories.add(categories.get(remap[i]));
             }
 
-            final Box panel = Box.createVerticalBox();
+            Box panel = Box.createVerticalBox();
 
             createCategoryFields();
             createRangeFields();
 
             for (int i = 0; i < categories.size(); i++) {
-                final Box row = Box.createHorizontalBox();
+                Box row = Box.createHorizontalBox();
                 row.add(Box.createRigidArea(new Dimension(10, 0)));
 
                 row.add(new JLabel((i + 1) + ". "));
@@ -180,10 +180,10 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
             add(panel, BorderLayout.CENTER);
 
             setFocusTraversalPolicy(new FocusTraversalPolicy() {
-                public Component getComponentAfter(final Container focusCycleRoot,
-                                                   final Component aComponent) {
-                    final int index = RemapEditor.this.focusTraveralOrder.indexOf(aComponent);
-                    final int size = RemapEditor.this.focusTraveralOrder.size();
+                public Component getComponentAfter(Container focusCycleRoot,
+                                                   Component aComponent) {
+                    int index = RemapEditor.this.focusTraveralOrder.indexOf(aComponent);
+                    int size = RemapEditor.this.focusTraveralOrder.size();
 
                     if (index != -1) {
                         return RemapEditor.this.focusTraveralOrder.get(
@@ -193,10 +193,10 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
                     }
                 }
 
-                public Component getComponentBefore(final Container focusCycleRoot,
-                                                    final Component aComponent) {
-                    final int index = RemapEditor.this.focusTraveralOrder.indexOf(aComponent);
-                    final int size = RemapEditor.this.focusTraveralOrder.size();
+                public Component getComponentBefore(Container focusCycleRoot,
+                                                    Component aComponent) {
+                    int index = RemapEditor.this.focusTraveralOrder.indexOf(aComponent);
+                    int size = RemapEditor.this.focusTraveralOrder.size();
 
                     if (index != -1) {
                         return RemapEditor.this.focusTraveralOrder.get((index - 1) % size);
@@ -205,15 +205,15 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
                     }
                 }
 
-                public Component getFirstComponent(final Container focusCycleRoot) {
+                public Component getFirstComponent(Container focusCycleRoot) {
                     return RemapEditor.this.focusTraveralOrder.getFirst();
                 }
 
-                public Component getLastComponent(final Container focusCycleRoot) {
+                public Component getLastComponent(Container focusCycleRoot) {
                     return RemapEditor.this.focusTraveralOrder.getLast();
                 }
 
-                public Component getDefaultComponent(final Container focusCycleRoot) {
+                public Component getDefaultComponent(Container focusCycleRoot) {
                     return getFirstComponent(focusCycleRoot);
                 }
             });
@@ -240,12 +240,12 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
             for (int i = 0; i < this.oldVariable.getNumCategories(); i++) {
                 this.rangeFields[i] =
                         new StringTextField(this.oldVariable.getCategory(i), 6);
-                final StringTextField _field = this.rangeFields[i];
+                StringTextField _field = this.rangeFields[i];
 
                 this.rangeFields[i].setFilter(new StringTextField.Filter() {
-                    public String filter(String value, final String oldValue) {
+                    public String filter(String value, String oldValue) {
                         if (RemapEditor.this.labels.get(_field) != null) {
-                            final int index = RemapEditor.this.labels.get(_field);
+                            int index = RemapEditor.this.labels.get(_field);
 
                             if (value == null) {
                                 value = RemapEditor.this.oldVariable.getCategory(index);
@@ -268,27 +268,27 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
         }
 
         public DiscreteDiscretizationSpec getDiscretizationSpec() {
-            final List<String> categoryList = new LinkedList<>();
+            List<String> categoryList = new LinkedList<>();
 
-            for (final String newCategory : this.newCategories) {
+            for (String newCategory : this.newCategories) {
                 if (!categoryList.contains(newCategory)) {
                     categoryList.add(newCategory);
                 }
             }
 
-            final int[] remap = new int[this.oldVariable.getNumCategories()];
+            int[] remap = new int[this.oldVariable.getNumCategories()];
 
             for (int i = 0; i < remap.length; i++) {
-                final String value = this.newCategories.get(i);
+                String value = this.newCategories.get(i);
                 remap[i] = categoryList.indexOf(value);
             }
 
             return new DiscreteDiscretizationSpec(remap, categoryList);
         }
 
-        public void setDiscretizationSpec(final DiscreteDiscretizationSpec spec) {
-            final int[] remap = spec.getRemap();
-            final List categories = spec.getCategories();
+        public void setDiscretizationSpec(DiscreteDiscretizationSpec spec) {
+            int[] remap = spec.getRemap();
+            List categories = spec.getCategories();
 
             for (int i = 0; i < this.oldVariable.getNumCategories(); i++) {
                 this.rangeFields[i].setValue((String) categories.get(remap[i]));

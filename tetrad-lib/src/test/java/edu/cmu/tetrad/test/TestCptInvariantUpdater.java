@@ -42,18 +42,18 @@ public final class TestCptInvariantUpdater {
      */
     @Test
     public void testUpdate1() {
-        final BayesIm bayesIm = sampleBayesIm1();
-        final ManipulatingBayesUpdater updater = new CptInvariantUpdater(bayesIm);
+        BayesIm bayesIm = sampleBayesIm1();
+        ManipulatingBayesUpdater updater = new CptInvariantUpdater(bayesIm);
 
-        final Evidence evidence = Evidence.tautology(bayesIm);
-        final int xIndex = evidence.getNodeIndex("x");
-        final int zIndex = evidence.getNodeIndex("z");
-        final int valueIndex = evidence.getCategoryIndex("z", "1");
+        Evidence evidence = Evidence.tautology(bayesIm);
+        int xIndex = evidence.getNodeIndex("x");
+        int zIndex = evidence.getNodeIndex("z");
+        int valueIndex = evidence.getCategoryIndex("z", "1");
 
         evidence.getProposition().setCategory(zIndex, valueIndex);
 
         updater.setEvidence(evidence);
-        final BayesIm updatedIm = updater.getUpdatedBayesIm();
+        BayesIm updatedIm = updater.getUpdatedBayesIm();
 
         // Check results.
         assertEquals(0.1250, updatedIm.getProbability(0, 0, 0), 0.001);
@@ -65,8 +65,8 @@ public final class TestCptInvariantUpdater {
         assertEquals(0.0000, updatedIm.getProbability(1, 1, 0), 0.001);
         assertEquals(1.0000, updatedIm.getProbability(1, 1, 1), 0.001);
 
-        final ManipulatingBayesUpdater updater2 = new CptInvariantUpdater(bayesIm);
-        final Evidence evidence2 = new Evidence(evidence, bayesIm);
+        ManipulatingBayesUpdater updater2 = new CptInvariantUpdater(bayesIm);
+        Evidence evidence2 = new Evidence(evidence, bayesIm);
         updater2.setEvidence(evidence2);
     }
 
@@ -75,17 +75,17 @@ public final class TestCptInvariantUpdater {
      */
     @Test
     public void testUpdate2() {
-        final BayesIm bayesIm = sampleBayesIm2();
-        final ManipulatingBayesUpdater updater = new CptInvariantUpdater(bayesIm);
+        BayesIm bayesIm = sampleBayesIm2();
+        ManipulatingBayesUpdater updater = new CptInvariantUpdater(bayesIm);
 
-        final Evidence evidence = Evidence.tautology(bayesIm);
-        final int nodeIndex = evidence.getNodeIndex("c");
-        final int valueIndex = evidence.getCategoryIndex("c", "1");
+        Evidence evidence = Evidence.tautology(bayesIm);
+        int nodeIndex = evidence.getNodeIndex("c");
+        int valueIndex = evidence.getCategoryIndex("c", "1");
 
         evidence.getProposition().setCategory(nodeIndex, valueIndex);
 
         updater.setEvidence(evidence);
-        final BayesIm updatedIm = updater.getUpdatedBayesIm();
+        BayesIm updatedIm = updater.getUpdatedBayesIm();
 
         // Check results.
         assertEquals(0.2750, updatedIm.getProbability(0, 0, 0), 0.001);
@@ -118,17 +118,17 @@ public final class TestCptInvariantUpdater {
      */
     @Test
     public void testUpdate3() {
-        final BayesIm bayesIm = sampleBayesIm2();
-        final ManipulatingBayesUpdater updater = new CptInvariantUpdater(bayesIm);
+        BayesIm bayesIm = sampleBayesIm2();
+        ManipulatingBayesUpdater updater = new CptInvariantUpdater(bayesIm);
 
-        final Evidence evidence = Evidence.tautology(bayesIm);
-        final int nodeIndex = evidence.getNodeIndex("b");
-        final int valueIndex = evidence.getCategoryIndex("b", "0");
+        Evidence evidence = Evidence.tautology(bayesIm);
+        int nodeIndex = evidence.getNodeIndex("b");
+        int valueIndex = evidence.getCategoryIndex("b", "0");
 
         evidence.getProposition().setCategory(nodeIndex, valueIndex);
 
         updater.setEvidence(evidence);
-        final BayesIm updatedIm = updater.getUpdatedBayesIm();
+        BayesIm updatedIm = updater.getUpdatedBayesIm();
 
         // Check results.
         assertEquals(0.1765, updatedIm.getProbability(0, 0, 0), 0.001);
@@ -158,12 +158,12 @@ public final class TestCptInvariantUpdater {
 
     @Test
     public void testUpdate4() {
-        final Node x0Node = new GraphNode("X0");
-        final Node x1Node = new GraphNode("X1");
-        final Node x2Node = new GraphNode("X2");
-        final Node x3Node = new GraphNode("X3");
+        Node x0Node = new GraphNode("X0");
+        Node x1Node = new GraphNode("X1");
+        Node x2Node = new GraphNode("X2");
+        Node x3Node = new GraphNode("X3");
 
-        final Dag graph = new Dag();
+        Dag graph = new Dag();
         graph.addNode(x0Node);
         graph.addNode(x1Node);
         graph.addNode(x2Node);
@@ -174,38 +174,38 @@ public final class TestCptInvariantUpdater {
         graph.addDirectedEdge(x1Node, x3Node);
         graph.addDirectedEdge(x2Node, x3Node);
 
-        final BayesPm bayesPm = new BayesPm(graph);
-        final MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesPm bayesPm = new BayesPm(graph);
+        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
         //        int x0 = bayesIm.getNodeIndex(x0Node);
         //        int x1 = bayesIm.getNodeIndex(x1Node);
-        final int x2 = bayesIm.getNodeIndex(x2Node);
-        final int x3 = bayesIm.getNodeIndex(x3Node);
+        int x2 = bayesIm.getNodeIndex(x2Node);
+        int x3 = bayesIm.getNodeIndex(x3Node);
 
-        final Evidence evidence = Evidence.tautology(bayesIm);
+        Evidence evidence = Evidence.tautology(bayesIm);
         evidence.getProposition().setCategory(x2, 0);
 
-        final BayesUpdater updater1 = new CptInvariantUpdater(bayesIm);
+        BayesUpdater updater1 = new CptInvariantUpdater(bayesIm);
         updater1.setEvidence(evidence);
 
-        final BayesUpdater updater2 = new RowSummingExactUpdater(bayesIm);
+        BayesUpdater updater2 = new RowSummingExactUpdater(bayesIm);
         updater2.setEvidence(evidence);
 
-        final double marginal1 = updater1.getMarginal(x3, 0);
-        final double marginal2 = updater2.getMarginal(x3, 0);
+        double marginal1 = updater1.getMarginal(x3, 0);
+        double marginal2 = updater2.getMarginal(x3, 0);
 
         assertEquals(marginal1, marginal2, 0.000001);
     }
 
     @Test
     public void testUpdate5() {
-        final Node x0Node = new GraphNode("X0");
-        final Node x1Node = new GraphNode("X1");
-        final Node x2Node = new GraphNode("X2");
-        final Node x3Node = new GraphNode("X3");
-        final Node x4Node = new GraphNode("X4");
+        Node x0Node = new GraphNode("X0");
+        Node x1Node = new GraphNode("X1");
+        Node x2Node = new GraphNode("X2");
+        Node x3Node = new GraphNode("X3");
+        Node x4Node = new GraphNode("X4");
 
-        final Dag graph = new Dag();
+        Dag graph = new Dag();
         graph.addNode(x0Node);
         graph.addNode(x1Node);
         graph.addNode(x2Node);
@@ -219,45 +219,45 @@ public final class TestCptInvariantUpdater {
         graph.addDirectedEdge(x4Node, x0Node);
         graph.addDirectedEdge(x4Node, x2Node);
 
-        final BayesPm bayesPm = new BayesPm(graph);
-        final MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesPm bayesPm = new BayesPm(graph);
+        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
-        final int x1 = bayesIm.getNodeIndex(x1Node);
-        final int x2 = bayesIm.getNodeIndex(x2Node);
-        final int x3 = bayesIm.getNodeIndex(x3Node);
+        int x1 = bayesIm.getNodeIndex(x1Node);
+        int x2 = bayesIm.getNodeIndex(x2Node);
+        int x3 = bayesIm.getNodeIndex(x3Node);
 
-        final Evidence evidence = Evidence.tautology(bayesIm);
+        Evidence evidence = Evidence.tautology(bayesIm);
         evidence.getProposition().setCategory(x1, 1);
         evidence.getProposition().setCategory(x2, 0);
 
         evidence.getNodeIndex("X1");
 
-        final BayesUpdater updater1 = new CptInvariantUpdater(bayesIm);
+        BayesUpdater updater1 = new CptInvariantUpdater(bayesIm);
         updater1.setEvidence(evidence);
 
-        final BayesUpdater updater2 = new RowSummingExactUpdater(bayesIm);
+        BayesUpdater updater2 = new RowSummingExactUpdater(bayesIm);
         updater2.setEvidence(evidence);
 
-        final double marginal1 = updater1.getMarginal(x3, 0);
-        final double marginal2 = updater2.getMarginal(x3, 0);
+        double marginal1 = updater1.getMarginal(x3, 0);
+        double marginal2 = updater2.getMarginal(x3, 0);
 
         assertEquals(marginal1, marginal2, 0.000001);
     }
 
     private BayesIm sampleBayesIm1() {
-        final Node x = new GraphNode("x");
-        final Node z = new GraphNode("z");
+        Node x = new GraphNode("x");
+        Node z = new GraphNode("z");
 
-        final Dag graph = new Dag();
+        Dag graph = new Dag();
 
         graph.addNode(x);
         graph.addNode(z);
 
         graph.addDirectedEdge(x, z);
 
-        final BayesPm bayesPm = new BayesPm(graph);
+        BayesPm bayesPm = new BayesPm(graph);
 
-        final BayesIm bayesIm1 = new MlBayesIm(bayesPm);
+        BayesIm bayesIm1 = new MlBayesIm(bayesPm);
         bayesIm1.setProbability(0, 0, 0, .3);
         bayesIm1.setProbability(0, 0, 1, .7);
 
@@ -271,11 +271,11 @@ public final class TestCptInvariantUpdater {
     }
 
     private BayesIm sampleBayesIm2() {
-        final Node a = new GraphNode("a");
-        final Node b = new GraphNode("b");
-        final Node c = new GraphNode("c");
+        Node a = new GraphNode("a");
+        Node b = new GraphNode("b");
+        Node c = new GraphNode("c");
 
-        final Dag graph;
+        Dag graph;
 
         graph = new Dag();
 
@@ -287,10 +287,10 @@ public final class TestCptInvariantUpdater {
         graph.addDirectedEdge(a, c);
         graph.addDirectedEdge(b, c);
 
-        final BayesPm bayesPm = new BayesPm(graph);
+        BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);
 
-        final BayesIm bayesIm1 = new MlBayesIm(bayesPm);
+        BayesIm bayesIm1 = new MlBayesIm(bayesPm);
         bayesIm1.setProbability(0, 0, 0, .3);
         bayesIm1.setProbability(0, 0, 1, .7);
 

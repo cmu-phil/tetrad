@@ -75,7 +75,7 @@ public final class LargeScaleSimulation {
     private double selfLoopCoef;
 
     //=============================CONSTRUCTORS============================//
-    public LargeScaleSimulation(final Graph graph) {
+    public LargeScaleSimulation(Graph graph) {
         this.graph = graph;
         this.variableNodes = graph.getNodes();
 
@@ -83,14 +83,14 @@ public final class LargeScaleSimulation {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
 
-        final List<Node> causalOrdering = graph.getCausalOrdering();
+        List<Node> causalOrdering = graph.getCausalOrdering();
         this.tierIndices = new int[causalOrdering.size()];
         for (int i = 0; i < this.tierIndices.length; i++) {
             this.tierIndices[i] = this.variableNodes.indexOf(causalOrdering.get(i));
         }
     }
 
-    public LargeScaleSimulation(final Graph graph, final List<Node> nodes, final int[] tierIndices) {
+    public LargeScaleSimulation(Graph graph, List<Node> nodes, int[] tierIndices) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -114,14 +114,14 @@ public final class LargeScaleSimulation {
      */
     public DataSet simulateDataRecursive(int sampleSize) {
         if (this.tierIndices == null) {
-            final List<Node> nodes = this.graph.getNodes();
+            List<Node> nodes = this.graph.getNodes();
             this.tierIndices = new int[nodes.size()];
             for (int j = 0; j < nodes.size(); j++) {
                 this.tierIndices[j] = j;
             }
         }
 
-        final int size = this.variableNodes.size();
+        int size = this.variableNodes.size();
         setupModel(size);
 
         class SimulateTask extends RecursiveTask<Boolean> {
@@ -131,7 +131,7 @@ public final class LargeScaleSimulation {
             private final double[][] all;
             private final int chunk;
 
-            public SimulateTask(final int from, final int to, final double[][] all, final int chunk) {
+            public SimulateTask(int from, int to, double[][] all, int chunk) {
                 this.from = from;
                 this.to = to;
                 this.all = all;
@@ -141,23 +141,23 @@ public final class LargeScaleSimulation {
             @Override
             protected Boolean compute() {
                 if (this.from - this.to > this.chunk) {
-                    final int mid = this.from + this.to / 2;
-                    final SimulateTask left = new SimulateTask(this.from, mid, this.all, this.chunk);
-                    final SimulateTask right = new SimulateTask(mid, this.to, this.all, this.chunk);
+                    int mid = this.from + this.to / 2;
+                    SimulateTask left = new SimulateTask(this.from, mid, this.all, this.chunk);
+                    SimulateTask right = new SimulateTask(mid, this.to, this.all, this.chunk);
                     left.fork();
                     right.compute();
                     left.join();
                     return true;
                 } else {
                     for (int i = this.from; i < this.to; i++) {
-                        final NormalDistribution normal = new NormalDistribution(new Well1024a(++LargeScaleSimulation.this.seed), 0, 1);//sqrt(errorVars[col]));
+                        NormalDistribution normal = new NormalDistribution(new Well1024a(++LargeScaleSimulation.this.seed), 0, 1);//sqrt(errorVars[col]));
                         normal.sample();
 
                         if (LargeScaleSimulation.this.verbose && (i + 1) % 50 == 0) {
                             System.out.println("Simulating " + (i + 1));
                         }
 
-                        for (final int col : LargeScaleSimulation.this.tierIndices) {
+                        for (int col : LargeScaleSimulation.this.tierIndices) {
                             double value = normal.sample() * sqrt(LargeScaleSimulation.this.errorVars[col]);
 
                             for (int j = 0; j < LargeScaleSimulation.this.parents[col].length; j++) {
@@ -179,18 +179,18 @@ public final class LargeScaleSimulation {
             sampleSize += 200;
         }
 
-        final double[][] all = new double[this.variableNodes.size()][sampleSize];
+        double[][] all = new double[this.variableNodes.size()][sampleSize];
 
-        final int chunk = sampleSize / ForkJoinPoolInstance.getInstance().getPool().getParallelism() + 1;
+        int chunk = sampleSize / ForkJoinPoolInstance.getInstance().getPool().getParallelism() + 1;
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(0, sampleSize, all, chunk));
 
         if (this.graph instanceof TimeLagGraph) {
-            final int[] rem = new int[200];
+            int[] rem = new int[200];
             for (int i = 0; i < 200; ++i) {
                 rem[i] = i;
             }
-            final BoxDataSet dat = new BoxDataSet(new VerticalDoubleDataBox(all), this.variableNodes);
+            BoxDataSet dat = new BoxDataSet(new VerticalDoubleDataBox(all), this.variableNodes);
             dat.removeRows(rem);
             return dat;
         }
@@ -204,45 +204,45 @@ public final class LargeScaleSimulation {
      *
      * @param sampleSize The nubmer of samples to draw.
      */
-    public DataSet simulateDataReducedForm(final int sampleSize) {
+    public DataSet simulateDataReducedForm(int sampleSize) {
         if (sampleSize < 1) {
             throw new IllegalArgumentException(
                     "Sample size must be >= 1: " + sampleSize);
         }
 
-        final int size = this.variableNodes.size();
+        int size = this.variableNodes.size();
         setupModel(size);
 
-        final NormalDistribution normal = new NormalDistribution(new Well1024a(++this.seed), 0, 1);
+        NormalDistribution normal = new NormalDistribution(new Well1024a(++this.seed), 0, 1);
 
-        final Matrix B = new Matrix(getCoefficientMatrix());
-        final Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix B = new Matrix(getCoefficientMatrix());
+        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
 
-        final double[][] all = new double[this.variableNodes.size()][sampleSize];
+        double[][] all = new double[this.variableNodes.size()][sampleSize];
 
         for (int row = 0; row < sampleSize; row++) {
-            final Vector e = new Vector(B.rows());
+            Vector e = new Vector(B.rows());
 
             for (int j = 0; j < e.size(); j++) {
                 e.set(j, normal.sample() * sqrt(this.errorVars[j]));
             }
 
-            final Vector x = iMinusBInv.times(e);
+            Vector x = iMinusBInv.times(e);
 
             for (int j = 0; j < x.size(); j++) {
                 all[j][row] = x.get(j);
             }
         }
 
-        final List<Node> continuousVars = new ArrayList<>();
+        List<Node> continuousVars = new ArrayList<>();
 
-        for (final Node node : getVariableNodes()) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : getVariableNodes()) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
             continuousVars.add(var);
         }
 
-        final BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
         return DataUtils.restrictToMeasured(boxDataSet);
     }
 
@@ -259,7 +259,7 @@ public final class LargeScaleSimulation {
      * @param sampleSize The number of samples to be drawn. Must be a positive
      *                   integer.
      */
-    public DataSet simulateDataFisher(final int sampleSize) {
+    public DataSet simulateDataFisher(int sampleSize) {
         return simulateDataFisher(getSoCalledPoissonShocks(sampleSize), 50, 1e-5);
     }
 
@@ -278,7 +278,7 @@ public final class LargeScaleSimulation {
      *                              steps. Must be positive integer.
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.fff
      */
-    public DataSet simulateDataFisher(final double[][] shocks, final int intervalBetweenShocks, final double epsilon) {
+    public DataSet simulateDataFisher(double[][] shocks, int intervalBetweenShocks, double epsilon) {
         if (intervalBetweenShocks < 1) {
             throw new IllegalArgumentException(
                     "Interval between shocks must be >= 1: " + intervalBetweenShocks);
@@ -288,7 +288,7 @@ public final class LargeScaleSimulation {
                     "Epsilon must be > 0: " + epsilon);
         }
 
-        final int size = this.variableNodes.size();
+        int size = this.variableNodes.size();
         if (shocks[0].length != size) {
             throw new IllegalArgumentException("The number of columns in the shocks matrix does not equal "
                     + "the number of variables.");
@@ -298,7 +298,7 @@ public final class LargeScaleSimulation {
 
         double[] t1 = new double[this.variableNodes.size()];
         double[] t2 = new double[this.variableNodes.size()];
-        final double[][] all = new double[this.variableNodes.size()][shocks.length];
+        double[][] all = new double[this.variableNodes.size()][shocks.length];
 
         // Do the simulation.
         for (int row = 0; row < shocks.length; row++) {
@@ -322,7 +322,7 @@ public final class LargeScaleSimulation {
                     }
                 }
 
-                final double[] t3 = t1;
+                double[] t3 = t1;
                 t1 = t2;
                 t2 = t3;
 
@@ -336,19 +336,19 @@ public final class LargeScaleSimulation {
             }
         }
 
-        final List<Node> continuousVars = new ArrayList<>();
+        List<Node> continuousVars = new ArrayList<>();
 
-        for (final Node node : getVariableNodes()) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : getVariableNodes()) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
             continuousVars.add(var);
         }
 
-        final BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
         return DataUtils.restrictToMeasured(boxDataSet);
     }
 
-    public DataSet simulateDataFisher(final int intervalBetweenShocks, final int intervalBetweenRecordings, final int sampleSize, final double epsilon, final boolean saveLatentVars) {
+    public DataSet simulateDataFisher(int intervalBetweenShocks, int intervalBetweenRecordings, int sampleSize, double epsilon, boolean saveLatentVars) {
         if (intervalBetweenShocks < 1) {
             throw new IllegalArgumentException(
                     "Interval between shocks must be >= 1: " + intervalBetweenShocks);
@@ -358,13 +358,13 @@ public final class LargeScaleSimulation {
                     "Epsilon must be > 0: " + epsilon);
         }
 
-        final int size = this.variableNodes.size();
+        int size = this.variableNodes.size();
 
         setupModel(size);
 
         double[] t1 = new double[this.variableNodes.size()];
         double[] t2 = new double[this.variableNodes.size()];
-        final double[][] all = new double[this.variableNodes.size()][sampleSize];
+        double[][] all = new double[this.variableNodes.size()][sampleSize];
 
         int s = 0;
         int shockIndex = 0;
@@ -401,30 +401,30 @@ public final class LargeScaleSimulation {
                 }
             }
 
-            final double[] t3 = t1;
+            double[] t3 = t1;
             t1 = t2;
             t2 = t3;
         }
 
-        final List<Node> continuousVars = new ArrayList<>();
+        List<Node> continuousVars = new ArrayList<>();
 
-        for (final Node node : getVariableNodes()) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : getVariableNodes()) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
             continuousVars.add(var);
         }
 
-        final BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
 
         return saveLatentVars ? boxDataSet : DataUtils.restrictToMeasured(boxDataSet);
     }
 
-    private void setupModel(final int size) {
+    private void setupModel(int size) {
         if (this.alreadySetUp) {
             return;
         }
 
-        final Map<Node, Integer> nodesHash = new HashedMap<>();
+        Map<Node, Integer> nodesHash = new HashedMap<>();
 
         for (int i = 0; i < this.variableNodes.size(); i++) {
             nodesHash.put(this.variableNodes.get(i), i);
@@ -440,23 +440,23 @@ public final class LargeScaleSimulation {
             this.coefs[i] = new double[0];
         }
 
-        final Distribution edgeCoefDist = new Split(this.coefLow, this.coefHigh);
-        final Distribution errorCovarDist = new Uniform(this.varLow, this.varHigh);
-        final Distribution meanDist = new Uniform(this.meanLow, this.meanHigh);
+        Distribution edgeCoefDist = new Split(this.coefLow, this.coefHigh);
+        Distribution errorCovarDist = new Uniform(this.varLow, this.varHigh);
+        Distribution meanDist = new Uniform(this.meanLow, this.meanHigh);
 
-        for (final Edge edge : this.graph.getEdges()) {
-            final Node tail = Edges.getDirectedEdgeTail(edge);
-            final Node head = Edges.getDirectedEdgeHead(edge);
+        for (Edge edge : this.graph.getEdges()) {
+            Node tail = Edges.getDirectedEdgeTail(edge);
+            Node head = Edges.getDirectedEdgeHead(edge);
 
-            final int _tail = nodesHash.get(tail);
-            final int _head = nodesHash.get(head);
+            int _tail = nodesHash.get(tail);
+            int _head = nodesHash.get(head);
 
-            final int[] parents = this.parents[_head];
-            final int[] newParents = new int[parents.length + 1];
+            int[] parents = this.parents[_head];
+            int[] newParents = new int[parents.length + 1];
             System.arraycopy(parents, 0, newParents, 0, parents.length);
             newParents[newParents.length - 1] = _tail;
-            final double[] coefs = this.coefs[_head];
-            final double[] newCoefs = new double[coefs.length + 1];
+            double[] coefs = this.coefs[_head];
+            double[] newCoefs = new double[coefs.length + 1];
 
             System.arraycopy(coefs, 0, newCoefs, 0, coefs.length);
 
@@ -477,18 +477,18 @@ public final class LargeScaleSimulation {
         }
 
         if (this.graph instanceof TimeLagGraph) {
-            final TimeLagGraph lagGraph = (TimeLagGraph) this.graph;
-            final IKnowledge knowledge = getKnowledge(lagGraph); //TimeSeriesUtils.getKnowledge(lagGraph);
-            final List<Node> lag0 = lagGraph.getLag0Nodes();
+            TimeLagGraph lagGraph = (TimeLagGraph) this.graph;
+            IKnowledge knowledge = getKnowledge(lagGraph); //TimeSeriesUtils.getKnowledge(lagGraph);
+            List<Node> lag0 = lagGraph.getLag0Nodes();
 
-            for (final Node y : lag0) {
-                final List<Node> _parents = lagGraph.getParents(y);
+            for (Node y : lag0) {
+                List<Node> _parents = lagGraph.getParents(y);
 
-                for (final Node x : _parents) {
-                    final List<List<Node>> similar = returnSimilarPairs(x, y, knowledge);
+                for (Node x : _parents) {
+                    List<List<Node>> similar = returnSimilarPairs(x, y, knowledge);
 
-                    final int _x = this.variableNodes.indexOf(x);
-                    final int _y = this.variableNodes.indexOf(y);
+                    int _x = this.variableNodes.indexOf(x);
+                    int _y = this.variableNodes.indexOf(y);
                     double first = Double.NaN;
 
                     for (int i = 0; i < this.parents[_y].length; i++) {
@@ -498,8 +498,8 @@ public final class LargeScaleSimulation {
                     }
 
                     for (int j = 0; j < similar.get(0).size(); j++) {
-                        final int _xx = this.variableNodes.indexOf(similar.get(0).get(j));
-                        final int _yy = this.variableNodes.indexOf(similar.get(1).get(j));
+                        int _xx = this.variableNodes.indexOf(similar.get(0).get(j));
+                        int _yy = this.variableNodes.indexOf(similar.get(1).get(j));
 
                         for (int i = 0; i < this.parents[_yy].length; i++) {
                             if (_xx == this.parents[_yy][i]) {
@@ -531,22 +531,22 @@ public final class LargeScaleSimulation {
         return this.graph;
     }
 
-    public void setCoefRange(final double coefLow, final double coefHigh) {
+    public void setCoefRange(double coefLow, double coefHigh) {
         this.coefLow = coefLow;
         this.coefHigh = coefHigh;
     }
 
-    public void setVarRange(final double varLow, final double varHigh) {
+    public void setVarRange(double varLow, double varHigh) {
         this.varLow = varLow;
         this.varHigh = varHigh;
     }
 
-    public void setMeanRange(final double meanLow, final double meanHigh) {
+    public void setMeanRange(double meanLow, double meanHigh) {
         this.meanLow = meanLow;
         this.meanHigh = meanHigh;
     }
 
-    public void setOut(final PrintStream out) {
+    public void setOut(PrintStream out) {
         this.out = out;
     }
 
@@ -558,12 +558,12 @@ public final class LargeScaleSimulation {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     public double[][] getCoefficientMatrix() {
-        final double[][] c = new double[this.coefs.length][this.coefs.length];
+        double[][] c = new double[this.coefs.length][this.coefs.length];
 
         for (int i = 0; i < this.coefs.length; i++) {
             for (int j = 0; j < this.coefs[i].length; j++) {
@@ -579,19 +579,19 @@ public final class LargeScaleSimulation {
     }
 
     // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
-    private List<List<Node>> returnSimilarPairs(final Node x, final Node y, final IKnowledge knowledge) {
+    private List<List<Node>> returnSimilarPairs(Node x, Node y, IKnowledge knowledge) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
-        final int ntiers = knowledge.getNumTiers();
-        final int indx_tier = knowledge.isInWhichTier(x);
-        final int indy_tier = knowledge.isInWhichTier(y);
-        final int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int ntiers = knowledge.getNumTiers();
+        int indx_tier = knowledge.isInWhichTier(x);
+        int indy_tier = knowledge.isInWhichTier(y);
+        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        final List tier_x = knowledge.getTier(indx_tier);
-        final List tier_y = knowledge.getTier(indy_tier);
+        List tier_x = knowledge.getTier(indx_tier);
+        List tier_y = knowledge.getTier(indy_tier);
 
         int i;
         for (i = 0; i < tier_x.size(); ++i) {
@@ -617,20 +617,20 @@ public final class LargeScaleSimulation {
             System.out.println("WARNING: indy_comp = -1!!!! ");
         }
 
-        final List<Node> simListX = new ArrayList<>();
-        final List<Node> simListY = new ArrayList<>();
+        List<Node> simListX = new ArrayList<>();
+        List<Node> simListY = new ArrayList<>();
 
         for (i = 0; i < ntiers - tier_diff; ++i) {
             if (knowledge.getTier(i).size() == 1) {
                 continue;
             }
-            final String A;
-            final Node x1;
-            final String B;
-            final Node y1;
+            String A;
+            Node x1;
+            String B;
+            Node y1;
             if (indx_tier >= indy_tier) {
-                final List tmp_tier1 = knowledge.getTier(i + tier_diff);
-                final List tmp_tier2 = knowledge.getTier(i);
+                List tmp_tier1 = knowledge.getTier(i + tier_diff);
+                List tmp_tier2 = knowledge.getTier(i);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
                 if (A.equals(B)) {
@@ -648,8 +648,8 @@ public final class LargeScaleSimulation {
                 simListX.add(x1);
                 simListY.add(y1);
             } else {
-                final List tmp_tier1 = knowledge.getTier(i);
-                final List tmp_tier2 = knowledge.getTier(i + tier_diff);
+                List tmp_tier1 = knowledge.getTier(i);
+                List tmp_tier2 = knowledge.getTier(i + tier_diff);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
                 if (A.equals(B)) {
@@ -669,14 +669,14 @@ public final class LargeScaleSimulation {
             }
         }
 
-        final List<List<Node>> pairList = new ArrayList<>();
+        List<List<Node>> pairList = new ArrayList<>();
         pairList.add(simListX);
         pairList.add(simListY);
         return (pairList);
     }
 
-    public String getNameNoLag(final Object obj) {
-        final String tempS = obj.toString();
+    public String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
             return tempS;
         } else {
@@ -684,15 +684,15 @@ public final class LargeScaleSimulation {
         }
     }
 
-    public IKnowledge getKnowledge(final Graph graph) {
-        final int numLags;
-        final List<Node> variables = graph.getNodes();
-        final List<Integer> laglist = new ArrayList<>();
-        final IKnowledge knowledge = new Knowledge2();
+    public IKnowledge getKnowledge(Graph graph) {
+        int numLags;
+        List<Node> variables = graph.getNodes();
+        List<Integer> laglist = new ArrayList<>();
+        IKnowledge knowledge = new Knowledge2();
         int lag;
-        for (final Node node : variables) {
-            final String varName = node.getName();
-            final String tmp;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
@@ -706,15 +706,15 @@ public final class LargeScaleSimulation {
 
         Collections.sort(variables, new Comparator<Node>() {
             @Override
-            public int compare(final Node o1, final Node o2) {
-                final String name1 = getNameNoLag(o1);
-                final String name2 = getNameNoLag(o2);
+            public int compare(Node o1, Node o2) {
+                String name1 = getNameNoLag(o1);
+                String name2 = getNameNoLag(o2);
 
-                final String prefix1 = LargeScaleSimulation.getPrefix(name1);
-                final String prefix2 = LargeScaleSimulation.getPrefix(name2);
+                String prefix1 = LargeScaleSimulation.getPrefix(name1);
+                String prefix2 = LargeScaleSimulation.getPrefix(name2);
 
-                final int index1 = LargeScaleSimulation.getIndex(name1);
-                final int index2 = LargeScaleSimulation.getIndex(name2);
+                int index1 = LargeScaleSimulation.getIndex(name1);
+                int index2 = LargeScaleSimulation.getIndex(name2);
 
                 if (LargeScaleSimulation.getLag(o1.getName()) == LargeScaleSimulation.getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
@@ -729,9 +729,9 @@ public final class LargeScaleSimulation {
         });
 
 //        System.out.println("Variable list after the sort = " + variables);
-        for (final Node node : variables) {
-            final String varName = node.getName();
-            final String tmp;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
             } else {
@@ -746,37 +746,37 @@ public final class LargeScaleSimulation {
         return knowledge;
     }
 
-    public static String getPrefix(final String s) {
+    public static String getPrefix(String s) {
         return s.substring(0, 1);
     }
 
-    public static int getIndex(final String s) {
+    public static int getIndex(String s) {
         int y = 0;
         for (int i = s.length() - 1; i >= 0; i--) {
             try {
                 y = Integer.parseInt(s.substring(i));
-            } catch (final NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 return y;
             }
         }
         throw new IllegalArgumentException("Not integer suffix.");
     }
 
-    public static int getLag(final String s) {
+    public static int getLag(String s) {
         if (s.indexOf(':') == -1) {
             return 0;
         }
-        final String tmp = s.substring(s.indexOf(':') + 1);
+        String tmp = s.substring(s.indexOf(':') + 1);
         return (Integer.parseInt(tmp));
     }
 
-    public double[][] getUncorrelatedGaussianShocks(final int sampleSize) {
-        final NormalDistribution normal = new NormalDistribution(new Well1024a(++this.seed), 0, 1);
+    public double[][] getUncorrelatedGaussianShocks(int sampleSize) {
+        NormalDistribution normal = new NormalDistribution(new Well1024a(++this.seed), 0, 1);
 
-        final int numVars = this.variableNodes.size();
+        int numVars = this.variableNodes.size();
         setupModel(numVars);
 
-        final double[][] shocks = new double[sampleSize][numVars];
+        double[][] shocks = new double[sampleSize][numVars];
 
         for (int i = 0; i < sampleSize; i++) {
             for (int j = 0; j < numVars; j++) {
@@ -787,20 +787,20 @@ public final class LargeScaleSimulation {
         return shocks;
     }
 
-    public double[][] getUncorrelatedShocks(final int sampleSize) {
-        final AbstractRealDistribution distribution;
+    public double[][] getUncorrelatedShocks(int sampleSize) {
+        AbstractRealDistribution distribution;
         AbstractRealDistribution varDist = null;
 
         distribution = new NormalDistribution(new Well1024a(++this.seed), 0, 1);
         varDist = new UniformRealDistribution(this.varLow, this.varHigh);
 
-        final int numVars = this.variableNodes.size();
+        int numVars = this.variableNodes.size();
         setupModel(numVars);
 
-        final double[][] shocks = new double[sampleSize][numVars];
+        double[][] shocks = new double[sampleSize][numVars];
 
         for (int j = 0; j < numVars; j++) {
-            final double sd = sqrt(varDist.sample());
+            double sd = sqrt(varDist.sample());
 
             for (int i = 0; i < sampleSize; i++) {
                 double sample = distribution.sample();
@@ -817,11 +817,11 @@ public final class LargeScaleSimulation {
         return shocks;
     }
 
-    public double[][] getSoCalledPoissonShocks(final int sampleSize) {
-        final int numVars = this.variableNodes.size();
+    public double[][] getSoCalledPoissonShocks(int sampleSize) {
+        int numVars = this.variableNodes.size();
         setupModel(numVars);
 
-        final double[][] shocks = new double[sampleSize][numVars];
+        double[][] shocks = new double[sampleSize][numVars];
 
         for (int j = 0; j < numVars; j++) {
             int v = 0;
@@ -838,11 +838,11 @@ public final class LargeScaleSimulation {
         return shocks;
     }
 
-    public void setIncludePositiveCoefs(final boolean includePositiveCoefs) {
+    public void setIncludePositiveCoefs(boolean includePositiveCoefs) {
         this.includePositiveCoefs = includePositiveCoefs;
     }
 
-    public void setIncludeNegativeCoefs(final boolean includeNegativeCoefs) {
+    public void setIncludeNegativeCoefs(boolean includeNegativeCoefs) {
         this.includeNegativeCoefs = includeNegativeCoefs;
     }
 
@@ -850,7 +850,7 @@ public final class LargeScaleSimulation {
         return this.errorsNormal;
     }
 
-    public void setErrorsNormal(final boolean errorsNormal) {
+    public void setErrorsNormal(boolean errorsNormal) {
         this.errorsNormal = errorsNormal;
     }
 
@@ -866,7 +866,7 @@ public final class LargeScaleSimulation {
         return this.selfLoopCoef;
     }
 
-    public void setSelfLoopCoef(final double selfLoopCoef) {
+    public void setSelfLoopCoef(double selfLoopCoef) {
         this.selfLoopCoef = selfLoopCoef;
     }
 }

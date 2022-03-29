@@ -58,7 +58,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      *
      * @param textArea The text area written to.
      */
-    public TextAreaOutputStream(final JTextArea textArea) {
+    public TextAreaOutputStream(JTextArea textArea) {
         this.textArea = textArea;
         this.lengthWritten = textArea.getText().length();
     }
@@ -68,7 +68,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      *
      * @param b the byte to be written.
      */
-    public synchronized void write(final int b) {
+    public synchronized void write(int b) {
         if (this.buf.length() > 5000) return;
         this.buf.append((char) b);
 
@@ -76,8 +76,8 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
             final int maxSize = 50000;
 
             if (false) {//lengthWritten > maxSize) {
-                final String text = this.textArea.getText();
-                final StringBuilder buf1 = new StringBuilder(text.substring(maxSize - 10000));
+                String text = this.textArea.getText();
+                StringBuilder buf1 = new StringBuilder(text.substring(maxSize - 10000));
                 buf1.append(this.buf);
                 this.textArea.setText(buf1.toString());
                 this.lengthWritten = buf1.length();
@@ -87,7 +87,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
 
                 try {
                     Thread.sleep(100);
-                } catch (final InterruptedException e) {
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             } else {

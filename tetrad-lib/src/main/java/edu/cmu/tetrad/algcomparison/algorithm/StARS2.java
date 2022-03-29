@@ -30,7 +30,7 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
     private DataSet _dataSet;
     Map<Double, Double> archive;
 
-    public StARS2(final Algorithm algorithm, final String parameter, final double low, final double high, final double initialGuess) {
+    public StARS2(Algorithm algorithm, String parameter, double low, double high, double initialGuess) {
         if (low >= high) {
             throw new IllegalArgumentException("Must have low < high");
         }
@@ -42,7 +42,7 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         this._dataSet = (DataSet) dataSet;
 
 //        int numVars = Math.min(50, ((DataSet) dataSet).getNumColumns());
@@ -50,18 +50,18 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
 //        for (int i = 0; i < numVars; i++) cols[i] = i;
         this._dataSet = (DataSet) dataSet;//.subsetColumns(cols);
 
-        final double percentageB = parameters.getDouble("StARS.percentageB");
-        final double tolerance = parameters.getDouble("StARS.tolerance");
-        final double cutoff = parameters.getDouble("StARS.cutoff");
-        final int numSubsamples = parameters.getInt("numSubsamples");
+        double percentageB = parameters.getDouble("StARS.percentageB");
+        double tolerance = parameters.getDouble("StARS.tolerance");
+        double cutoff = parameters.getDouble("StARS.cutoff");
+        int numSubsamples = parameters.getInt("numSubsamples");
 
-        final Parameters _parameters = new Parameters(parameters);
+        Parameters _parameters = new Parameters(parameters);
 
         // Draw 5 samples without replacement.
-        final List<DataSet> samples = new ArrayList<>();
+        List<DataSet> samples = new ArrayList<>();
 
         for (int i = 0; i < numSubsamples; i++) {
-            final BootstrapSampler sampler = new BootstrapSampler();
+            BootstrapSampler sampler = new BootstrapSampler();
             sampler.setWithoutReplacements(true);
             samples.add(sampler.sample(this._dataSet, (int) (percentageB * this._dataSet.getNumRows())));
         }
@@ -76,7 +76,7 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
             pMid = (pFrom + pTo) / 2.0;
             _parameters.set(this.parameter, StARS2.getValue(pMid, parameters));
 
-            final double D = StARS2.getD(parameters, this.parameter, pMid, samples, samples.size(), this.algorithm, this.archive);
+            double D = StARS2.getD(parameters, this.parameter, pMid, samples, samples.size(), this.algorithm, this.archive);
             System.out.println("pFrom = " + pFrom + " pTo = " + pTo + " pMid = " + pMid + " D = " + D);
 
             if (D > lastD && D < cutoff) {
@@ -101,7 +101,7 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
 //        );
 //
 //        double _p = getValue(p.getPoint()[0], parameters);
-        final double _p = StARS2.getValue(pMid, parameters);
+        double _p = StARS2.getValue(pMid, parameters);
 //        _p = Math.round(_p * 10.0) / 10.0;
         System.out.println(this.parameter + " = " + _p);
         _parameters.set(this.parameter, StARS2.getValue(_p, parameters));
@@ -163,21 +163,21 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
 //            return D;
 //        }
 //    }
-    private static double getD(final Parameters params, final String paramName, final double paramValue, final List<DataSet> boostraps,
-                               final int numBootstraps, final Algorithm algorithm, final Map<Double, Double> archive) {
+    private static double getD(Parameters params, String paramName, double paramValue, List<DataSet> boostraps,
+                               int numBootstraps, Algorithm algorithm, Map<Double, Double> archive) {
         params.set(paramName, paramValue);
 
-        final List<Graph> graphs = new ArrayList<>();
+        List<Graph> graphs = new ArrayList<>();
 
-        for (final DataSet d : boostraps) {
+        for (DataSet d : boostraps) {
             Graph e = GraphUtils.undirectedGraph(algorithm.search(d, params));
             e = GraphUtils.replaceNodes(e, boostraps.get(0).getVariables());
             graphs.add(e);
 
         }
 
-        final int p = boostraps.get(0).getNumColumns();
-        final List<Node> nodes = graphs.get(0).getNodes();
+        int p = boostraps.get(0).getNumColumns();
+        List<Node> nodes = graphs.get(0).getNodes();
 
         double D = 0.0;
 
@@ -186,12 +186,12 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
                 double theta = 0.0;
 
                 for (int k = 0; k < numBootstraps; k++) {
-                    final boolean adj = graphs.get(k).isAdjacentTo(nodes.get(i), nodes.get(j));
+                    boolean adj = graphs.get(k).isAdjacentTo(nodes.get(i), nodes.get(j));
                     theta += adj ? 1.0 : 0.0;
                 }
 
                 theta /= numBootstraps;
-                final double xsi = 2 * theta * (1.0 - theta);
+                double xsi = 2 * theta * (1.0 - theta);
                 D += xsi;
             }
         }
@@ -201,7 +201,7 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
         return D;
     }
 
-    private static double getValue(final double value, final Parameters parameters) {
+    private static double getValue(double value, Parameters parameters) {
         if (parameters.getBoolean("logScale")) {
             return Math.round(Math.pow(10.0, value) * 1000000000.0) / 1000000000.0;
         } else {
@@ -210,7 +210,7 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return this.algorithm.getComparisonGraph(graph);
     }
 
@@ -226,7 +226,7 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = this.algorithm.getParameters();
+        List<String> parameters = this.algorithm.getParameters();
         parameters.add("depth");
         parameters.add("verbose");
         parameters.add("StARS.percentageB");
@@ -243,12 +243,12 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
     }
 
     @Override
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
 
     }
 
     @Override
-    public void setExternalGraph(final Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

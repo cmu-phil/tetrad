@@ -46,10 +46,10 @@ public class ScoredIndTest implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ScoredIndTest(final IndependenceTest test) {
+    public ScoredIndTest(IndependenceTest test) {
         this.variables = new ArrayList<>();
 
-        for (final Node node : test.getVariables()) {
+        for (Node node : test.getVariables()) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 this.variables.add(node);
             }
@@ -61,13 +61,13 @@ public class ScoredIndTest implements Score {
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(final int i, final int[] parents) {
+    public double localScore(int i, int[] parents) {
         throw new UnsupportedOperationException();
     }
 
-    private List<Node> getVariableList(final int[] indices) {
-        final List<Node> variables = new ArrayList<>();
-        for (final int i : indices) {
+    private List<Node> getVariableList(int[] indices) {
+        List<Node> variables = new ArrayList<>();
+        for (int i : indices) {
             variables.add(this.variables.get(i));
         }
         return variables;
@@ -75,19 +75,19 @@ public class ScoredIndTest implements Score {
 
 
     @Override
-    public double localScoreDiff(final int x, final int y, final int[] z) {
+    public double localScoreDiff(int x, int y, int[] z) {
         this.test.isIndependent(this.variables.get(x), this.variables.get(y), getVariableList(z));
         return this.test.getScore();
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
+    public double localScoreDiff(int x, int y) {
         return localScoreDiff(x, y, new int[0]);
     }
 
 
-    int[] append(final int[] parents, final int extra) {
-        final int[] all = new int[parents.length + 1];
+    int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
@@ -97,19 +97,19 @@ public class ScoredIndTest implements Score {
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
 
-    public double localScore(final int i, final int parent) {
+    public double localScore(int i, int parent) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
+    public double localScore(int i) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
+    public boolean isEffectEdge(double bump) {
         return true;
     }
 
@@ -121,7 +121,7 @@ public class ScoredIndTest implements Score {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -139,8 +139,8 @@ public class ScoredIndTest implements Score {
     }
 
     @Override
-    public Node getVariable(final String targetName) {
-        for (final Node node : this.variables) {
+    public Node getVariable(String targetName) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -155,7 +155,7 @@ public class ScoredIndTest implements Score {
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 

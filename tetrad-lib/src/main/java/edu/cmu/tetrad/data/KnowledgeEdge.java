@@ -49,7 +49,7 @@ public final class KnowledgeEdge implements TetradSerializable {
     /**
      * Constructs a knowledge edge for from-->to.
      */
-    public KnowledgeEdge(final String from, final String to) {
+    public KnowledgeEdge(String from, String to) {
         if (from == null || to == null) {
             throw new NullPointerException();
         }
@@ -84,7 +84,7 @@ public final class KnowledgeEdge implements TetradSerializable {
     /**
      * Reteurns true if (from1, to1) == (from2, to2).
      */
-    public final boolean equals(final Object object) {
+    public final boolean equals(Object object) {
         if (object == null) {
             return false;
         }
@@ -93,7 +93,7 @@ public final class KnowledgeEdge implements TetradSerializable {
             return false;
         }
 
-        final KnowledgeEdge pair = (KnowledgeEdge) object;
+        KnowledgeEdge pair = (KnowledgeEdge) object;
         return this.from.equals(pair.from) && this.to.equals(pair.to);
     }
 
@@ -101,7 +101,7 @@ public final class KnowledgeEdge implements TetradSerializable {
      * @return a good hashcode.
      */
     public final int hashCode() {
-        final int hashCode = 31 + this.from.hashCode();
+        int hashCode = 31 + this.from.hashCode();
         return 37 * hashCode + this.to.hashCode();
     }
 
@@ -122,7 +122,7 @@ public final class KnowledgeEdge implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

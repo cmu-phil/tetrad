@@ -64,7 +64,7 @@ public class SemStdErrorEstimator {
      *
      * @param estSem the estimated SEM.
      */
-    public void computeStdErrors(final ISemIm estSem) {
+    public void computeStdErrors(ISemIm estSem) {
 //        if (!unmeasuredLatents(estSem.getSemPm()).isEmpty()) {
 //            int n = estSem.getFreeParameters().size();
 //            stdErrs = new double[n];
@@ -79,16 +79,16 @@ public class SemStdErrorEstimator {
 
 //        this.semIm = estSem;
         estSem.setParameterBoundsEnforced(false);
-        final double[] paramsOriginal = estSem.getFreeParamValues();
-        final double delta;
-        final FittingFunction fcn = new SemFittingFunction(estSem);
+        double[] paramsOriginal = estSem.getFreeParamValues();
+        double delta;
+        FittingFunction fcn = new SemFittingFunction(estSem);
         final boolean ridder = false;  // Ridder is more accurate but a lot slower.
 
-        final int n = fcn.getNumParameters();
+        int n = fcn.getNumParameters();
 
         //Store the free freeParameters of the SemIm so that they can be reset to these
         //values.  The differentiation methods change them.
-        final double[] params = new double[n];
+        double[] params = new double[n];
         System.arraycopy(paramsOriginal, 0, params, 0, n);
 
         //If the Ridder method (secondPartialDerivativeRidr) is used to search for
@@ -103,12 +103,12 @@ public class SemStdErrorEstimator {
 
         //The Hessian matrix of second order partial derivatives is called the
         //information matrix.
-        final Matrix hess = new Matrix(n, n);
+        Matrix hess = new Matrix(n, n);
 
-        final List<Parameter> freeParameters = estSem.getFreeParameters();
+        List<Parameter> freeParameters = estSem.getFreeParameters();
         boolean containsCovararianceParameter = false;
 
-        for (final Parameter p : freeParameters) {
+        for (Parameter p : freeParameters) {
             if (p.getType() == ParamType.COVAR) {
                 containsCovararianceParameter = true;
                 break;
@@ -117,8 +117,8 @@ public class SemStdErrorEstimator {
 
         for (int i = 0; i < n; i++) {
             for (int j = i; j < n; j++) {
-                final Parameter pi = freeParameters.get(i);
-                final Parameter pj = freeParameters.get(j);
+                Parameter pi = freeParameters.get(i);
+                Parameter pj = freeParameters.get(j);
 
                 if (!containsCovararianceParameter) {
 
@@ -170,7 +170,7 @@ public class SemStdErrorEstimator {
         try {
 
 //            TetradMatrix hessInv = hess.inverse();
-            final Matrix hessInv = hess.ginverse();
+            Matrix hessInv = hess.ginverse();
 
 //            System.out.println("Inverse: " + hessInv);
 
@@ -183,7 +183,7 @@ public class SemStdErrorEstimator {
             //Hence the standard errors of the freeParameters are the square roots of the
             //diagonal elements of the inverse of the information matrix.
             for (int i = 0; i < n; i++) {
-                final double v = Math.sqrt((2.0 / (estSem.getSampleSize() - 1)) * hessInv.get(i, i));
+                double v = Math.sqrt((2.0 / (estSem.getSampleSize() - 1)) * hessInv.get(i, i));
 
                 if (v == 0) {
                     System.out.println("v = " + 0 + " hessInv(i, i) = " + hessInv.get(i, i));
@@ -195,7 +195,7 @@ public class SemStdErrorEstimator {
                     this.stdErrs[i] = v;
                 }
             }
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
 
             this.stdErrs = new double[n];
@@ -223,12 +223,12 @@ public class SemStdErrorEstimator {
      * numerical estimates of the second order partial derivatives.  See for
      * example Section 5.7 of Numerical Recipes in C.
      */
-    private double secondPartialDerivative(final FittingFunction f, final int i, final int j,
-                                           final double[] p, final double delt) {
-        final double[] arg = new double[p.length];
+    private double secondPartialDerivative(FittingFunction f, int i, int j,
+                                           double[] p, double delt) {
+        double[] arg = new double[p.length];
         System.arraycopy(p, 0, arg, 0, p.length);
 
-        final double center = f.evaluate(arg);
+        double center = f.evaluate(arg);
 
         arg[i] += delt;
         arg[j] += delt;
@@ -260,7 +260,7 @@ public class SemStdErrorEstimator {
             ff4 = center;
         }
 
-        final double fsSum = ff1 - ff2 - ff3 + ff4;
+        double fsSum = ff1 - ff2 - ff3 + ff4;
 
         return fsSum / (4.0 * delt * delt);
     }
@@ -273,11 +273,11 @@ public class SemStdErrorEstimator {
      * experience to date with SEM fitting functions, the above method seems to
      * be adequately accurate and faster that this one.
      */
-    private double secondPartialDerivativeRidr(final FittingFunction f, final int i, final int j,
-                                               final double[] args, final double delt) {
+    private double secondPartialDerivativeRidr(FittingFunction f, int i, int j,
+                                               double[] args, double delt) {
 
-        final double[] arg = new double[args.length];
-        final double[][] a = new double[SemStdErrorEstimator.NTAB][SemStdErrorEstimator.NTAB];
+        double[] arg = new double[args.length];
+        double[][] a = new double[SemStdErrorEstimator.NTAB][SemStdErrorEstimator.NTAB];
         double hh = delt;
         double errt;
         double ans = 0.0;
@@ -285,7 +285,7 @@ public class SemStdErrorEstimator {
 
         System.arraycopy(args, 0, arg, 0, args.length);
 
-        final double center = f.evaluate(arg);
+        double center = f.evaluate(arg);
 
         arg[i] += delt;
         arg[j] += delt;
@@ -414,7 +414,7 @@ public class SemStdErrorEstimator {
         /**
          * Constructs a new CoefFittingFunction for the given Sem.
          */
-        public SemFittingFunction(final ISemIm sem) {
+        public SemFittingFunction(ISemIm sem) {
             this.sem = sem;
         }
 
@@ -423,11 +423,11 @@ public class SemStdErrorEstimator {
          * freeParameters values as given by the optimizer. These values are mapped
          * to parameter values.
          */
-        public double evaluate(final double[] parameters) {
-            final List<Parameter> _parameters = this.sem.getSemPm().getFreeParameters();
+        public double evaluate(double[] parameters) {
+            List<Parameter> _parameters = this.sem.getSemPm().getFreeParameters();
 
             for (int i = 0; i < _parameters.size(); i++) {
-                final Parameter parameter = _parameters.get(i);
+                Parameter parameter = _parameters.get(i);
                 if (parameter.getType() == ParamType.VAR && parameters[i] < 0) {
                     parameters[i] = 0;
                 }

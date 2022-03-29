@@ -77,7 +77,7 @@ public final class Knowledge2 implements IKnowledge {
         this.knowledgeGroupRules = new HashMap<>();
     }
 
-    public Knowledge2(final Collection<String> nodes) {
+    public Knowledge2(Collection<String> nodes) {
         this();
 
         nodes.forEach(node -> {
@@ -89,9 +89,9 @@ public final class Knowledge2 implements IKnowledge {
         });
     }
 
-    public Knowledge2(final Knowledge2 knowledge) {
+    public Knowledge2(Knowledge2 knowledge) {
         try {
-            final Knowledge2 copy = new MarshalledObject<>(knowledge).get();
+            Knowledge2 copy = new MarshalledObject<>(knowledge).get();
 
             this.defaultToKnowledgeLayout = copy.defaultToKnowledgeLayout;
             this.variables = copy.variables;
@@ -100,7 +100,7 @@ public final class Knowledge2 implements IKnowledge {
             this.tierSpecs = copy.tierSpecs;
             this.knowledgeGroups = copy.knowledgeGroups;
             this.knowledgeGroupRules = copy.knowledgeGroupRules;
-        } catch (final IOException | ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
@@ -112,12 +112,12 @@ public final class Knowledge2 implements IKnowledge {
         return new Knowledge2();
     }
 
-    private boolean checkVarName(final String name) {
+    private boolean checkVarName(String name) {
         return Knowledge2.VARNAME_PATTERN.matcher(name).matches();
     }
 
-    private String checkSpec(final String spec) {
-        final Matcher matcher = Knowledge2.SPEC_PATTERN.matcher(spec);
+    private String checkSpec(String spec) {
+        Matcher matcher = Knowledge2.SPEC_PATTERN.matcher(spec);
         if (!matcher.matches()) {
             throw new IllegalArgumentException(spec + ": Cpdag names can consist of alphabetic "
                     + "characters plus :, _, -, and .. A wildcard '*' may be included to match a "
@@ -127,14 +127,14 @@ public final class Knowledge2 implements IKnowledge {
         return spec.replace(".", "\\.");
     }
 
-    private Set<String> getExtent(final String spec) {
-        final Set<String> vars = new HashSet<>();
+    private Set<String> getExtent(String spec) {
+        Set<String> vars = new HashSet<>();
 
         if (spec.contains("*")) {
             split(spec).stream()
                     .map(e -> e.replace("*", ".*"))
                     .forEach(e -> {
-                        final Pattern cpdag = Pattern.compile(e);
+                        Pattern cpdag = Pattern.compile(e);
                         this.variables.stream()
                                 .filter(var -> cpdag.matcher(var).matches())
                                 .collect(Collectors.toCollection(() -> vars));
@@ -148,14 +148,14 @@ public final class Knowledge2 implements IKnowledge {
         return vars;
     }
 
-    private Set<String> split(final String spec) {
+    private Set<String> split(String spec) {
         return Arrays.stream(Knowledge2.COMMAN_DELIM.split(spec))
                 .map(String::trim)
                 .filter(e -> !e.isEmpty())
                 .collect(Collectors.toSet());
     }
 
-    private void ensureTiers(final int tier) {
+    private void ensureTiers(int tier) {
         for (int i = this.tierSpecs.size(); i <= tier; i++) {
             this.tierSpecs.add(new LinkedHashSet<>());
 
@@ -165,12 +165,12 @@ public final class Knowledge2 implements IKnowledge {
         }
     }
 
-    private OrderedPair<Set<String>> getGroupRule(final KnowledgeGroup group) {
-        final Set<String> fromExtent = new HashSet<>();
+    private OrderedPair<Set<String>> getGroupRule(KnowledgeGroup group) {
+        Set<String> fromExtent = new HashSet<>();
         group.getFromVariables()
                 .forEach(e -> fromExtent.addAll(getExtent(e)));
 
-        final Set<String> toExtent = new HashSet<>();
+        Set<String> toExtent = new HashSet<>();
         group.getToVariables()
                 .forEach(e -> toExtent.addAll(getExtent(e)));
 
@@ -178,7 +178,7 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     private Set<OrderedPair<Set<String>>> forbiddenTierRules() {
-        final Set<OrderedPair<Set<String>>> rules = new HashSet<>();
+        Set<OrderedPair<Set<String>>> rules = new HashSet<>();
 
         for (int i = 0; i < this.tierSpecs.size(); i++) {
             if (isTierForbiddenWithin(i)) {
@@ -208,7 +208,7 @@ public final class Knowledge2 implements IKnowledge {
      * is a non-negative integer.
      */
     @Override
-    public void addToTier(final int tier, String spec) {
+    public void addToTier(int tier, String spec) {
         if (tier < 0) {
             throw new IllegalArgumentException();
         }
@@ -233,7 +233,7 @@ public final class Knowledge2 implements IKnowledge {
      * i.
      */
     @Override
-    public void addToTiersByVarNames(final List<String> varNames) {
+    public void addToTiersByVarNames(List<String> varNames) {
         if (!this.variables.containsAll(varNames)) {
             varNames.forEach(e -> {
                 if (checkVarName(e)) {
@@ -245,7 +245,7 @@ public final class Knowledge2 implements IKnowledge {
         }
 
         varNames.forEach(e -> {
-            final int index = e.lastIndexOf(":t");
+            int index = e.lastIndexOf(":t");
             if (index >= 0) {
                 addToTier(Integer.parseInt(e.substring(index + 2)), e);
             }
@@ -257,10 +257,10 @@ public final class Knowledge2 implements IKnowledge {
      * setRequired with cpdags. Needed for the interface.
      */
     @Override
-    public void addKnowledgeGroup(final KnowledgeGroup group) {
+    public void addKnowledgeGroup(KnowledgeGroup group) {
         this.knowledgeGroups.add(group);
 
-        final OrderedPair<Set<String>> o = getGroupRule(group);
+        OrderedPair<Set<String>> o = getGroupRule(group);
         this.knowledgeGroupRules.put(group, o);
 
         if (group.getType() == KnowledgeGroup.FORBIDDEN) {
@@ -271,7 +271,7 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     @Override
-    public void addVariable(final String varName) {
+    public void addVariable(String varName) {
         this.variables.add(varName);
     }
 
@@ -291,15 +291,15 @@ public final class Knowledge2 implements IKnowledge {
      */
     @Override
     public Iterator<KnowledgeEdge> explicitlyForbiddenEdgesIterator() {
-        final Set<OrderedPair<Set<String>>> copy = new HashSet<>(this.forbiddenRulesSpecs);
+        Set<OrderedPair<Set<String>>> copy = new HashSet<>(this.forbiddenRulesSpecs);
         copy.removeAll(forbiddenTierRules());
 
         this.knowledgeGroups.forEach(e -> copy.remove(this.knowledgeGroupRules.get(e)));
 
-        final Set<KnowledgeEdge> edges = new HashSet<>();
+        Set<KnowledgeEdge> edges = new HashSet<>();
 
         copy.forEach(o -> {
-            for (final String s1 : o.getFirst()) {
+            for (String s1 : o.getFirst()) {
                 o.getSecond().forEach(s2 -> edges.add(new KnowledgeEdge(s1, s2)));
             }
         });
@@ -320,7 +320,7 @@ public final class Knowledge2 implements IKnowledge {
      */
     @Override
     public Iterator<KnowledgeEdge> forbiddenEdgesIterator() {
-        final Set<KnowledgeEdge> edges = new HashSet<>();
+        Set<KnowledgeEdge> edges = new HashSet<>();
 
         this.forbiddenRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
             if (!s1.equals(s2)) {
@@ -356,9 +356,9 @@ public final class Knowledge2 implements IKnowledge {
      */
     @Override
     public List<String> getVariablesNotInTiers() {
-        final List<String> notInTier = new ArrayList<>(this.variables);
+        List<String> notInTier = new ArrayList<>(this.variables);
 
-        for (final Set<String> tier : this.tierSpecs) {
+        for (Set<String> tier : this.tierSpecs) {
             notInTier.removeAll(tier);
         }
 
@@ -370,14 +370,14 @@ public final class Knowledge2 implements IKnowledge {
      * @return a copy of this tier
      */
     @Override
-    public List<String> getTier(final int tier) {
+    public List<String> getTier(int tier) {
         ensureTiers(tier);
 
         try {
             return this.tierSpecs.get(tier).stream()
                     .sorted()
                     .collect(Collectors.toList());
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Unexpected knowledge configuration.", e);
         }
     }
@@ -396,11 +396,11 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     @Override
-    public void setDefaultToKnowledgeLayout(final boolean defaultToKnowledgeLayout) {
+    public void setDefaultToKnowledgeLayout(boolean defaultToKnowledgeLayout) {
         this.defaultToKnowledgeLayout = defaultToKnowledgeLayout;
     }
 
-    private boolean isForbiddenByRules(final String var1, final String var2) {
+    private boolean isForbiddenByRules(String var1, String var2) {
         return this.forbiddenRulesSpecs.stream()
                 .anyMatch(rule -> !var1.equals(var2)
                         && rule.getFirst().contains(var1)
@@ -411,7 +411,7 @@ public final class Knowledge2 implements IKnowledge {
      * Determines whether the edge var1 --> var2 is forbidden.
      */
     @Override
-    public boolean isForbidden(final String var1, final String var2) {
+    public boolean isForbidden(String var1, String var2) {
         if (isRequired(var1, var2)) {
             return false;
         }
@@ -423,8 +423,8 @@ public final class Knowledge2 implements IKnowledge {
      * Legacy.
      */
     @Override
-    public boolean isForbiddenByGroups(final String var1, final String var2) {
-        final Set<OrderedPair<Set<String>>> s = this.knowledgeGroups.stream()
+    public boolean isForbiddenByGroups(String var1, String var2) {
+        Set<OrderedPair<Set<String>>> s = this.knowledgeGroups.stream()
                 .filter(e -> e.getType() == KnowledgeGroup.FORBIDDEN)
                 .map(this::getGroupRule)
                 .collect(Collectors.toSet());
@@ -439,7 +439,7 @@ public final class Knowledge2 implements IKnowledge {
      * tiers.
      */
     @Override
-    public boolean isForbiddenByTiers(final String var1, final String var2) {
+    public boolean isForbiddenByTiers(String var1, String var2) {
         return forbiddenTierRules().stream()
                 .anyMatch(rule -> rule.getFirst().contains(var1)
                         && rule.getSecond().contains(var2));
@@ -449,7 +449,7 @@ public final class Knowledge2 implements IKnowledge {
      * Determines whether the edge var1 --> var2 is required.
      */
     @Override
-    public boolean isRequired(final String var1, final String var2) {
+    public boolean isRequired(String var1, String var2) {
         return this.requiredRulesSpecs.stream()
                 .anyMatch(rule -> !var1.equals(var2)
                         && rule.getFirst().contains(var1)
@@ -460,8 +460,8 @@ public final class Knowledge2 implements IKnowledge {
      * Legacy.
      */
     @Override
-    public boolean isRequiredByGroups(final String var1, final String var2) {
-        final Set<OrderedPair<Set<String>>> s = this.knowledgeGroups.stream()
+    public boolean isRequiredByGroups(String var1, String var2) {
+        Set<OrderedPair<Set<String>>> s = this.knowledgeGroups.stream()
                 .filter(e -> e.getType() == KnowledgeGroup.REQUIRED)
                 .map(this::getGroupRule)
                 .collect(Collectors.toSet());
@@ -486,10 +486,10 @@ public final class Knowledge2 implements IKnowledge {
      * variable within a given tier.
      */
     @Override
-    public boolean isTierForbiddenWithin(final int tier) {
+    public boolean isTierForbiddenWithin(int tier) {
         ensureTiers(tier);
 
-        final Set<String> varsInTier = this.tierSpecs.get(tier);
+        Set<String> varsInTier = this.tierSpecs.get(tier);
         if (varsInTier.isEmpty()) {
             return false;
         }
@@ -498,7 +498,7 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     @Override
-    public boolean isViolatedBy(final Graph graph) {
+    public boolean isViolatedBy(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Sorry, a graph hasn't been provided.");
         }
@@ -506,15 +506,15 @@ public final class Knowledge2 implements IKnowledge {
         return graph.getEdges().stream()
                 .filter(Edge::isDirected)
                 .anyMatch(edge -> {
-                    final Node from = Edges.getDirectedEdgeTail(edge);
-                    final Node to = Edges.getDirectedEdgeHead(edge);
+                    Node from = Edges.getDirectedEdgeTail(edge);
+                    Node to = Edges.getDirectedEdgeHead(edge);
 
                     return isForbidden(from.getName(), to.getName());
                 });
     }
 
     @Override
-    public boolean noEdgeRequired(final String x, final String y) {
+    public boolean noEdgeRequired(String x, String y) {
         return !(isRequired(x, y) || isRequired(y, x));
     }
 
@@ -535,8 +535,8 @@ public final class Knowledge2 implements IKnowledge {
      * Removes the knowledge group at the given index.
      */
     @Override
-    public void removeKnowledgeGroup(final int index) {
-        final OrderedPair<Set<String>> old = this.knowledgeGroupRules.get(this.knowledgeGroups.get(index));
+    public void removeKnowledgeGroup(int index) {
+        OrderedPair<Set<String>> old = this.knowledgeGroupRules.get(this.knowledgeGroups.get(index));
 
         this.forbiddenRulesSpecs.remove(old);
         this.requiredRulesSpecs.remove(old);
@@ -548,7 +548,7 @@ public final class Knowledge2 implements IKnowledge {
      * Removes the given variable from the list of myNodes and all rules.
      */
     @Override
-    public void removeVariable(final String name) {
+    public void removeVariable(String name) {
         if (!checkVarName(name)) {
             throw new IllegalArgumentException("Bad variable name: " + name);
         }
@@ -573,7 +573,7 @@ public final class Knowledge2 implements IKnowledge {
      */
     @Override
     public Iterator<KnowledgeEdge> requiredEdgesIterator() {
-        final Set<KnowledgeEdge> edges = new HashSet<>();
+        Set<KnowledgeEdge> edges = new HashSet<>();
 
         this.requiredRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
             if (!s1.equals(s2)) {
@@ -595,8 +595,8 @@ public final class Knowledge2 implements IKnowledge {
         var1 = checkSpec(var1);
         var2 = checkSpec(var2);
 
-        final Set<String> f1 = getExtent(var1);
-        final Set<String> f2 = getExtent(var2);
+        Set<String> f1 = getExtent(var1);
+        Set<String> f2 = getExtent(var2);
 
         this.forbiddenRulesSpecs.add(new OrderedPair<>(f1, f2));
     }
@@ -609,8 +609,8 @@ public final class Knowledge2 implements IKnowledge {
         var1 = checkSpec(var1);
         var2 = checkSpec(var2);
 
-        final Set<String> f1 = getExtent(var1);
-        final Set<String> f2 = getExtent(var2);
+        Set<String> f1 = getExtent(var1);
+        Set<String> f2 = getExtent(var2);
 
         this.forbiddenRulesSpecs.remove(new OrderedPair<>(f1, f2));
     }
@@ -626,8 +626,8 @@ public final class Knowledge2 implements IKnowledge {
         var1 = checkSpec(var1);
         var2 = checkSpec(var2);
 
-        final Set<String> f1 = getExtent(var1);
-        final Set<String> f2 = getExtent(var2);
+        Set<String> f1 = getExtent(var1);
+        Set<String> f2 = getExtent(var2);
 
         f1.forEach(s -> {
             if (checkVarName(s)) {
@@ -651,8 +651,8 @@ public final class Knowledge2 implements IKnowledge {
         var1 = checkSpec(var1);
         var2 = checkSpec(var2);
 
-        final Set<String> f1 = getExtent(var1);
-        final Set<String> f2 = getExtent(var2);
+        Set<String> f1 = getExtent(var1);
+        Set<String> f2 = getExtent(var2);
 
         this.requiredRulesSpecs.remove(new OrderedPair<>(f1, f2));
     }
@@ -661,9 +661,9 @@ public final class Knowledge2 implements IKnowledge {
      * Legacy, do not use.
      */
     @Override
-    public void setKnowledgeGroup(final int index, final KnowledgeGroup group) {
-        final OrderedPair<Set<String>> o = getGroupRule(group);
-        final OrderedPair<Set<String>> old = this.knowledgeGroupRules.get(this.knowledgeGroups.get(index));
+    public void setKnowledgeGroup(int index, KnowledgeGroup group) {
+        OrderedPair<Set<String>> o = getGroupRule(group);
+        OrderedPair<Set<String>> old = this.knowledgeGroupRules.get(this.knowledgeGroups.get(index));
 
         this.forbiddenRulesSpecs.remove(old);
         this.requiredRulesSpecs.remove(old);
@@ -681,9 +681,9 @@ public final class Knowledge2 implements IKnowledge {
      * Sets the variable in a given tier to the specified list.
      */
     @Override
-    public void setTier(final int tier, final List<String> vars) {
+    public void setTier(int tier, List<String> vars) {
         ensureTiers(tier);
-        final Set<String> varsInTier = this.tierSpecs.get(tier);
+        Set<String> varsInTier = this.tierSpecs.get(tier);
         if (varsInTier != null) {
             varsInTier.clear();
         }
@@ -696,9 +696,9 @@ public final class Knowledge2 implements IKnowledge {
      * given tier, or cancels this forbidding.
      */
     @Override
-    public void setTierForbiddenWithin(final int tier, final boolean forbidden) {
+    public void setTierForbiddenWithin(int tier, boolean forbidden) {
         ensureTiers(tier);
-        final Set<String> varsInTier = this.tierSpecs.get(tier);
+        Set<String> varsInTier = this.tierSpecs.get(tier);
 
         if (forbidden) {
             this.forbiddenRulesSpecs.add(new OrderedPair<>(varsInTier, varsInTier));
@@ -734,11 +734,11 @@ public final class Knowledge2 implements IKnowledge {
      * Returns the index of the tier of node if it's in a tier, otherwise -1.
      */
     @Override
-    public int isInWhichTier(final Node node) {
+    public int isInWhichTier(Node node) {
         for (int i = 0; i < this.tierSpecs.size(); i++) {
-            final Set<String> tier = this.tierSpecs.get(i);
+            Set<String> tier = this.tierSpecs.get(i);
 
-            for (final String myNode : tier) {
+            for (String myNode : tier) {
                 if (myNode.equals(node.getName())) {
                     return i;
                 }
@@ -750,7 +750,7 @@ public final class Knowledge2 implements IKnowledge {
 
     @Override
     public List<KnowledgeEdge> getListOfRequiredEdges() {
-        final Set<KnowledgeEdge> edges = new LinkedHashSet<>();
+        Set<KnowledgeEdge> edges = new LinkedHashSet<>();
 
         this.requiredRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
             if (!e1.equals(e2)) {
@@ -768,7 +768,7 @@ public final class Knowledge2 implements IKnowledge {
 
     @Override
     public List<KnowledgeEdge> getListOfForbiddenEdges() {
-        final Set<KnowledgeEdge> edges = new LinkedHashSet<>();
+        Set<KnowledgeEdge> edges = new LinkedHashSet<>();
 
         this.forbiddenRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
             if (!e1.equals(e2)) {
@@ -781,23 +781,23 @@ public final class Knowledge2 implements IKnowledge {
 
     @Override
     public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges() {
-        final Set<OrderedPair<Set<String>>> copy = new HashSet<>(this.forbiddenRulesSpecs);
+        Set<OrderedPair<Set<String>>> copy = new HashSet<>(this.forbiddenRulesSpecs);
         copy.removeAll(forbiddenTierRules());
 
         this.knowledgeGroups.forEach(e -> copy.remove(this.knowledgeGroupRules.get(e)));
 
-        final Set<KnowledgeEdge> edges = new HashSet<>();
-        for (final OrderedPair<Set<String>> e : copy)
+        Set<KnowledgeEdge> edges = new HashSet<>();
+        for (OrderedPair<Set<String>> e : copy)
             e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> edges.add(new KnowledgeEdge(e1, e2))));
 
         return new ArrayList<>(edges);
     }
 
     @Override
-    public boolean isOnlyCanCauseNextTier(final int tier) {
+    public boolean isOnlyCanCauseNextTier(int tier) {
         ensureTiers(tier);
 
-        final Set<String> varsInTier = this.tierSpecs.get(tier);
+        Set<String> varsInTier = this.tierSpecs.get(tier);
         if (varsInTier.isEmpty()) {
             return false;
         }
@@ -808,8 +808,8 @@ public final class Knowledge2 implements IKnowledge {
 
         // all successive tiers > tier + 2 must be forbidden
         for (int tierN = tier + 2; tierN < this.tierSpecs.size(); tierN++) {
-            final Set<String> varsInTierN = this.tierSpecs.get(tierN);
-            final OrderedPair<Set<String>> o = new OrderedPair<>(varsInTier, varsInTierN);
+            Set<String> varsInTierN = this.tierSpecs.get(tierN);
+            OrderedPair<Set<String>> o = new OrderedPair<>(varsInTier, varsInTierN);
 
             if (!this.forbiddenRulesSpecs.contains(o)) {
                 return false;
@@ -820,13 +820,13 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     @Override
-    public void setOnlyCanCauseNextTier(final int tier, final boolean onlyCausesNext) {
+    public void setOnlyCanCauseNextTier(int tier, boolean onlyCausesNext) {
         ensureTiers(tier);
 
-        final Set<String> varsInTier = this.tierSpecs.get(tier);
+        Set<String> varsInTier = this.tierSpecs.get(tier);
 
         for (int tierN = tier + 2; tierN < this.tierSpecs.size(); tierN++) {
-            final Set<String> varsInTierN = this.tierSpecs.get(tierN);
+            Set<String> varsInTierN = this.tierSpecs.get(tierN);
             if (onlyCausesNext) {
                 this.forbiddenRulesSpecs.add(new OrderedPair<>(varsInTier, varsInTierN));
             } else {
@@ -853,11 +853,11 @@ public final class Knowledge2 implements IKnowledge {
      * edges are equal, and their tiers are equal.
      */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (!(o instanceof Knowledge2)) {
             return false;
         }
-        final Knowledge2 that = (Knowledge2) o;
+        Knowledge2 that = (Knowledge2) o;
 
         return this.forbiddenRulesSpecs.equals(that.forbiddenRulesSpecs)
                 && this.requiredRulesSpecs.equals(that.requiredRulesSpecs)
@@ -870,10 +870,10 @@ public final class Knowledge2 implements IKnowledge {
     @Override
     public String toString() {
         try {
-            final CharArrayWriter out = new CharArrayWriter();
+            CharArrayWriter out = new CharArrayWriter();
             DataWriter.saveKnowledge(this, out);
             return out.toString();
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new IllegalStateException("Could not render knowledge.");
         }
     }

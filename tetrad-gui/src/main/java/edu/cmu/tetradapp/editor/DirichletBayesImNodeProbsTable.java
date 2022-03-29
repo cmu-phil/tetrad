@@ -59,8 +59,8 @@ class DirichletBayesImNodeProbsTable extends JTable {
     /**
      * Constructs a new editing table from a given editing table model.
      */
-    public DirichletBayesImNodeProbsTable(final Node node,
-                                          final DirichletBayesIm dirichletBayesIm) {
+    public DirichletBayesImNodeProbsTable(Node node,
+                                          DirichletBayesIm dirichletBayesIm) {
         if (node == null) {
             throw new NullPointerException();
         }
@@ -85,29 +85,29 @@ class DirichletBayesImNodeProbsTable extends JTable {
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         setCellSelectionEnabled(true);
 
-        final ListSelectionModel rowSelectionModel = getSelectionModel();
+        ListSelectionModel rowSelectionModel = getSelectionModel();
 
         rowSelectionModel.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(final ListSelectionEvent e) {
-                final ListSelectionModel m = (ListSelectionModel) (e.getSource());
+            public void valueChanged(ListSelectionEvent e) {
+                ListSelectionModel m = (ListSelectionModel) (e.getSource());
                 setFocusRow(m.getAnchorSelectionIndex());
             }
         });
 
-        final ListSelectionModel columnSelectionModel = getColumnModel()
+        ListSelectionModel columnSelectionModel = getColumnModel()
                 .getSelectionModel();
 
         columnSelectionModel.addListSelectionListener(
                 new ListSelectionListener() {
-                    public void valueChanged(final ListSelectionEvent e) {
-                        final ListSelectionModel m =
+                    public void valueChanged(ListSelectionEvent e) {
+                        ListSelectionModel m =
                                 (ListSelectionModel) (e.getSource());
                         setFocusColumn(m.getAnchorSelectionIndex());
                     }
                 });
 
         addMouseListener(new MouseAdapter() {
-            public void mousePressed(final MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     showPopup(e);
                 }
@@ -118,10 +118,10 @@ class DirichletBayesImNodeProbsTable extends JTable {
         setFocusColumn(0);
     }
 
-    private void resetModel(final Node node, final DirichletBayesIm dirichletBayesIm) {
-        final Model model = new Model(node, dirichletBayesIm, this);
+    private void resetModel(Node node, DirichletBayesIm dirichletBayesIm) {
+        Model model = new Model(node, dirichletBayesIm, this);
         model.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("editorValueChanged", null, null);
                 }
@@ -134,16 +134,16 @@ class DirichletBayesImNodeProbsTable extends JTable {
         super.createDefaultColumnsFromModel();
 
         if (getModel() instanceof Model) {
-            final FontMetrics fontMetrics = getFontMetrics(getFont());
-            final Model model = (Model) getModel();
+            FontMetrics fontMetrics = getFontMetrics(getFont());
+            Model model = (Model) getModel();
 
             for (int i = 0; i < model.getColumnCount(); i++) {
-                final TableColumn column = getColumnModel().getColumn(i);
-                final String columnName = model.getColumnName(i);
-                final int currentWidth = column.getPreferredWidth();
+                TableColumn column = getColumnModel().getColumn(i);
+                String columnName = model.getColumnName(i);
+                int currentWidth = column.getPreferredWidth();
 
                 if (columnName != null) {
-                    final int minimumWidth = fontMetrics.stringWidth(columnName) + 8;
+                    int minimumWidth = fontMetrics.stringWidth(columnName) + 8;
 
                     if (minimumWidth > currentWidth) {
                         column.setPreferredWidth(minimumWidth);
@@ -153,35 +153,35 @@ class DirichletBayesImNodeProbsTable extends JTable {
         }
     }
 
-    private void showPopup(final MouseEvent e) {
-        final JPopupMenu popup = new JPopupMenu();
+    private void showPopup(MouseEvent e) {
+        JPopupMenu popup = new JPopupMenu();
 
-        final JMenuItem randomizeRow = new JMenuItem("Randomize this row");
-        final JMenuItem randomizeIncompleteRows =
+        JMenuItem randomizeRow = new JMenuItem("Randomize this row");
+        JMenuItem randomizeIncompleteRows =
                 new JMenuItem("Randomize incomplete rows in table");
-        final JMenuItem randomizeEntireTable =
+        JMenuItem randomizeEntireTable =
                 new JMenuItem("Randomize entire table");
-        final JMenuItem randomizeAllTables = new JMenuItem("Randomize all tables");
+        JMenuItem randomizeAllTables = new JMenuItem("Randomize all tables");
 
-        final JMenuItem clearRow = new JMenuItem("Clear this row");
-        final JMenuItem clearEntireTable = new JMenuItem("Clear entire table");
+        JMenuItem clearRow = new JMenuItem("Clear this row");
+        JMenuItem clearEntireTable = new JMenuItem("Clear entire table");
 
         randomizeRow.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final int nodeIndex = getEditingTableModel().getNodeIndex();
+            public void actionPerformed(ActionEvent e) {
+                int nodeIndex = getEditingTableModel().getNodeIndex();
 
-                final DirichletBayesImNodeProbsTable editingTable =
+                DirichletBayesImNodeProbsTable editingTable =
                         DirichletBayesImNodeProbsTable.this;
-                final TableCellEditor cellEditor = editingTable.getCellEditor();
+                TableCellEditor cellEditor = editingTable.getCellEditor();
 
                 if (cellEditor != null) {
                     cellEditor.cancelCellEditing();
                 }
 
-                final Point point = new Point(getLastX(), getLastY());
-                final int rowIndex = editingTable.rowAtPoint(point);
+                Point point = new Point(getLastX(), getLastY());
+                int rowIndex = editingTable.rowAtPoint(point);
 
-                final DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
+                DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
 //                requestRowTotal(dirichletBayesIm, nodeIndex, rowIndex);
                 dirichletBayesIm.randomizeRow(nodeIndex, rowIndex);
 
@@ -190,9 +190,9 @@ class DirichletBayesImNodeProbsTable extends JTable {
         });
 
         randomizeIncompleteRows.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final int nodeIndex = getEditingTableModel().getNodeIndex();
-                final DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
+            public void actionPerformed(ActionEvent e) {
+                int nodeIndex = getEditingTableModel().getNodeIndex();
+                DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
 
                 if (!existsIncompleteRow(dirichletBayesIm, nodeIndex)) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -200,9 +200,9 @@ class DirichletBayesImNodeProbsTable extends JTable {
                     return;
                 }
 
-                final DirichletBayesImNodeProbsTable editingTable =
+                DirichletBayesImNodeProbsTable editingTable =
                         DirichletBayesImNodeProbsTable.this;
-                final TableCellEditor cellEditor = editingTable.getCellEditor();
+                TableCellEditor cellEditor = editingTable.getCellEditor();
 
                 if (cellEditor != null) {
                     cellEditor.cancelCellEditing();
@@ -215,12 +215,12 @@ class DirichletBayesImNodeProbsTable extends JTable {
         });
 
         randomizeEntireTable.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final int nodeIndex = getEditingTableModel().getNodeIndex();
-                final DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
+            public void actionPerformed(ActionEvent e) {
+                int nodeIndex = getEditingTableModel().getNodeIndex();
+                DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
 
                 if (existsCompleteRow(dirichletBayesIm, nodeIndex)) {
-                    final int ret = JOptionPane.showConfirmDialog(
+                    int ret = JOptionPane.showConfirmDialog(
                             JOptionUtils.centeringComp(),
                             "This will modify all values in the table. " +
                                     "Continue?", "Warning",
@@ -231,9 +231,9 @@ class DirichletBayesImNodeProbsTable extends JTable {
                     }
                 }
 
-                final DirichletBayesImNodeProbsTable editingTable =
+                DirichletBayesImNodeProbsTable editingTable =
                         DirichletBayesImNodeProbsTable.this;
-                final TableCellEditor cellEditor = editingTable.getCellEditor();
+                TableCellEditor cellEditor = editingTable.getCellEditor();
 
                 if (cellEditor != null) {
                     cellEditor.cancelCellEditing();
@@ -246,8 +246,8 @@ class DirichletBayesImNodeProbsTable extends JTable {
         });
 
         randomizeAllTables.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final int ret = JOptionPane.showConfirmDialog(
+            public void actionPerformed(ActionEvent e) {
+                int ret = JOptionPane.showConfirmDialog(
                         JOptionUtils.centeringComp(),
                         "This will modify all values in the entire Dirichlet model! " +
                                 "Continue?", "Warning",
@@ -257,15 +257,15 @@ class DirichletBayesImNodeProbsTable extends JTable {
                     return;
                 }
 
-                final DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
+                DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
 //                requestRowTotal(dirichletBayesIm, -1, -1);
 
                 for (int nodeIndex = 0;
                      nodeIndex < dirichletBayesIm.getNumNodes(); nodeIndex++) {
 
-                    final DirichletBayesImNodeProbsTable editingTable =
+                    DirichletBayesImNodeProbsTable editingTable =
                             DirichletBayesImNodeProbsTable.this;
-                    final TableCellEditor cellEditor = editingTable.getCellEditor();
+                    TableCellEditor cellEditor = editingTable.getCellEditor();
 
                     if (cellEditor != null) {
                         cellEditor.cancelCellEditing();
@@ -278,21 +278,21 @@ class DirichletBayesImNodeProbsTable extends JTable {
         });
 
         clearRow.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final int nodeIndex = getEditingTableModel().getNodeIndex();
+            public void actionPerformed(ActionEvent e) {
+                int nodeIndex = getEditingTableModel().getNodeIndex();
 
-                final DirichletBayesImNodeProbsTable editingTable =
+                DirichletBayesImNodeProbsTable editingTable =
                         DirichletBayesImNodeProbsTable.this;
-                final TableCellEditor cellEditor = editingTable.getCellEditor();
+                TableCellEditor cellEditor = editingTable.getCellEditor();
 
                 if (cellEditor != null) {
                     cellEditor.cancelCellEditing();
                 }
 
-                final Point point = new Point(getLastX(), getLastY());
-                final int rowIndex = editingTable.rowAtPoint(point);
+                Point point = new Point(getLastX(), getLastY());
+                int rowIndex = editingTable.rowAtPoint(point);
 
-                final DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
+                DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
                 dirichletBayesIm.clearRow(nodeIndex, rowIndex);
 
                 getEditingTableModel().fireTableRowsUpdated(rowIndex, rowIndex);
@@ -300,12 +300,12 @@ class DirichletBayesImNodeProbsTable extends JTable {
         });
 
         clearEntireTable.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final int nodeIndex = getEditingTableModel().getNodeIndex();
-                final DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
+            public void actionPerformed(ActionEvent e) {
+                int nodeIndex = getEditingTableModel().getNodeIndex();
+                DirichletBayesIm dirichletBayesIm = getDirichletBayesIm();
 
                 if (existsCompleteRow(dirichletBayesIm, nodeIndex)) {
-                    final int ret = JOptionPane.showConfirmDialog(
+                    int ret = JOptionPane.showConfirmDialog(
                             JOptionUtils.centeringComp(),
                             "This will delete all values in the table. " +
                                     "Continue?", "Warning",
@@ -316,9 +316,9 @@ class DirichletBayesImNodeProbsTable extends JTable {
                     }
                 }
 
-                final DirichletBayesImNodeProbsTable editingTable =
+                DirichletBayesImNodeProbsTable editingTable =
                         DirichletBayesImNodeProbsTable.this;
-                final TableCellEditor cellEditor = editingTable.getCellEditor();
+                TableCellEditor cellEditor = editingTable.getCellEditor();
 
                 if (cellEditor != null) {
                     cellEditor.cancelCellEditing();
@@ -360,8 +360,8 @@ class DirichletBayesImNodeProbsTable extends JTable {
 //        dirichletBayesIm.setNextRowTotal(rowTotal);
 //    }
 
-    private boolean existsCompleteRow(final DirichletBayesIm dirichletBayesIm,
-                                      final int nodeIndex) {
+    private boolean existsCompleteRow(DirichletBayesIm dirichletBayesIm,
+                                      int nodeIndex) {
         boolean existsCompleteRow = false;
 
         for (int rowIndex = 0;
@@ -374,8 +374,8 @@ class DirichletBayesImNodeProbsTable extends JTable {
         return existsCompleteRow;
     }
 
-    private boolean existsIncompleteRow(final DirichletBayesIm dirichletBayesIm,
-                                        final int nodeIndex) {
+    private boolean existsIncompleteRow(DirichletBayesIm dirichletBayesIm,
+                                        int nodeIndex) {
         boolean existsCompleteRow = false;
 
         for (int rowIndex = 0;
@@ -388,7 +388,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
         return existsCompleteRow;
     }
 
-    public void setModel(final TableModel model) {
+    public void setModel(TableModel model) {
         super.setModel(model);
     }
 
@@ -396,8 +396,8 @@ class DirichletBayesImNodeProbsTable extends JTable {
      * Sets the focus row to the anchor row currently being selected.
      */
     private void setFocusRow(int row) {
-        final Model editingTableModel = (Model) getModel();
-        final int failedRow = editingTableModel.getFailedRow();
+        Model editingTableModel = (Model) getModel();
+        int failedRow = editingTableModel.getFailedRow();
 
         if (failedRow != -1) {
             row = failedRow;
@@ -416,8 +416,8 @@ class DirichletBayesImNodeProbsTable extends JTable {
      * Sets the focus column to the anchor column currently being selected.
      */
     private void setFocusColumn(int col) {
-        final Model editingTableModel = (Model) getModel();
-        final int failedCol = editingTableModel.getFailedCol();
+        Model editingTableModel = (Model) getModel();
+        int failedCol = editingTableModel.getFailedCol();
 
         if (failedCol != -1) {
             col = failedCol;
@@ -438,10 +438,10 @@ class DirichletBayesImNodeProbsTable extends JTable {
     }
 
     private int getNumParents() {
-        final Model editingTableModel = (Model) getModel();
-        final DirichletBayesIm dirichletBayesIm =
+        Model editingTableModel = (Model) getModel();
+        DirichletBayesIm dirichletBayesIm =
                 editingTableModel.getDirichletBayesIm();
-        final int nodeIndex = editingTableModel.getNodeIndex();
+        int nodeIndex = editingTableModel.getNodeIndex();
         return dirichletBayesIm.getNumParents(nodeIndex);
     }
 
@@ -506,8 +506,8 @@ class DirichletBayesImNodeProbsTable extends JTable {
          * Constructs a new editing table model for a given a node in a given
          * bayesIm.
          */
-        public Model(final Node node, final DirichletBayesIm bayesIm,
-                     final JComponent messageAnchor) {
+        public Model(Node node, DirichletBayesIm bayesIm,
+                     JComponent messageAnchor) {
             if (node == null) {
                 throw new NullPointerException("Node must not be null.");
             }
@@ -529,21 +529,21 @@ class DirichletBayesImNodeProbsTable extends JTable {
         /**
          * @return the name of the given column.
          */
-        public String getColumnName(final int col) {
-            final Node node = getDirichletBayesIm().getNode(getNodeIndex());
-            final int numParents =
+        public String getColumnName(int col) {
+            Node node = getDirichletBayesIm().getNode(getNodeIndex());
+            int numParents =
                     getDirichletBayesIm().getNumParents(getNodeIndex());
-            final int numColumns =
+            int numColumns =
                     getDirichletBayesIm().getNumColumns(getNodeIndex());
-            final int totalsColumn = numParents + numColumns;
+            int totalsColumn = numParents + numColumns;
 
             if (col < numParents) {
-                final int parent =
+                int parent =
                         getDirichletBayesIm().getParent(getNodeIndex(), col);
                 return getDirichletBayesIm().getNode(parent).getName();
             } else if (col < numParents + numColumns) {
-                final int valIndex = col - numParents;
-                final String value = getDirichletBayesIm().getBayesPm().getCategory(
+                int valIndex = col - numParents;
+                String value = getDirichletBayesIm().getBayesPm().getCategory(
                         node, valIndex);
                 return node.getName() + "=" + value;
             } else if (col == totalsColumn) {
@@ -566,9 +566,9 @@ class DirichletBayesImNodeProbsTable extends JTable {
          * node.
          */
         public int getColumnCount() {
-            final int numParents =
+            int numParents =
                     getDirichletBayesIm().getNumParents(getNodeIndex());
-            final int numColumns =
+            int numColumns =
                     getDirichletBayesIm().getNumColumns(getNodeIndex());
             return numParents + numColumns + 1;
         }
@@ -582,35 +582,35 @@ class DirichletBayesImNodeProbsTable extends JTable {
          * representing conditional probabilities of node values given parent
          * value combinations.
          */
-        public Object getValueAt(final int tableRow, final int tableCol) {
+        public Object getValueAt(int tableRow, int tableCol) {
             if (tableRow != this.currentRow) {
                 closeCurrentRow();
                 openNewRow(tableRow);
             }
 
-            final int numParents =
+            int numParents =
                     getDirichletBayesIm().getNumParents(getNodeIndex());
-            final int numColumns =
+            int numColumns =
                     getDirichletBayesIm().getNumColumns(getNodeIndex());
-            final int totalsColumn = numParents + numColumns;
-            final int[] parentVals = getDirichletBayesIm().getParentValues(
+            int totalsColumn = numParents + numColumns;
+            int[] parentVals = getDirichletBayesIm().getParentValues(
                     getNodeIndex(), tableRow);
 
             if (tableCol < numParents) {
-                final int parent = getDirichletBayesIm().getParent(getNodeIndex(),
+                int parent = getDirichletBayesIm().getParent(getNodeIndex(),
                         tableCol);
-                final Node columnNode = getDirichletBayesIm().getNode(parent);
-                final BayesPm bayesPm = getDirichletBayesIm().getBayesPm();
+                Node columnNode = getDirichletBayesIm().getNode(parent);
+                BayesPm bayesPm = getDirichletBayesIm().getBayesPm();
                 return bayesPm.getCategory(columnNode, parentVals[tableCol]);
             } else if (tableCol < numParents + numColumns) {
-                final int colIndex = tableCol - numParents;
+                int colIndex = tableCol - numParents;
 
                 if (this.currentRowProbs != null && this.currentRow == tableRow) {
                     return this.currentRowProbs[colIndex];
                 } else {
-                    final double value = getDirichletBayesIm().getPseudocount(
+                    double value = getDirichletBayesIm().getPseudocount(
                             getNodeIndex(), tableRow, colIndex);
-                    final double prob = getDirichletBayesIm().getProbability(
+                    double prob = getDirichletBayesIm().getProbability(
                             getNodeIndex(), tableRow, colIndex);
 
                     if (value == -1) {
@@ -635,10 +635,10 @@ class DirichletBayesImNodeProbsTable extends JTable {
          * Determines whether a cell is in the column range to allow for
          * editing.
          */
-        public boolean isCellEditable(final int row, final int col) {
-            final int numParents =
+        public boolean isCellEditable(int row, int col) {
+            int numParents =
                     getDirichletBayesIm().getNumParents(getNodeIndex());
-            final int numColumns =
+            int numColumns =
                     getDirichletBayesIm().getNumColumns(getNodeIndex());
 
             return !(col < numParents) && col < numParents + numColumns + 1;
@@ -647,10 +647,10 @@ class DirichletBayesImNodeProbsTable extends JTable {
         /**
          * Sets the value of the cell at (row, col) to 'aValue'.
          */
-        public void setValueAt(final Object aValue, final int row, final int col) {
-            final int numParents =
+        public void setValueAt(Object aValue, int row, int col) {
+            int numParents =
                     getDirichletBayesIm().getNumParents(getNodeIndex());
-            final int numColumns =
+            int numColumns =
                     getDirichletBayesIm().getNumColumns(getNodeIndex());
 
             if (col == numParents + numColumns) {
@@ -660,7 +660,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
             }
         }
 
-        private void setTotal(final int row, final Object aValue) {
+        private void setTotal(int row, Object aValue) {
             if ("".equals(aValue) || aValue == null) {
                 return;
             }
@@ -671,7 +671,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
             }
 
             try {
-                final double total = Double.parseDouble((String) aValue);
+                double total = Double.parseDouble((String) aValue);
 
                 if (total < 0.0) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -684,22 +684,22 @@ class DirichletBayesImNodeProbsTable extends JTable {
                             null);
                     saveCurrentRow();
                 }
-            } catch (final NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Could not interpret '" + aValue + "'");
                 this.failedRow = row;
             }
         }
 
-        private void setProbability(final int row, final int col, final Object aValue) {
+        private void setProbability(int row, int col, Object aValue) {
             if (row != this.currentRow) {
                 closeCurrentRow();
                 openNewRow(row);
             }
 
-            final int numParents =
+            int numParents =
                     getDirichletBayesIm().getNumParents(getNodeIndex());
-            final int colIndex = col - numParents;
+            int colIndex = col - numParents;
 
             if ("".equals(aValue) || aValue == null) {
                 this.currentRowProbs[colIndex] = Double.NaN;
@@ -708,7 +708,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
             }
 
             try {
-                final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
                 double probability = Double.parseDouble((String) aValue);
                 probability = Double.parseDouble(nf.format(probability));
 
@@ -722,7 +722,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
                     return;
                 }
 
-                final double sumInRow = sumInRow(colIndex) + probability;
+                double sumInRow = sumInRow(colIndex) + probability;
 
                 if (probabilityOutOfRange(probability)) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -754,7 +754,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
                     getPcs().firePropertyChange("editorValueChanged", null,
                             null);
                 }
-            } catch (final NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Could not interpret '" + aValue + "'");
                 this.failedRow = row;
@@ -770,8 +770,8 @@ class DirichletBayesImNodeProbsTable extends JTable {
             }
         }
 
-        private void openNewRow(final int row) {
-            final int numCols = getDirichletBayesIm().getNumColumns(this.nodeIndex);
+        private void openNewRow(int row) {
+            int numCols = getDirichletBayesIm().getNumColumns(this.nodeIndex);
 
             this.currentRow = row;
             this.currentRowProbs = new double[numCols];
@@ -789,7 +789,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
                 return;
             }
 
-            for (final double currentRowProb : this.currentRowProbs) {
+            for (double currentRowProb : this.currentRowProbs) {
                 if (Double.isNaN(currentRowProb)) {
                     Arrays.fill(this.currentRowProbs, Double.NaN);
                     break;
@@ -797,7 +797,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
             }
 
             for (int i = 0; i < this.currentRowProbs.length; i++) {
-                final double pseudocount =
+                double pseudocount =
                         this.currentRowProbs[i] * this.currentRowTotal;
                 getDirichletBayesIm().setPseudocount(getNodeIndex(),
                         this.currentRow, i, pseudocount);
@@ -815,21 +815,21 @@ class DirichletBayesImNodeProbsTable extends JTable {
                 return;
             }
 
-            for (final double currentRowProb : this.currentRowProbs) {
+            for (double currentRowProb : this.currentRowProbs) {
                 if (Double.isNaN(currentRowProb)) {
                     return;
                 }
             }
 
             for (int i = 0; i < this.currentRowProbs.length; i++) {
-                final double pseudocount =
+                double pseudocount =
                         this.currentRowProbs[i] * this.currentRowTotal;
                 getDirichletBayesIm().setPseudocount(getNodeIndex(),
                         this.currentRow, i, pseudocount);
             }
         }
 
-        public void addPropertyChangeListener(final PropertyChangeListener l) {
+        public void addPropertyChangeListener(PropertyChangeListener l) {
             getPcs().addPropertyChangeListener(l);
         }
 
@@ -841,7 +841,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
         }
 
         private void fillInSingleRemainingColumn() {
-            final int leftOverColumn = uniqueNanCol();
+            int leftOverColumn = uniqueNanCol();
 
             if (leftOverColumn != -1) {
                 this.currentRowProbs[leftOverColumn] =
@@ -849,7 +849,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
             }
         }
 
-        private boolean probabilityOutOfRange(final double value) {
+        private boolean probabilityOutOfRange(double value) {
             return value < 0.0 || value > 1.0;
         }
 
@@ -870,7 +870,7 @@ class DirichletBayesImNodeProbsTable extends JTable {
         private boolean rowIsFull() {
             int numNanCols = 0;
 
-            for (final double currentRowProb : this.currentRowProbs) {
+            for (double currentRowProb : this.currentRowProbs) {
                 if (Double.isNaN(currentRowProb)) {
                     numNanCols++;
                 }
@@ -885,14 +885,14 @@ class DirichletBayesImNodeProbsTable extends JTable {
             }
         }
 
-        private double sumInRow(final int skipCol) {
+        private double sumInRow(int skipCol) {
             double sum = 0.0;
 
             for (int i = 0; i < getDirichletBayesIm().getNumColumns(getNodeIndex()); i++) {
                 double probability = this.currentRowProbs[i];
 
                 if (i != skipCol && !Double.isNaN(probability)) {
-                    final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                    NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
                     probability = Double.parseDouble(nf.format(probability));
                     sum += probability;
                 }
@@ -918,8 +918,8 @@ class DirichletBayesImNodeProbsTable extends JTable {
         /**
          * @return the class of the column.
          */
-        public Class getColumnClass(final int col) {
-            final boolean isParent =
+        public Class getColumnClass(int col) {
+            boolean isParent =
                     col < getDirichletBayesIm().getNumParents(getNodeIndex());
             return isParent ? Object.class : Number.class;
         }

@@ -49,7 +49,7 @@ public class CovSum implements CovarianceFunction {
      * @param f               array of <code>CovarianceFunction</code>
      * @see CovarianceFunction
      */
-    public CovSum(final int inputDimensions, final CovarianceFunction... f) {
+    public CovSum(int inputDimensions, CovarianceFunction... f) {
         this.D = inputDimensions;
         this.f = f;
         this.idx = new int[f.length + 1];
@@ -74,12 +74,12 @@ public class CovSum implements CovarianceFunction {
      * @param X        input dataset
      * @return K covariance <code>Matrix</code>
      */
-    public Matrix compute(final Matrix loghyper, final Matrix X) {
+    public Matrix compute(Matrix loghyper, Matrix X) {
 
-        final Matrix K = new Matrix(X.getRowDimension(), X.getRowDimension());
+        Matrix K = new Matrix(X.getRowDimension(), X.getRowDimension());
 
         for (int i = 0; i < this.f.length; i++) {
-            final Matrix loghyperi = loghyper.getMatrix(this.idx[i], this.idx[i + 1] - 1, 0, 0);
+            Matrix loghyperi = loghyper.getMatrix(this.idx[i], this.idx[i + 1] - 1, 0, 0);
             K.plusEquals(this.f[i].compute(loghyperi, X));
         }
         return K;
@@ -93,14 +93,14 @@ public class CovSum implements CovarianceFunction {
      * @param Xstar    test set
      * @return [K(Xstar, Xstar) K(X,Xstar)]
      */
-    public Matrix[] compute(final Matrix loghyper, final Matrix X, final Matrix Xstar) {
+    public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
 
-        final Matrix A = new Matrix(Xstar.getRowDimension(), 1);
-        final Matrix B = new Matrix(X.getRowDimension(), Xstar.getRowDimension());
+        Matrix A = new Matrix(Xstar.getRowDimension(), 1);
+        Matrix B = new Matrix(X.getRowDimension(), Xstar.getRowDimension());
 
         for (int i = 0; i < this.f.length; i++) {
-            final Matrix loghyperi = loghyper.getMatrix(this.idx[i], this.idx[i + 1] - 1, 0, 0);
-            final Matrix[] K = this.f[i].compute(loghyperi, X, Xstar);
+            Matrix loghyperi = loghyper.getMatrix(this.idx[i], this.idx[i + 1] - 1, 0, 0);
+            Matrix[] K = this.f[i].compute(loghyperi, X, Xstar);
             A.plusEquals(K[0]);
             B.plusEquals(K[1]);
         }
@@ -116,7 +116,7 @@ public class CovSum implements CovarianceFunction {
      * @param index    hyperparameter index
      * @return <code>Matrix</code> of derivatives
      */
-    public Matrix computeDerivatives(final Matrix loghyper, final Matrix X, int index) {
+    public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index) {
 
 
         if (index > numParameters() - 1)
@@ -125,7 +125,7 @@ public class CovSum implements CovarianceFunction {
         int whichf = 0;
         while (index > (this.idx[whichf + 1] - 1)) whichf++;  // find in which of the covariance this parameter is
 
-        final Matrix loghyperi = loghyper.getMatrix(this.idx[whichf], this.idx[whichf + 1] - 1, 0, 0);
+        Matrix loghyperi = loghyper.getMatrix(this.idx[whichf], this.idx[whichf + 1] - 1, 0, 0);
         index -= this.idx[whichf];
         return this.f[whichf].computeDerivatives(loghyperi, X, index);
     }

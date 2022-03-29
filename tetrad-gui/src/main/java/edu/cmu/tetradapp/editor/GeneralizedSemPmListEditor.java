@@ -68,13 +68,13 @@ class GeneralizedSemPmListEditor extends JPanel {
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
      */
-    public GeneralizedSemPmListEditor(final GeneralizedSemPm semPm, final GeneralizedSemPmParamsEditor paramsEditor,
-                                      final Map<Object, EditorWindow> launchedEditors) {
+    public GeneralizedSemPmListEditor(GeneralizedSemPm semPm, GeneralizedSemPmParamsEditor paramsEditor,
+                                      Map<Object, EditorWindow> launchedEditors) {
         this.semPm = semPm;
         this.paramsEditor = paramsEditor;
         this.launchedEditors = launchedEditors;
         setLayout(new BorderLayout());
-        final JScrollPane scroll = new JScrollPane(equationPane());
+        JScrollPane scroll = new JScrollPane(equationPane());
         scroll.setPreferredSize(new Dimension(450, 450));
 
         add(scroll, BorderLayout.CENTER);
@@ -91,21 +91,21 @@ class GeneralizedSemPmListEditor extends JPanel {
     public void refreshLabels() {
         this.formulasBox.removeAll();
 
-        for (final Node node : semPm().getNodes()) {
+        for (Node node : semPm().getNodes()) {
             if (!semPm().getGraph().isParameterizable(node)) {
                 continue;
             }
 
-            final Box c = Box.createHorizontalBox();
-            final String symbol = node.getNodeType() == NodeType.ERROR ? " ~ " : " = ";
-            final JLabel label = new JLabel(node + symbol + semPm().getNodeExpressionString(node));
+            Box c = Box.createHorizontalBox();
+            String symbol = node.getNodeType() == NodeType.ERROR ? " ~ " : " = ";
+            JLabel label = new JLabel(node + symbol + semPm().getNodeExpressionString(node));
             c.add(label);
             c.add(Box.createHorizontalGlue());
 
-            final Node _node = node;
+            Node _node = node;
 
             label.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(final MouseEvent mouseEvent) {
+                public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() == 2) {
                         beginNodeEdit(_node, label, label);
                     }
@@ -123,20 +123,20 @@ class GeneralizedSemPmListEditor extends JPanel {
                 new EmptyBorder(5, 5, 5, 5)));
     }
 
-    private void beginNodeEdit(final Node node, final JComponent centering, final JLabel label) {
+    private void beginNodeEdit(Node node, JComponent centering, JLabel label) {
         if (this.launchedEditors.containsKey(node)) {
             this.launchedEditors.get(node).moveToFront();
             return;
         }
 
-        final GeneralizedExpressionEditor paramEditor = new GeneralizedExpressionEditor(this.semPm, node);
+        GeneralizedExpressionEditor paramEditor = new GeneralizedExpressionEditor(this.semPm, node);
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(paramEditor, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        final EditorWindow editorWindow =
+        EditorWindow editorWindow =
                 new EditorWindow(panel, "Edit Expression", "OK", true, centering);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -146,9 +146,9 @@ class GeneralizedSemPmListEditor extends JPanel {
         this.launchedEditors.put(node, editorWindow);
 
         editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-            public void internalFrameClosing(final InternalFrameEvent internalFrameEvent) {
+            public void internalFrameClosing(InternalFrameEvent internalFrameEvent) {
                 if (!editorWindow.isCanceled()) {
-                    final String expressionString = paramEditor.getExpressionString();
+                    String expressionString = paramEditor.getExpressionString();
                     try {
                         GeneralizedSemPmListEditor.this.semPm.setNodeExpression(node, expressionString);
 
@@ -157,7 +157,7 @@ class GeneralizedSemPmListEditor extends JPanel {
                         } else {
                             label.setText(node + " ~ " + semPm().getNodeExpressionString(node));
                         }
-                    } catch (final ParseException e) {
+                    } catch (ParseException e) {
                         // This is an expression that's been vetted by the expression editor.
                         GeneralizedSemPmListEditor.this.launchedEditors.remove(node);
                         e.printStackTrace();

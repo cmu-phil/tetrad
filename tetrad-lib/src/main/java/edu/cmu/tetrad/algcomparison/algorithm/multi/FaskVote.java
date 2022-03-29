@@ -50,32 +50,32 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     }
 
     @Override
-    public Graph search(final List<DataModel> dataSets, final Parameters parameters) {
-        for (final DataModel d : dataSets) {
+    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+        for (DataModel d : dataSets) {
             if (((DataSet) d).existsMissingValue()) {
                 throw new IllegalArgumentException("Please remove or impute missing values.");
             }
         }
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final List<DataSet> _dataSets = new ArrayList<>();
-            for (final DataModel d : dataSets) {
+            List<DataSet> _dataSets = new ArrayList<>();
+            for (DataModel d : dataSets) {
                 _dataSets.add((DataSet) d);
             }
 
-            final edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, this.score, this.test);
+            edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, this.score, this.test);
 
             search.setKnowledge(this.knowledge);
             return search.search(parameters);
         } else {
-            final FaskVote imagesSemBic = new FaskVote();
+            FaskVote imagesSemBic = new FaskVote();
 
-            final List<DataSet> datasets = new ArrayList<>();
+            List<DataSet> datasets = new ArrayList<>();
 
-            for (final DataModel dataModel : dataSets) {
+            for (DataModel dataModel : dataSets) {
                 datasets.add((DataSet) dataModel);
             }
-            final GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
+            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -102,14 +102,14 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            final FaskVote imagesSemBic = new FaskVote();
+            FaskVote imagesSemBic = new FaskVote();
 
-            final List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            final GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
+            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -137,7 +137,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
@@ -153,7 +153,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ImagesSemBic().getParameters();
+        List<String> parameters = new ImagesSemBic().getParameters();
         parameters.addAll(new Fask().getParameters());
 
         return parameters;
@@ -165,7 +165,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -175,16 +175,16 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     }
 
     @Override
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setExternalGraph(final Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
     }
 
     @Override
-    public void setScoreWrapper(final ScoreWrapper score) {
+    public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -194,7 +194,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     }
 
     @Override
-    public void setIndependenceWrapper(final IndependenceWrapper independenceWrapper) {
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
 

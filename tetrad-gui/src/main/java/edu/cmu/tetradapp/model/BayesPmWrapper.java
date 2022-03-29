@@ -66,13 +66,13 @@ public class BayesPmWrapper implements SessionModel {
      * Creates a new BayesPm from the given DAG and uses it to construct a new
      * BayesPm.
      */
-    public BayesPmWrapper(final Graph graph, final Parameters params) {
+    public BayesPmWrapper(Graph graph, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
 
-        final int lowerBound;
-        final int upperBound;
+        int lowerBound;
+        int upperBound;
 
         if (params.getString("initializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
@@ -86,24 +86,24 @@ public class BayesPmWrapper implements SessionModel {
         }
     }
 
-    private void setBayesPm(final Graph graph, final int lowerBound, final int upperBound) {
-        final BayesPm b = new BayesPm(graph, lowerBound, upperBound);
+    private void setBayesPm(Graph graph, int lowerBound, int upperBound) {
+        BayesPm b = new BayesPm(graph, lowerBound, upperBound);
         setBayesPm(b);
     }
 
-    private void setBayesPm(final BayesPm b) {
+    private void setBayesPm(BayesPm b) {
         this.bayesPms = new ArrayList<>();
         this.bayesPms.add(b);
     }
 
-    public BayesPmWrapper(final Simulation simulation) {
-        final List<BayesIm> bayesIms;
+    public BayesPmWrapper(Simulation simulation) {
+        List<BayesIm> bayesIms;
 
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
         }
 
-        final edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
 
         if (_simulation == null) {
             throw new NullPointerException("No data sets have been simulated.");
@@ -119,9 +119,9 @@ public class BayesPmWrapper implements SessionModel {
             throw new NullPointerException("It looks like you have not done a simulation.");
         }
 
-        final List<BayesPm> bayesPms = new ArrayList<>();
+        List<BayesPm> bayesPms = new ArrayList<>();
 
-        for (final BayesIm bayesIm : bayesIms) {
+        for (BayesIm bayesIm : bayesIms) {
             bayesPms.add(bayesIm.getBayesPm());
         }
 
@@ -132,7 +132,7 @@ public class BayesPmWrapper implements SessionModel {
         this.modelSourceName = simulation.getName();
     }
 
-    public BayesPmWrapper(final Dag graph, final BayesPm bayesPm, final Parameters params) {
+    public BayesPmWrapper(Dag graph, BayesPm bayesPm, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -141,8 +141,8 @@ public class BayesPmWrapper implements SessionModel {
             throw new NullPointerException("BayesPm must not be null");
         }
 
-        final int lowerBound;
-        final int upperBound;
+        int lowerBound;
+        int upperBound;
 
         if (params.getString("initializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
@@ -164,22 +164,22 @@ public class BayesPmWrapper implements SessionModel {
      * @throws RuntimeException If the parent graph cannot be converted into a
      *                          DAG.
      */
-    public BayesPmWrapper(final GraphWrapper graphWrapper, final Parameters params) {
+    public BayesPmWrapper(GraphWrapper graphWrapper, Parameters params) {
         if (graphWrapper == null) {
             throw new NullPointerException("Graph must not be null.");
         }
 
-        final Dag graph;
+        Dag graph;
 
         try {
             graph = new Dag(graphWrapper.getGraph());
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
         }
 
-        final int lowerBound;
-        final int upperBound;
+        int lowerBound;
+        int upperBound;
 
         if (params.getString("bayesPmInitializationMode", "range").equals("trinary")) {
             lowerBound = upperBound = 3;
@@ -193,11 +193,11 @@ public class BayesPmWrapper implements SessionModel {
         }
     }
 
-    public BayesPmWrapper(final BayesEstimatorWrapper wrapper) {
+    public BayesPmWrapper(BayesEstimatorWrapper wrapper) {
         setBayesPm(new BayesPm(wrapper.getEstimatedBayesIm().getBayesPm()));
     }
 
-    public BayesPmWrapper(final BayesImWrapper wrapper) {
+    public BayesPmWrapper(BayesImWrapper wrapper) {
         this.bayesPms = new ArrayList<>();
 
         for (int i = 0; i < wrapper.getNumModels(); i++) {
@@ -208,34 +208,34 @@ public class BayesPmWrapper implements SessionModel {
         this.numModels = wrapper.getNumModels();
     }
 
-    public BayesPmWrapper(final GraphSource graphWrapper, final DataWrapper dataWrapper) {
+    public BayesPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
         this(new Dag(graphWrapper.getGraph()), dataWrapper);
     }
 
-    public BayesPmWrapper(final Graph graph, final DataWrapper dataWrapper) {
-        final DataSet dataSet
+    public BayesPmWrapper(Graph graph, DataWrapper dataWrapper) {
+        DataSet dataSet
                 = (DataSet) dataWrapper.getSelectedDataModel();
-        final List<Node> vars = dataSet.getVariables();
+        List<Node> vars = dataSet.getVariables();
 
-        final Map<String, DiscreteVariable> nodesToVars
+        Map<String, DiscreteVariable> nodesToVars
                 = new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            final DiscreteVariable var = (DiscreteVariable) vars.get(i);
-            final String name = var.getName();
-            final Node node = new GraphNode(name);
+            DiscreteVariable var = (DiscreteVariable) vars.get(i);
+            String name = var.getName();
+            Node node = new GraphNode(name);
             nodesToVars.put(node.getName(), var);
         }
 
-        final BayesPm bayesPm = new BayesPm(graph);
-        final List<Node> nodes = bayesPm.getDag().getNodes();
+        BayesPm bayesPm = new BayesPm(graph);
+        List<Node> nodes = bayesPm.getDag().getNodes();
 
-        for (final Node node : nodes) {
-            final Node var = nodesToVars.get(node.getName());
+        for (Node node : nodes) {
+            Node var = nodesToVars.get(node.getName());
 
             if (var != null) {
-                final DiscreteVariable var2 = nodesToVars.get(node.getName());
-                final int numCategories = var2.getNumCategories();
-                final List<String> categories = new ArrayList<>();
+                DiscreteVariable var2 = nodesToVars.get(node.getName());
+                int numCategories = var2.getNumCategories();
+                List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }
@@ -246,29 +246,29 @@ public class BayesPmWrapper implements SessionModel {
         setBayesPm(bayesPm);
     }
 
-    public BayesPmWrapper(final GraphWrapper graphWrapper,
-                          final Simulation simulation) {
+    public BayesPmWrapper(GraphWrapper graphWrapper,
+                          Simulation simulation) {
         this(graphWrapper, (DataWrapper) simulation);
     }
 
-    public BayesPmWrapper(final AlgorithmRunner wrapper, final Parameters params) {
+    public BayesPmWrapper(AlgorithmRunner wrapper, Parameters params) {
         this(new Dag(wrapper.getGraph()), params);
     }
 
-    public BayesPmWrapper(final AlgorithmRunner wrapper, final DataWrapper dataWrapper) {
+    public BayesPmWrapper(AlgorithmRunner wrapper, DataWrapper dataWrapper) {
         this(new Dag(wrapper.getGraph()), dataWrapper);
     }
 
-    public BayesPmWrapper(final AlgorithmRunner wrapper, final Simulation simulation) {
+    public BayesPmWrapper(AlgorithmRunner wrapper, Simulation simulation) {
         this(new Dag(wrapper.getGraph()), simulation);
     }
 
-    public BayesPmWrapper(final BayesEstimatorWrapper wrapper, final Simulation simulation) {
+    public BayesPmWrapper(BayesEstimatorWrapper wrapper, Simulation simulation) {
         this(new Dag(wrapper.getGraph()), simulation);
     }
 
-    public BayesPmWrapper(final BayesEstimatorWrapper wrapper,
-                          final DataWrapper dataWrapper) {
+    public BayesPmWrapper(BayesEstimatorWrapper wrapper,
+                          DataWrapper dataWrapper) {
         this(new Dag(wrapper.getGraph()), dataWrapper);
     }
 
@@ -279,22 +279,22 @@ public class BayesPmWrapper implements SessionModel {
      * @throws RuntimeException If the parent graph cannot be converted into a
      *                          DAG.
      */
-    public BayesPmWrapper(final DagWrapper dagWrapper, final Parameters params) {
+    public BayesPmWrapper(DagWrapper dagWrapper, Parameters params) {
         if (dagWrapper == null) {
             throw new NullPointerException("Graph must not be null.");
         }
 
-        final Dag graph;
+        Dag graph;
 
         try {
             graph = new Dag(dagWrapper.getDag());
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
         }
 
-        final int lowerBound;
-        final int upperBound;
+        int lowerBound;
+        int upperBound;
 
         if (params.getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
@@ -308,8 +308,8 @@ public class BayesPmWrapper implements SessionModel {
         setBayesPm(graph, lowerBound, upperBound);
     }
 
-    public BayesPmWrapper(final DagWrapper dagWrapper,
-                          final BayesPmWrapper oldBayesPmWrapper, final Parameters params) {
+    public BayesPmWrapper(DagWrapper dagWrapper,
+                          BayesPmWrapper oldBayesPmWrapper, Parameters params) {
         try {
             if (dagWrapper == null) {
                 throw new NullPointerException("Graph must not be null.");
@@ -319,12 +319,12 @@ public class BayesPmWrapper implements SessionModel {
                 throw new NullPointerException("BayesPm must not be null");
             }
 
-            final Graph graph = dagWrapper.getDag();
+            Graph graph = dagWrapper.getDag();
 
-            final int lowerBound;
-            final int upperBound;
+            int lowerBound;
+            int upperBound;
 
-            final String string = params.getString("bayesPmInitializationMode", "trinary");
+            String string = params.getString("bayesPmInitializationMode", "trinary");
 
             if (string.equals("trinary")) {
                 lowerBound = upperBound = 3;
@@ -337,36 +337,36 @@ public class BayesPmWrapper implements SessionModel {
             } else {
                 throw new IllegalStateException("Unrecognized type.");
             }
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
         }
     }
 
-    public BayesPmWrapper(final DagWrapper dagWrapper, final DataWrapper dataWrapper) {
-        final DataSet dataSet
+    public BayesPmWrapper(DagWrapper dagWrapper, DataWrapper dataWrapper) {
+        DataSet dataSet
                 = (DataSet) dataWrapper.getSelectedDataModel();
-        final List<Node> vars = dataSet.getVariables();
-        final Map<String, DiscreteVariable> nodesToVars
+        List<Node> vars = dataSet.getVariables();
+        Map<String, DiscreteVariable> nodesToVars
                 = new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            final DiscreteVariable var = (DiscreteVariable) vars.get(i);
-            final String name = var.getName();
-            final Node node = new GraphNode(name);
+            DiscreteVariable var = (DiscreteVariable) vars.get(i);
+            String name = var.getName();
+            Node node = new GraphNode(name);
             nodesToVars.put(node.getName(), var);
         }
 
-        final Dag graph = new Dag(dagWrapper.getDag());
-        final BayesPm bayesPm = new BayesPm(graph);
-        final List<Node> nodes = bayesPm.getDag().getNodes();
+        Dag graph = new Dag(dagWrapper.getDag());
+        BayesPm bayesPm = new BayesPm(graph);
+        List<Node> nodes = bayesPm.getDag().getNodes();
 
-        for (final Node node : nodes) {
-            final Node var = nodesToVars.get(node.getName());
+        for (Node node : nodes) {
+            Node var = nodesToVars.get(node.getName());
 
             if (var != null) {
-                final DiscreteVariable var2 = nodesToVars.get(node.getName());
-                final int numCategories = var2.getNumCategories();
-                final List<String> categories = new ArrayList<>();
+                DiscreteVariable var2 = nodesToVars.get(node.getName());
+                int numCategories = var2.getNumCategories();
+                List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }
@@ -377,7 +377,7 @@ public class BayesPmWrapper implements SessionModel {
         setBayesPm(bayesPm);
     }
 
-    public BayesPmWrapper(final DagWrapper dagWrapper, final Simulation dataWrapper) {
+    public BayesPmWrapper(DagWrapper dagWrapper, Simulation dataWrapper) {
         this(dagWrapper, (DataWrapper) dataWrapper);
     }
 
@@ -405,7 +405,7 @@ public class BayesPmWrapper implements SessionModel {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -418,12 +418,12 @@ public class BayesPmWrapper implements SessionModel {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     //================================= Private Methods ==================================//
-    private void log(final BayesPm pm) {
+    private void log(BayesPm pm) {
         TetradLogger.getInstance().log("info", "Bayes Parametric Model (Bayes PM)");
         TetradLogger.getInstance().log("pm", pm.toString());
 
@@ -457,7 +457,7 @@ public class BayesPmWrapper implements SessionModel {
         return this.modelSourceName;
     }
 
-    public void setModelIndex(final int modelIndex) {
+    public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 }

@@ -29,44 +29,44 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
 
-    public LoadContinuousDataAndSingleGraph(final String path) {
+    public LoadContinuousDataAndSingleGraph(String path) {
         this.path = path;
-        final String structure = new File(path).getName();
+        String structure = new File(path).getName();
         this.parametersValues.set("structure", structure);
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
         this.dataSets = new ArrayList<>();
 
-        final File dir = new File(this.path + "/data_noise");
+        File dir = new File(this.path + "/data_noise");
 
         if (dir.exists()) {
-            final File[] files = dir.listFiles();
+            File[] files = dir.listFiles();
 
-            for (final File file : files) {
+            for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
-                    final DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
+                    DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
                             "*", true, Delimiter.TAB);
                     this.dataSets.add(data);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());
                 }
             }
         }
 
-        final File dir2 = new File(this.path + "/graph");
+        File dir2 = new File(this.path + "/graph");
 
         if (dir2.exists()) {
-            final File[] files = dir2.listFiles();
+            File[] files = dir2.listFiles();
 
             if (files.length != 1) {
                 throw new IllegalArgumentException("Expecting exactly one graph file.");
             }
 
-            final File file = files[0];
+            File file = files[0];
 
             System.out.println("Loading graph from " + file.getAbsolutePath());
             this.graph = GraphUtils.loadGraphTxt(file);
@@ -88,21 +88,21 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graph;
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
     public String getDescription() {
         try {
-            final StringBuilder b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
             b.append("Load data sets and graphs from a directory.").append("\n\n");
             return b.toString();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

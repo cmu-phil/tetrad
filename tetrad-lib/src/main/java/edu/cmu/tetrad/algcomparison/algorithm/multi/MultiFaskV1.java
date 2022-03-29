@@ -47,9 +47,9 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(final List<DataModel> dataSets, final Parameters parameters) {
-        for (final DataModel d : dataSets) {
-            final DataSet _data = (DataSet) d;
+    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+        for (DataModel d : dataSets) {
+            DataSet _data = (DataSet) d;
 
             for (int j = 0; j < _data.getNumColumns(); j++) {
                 for (int i = 0; i < _data.getNumRows(); i++) {
@@ -61,24 +61,24 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
         }
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final List<DataSet> _dataSets = new ArrayList<>();
-            for (final DataModel d : dataSets) {
+            List<DataSet> _dataSets = new ArrayList<>();
+            for (DataModel d : dataSets) {
                 _dataSets.add((DataSet) d);
             }
-            final SemBicScoreMultiFas score = new SemBicScoreMultiFas(dataSets);
+            SemBicScoreMultiFas score = new SemBicScoreMultiFas(dataSets);
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            final edu.cmu.tetrad.search.MultiFaskV1 search = new edu.cmu.tetrad.search.MultiFaskV1(_dataSets, score);
+            edu.cmu.tetrad.search.MultiFaskV1 search = new edu.cmu.tetrad.search.MultiFaskV1(_dataSets, score);
             search.setKnowledge(this.knowledge);
             return search.search();
         } else {
-            final MultiFaskV1 imagesSemBic = new MultiFaskV1();
+            MultiFaskV1 imagesSemBic = new MultiFaskV1();
 
-            final List<DataSet> datasets = new ArrayList<>();
+            List<DataSet> datasets = new ArrayList<>();
 
-            for (final DataModel dataModel : dataSets) {
+            for (DataModel dataModel : dataSets) {
                 datasets.add((DataSet) dataModel);
             }
-            final GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
+            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -105,14 +105,14 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            final MultiFaskV1 imagesSemBic = new MultiFaskV1();
+            MultiFaskV1 imagesSemBic = new MultiFaskV1();
 
-            final List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            final GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
+            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -139,7 +139,7 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
 //        return SearchGraphUtils.patternForDag(graph);
 //        return new TsDagToPag(new EdgeListGraph(graph)).convert();
@@ -158,7 +158,7 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public List<String> getParameters() {
         // MultiFask uses SemBicScore internally, so we'll need to add the score parameters too - Zhou
-        final List<String> parameters = new LinkedList<>();
+        List<String> parameters = new LinkedList<>();
         parameters.addAll((new Fges()).getParameters());
         parameters.addAll((new SemBicScore()).getParameters());
         parameters.add(Params.NUM_RUNS);
@@ -175,7 +175,7 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

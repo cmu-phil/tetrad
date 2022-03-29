@@ -43,7 +43,7 @@ public class Discrete implements Distribution {
      * supplied values must be in (0, 1), and each must be less than its
      * successor (if it has one).
      */
-    private Discrete(final double... p) {
+    private Discrete(double... p) {
         this.p = convert(p);
     }
 
@@ -65,20 +65,20 @@ public class Discrete implements Distribution {
         return "Discrete";
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         this.p[index] = value;
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         return this.p[index];
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         return "Cut #" + (index + 1);
     }
 
     public double nextRandom() {
-        final double r = RandomUtil.getInstance().nextDouble();
+        double r = RandomUtil.getInstance().nextDouble();
 
         for (int i = 0; i < this.p.length; i++) {
             if (r < this.p[i]) return i;
@@ -93,14 +93,14 @@ public class Discrete implements Distribution {
 
     //=============================PRIVATE METHODS=========================//
 
-    private double[] convert(final double... p) {
-        for (final double _p : p) {
+    private double[] convert(double... p) {
+        for (double _p : p) {
             if (_p < 0) throw new IllegalArgumentException("All arguments must be >= 0: " + _p);
         }
 
         double sum = 0.0;
 
-        for (final double _p : p) {
+        for (double _p : p) {
             sum += _p;
         }
 

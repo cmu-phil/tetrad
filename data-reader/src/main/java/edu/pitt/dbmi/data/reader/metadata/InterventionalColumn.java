@@ -36,7 +36,7 @@ public class InterventionalColumn {
     public InterventionalColumn() {
     }
 
-    public InterventionalColumn(final ColumnMetadata valueColumn, final ColumnMetadata statusColumn) {
+    public InterventionalColumn(ColumnMetadata valueColumn, ColumnMetadata statusColumn) {
         this.valueColumn = valueColumn;
         this.statusColumn = statusColumn;
     }
@@ -50,7 +50,7 @@ public class InterventionalColumn {
         return this.valueColumn;
     }
 
-    public void setValueColumn(final ColumnMetadata valueColumn) {
+    public void setValueColumn(ColumnMetadata valueColumn) {
         this.valueColumn = valueColumn;
     }
 
@@ -58,7 +58,7 @@ public class InterventionalColumn {
         return this.statusColumn;
     }
 
-    public void setStatusColumn(final ColumnMetadata statusColumn) {
+    public void setStatusColumn(ColumnMetadata statusColumn) {
         this.statusColumn = statusColumn;
     }
 

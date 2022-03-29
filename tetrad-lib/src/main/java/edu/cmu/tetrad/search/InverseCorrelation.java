@@ -39,40 +39,40 @@ public class InverseCorrelation {
     private final DataSet data;
     private final double threshold;
 
-    public InverseCorrelation(final DataSet dataSet, final double threshold) {
+    public InverseCorrelation(DataSet dataSet, double threshold) {
         this.data = dataSet;
         this.threshold = threshold;
     }
 
     public Graph search() {
-        final CovarianceMatrix cov = new CovarianceMatrix(this.data);
+        CovarianceMatrix cov = new CovarianceMatrix(this.data);
 
-        final Matrix _data = cov.getMatrix();
-        final Matrix inverse = _data.inverse();
+        Matrix _data = cov.getMatrix();
+        Matrix inverse = _data.inverse();
 
         System.out.println(inverse);
 
-        final Graph graph = new EdgeListGraph(this.data.getVariables());
+        Graph graph = new EdgeListGraph(this.data.getVariables());
 
         for (int i = 0; i < inverse.rows(); i++) {
             for (int j = i + 1; j < inverse.columns(); j++) {
-                final double a = inverse.get(i, j);
-                final double b = inverse.get(i, i);
-                final double c = inverse.get(j, j);
+                double a = inverse.get(i, j);
+                double b = inverse.get(i, i);
+                double c = inverse.get(j, j);
 
-                final double r = -a / Math.sqrt(b * c);
+                double r = -a / Math.sqrt(b * c);
 
-                final int sampleSize = this.data.getNumRows();
-                final int z = this.data.getNumColumns();
+                int sampleSize = this.data.getNumRows();
+                int z = this.data.getNumColumns();
 
-                final double fisherZ = Math.sqrt(sampleSize - z - 3.0) *
+                double fisherZ = Math.sqrt(sampleSize - z - 3.0) *
                         0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
 
-                final double p = getPValue(fisherZ);
+                double p = getPValue(fisherZ);
 
                 if (p < this.threshold) {
-                    final Node x = graph.getNodes().get(i);
-                    final Node y = graph.getNodes().get(j);
+                    Node x = graph.getNodes().get(i);
+                    Node y = graph.getNodes().get(j);
                     graph.addUndirectedEdge(x, y);
                 }
 
@@ -95,7 +95,7 @@ public class InverseCorrelation {
         return graph;
     }
 
-    public double getPValue(final double z) {
+    public double getPValue(double z) {
         return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(z)));
     }
 }

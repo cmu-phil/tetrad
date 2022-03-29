@@ -85,14 +85,14 @@ public class GraphNode implements Node {
     /**
      * Constructs a new Tetrad node with the given (non-null) string.
      */
-    public GraphNode(final String name) {
+    public GraphNode(String name) {
         setName(name);
     }
 
     /**
      * Copy constructor.
      */
-    public GraphNode(final GraphNode node) {
+    public GraphNode(GraphNode node) {
         this.name = node.name;
         this.nodeType = node.nodeType;
         this.centerX = node.centerX;
@@ -128,7 +128,7 @@ public class GraphNode implements Node {
      *
      * @see edu.cmu.tetrad.graph.NodeType
      */
-    public final void setNodeType(final NodeType nodeType) {
+    public final void setNodeType(NodeType nodeType) {
         if (nodeType == null) {
             throw new NullPointerException("Node type must not be null.");
         }
@@ -138,7 +138,7 @@ public class GraphNode implements Node {
     /**
      * Sets the name of this variable.
      */
-    public final void setName(final String name) {
+    public final void setName(String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -147,7 +147,7 @@ public class GraphNode implements Node {
 //            throw new IllegalArgumentException(
 //                    NamingProtocol.getProtocolDescription() + ": " + name);
 //        }
-        final String oldName = this.name;
+        String oldName = this.name;
         this.name = name;
         getPcs().firePropertyChange("name", oldName, this.name);
     }
@@ -162,7 +162,7 @@ public class GraphNode implements Node {
     /**
      * Sets the x coordinate of the center of this node.
      */
-    public final void setCenterX(final int centerX) {
+    public final void setCenterX(int centerX) {
         this.centerX = centerX;
     }
 
@@ -176,14 +176,14 @@ public class GraphNode implements Node {
     /**
      * Sets the y coordinate of the center of this node.
      */
-    public final void setCenterY(final int centerY) {
+    public final void setCenterY(int centerY) {
         this.centerY = centerY;
     }
 
     /**
      * Sets the (x, y) coordinates of the center of this node.
      */
-    public final void setCenter(final int centerX, final int centerY) {
+    public final void setCenter(int centerX, int centerY) {
         this.centerX = centerX;
         this.centerY = centerY;
     }
@@ -202,7 +202,7 @@ public class GraphNode implements Node {
     /**
      * Adds a property change listener.
      */
-    public final void addPropertyChangeListener(final PropertyChangeListener l) {
+    public final void addPropertyChangeListener(PropertyChangeListener l) {
         getPcs().addPropertyChangeListener(l);
     }
 
@@ -240,8 +240,8 @@ public class GraphNode implements Node {
         throw new IllegalStateException();
     }
 
-    public Node like(final String name) {
-        final GraphNode node = new GraphNode(name);
+    public Node like(String name) {
+        GraphNode node = new GraphNode(name);
         node.setNodeType(getNodeType());
         return node;
     }
@@ -259,7 +259,7 @@ public class GraphNode implements Node {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -273,16 +273,16 @@ public class GraphNode implements Node {
     }
 
     @Override
-    public int compareTo(final Node node) {
-        final String node1 = getName();
-        final String node2 = node.getName();
+    public int compareTo(Node node) {
+        String node1 = getName();
+        String node2 = node.getName();
 
-        final boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
-        final boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
-        final boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
-        final boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
-        final boolean isLag1 = Node.LAG.matcher(node1).matches();
-        final boolean isLag2 = Node.LAG.matcher(node2).matches();
+        boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
+        boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
+        boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
+        boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
+        boolean isLag1 = Node.LAG.matcher(node1).matches();
+        boolean isLag2 = Node.LAG.matcher(node2).matches();
 
         if (isAlpha1) {
             if (isLag2) {
@@ -290,11 +290,11 @@ public class GraphNode implements Node {
             }
         } else if (isAlphaNum1) {
             if (isAlphaNum2) {
-                final String s1 = node1.replaceAll("\\d+", "");
-                final String s2 = node2.replaceAll("\\d+", "");
+                String s1 = node1.replaceAll("\\d+", "");
+                String s2 = node2.replaceAll("\\d+", "");
                 if (s1.equals(s2)) {
-                    final String n1 = node1.replaceAll("\\D+", "");
-                    final String n2 = node2.replaceAll("\\D+", "");
+                    String n1 = node1.replaceAll("\\D+", "");
+                    String n2 = node2.replaceAll("\\D+", "");
 
                     return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
                 } else {
@@ -307,13 +307,13 @@ public class GraphNode implements Node {
             if (isAlpha2 || isAlphaNum2) {
                 return 1;
             } else if (isLag2) {
-                final String l1 = node1.replaceAll(":", "");
-                final String l2 = node2.replaceAll(":", "");
-                final String s1 = l1.replaceAll("\\d+", "");
-                final String s2 = l2.replaceAll("\\d+", "");
+                String l1 = node1.replaceAll(":", "");
+                String l2 = node2.replaceAll(":", "");
+                String s1 = l1.replaceAll("\\d+", "");
+                String s2 = l2.replaceAll("\\d+", "");
                 if (s1.equals(s2)) {
-                    final String n1 = l1.replaceAll("\\D+", "");
-                    final String n2 = l2.replaceAll("\\D+", "");
+                    String n1 = l1.replaceAll("\\D+", "");
+                    String n2 = l2.replaceAll("\\D+", "");
 
                     return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
                 } else {
@@ -331,7 +331,7 @@ public class GraphNode implements Node {
     }
 
     @Override
-    public void setNodeVariableType(final NodeVariableType nodeVariableType) {
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
@@ -341,17 +341,17 @@ public class GraphNode implements Node {
     }
 
     @Override
-    public Object getAttribute(final String key) {
+    public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(final String key) {
+    public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(final String key, final Object value) {
+    public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
     }
 

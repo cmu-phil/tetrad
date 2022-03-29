@@ -45,13 +45,13 @@ public class MisclassificationsEditor extends JPanel {
     /**
      * Constructs the editor given the model
      */
-    public MisclassificationsEditor(final Misclassifications comparison) {
+    public MisclassificationsEditor(Misclassifications comparison) {
         this.comparison = comparison;
         setup();
     }
 
     //============================ Private Methods =========================//
-    private boolean isLegal(final String text) {
+    private boolean isLegal(String text) {
 //        if (!NamingProtocol.isLegalName(text)) {
 //            JOptionPane.showMessageDialog(this, NamingProtocol.getProtocolDescription() + ": " + text);
 //            return false;
@@ -60,31 +60,31 @@ public class MisclassificationsEditor extends JPanel {
     }
 
     private void setup() {
-        final java.util.List<Graph> referenceGraphs = this.comparison.getReferenceGraphs();
-        final JTabbedPane pane = new JTabbedPane(SwingConstants.LEFT);
+        java.util.List<Graph> referenceGraphs = this.comparison.getReferenceGraphs();
+        JTabbedPane pane = new JTabbedPane(SwingConstants.LEFT);
 
         for (int i = 0; i < referenceGraphs.size(); i++) {
-            final JTabbedPane pane2 = new JTabbedPane(SwingConstants.TOP);
-            final String compareString = this.comparison.getComparisonString(i);
+            JTabbedPane pane2 = new JTabbedPane(SwingConstants.TOP);
+            String compareString = this.comparison.getComparisonString(i);
 
-            final JPanel panel = new JPanel();
+            JPanel panel = new JPanel();
 
-            final Font font = new Font("Monospaced", Font.PLAIN, 14);
-            final JTextArea textPane = new JTextArea();
+            Font font = new Font("Monospaced", Font.PLAIN, 14);
+            JTextArea textPane = new JTextArea();
             textPane.setText(compareString);
 
             textPane.setFont(font);
 
-            final JScrollPane scroll = new JScrollPane(textPane);
+            JScrollPane scroll = new JScrollPane(textPane);
             scroll.setPreferredSize(new Dimension(400, 400));
 
             panel.add(Box.createVerticalStrut(10));
 
-            final Box box = Box.createHorizontalBox();
+            Box box = Box.createHorizontalBox();
             panel.add(box);
             panel.add(Box.createVerticalStrut(10));
 
-            final Box box1 = Box.createHorizontalBox();
+            Box box1 = Box.createHorizontalBox();
             box1.add(new JLabel("Graph Comparison: "));
             box1.add(Box.createHorizontalGlue());
 

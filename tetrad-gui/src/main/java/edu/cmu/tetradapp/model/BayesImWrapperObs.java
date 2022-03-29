@@ -139,7 +139,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
         log(bayesIm);
     }
      */
-    public BayesImWrapperObs(final BayesPmWrapper bayesPmWrapper, final Parameters params) {
+    public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -148,7 +148,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        final BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
+        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
         if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             this.bayesIm = new MlBayesImObs(bayesPm);
@@ -214,12 +214,12 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     //============================== private methods ============================//
-    private void log(final BayesIm im) {
+    private void log(BayesIm im) {
         TetradLogger.getInstance().log("info",
                 "Maximum likelihood Bayes IM: Observed Variables Only");
         TetradLogger.getInstance().log("im", im.toString());
@@ -238,7 +238,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -263,7 +263,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
         return getGraph().getNodes();
     }
 
-    public void setBayesIm(final BayesIm bayesIm) {
+    public void setBayesIm(BayesIm bayesIm) {
         this.bayesIm = bayesIm;
     }
 }

@@ -90,14 +90,14 @@ public final class ContinuousVariable extends AbstractVariable {
      *
      * @param name the name of the variable.
      */
-    public ContinuousVariable(final String name) {
+    public ContinuousVariable(String name) {
         super(name);
     }
 
     /**
      * Copy constructor.
      */
-    public ContinuousVariable(final ContinuousVariable variable) {
+    public ContinuousVariable(ContinuousVariable variable) {
         super(variable.getName());
         this.nodeType = variable.nodeType;
         this.centerX = variable.centerX;
@@ -119,14 +119,14 @@ public final class ContinuousVariable extends AbstractVariable {
      * @param value the value to check.
      * @return true iff the value is legitimate.
      */
-    public boolean checkValue(final Object value) {
+    public boolean checkValue(Object value) {
         if (value instanceof Double) {
             return true;
         } else if (value instanceof String) {
             try {
                 Double.parseDouble((String) value);
                 return true;
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 return false;
             }
         } else {
@@ -134,8 +134,8 @@ public final class ContinuousVariable extends AbstractVariable {
         }
     }
 
-    public Node like(final String name) {
-        final ContinuousVariable continuousVariable = new ContinuousVariable(name);
+    public Node like(String name) {
+        ContinuousVariable continuousVariable = new ContinuousVariable(name);
         continuousVariable.setNodeType(getNodeType());
         return continuousVariable;
     }
@@ -162,7 +162,7 @@ public final class ContinuousVariable extends AbstractVariable {
      * @return true iff it really is a wrapped version of the missing value
      * marker.
      */
-    public static boolean isDoubleMissingValue(final double value) {
+    public static boolean isDoubleMissingValue(double value) {
         return Double.isNaN(value);
     }
 
@@ -174,9 +174,9 @@ public final class ContinuousVariable extends AbstractVariable {
      * @return true iff it really is a wrapped version of the missing value
      * marker.
      */
-    public boolean isMissingValue(final Object value) {
+    public boolean isMissingValue(Object value) {
         if (value instanceof Double) {
-            final double doubleValue = (Double) value;
+            double doubleValue = (Double) value;
             return Double.isNaN(doubleValue);
         }
 
@@ -220,7 +220,7 @@ public final class ContinuousVariable extends AbstractVariable {
         return this.nodeType;
     }
 
-    public void setNodeType(final NodeType nodeType) {
+    public void setNodeType(NodeType nodeType) {
         this.nodeType = nodeType;
     }
 
@@ -234,7 +234,7 @@ public final class ContinuousVariable extends AbstractVariable {
     /**
      * Sets the x coordinate of the center of this node.
      */
-    public void setCenterX(final int centerX) {
+    public void setCenterX(int centerX) {
         this.centerX = centerX;
     }
 
@@ -248,14 +248,14 @@ public final class ContinuousVariable extends AbstractVariable {
     /**
      * Sets the y coordinate of the center of this node.
      */
-    public void setCenterY(final int centerY) {
+    public void setCenterY(int centerY) {
         this.centerY = centerY;
     }
 
     /**
      * Sets the (x, y) coordinates of the center of this node.
      */
-    public void setCenter(final int centerX, final int centerY) {
+    public void setCenter(int centerX, int centerY) {
         setCenterX(centerX);
         setCenterY(centerY);
     }
@@ -263,7 +263,7 @@ public final class ContinuousVariable extends AbstractVariable {
     /**
      * Adds a property change listener.
      */
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
+    public void addPropertyChangeListener(PropertyChangeListener l) {
         getPcs().addPropertyChangeListener(l);
     }
 
@@ -288,7 +288,7 @@ public final class ContinuousVariable extends AbstractVariable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -303,7 +303,7 @@ public final class ContinuousVariable extends AbstractVariable {
     }
 
     @Override
-    public void setNodeVariableType(final NodeVariableType nodeVariableType) {
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
@@ -313,17 +313,17 @@ public final class ContinuousVariable extends AbstractVariable {
     }
 
     @Override
-    public Object getAttribute(final String key) {
+    public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(final String key) {
+    public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(final String key, final Object value) {
+    public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
     }
 

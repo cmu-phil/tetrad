@@ -41,8 +41,8 @@ public class ManualActiveLagGraph extends ActiveLagGraph implements SessionModel
         setMaxLagAllowable(3);
 
         // Add edges one time step back.
-        for (final String s : getFactors()) {
-            final LaggedFactor laggedFactor = new LaggedFactor(s, 1);
+        for (String s : getFactors()) {
+            LaggedFactor laggedFactor = new LaggedFactor(s, 1);
             addEdge(s, laggedFactor);
         }
     }
@@ -54,7 +54,7 @@ public class ManualActiveLagGraph extends ActiveLagGraph implements SessionModel
         return new ManualActiveLagGraph();
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 

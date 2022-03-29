@@ -49,7 +49,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner {
 
     //============================CONSTRUCTORS============================//
 
-    private MmhcRunner(final DataWrapper dataWrapper, final Parameters params) {
+    private MmhcRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -70,15 +70,15 @@ public class MmhcRunner extends AbstractAlgorithmRunner {
      */
 
     public void execute() {
-        final Mmhc search;
+        Mmhc search;
 
-        final int depth = getParams().getInt("depth", -1);
+        int depth = getParams().getInt("depth", -1);
 
         search = new Mmhc(getIndependenceTest(), getIndependenceTest().getDataSets().get(0));
         search.setDepth(depth);
         search.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
 
-        final Graph graph = search.search();
+        Graph graph = search.search();
         setResultGraph(graph);
 
         if (getSourceGraph() != null) {
@@ -106,7 +106,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner {
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<>();
     }
 
@@ -115,7 +115,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner {
     }
 
     public ImpliedOrientation getMeekRules() {
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
@@ -132,7 +132,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner {
             dataModel = getSourceGraph();
         }
 
-        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 }

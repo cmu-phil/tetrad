@@ -51,7 +51,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     private List<String> variableNames = new ArrayList<>();
     private int numTiers = 3;
 
-    public KnowledgeBoxModel(final Parameters params) {
+    public KnowledgeBoxModel(Parameters params) {
         this.knowledge = new Knowledge2();
         this.numTiers = 3;
         this.variables = new ArrayList<>();
@@ -62,7 +62,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     /**
      * Constructor from dataWrapper edge
      */
-    public KnowledgeBoxModel(final KnowledgeBoxInput[] inputs, final Parameters params) {
+    public KnowledgeBoxModel(KnowledgeBoxInput[] inputs, Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -73,17 +73,17 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
             return;
         }
 
-        for (final KnowledgeBoxInput input : inputs) {
+        for (KnowledgeBoxInput input : inputs) {
             if (input == null) {
                 throw new NullPointerException();
             }
         }
 
-        final SortedSet<Node> variableNodes = new TreeSet<>();
-        final SortedSet<String> variableNames = new TreeSet<>();
+        SortedSet<Node> variableNodes = new TreeSet<>();
+        SortedSet<String> variableNames = new TreeSet<>();
 
-        for (final KnowledgeBoxInput input : inputs) {
-            for (final Node node : input.getVariables()) {
+        for (KnowledgeBoxInput input : inputs) {
+            for (Node node : input.getVariables()) {
                 if (node.getNodeType() == NodeType.MEASURED) {
                     variableNodes.add(node);
                     variableNames.add(node.getName());
@@ -97,7 +97,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 
         this.params = params;
 
-        final Object myKnowledge = params.get("__myKnowledge");
+        Object myKnowledge = params.get("__myKnowledge");
         if (myKnowledge instanceof IKnowledge
                 && new HashSet<>(((IKnowledge) myKnowledge).getVariables())
                 .equals(new HashSet<>(variableNames))) {
@@ -105,7 +105,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         } else {
             this.knowledge = new Knowledge2();
 
-            for (final String var : variableNames) {
+            for (String var : variableNames) {
                 this.knowledge.addVariable(var);
             }
 
@@ -128,11 +128,11 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         return new KnowledgeBoxModel(new KnowledgeBoxInput[]{GraphWrapper.serializableInstance()}, new Parameters());
     }
 
-    private void freshenKnowledgeIfEmpty(final List<String> varNames) {
+    private void freshenKnowledgeIfEmpty(List<String> varNames) {
         if (this.knowledge.isEmpty()) {
             createKnowledge(this.knowledge);
 
-            for (final String varName : varNames) {
+            for (String varName : varNames) {
                 if (!varName.startsWith("E_")) {
                     varNames.add(varName);
                 }
@@ -140,10 +140,10 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         }
     }
 
-    private IKnowledge createKnowledge(final IKnowledge knowledge) {
+    private IKnowledge createKnowledge(IKnowledge knowledge) {
         knowledge.clear();
         this.variableNames.clear();
-        for (final String varName : knowledge.getVariables()) {
+        for (String varName : knowledge.getVariables()) {
             knowledge.addVariable(varName);
         }
         return knowledge;
@@ -155,7 +155,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     }
 
     @Override
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -180,7 +180,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -193,7 +193,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     }
 
     @Override
-    public void resetParams(final Object params) {
+    public void resetParams(Object params) {
         this.params = (Parameters) params;
         freshenKnowledgeIfEmpty(this.variableNames);
 
@@ -220,7 +220,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         return this.numTiers;
     }
 
-    public void setNumTiers(final int numTiers) {
+    public void setNumTiers(int numTiers) {
         this.numTiers = numTiers;
     }
 }

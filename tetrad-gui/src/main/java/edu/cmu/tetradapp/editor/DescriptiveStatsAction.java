@@ -50,13 +50,13 @@ class DescriptiveStatsAction extends AbstractAction {
      * Constructs the <code>DescriptiveStatsAction</code> given the <code>DataEditor</code>
      * that its attached to.
      */
-    public DescriptiveStatsAction(final DataEditor editor) {
+    public DescriptiveStatsAction(DataEditor editor) {
         super("Descriptive Statistics...");
         this.dataEditor = editor;
     }
 
-    public void actionPerformed(final ActionEvent e) {
-        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot generate descriptive statistics on an empty data set.");
             return;
@@ -71,16 +71,16 @@ class DescriptiveStatsAction extends AbstractAction {
 
         Node selected = null;
 
-        for (final Node node : dataSet.getVariables()) {
+        for (Node node : dataSet.getVariables()) {
             if (dataSet.isSelected(node)) {
                 selected = node;
                 break;
             }
         }
 
-        final JPanel panel = createDescriptiveStatsDialog(selected);
+        JPanel panel = createDescriptiveStatsDialog(selected);
 
-        final EditorWindow window = new EditorWindow(panel,
+        EditorWindow window = new EditorWindow(panel,
                 "Descriptive Statistics", "Close", false, this.dataEditor);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
@@ -94,21 +94,21 @@ class DescriptiveStatsAction extends AbstractAction {
      * one is selected for you)
      */
     private JPanel createDescriptiveStatsDialog(Node selected) {
-        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
         //if nothing is selected, select something by default
         if (selected == null && dataSet.getNumColumns() != 0) {
             selected = dataSet.getVariable(0);
         }
-        final DescriptiveStatsEditorPanel editorPanel = new DescriptiveStatsEditorPanel(selected, dataSet);
+        DescriptiveStatsEditorPanel editorPanel = new DescriptiveStatsEditorPanel(selected, dataSet);
 
-        final JTextArea display = new JTextArea(DescriptiveStats.generateDescriptiveStats(dataSet,
+        JTextArea display = new JTextArea(DescriptiveStats.generateDescriptiveStats(dataSet,
                 selected), 20, 65);
         display.setEditable(false);
         display.setFont(new Font("Monospaced", Font.PLAIN, 12));
         editorPanel.addPropertyChangeListener(new DescriptiveStatsListener(display));
 
-        final Box box = Box.createHorizontalBox();
+        Box box = Box.createHorizontalBox();
         box.add(display);
 
         box.add(Box.createHorizontalStrut(3));
@@ -116,12 +116,12 @@ class DescriptiveStatsAction extends AbstractAction {
         box.add(Box.createHorizontalStrut(5));
         box.add(Box.createHorizontalGlue());
 
-        final Box vBox = Box.createVerticalBox();
+        Box vBox = Box.createVerticalBox();
         vBox.add(Box.createVerticalStrut(15));
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(vBox, BorderLayout.CENTER);
 
@@ -145,12 +145,12 @@ class DescriptiveStatsAction extends AbstractAction {
         private final JTextArea display;
 
 
-        public DescriptiveStatsListener(final JTextArea display) {
+        public DescriptiveStatsListener(JTextArea display) {
             this.display = display;
         }
 
 
-        public void propertyChange(final PropertyChangeEvent evt) {
+        public void propertyChange(PropertyChangeEvent evt) {
             if ("histogramChange".equals(evt.getPropertyName())) {
                 this.display.setText((String) evt.getNewValue());
             }

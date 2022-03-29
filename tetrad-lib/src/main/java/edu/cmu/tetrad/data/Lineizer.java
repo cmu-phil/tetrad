@@ -58,7 +58,7 @@ final class Lineizer {
      * Constructs a tokenizer for the given input line, using the given Pattern
      * as delimiter.
      */
-    public Lineizer(final Reader reader, final String commentMarker) {
+    public Lineizer(Reader reader, String commentMarker) {
         if (reader == null) {
             throw new NullPointerException();
         }
@@ -79,7 +79,7 @@ final class Lineizer {
             try {
                 this.tempLine = readLine();
                 return this.tempLine != null;
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 return false;
             }
         } else {
@@ -96,11 +96,11 @@ final class Lineizer {
         if (this.tempLine == null) {
             try {
                 return readLine();
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         } else {
-            final String line = this.tempLine;
+            String line = this.tempLine;
             this.tempLine = null;
             return line;
         }

@@ -50,7 +50,7 @@ public class KnowledgeWrapper implements SessionModel {
         return this.knowledgeList.get(0);
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 

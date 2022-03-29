@@ -143,7 +143,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         private final String description;
 
 
-        public DefaultEvent(final String id, final String description) {
+        public DefaultEvent(String id, String description) {
             if (id == null) {
                 throw new NullPointerException("The given id must not be null");
             }

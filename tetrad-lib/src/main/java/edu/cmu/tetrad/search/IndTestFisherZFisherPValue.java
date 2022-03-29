@@ -58,14 +58,14 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
     //==========================CONSTRUCTORS=============================//
 
-    public IndTestFisherZFisherPValue(final List<DataSet> dataSets, final double alpha) {
+    public IndTestFisherZFisherPValue(List<DataSet> dataSets, double alpha) {
 
         this.sampleSize = dataSets.get(0).getNumRows();
         setAlpha(alpha);
         this.ncov = new ArrayList<>();
         this.allLagged = new ArrayList<>();
 
-        for (final DataSet dataSet : dataSets) {
+        for (DataSet dataSet : dataSets) {
 //            dataSet = DataUtils.center(dataSet);
 //            TetradMatrix d = dataSet.getDoubleData();
             this.ncov.add(new CovarianceMatrix(dataSet));
@@ -81,7 +81,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
             this.variablesMap.put(this.variables.get(i), i);
         }
 
-        for (final DataSet dataSet : dataSets) {
+        for (DataSet dataSet : dataSets) {
             this.tests.add(new IndTestFisherZ(dataSet, alpha));
         }
 
@@ -90,27 +90,27 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
     //==========================PUBLIC METHODS=============================//
 
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
-        final int[] all = new int[z.size() + 2];
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
+        int[] all = new int[z.size() + 2];
         all[0] = this.variablesMap.get(x);
         all[1] = this.variablesMap.get(y);
         for (int i = 0; i < z.size(); i++) {
             all[i + 2] = this.variablesMap.get(z.get(i));
         }
 
-        final List<Double> pValues = new ArrayList<>();
+        List<Double> pValues = new ArrayList<>();
 
         for (int m = 0; m < this.ncov.size(); m++) {
-            final Matrix _ncov = this.ncov.get(m).getSelection(all, all);
-            final Matrix inv = _ncov.inverse();
-            final double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
+            Matrix _ncov = this.ncov.get(m).getSelection(all, all);
+            Matrix inv = _ncov.inverse();
+            double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
 //            r *= 0.6;
-            final double _z = sqrt(this.sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
-            final double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(_z)));
+            double _z = sqrt(this.sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
+            double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(_z)));
             pValues.add(pvalue);
         }
 
@@ -129,7 +129,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         int numZeros = 0;
 
         for (int i = 0; i < pValues.size(); i++) {
-            final double p = pValues.get(i);
+            double p = pValues.get(i);
             if (p == 0) {
                 numZeros++;
                 continue;
@@ -143,10 +143,10 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         if (tf == 0) throw new IllegalArgumentException(
                 "For the Fisher method, all component p values in the calculation may not be zero, " +
                         "\nsince not all p values can be ignored. Maybe try calculating AR residuals.");
-        final double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * n);
+        double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * n);
         this.pValue = p;
 
-        final boolean independent = p > this.alpha;
+        boolean independent = p > this.alpha;
 
         if (this.verbose) {
             if (independent) {
@@ -162,20 +162,20 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         return independent;
     }
 
-    private static List<Double> getAvailablePValues(final List<IndependenceTest> independenceTests, final Node x, final Node y, final List<Node> condSet) {
-        final List<Double> allPValues = new ArrayList<>();
+    private static List<Double> getAvailablePValues(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
+        List<Double> allPValues = new ArrayList<>();
 
-        for (final IndependenceTest test : independenceTests) {
+        for (IndependenceTest test : independenceTests) {
 //            if (missingVariable(x, y, condSet, test)) continue;
-            final List<Node> localCondSet = new ArrayList<>();
-            for (final Node node : condSet) {
+            List<Node> localCondSet = new ArrayList<>();
+            for (Node node : condSet) {
                 localCondSet.add(test.getVariable(node.getName()));
             }
 
             try {
                 test.isIndependent(test.getVariable(x.getName()), test.getVariable(y.getName()), localCondSet);
                 allPValues.add(test.getPValue());
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 // Skip that test.
             }
         }
@@ -183,17 +183,17 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         return allPValues;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isDependent(Node x, Node y, List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -208,7 +208,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -234,9 +234,9 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+            Node variable = getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -249,9 +249,9 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
-        for (final Node variable1 : variables) {
+        List<Node> variables = getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -260,7 +260,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     /**
      * @throws UnsupportedOperationException
      */
-    public boolean determines(final List z, final Node x) throws UnsupportedOperationException {
+    public boolean determines(List z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -272,9 +272,9 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     public ICovarianceMatrix getCov() {
-        final List<DataSet> _dataSets = new ArrayList<>();
+        List<DataSet> _dataSets = new ArrayList<>();
 
-        for (final DataSet d : this.dataSets) {
+        for (DataSet d : this.dataSets) {
             _dataSets.add(DataUtils.standardizeData(d));
         }
 
@@ -316,7 +316,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         return this.percent;
     }
 
-    public void setPercent(final double percent) {
+    public void setPercent(double percent) {
         if (percent < 0.0 || percent > 1.0) throw new IllegalArgumentException();
         this.percent = percent;
     }
@@ -325,7 +325,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

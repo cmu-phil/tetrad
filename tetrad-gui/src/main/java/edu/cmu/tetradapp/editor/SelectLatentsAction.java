@@ -52,7 +52,7 @@ class SelectLatentsAction extends AbstractAction implements ClipboardOwner {
      * Creates a new copy subsession action for the given desktop and
      * clipboard.
      */
-    public SelectLatentsAction(final GraphWorkbench workbench) {
+    public SelectLatentsAction(GraphWorkbench workbench) {
         super("Highlight Latent Nodes");
 
         if (workbench == null) {
@@ -66,21 +66,21 @@ class SelectLatentsAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();
 
-        for (final Component comp : this.workbench.getComponents()) {
+        for (Component comp : this.workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
-                final Node node = ((DisplayNode) comp).getModelNode();
+                Node node = ((DisplayNode) comp).getModelNode();
                 if (node.getNodeType() == NodeType.LATENT) {
                     this.workbench.selectNode(node);
                 }
             }
         }
 
-        for (final Component comp : this.workbench.getComponents()) {
+        for (Component comp : this.workbench.getComponents()) {
             if (comp instanceof DisplayEdge) {
-                final Edge edge = ((DisplayEdge) comp).getModelEdge();
+                Edge edge = ((DisplayEdge) comp).getModelEdge();
 
                 if (edge.getNode1().getNodeType() == NodeType.LATENT
                         && edge.getNode2().getNodeType() == NodeType.LATENT) {
@@ -93,7 +93,7 @@ class SelectLatentsAction extends AbstractAction implements ClipboardOwner {
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 }
 

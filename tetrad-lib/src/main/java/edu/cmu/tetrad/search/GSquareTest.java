@@ -60,7 +60,7 @@ public final class GSquareTest extends ChiSquareTest {
 //     */
 //    private double alpha = 0.05;
 
-    public GSquareTest(final DataSet dataSet, final double alpha) {
+    public GSquareTest(DataSet dataSet, double alpha) {
         super(dataSet, alpha);
 //        if (alpha < 0.0 || alpha > 1.0) {
 //            throw new IllegalArgumentException("Significance level must be " +
@@ -86,7 +86,7 @@ public final class GSquareTest extends ChiSquareTest {
      * summing up g square and degrees of freedom for each conditional table in turn, where rows or columns that consist
      * entirely of zeros have been removed.
      */
-    public synchronized Result calcGSquare(final int[] testIndices) {
+    public synchronized Result calcGSquare(int[] testIndices) {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
@@ -96,49 +96,49 @@ public final class GSquareTest extends ChiSquareTest {
         // to calculate. For x _||_ y | z1, z2, ..., we want to
         // calculate the margin for x, the margin for y, and the
         // margin for x and y. (These will be used later.)
-        final int[] firstVar = {0};
-        final int[] secondVar = {1};
-        final int[] bothVars = {0, 1};
+        int[] firstVar = {0};
+        int[] secondVar = {1};
+        int[] bothVars = {0, 1};
 
         double g2 = 0.0;
         int df = 0;
 
-        final int[] condDims = new int[testIndices.length - 2];
+        int[] condDims = new int[testIndices.length - 2];
         System.arraycopy(selectFromArray(getDims(), testIndices), 2, condDims, 0,
                 condDims.length);
 
-        final int[] coords = new int[testIndices.length];
-        final int numRows = this.getCellTable().getNumValues(0);
-        final int numCols = this.getCellTable().getNumValues(1);
+        int[] coords = new int[testIndices.length];
+        int numRows = this.getCellTable().getNumValues(0);
+        int numCols = this.getCellTable().getNumValues(1);
 
-        final boolean[] attestedRows = new boolean[numRows];
-        final boolean[] attestedCols = new boolean[numCols];
+        boolean[] attestedRows = new boolean[numRows];
+        boolean[] attestedCols = new boolean[numCols];
 
-        final CombinationIterator combinationIterator =
+        CombinationIterator combinationIterator =
                 new CombinationIterator(condDims);
 
         while (combinationIterator.hasNext()) {
-            final int[] combination = combinationIterator.next();
+            int[] combination = combinationIterator.next();
 
             System.arraycopy(combination, 0, coords, 2, combination.length);
             Arrays.fill(attestedRows, true);
             Arrays.fill(attestedCols, true);
 
-            final long total = this.getCellTable().calcMargin(coords, bothVars);
+            long total = this.getCellTable().calcMargin(coords, bothVars);
 
             double _gSquare = 0.0;
 
-            final List<Double> e = new ArrayList<>();
-            final List<Long> o = new ArrayList<>();
+            List<Double> e = new ArrayList<>();
+            List<Long> o = new ArrayList<>();
 
             for (int i = 0; i < numRows; i++) {
                 for (int j = 0; j < numCols; j++) {
                     coords[0] = i;
                     coords[1] = j;
 
-                    final long sumRow = this.getCellTable().calcMargin(coords, secondVar);
-                    final long sumCol = this.getCellTable().calcMargin(coords, firstVar);
-                    final long observed = (int) this.getCellTable().getValue(coords);
+                    long sumRow = this.getCellTable().calcMargin(coords, secondVar);
+                    long sumCol = this.getCellTable().calcMargin(coords, firstVar);
+                    long observed = (int) this.getCellTable().getValue(coords);
 
                     boolean skip = false;
 
@@ -162,7 +162,7 @@ public final class GSquareTest extends ChiSquareTest {
             }
 
             for (int i = 0; i < o.size(); i++) {
-                final double expected = e.get(i) / (double) total;
+                double expected = e.get(i) / (double) total;
 
                 if (o.get(i) != 0) {
                     _gSquare += 2.0 * o.get(i) * log(o.get(i) / expected);
@@ -176,19 +176,19 @@ public final class GSquareTest extends ChiSquareTest {
             int numAttestedRows = 0;
             int numAttestedCols = 0;
 
-            for (final boolean attestedRow : attestedRows) {
+            for (boolean attestedRow : attestedRows) {
                 if (attestedRow) {
                     numAttestedRows++;
                 }
             }
 
-            for (final boolean attestedCol : attestedCols) {
+            for (boolean attestedCol : attestedCols) {
                 if (attestedCol) {
                     numAttestedCols++;
                 }
             }
 
-            final int _df = (numAttestedRows - 1) * (numAttestedCols - 1);
+            int _df = (numAttestedRows - 1) * (numAttestedCols - 1);
 
             if (_df > 0) {
                 df += _df;
@@ -201,8 +201,8 @@ public final class GSquareTest extends ChiSquareTest {
             df = 1;
         }
 
-        final double pValue = 1.0 - ProbUtils.chisqCdf(g2, df);
-        final boolean indep = (pValue > getAlpha());
+        double pValue = 1.0 - ProbUtils.chisqCdf(g2, df);
+        boolean indep = (pValue > getAlpha());
         return new Result(g2, pValue, df, indep);
     }
 
@@ -389,7 +389,7 @@ public final class GSquareTest extends ChiSquareTest {
         /**
          * Constructs a new g square result using the given parameters.
          */
-        public Result(final double gSquare, final double pValue, final int df, final boolean isIndep) {
+        public Result(double gSquare, double pValue, int df, boolean isIndep) {
             this.gSquare = gSquare;
             this.pValue = pValue;
             this.df = df;

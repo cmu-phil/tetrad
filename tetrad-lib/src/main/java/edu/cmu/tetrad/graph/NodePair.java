@@ -41,7 +41,7 @@ public class NodePair {
     private final Node second;
 
 
-    public NodePair(final Node first, final Node second) {
+    public NodePair(Node first, Node second) {
         if (first == null) {
             throw new NullPointerException("First node must not be null.");
         }
@@ -67,14 +67,14 @@ public class NodePair {
     }
 
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
         if (!(o instanceof NodePair)) {
             return false;
         }
-        final NodePair thatPair = (NodePair) o;
+        NodePair thatPair = (NodePair) o;
 //        return this.first.equals(thatPair.first) && this.second.equals(thatPair.second) || this.first.equals(thatPair.second) && this.second.equals(thatPair.first);
         return (this.first == thatPair.first && this.second == thatPair.second) || (this.first == thatPair.second && this.second == thatPair.first);
     }

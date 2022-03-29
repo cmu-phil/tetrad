@@ -41,16 +41,16 @@ public class GraphEditorUtils {
      *
      */
     public static void editkamadaKawaiLayoutParams() {
-        final boolean initializeRandomly = Preferences.userRoot().getBoolean(
+        boolean initializeRandomly = Preferences.userRoot().getBoolean(
                 "kamadaKawaiLayoutInitializeRandomly", false);
-        final double naturalEdgeLength = Preferences.userRoot().getDouble(
+        double naturalEdgeLength = Preferences.userRoot().getDouble(
                 "kamadaKawaiLayoutNaturalEdgeLength", 80.0);
-        final double springConstant = Preferences.userRoot().getDouble(
+        double springConstant = Preferences.userRoot().getDouble(
                 "kamadaKawaiLayoutSpringConstant", 0.2);
-        final double stopEnergy = Preferences.userRoot().getDouble(
+        double stopEnergy = Preferences.userRoot().getDouble(
                 "kamadaKawaiLayoutStopEnergy", 1.0);
 
-        final JComboBox randomCombo = new JComboBox(new String[]{"No", "Yes"});
+        JComboBox randomCombo = new JComboBox(new String[]{"No", "Yes"});
         randomCombo.setMaximumSize(randomCombo.getPreferredSize());
 
         if (initializeRandomly) {
@@ -58,15 +58,15 @@ public class GraphEditorUtils {
         }
 
         randomCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JComboBox combo = (JComboBox) e.getSource();
-                final String selection = (String) combo.getSelectedItem();
+            public void actionPerformed(ActionEvent e) {
+                JComboBox combo = (JComboBox) e.getSource();
+                String selection = (String) combo.getSelectedItem();
                 Preferences.userRoot().putBoolean(
                         "kamadaKawaiLayoutInitializeRandomly", !"No".equals(selection));
             }
         });
 
-        final DoubleTextField naturalEdgeLengthField = new DoubleTextField(
+        DoubleTextField naturalEdgeLengthField = new DoubleTextField(
                 naturalEdgeLength, 4, NumberFormatUtil.getInstance().getNumberFormat());
         naturalEdgeLengthField.setFilter(
                 new DoubleTextField.Filter() {
@@ -100,7 +100,7 @@ public class GraphEditorUtils {
         DoubleTextField stopEnergyField =
                 new DoubleTextField(stopEnergy, 4, NumberFormatUtil.getInstance().getNumberFormat());
         stopEnergyField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 if (value < 0.0) {
                     return oldValue;
                 }
@@ -111,33 +111,33 @@ public class GraphEditorUtils {
             }
         });
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Initialize randomly? "));
         b1.add(Box.createHorizontalGlue());
         b1.add(randomCombo);
         b.add(b1);
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Natural edge length: "));
         b2.add(Box.createHorizontalGlue());
         b2.add(naturalEdgeLengthField);
         b.add(b2);
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Strength of springs: "));
         b3.add(Box.createHorizontalGlue());
         b3.add(springConstantField);
         b.add(b3);
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Stop at energy = "));
         b4.add(Box.createHorizontalGlue());
         b4.add(stopEnergyField);
         b.add(b4);
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b, BorderLayout.CENTER);
 

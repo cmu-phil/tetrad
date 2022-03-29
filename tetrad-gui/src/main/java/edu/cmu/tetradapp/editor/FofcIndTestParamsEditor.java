@@ -41,25 +41,25 @@ import java.text.NumberFormat;
 class FofcIndTestParamsEditor extends JComponent {
     private final Parameters fofcParams;
 
-    public FofcIndTestParamsEditor(final Parameters params) {
+    public FofcIndTestParamsEditor(Parameters params) {
         this.fofcParams = params;
 
-        final NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
+        NumberFormat smallNumberFormat = new DecimalFormat("0E00");
+        DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
         alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
                     getParams().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        final JComboBox<TestType> testSelector = new JComboBox<>();
+        JComboBox<TestType> testSelector = new JComboBox<>();
         testSelector.addItem(TestType.TETRAD_DELTA);
         testSelector.addItem(TestType.TETRAD_WISHART);
 
@@ -72,8 +72,8 @@ class FofcIndTestParamsEditor extends JComponent {
         }
 
         testSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final TestType index = (TestType) testSelector.getSelectedItem();
+            public void actionPerformed(ActionEvent e) {
+                TestType index = (TestType) testSelector.getSelectedItem();
                 if (index != null) {
                     getParams().set("tetradTestType", index);
                 }
@@ -98,30 +98,30 @@ class FofcIndTestParamsEditor extends JComponent {
         });
 
         testSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JComboBox combo = (JComboBox) e.getSource();
-                final TestType type = (TestType) combo.getSelectedItem();
+            public void actionPerformed(ActionEvent e) {
+                JComboBox combo = (JComboBox) e.getSource();
+                TestType type = (TestType) combo.getSelectedItem();
                 getParams().set("tetradTestType", type);
             }
         });
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Test:"));
         b1.add(Box.createHorizontalGlue());
         b1.add(testSelector);
         add(b1);
         add(Box.createHorizontalGlue());
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Algorithm:"));
         b2.add(Box.createHorizontalGlue());
         b2.add(algorithmSelector);
         add(b2);
 
         add(Box.createHorizontalGlue());
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Alpha:"));
         b3.add(Box.createHorizontalGlue());
         b3.add(alphaField);

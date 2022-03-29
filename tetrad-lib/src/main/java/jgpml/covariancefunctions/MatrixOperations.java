@@ -41,9 +41,9 @@ public class MatrixOperations {
      * @param A input <code>Matrix</code>
      * @return exp(A) result
      */
-    public static Matrix exp(final Matrix A) {
+    public static Matrix exp(Matrix A) {
 
-        final Matrix out = new Matrix(A.getRowDimension(), A.getColumnDimension());
+        Matrix out = new Matrix(A.getRowDimension(), A.getColumnDimension());
         for (int i = 0; i < A.getRowDimension(); i++)
             for (int j = 0; j < A.getColumnDimension(); j++)
                 out.set(i, j, Math.exp(A.get(i, j)));
@@ -58,8 +58,8 @@ public class MatrixOperations {
      * @return result
      */
 
-    public static Matrix sumRows(final Matrix A) {
-        final Matrix sum = new Matrix(A.getRowDimension(), 1);
+    public static Matrix sumRows(Matrix A) {
+        Matrix sum = new Matrix(A.getRowDimension(), 1);
         for (int i = 0; i < A.getColumnDimension(); i++)
             sum.plusEquals(A.getMatrix(0, A.getRowDimension() - 1, i, i));
         return sum;
@@ -73,7 +73,7 @@ public class MatrixOperations {
      * @param val value to be added
      * @return result
      */
-    public static Matrix addValue(final Matrix A, final double val) {
+    public static Matrix addValue(Matrix A, double val) {
         for (int i = 0; i < A.getRowDimension(); i++)
             for (int j = 0; j < A.getColumnDimension(); j++)
                 A.set(i, j, A.get(i, j) + val);
@@ -87,9 +87,9 @@ public class MatrixOperations {
      * @param A input <code>Matrix</code>
      * @return asin(A)  result
      */
-    public static Matrix asin(final Matrix A) {
+    public static Matrix asin(Matrix A) {
 
-        final Matrix out = new Matrix(A.getRowDimension(), A.getColumnDimension());
+        Matrix out = new Matrix(A.getRowDimension(), A.getColumnDimension());
         for (int i = 0; i < A.getRowDimension(); i++)
             for (int j = 0; j < A.getColumnDimension(); j++)
                 out.set(i, j, Math.asin(A.get(i, j)));
@@ -103,9 +103,9 @@ public class MatrixOperations {
      * @param A input <code>Matrix</code>
      * @return sqrt(A)  result
      */
-    public static Matrix sqrt(final Matrix A) {
+    public static Matrix sqrt(Matrix A) {
 
-        final Matrix out = new Matrix(A.getRowDimension(), A.getColumnDimension());
+        Matrix out = new Matrix(A.getRowDimension(), A.getColumnDimension());
         for (int i = 0; i < A.getRowDimension(); i++)
             for (int j = 0; j < A.getColumnDimension(); j++)
                 out.set(i, j, Math.sqrt(A.get(i, j)));
@@ -122,7 +122,7 @@ public class MatrixOperations {
      * @param A input <code>Matrix</code>
      * @return diag(A) result
      */
-    public static Matrix diag(final Matrix A) {
+    public static Matrix diag(Matrix A) {
         Matrix diag = null;
         if (A.getColumnDimension() == 1 || A.getRowDimension() == 1) {
             if (A.getColumnDimension() == 1) {
@@ -145,17 +145,17 @@ public class MatrixOperations {
     }
 
 
-    public static Matrix mean(final Matrix A) {
+    public static Matrix mean(Matrix A) {
 
         if (A.getRowDimension() == 1) {
             double m = 0;
             for (int i = 0; i < A.getColumnDimension(); i++) m += A.get(0, i);
 
-            final Matrix M = new Matrix(1, 1);
+            Matrix M = new Matrix(1, 1);
             M.set(0, 0, m / A.getColumnDimension());
             return M;
         } else {
-            final Matrix M = new Matrix(1, A.getColumnDimension());
+            Matrix M = new Matrix(1, A.getColumnDimension());
             for (int i = 0; i < A.getColumnDimension(); i++) {
                 double m = 0;
                 for (int j = 0; j < A.getRowDimension(); j++) {
@@ -167,7 +167,7 @@ public class MatrixOperations {
         }
     }
 
-    public static Matrix std(final Matrix A) {
+    public static Matrix std(Matrix A) {
 
         if (A.getRowDimension() == 1) {
             double m = 0;
@@ -176,11 +176,11 @@ public class MatrixOperations {
                 m = (m * (i - 1) + A.get(0, i)) / i;
                 var = var * (i - 1) / i + ((A.get(0, i) - m) * (A.get(0, i) - m)) / (i - 1);
             }
-            final Matrix M = new Matrix(1, 1);
+            Matrix M = new Matrix(1, 1);
             M.set(0, 0, Math.sqrt(var));
             return M;
         } else {
-            final Matrix M = new Matrix(1, A.getColumnDimension());
+            Matrix M = new Matrix(1, A.getColumnDimension());
             for (int i = 0; i < A.getColumnDimension(); i++) {
                 double m = 0;
                 double var = 0;

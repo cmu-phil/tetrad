@@ -57,22 +57,22 @@ class PcIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public PcIndTestParamsEditor(final Parameters params) {
+    public PcIndTestParamsEditor(Parameters params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
 //        alphaField = new DoubleTextField(params().getAlternativePenalty(), 5,
 //                NumberFormatUtil.getInstance().getNumberFormat());
-        final NumberFormat numberFormat = NumberFormatUtil.getInstance().getNumberFormat();
-        final NumberFormat smallNumberFormat = new DecimalFormat("0.0E0##");
+        NumberFormat numberFormat = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat smallNumberFormat = new DecimalFormat("0.0E0##");
         this.alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 6,
                 numberFormat, smallNumberFormat, .001);
         this.alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
                     params().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -80,11 +80,11 @@ class PcIndTestParamsEditor extends JComponent {
 
         this.depthField = new IntTextField(params().getInt("depth", -1), 4);
         this.depthField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+            public int filter(int value, int oldValue) {
                 try {
                     params().set("depth", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -102,7 +102,7 @@ class PcIndTestParamsEditor extends JComponent {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         if (this.alphaField != null) {
-            final Box b1 = Box.createHorizontalBox();
+            Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Alpha:"));
             b1.add(Box.createHorizontalStrut(10));
             b1.add(Box.createHorizontalGlue());
@@ -110,7 +110,7 @@ class PcIndTestParamsEditor extends JComponent {
             add(b1);
         }
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Depth:"));
         b2.add(Box.createHorizontalStrut(10));
         b2.add(Box.createHorizontalGlue());

@@ -62,7 +62,7 @@ public class MultiFaskV1 {
 
     private final double[][][] data;
 
-    public MultiFaskV1(final List<DataSet> dataSets, final SemBicScoreMultiFas score) {
+    public MultiFaskV1(List<DataSet> dataSets, SemBicScoreMultiFas score) {
 
         this.dataSets = dataSets;
         this.score = score;
@@ -85,7 +85,7 @@ public class MultiFaskV1 {
 
         // System.out.println(dataSets.size());
 
-        final ArrayList<DataSet> standardSets = new ArrayList<>();
+        ArrayList<DataSet> standardSets = new ArrayList<>();
 
         for (int i = 0; i < this.dataSets.size(); i++) {
             dataSet = DataUtils.standardizeData(this.dataSets.get(i));
@@ -95,14 +95,14 @@ public class MultiFaskV1 {
 
         this.dataSets = standardSets;
 
-        final List<Node> variables = this.dataSets.get(0).getVariables();
+        List<Node> variables = this.dataSets.get(0).getVariables();
 
         Graph G0;
 
-        final IndependenceTest test = new IndTestScore(this.score);
+        IndependenceTest test = new IndTestScore(this.score);
         System.out.println("FAS");
 
-        final Fas fas = new Fas(test);
+        Fas fas = new Fas(test);
         fas.setStable(true);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
@@ -114,19 +114,19 @@ public class MultiFaskV1 {
 
         System.out.println("Orientation");
 
-        final Graph graph = new EdgeListGraph(variables);
+        Graph graph = new EdgeListGraph(variables);
 
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
 
-                final Node X = variables.get(i);
-                final Node Y = variables.get(j);
+                Node X = variables.get(i);
+                Node Y = variables.get(j);
 
                 double[] x;
                 double[] y;
 
-                final double[][] _x = new double[this.dataSets.size()][];
-                final double[][] _y = new double[this.dataSets.size()][];
+                double[][] _x = new double[this.dataSets.size()][];
+                double[][] _y = new double[this.dataSets.size()][];
 
                 double c1 = 0;
                 double c2 = 0;
@@ -150,8 +150,8 @@ public class MultiFaskV1 {
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
                     } else if (bidirected(_x, _y, G0, X, Y)) {
-                        final Edge edge1 = Edges.directedEdge(X, Y);
-                        final Edge edge2 = Edges.directedEdge(Y, X);
+                        Edge edge1 = Edges.directedEdge(X, Y);
+                        Edge edge2 = Edges.directedEdge(Y, X);
                         graph.addEdge(edge1);
                         graph.addEdge(edge2);
                     } else {
@@ -187,14 +187,14 @@ public class MultiFaskV1 {
      *                        The default is 1, though a higher value is recommended, say,
      *                        2, 3, or 4.
      */
-    public void setPenaltyDiscount(final double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
     /**
      * @param alpha Alpha for orienting 2-cycles. Needs to be on the low side usually. Default 1e-6.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
@@ -208,7 +208,7 @@ public class MultiFaskV1 {
     /**
      * @param knowledge Knowledge of forbidden and required edges.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -218,10 +218,10 @@ public class MultiFaskV1 {
 
     //======================================== PRIVATE METHODS ===================================//
 
-    private boolean bidirected(final double[][] x, final double[][] y, final Graph G0, final Node X, final Node Y) {
-        final Set<Node> adjSet = new HashSet<Node>(G0.getAdjacentNodes(X));
+    private boolean bidirected(double[][] x, double[][] y, Graph G0, Node X, Node Y) {
+        Set<Node> adjSet = new HashSet<Node>(G0.getAdjacentNodes(X));
         adjSet.addAll(G0.getAdjacentNodes(Y));
-        final List<Node> adj = new ArrayList<>(adjSet);
+        List<Node> adj = new ArrayList<>(adjSet);
         // System.out.println(adj.size());
         adj.remove(X);
         adj.remove(Y);
@@ -233,7 +233,7 @@ public class MultiFaskV1 {
 
         for (int i = 0; i < this.dataSets.size(); i++) {
 
-            final DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), min(this.depth, adj.size()));
+            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), min(this.depth, adj.size()));
             int[] choice;
             DataSet dataSet;
 
@@ -241,8 +241,8 @@ public class MultiFaskV1 {
 
             while ((choice = gen.next()) != null) {
 
-                final List<Node> _adj = GraphUtils.asList(choice, adj);
-                final double[][][] _Z = new double[this.dataSets.size()][_adj.size()][];
+                List<Node> _adj = GraphUtils.asList(choice, adj);
+                double[][][] _Z = new double[this.dataSets.size()][_adj.size()][];
 
 
                 // System.out.println(_adj.size());
@@ -252,33 +252,33 @@ public class MultiFaskV1 {
 
                     for (int f = 0; f < _adj.size(); f++) {
 
-                        final Node _z = _adj.get(f);
+                        Node _z = _adj.get(f);
 
                         for (int g = 0; g < this.dataSets.size(); g++) {
 
-                            final int column = this.dataSets.get(0).getColumn(_z);
+                            int column = this.dataSets.get(0).getColumn(_z);
                             _Z[g][f] = this.data[g][column];
                         }
                     }
 
 
-                    final double pc = partialCorrelation(x[i], y[i], _Z[i], x[i], Double.NEGATIVE_INFINITY, +1);
-                    final double pc1 = partialCorrelation(x[i], y[i], _Z[i], x[i], 0, +1);
-                    final double pc2 = partialCorrelation(x[i], y[i], _Z[i], y[i], 0, +1);
+                    double pc = partialCorrelation(x[i], y[i], _Z[i], x[i], Double.NEGATIVE_INFINITY, +1);
+                    double pc1 = partialCorrelation(x[i], y[i], _Z[i], x[i], 0, +1);
+                    double pc2 = partialCorrelation(x[i], y[i], _Z[i], y[i], 0, +1);
 
-                    final int nc = StatUtils.getRows(x[i], Double.NEGATIVE_INFINITY, +1).size();
-                    final int nc1 = StatUtils.getRows(x[i], 0, +1).size();
-                    final int nc2 = StatUtils.getRows(y[i], 0, +1).size();
+                    int nc = StatUtils.getRows(x[i], Double.NEGATIVE_INFINITY, +1).size();
+                    int nc1 = StatUtils.getRows(x[i], 0, +1).size();
+                    int nc2 = StatUtils.getRows(y[i], 0, +1).size();
 
-                    final double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
-                    final double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
-                    final double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
+                    double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
+                    double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
+                    double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
 
-                    final double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
-                    final double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
+                    double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
+                    double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-                    final boolean rejected1 = abs(zv1) > this.cutoff;
-                    final boolean rejected2 = abs(zv2) > this.cutoff;
+                    boolean rejected1 = abs(zv1) > this.cutoff;
+                    boolean rejected2 = abs(zv2) > this.cutoff;
 
                     if (zv1 < 0 && zv2 > 0 && rejected1) {
                         possibleTwoCycle = true;
@@ -293,24 +293,24 @@ public class MultiFaskV1 {
                     }
 
                 } else {
-                    final double[][] _emptyZ = new double[0][0];
-                    final double pc = partialCorrelation(x[i], y[i], _emptyZ, x[i], Double.NEGATIVE_INFINITY, +1);
-                    final double pc1 = partialCorrelation(x[i], y[i], _emptyZ, x[i], 0, +1);
-                    final double pc2 = partialCorrelation(x[i], y[i], _emptyZ, y[i], 0, +1);
+                    double[][] _emptyZ = new double[0][0];
+                    double pc = partialCorrelation(x[i], y[i], _emptyZ, x[i], Double.NEGATIVE_INFINITY, +1);
+                    double pc1 = partialCorrelation(x[i], y[i], _emptyZ, x[i], 0, +1);
+                    double pc2 = partialCorrelation(x[i], y[i], _emptyZ, y[i], 0, +1);
 
-                    final int nc = StatUtils.getRows(x[i], Double.NEGATIVE_INFINITY, +1).size();
-                    final int nc1 = StatUtils.getRows(x[i], 0, +1).size();
-                    final int nc2 = StatUtils.getRows(y[i], 0, +1).size();
+                    int nc = StatUtils.getRows(x[i], Double.NEGATIVE_INFINITY, +1).size();
+                    int nc1 = StatUtils.getRows(x[i], 0, +1).size();
+                    int nc2 = StatUtils.getRows(y[i], 0, +1).size();
 
-                    final double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
-                    final double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
-                    final double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
+                    double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
+                    double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
+                    double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
 
-                    final double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
-                    final double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
+                    double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
+                    double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-                    final boolean rejected1 = abs(zv1) > this.cutoff;
-                    final boolean rejected2 = abs(zv2) > this.cutoff;
+                    boolean rejected1 = abs(zv1) > this.cutoff;
+                    boolean rejected2 = abs(zv2) > this.cutoff;
 
                     if (zv1 < 0 && zv2 > 0 && rejected1) {
                         possibleTwoCycle = true;
@@ -338,18 +338,18 @@ public class MultiFaskV1 {
         return trueCounter > falseCounter;
     }
 
-    private boolean leftright(final double[][] x, final double[][] y) {
+    private boolean leftright(double[][] x, double[][] y) {
 
         double lrSum = 0;
 
         for (int i = 0; i < this.dataSets.size(); i++) {
-            final double left = MultiFaskV1.cu(x[i], y[i], x[i]) / (sqrt(MultiFaskV1.cu(x[i], x[i], x[i]) * MultiFaskV1.cu(y[i], y[i], x[i])));
-            final double right = MultiFaskV1.cu(x[i], y[i], y[i]) / (sqrt(MultiFaskV1.cu(x[i], x[i], y[i]) * MultiFaskV1.cu(y[i], y[i], y[i])));
+            double left = MultiFaskV1.cu(x[i], y[i], x[i]) / (sqrt(MultiFaskV1.cu(x[i], x[i], x[i]) * MultiFaskV1.cu(y[i], y[i], x[i])));
+            double right = MultiFaskV1.cu(x[i], y[i], y[i]) / (sqrt(MultiFaskV1.cu(x[i], x[i], y[i]) * MultiFaskV1.cu(y[i], y[i], y[i])));
             double lr = left - right;
 
             double r = StatUtils.correlation(x[i], y[i]);
-            final double sx = StatUtils.skewness(x[i]);
-            final double sy = StatUtils.skewness(y[i]);
+            double sx = StatUtils.skewness(x[i]);
+            double sy = StatUtils.skewness(y[i]);
 
             r *= signum(sx) * signum(sy);
             lr *= signum(r);
@@ -361,7 +361,7 @@ public class MultiFaskV1 {
         return lrSum > 0;
     }
 
-    private static double cu(final double[] x, final double[] y, final double[] condition) {
+    private static double cu(double[] x, double[] y, double[] condition) {
         double exy = 0.0;
 
         int n = 0;
@@ -376,9 +376,9 @@ public class MultiFaskV1 {
         return exy / n;
     }
 
-    private double partialCorrelation(final double[] x, final double[] y, final double[][] z, final double[] condition, final double threshold, final double direction) throws SingularMatrixException {
-        final double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
-        final Matrix m = new Matrix(cv).transpose();
+    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) throws SingularMatrixException {
+        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
+        Matrix m = new Matrix(cv).transpose();
         return StatUtils.partialCorrelation(m);
     }
 
@@ -386,7 +386,7 @@ public class MultiFaskV1 {
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    private void setCutoff(final double alpha) {
+    private void setCutoff(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range: " + alpha);
         }
@@ -394,7 +394,7 @@ public class MultiFaskV1 {
         this.cutoff = StatUtils.getZForAlpha(alpha);
     }
 
-    private boolean knowledgeOrients(final Node left, final Node right) {
+    private boolean knowledgeOrients(Node left, Node right) {
         return this.knowledge.isForbidden(right.getName(), left.getName()) || this.knowledge.isRequired(left.getName(), right.getName());
     }
 
@@ -402,7 +402,7 @@ public class MultiFaskV1 {
         return this.externalGraph;
     }
 
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
@@ -410,7 +410,7 @@ public class MultiFaskV1 {
         return this.extraEdgeThreshold;
     }
 
-    public void setExtraEdgeThreshold(final double extraEdgeThreshold) {
+    public void setExtraEdgeThreshold(double extraEdgeThreshold) {
         this.extraEdgeThreshold = extraEdgeThreshold;
     }
 
@@ -418,7 +418,7 @@ public class MultiFaskV1 {
         return this.useFasAdjacencies;
     }
 
-    public void setUseFasAdjacencies(final boolean useFasAdjacencies) {
+    public void setUseFasAdjacencies(boolean useFasAdjacencies) {
         this.useFasAdjacencies = useFasAdjacencies;
     }
 
@@ -426,7 +426,7 @@ public class MultiFaskV1 {
         return this.useSkewAdjacencies;
     }
 
-    public void setUseSkewAdjacencies(final boolean useSkewAdjacencies) {
+    public void setUseSkewAdjacencies(boolean useSkewAdjacencies) {
         this.useSkewAdjacencies = useSkewAdjacencies;
     }
 
@@ -434,7 +434,7 @@ public class MultiFaskV1 {
         return this.delta;
     }
 
-    public void setDelta(final double delta) {
+    public void setDelta(double delta) {
         this.delta = delta;
     }
 }

@@ -94,7 +94,7 @@ public class PcStableMax implements GraphSearch {
      * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
      *                         independence test, for fear of duplicating the data set!
      */
-    public PcStableMax(final IndependenceTest independenceTest) {
+    public PcStableMax(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -121,7 +121,7 @@ public class PcStableMax implements GraphSearch {
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -145,7 +145,7 @@ public class PcStableMax implements GraphSearch {
      *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
      *              machines.
      */
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -167,24 +167,24 @@ public class PcStableMax implements GraphSearch {
     /**
      * Runs PC search, returning the output CPDAG, over the given nodes.
      */
-    public Graph search(final List<Node> nodes) {
+    public Graph search(List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        final long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        final List<Node> allNodes = getIndependenceTest().getVariables();
+        List<Node> allNodes = getIndependenceTest().getVariables();
 
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
 
-        final Fas fas = new Fas(getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         fas.setStable(true);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
@@ -194,13 +194,13 @@ public class PcStableMax implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
 
-        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(this.independenceTest);
+        OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(this.independenceTest);
         orientCollidersMaxP.setKnowledge(this.knowledge);
         orientCollidersMaxP.setUseHeuristic(this.useHeuristic);
         orientCollidersMaxP.setMaxPathLength(this.maxPathLength);
         orientCollidersMaxP.orient(this.graph);
 
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
         rules.setKnowledge(this.knowledge);
         rules.orientImplied(this.graph);
 
@@ -223,17 +223,17 @@ public class PcStableMax implements GraphSearch {
     }
 
     public Set<Edge> getAdjacencies() {
-        final Set<Edge> adjacencies = new HashSet<>();
-        for (final Edge edge : this.graph.getEdges()) {
+        Set<Edge> adjacencies = new HashSet<>();
+        for (Edge edge : this.graph.getEdges()) {
             adjacencies.add(edge);
         }
         return adjacencies;
     }
 
     public Set<Edge> getNonadjacencies() {
-        final Graph complete = GraphUtils.completeGraph(this.graph);
-        final Set<Edge> nonAdjacencies = complete.getEdges();
-        final Graph undirected = GraphUtils.undirectedGraph(this.graph);
+        Graph complete = GraphUtils.completeGraph(this.graph);
+        Set<Edge> nonAdjacencies = complete.getEdges();
+        Graph undirected = GraphUtils.undirectedGraph(this.graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
     }
@@ -242,7 +242,7 @@ public class PcStableMax implements GraphSearch {
         return this.graph.getNodes();
     }
 
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
@@ -250,11 +250,11 @@ public class PcStableMax implements GraphSearch {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setUseHeuristic(final boolean useHeuristic) {
+    public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;
     }
 
@@ -262,7 +262,7 @@ public class PcStableMax implements GraphSearch {
         return this.useHeuristic;
     }
 
-    public void setMaxPathLength(final int maxPathLength) {
+    public void setMaxPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
     }
 

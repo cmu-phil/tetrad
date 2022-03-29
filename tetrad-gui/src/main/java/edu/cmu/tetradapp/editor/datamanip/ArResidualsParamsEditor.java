@@ -54,14 +54,14 @@ public class ArResidualsParamsEditor extends JPanel implements ParameterEditor {
      *
      * @param params
      */
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 
     /**
      * Does nothing
      */
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
 
     }
 
@@ -69,19 +69,19 @@ public class ArResidualsParamsEditor extends JPanel implements ParameterEditor {
      * Builds the panel.
      */
     public void setup() {
-        final SpinnerNumberModel model = new SpinnerNumberModel(this.params.getInt("numTimeLags", 1),
+        SpinnerNumberModel model = new SpinnerNumberModel(this.params.getInt("numTimeLags", 1),
                 0, Integer.MAX_VALUE, 1);
-        final JSpinner jSpinner = new JSpinner(model);
+        JSpinner jSpinner = new JSpinner(model);
         jSpinner.setPreferredSize(jSpinner.getPreferredSize());
 
         model.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent e) {
-                final SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
+            public void stateChanged(ChangeEvent e) {
+                SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
                 ArResidualsParamsEditor.this.params.set("numTimeLags", model.getNumber().intValue());
             }
         });
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Number of lags: "));
         b1.add(Box.createHorizontalGlue());
         b1.add(Box.createHorizontalStrut(15));

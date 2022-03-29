@@ -62,20 +62,20 @@ public class ContinuousTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataWithNoHeaderExcludingVariableByColumnNumbers() throws IOException {
-        final Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/no_header_sim_test_data.csv").getFile());
-        final ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
+        Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/no_header_sim_test_data.csv").getFile());
+        ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteCharacter);
         dataReader.setMissingDataMarker(this.missingValueMarker);
         dataReader.setHasHeader(false);
 
-        final int[] columnsToExclude = {5, 3, 1, 8, 10, 11};
-        final Data data = dataReader.readInData(columnsToExclude);
+        int[] columnsToExclude = {5, 3, 1, 8, 10, 11};
+        Data data = dataReader.readInData(columnsToExclude);
         Assert.assertTrue(data instanceof ContinuousData);
 
-        final ContinuousData continuousData = (ContinuousData) data;
-        final DataColumn[] dataColumns = continuousData.getDataColumns();
-        final double[][] contData = continuousData.getData();
+        ContinuousData continuousData = (ContinuousData) data;
+        DataColumn[] dataColumns = continuousData.getDataColumns();
+        double[][] contData = continuousData.getData();
 
         long expected = 5;
         long actual = dataColumns.length;
@@ -97,19 +97,19 @@ public class ContinuousTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataWithNoHeader() throws IOException {
-        final Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/no_header_sim_test_data.csv").getFile());
-        final ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
+        Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/no_header_sim_test_data.csv").getFile());
+        ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteCharacter);
         dataReader.setMissingDataMarker(this.missingValueMarker);
         dataReader.setHasHeader(false);
 
-        final Data data = dataReader.readInData();
+        Data data = dataReader.readInData();
         Assert.assertTrue(data instanceof ContinuousData);
 
-        final ContinuousData continuousData = (ContinuousData) data;
-        final DataColumn[] dataColumns = continuousData.getDataColumns();
-        final double[][] contData = continuousData.getData();
+        ContinuousData continuousData = (ContinuousData) data;
+        DataColumn[] dataColumns = continuousData.getDataColumns();
+        double[][] contData = continuousData.getData();
 
         long expected = 10;
         long actual = dataColumns.length;
@@ -131,20 +131,20 @@ public class ContinuousTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataExcludingVariableByColumnNumbers() throws IOException {
-        final int[] columnsToExclude = {5, 3, 1, 8, 10, 11};
-        for (final Path dataFile : this.dataFiles) {
-            final ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
+        int[] columnsToExclude = {5, 3, 1, 8, 10, 11};
+        for (Path dataFile : this.dataFiles) {
+            ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
             dataReader.setCommentMarker(this.commentMarker);
             dataReader.setQuoteCharacter(this.quoteCharacter);
             dataReader.setMissingDataMarker(this.missingValueMarker);
             dataReader.setHasHeader(this.hasHeader);
 
-            final Data data = dataReader.readInData(columnsToExclude);
+            Data data = dataReader.readInData(columnsToExclude);
             Assert.assertTrue(data instanceof ContinuousData);
 
-            final ContinuousData continuousData = (ContinuousData) data;
-            final DataColumn[] dataColumns = continuousData.getDataColumns();
-            final double[][] contData = continuousData.getData();
+            ContinuousData continuousData = (ContinuousData) data;
+            DataColumn[] dataColumns = continuousData.getDataColumns();
+            double[][] contData = continuousData.getData();
 
             long expected = 5;
             long actual = dataColumns.length;
@@ -167,20 +167,20 @@ public class ContinuousTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataExcludingVariableByNames() throws IOException {
-        final Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X1", "X3", "X4", "X6", "X8", "X10"));
-        for (final Path dataFile : this.dataFiles) {
-            final ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
+        Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X1", "X3", "X4", "X6", "X8", "X10"));
+        for (Path dataFile : this.dataFiles) {
+            ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
             dataReader.setCommentMarker(this.commentMarker);
             dataReader.setQuoteCharacter(this.quoteCharacter);
             dataReader.setMissingDataMarker(this.missingValueMarker);
             dataReader.setHasHeader(this.hasHeader);
 
-            final Data data = dataReader.readInData(namesOfColumnsToExclude);
+            Data data = dataReader.readInData(namesOfColumnsToExclude);
             Assert.assertTrue(data instanceof ContinuousData);
 
-            final ContinuousData continuousData = (ContinuousData) data;
-            final DataColumn[] dataColumns = continuousData.getDataColumns();
-            final double[][] contData = continuousData.getData();
+            ContinuousData continuousData = (ContinuousData) data;
+            DataColumn[] dataColumns = continuousData.getDataColumns();
+            double[][] contData = continuousData.getData();
 
             long expected = 4;
             long actual = dataColumns.length;
@@ -203,19 +203,19 @@ public class ContinuousTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInData() throws IOException {
-        for (final Path dataFile : this.dataFiles) {
-            final ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
+        for (Path dataFile : this.dataFiles) {
+            ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
             dataReader.setCommentMarker(this.commentMarker);
             dataReader.setQuoteCharacter(this.quoteCharacter);
             dataReader.setMissingDataMarker(this.missingValueMarker);
             dataReader.setHasHeader(this.hasHeader);
 
-            final Data data = dataReader.readInData();
+            Data data = dataReader.readInData();
             Assert.assertTrue(data instanceof ContinuousData);
 
-            final ContinuousData continuousData = (ContinuousData) data;
-            final DataColumn[] dataColumns = continuousData.getDataColumns();
-            final double[][] contData = continuousData.getData();
+            ContinuousData continuousData = (ContinuousData) data;
+            DataColumn[] dataColumns = continuousData.getDataColumns();
+            double[][] contData = continuousData.getData();
 
             long expected = 10;
             long actual = dataColumns.length;

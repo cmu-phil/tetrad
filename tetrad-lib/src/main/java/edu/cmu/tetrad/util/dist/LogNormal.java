@@ -42,7 +42,7 @@ public class LogNormal implements Distribution {
         return new LogNormal(.5);
     }
 
-    public LogNormal(final double sd) {
+    public LogNormal(double sd) {
         this.sd = sd;
     }
 
@@ -54,7 +54,7 @@ public class LogNormal implements Distribution {
         return "LogNormal";
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
             this.sd = value;
         }
@@ -62,7 +62,7 @@ public class LogNormal implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
             return this.sd;
         }
@@ -70,12 +70,12 @@ public class LogNormal implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         return "Standard Deviation";
     }
 
     public double nextRandom() {
-        final double random = RandomUtil.getInstance().nextNormal(0, this.sd);
+        double random = RandomUtil.getInstance().nextNormal(0, this.sd);
         return Math.exp(random);
     }
 

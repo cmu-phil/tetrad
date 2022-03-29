@@ -47,8 +47,8 @@ public class TestSessionEvent {
     @Test
     public void testAddNodeEvent() {
 
-        final SessionNode node = new SessionNode(Type1.class);
-        final SessionEvent event =
+        SessionNode node = new SessionNode(Type1.class);
+        SessionEvent event =
                 new SessionEvent(this.session, node, SessionEvent.NODE_ADDED);
 
         assertTrue(node == event.getNode());
@@ -61,8 +61,8 @@ public class TestSessionEvent {
     @Test
     public void testRemoveNodeEvent() {
 
-        final SessionNode node = new SessionNode(Type1.class);
-        final SessionEvent event =
+        SessionNode node = new SessionNode(Type1.class);
+        SessionEvent event =
                 new SessionEvent(this.session, node, SessionEvent.NODE_REMOVED);
 
         assertTrue(node == event.getNode());
@@ -75,8 +75,8 @@ public class TestSessionEvent {
     @Test
     public void testModelCreatedEvent() {
 
-        final SessionNode node = new SessionNode(Type1.class);
-        final SessionEvent event =
+        SessionNode node = new SessionNode(Type1.class);
+        SessionEvent event =
                 new SessionEvent(this.session, node, SessionEvent.MODEL_CREATED);
 
         assertTrue(node == event.getNode());
@@ -88,8 +88,8 @@ public class TestSessionEvent {
      */
     @Test
     public void testModelDestroyedEvent() {
-        final SessionNode node = new SessionNode(Type1.class);
-        final SessionEvent event =
+        SessionNode node = new SessionNode(Type1.class);
+        SessionEvent event =
                 new SessionEvent(this.session, node, SessionEvent.MODEL_DESTROYED);
 
         assertTrue(node == event.getNode());
@@ -101,8 +101,8 @@ public class TestSessionEvent {
      */
     @Test
     public void testModelUnclearEvent() {
-        final SessionNode node = new SessionNode(Type1.class);
-        final SessionEvent event =
+        SessionNode node = new SessionNode(Type1.class);
+        SessionEvent event =
                 new SessionEvent(this.session, node, SessionEvent.MODEL_UNCLEAR);
 
         assertTrue(node == event.getNode());
@@ -114,9 +114,9 @@ public class TestSessionEvent {
      */
     @Test
     public void testParentAddedEvent() {
-        final SessionNode child = new SessionNode(Type1.class);
-        final SessionNode parent = new SessionNode(Type2.class);
-        final SessionEvent event = new SessionEvent(this.session, parent, child,
+        SessionNode child = new SessionNode(Type1.class);
+        SessionNode parent = new SessionNode(Type2.class);
+        SessionEvent event = new SessionEvent(this.session, parent, child,
                 SessionEvent.PARENT_ADDED);
 
         assertTrue(child == event.getChild());
@@ -129,9 +129,9 @@ public class TestSessionEvent {
      */
     @Test
     public void testParentRemovedEvent() {
-        final SessionNode child = new SessionNode(Type1.class);
-        final SessionNode parent = new SessionNode(Type2.class);
-        final SessionEvent event = new SessionEvent(this.session, parent, child,
+        SessionNode child = new SessionNode(Type1.class);
+        SessionNode parent = new SessionNode(Type2.class);
+        SessionEvent event = new SessionEvent(this.session, parent, child,
                 SessionEvent.PARENT_REMOVED);
 
         assertTrue(child == event.getChild());

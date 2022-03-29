@@ -57,7 +57,7 @@ public final class SemManipulation implements TetradSerializable {
     /**
      * Constructs a container for evidence for the given Bayes IM.
      */
-    public SemManipulation(final SemIm semIm) {
+    public SemManipulation(SemIm semIm) {
         if (semIm == null) {
             throw new NullPointerException();
         }
@@ -66,7 +66,7 @@ public final class SemManipulation implements TetradSerializable {
         this.manipulated = new boolean[semIm.getVariableNodes().size()];
     }
 
-    public SemManipulation(final SemManipulation manipulation) {
+    public SemManipulation(SemManipulation manipulation) {
         this.semIm = manipulation.semIm;
         this.manipulated = Arrays.copyOf(manipulation.manipulated, manipulation.manipulated.length);
     }
@@ -120,11 +120,11 @@ public final class SemManipulation implements TetradSerializable {
 //        return this.semIm;
 //    }
 
-    public int getNodeIndex(final String nodeName) {
-        final List nodes = this.semIm.getSemPm().getVariableNodes();
+    public int getNodeIndex(String nodeName) {
+        List nodes = this.semIm.getSemPm().getVariableNodes();
 
         for (int i = 0; i < nodes.size(); i++) {
-            final Node node = (Node) nodes.get(i);
+            Node node = (Node) nodes.get(i);
 
             if (node.getName().equals(nodeName)) {
                 return i;
@@ -138,20 +138,20 @@ public final class SemManipulation implements TetradSerializable {
         return this.semIm.getVariableNodes().size();
     }
 
-    public Node getNode(final int nodeIndex) {
+    public Node getNode(int nodeIndex) {
         return this.semIm.getVariableNodes().get(nodeIndex);
     }
 
-    public boolean isManipulated(final int nodeIndex) {
+    public boolean isManipulated(int nodeIndex) {
         return this.manipulated[nodeIndex];
     }
 
-    public void setManipulated(final int nodeIndex, final boolean manipulated) {
+    public void setManipulated(int nodeIndex, boolean manipulated) {
         this.manipulated[nodeIndex] = manipulated;
     }
 
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
 
         buf.append("\nManipulation:");
         buf.append("\n");
@@ -164,7 +164,7 @@ public final class SemManipulation implements TetradSerializable {
         return buf.toString();
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
@@ -173,7 +173,7 @@ public final class SemManipulation implements TetradSerializable {
             throw new IllegalArgumentException();
         }
 
-        final SemManipulation evidence = (SemManipulation) o;
+        SemManipulation evidence = (SemManipulation) o;
 
         if (!(this.semIm == evidence.semIm)) {
             return false;
@@ -208,7 +208,7 @@ public final class SemManipulation implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

@@ -32,7 +32,7 @@ public class TestIntegrator {
 
     private void setUp() {
         this.function = new Function() {
-            public double valueAt(final double x) {
+            public double valueAt(double x) {
                 return x;
             }
 

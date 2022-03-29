@@ -53,7 +53,7 @@ public class Normal implements Distribution {
 
     //=========================CONSTRUCTORS===========================//
 
-    public Normal(final double mean, final double sd) {
+    public Normal(double mean, double sd) {
         setParameter(0, mean);
         setParameter(1, sd);
     }
@@ -73,7 +73,7 @@ public class Normal implements Distribution {
         return "N";
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
             this.mean = value;
         } else if (index == 1 && value >= 0) {
@@ -84,7 +84,7 @@ public class Normal implements Distribution {
         }
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
             return this.mean;
         } else if (index == 1) {
@@ -94,7 +94,7 @@ public class Normal implements Distribution {
         }
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Mean";
         } else if (index == 1) {
@@ -119,7 +119,7 @@ public class Normal implements Distribution {
     }
 
     public String toString() {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         return "N(" + nf.format(this.mean) + ", " + nf.format(this.sd) + ")";
     }
 
@@ -140,7 +140,7 @@ public class Normal implements Distribution {
      * @throws ClassNotFoundException if a the class of an object in the input cannot
      *                                be found.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

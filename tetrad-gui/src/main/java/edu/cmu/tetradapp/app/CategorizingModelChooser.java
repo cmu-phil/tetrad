@@ -77,7 +77,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         return this.title;
     }
 
-    public void setTitle(final String title) {
+    public void setTitle(String title) {
         if (title == null) {
             throw new NullPointerException("The title must not be null");
         }
@@ -85,22 +85,22 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
     }
 
     public Class getSelectedModel() {
-        final TreePath path = this.tree.getSelectionPath();
+        TreePath path = this.tree.getSelectionPath();
 
         if (path == null) {
             throw new NullPointerException("I had a problem figuring out the models for this box given the parents. Maybe\n" +
                     "the parents are wrong, or maybe this isn't the box you were intending to use.");
         }
 
-        final Object selected = path.getLastPathComponent();
+        Object selected = path.getLastPathComponent();
         if (selected instanceof ModelWrapper) {
             return ((ModelWrapper) selected).model;
         }
         return null;
     }
 
-    public void setModelConfigs(final List<SessionNodeModelConfig> configs) {
-        final ChooserTreeModel model = new ChooserTreeModel(configs);
+    public void setModelConfigs(List<SessionNodeModelConfig> configs) {
+        ChooserTreeModel model = new ChooserTreeModel(configs);
         this.tree = new JTree(model);
         this.tree.setCellRenderer(new ChooserRenderer());
         this.tree.setRootVisible(false);
@@ -110,10 +110,10 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
             this.tree.expandRow(i);
         }
         this.tree.addTreeSelectionListener(e -> {
-            final TreePath path = e.getPath();
-            final Object selected = path.getLastPathComponent();
+            TreePath path = e.getPath();
+            Object selected = path.getLastPathComponent();
             if (selected instanceof ModelWrapper) {
-                final String name = ((ModelWrapper) selected).name;
+                String name = ((ModelWrapper) selected).name;
                 Preferences.userRoot().put(this.nodeId, name);
             }
         });
@@ -129,10 +129,10 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
 
         if (storedModelType.length() != 0) {
-            for (final Map.Entry<String, List<ModelWrapper>> entry : model.map.entrySet()) {
-                for (final ModelWrapper wrapper : entry.getValue()) {
+            for (Map.Entry<String, List<ModelWrapper>> entry : model.map.entrySet()) {
+                for (ModelWrapper wrapper : entry.getValue()) {
                     if (storedModelType.equals(wrapper.name)) {
-                        final Object[] path = {ChooserTreeModel.ROOT, entry.getKey(), wrapper};
+                        Object[] path = {ChooserTreeModel.ROOT, entry.getKey(), wrapper};
                         this.tree.setSelectionPath(new TreePath(path));
                         break;
                     }
@@ -141,17 +141,17 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         }
     }
 
-    private String getModelTypeFromSessionNode(final SessionNode sessionNode, final ChooserTreeModel model) {
+    private String getModelTypeFromSessionNode(SessionNode sessionNode, ChooserTreeModel model) {
 
         // Assumes the tree will always be of depth 2.
-        final Class clazz = sessionNode.getLastModelClass();
-        final Object root = model.getRoot();
+        Class clazz = sessionNode.getLastModelClass();
+        Object root = model.getRoot();
 
         for (int i = 0; i < model.getChildCount(root); i++) {
-            final Object child = model.getChild(root, i);
+            Object child = model.getChild(root, i);
 
             for (int j = 0; j < model.getChildCount(child); j++) {
-                final ModelWrapper modelWrapper = (ModelWrapper) model.getChild(child, j);
+                ModelWrapper modelWrapper = (ModelWrapper) model.getChild(child, j);
                 assert modelWrapper != null;
                 if (modelWrapper.model == clazz) {
                     return modelWrapper.name;
@@ -162,14 +162,14 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         return null;
     }
 
-    public void setNodeId(final String id) {
+    public void setNodeId(String id) {
         if (id == null) {
             throw new NullPointerException("The given id must not be null");
         }
         this.nodeId = id;
     }
 
-    public void setSessionNode(final SessionNode sessionNode) {
+    public void setSessionNode(SessionNode sessionNode) {
         this.sessionNode = sessionNode;
         this.nodeName = sessionNode.getDisplayName();
     }
@@ -177,10 +177,10 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
     public void setup() {
         this.setLayout(new BorderLayout());
 
-        final JButton info = new JButton("Help");
+        JButton info = new JButton("Help");
 
         info.addActionListener(e -> {
-            final Class model = getSelectedModel();
+            Class model = getSelectedModel();
             if (model == null) {
                 JOptionPane.showMessageDialog(this, "No node selected. Select" +
                         " a node to get help for it.");
@@ -190,10 +190,10 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
             }
         });
 
-        final Box vBox = Box.createVerticalBox();
+        Box vBox = Box.createVerticalBox();
         vBox.add(Box.createVerticalStrut(5));
 
-        final Box box = Box.createHorizontalBox();
+        Box box = Box.createHorizontalBox();
         box.add(new JLabel(" Name of node: " + this.nodeName));
         box.add(Box.createHorizontalGlue());
         box.add(info);
@@ -216,7 +216,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         private final String name;
         private final Class model;
 
-        public ModelWrapper(final String name, final Class model) {
+        public ModelWrapper(String name, Class model) {
             this.name = name;
             this.model = model;
         }
@@ -226,8 +226,8 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
     private static class ChooserRenderer extends DefaultTreeCellRenderer {
 
 
-        public Component getTreeCellRendererComponent(final JTree tree, final Object value, final boolean selected, final boolean expanded,
-                                                      final boolean leaf, final int row, final boolean hasFocus) {
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded,
+                                                      boolean leaf, int row, boolean hasFocus) {
 
             if (value == null) {
                 this.setText("");
@@ -268,9 +268,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
         private final List<String> categories = new LinkedList<>();
 
-        public ChooserTreeModel(final List<SessionNodeModelConfig> configs) {
-            for (final SessionNodeModelConfig config : configs) {
-                final String category = config.getCategory();
+        public ChooserTreeModel(List<SessionNodeModelConfig> configs) {
+            for (SessionNodeModelConfig config : configs) {
+                String category = config.getCategory();
                 if (category == null) {
                     throw new NullPointerException("No Category name associated with model: " + config.getModel());
                 }
@@ -283,7 +283,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
                     this.categories.add(category);
                 }
 
-                final List<ModelWrapper> models = this.map.computeIfAbsent(category, k -> new LinkedList<>());
+                List<ModelWrapper> models = this.map.computeIfAbsent(category, k -> new LinkedList<>());
                 models.add(new ModelWrapper(config.getName(), config.getModel()));
             }
         }
@@ -292,47 +292,47 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
             return ChooserTreeModel.ROOT;
         }
 
-        public Object getChild(final Object parent, final int index) {
+        public Object getChild(Object parent, int index) {
             if (ChooserTreeModel.ROOT.equals(parent)) {
                 return this.categories.get(index);
             } else if (parent instanceof String) {
-                final List<ModelWrapper> models = this.map.get(parent);
+                List<ModelWrapper> models = this.map.get(parent);
                 return models.get(index);
             }
             return null;
         }
 
-        public int getChildCount(final Object parent) {
+        public int getChildCount(Object parent) {
             if (ChooserTreeModel.ROOT.equals(parent)) {
                 return this.categories.size();
             } else if (parent instanceof ModelWrapper) {
                 return 0;
             }
-            final List<ModelWrapper> models = this.map.get(parent);
+            List<ModelWrapper> models = this.map.get(parent);
             return models.size();
         }
 
-        public boolean isLeaf(final Object node) {
+        public boolean isLeaf(Object node) {
             return node instanceof ModelWrapper;
         }
 
-        public void valueForPathChanged(final TreePath path, final Object newValue) {
+        public void valueForPathChanged(TreePath path, Object newValue) {
 
         }
 
-        public int getIndexOfChild(final Object parent, final Object child) {
+        public int getIndexOfChild(Object parent, Object child) {
             if (ChooserTreeModel.ROOT.equals(parent)) {
                 return this.categories.indexOf(child);
             }
-            final List<ModelWrapper> models = this.map.get(parent);
+            List<ModelWrapper> models = this.map.get(parent);
             return models.indexOf(child);
         }
 
-        public void addTreeModelListener(final TreeModelListener l) {
+        public void addTreeModelListener(TreeModelListener l) {
 
         }
 
-        public void removeTreeModelListener(final TreeModelListener l) {
+        public void removeTreeModelListener(TreeModelListener l) {
 
         }
     }

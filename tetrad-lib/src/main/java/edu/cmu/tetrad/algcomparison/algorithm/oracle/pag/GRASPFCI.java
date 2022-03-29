@@ -50,15 +50,15 @@ public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         // Used for reflection; do not delete.
     }
 
-    public GRASPFCI(final ScoreWrapper score, final IndependenceWrapper test) {
+    public GRASPFCI(ScoreWrapper score, IndependenceWrapper test) {
         this.test = test;
         this.score = score;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final GraspFci search = new GraspFci(this.test.getTest(dataSet, parameters), this.score.getScore(dataSet, parameters));
+            GraspFci search = new GraspFci(this.test.getTest(dataSet, parameters), this.score.getScore(dataSet, parameters));
             search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -77,7 +77,7 @@ public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             search.setKnowledge(search.getKnowledge());
 
-            final Object obj = parameters.get(Params.PRINT_STREAM);
+            Object obj = parameters.get(Params.PRINT_STREAM);
 
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
@@ -85,15 +85,15 @@ public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
             return search.search();
         } else {
-            final GRASPFCI algorithm = new GRASPFCI(this.score, this.test);
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            GRASPFCI algorithm = new GRASPFCI(this.score, this.test);
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(data.getKnowledge());
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
 
-            final ResamplingEdgeEnsemble edgeEnsemble;
+            ResamplingEdgeEnsemble edgeEnsemble;
 
             switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
                 case 0:
@@ -118,7 +118,7 @@ public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new DagToPag2(graph).convert();
     }
 
@@ -135,7 +135,7 @@ public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public List<String> getParameters() {
-        final List<String> params = new ArrayList<>();
+        List<String> params = new ArrayList<>();
 
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
@@ -167,7 +167,7 @@ public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -177,7 +177,7 @@ public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
     }
 
     @Override
-    public void setIndependenceWrapper(final IndependenceWrapper test) {
+    public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -187,7 +187,7 @@ public class GRASPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
     }
 
     @Override
-    public void setScoreWrapper(final ScoreWrapper score) {
+    public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 

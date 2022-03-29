@@ -292,13 +292,13 @@ public final class TestCellTable {
         this.table = new CellTable(this.dims);
 
 //        // Add data to table.
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
         variables.add(new DiscreteVariable("X1", 2));
         variables.add(new DiscreteVariable("X2", 2));
         variables.add(new DiscreteVariable("X3", 2));
         variables.add(new DiscreteVariable("X4", 2));
 
-        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(this.data.length, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(this.data.length, variables.size()), variables);
 
         for (int i = 0; i < this.data.length; i++) {
             for (int j = 0; j < this.data[0].length; j++) {
@@ -306,7 +306,7 @@ public final class TestCellTable {
             }
         }
 
-        final int[] indices = {0, 1, 2, 3};
+        int[] indices = {0, 1, 2, 3};
 
         this.table.addToTable(dataSet, indices);
     }
@@ -324,7 +324,7 @@ public final class TestCellTable {
 
             int myCount = 0;
 
-            for (final int[] aData : this.data) {
+            for (int[] aData : this.data) {
                 boolean inCell = true;
 
                 for (int j = 0; j < this.data[0].length; j++) {
@@ -353,11 +353,11 @@ public final class TestCellTable {
             // array of variable indices to marginalize and (b) a
             // "wildcard" version of this cell with those indices
             // replaced by -1.
-            final int[] cell = TestCellTable.pickRandomCell(4);
+            int[] cell = TestCellTable.pickRandomCell(4);
 
             // The indices to marginalize. (No repeats.)
-            final int numMargin = RandomUtil.getInstance().nextInt(4);
-            final int[] marginVars = new int[numMargin];
+            int numMargin = RandomUtil.getInstance().nextInt(4);
+            int[] marginVars = new int[numMargin];
 
             for (int i = 0; i < numMargin; i++) {
                 marginVars[i] = RandomUtil.getInstance().nextInt(4);
@@ -370,7 +370,7 @@ public final class TestCellTable {
             }
 
             // The wildcard version of the test cell.
-            final int[] testCell = new int[4];
+            int[] testCell = new int[4];
 
             System.arraycopy(cell, 0, testCell, 0, 4);
 
@@ -381,7 +381,7 @@ public final class TestCellTable {
             // Count the data, using the -1 as a wildcard.
             int myCount = 0;
 
-            for (final int[] aData : this.data) {
+            for (int[] aData : this.data) {
                 boolean inMargin = true;
 
                 for (int j = 0; j < this.data[0].length; j++) {
@@ -404,9 +404,9 @@ public final class TestCellTable {
         }
     }
 
-    private static int[] pickRandomCell(final int size) {
+    private static int[] pickRandomCell(int size) {
 
-        final int[] cell = new int[size];
+        int[] cell = new int[size];
 
         for (int i = 0; i < size; i++) {
             cell[i] = RandomUtil.getInstance().nextInt(2);

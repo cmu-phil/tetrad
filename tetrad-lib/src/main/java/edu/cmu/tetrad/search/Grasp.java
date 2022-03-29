@@ -43,26 +43,26 @@ public class Grasp {
     private int depth = 4;
     private int numStarts = 1;
 
-    public Grasp(@NotNull final Score score) {
+    public Grasp(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
     }
 
-    public Grasp(@NotNull final IndependenceTest test) {
+    public Grasp(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
     }
 
-    public Grasp(@NotNull final IndependenceTest test, final Score score) {
+    public Grasp(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
-        final long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
@@ -95,7 +95,7 @@ public class Grasp {
 
             this.scorer.score(order);
 
-            final List<Node> perm = grasp(this.scorer);
+            List<Node> perm = grasp(this.scorer);
 
             this.scorer.score(perm);
 
@@ -107,7 +107,7 @@ public class Grasp {
 
         this.scorer.score(bestPerm);
 
-        final long stop = System.currentTimeMillis();
+        long stop = System.currentTimeMillis();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
@@ -121,7 +121,7 @@ public class Grasp {
         return this.scorer.getNumEdges();
     }
 
-    private void makeValidKnowledgeOrder(final List<Node> order) {
+    private void makeValidKnowledgeOrder(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
             order.sort((o1, o2) -> {
                 if (o1.getName().equals(o2.getName())) {
@@ -141,9 +141,9 @@ public class Grasp {
         }
     }
 
-    public List<Node> grasp(@NotNull final TeyssierScorer scorer) {
+    public List<Node> grasp(@NotNull TeyssierScorer scorer) {
         scorer.clearBookmarks();
-        final List<int[]> depths = new ArrayList<>();
+        List<int[]> depths = new ArrayList<>();
 
         // GRaSP-TSP
         if (this.ordered && this.uncoveredDepth != 0 && this.nonSingularDepth != 0) {
@@ -164,7 +164,7 @@ public class Grasp {
         double sNew = scorer.score();
         double sOld;
 
-        for (final int[] depth : depths) {
+        for (int[] depth : depths) {
             do {
                 sOld = sNew;
                 graspDfs(scorer, sOld, depth, 1, new HashSet<>(), new HashSet<>());
@@ -183,9 +183,9 @@ public class Grasp {
     }
 
 
-    private void graspDfs(@NotNull final TeyssierScorer scorer, final double sOld, final int[] depth, final int currentDepth,
-                          final Set<Set<Node>> tucks, final Set<Set<Set<Node>>> dfsHistory) {
-        final List<Node> variables;
+    private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
+                          Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
+        List<Node> variables;
 
         if (this.allowRandomnessInsideAlgorithm) {
             variables = scorer.getShuffledVariables();
@@ -193,40 +193,40 @@ public class Grasp {
             variables = scorer.getPi();
         }
 
-        for (final Node y : variables) {
-            final Set<Node> ancestors = scorer.getAncestors(y);
-            final List<Node> parents = new ArrayList<>(scorer.getParents(y));
+        for (Node y : variables) {
+            Set<Node> ancestors = scorer.getAncestors(y);
+            List<Node> parents = new ArrayList<>(scorer.getParents(y));
 
             if (this.allowRandomnessInsideAlgorithm) {
                 shuffle(parents);
             }
 
-            for (final Node x : parents) {
+            for (Node x : parents) {
 
-                final boolean covered = scorer.coveredEdge(x, y);
+                boolean covered = scorer.coveredEdge(x, y);
                 boolean singular = true;
-                final Set<Node> tuck = new HashSet<>();
+                Set<Node> tuck = new HashSet<>();
                 tuck.add(x);
                 tuck.add(y);
 
                 if (covered && tucks.contains(tuck)) continue;
                 if (currentDepth > depth[1] && !covered) continue;
 
-                final int[] idcs = {scorer.index(x), scorer.index(y)};
+                int[] idcs = {scorer.index(x), scorer.index(y)};
 
                 int i = idcs[0];
                 scorer.bookmark(currentDepth);
 
                 boolean first = true;
-                final List<Node> Z = new ArrayList<>(scorer.getOrderShallow().subList(i + 1, idcs[1]));
-                final Iterator<Node> zItr = Z.iterator();
+                List<Node> Z = new ArrayList<>(scorer.getOrderShallow().subList(i + 1, idcs[1]));
+                Iterator<Node> zItr = Z.iterator();
                 do {
                     if (first) {
 //                        scorer.moveTo(y, i);
                         scorer.moveToNoUpdate(y, i);
                         first = false;
                     } else {
-                        final Node z = zItr.next();
+                        Node z = zItr.next();
                         if (ancestors.contains(z)) {
                             if (scorer.getParents(z).contains(x)) {
                                 singular = false;
@@ -276,20 +276,20 @@ public class Grasp {
     }
 
     @NotNull
-    public Graph getGraph(final boolean cpDag) {
+    public Graph getGraph(boolean cpDag) {
         if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-        final Graph graph = this.scorer.getGraph(cpDag);
+        Graph graph = this.scorer.getGraph(cpDag);
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         graph.addAttribute("score ", nf.format(this.scorer.score()));
         return graph;
     }
 
-    public void setCacheScores(final boolean cachingScores) {
+    public void setCacheScores(boolean cachingScores) {
         this.cachingScores = cachingScores;
     }
 
-    public void setNumStarts(final int numStarts) {
+    public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
 
@@ -301,35 +301,35 @@ public class Grasp {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
         this.test.setVerbose(verbose);
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
         this.depth = depth;
     }
 
-    public void setUncoveredDepth(final int uncoveredDepth) {
+    public void setUncoveredDepth(int uncoveredDepth) {
         if (this.depth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
         this.uncoveredDepth = uncoveredDepth;
     }
 
-    public void setNonSingularDepth(final int nonSingularDepth) {
+    public void setNonSingularDepth(int nonSingularDepth) {
         if (this.depth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
         this.nonSingularDepth = nonSingularDepth;
     }
 
-    public void setUseScore(final boolean useScore) {
+    public void setUseScore(boolean useScore) {
         this.useScore = useScore;
     }
 
-    private boolean violatesKnowledge(final List<Node> order) {
+    private boolean violatesKnowledge(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
             for (int i = 0; i < order.size(); i++) {
                 for (int j = i + 1; j < order.size(); j++) {
@@ -343,19 +343,19 @@ public class Grasp {
         return false;
     }
 
-    public void setOrdered(final boolean ordered) {
+    public void setOrdered(boolean ordered) {
         this.ordered = ordered;
     }
 
-    public void setUseRaskuttiUhler(final boolean usePearl) {
+    public void setUseRaskuttiUhler(boolean usePearl) {
         this.usePearl = usePearl;
     }
 
-    public void setUseDataOrder(final boolean useDataOrder) {
+    public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
     }
 
-    public void setAllowRandomnessInsideAlgorithm(final boolean allowRandomnessInsideAlgorithm) {
+    public void setAllowRandomnessInsideAlgorithm(boolean allowRandomnessInsideAlgorithm) {
         this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithm;
     }
 }

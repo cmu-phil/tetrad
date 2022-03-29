@@ -43,37 +43,37 @@ public class LinearSimExp1 {
      */
     private final MeasurementSimulator simulator;
 
-    public LinearSimExp1(final String stub) {
+    public LinearSimExp1(String stub) {
         this.simulator = new MeasurementSimulator(new Parameters());
-        final UpdateFunction function = createFunction();
-        final GeneHistory history = createHistory(function);
+        UpdateFunction function = createFunction();
+        GeneHistory history = createHistory(function);
         this.simulator.setRawDataSaved(true);
         this.simulator.setNumDishes(8);
         this.simulator.simulate(history);
 
         try {
-            final PrintStream out =
+            PrintStream out =
                     new PrintStream(new FileOutputStream(stub + "meas.dat"));
             printMeasuredData(out);
             out.close();
 
-            final PrintStream out2 =
+            PrintStream out2 =
                     new PrintStream(new FileOutputStream(stub + "raw.dat"));
             printRawData(out2);
             out2.close();
-        } catch (final FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         new LinearSimExp1(args[0]);
     }
 
     private UpdateFunction createFunction() {
-        final String[] factors = {"G1", "G2", "G3"};
+        String[] factors = {"G1", "G2", "G3"};
 
-        final LagGraph lagGraph = new BasicLagGraph();
+        LagGraph lagGraph = new BasicLagGraph();
         lagGraph.addFactor(factors[0]);
         lagGraph.addFactor(factors[1]);
         lagGraph.addFactor(factors[2]);
@@ -84,7 +84,7 @@ public class LinearSimExp1 {
         lagGraph.addEdge(factors[1], new LaggedFactor(factors[2], 1));
         lagGraph.addEdge(factors[2], new LaggedFactor(factors[2], 1));
 
-        final LinearFunction function = new LinearFunction(lagGraph);
+        LinearFunction function = new LinearFunction(lagGraph);
 
         function.setIntercept("G1", 0.05);
         function.setCoefficient("G1", new LaggedFactor("G1", 1), 0.5);
@@ -113,16 +113,16 @@ public class LinearSimExp1 {
         return function;
     }
 
-    private GeneHistory createHistory(final UpdateFunction function) {
-        final BasalInitializer initializer = new BasalInitializer(function, 0.0, 1.0);
+    private GeneHistory createHistory(UpdateFunction function) {
+        BasalInitializer initializer = new BasalInitializer(function, 0.0, 1.0);
         return new GeneHistory(initializer, function);
     }
 
-    private void printRawData(final PrintStream out) {
-        final double[][][] data = this.simulator.getRawData();
-        final GeneHistory history = this.simulator.getHistory();
-        final UpdateFunction updateFunction = history.getUpdateFunction();
-        final int[] timeSteps = this.simulator.getTimeSteps();
+    private void printRawData(PrintStream out) {
+        double[][][] data = this.simulator.getRawData();
+        GeneHistory history = this.simulator.getHistory();
+        UpdateFunction updateFunction = history.getUpdateFunction();
+        int[] timeSteps = this.simulator.getTimeSteps();
 
         out.print("Dish\tInd\t");
         for (int i = 0; i < timeSteps.length; i++) {
@@ -132,9 +132,9 @@ public class LinearSimExp1 {
         }
         out.println();
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        final int cellsPerDish = this.simulator.getNumCellsPerDish();
+        int cellsPerDish = this.simulator.getNumCellsPerDish();
 
         for (int i = 0; i < data[0][0].length; i++) {
             out.print((i / cellsPerDish + 1) + "\t");
@@ -148,11 +148,11 @@ public class LinearSimExp1 {
         }
     }
 
-    private void printMeasuredData(final PrintStream out) {
-        final double[][][] data = this.simulator.getMeasuredData();
-        final GeneHistory history = this.simulator.getHistory();
-        final UpdateFunction updateFunction = history.getUpdateFunction();
-        final int[] timeSteps = this.simulator.getTimeSteps();
+    private void printMeasuredData(PrintStream out) {
+        double[][][] data = this.simulator.getMeasuredData();
+        GeneHistory history = this.simulator.getHistory();
+        UpdateFunction updateFunction = history.getUpdateFunction();
+        int[] timeSteps = this.simulator.getTimeSteps();
 
         out.print("Dish\tChip\t");
 
@@ -163,8 +163,8 @@ public class LinearSimExp1 {
         }
         out.println();
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        final int samplesPerDish = this.simulator.getNumSamplesPerDish();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        int samplesPerDish = this.simulator.getNumSamplesPerDish();
 
         for (int i = 0; i < data[0][0].length; i++) {
             out.print((i / samplesPerDish + 1) + "\t");

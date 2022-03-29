@@ -141,12 +141,12 @@ public class TestFci {
         checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
                 "X1o->X2,X3o->X2", new Knowledge2());
 
-        final List<String> varNames = new ArrayList<>();
+        List<String> varNames = new ArrayList<>();
         varNames.add("X1");
         varNames.add("X2");
         varNames.add("X3");
 
-        final IKnowledge knowledge = new Knowledge2(varNames);
+        IKnowledge knowledge = new Knowledge2(varNames);
         knowledge.addToTier(1, "X1");
         knowledge.addToTier(1, "X2");
         knowledge.addToTier(2, "X3");
@@ -160,7 +160,7 @@ public class TestFci {
         checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",
                 "X1o->X2,X3o->X4,X2<->X4", new Knowledge2());
 
-        final Knowledge2 knowledge = new Knowledge2();
+        Knowledge2 knowledge = new Knowledge2();
         knowledge.setRequired("X2", "X4");
 
         assertTrue(knowledge.isRequired("X2", "X4"));
@@ -174,23 +174,23 @@ public class TestFci {
         final int numVars = 10;
         final int numEdges = 10;
 
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 10, numEdges,
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 10, numEdges,
                 7, 5, 5, false));
 
-        final IndependenceTest test = new IndTestDSep(trueGraph);
+        IndependenceTest test = new IndTestDSep(trueGraph);
 
-        final Fci fci = new Fci(test);
+        Fci fci = new Fci(test);
 
-        final Graph graph = fci.search();
+        Graph graph = fci.search();
 
-        final DagToPag2 dagToPag = new DagToPag2(trueGraph);
-        final Graph truePag = dagToPag.convert();
+        DagToPag2 dagToPag = new DagToPag2(trueGraph);
+        Graph truePag = dagToPag.convert();
 
         assertEquals(graph, truePag);
     }
@@ -203,22 +203,22 @@ public class TestFci {
         final boolean latentDataSaved = false;
         final int numLatents = 40;
 
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, numLatents, numEdges,
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, numLatents, numEdges,
                 7, 5, 5, false));
 
-        final SemPm bayesPm = new SemPm(trueGraph);
-        final SemIm bayesIm = new SemIm(bayesPm);
-        final DataSet dataSet = bayesIm.simulateData(sampleSize, latentDataSaved);
+        SemPm bayesPm = new SemPm(trueGraph);
+        SemIm bayesIm = new SemIm(bayesPm);
+        DataSet dataSet = bayesIm.simulateData(sampleSize, latentDataSaved);
 
-        final IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
+        IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
 
-        final Cfci search = new Cfci(test);
+        Cfci search = new Cfci(test);
 
         // Run search
         search.search();
@@ -228,24 +228,24 @@ public class TestFci {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkSearch(final String inputGraph, final String outputGraph, final IKnowledge knowledge) {
+    private void checkSearch(String inputGraph, String outputGraph, IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
 
         // Set up graph and node objects.
-        final Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        final IndependenceTest independence = new IndTestDSep(graph);
-        final Fci fci = new Fci(independence);
+        IndependenceTest independence = new IndTestDSep(graph);
+        Fci fci = new Fci(independence);
         fci.setPossibleDsepSearchDone(true);
         fci.setCompleteRuleSetUsed(true);
         fci.setKnowledge(knowledge);
         fci.setMaxPathLength(-1);
 
         // Run search
-        final Graph resultGraph = fci.search();
+        Graph resultGraph = fci.search();
 //
 //        // Build comparison graph.
 //        Graph compareGraph = new EdgeListGraph(GraphConverter.convert(outputGraph));
@@ -283,31 +283,31 @@ public class TestFci {
         for (int i = 0; i < numRuns; i++) {
             final int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
 
-            final List<Node> nodes = new ArrayList<>();
+            List<Node> nodes = new ArrayList<>();
 
             for (int r = 0; r < numMeasures + numLatents; r++) {
-                final String name = "X" + (r + 1);
+                String name = "X" + (r + 1);
                 nodes.add(new ContinuousVariable(name));
             }
 
-            final Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
+            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
                     10, 10, 10, false);
-            final SemPm pm = new SemPm(dag);
-            final SemIm im = new SemIm(pm);
-            final DataSet data = im.simulateData(1000, false);
+            SemPm pm = new SemPm(dag);
+            SemIm im = new SemIm(pm);
+            DataSet data = im.simulateData(1000, false);
 
-            final Graph pag = getPag(alpha, penaltyDiscount, data);
+            Graph pag = getPag(alpha, penaltyDiscount, data);
 
-            final DataSet marginalData = data.copy();
+            DataSet marginalData = data.copy();
 
-            final List<Node> variables = marginalData.getVariables();
+            List<Node> variables = marginalData.getVariables();
             Collections.shuffle(variables);
 
             for (int m = 0; m < numVarsToMarginalize; m++) {
                 marginalData.removeColumn(marginalData.getColumn(variables.get(m)));
             }
 
-            final Graph margPag = getPag(alpha, penaltyDiscount, marginalData);
+            Graph margPag = getPag(alpha, penaltyDiscount, marginalData);
 
             int ancAnc = 0;
             int ancNanc = 0;
@@ -319,8 +319,8 @@ public class TestFci {
             int totalAncMarg = 0;
             int totalNancMarg = 0;
 
-            for (final Node n1 : marginalData.getVariables()) {
-                for (final Node n2 : marginalData.getVariables()) {
+            for (Node n1 : marginalData.getVariables()) {
+                for (Node n2 : marginalData.getVariables()) {
                     if (n1 == n2) continue;
 
                     if (ancestral(n1, n2, margPag)) {
@@ -369,7 +369,7 @@ public class TestFci {
 //            }
 
             {
-                final TextTable table = new TextTable(5, 3);
+                TextTable table = new TextTable(5, 3);
                 table.setToken(0, 1, "Ancestral");
                 table.setToken(0, 2, "Nonancestral");
                 table.setToken(1, 0, "Ancestral");
@@ -377,7 +377,7 @@ public class TestFci {
                 table.setToken(3, 0, "Ambiguous");
                 table.setToken(4, 0, "Total");
 
-                final NumberFormat nf = new DecimalFormat("0.00");
+                NumberFormat nf = new DecimalFormat("0.00");
 
                 table.setToken(1, 1, nf.format(ancAnc / (double) totalAncMarg) + "");
                 table.setToken(2, 1, nf.format(nancAnc / (double) totalAncMarg) + "");
@@ -393,23 +393,23 @@ public class TestFci {
         }
     }
 
-    private boolean ancestral(final Node n, final Node q, final Graph pag) {
+    private boolean ancestral(Node n, Node q, Graph pag) {
         if (n == q) return false;
 
         if (pag.isAncestorOf(n, q)) {
             return true;
         } else {
-            final List<Node> adj = uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>());
+            List<Node> adj = uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>());
 
             if (adj.size() >= 2) {
-                final ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
+                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
                 int[] choice;
                 boolean found = false;
 
                 while ((choice = gen.next()) != null) {
-                    final List<Node> c = GraphUtils.asList(choice, adj);
-                    final Node n1 = c.get(0);
-                    final Node n2 = c.get(1);
+                    List<Node> c = GraphUtils.asList(choice, adj);
+                    Node n1 = c.get(0);
+                    Node n2 = c.get(1);
 
                     if (!pag.isAdjacentTo(n1, n2)) {
                         if (pag.isDefNoncollider(n1, n, n2)) {
@@ -425,7 +425,7 @@ public class TestFci {
         return false;
     }
 
-    private boolean nonAncestral(final Node n, final Node q, final Graph pag) {
+    private boolean nonAncestral(Node n, Node q, Graph pag) {
         if (n == q) return false;
 
         if (ancestral(n, q, pag)) {
@@ -441,15 +441,15 @@ public class TestFci {
         return uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>()).isEmpty();
     }
 
-    private Graph getPag(final double alpha, final double penaltyDiscount, final DataSet data) {
-        final IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+    private Graph getPag(double alpha, double penaltyDiscount, DataSet data) {
+        IndTestFisherZ test = new IndTestFisherZ(data, alpha);
 
-        final SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(penaltyDiscount);
 
 //        GraphSearch search = new Fci(test);
 //        GraphSearch search = new GFci(score);
-        final GraphSearch search = new Pc(test);
+        GraphSearch search = new Pc(test);
 
         return search.search();
     }
@@ -457,15 +457,15 @@ public class TestFci {
     /**
      * Returns the adjacents n of x such that x*-*n... starts a potentially directed path.
      */
-    private List<Node> uncoveredPotentiallyDirectedPathStarts(final Node x, final Node y, final Graph g, final LinkedList<Node> path) {
-        final List<Node> pathThrough = new ArrayList<>();
+    private List<Node> uncoveredPotentiallyDirectedPathStarts(Node x, Node y, Graph g, LinkedList<Node> path) {
+        List<Node> pathThrough = new ArrayList<>();
 
         if (x == y) return path;
         if (path.contains(x)) return path;
         path.add(x);
 
-        for (final Node n : g.getAdjacentNodes(x)) {
-            final Edge e = g.getEdge(x, n);
+        for (Node n : g.getAdjacentNodes(x)) {
+            Edge e = g.getEdge(x, n);
 
             if (e.getProximalEndpoint(x) == Endpoint.ARROW) continue;
 

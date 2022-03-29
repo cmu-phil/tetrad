@@ -33,7 +33,7 @@ public class MixedTabularData implements MixedData {
     private final double[][] continuousData;
     private final int[][] discreteData;
 
-    public MixedTabularData(final int numOfRows, final DiscreteDataColumn[] dataColumns, final double[][] continuousData, final int[][] discreteData) {
+    public MixedTabularData(int numOfRows, DiscreteDataColumn[] dataColumns, double[][] continuousData, int[][] discreteData) {
         this.numOfRows = numOfRows;
         this.dataColumns = dataColumns;
         this.continuousData = continuousData;

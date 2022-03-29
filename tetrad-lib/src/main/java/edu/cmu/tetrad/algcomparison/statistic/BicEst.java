@@ -26,14 +26,14 @@ public class BicEst implements Statistic {
     }
 
     @Override
-    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
 //        double _true = SemBicScorer.scoreDag(SearchGraphUtils.dagFromCPDAG(trueGraph), dataModel);
-        final double est = SemBicScorer.scoreDag(SearchGraphUtils.dagFromCPDAG(estGraph), dataModel);
+        double est = SemBicScorer.scoreDag(SearchGraphUtils.dagFromCPDAG(estGraph), dataModel);
         return est;
     }
 
     @Override
-    public double getNormValue(final double value) {
+    public double getNormValue(double value) {
         return tanh(value / 1e6);
     }
 }

@@ -16,23 +16,23 @@ public class ComparisonResult {
     private Graph correctResult;
     private long elapsed;
 
-    public ComparisonResult(final ComparisonParameters params) {
+    public ComparisonResult(ComparisonParameters params) {
         this.params = new ComparisonParameters(params);
     }
 
-    public void setResultGraph(final Graph graph) {
+    public void setResultGraph(Graph graph) {
         this.resultGraph = new EdgeListGraph(graph);
     }
 
-    public void setElapsed(final long elapsed) {
+    public void setElapsed(long elapsed) {
         this.elapsed = elapsed;
     }
 
-    public void setTrueDag(final Graph trueDag) {
+    public void setTrueDag(Graph trueDag) {
         this.trueDag = new EdgeListGraph(trueDag);
     }
 
-    public void setCorrectResult(final Graph correctResult) {
+    public void setCorrectResult(Graph correctResult) {
         this.correctResult = correctResult;
     }
 

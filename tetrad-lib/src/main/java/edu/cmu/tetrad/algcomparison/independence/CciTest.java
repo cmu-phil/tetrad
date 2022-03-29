@@ -32,8 +32,8 @@ public class CciTest implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
-        final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA));
         if (parameters.getInt(Params.KERNEL_TYPE) == 1) {
             cci.setKernel(ConditionalCorrelationIndependence.Kernel.Gaussian);
@@ -71,7 +71,7 @@ public class CciTest implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> params = new ArrayList<>();
+        List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
         params.add(Params.NUM_BASIS_FUNCTIONS);
         params.add(Params.KERNEL_TYPE);

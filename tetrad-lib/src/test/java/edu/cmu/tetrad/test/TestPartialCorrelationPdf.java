@@ -39,7 +39,7 @@ public class TestPartialCorrelationPdf {
     public void testIntegralSumToOne() {
         setUp();
         final String message = "Integrator does not properly integrate a p.d.f.";
-        final double area = Integrator.getArea(this.function, -1.0, 1.0, 10000);
+        double area = Integrator.getArea(this.function, -1.0, 1.0, 10000);
         final double tolerance = 0.000001;
         assertEquals(message, 1.0, area, tolerance);
     }

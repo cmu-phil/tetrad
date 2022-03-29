@@ -28,7 +28,7 @@ import java.util.List;
  */
 class ExpressionUtils {
 
-    public static String renderExpression(final Expression expression, ExpressionDescriptor.Position position, String token) {
+    public static String renderExpression(Expression expression, ExpressionDescriptor.Position position, String token) {
 
         List<Expression> expressions = expression.getExpressions();
 
@@ -66,7 +66,7 @@ class ExpressionUtils {
 //            return "(" + expression1 + middleToken +
 //                    expression2 + ")";
         } else {
-            final StringBuilder buf = new StringBuilder();
+            StringBuilder buf = new StringBuilder();
             buf.append(token);
             buf.append("(");
 

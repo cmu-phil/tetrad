@@ -5,13 +5,13 @@ package edu.cmu.tetrad.simulation;
  */
 public class HsimStudyAuto {
 
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         //***!!!!===!!!=== Parameters for the User to fill in! !!!===!!!===***
         final String readfilename = "YeastNoDupe2Slim.csv";
         final String filenameOut = "dataOutGeM.txt";
         final char delimiter = ','; //'\t';
         final int resimSize = 2;//number of variables to be resimmed
-        final HsimAutoRun study = new HsimAutoRun(readfilename, delimiter);
+        HsimAutoRun study = new HsimAutoRun(readfilename, delimiter);
         study.setVerbose(false);//set this to true if you want HsimAutoRun to report information
         study.setWrite(true);//set this to true if you want HsimAutoRun to write the hsim data to a file
         study.setFilenameOut(filenameOut);

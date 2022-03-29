@@ -118,7 +118,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @param vars The variables over which the data is (repeatedly) measured. The number of variables must equal the
      *             number of columns in the data-- that is, vars.size() == data[i].length for each i.
      */
-    public IndTestTimeSeries(final Matrix data, final List<Node> vars) {
+    public IndTestTimeSeries(Matrix data, List<Node> vars) {
         if (data == null) {
             throw new NullPointerException("Data must not be null.");
         }
@@ -147,7 +147,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * Required by IndependenceTest.
      */
-    public IndependenceTest indTestSubset(final List vars) {
+    public IndependenceTest indTestSubset(List vars) {
         throw new UnsupportedOperationException();
     }
 
@@ -160,32 +160,32 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @param z the list of conditioning vars.
      * @return true iff x _||_ data | z.
      */
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (final Node node : z) {
+        for (Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
-        final int[] indices = createIndexArray(z, x, y);
+        int[] indices = createIndexArray(z, x, y);
         return isIndependent(indices);
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isDependent(Node x, Node y, List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -193,7 +193,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @return true iff according to the test var(indices[0]) _||_ var(indices[1] | var(indices[2], ...,
      * var(indices[indices.length - 1]).
      */
-    public boolean isIndependent(final int[] indices) {
+    public boolean isIndependent(int[] indices) {
 
         // Tests whether the given index array is legal.
         setIndices(indices);
@@ -209,28 +209,28 @@ public final class IndTestTimeSeries implements IndependenceTest {
         //        System.out.println("---->" + getNumReps());
 
         // Calculate chi square value.
-        final double temp = Math.pow(tau(), 2.0);
-        final double numerator = getNumReps() * temp;
+        double temp = Math.pow(tau(), 2.0);
+        double numerator = getNumReps() * temp;
 
         //        System.out.println("Numerator = " + numerator);
-        final double[][] gradTau = gradTau();
-        final double[][] gradTauPrime = MatrixUtils.transpose(gradTau);
-        final double[][] prod1 = MatrixUtils.product(gradTauPrime, omega());
-        final double[][] prod2 = MatrixUtils.product(prod1, gradTau);
+        double[][] gradTau = gradTau();
+        double[][] gradTauPrime = MatrixUtils.transpose(gradTau);
+        double[][] prod1 = MatrixUtils.product(gradTauPrime, omega());
+        double[][] prod2 = MatrixUtils.product(prod1, gradTau);
         assert (MatrixUtils.hasDimensions(prod2, 1, 1));
-        final double denominator = prod2[0][0];
+        double denominator = prod2[0][0];
 
         System.out.println("ratio w/o T = " + temp / denominator);
 
         //        System.out.println("Denominator = " + denominator);
-        final double chiSquare = numerator / denominator;
+        double chiSquare = numerator / denominator;
 
         this.chiSquare = chiSquare;
 
         //        System.out.println("chi square = " + chiSquare);
 
         // Compare chi square value to cutoff.
-        final double pValue = 1.0 - ProbUtils.chisqCdf(chiSquare, 1);
+        double pValue = 1.0 - ProbUtils.chisqCdf(chiSquare, 1);
         return pValue > this.alpha;
     }
 //
@@ -250,17 +250,17 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
+        List<Node> variables = getVariables();
+        List<String> variableNames = new ArrayList<>();
 
-        for (final Node variable : variables) {
+        for (Node variable : variables) {
             variableNames.add(variable.getName());
         }
 
         return variableNames;
     }
 
-    public boolean determines(final List<Node> z, final Node x1) {
+    public boolean determines(List<Node> z, Node x1) {
         throw new UnsupportedOperationException(
                 "This independence test does not " +
                         "test whether Z determines X for list Z of variable and variable X.");
@@ -270,9 +270,9 @@ public final class IndTestTimeSeries implements IndependenceTest {
         return this.alpha;
     }
 
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+            Node variable = getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -291,7 +291,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * Sets the significance level for statistical tests. By default, this is 0.05.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException(
                     "Alpha must be in [0.0, 1.0]: " + alpha);
@@ -317,7 +317,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * Sets the number of lags; the number of reps is 1 - numLags.
      */
-    public void setNumLags(final int numLags) {
+    public void setNumLags(int numLags) {
         if (numLags < 1 || numLags > getNumTimeSteps() - 1) {
             throw new IllegalArgumentException("numLags must be in [1, " +
                     "numTimePoints - 1]: " + numLags);
@@ -330,7 +330,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * Sets the number of lags. Note that the number of lags plus the lag size must be <= the number of times.
      */
-    public void setDataView(final int numReps, final int numLags) {
+    public void setDataView(int numReps, int numLags) {
         if (numLags < 1) {
             throw new IllegalArgumentException("numLags must be > 0.");
         }
@@ -360,7 +360,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * True if the stationary algorithm is to be used; false if the non- stationary algorithm is to be used.
      */
-    public void setStationary(final boolean stationary) {
+    public void setStationary(boolean stationary) {
         this.stationary = stationary;
     }
 
@@ -386,7 +386,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
         return this.indexedCorr;
     }
 
-    private void setIndices(final int[] indices) {
+    private void setIndices(int[] indices) {
 
         // The indices are stored in the IndexedMatrix. (No need to duplicate.)
         indexedCorr().setIndices(indices);
@@ -398,8 +398,8 @@ public final class IndTestTimeSeries implements IndependenceTest {
         return indexedCorr().getIndices();
     }
 
-    private int[] createIndexArray(final List<Node> z, final Node x, final Node y) {
-        final int[] indices = new int[z.size() + 2];
+    private int[] createIndexArray(List<Node> z, Node x, Node y) {
+        int[] indices = new int[z.size() + 2];
 
         indices[0] = getVariables().indexOf(x);
         indices[1] = getVariables().indexOf(y);
@@ -408,7 +408,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
             indices[i + 2] = getVariables().indexOf(z.get(i));
         }
 
-        for (final int index : indices) {
+        for (int index : indices) {
             if (index < 0) {
                 throw new IllegalArgumentException("Some variable was no in " +
                         "the constructed list of vars.");
@@ -423,10 +423,10 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @return the row of the data indexed so that the last row has index numReps and the first row has index numReps -
      * numTimeSteps + 1.
      */
-    private double[][] yPrime(final int tIndex) {
+    private double[][] yPrime(int tIndex) {
 
 //        double[][] yPrime = new double[1][numVars];
-        final int transformedIndex = getNumTimeSteps() - getNumReps() + tIndex - 1;
+        int transformedIndex = getNumTimeSteps() - getNumReps() + tIndex - 1;
         //        System.out.println("tIndex = " + tIndex + ", transformed index = " + transformedIndex);
 
         return this.data.getPart(transformedIndex, 0, 1, this.data.columns()).toArray();
@@ -438,11 +438,11 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * Constructs the x(t) vector.
      */
-    private double[][] xPrime(final int t) {
-        final double[][] x = new double[1][getNumLags() * this.numVars];
+    private double[][] xPrime(int t) {
+        double[][] x = new double[1][getNumLags() * this.numVars];
 
         for (int i = 0; i < getNumLags(); i++) {
-            final double[][] yPrime = yPrime(t - i - 1);
+            double[][] yPrime = yPrime(t - i - 1);
             System.arraycopy(yPrime[0], 0, x[0], i * this.numVars, this.numVars);
         }
 
@@ -452,35 +452,35 @@ public final class IndTestTimeSeries implements IndependenceTest {
     private double[][] piPrime() {
         double[][] ma = MatrixUtils.zeros(this.numVars, this.numVars * this.numLags);
         for (int t = 1; t <= getNumReps(); t++) {
-            final double[][] summand = MatrixUtils.product(y(t), xPrime(t));
+            double[][] summand = MatrixUtils.product(y(t), xPrime(t));
             ma = MatrixUtils.sum(ma, summand);
         }
         double[][] mb = MatrixUtils.zeros(this.numVars * this.numLags, this.numVars * this.numLags);
         for (int t = 1; t <= getNumReps(); t++) {
-            final double[][] summand = MatrixUtils.product(x(t), xPrime(t));
+            double[][] summand = MatrixUtils.product(x(t), xPrime(t));
             mb = MatrixUtils.sum(mb, summand);
         }
 
-        final double[][] mbinv = MatrixUtils.inverse(mb);
+        double[][] mbinv = MatrixUtils.inverse(mb);
         //        double[][] a = MatrixUtils.outerProduct(mb, mbinv);
         //        testPrint("a", a);
 
-        final double[][] prod = MatrixUtils.product(ma, mbinv);
+        double[][] prod = MatrixUtils.product(ma, mbinv);
         assert MatrixUtils.hasDimensions(prod, this.numVars, this.numVars * this.numLags);
 
         //        testPrint("piprime", prod);
         return prod;
     }
 
-    private double[][] y(final int t) {
+    private double[][] y(int t) {
         return MatrixUtils.transpose(yPrime(t));
     }
 
-    private double[][] x(final int t) {
+    private double[][] x(int t) {
         return MatrixUtils.transpose(xPrime(t));
     }
 
-    private double[][] u(final double[][] piPrime, final int t) {
+    private double[][] u(double[][] piPrime, int t) {
         return MatrixUtils.subtract(y(t), MatrixUtils.product(piPrime, x(t)));
     }
 
@@ -496,13 +496,13 @@ public final class IndTestTimeSeries implements IndependenceTest {
 
     private double[][] sigmaUStationary() {
         // Precalculate to avoid inverting the same huge matrix ad nauseum.
-        final double[][] piPrime = piPrime();
+        double[][] piPrime = piPrime();
         double[][] sum = MatrixUtils.zeros(this.numVars, this.numVars);
 
         for (int t = 1; t <= getNumReps(); t++) {
-            final double[][] u = u(piPrime, t);
-            final double[][] uPrime = MatrixUtils.transpose(u);
-            final double[][] product = MatrixUtils.product(u, uPrime);
+            double[][] u = u(piPrime, t);
+            double[][] uPrime = MatrixUtils.transpose(u);
+            double[][] product = MatrixUtils.product(u, uPrime);
             sum = MatrixUtils.sum(sum, product);
         }
 
@@ -510,20 +510,20 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     private double[][] dkPlus() {
-        final double[][] dk = MatrixUtils.vechToVecLeft(this.numVars);
-        final double[][] dkPrime = MatrixUtils.transpose(dk);
-        final double[][] ma = MatrixUtils.product(dkPrime, dk);
-        final double[][] mainv = MatrixUtils.inverse(ma);
+        double[][] dk = MatrixUtils.vechToVecLeft(this.numVars);
+        double[][] dkPrime = MatrixUtils.transpose(dk);
+        double[][] ma = MatrixUtils.product(dkPrime, dk);
+        double[][] mainv = MatrixUtils.inverse(ma);
         return MatrixUtils.product(mainv, dkPrime);
     }
 
     private double[][] omega() {
         if (this.omega == null) {
-            final double[][] dkPlus = dkPlus();
-            final double[][] dkPlusPrime = MatrixUtils.transpose(dkPlus);
-            final double[][] prod1 = MatrixUtils.directProduct(sigmaU(), sigmaU());
-            final double[][] prod2 = MatrixUtils.scalarProduct(2.0, dkPlus);
-            final double[][] prod3 = MatrixUtils.product(prod2, prod1);
+            double[][] dkPlus = dkPlus();
+            double[][] dkPlusPrime = MatrixUtils.transpose(dkPlus);
+            double[][] prod1 = MatrixUtils.directProduct(sigmaU(), sigmaU());
+            double[][] prod2 = MatrixUtils.scalarProduct(2.0, dkPlus);
+            double[][] prod3 = MatrixUtils.product(prod2, prod1);
             this.omega = MatrixUtils.product(prod3, dkPlusPrime);
         }
         return this.omega;
@@ -533,13 +533,13 @@ public final class IndTestTimeSeries implements IndependenceTest {
 
     private double[][] sigmaUNonStationary() {
         // Precalculate to avoid inverting the same huge matrix ad nauseum.
-        final double[][] piPrime = piPrime();
+        double[][] piPrime = piPrime();
         double[][] sum = MatrixUtils.zeros(this.numVars, this.numVars);
 
         for (int t = 1; t <= getNumReps(); t++) {
-            final double[][] u = u(piPrime, t);
-            final double[][] uPrime = MatrixUtils.transpose(u);
-            final double[][] product = MatrixUtils.product(u, uPrime);
+            double[][] u = u(piPrime, t);
+            double[][] uPrime = MatrixUtils.transpose(u);
+            double[][] product = MatrixUtils.product(u, uPrime);
             sum = MatrixUtils.sum(sum, product);
         }
 
@@ -623,7 +623,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     public double chiSquareCutoff() {
         double d = 0.0;
         for (int mantissa = 0; mantissa >= -15; mantissa--) {
-            final double increment = Math.pow(10, mantissa);
+            double increment = Math.pow(10, mantissa);
             while (d < 1000.0) {
                 d += increment;
                 if (ProbUtils.chisqCdf(d, 1.0) > 1.0 - getAlpha()) {
@@ -639,7 +639,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * Calculates the gradient of tau for the given indices array (for up to 4 conditioning vars).
      */
     private double tau() {
-        final int numCondVars = getIndices().length - 2;
+        int numCondVars = getIndices().length - 2;
 
         switch (numCondVars) {
             case 0:
@@ -830,7 +830,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * Calculates the gradient of tau for the given indices array (for up to 4 conditioning vars).
      */
     private double[][] gradTau() {
-        final int numCondVars = getIndices().length - 2;
+        int numCondVars = getIndices().length - 2;
 
         switch (numCondVars) {
             case 0:
@@ -853,9 +853,9 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * Takes a gradTau for a basic case and transforms it into a gradTau for the case at hand.
      */
-    private double[][] convertGradTau(final double[] basicGradTau) {
-        final double[][] m = MatrixUtils.invVech(basicGradTau);
-        final double[][] m2 = new double[this.numVars][this.numVars];
+    private double[][] convertGradTau(double[] basicGradTau) {
+        double[][] m = MatrixUtils.invVech(basicGradTau);
+        double[][] m2 = new double[this.numVars][this.numVars];
 
         for (int i = 0; i < m.length; i++) {
             for (int j = 0; j < m.length; j++) {
@@ -1472,7 +1472,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * @return the sample correlation of var(i) with var(j) (one-indexed).
      */
-    private double s(final int i, final int j) {
+    private double s(int i, int j) {
         return indexedCorr().getValue(i - 1, j - 1);
     }
 
@@ -1519,7 +1519,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     }
 
     @Override
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

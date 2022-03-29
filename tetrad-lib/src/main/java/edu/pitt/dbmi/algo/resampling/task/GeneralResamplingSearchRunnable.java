@@ -47,8 +47,8 @@ public class GeneralResamplingSearchRunnable implements Runnable {
 
     private PrintStream out = System.out;
 
-    public GeneralResamplingSearchRunnable(final DataSet dataSet, final Algorithm algorithm, final Parameters parameters,
-                                           final GeneralResamplingSearch resamplingAlgorithmSearch, final boolean verbose) {
+    public GeneralResamplingSearchRunnable(DataSet dataSet, Algorithm algorithm, Parameters parameters,
+                                           GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
         this.dataSet = dataSet;
         this.algorithm = algorithm;
         this.parameters = parameters;
@@ -56,8 +56,8 @@ public class GeneralResamplingSearchRunnable implements Runnable {
         this.verbose = verbose;
     }
 
-    public GeneralResamplingSearchRunnable(final List<DataModel> dataSets, final MultiDataSetAlgorithm multiDataSetAlgorithm, final Parameters parameters,
-                                           final GeneralResamplingSearch resamplingAlgorithmSearch, final boolean verbose) {
+    public GeneralResamplingSearchRunnable(List<DataModel> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, Parameters parameters,
+                                           GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
         this.dataSets = dataSets;
         this.multiDataSetAlgorithm = multiDataSetAlgorithm;
         this.parameters = parameters;
@@ -78,7 +78,7 @@ public class GeneralResamplingSearchRunnable implements Runnable {
      *
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null)
             throw new NullPointerException();
         this.knowledge = knowledge;
@@ -88,7 +88,7 @@ public class GeneralResamplingSearchRunnable implements Runnable {
         return this.externalGraph;
     }
 
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
@@ -96,7 +96,7 @@ public class GeneralResamplingSearchRunnable implements Runnable {
      * Sets the output stream that output (except for log output) should be sent
      * to. By detault System.out.
      */
-    public void setOut(final PrintStream out) {
+    public void setOut(PrintStream out) {
         this.out = out;
     }
 
@@ -112,8 +112,8 @@ public class GeneralResamplingSearchRunnable implements Runnable {
     public void run() {
         //System.out.println("#dataSet rows: " + dataSet.getNumRows());
 
-        final long start;
-        final long stop;
+        long start;
+        long stop;
         start = System.currentTimeMillis();
         if (this.verbose) {
             this.out.println("thread started ... ");

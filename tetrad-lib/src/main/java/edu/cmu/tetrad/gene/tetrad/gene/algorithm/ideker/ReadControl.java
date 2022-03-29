@@ -28,11 +28,11 @@ import java.text.NumberFormat;
 import java.util.StringTokenizer;
 
 public class ReadControl {
-    public static void main(final String[] argv) {
+    public static void main(String[] argv) {
 
-        final String fileName = argv[0];
+        String fileName = argv[0];
 
-        final InputStream s;
+        InputStream s;
         StringTokenizer st;
 
         final int ngenes = 9;
@@ -41,24 +41,24 @@ public class ReadControl {
 
         final int nrecords = 7;
 
-        final int[][] rawData = new int[ngenes][80];
-        final int[] nvaluesRecord = {10, 12, 12, 12, 12, 12, 10};
-        final int[] offSet = {0, 10, 22, 34, 46, 58, 70};
-        final String[] name = new String[ngenes];
-        final String[] code = new String[ngenes];
+        int[][] rawData = new int[ngenes][80];
+        int[] nvaluesRecord = {10, 12, 12, 12, 12, 12, 10};
+        int[] offSet = {0, 10, 22, 34, 46, 58, 70};
+        String[] name = new String[ngenes];
+        String[] code = new String[ngenes];
 
-        final double[][] expressions = new double[nperturbations][ngenes];
+        double[][] expressions = new double[nperturbations][ngenes];
         //        int[][] binaryExpression = new int[10][ngenes];
-        final double[] meanExpression = new double[ngenes];
+        double[] meanExpression = new double[ngenes];
 
         try {
             s = new FileInputStream(fileName);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             System.out.println("Cannot open file " + fileName);
             return;
         }
 
-        final BufferedReader in = new BufferedReader(new InputStreamReader(s));
+        BufferedReader in = new BufferedReader(new InputStreamReader(s));
         for (int k = 0; k < nrecords; k++) {
             for (int j = 0; j < 10; j++) {  //Lines per record
                 try {
@@ -85,7 +85,7 @@ public class ReadControl {
                         }
                         //System.out.println("first raw data = " + rawData[j-1][0]);
                     }
-                } catch (final IOException e) {
+                } catch (IOException e) {
                     System.out.println("Read error in " + fileName);
                     return;
                 }
@@ -115,13 +115,13 @@ public class ReadControl {
             }
         }
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         //for(int p = 0; p < nperturbations; p++) {
         //for(int p = 0; p < 10; p++) {  //Galactose
         for (int p = 10; p < 20; p++) {  //Raffinose
             for (int g = 0; g < 5; g++) {
-                final String exp = nf.format(expressions[p][g]);
+                String exp = nf.format(expressions[p][g]);
                 System.out.print(exp + "  ");
             }
             System.out.println();
@@ -142,7 +142,7 @@ public class ReadControl {
 
         System.out.println("Mean expression for each gene");
         for (int g = 0; g < ngenes; g++) {
-            final String mean = nf.format(meanExpression[g]);
+            String mean = nf.format(meanExpression[g]);
             System.out.print(mean + " ");
         }
         System.out.println();

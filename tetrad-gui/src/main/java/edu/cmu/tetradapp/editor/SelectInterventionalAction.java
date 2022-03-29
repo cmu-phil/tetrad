@@ -40,7 +40,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
      *
      * @param workbench
      */
-    public SelectInterventionalAction(final GraphWorkbench workbench) {
+    public SelectInterventionalAction(GraphWorkbench workbench) {
         super("Highlight Interventional Nodes");
 
         if (workbench == null) {
@@ -57,19 +57,19 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
      * @param e
      */
     @Override
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();
 
-        for (final Component comp : this.workbench.getComponents()) {
+        for (Component comp : this.workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
-                final Node node = ((DisplayNode) comp).getModelNode();
+                Node node = ((DisplayNode) comp).getModelNode();
                 if (node.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || node.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
                     this.workbench.selectNode(node);
                 }
             }
 
             if (comp instanceof DisplayEdge) {
-                final Edge edge = ((DisplayEdge) comp).getModelEdge();
+                Edge edge = ((DisplayEdge) comp).getModelEdge();
                 if ((edge.getNode1().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode1().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)
                         || (edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)) {
                     this.workbench.selectEdge(edge);
@@ -83,7 +83,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
      * Required by the AbstractAction interface; does nothing.
      */
     @Override
-    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 
 }

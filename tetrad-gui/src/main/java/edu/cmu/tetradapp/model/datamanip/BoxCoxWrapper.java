@@ -39,20 +39,20 @@ public class BoxCoxWrapper extends DataWrapper {
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    private BoxCoxWrapper(final DataWrapper data, final Parameters params) {
-        final DataModelList list = data.getDataModelList();
-        final DataModelList convertedList = new DataModelList();
-        final DataModelList dataSets = data.getDataModelList();
+    private BoxCoxWrapper(DataWrapper data, Parameters params) {
+        DataModelList list = data.getDataModelList();
+        DataModelList convertedList = new DataModelList();
+        DataModelList dataSets = data.getDataModelList();
 
         for (int i = 0; i < list.size(); i++) {
-            final DataModel selectedModel = dataSets.get(i);
+            DataModel selectedModel = dataSets.get(i);
 
             if (!(selectedModel instanceof DataSet)) {
                 continue;
             }
 
 //            DataModel model = boxCox((DataSet) selectedModel, params.getLambda());
-            final DataModel model = yeoJohnson((DataSet) selectedModel, params.getDouble("lambda", 0));
+            DataModel model = yeoJohnson((DataSet) selectedModel, params.getDouble("lambda", 0));
             convertedList.add(model);
             setSourceGraph(data.getSourceGraph());
         }
@@ -72,14 +72,14 @@ public class BoxCoxWrapper extends DataWrapper {
 
     }
 
-    private DataModel boxCox(final DataSet dataSet, final double lambda) {
-        final DataSet transformedData = new BoxDataSet(new VerticalDoubleDataBox(dataSet.getNumRows(), dataSet.getVariables().size()),
+    private DataModel boxCox(DataSet dataSet, double lambda) {
+        DataSet transformedData = new BoxDataSet(new VerticalDoubleDataBox(dataSet.getNumRows(), dataSet.getVariables().size()),
                 dataSet.getVariables());
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             for (int i = 0; i < dataSet.getNumRows(); i++) {
-                final double y = dataSet.getDouble(i, j);
-                final double d2;
+                double y = dataSet.getDouble(i, j);
+                double d2;
 
                 if (lambda == 0.0) {
                     d2 = Math.log(y);
@@ -94,14 +94,14 @@ public class BoxCoxWrapper extends DataWrapper {
         return transformedData;
     }
 
-    private DataModel yeoJohnson(final DataSet dataSet, final double lambda) {
-        final DataSet transformedData = new BoxDataSet(new DoubleDataBox(dataSet.getNumRows(), dataSet.getVariables().size()),
+    private DataModel yeoJohnson(DataSet dataSet, double lambda) {
+        DataSet transformedData = new BoxDataSet(new DoubleDataBox(dataSet.getNumRows(), dataSet.getVariables().size()),
                 dataSet.getVariables());
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             for (int i = 0; i < dataSet.getNumRows(); i++) {
-                final double y = dataSet.getDouble(i, j);
-                final double d2;
+                double y = dataSet.getDouble(i, j);
+                double d2;
 
                 if (lambda != 0 && y >= 0.0) {
                     d2 = (Math.pow(y + 1.0, lambda) - 1.0) / lambda;

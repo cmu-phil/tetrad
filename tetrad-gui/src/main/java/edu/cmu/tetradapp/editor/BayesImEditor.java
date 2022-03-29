@@ -56,7 +56,7 @@ public class BayesImEditor extends JPanel {
     /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
-    public BayesImEditor(final BayesImWrapper wrapper) {
+    public BayesImEditor(BayesImWrapper wrapper) {
         this.wrapper = wrapper;
         setLayout(new BorderLayout());
 
@@ -69,7 +69,7 @@ public class BayesImEditor extends JPanel {
         validate();
 
         if (wrapper.getNumModels() > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
+            JComboBox<Integer> comp = new JComboBox<>();
 
             for (int i = 0; i < wrapper.getNumModels(); i++) {
                 comp.addItem(i + 1);
@@ -79,7 +79,7 @@ public class BayesImEditor extends JPanel {
 
             comp.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     wrapper.setModelIndex(comp.getSelectedIndex() - 1);
                     setEditorPanel();
                     validate();
@@ -88,7 +88,7 @@ public class BayesImEditor extends JPanel {
 
             comp.setMaximumSize(comp.getPreferredSize());
 
-            final Box b = Box.createHorizontalBox();
+            Box b = Box.createHorizontalBox();
             b.add(new JLabel("Using model"));
             b.add(comp);
             b.add(new JLabel("from "));
@@ -100,15 +100,15 @@ public class BayesImEditor extends JPanel {
     }
 
     private void setEditorPanel() {
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        final BayesIm bayesIm = this.wrapper.getBayesIm();
-        final Graph graph = bayesIm.getDag();
-        final GraphWorkbench workbench = new GraphWorkbench(graph);
+        BayesIm bayesIm = this.wrapper.getBayesIm();
+        Graph graph = bayesIm.getDag();
+        GraphWorkbench workbench = new GraphWorkbench(graph);
 
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
         menuBar.add(file);
         file.add(new SaveBayesImXmlAction(this));
         file.add(new LoadBayesImXmlAction(this.wrapper, this));
@@ -122,19 +122,19 @@ public class BayesImEditor extends JPanel {
         this.wizard.enableEditing(false);
 
         this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
         });
 
-        final JScrollPane workbenchScroll = new JScrollPane(workbench);
-        final JScrollPane wizardScroll = new JScrollPane(getWizard());
+        JScrollPane workbenchScroll = new JScrollPane(workbench);
+        JScrollPane wizardScroll = new JScrollPane(getWizard());
 
         workbenchScroll.setPreferredSize(new Dimension(450, 450));
 
-        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, wizardScroll);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
@@ -142,7 +142,7 @@ public class BayesImEditor extends JPanel {
 
         setName("Bayes IM Editor");
         getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorClosing".equals(evt.getPropertyName())) {
                     firePropertyChange("editorClosing", null, getName());
                 }
@@ -167,8 +167,8 @@ public class BayesImEditor extends JPanel {
     /**
      * Sets the name of this editor.
      */
-    public void setName(final String name) {
-        final String oldName = getName();
+    public void setName(String name) {
+        String oldName = getName();
         super.setName(name);
         firePropertyChange("name", oldName, getName());
     }
@@ -180,7 +180,7 @@ public class BayesImEditor extends JPanel {
         return this.wizard;
     }
 
-    public void getBayesIm(final BayesIm bayesIm) {
+    public void getBayesIm(BayesIm bayesIm) {
 //        this.wrapper.setBayesIm(bayesIm);
         removeAll();
         setEditorPanel();

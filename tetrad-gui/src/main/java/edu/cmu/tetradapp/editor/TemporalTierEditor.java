@@ -49,8 +49,8 @@ class TemporalTierEditor extends JPanel
      */
     private final TierList tierList;
 
-    public TemporalTierEditor(final IKnowledge knowledge, final List varNames,
-                              final String sessionName) {
+    public TemporalTierEditor(IKnowledge knowledge, List varNames,
+                              String sessionName) {
 
         //nameTiers = new JButton("VariableNameImpliedTiers");
         this.clear = new JButton("Clear All Knowledge");
@@ -82,7 +82,7 @@ class TemporalTierEditor extends JPanel
         this.tierList.addPropertyChangeListener(this);
         add(this.tierList);
 
-        final JPanel southPanel = new JPanel();
+        JPanel southPanel = new JPanel();
         southPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         //southPanel.add(nameTiers);
         southPanel.add(this.clear);
@@ -100,7 +100,7 @@ class TemporalTierEditor extends JPanel
      *
      * @param e the property change event.
      */
-    public void propertyChange(final PropertyChangeEvent e) {
+    public void propertyChange(PropertyChangeEvent e) {
 
         //System.out.println("prop change");
         //firePropertyChange("TemporalTierEditor",null,null);
@@ -111,8 +111,8 @@ class TemporalTierEditor extends JPanel
     /**
      * Sets the name of this editor.
      */
-    public void setName(final String name) {
-        final String oldName = getName();
+    public void setName(String name) {
+        String oldName = getName();
         super.setName(name);
         this.firePropertyChange("name", oldName, getName());
     }
@@ -125,7 +125,7 @@ class TemporalTierEditor extends JPanel
         return getName() + ":  " + graphName;
     }
 
-    public void actionPerformed(final ActionEvent a) {
+    public void actionPerformed(ActionEvent a) {
         if (a.getSource() == this.clear) {
             this.knowledge.clear();
             this.tierList.repaint();

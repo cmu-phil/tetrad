@@ -68,8 +68,8 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
      * Constructs a new table for the given covariance matrix, the nodes for
      * which are as specified (in the order they appear in the matrix).
      */
-    public StandardizedSemImImpliedCovTable(final StandardizedSemIm semIm, final boolean measured,
-                                            final boolean correlations) {
+    public StandardizedSemImImpliedCovTable(StandardizedSemIm semIm, boolean measured,
+                                            boolean correlations) {
         this.semIm = semIm;
         this.measured = measured;
         this.correlations = correlations;
@@ -81,10 +81,10 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
         } else if (measured() && !covariances()) {
             this.matrix = StandardizedSemImImpliedCovTable.corr(getSemIm().getImplCovarMeas().toArray());
         } else if (!measured() && covariances()) {
-            final Matrix implCovarC = getSemIm().getImplCovar();
+            Matrix implCovarC = getSemIm().getImplCovar();
             this.matrix = implCovarC.toArray();
         } else if (!measured() && !covariances()) {
-            final Matrix implCovarC = getSemIm().getImplCovar();
+            Matrix implCovarC = getSemIm().getImplCovar();
             this.matrix = StandardizedSemImImpliedCovTable.corr(implCovarC.toArray());
         }
     }
@@ -119,17 +119,17 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
      * @return the name of the column at columnIndex, which is "" for column 0
      * and the name of the variable for the other columns.
      */
-    public String getColumnName(final int columnIndex) {
+    public String getColumnName(int columnIndex) {
         if (columnIndex == 0) {
             return "";
         } else {
             if (measured()) {
-                final List nodes = getSemIm().getMeasuredNodes();
-                final Node node = ((Node) nodes.get(columnIndex - 1));
+                List nodes = getSemIm().getMeasuredNodes();
+                Node node = ((Node) nodes.get(columnIndex - 1));
                 return node.getName();
             } else {
-                final List nodes = getSemIm().getVariableNodes();
-                final Node node = ((Node) nodes.get(columnIndex - 1));
+                List nodes = getSemIm().getVariableNodes();
+                Node node = ((Node) nodes.get(columnIndex - 1));
                 return node.getName();
             }
         }
@@ -139,7 +139,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
      * @return the value being displayed in a cell, either a variable name or a
      * Double.
      */
-    public Object getValueAt(final int rowIndex, final int columnIndex) {
+    public Object getValueAt(int rowIndex, int columnIndex) {
         if (rowIndex == 0) {
             return getColumnName(columnIndex);
         }
@@ -156,16 +156,16 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
         return !correlations();
     }
 
-    private static double[][] corr(final double[][] implCovar) {
-        final int length = implCovar.length;
-        final double[][] corr = new double[length][length];
+    private static double[][] corr(double[][] implCovar) {
+        int length = implCovar.length;
+        double[][] corr = new double[length][length];
 
         for (int i = 1; i < length; i++) {
             for (int j = 0; j < i; j++) {
-                final double d1 = implCovar[i][j];
-                final double d2 = implCovar[i][i];
-                final double d3 = implCovar[j][j];
-                final double d4 = d1 / Math.pow(d2 * d3, 0.5);
+                double d1 = implCovar[i][j];
+                double d2 = implCovar[i][i];
+                double d3 = implCovar[j][j];
+                double d4 = d1 / Math.pow(d2 * d3, 0.5);
 
                 if (d4 <= 1.0 || Double.isNaN(d4)) {
                     corr[i][j] = d4;

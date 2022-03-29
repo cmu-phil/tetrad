@@ -72,7 +72,7 @@ public class LingamCPDAG2 {
 
     //===============================CONSTRUCTOR============================//
 
-    public LingamCPDAG2(final Graph CPDAG, final List<DataSet> dataSets)
+    public LingamCPDAG2(Graph CPDAG, List<DataSet> dataSets)
             throws IllegalArgumentException {
 
         if (dataSets == null) {
@@ -90,14 +90,14 @@ public class LingamCPDAG2 {
 
         this.data = new ArrayList<>();
 
-        for (final DataSet dataSet : getDataSets()) {
-            final Matrix _data = dataSet.getDoubleData();
+        for (DataSet dataSet : getDataSets()) {
+            Matrix _data = dataSet.getDoubleData();
             this.data.add(_data);
         }
 
         this.regressions = new ArrayList<>();
 
-        for (final Matrix _data : this.data) {
+        for (Matrix _data : this.data) {
             this.regressions.add(new RegressionDataset(_data, this.variables));
         }
 
@@ -106,24 +106,24 @@ public class LingamCPDAG2 {
 
     //===============================PUBLIC METHODS========================//
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     public Graph search() {
-        final long initialTime = System.currentTimeMillis();
+        long initialTime = System.currentTimeMillis();
 
-        final Graph _CPDAG = GraphUtils.bidirectedToUndirected(getCPDAG());
+        Graph _CPDAG = GraphUtils.bidirectedToUndirected(getCPDAG());
 
         TetradLogger.getInstance().log("info", "Making list of all dags in CPDAG...");
 
 //        List<Graph> dags = SearchGraphUtils.getDagsInCPDAGMeek(_CPDAG, getKnowledge());
 //        List<Graph> dags = SearchGraphUtils.generateCpdagDags(_CPDAG, false);
 //        List<Dag> dags = SearchGraphUtils.getAllDagsByDirectingUndirectedEdges(_CPDAG);
-        final List<Graph> dags = SearchGraphUtils.getAllGraphsByDirectingUndirectedEdges(_CPDAG);
+        List<Graph> dags = SearchGraphUtils.getAllGraphsByDirectingUndirectedEdges(_CPDAG);
 
         TetradLogger.getInstance().log("normalityTests", "Anderson Darling P value for Variables\n");
-        final NumberFormat nf = new DecimalFormat("0.0000");
+        NumberFormat nf = new DecimalFormat("0.0000");
 
 //        TetradMatrix m = getDataModel().getDoubleData();
 
@@ -146,9 +146,9 @@ public class LingamCPDAG2 {
 
         // Check that all the daga and the data contain the same variables.
 
-        final List<Score> scores = new ArrayList<>();
+        List<Score> scores = new ArrayList<>();
 
-        for (final Graph dag : dags) {
+        for (Graph dag : dags) {
 //            System.out.println(dag);
             scores.add(getScore(dag, this.data, this.variables));
         }
@@ -157,7 +157,7 @@ public class LingamCPDAG2 {
         int maxj = -1;
 
         for (int j = 0; j < dags.size(); j++) {
-            final double _score = scores.get(j).score;
+            double _score = scores.get(j).score;
 
             if (_score > maxScore) {
                 maxScore = _score;
@@ -165,7 +165,7 @@ public class LingamCPDAG2 {
             }
         }
 
-        final Graph dag = dags.get(maxj);
+        Graph dag = dags.get(maxj);
         this.bestDag = new EdgeListGraph(dags.get(maxj));
         this.pValues = scores.get(maxj).pvals;
 
@@ -179,19 +179,19 @@ public class LingamCPDAG2 {
 
 //        System.out.println();
 
-        final Graph ngDagCPDAG = SearchGraphUtils.cpdagFromDag(dag);
+        Graph ngDagCPDAG = SearchGraphUtils.cpdagFromDag(dag);
 
-        final List<Node> nodes = ngDagCPDAG.getNodes();
+        List<Node> nodes = ngDagCPDAG.getNodes();
 
-        for (final Edge edge : ngDagCPDAG.getEdges()) {
-            final Node node1 = edge.getNode1();
-            final Node node2 = edge.getNode2();
+        for (Edge edge : ngDagCPDAG.getEdges()) {
+            Node node1 = edge.getNode1();
+            Node node2 = edge.getNode2();
 
-            final double p1 = getPValues()[nodes.indexOf(node1)];
-            final double p2 = getPValues()[nodes.indexOf(node2)];
+            double p1 = getPValues()[nodes.indexOf(node1)];
+            double p2 = getPValues()[nodes.indexOf(node2)];
 
-            final boolean node1Nongaussian = p1 < getAlpha();
-            final boolean node2Nongaussian = p2 < getAlpha();
+            boolean node1Nongaussian = p1 < getAlpha();
+            boolean node2Nongaussian = p2 < getAlpha();
 
             if (node1Nongaussian || node2Nongaussian) {
                 if (!Edges.isUndirectedEdge(edge)) {
@@ -218,7 +218,7 @@ public class LingamCPDAG2 {
 //        System.out.println("Applying Meek rules.");
 //        System.out.println();
 
-        final MeekRules meekRules = new MeekRules();
+        MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(true);
         meekRules.orientImplied(ngDagCPDAG);
 
@@ -230,49 +230,49 @@ public class LingamCPDAG2 {
 
     //=============================PRIVATE METHODS=========================//
 
-    private Score getScore1(final Graph dag, final List<Matrix> data, final List<Node> variables) {
+    private Score getScore1(Graph dag, List<Matrix> data, List<Node> variables) {
 //        System.out.println("Scoring DAG: " + dag);
 
-        final List<Regression> regressions = new ArrayList<>();
+        List<Regression> regressions = new ArrayList<>();
 
-        for (final Matrix _data : data) {
+        for (Matrix _data : data) {
             regressions.add(new RegressionDataset(_data, variables));
         }
 
         int totalSampleSize = 0;
 
-        for (final Matrix _data : data) {
+        for (Matrix _data : data) {
             totalSampleSize += _data.rows();
         }
 
-        final int numCols = data.get(0).columns();
+        int numCols = data.get(0).columns();
 
-        final List<Node> nodes = dag.getNodes();
+        List<Node> nodes = dag.getNodes();
         double score = 0.0;
-        final double[] pValues = new double[nodes.size()];
-        final Matrix absoluteStandardizedResiduals = new Matrix(totalSampleSize, numCols);
+        double[] pValues = new double[nodes.size()];
+        Matrix absoluteStandardizedResiduals = new Matrix(totalSampleSize, numCols);
 
         for (int i = 0; i < nodes.size(); i++) {
-            final List<Double> _absoluteStandardizedResiduals = new ArrayList<>();
+            List<Double> _absoluteStandardizedResiduals = new ArrayList<>();
 
             for (int j = 0; j < data.size(); j++) {
-                final Node _target = nodes.get(i);
-                final List<Node> _regressors = dag.getParents(_target);
-                final Node target = getVariable(variables, _target.getName());
-                final List<Node> regressors = new ArrayList<>();
+                Node _target = nodes.get(i);
+                List<Node> _regressors = dag.getParents(_target);
+                Node target = getVariable(variables, _target.getName());
+                List<Node> regressors = new ArrayList<>();
 
-                for (final Node _regressor : _regressors) {
-                    final Node variable = getVariable(variables, _regressor.getName());
+                for (Node _regressor : _regressors) {
+                    Node variable = getVariable(variables, _regressor.getName());
                     regressors.add(variable);
                 }
 
-                final RegressionResult result = regressions.get(j).regress(target, regressors);
-                final Vector residualsColumn = result.getResiduals();
+                RegressionResult result = regressions.get(j).regress(target, regressors);
+                Vector residualsColumn = result.getResiduals();
 
-                final DoubleArrayList _absoluteStandardizedResidualsColumn = new DoubleArrayList(residualsColumn.toArray());
+                DoubleArrayList _absoluteStandardizedResidualsColumn = new DoubleArrayList(residualsColumn.toArray());
 
-                final double mean = Descriptive.mean(_absoluteStandardizedResidualsColumn);
-                final double std = Descriptive.standardDeviation(Descriptive.variance(_absoluteStandardizedResidualsColumn.size(),
+                double mean = Descriptive.mean(_absoluteStandardizedResidualsColumn);
+                double std = Descriptive.standardDeviation(Descriptive.variance(_absoluteStandardizedResidualsColumn.size(),
                         Descriptive.sum(_absoluteStandardizedResidualsColumn), Descriptive.sumOfSquares(_absoluteStandardizedResidualsColumn)));
 
                 for (int i2 = 0; i2 < _absoluteStandardizedResidualsColumn.size(); i2++) {
@@ -285,69 +285,69 @@ public class LingamCPDAG2 {
                 }
             }
 
-            final DoubleArrayList absoluteStandardResidualsList = new DoubleArrayList(absoluteStandardizedResiduals.getColumn(i).toArray());
+            DoubleArrayList absoluteStandardResidualsList = new DoubleArrayList(absoluteStandardizedResiduals.getColumn(i).toArray());
 
             for (int k = 0; k < _absoluteStandardizedResiduals.size(); k++) {
                 absoluteStandardizedResiduals.set(k, i, _absoluteStandardizedResiduals.get(k));
             }
 
-            final double _mean = Descriptive.mean(absoluteStandardResidualsList);
-            final double diff = _mean - Math.sqrt(2.0 / Math.PI);
+            double _mean = Descriptive.mean(absoluteStandardResidualsList);
+            double diff = _mean - Math.sqrt(2.0 / Math.PI);
             score += diff * diff;
         }
 
         for (int j = 0; j < absoluteStandardizedResiduals.columns(); j++) {
-            final double[] x = absoluteStandardizedResiduals.getColumn(j).toArray();
-            final double p = new AndersonDarlingTest(x).getP();
+            double[] x = absoluteStandardizedResiduals.getColumn(j).toArray();
+            double p = new AndersonDarlingTest(x).getP();
             pValues[j] = p;
         }
 
         return new Score(score, pValues);
     }
 
-    private Score getScore2(final Graph dag, final List<Matrix> data, final List<Node> variables) {
+    private Score getScore2(Graph dag, List<Matrix> data, List<Node> variables) {
 //        System.out.println("Scoring DAG: " + dag);
 
-        final List<Regression> regressions = new ArrayList<>();
+        List<Regression> regressions = new ArrayList<>();
 
-        for (final Matrix _data : data) {
+        for (Matrix _data : data) {
             regressions.add(new RegressionDataset(_data, variables));
         }
 
         int totalSampleSize = 0;
 
-        for (final Matrix _data : data) {
+        for (Matrix _data : data) {
             totalSampleSize += _data.rows();
         }
 
-        final int numCols = data.get(0).columns();
+        int numCols = data.get(0).columns();
 
-        final List<Node> nodes = dag.getNodes();
+        List<Node> nodes = dag.getNodes();
         double score = 0.0;
-        final double[] pValues = new double[nodes.size()];
-        final Matrix residuals = new Matrix(totalSampleSize, numCols);
+        double[] pValues = new double[nodes.size()];
+        Matrix residuals = new Matrix(totalSampleSize, numCols);
 
         for (int j = 0; j < nodes.size(); j++) {
-            final List<Double> _residuals = new ArrayList<>();
+            List<Double> _residuals = new ArrayList<>();
 
-            final Node _target = nodes.get(j);
-            final List<Node> _regressors = dag.getParents(_target);
-            final Node target = getVariable(variables, _target.getName());
-            final List<Node> regressors = new ArrayList<>();
+            Node _target = nodes.get(j);
+            List<Node> _regressors = dag.getParents(_target);
+            Node target = getVariable(variables, _target.getName());
+            List<Node> regressors = new ArrayList<>();
 
-            for (final Node _regressor : _regressors) {
-                final Node variable = getVariable(variables, _regressor.getName());
+            for (Node _regressor : _regressors) {
+                Node variable = getVariable(variables, _regressor.getName());
                 regressors.add(variable);
             }
 
             for (int m = 0; m < data.size(); m++) {
-                final RegressionResult result = regressions.get(m).regress(target, regressors);
-                final Vector residualsSingleDataset = result.getResiduals();
+                RegressionResult result = regressions.get(m).regress(target, regressors);
+                Vector residualsSingleDataset = result.getResiduals();
 
-                final DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
+                DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
-                final double mean = Descriptive.mean(_residualsSingleDataset);
-                final double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
+                double mean = Descriptive.mean(_residualsSingleDataset);
+                double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
                         Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
                 for (int i2 = 0; i2 < _residualsSingleDataset.size(); i2++) {
@@ -365,20 +365,20 @@ public class LingamCPDAG2 {
         }
 
         for (int i = 0; i < nodes.size(); i++) {
-            final DoubleArrayList f = new DoubleArrayList(residuals.getColumn(i).toArray());
+            DoubleArrayList f = new DoubleArrayList(residuals.getColumn(i).toArray());
 
             for (int j = 0; j < f.size(); j++) {
                 f.set(j, Math.abs(f.get(j)));
             }
 
-            final double _mean = Descriptive.mean(f);
-            final double diff = _mean - Math.sqrt(2.0 / Math.PI);
+            double _mean = Descriptive.mean(f);
+            double diff = _mean - Math.sqrt(2.0 / Math.PI);
             score += diff * diff;
         }
 
         for (int j = 0; j < residuals.columns(); j++) {
-            final double[] x = residuals.getColumn(j).toArray();
-            final double p = new AndersonDarlingTest(x).getP();
+            double[] x = residuals.getColumn(j).toArray();
+            double p = new AndersonDarlingTest(x).getP();
             pValues[j] = p;
         }
 
@@ -387,43 +387,43 @@ public class LingamCPDAG2 {
 
     // Return the average score.
 
-    private Score getScore(final Graph dag, final List<Matrix> data, final List<Node> variables) {
+    private Score getScore(Graph dag, List<Matrix> data, List<Node> variables) {
 //        System.out.println("Scoring DAG: " + dag);
 
         int totalSampleSize = 0;
 
-        for (final Matrix _data : data) {
+        for (Matrix _data : data) {
             totalSampleSize += _data.rows();
         }
 
-        final int numCols = data.get(0).columns();
+        int numCols = data.get(0).columns();
 
-        final List<Node> nodes = dag.getNodes();
+        List<Node> nodes = dag.getNodes();
         double score = 0.0;
-        final double[] pValues = new double[nodes.size()];
-        final Matrix residuals = new Matrix(totalSampleSize, numCols);
+        double[] pValues = new double[nodes.size()];
+        Matrix residuals = new Matrix(totalSampleSize, numCols);
 
         for (int j = 0; j < nodes.size(); j++) {
-            final List<Double> _residuals = new ArrayList<>();
+            List<Double> _residuals = new ArrayList<>();
 
-            final Node _target = nodes.get(j);
-            final List<Node> _regressors = dag.getParents(_target);
-            final Node target = getVariable(variables, _target.getName());
-            final List<Node> regressors = new ArrayList<>();
+            Node _target = nodes.get(j);
+            List<Node> _regressors = dag.getParents(_target);
+            Node target = getVariable(variables, _target.getName());
+            List<Node> regressors = new ArrayList<>();
 
-            for (final Node _regressor : _regressors) {
-                final Node variable = getVariable(variables, _regressor.getName());
+            for (Node _regressor : _regressors) {
+                Node variable = getVariable(variables, _regressor.getName());
                 regressors.add(variable);
             }
 
             for (int m = 0; m < data.size(); m++) {
-                final RegressionResult result = this.regressions.get(m).regress(target, regressors);
-                final Vector residualsSingleDataset = result.getResiduals();
+                RegressionResult result = this.regressions.get(m).regress(target, regressors);
+                Vector residualsSingleDataset = result.getResiduals();
 
-                final DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
+                DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
-                final double mean = Descriptive.mean(_residualsSingleDataset);
-                final double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
+                double mean = Descriptive.mean(_residualsSingleDataset);
+                double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
                         Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
                 for (int i2 = 0; i2 < _residualsSingleDataset.size(); i2++) {
@@ -434,14 +434,14 @@ public class LingamCPDAG2 {
                     _residuals.add(_residualsSingleDataset.get(k));
                 }
 
-                final DoubleArrayList f = new DoubleArrayList(_residualsSingleDataset.elements());
+                DoubleArrayList f = new DoubleArrayList(_residualsSingleDataset.elements());
 
                 for (int k = 0; k < f.size(); k++) {
                     f.set(k, Math.abs(f.get(k)));
                 }
 
-                final double _mean = Descriptive.mean(f);
-                final double diff = _mean - Math.sqrt(2.0 / Math.PI);
+                double _mean = Descriptive.mean(f);
+                double diff = _mean - Math.sqrt(2.0 / Math.PI);
                 score += diff * diff;
 
 //                score += andersonDarlingPASquareStar(target, dag.getParents(target));
@@ -453,31 +453,31 @@ public class LingamCPDAG2 {
         }
 
         for (int j = 0; j < residuals.columns(); j++) {
-            final double[] x = residuals.getColumn(j).toArray();
-            final double p = new AndersonDarlingTest(x).getP();
+            double[] x = residuals.getColumn(j).toArray();
+            double p = new AndersonDarlingTest(x).getP();
             pValues[j] = p;
         }
 
         return new Score(score, pValues);
     }
 
-    private double andersonDarlingPASquareStar(final Node node, final List<Node> parents) {
-        final List<Double> _residuals = new ArrayList<>();
+    private double andersonDarlingPASquareStar(Node node, List<Node> parents) {
+        List<Double> _residuals = new ArrayList<>();
 
-        final Node _target = node;
-        final List<Node> _regressors = parents;
-        final Node target = getVariable(this.variables, _target.getName());
-        final List<Node> regressors = new ArrayList<>();
+        Node _target = node;
+        List<Node> _regressors = parents;
+        Node target = getVariable(this.variables, _target.getName());
+        List<Node> regressors = new ArrayList<>();
 
-        for (final Node _regressor : _regressors) {
-            final Node variable = getVariable(this.variables, _regressor.getName());
+        for (Node _regressor : _regressors) {
+            Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
 
         DATASET:
         for (int m = 0; m < this.dataSets.size(); m++) {
-            final RegressionResult result = this.regressions.get(m).regress(target, regressors);
-            final Vector residualsSingleDataset = result.getResiduals();
+            RegressionResult result = this.regressions.get(m).regress(target, regressors);
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -485,10 +485,10 @@ public class LingamCPDAG2 {
                 }
             }
 
-            final DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
+            DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
-            final double mean = Descriptive.mean(_residualsSingleDataset);
-            final double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
+            double mean = Descriptive.mean(_residualsSingleDataset);
+            double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
                     Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
             for (int i2 = 0; i2 < _residualsSingleDataset.size(); i2++) {
@@ -502,13 +502,13 @@ public class LingamCPDAG2 {
             }
         }
 
-        final double[] _f = new double[_residuals.size()];
+        double[] _f = new double[_residuals.size()];
 
         for (int k = 0; k < _residuals.size(); k++) {
             _f[k] = _residuals.get(k);
         }
 
-        final double p = new AndersonDarlingTest(_f).getASquaredStar();
+        double p = new AndersonDarlingTest(_f).getASquaredStar();
 
         System.out.println("Anderson Darling p for " + node + " given " + parents + " = " + p);
 
@@ -524,7 +524,7 @@ public class LingamCPDAG2 {
         return this.alpha;
     }
 
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Alpha is in range [0, 1]");
         }
@@ -540,7 +540,7 @@ public class LingamCPDAG2 {
         return this.bestDag;
     }
 
-    public void setTimeLimit(final long timeLimit) {
+    public void setTimeLimit(long timeLimit) {
         this.timeLimit = timeLimit;
     }
 
@@ -565,7 +565,7 @@ public class LingamCPDAG2 {
     }
 
     private static class Score {
-        public Score(final double score, final double[] pvals) {
+        public Score(double score, double[] pvals) {
             this.score = score;
             this.pvals = pvals;
         }
@@ -574,8 +574,8 @@ public class LingamCPDAG2 {
         double[] pvals;
     }
 
-    private Node getVariable(final List<Node> variables, final String name) {
-        for (final Node node : variables) {
+    private Node getVariable(List<Node> variables, String name) {
+        for (Node node : variables) {
             if (name.equals(node.getName())) {
                 return node;
             }

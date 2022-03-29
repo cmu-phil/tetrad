@@ -102,7 +102,7 @@ public class PcStable implements GraphSearch {
      * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
      *                         independence test, for fear of duplicating the data set!
      */
-    public PcStable(final IndependenceTest independenceTest) {
+    public PcStable(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -122,7 +122,7 @@ public class PcStable implements GraphSearch {
     /**
      * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -143,7 +143,7 @@ public class PcStable implements GraphSearch {
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -174,7 +174,7 @@ public class PcStable implements GraphSearch {
      *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
      *              machines.
      */
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -206,17 +206,17 @@ public class PcStable implements GraphSearch {
      * <p>
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
-    public Graph search(final List<Node> nodes) {
+    public Graph search(List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        final long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        final List<Node> allNodes = getIndependenceTest().getVariables();
+        List<Node> allNodes = getIndependenceTest().getVariables();
 
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
@@ -225,7 +225,7 @@ public class PcStable implements GraphSearch {
 
         this.graph = new EdgeListGraph(nodes);
 
-        final Fas fas = new Fas(getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         fas.setStable(true);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
@@ -237,7 +237,7 @@ public class PcStable implements GraphSearch {
         SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
         SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
 
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         rules.setKnowledge(this.knowledge);
         rules.orientImplied(this.graph);
@@ -266,15 +266,15 @@ public class PcStable implements GraphSearch {
         return this.graph.getNodes();
     }
 
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setOut(final PrintStream out) {
+    public void setOut(PrintStream out) {
         this.out = out;
     }
 

@@ -57,7 +57,7 @@ public class Split implements Distribution {
      * @param a Ibid.
      * @param b Ibid.
      */
-    public Split(final double a, final double b) {
+    public Split(double a, double b) {
         if (a < 0) {
             throw new IllegalArgumentException(
                     "When asking for a range from a to b, the value of a must be >= 0: a = " + a + " b = " + b);
@@ -87,7 +87,7 @@ public class Split implements Distribution {
      * @return a random value from [-b, -a] U [a, b].
      */
     public double nextRandom() {
-        final double c = RandomUtil.getInstance().nextDouble();
+        double c = RandomUtil.getInstance().nextDouble();
         double value = getA() + c * (getB() - getA());
 
         if (RandomUtil.getInstance().nextDouble() < 0.5) {
@@ -111,12 +111,12 @@ public class Split implements Distribution {
     }
 
     public String toString() {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         return "Split(" + nf.format(this.a) + ", " + nf.format(this.b) + ", " + ")";
     }
 
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0 && value < this.b) {
             this.a = value;
         } else if (index == 1 && value > this.a) {
@@ -126,7 +126,7 @@ public class Split implements Distribution {
         }
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
             return this.a;
         } else if (index == 1) {
@@ -136,7 +136,7 @@ public class Split implements Distribution {
         }
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Lower bound (> 0)";
         } else if (index == 1) {
@@ -165,7 +165,7 @@ public class Split implements Distribution {
      * @throws ClassNotFoundException If the class of an object in the stream is not
      *                                in the project.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

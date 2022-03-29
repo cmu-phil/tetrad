@@ -57,7 +57,7 @@ public class Gamma implements Distribution {
         return "Gamma";
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
             this.alpha = value;
         } else if (index == 1) {
@@ -67,7 +67,7 @@ public class Gamma implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
             return this.alpha;
         } else if (index == 1) {
@@ -77,7 +77,7 @@ public class Gamma implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Alpha";
         } else if (index == 1) {

@@ -52,7 +52,7 @@ public class PointXy implements TetradSerializable {
      * @param x The x coordinate for the point.
      * @param y The y coordinate for the point.
      */
-    public PointXy(final int x, final int y) {
+    public PointXy(int x, int y) {
         this.x = x;
         this.y = y;
     }
@@ -62,7 +62,7 @@ public class PointXy implements TetradSerializable {
      *
      * @param point The point to be copied.
      */
-    public PointXy(final PointXy point) {
+    public PointXy(PointXy point) {
         this.x = point.x;
         this.y = point.y;
     }
@@ -97,7 +97,7 @@ public class PointXy implements TetradSerializable {
      * @return true just in case o is a Point with the same x and y
      * coordinates.
      */
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (!(o instanceof PointXy)) {
             throw new IllegalArgumentException("Not a Point object.");
         }
@@ -106,7 +106,7 @@ public class PointXy implements TetradSerializable {
             return true;
         }
 
-        final PointXy c = (PointXy) o;
+        PointXy c = (PointXy) o;
         return c.x == this.x && c.y == this.y;
     }
 

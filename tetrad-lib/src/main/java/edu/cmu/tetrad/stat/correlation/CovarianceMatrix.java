@@ -31,14 +31,14 @@ public class CovarianceMatrix implements Covariance {
 
     private final int numOfCols;
 
-    public CovarianceMatrix(final float[][] data) {
+    public CovarianceMatrix(float[][] data) {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
     }
 
     private float[] computeMeans() {
-        final float[] mean = new float[this.numOfCols];
+        float[] mean = new float[this.numOfCols];
         for (int col = 0; col < this.numOfCols; col++) {
             float sum = 0;
             for (int row = 0; row < this.numOfRows; row++) {
@@ -51,10 +51,10 @@ public class CovarianceMatrix implements Covariance {
     }
 
     @Override
-    public float[] computeLowerTriangle(final boolean biasCorrected) {
-        final float[] covarianceMatrix = new float[(this.numOfCols * (this.numOfCols + 1)) / 2];
+    public float[] computeLowerTriangle(boolean biasCorrected) {
+        float[] covarianceMatrix = new float[(this.numOfCols * (this.numOfCols + 1)) / 2];
 
-        final float[] mean = computeMeans();
+        float[] mean = computeMeans();
 
         int index = 0;
         for (int col = 0; col < this.numOfCols; col++) {
@@ -76,10 +76,10 @@ public class CovarianceMatrix implements Covariance {
     }
 
     @Override
-    public float[][] compute(final boolean biasCorrected) {
-        final float[][] covarianceMatrix = new float[this.numOfCols][this.numOfCols];
+    public float[][] compute(boolean biasCorrected) {
+        float[][] covarianceMatrix = new float[this.numOfCols][this.numOfCols];
 
-        final float[] mean = computeMeans();
+        float[] mean = computeMeans();
 
         for (int col = 0; col < this.numOfCols; col++) {
             for (int col2 = 0; col2 < col; col2++) {

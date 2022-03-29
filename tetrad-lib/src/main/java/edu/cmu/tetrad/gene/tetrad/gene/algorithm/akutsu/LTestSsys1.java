@@ -29,11 +29,11 @@ import java.text.NumberFormat;
 import java.util.StringTokenizer;
 
 public class LTestSsys1 {
-    public static void main(final String[] argv) {
+    public static void main(String[] argv) {
 
-        final String fileName = argv[0];
+        String fileName = argv[0];
 
-        final InputStream s;
+        InputStream s;
         StringTokenizer st;
 
         final int ngenes = 5;
@@ -41,17 +41,17 @@ public class LTestSsys1 {
         final int nrecords = 5;
         final int nchips = 4;
 
-        final double[][] cases = new double[4][2004];
+        double[][] cases = new double[4][2004];
 
         try {
             s = new FileInputStream(fileName);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             System.out.println("Cannot open file " + fileName);
             return;
         }
 
         //DataInputStream in = new DataInputStream(s);
-        final BufferedReader in = new BufferedReader(new InputStreamReader(s));
+        BufferedReader in = new BufferedReader(new InputStreamReader(s));
         for (int k = 0; k < nrecords; k++) {
             try {
                 st = new StringTokenizer(in.readLine());
@@ -63,24 +63,24 @@ public class LTestSsys1 {
                 for (int j = 0; j < ntimes * ngenes; j++) {
                     cases[k - 1][j] = Double.parseDouble(st.nextToken("\t"));
                 }
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 System.out.println("Read error in " + fileName);
                 return;
             }
         }
 
-        final double[][] gene = new double[ntimes][ngenes];
-        final double[][] deriv = new double[ntimes][ngenes];
-        final double[] sum = new double[ngenes];
+        double[][] gene = new double[ntimes][ngenes];
+        double[][] deriv = new double[ntimes][ngenes];
+        double[] sum = new double[ngenes];
         final double baseLevel = 15.0;
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         double min = 1000.0;
 
         for (int j = 0; j < ntimes; j++) {
             for (int g = 0; g < ngenes; g++) {
-                final int icol = j * ngenes + g;
+                int icol = j * ngenes + g;
 
                 sum[g] = 0.0;
 
@@ -116,7 +116,7 @@ public class LTestSsys1 {
         for (int g = 0; g < ngenes; g++) {
             System.out.println("For gene " + g);
             final int k = 5;
-            final ChoiceGenerator cg = new ChoiceGenerator(ngenes, k);
+            ChoiceGenerator cg = new ChoiceGenerator(ngenes, k);
             int[] regs = new int[k];
 
             while ((regs = cg.next()) != null) {
@@ -125,15 +125,15 @@ public class LTestSsys1 {
                         " " + regs[3] + " " + regs[4]);
 
                 for (int t = 1; t < ntimes; t++) {
-                    final String g0 =
+                    String g0 =
                             nf.format(Math.log(gene[t][regs[0]] + baseLevel));
-                    final String g1 =
+                    String g1 =
                             nf.format(Math.log(gene[t][regs[1]] + baseLevel));
-                    final String g2 =
+                    String g2 =
                             nf.format(Math.log(gene[t][regs[2]] + baseLevel));
-                    final String g3 =
+                    String g3 =
                             nf.format(Math.log(gene[t][regs[3]] + baseLevel));
-                    final String g4 =
+                    String g4 =
                             nf.format(Math.log(gene[t][regs[4]] + baseLevel));
 
                     if (deriv[t][g] > 0.35) {

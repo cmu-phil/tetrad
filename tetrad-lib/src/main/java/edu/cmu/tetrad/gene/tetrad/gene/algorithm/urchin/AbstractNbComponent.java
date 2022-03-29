@@ -39,8 +39,8 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     private double sd;
 
-    public AbstractNbComponent(final double factor, final double power,
-                               final NbComponent[] parents, final int[] inhibitExcite, final String name) {
+    public AbstractNbComponent(double factor, double power,
+                               NbComponent[] parents, int[] inhibitExcite, String name) {
         setFactor(factor);
         setPower(power);
         setParents(parents);
@@ -63,11 +63,11 @@ public abstract class AbstractNbComponent implements NbComponent {
         return this.name;
     }
 
-    public void setValue(final double level) {
+    public void setValue(double level) {
         this.value = level;
     }
 
-    public void addParent(final NbComponent component, final int ie) {
+    public void addParent(NbComponent component, int ie) {
         if (getParents() == null) {
             this.setParents(new NbComponent[1]);
             this.getParents()[0] = component;
@@ -75,8 +75,8 @@ public abstract class AbstractNbComponent implements NbComponent {
             this.getInhibitExcite()[0] = ie;
             this.setNparents(1);
         } else {
-            final NbComponent[] newParents = new NbComponent[getParents().length + 1];
-            final int[] newInhibitExcite = new int[getParents().length + 1];
+            NbComponent[] newParents = new NbComponent[getParents().length + 1];
+            int[] newInhibitExcite = new int[getParents().length + 1];
             newParents[getParents().length] = component;
             newInhibitExcite[getParents().length] = ie;
 
@@ -104,7 +104,7 @@ public abstract class AbstractNbComponent implements NbComponent {
         return this.parents;
     }
 
-    public void setParents(final NbComponent[] parents) {
+    public void setParents(NbComponent[] parents) {
         this.parents = parents;
     }
 
@@ -112,7 +112,7 @@ public abstract class AbstractNbComponent implements NbComponent {
         return this.inhibitExcite;
     }
 
-    public void setInhibitExcite(final int[] inhibitExcite) {
+    public void setInhibitExcite(int[] inhibitExcite) {
         this.inhibitExcite = inhibitExcite;
     }
 
@@ -120,11 +120,11 @@ public abstract class AbstractNbComponent implements NbComponent {
         return this.nparents;
     }
 
-    public void setNparents(final int nparents) {
+    public void setNparents(int nparents) {
         this.nparents = nparents;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         if (!NamingProtocol.isLegalName(name)) {
             throw new IllegalArgumentException(
                     NamingProtocol.getProtocolDescription());
@@ -137,7 +137,7 @@ public abstract class AbstractNbComponent implements NbComponent {
         return this.factor;
     }
 
-    public void setFactor(final double factor) {
+    public void setFactor(double factor) {
         this.factor = factor;
     }
 
@@ -145,7 +145,7 @@ public abstract class AbstractNbComponent implements NbComponent {
         return this.power;
     }
 
-    public void setPower(final double power) {
+    public void setPower(double power) {
         this.power = power;
     }
 
@@ -153,7 +153,7 @@ public abstract class AbstractNbComponent implements NbComponent {
         return this.sd;
     }
 
-    public void setSd(final double sd) {
+    public void setSd(double sd) {
         this.sd = sd;
     }
 }

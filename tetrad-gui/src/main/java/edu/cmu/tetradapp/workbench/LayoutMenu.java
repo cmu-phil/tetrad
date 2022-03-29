@@ -43,17 +43,17 @@ public class LayoutMenu extends JMenu {
     private final LayoutEditable layoutEditable;
     private final CopyLayoutAction copyLayoutAction;
 
-    public LayoutMenu(final LayoutEditable layoutEditable) {
+    public LayoutMenu(LayoutEditable layoutEditable) {
         super("Layout");
         this.layoutEditable = layoutEditable;
 
         if (layoutEditable.getGraph().isTimeLagModel()) {
 
-            final JMenuItem topToBottom = new JMenuItem("Top to bottom");
+            JMenuItem topToBottom = new JMenuItem("Top to bottom");
             add(topToBottom);
 
             topToBottom.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     LayoutUtils.topToBottomLayout(getLayoutEditable());
 
                     // Copy the laid out graph to the clipboard.
@@ -61,11 +61,11 @@ public class LayoutMenu extends JMenu {
                 }
             });
 
-            final JMenuItem leftToRight = new JMenuItem("Left to right");
+            JMenuItem leftToRight = new JMenuItem("Left to right");
             add(leftToRight);
 
             leftToRight.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     LayoutUtils.leftToRightLayout(getLayoutEditable());
 
                     // Copy the laid out graph to the clipboard.
@@ -73,11 +73,11 @@ public class LayoutMenu extends JMenu {
                 }
             });
 
-            final JMenuItem bottomToTop = new JMenuItem("Bottom to top");
+            JMenuItem bottomToTop = new JMenuItem("Bottom to top");
             add(bottomToTop);
 
             bottomToTop.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     LayoutUtils.bottomToTopLayout(getLayoutEditable());
 
                     // Copy the laid out graph to the clipboard.
@@ -85,11 +85,11 @@ public class LayoutMenu extends JMenu {
                 }
             });
 
-            final JMenuItem rightToLeft = new JMenuItem("Right to left");
+            JMenuItem rightToLeft = new JMenuItem("Right to left");
             add(rightToLeft);
 
             rightToLeft.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     LayoutUtils.rightToLeftLayout(getLayoutEditable());
 
                     // Copy the laid out graph to the clipboard.
@@ -97,11 +97,11 @@ public class LayoutMenu extends JMenu {
                 }
             });
 
-            final JMenuItem likeLag0 = new JMenuItem("Copy lag 0");
+            JMenuItem likeLag0 = new JMenuItem("Copy lag 0");
             add(likeLag0);
 
             likeLag0.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     if (LayoutUtils.getLayout() == LayoutUtils.Layout.topToBottom
                             || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0TopToBottom) {
                         LayoutUtils.copyLag0LayoutTopToBottom(LayoutMenu.this.getLayoutEditable());

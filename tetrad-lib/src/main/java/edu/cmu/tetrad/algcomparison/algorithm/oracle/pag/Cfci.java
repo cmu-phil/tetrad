@@ -28,24 +28,24 @@ public class Cfci implements Algorithm, HasKnowledge {
     private final IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Cfci(final IndependenceWrapper test) {
+    public Cfci(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(this.test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(this.test.getTest(dataSet, parameters));
             search.setKnowledge(this.knowledge);
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            final Cfci algorithm = new Cfci(this.test);
+            Cfci algorithm = new Cfci(this.test);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -72,7 +72,7 @@ public class Cfci implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new DagToPag2(new EdgeListGraph(graph)).convert();
     }
 
@@ -88,7 +88,7 @@ public class Cfci implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new LinkedList<>();
+        List<String> parameters = new LinkedList<>();
         if (this.test != null) {
             parameters.addAll(this.test.getParameters());
         }
@@ -105,7 +105,7 @@ public class Cfci implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

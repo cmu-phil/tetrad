@@ -66,7 +66,7 @@ public class ParamConstraintType implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private ParamConstraintType(final String name) {
+    private ParamConstraintType(String name) {
         this.name = name;
     }
 

@@ -51,7 +51,7 @@ public final class Manipulation implements TetradSerializable {
     /**
      * Constructs a container for evidence for the given Bayes IM.
      */
-    public Manipulation(final VariableSource variableSource) {
+    public Manipulation(VariableSource variableSource) {
         if (variableSource == null) {
             throw new NullPointerException();
         }
@@ -63,7 +63,7 @@ public final class Manipulation implements TetradSerializable {
     /**
      * Copy constructor.
      */
-    public Manipulation(final Manipulation manipulation) {
+    public Manipulation(Manipulation manipulation) {
         if (manipulation == null) {
             throw new NullPointerException();
         }
@@ -91,12 +91,12 @@ public final class Manipulation implements TetradSerializable {
 
     //===========================PUBLIC METHODS=========================//
 
-    public void setManipulated(final int nodeIndex, final boolean manipulated) {
+    public void setManipulated(int nodeIndex, boolean manipulated) {
         this.manipulated[nodeIndex] = manipulated;
     }
 
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
 
         buf.append("\nManipulation:");
         buf.append("\n");
@@ -109,7 +109,7 @@ public final class Manipulation implements TetradSerializable {
         return buf.toString();
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
@@ -118,7 +118,7 @@ public final class Manipulation implements TetradSerializable {
             return false;
         }
 
-        final Manipulation evidence = (Manipulation) o;
+        Manipulation evidence = (Manipulation) o;
 
         if (!(getVariableSource() == evidence.getVariableSource())) {
             return false;
@@ -146,7 +146,7 @@ public final class Manipulation implements TetradSerializable {
         return getVariableSource().getVariables().size();
     }
 
-    public boolean isManipulated(final int nodeIndex) {
+    public boolean isManipulated(int nodeIndex) {
         return this.manipulated[nodeIndex];
     }
 
@@ -160,7 +160,7 @@ public final class Manipulation implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

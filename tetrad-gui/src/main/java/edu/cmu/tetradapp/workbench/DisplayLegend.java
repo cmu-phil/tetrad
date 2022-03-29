@@ -21,7 +21,7 @@ public class DisplayLegend extends JComponent implements TetradSerializableExclu
 
     private final Map<String, Object> attributes;
 
-    public DisplayLegend(final Map<String, Object> attributes) {
+    public DisplayLegend(Map<String, Object> attributes) {
         this.attributes = attributes;
         initiateUI();
     }
@@ -29,26 +29,26 @@ public class DisplayLegend extends JComponent implements TetradSerializableExclu
     private void initiateUI() {
         setLayout(new BorderLayout());
         // Header
-        final JPanel headerPanel = new JPanel(new BorderLayout());
-        final JLabel headerLabel = new JLabel("Graph's Attribute(s)");
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        JLabel headerLabel = new JLabel("Graph's Attribute(s)");
         headerLabel.setFont(new Font(headerLabel.getFont().getName(), Font.BOLD, 12));
         headerPanel.add(headerLabel, BorderLayout.CENTER);
         add(headerPanel, BorderLayout.NORTH);
 
-        final JPanel attributesPanel = new JPanel();
+        JPanel attributesPanel = new JPanel();
         attributesPanel.setLayout(new BoxLayout(attributesPanel, BoxLayout.PAGE_AXIS));
 
-        for (final String key : this.attributes.keySet()) {
-            final Object value = this.attributes.get(key);
+        for (String key : this.attributes.keySet()) {
+            Object value = this.attributes.get(key);
 
-            final JLabel attributeLabel = new JLabel(key + ":\t" + value.toString());
+            JLabel attributeLabel = new JLabel(key + ":\t" + value.toString());
             attributesPanel.add(attributeLabel);
         }
 
         add(attributesPanel, BorderLayout.CENTER);
 
         // Set the bounds of the display node.
-        final Dimension dim = new Dimension(150, 20 + 15 * this.attributes.size());
+        Dimension dim = new Dimension(150, 20 + 15 * this.attributes.size());
         setSize(dim);
 
         setBorder(BorderFactory.createLineBorder(Color.red));

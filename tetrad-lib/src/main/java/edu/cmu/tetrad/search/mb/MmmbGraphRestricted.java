@@ -84,7 +84,7 @@ public final class MmmbGraphRestricted implements MbSearch {
      * @param depth     The maximum number of variables conditioned on.
      * @param symmetric True if the symmetric algorithm is to be used.
      */
-    public MmmbGraphRestricted(final IndependenceTest test, final int depth, final boolean symmetric, final Graph graph) {
+    public MmmbGraphRestricted(IndependenceTest test, int depth, boolean symmetric, Graph graph) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -111,18 +111,18 @@ public final class MmmbGraphRestricted implements MbSearch {
      * @param targetName The name of the target node.
      * @return The Markov blanket of the target.
      */
-    public List<Node> findMb(final String targetName) {
+    public List<Node> findMb(String targetName) {
         TetradLogger.getInstance().log("info", "target = " + targetName);
         this.numIndTests = 0;
-        final long time = System.currentTimeMillis();
+        long time = System.currentTimeMillis();
 
         this.pc = new HashMap<>();
         this.trimmed = new HashSet<>();
 
-        final Node target = getVariableForName(targetName);
-        final List<Node> nodes = mmmb(target);
+        Node target = getVariableForName(targetName);
+        List<Node> nodes = mmmb(target);
 
-        final long time2 = System.currentTimeMillis() - time;
+        long time2 = System.currentTimeMillis() - time;
         TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));
         TetradLogger.getInstance().log("info", "Number of independence tests performed: " +
                 this.numIndTests);
@@ -133,41 +133,41 @@ public final class MmmbGraphRestricted implements MbSearch {
 
     //===========================PRIVATE METHODS==========================//
 
-    private List<Node> mmmb(final Node t) {
+    private List<Node> mmmb(Node t) {
         // MB <- {}
-        final Set<Node> mb = new HashSet<>();
+        Set<Node> mb = new HashSet<>();
 
-        final Set<Node> _pcpc = new HashSet<>();
+        Set<Node> _pcpc = new HashSet<>();
 
-        for (final Node node : getPc(t)) {
-            final List<Node> f = getPc(node);
+        for (Node node : getPc(t)) {
+            List<Node> f = getPc(node);
             this.pc.put(node, f);
             _pcpc.addAll(f);
         }
 
-        final List<Node> pcpc = new LinkedList<>(_pcpc);
+        List<Node> pcpc = new LinkedList<>(_pcpc);
 
-        final Set<Node> currentMb = new HashSet<>(getPc(t));
+        Set<Node> currentMb = new HashSet<>(getPc(t));
         currentMb.addAll(pcpc);
         currentMb.remove(t);
 
-        final HashSet<Node> diff = new HashSet<>(currentMb);
+        HashSet<Node> diff = new HashSet<>(currentMb);
         diff.removeAll(getPc(t));
         diff.remove(t);
 
         //for each x in PCPC \ PC
-        for (final Node x : diff) {
+        for (Node x : diff) {
             List<Node> s = null;
 
             // Find an S such PC such that x _||_ t | S
-            final DepthChoiceGenerator generator =
+            DepthChoiceGenerator generator =
                     new DepthChoiceGenerator(pcpc.size(), this.depth);
             int[] choice;
 
             while ((choice = generator.next()) != null) {
-                final List<Node> _s = new LinkedList<>();
+                List<Node> _s = new LinkedList<>();
 
-                for (final int index : choice) {
+                for (int index : choice) {
                     _s.add(pcpc.get(index));
                 }
 
@@ -185,18 +185,18 @@ public final class MmmbGraphRestricted implements MbSearch {
             }
 
             // y_set <- {y in PC(t) : x in PC(y)}
-            final Set<Node> ySet = new HashSet<>();
-            for (final Node y : getPc(t)) {
+            Set<Node> ySet = new HashSet<>();
+            for (Node y : getPc(t)) {
                 if (this.pc.get(y).contains(x)) {
                     ySet.add(y);
                 }
             }
 
             //  For each y in y_set
-            for (final Node y : ySet) {
+            for (Node y : ySet) {
                 if (x == y) continue;
 
-                final List<Node> _s = new LinkedList<>(s);
+                List<Node> _s = new LinkedList<>(s);
                 _s.add(y);
 
                 // If x NOT _||_ t | S U {y}
@@ -212,21 +212,21 @@ public final class MmmbGraphRestricted implements MbSearch {
         return new LinkedList<>(mb);
     }
 
-    private List<Node> mmpc(final Node t) {
-        final List<Node> pc = new LinkedList<>();
+    private List<Node> mmpc(Node t) {
+        List<Node> pc = new LinkedList<>();
         boolean pcIncreased = true;
 
         // First optimization: Don't consider adding again variables that have
         // already been found independent of t.
-        final List<Node> indepOfT = new LinkedList<>();
+        List<Node> indepOfT = new LinkedList<>();
 
         // Phase 1
         while (pcIncreased) {
             pcIncreased = false;
 
-            final MaxMinAssocResult ret = maxMinAssoc(t, pc, indepOfT);
-            final Node f = ret.getNode();
-            final List<Node> assocSet = ret.getAssocSet();
+            MaxMinAssocResult ret = maxMinAssoc(t, pc, indepOfT);
+            Node f = ret.getNode();
+            List<Node> assocSet = ret.getAssocSet();
 
             if (f == null) {
                 break;
@@ -252,7 +252,7 @@ public final class MmmbGraphRestricted implements MbSearch {
     /**
      * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
      */
-    public List<Node> getPc(final Node t) {
+    public List<Node> getPc(Node t) {
         if (!this.pc.containsKey(t)) {
             this.pc.put(t, mmpc(t));
         }
@@ -268,8 +268,8 @@ public final class MmmbGraphRestricted implements MbSearch {
     /**
      * Trims away false positives from the given node. Used in the symmetric algorithm.
      */
-    private void trimPc(final Node t) {
-        for (final Node x : new LinkedList<>(this.pc.get(t))) {
+    private void trimPc(Node t) {
+        for (Node x : new LinkedList<>(this.pc.get(t))) {
             if (!this.pc.containsKey(x)) {
                 this.pc.put(x, mmpc(x));
             }
@@ -280,13 +280,13 @@ public final class MmmbGraphRestricted implements MbSearch {
         }
     }
 
-    private MaxMinAssocResult maxMinAssoc(final Node t, final List<Node> pc,
-                                          final List<Node> indepOfT) {
+    private MaxMinAssocResult maxMinAssoc(Node t, List<Node> pc,
+                                          List<Node> indepOfT) {
         Node f = null;
         List<Node> maxAssocSet = null;
         double maxAssoc = 0.0;
 
-        for (final Node v : this.graph.getAdjacentNodes(t)) {
+        for (Node v : this.graph.getAdjacentNodes(t)) {
             if (t == v) continue;
             if (pc.contains(v)) continue;
 
@@ -294,8 +294,8 @@ public final class MmmbGraphRestricted implements MbSearch {
                 continue;
             }
 
-            final List<Node> minAssoc = minAssoc(v, t, pc);
-            final double assoc = association(v, t, minAssoc);
+            List<Node> minAssoc = minAssoc(v, t, pc);
+            double assoc = association(v, t, minAssoc);
 
             // If v is conditionally independent of t, don't consider it
             // again. Note if this code is right, then we have to use the
@@ -314,7 +314,7 @@ public final class MmmbGraphRestricted implements MbSearch {
         return new MaxMinAssocResult(f, maxAssocSet);
     }
 
-    private List<Node> minAssoc(final Node x, final Node target, final List<Node> pc) {
+    private List<Node> minAssoc(Node x, Node target, List<Node> pc) {
         double assoc = 1.0;
         List<Node> set = new LinkedList<>();
 
@@ -322,14 +322,14 @@ public final class MmmbGraphRestricted implements MbSearch {
         if (pc.contains(target)) throw new IllegalArgumentException();
         if (x == target) throw new IllegalArgumentException();
 
-        final DepthChoiceGenerator generator =
+        DepthChoiceGenerator generator =
                 new DepthChoiceGenerator(pc.size(), this.depth);
         int[] choice;
 
         while ((choice = generator.next()) != null) {
-            final List<Node> s = new LinkedList<>();
+            List<Node> s = new LinkedList<>();
 
-            for (final int index : choice) {
+            for (int index : choice) {
                 s.add(pc.get(index));
             }
 
@@ -339,7 +339,7 @@ public final class MmmbGraphRestricted implements MbSearch {
                 continue;
             }
 
-            final double _assoc = association(x, target, s);
+            double _assoc = association(x, target, s);
 
             if (_assoc < assoc) {
                 assoc = _assoc;
@@ -350,13 +350,13 @@ public final class MmmbGraphRestricted implements MbSearch {
         return set;
     }
 
-    private void backwardsConditioning(final List<Node> pc, final Node target) {
-        for (final Node x : new LinkedList<>(pc)) {
-            final List<Node> _pc = new LinkedList<>(pc);
+    private void backwardsConditioning(List<Node> pc, Node target) {
+        for (Node x : new LinkedList<>(pc)) {
+            List<Node> _pc = new LinkedList<>(pc);
             _pc.remove(x);
             _pc.remove(target);
 
-            final List<Node> minAssoc = minAssoc(x, target, _pc);
+            List<Node> minAssoc = minAssoc(x, target, _pc);
 
             this.numIndTests++;
 
@@ -366,7 +366,7 @@ public final class MmmbGraphRestricted implements MbSearch {
         }
     }
 
-    private double association(final Node x, final Node target, final List<Node> s) {
+    private double association(Node x, Node target, List<Node> s) {
         this.numIndTests++;
 
         this.independenceTest.isIndependent(x, target, s);
@@ -381,10 +381,10 @@ public final class MmmbGraphRestricted implements MbSearch {
         return this.numIndTests;
     }
 
-    private Node getVariableForName(final String targetName) {
+    private Node getVariableForName(String targetName) {
         Node target = null;
 
-        for (final Node V : this.variables) {
+        for (Node V : this.variables) {
             if (V.getName().equals(targetName)) {
                 target = V;
                 break;
@@ -403,7 +403,7 @@ public final class MmmbGraphRestricted implements MbSearch {
         private final Node node;
         private final List<Node> assocSet;
 
-        public MaxMinAssocResult(final Node node, final List<Node> assocSet) {
+        public MaxMinAssocResult(Node node, List<Node> assocSet) {
             this.node = node;
             this.assocSet = assocSet;
         }

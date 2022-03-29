@@ -36,32 +36,32 @@ import java.nio.charset.Charset;
 public class FileLoadingUtils {
     // Converts the contents of a file into a CharSequence
     // suitable for use by the regex package.
-    public static String fromFile(final File file) throws IOException {
-        final FileInputStream fis = new FileInputStream(file);
-        final FileChannel fc = fis.getChannel();
+    public static String fromFile(File file) throws IOException {
+        FileInputStream fis = new FileInputStream(file);
+        FileChannel fc = fis.getChannel();
 
         // Create a read-only CharBuffer on the file
-        final ByteBuffer bbuf =
+        ByteBuffer bbuf =
                 fc.map(FileChannel.MapMode.READ_ONLY, 0, (int) fc.size());
-        final CharBuffer cbuf = Charset.forName("8859_1").newDecoder().decode(bbuf);
+        CharBuffer cbuf = Charset.forName("8859_1").newDecoder().decode(bbuf);
 
-        final String s = cbuf.toString();
+        String s = cbuf.toString();
         fis.close();
         return s;
     }
 
-    public static String fromResources(final String path) {
+    public static String fromResources(String path) {
         try {
-            final URL url = Version.class.getResource(path);
+            URL url = Version.class.getResource(path);
 
             if (url == null) {
                 throw new RuntimeException(
                         "Could not load resource file: " + path);
             }
 
-            final InputStream inStream = url.openStream();
-            final Reader reader = new InputStreamReader(inStream);
-            final BufferedReader bufReader = new BufferedReader(reader);
+            InputStream inStream = url.openStream();
+            Reader reader = new InputStreamReader(inStream);
+            BufferedReader bufReader = new BufferedReader(reader);
 
             String line;
             String spec = "";
@@ -71,7 +71,7 @@ public class FileLoadingUtils {
             bufReader.close();
 
             return spec;
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

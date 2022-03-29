@@ -47,12 +47,12 @@ public class GraphScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public GraphScore(final Graph dag) {
+    public GraphScore(Graph dag) {
         this.dag = dag;
 
         this.variables = new ArrayList<>();
 
-        for (final Node node : dag.getNodes()) {
+        for (Node node : dag.getNodes()) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 this.variables.add(node);
             }
@@ -62,13 +62,13 @@ public class GraphScore implements Score {
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(final int i, final int[] parents) {
+    public double localScore(int i, int[] parents) {
         throw new UnsupportedOperationException();
     }
 
-    private List<Node> getVariableList(final int[] indices) {
-        final List<Node> variables = new ArrayList<>();
-        for (final int i : indices) {
+    private List<Node> getVariableList(int[] indices) {
+        List<Node> variables = new ArrayList<>();
+        for (int i : indices) {
             variables.add(this.variables.get(i));
         }
         return variables;
@@ -76,22 +76,22 @@ public class GraphScore implements Score {
 
 
     @Override
-    public double localScoreDiff(final int x, final int y, final int[] z) {
+    public double localScoreDiff(int x, int y, int[] z) {
         return locallyConsistentScoringCriterion(x, y, z);
 //        return aBetterScore(x, y, z);
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
+    public double localScoreDiff(int x, int y) {
         return localScoreDiff(x, y, new int[0]);
 //        return localScore(y, x) - localScore(y);
     }
 
-    private double locallyConsistentScoringCriterion(final int x, final int y, final int[] z) {
-        final Node _y = this.variables.get(y);
-        final Node _x = this.variables.get(x);
-        final List<Node> _z = getVariableList(z);
-        final boolean dSeparatedFrom = this.dag.isDSeparatedFrom(_x, _y, _z);
+    private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
+        Node _y = this.variables.get(y);
+        Node _x = this.variables.get(x);
+        List<Node> _z = getVariableList(z);
+        boolean dSeparatedFrom = this.dag.isDSeparatedFrom(_x, _y, _z);
 
 //        if (dSeparatedFrom) {
 //            System.out.println(SearchLogUtils.independenceFact(_x, _y, _z));
@@ -102,35 +102,35 @@ public class GraphScore implements Score {
         return dSeparatedFrom ? -1.0 : 1.0;
     }
 
-    private double aBetterScore(final int x, final int y, final int[] z) {
-        final Node _y = this.variables.get(y);
-        final Node _x = this.variables.get(x);
-        final List<Node> _z = getVariableList(z);
-        final boolean dsep = this.dag.isDSeparatedFrom(_x, _y, _z);
+    private double aBetterScore(int x, int y, int[] z) {
+        Node _y = this.variables.get(y);
+        Node _x = this.variables.get(x);
+        List<Node> _z = getVariableList(z);
+        boolean dsep = this.dag.isDSeparatedFrom(_x, _y, _z);
         int count = 0;
 
         if (!dsep) count++;
 
-        for (final Node z0 : _z) {
+        for (Node z0 : _z) {
             if (this.dag.isDSeparatedFrom(_x, z0, _z)) {
                 count += 1;
             }
         }
 
-        final double score = dsep ? -1 - count : 1 + count;
+        double score = dsep ? -1 - count : 1 + count;
 
 //        if (score == 1) score -= Math.tanh(z.length);
         return score;
     }
 
-    private List<Node> minus(final List<Node> z, final Node z0) {
-        final List<Node> diff = new ArrayList<>(z);
+    private List<Node> minus(List<Node> z, Node z0) {
+        List<Node> diff = new ArrayList<>(z);
         diff.remove(z0);
         return diff;
     }
 
-    int[] append(final int[] parents, final int extra) {
-        final int[] all = new int[parents.length + 1];
+    int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
@@ -140,19 +140,19 @@ public class GraphScore implements Score {
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
 
-    public double localScore(final int i, final int parent) {
+    public double localScore(int i, int parent) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
+    public double localScore(int i) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
+    public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
@@ -164,7 +164,7 @@ public class GraphScore implements Score {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -173,8 +173,8 @@ public class GraphScore implements Score {
         return this.variables;
     }
 
-    public Node getVariable(final String name) {
-        for (final Node node : this.variables) {
+    public Node getVariable(String name) {
+        for (Node node : this.variables) {
             if (node.getName().equals(name)) {
                 return node;
             }
@@ -189,7 +189,7 @@ public class GraphScore implements Score {
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 
@@ -201,7 +201,7 @@ public class GraphScore implements Score {
         return false;
     }
 
-    public void setAlternativePenalty(final double alpha) {
+    public void setAlternativePenalty(double alpha) {
         throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
     }
 

@@ -39,12 +39,12 @@ final class ArrUtils {
      * @param arr the array to copy.
      * @return the copied array.
      */
-    public static int[] copy(final int[] arr) {
+    public static int[] copy(int[] arr) {
         if (arr == null) {
             return null;
         }
 
-        final int[] copy = new int[arr.length];
+        int[] copy = new int[arr.length];
         System.arraycopy(arr, 0, copy, 0, arr.length);
 
         return copy;
@@ -58,8 +58,8 @@ final class ArrUtils {
      * @param arr The double array to turn into a String.
      * @return The formatted array.
      */
-    public static String toString(final double[] arr) {
-        final NumberFormat nf = new DecimalFormat(" 0.0000;-0.0000");
+    public static String toString(double[] arr) {
+        NumberFormat nf = new DecimalFormat(" 0.0000;-0.0000");
         return ArrUtils.toString(arr, nf);
     }
 
@@ -71,10 +71,10 @@ final class ArrUtils {
      * @param arr The int array to turn into a string.
      * @return The formatted array.
      */
-    public static String toString(final int[] arr) {
-        final StringBuilder buf = new StringBuilder();
+    public static String toString(int[] arr) {
+        StringBuilder buf = new StringBuilder();
         buf.append("\n");
-        for (final int anArr : arr) {
+        for (int anArr : arr) {
             buf.append(anArr).append("\t");
         }
         return buf.toString();
@@ -89,19 +89,19 @@ final class ArrUtils {
      * @param nf  The number format to use.
      * @return The formatted string.
      */
-    private static String toString(final double[] arr, final NumberFormat nf) {
-        final String result;
+    private static String toString(double[] arr, NumberFormat nf) {
+        String result;
         if (nf == null) {
             throw new NullPointerException("NumberFormat must not be null.");
         }
         if (arr == null) {
             result = ArrUtils.nullMessage();
         } else {
-            final StringBuilder buf = new StringBuilder();
+            StringBuilder buf = new StringBuilder();
             buf.append("\n");
             buf.append("\t");
 
-            for (final double anArr : arr) {
+            for (double anArr : arr) {
                 buf.append(nf.format(anArr)).append("\t");
             }
             result = buf.toString();

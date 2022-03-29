@@ -14,7 +14,7 @@ public final class PRAOerrors {
     //****************CONSTRUCTORS*******************//
     //this constructor makes a PRAOerrors object from an array of error values.
     //make sure the array is storing its values in the correct order, if you use this
-    public PRAOerrors(final double[] input, final String thename) {
+    public PRAOerrors(double[] input, String thename) {
         if (Array.getLength(input) == 5) {
             this.AdjRecall = input[1];
             this.AdjPrecision = input[2];
@@ -35,7 +35,7 @@ public final class PRAOerrors {
     }
 
     //method for constructing a mean PRAO from a list of PRAO objects
-    public PRAOerrors(final List<PRAOerrors> input, final String thename) {
+    public PRAOerrors(List<PRAOerrors> input, String thename) {
         double totalAR = 0;
         double totalAP = 0;
         double totalOR = 0;
@@ -45,7 +45,7 @@ public final class PRAOerrors {
         int countOR = 0;
         int countOP = 0;
         //iterate through members of the list, summing and counting all non-NaN values
-        for (final PRAOerrors errors : input) {
+        for (PRAOerrors errors : input) {
             if (!Double.isNaN(errors.getAdjRecall())) {
                 totalAR += errors.getAdjRecall();
                 countAR++;
@@ -97,13 +97,13 @@ public final class PRAOerrors {
 
     //returns a string summarizing all the information
     public String allToString() {
-        final String nl = System.lineSeparator();
+        String nl = System.lineSeparator();
         return this.errorsName + nl + "AR: " + this.AdjRecall + " AP: " + this.AdjPrecision + " OR: " + this.OrientRecall + " OP: " + this.OrientPrecision;
     }
 
     //returns an array of the error values
     public double[] toArray() {
-        final double[] output = new double[4];
+        double[] output = new double[4];
         output[0] = this.AdjRecall;
         output[1] = this.AdjPrecision;
         output[2] = this.OrientRecall;

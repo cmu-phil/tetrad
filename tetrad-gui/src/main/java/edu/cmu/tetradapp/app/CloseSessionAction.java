@@ -48,27 +48,27 @@ final class CloseSessionAction extends AbstractAction {
     /**
      * Closes the frontmost session of this action's desktop.
      */
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
 
         // Get the frontmost SessionWrapper.
-        final SessionEditorIndirectRef sessionEditorRef =
+        SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
-        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        final SessionEditorWorkbench graph = sessionEditor.getSessionWorkbench();
-        final SessionWrapper sessionWrapper = graph.getSessionWrapper();
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        SessionEditorWorkbench graph = sessionEditor.getSessionWorkbench();
+        SessionWrapper sessionWrapper = graph.getSessionWrapper();
 
         if (sessionWrapper.isSessionChanged()) {
-            final String name = sessionWrapper.getName();
+            String name = sessionWrapper.getName();
 
             // check to make sure user wants to evaporate this window...
-            final String msg =
+            String msg =
                     "Do you want to save the changes you made to " + name + "?";
-            final int response = JOptionPane.showConfirmDialog(
+            int response = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(), msg, "Fair Warning",
                     JOptionPane.YES_NO_CANCEL_OPTION);
 
             if (response == JOptionPane.YES_OPTION) {
-                final SaveSessionAction saveSessionAction = new SaveSessionAction();
+                SaveSessionAction saveSessionAction = new SaveSessionAction();
                 saveSessionAction.actionPerformed(e);
                 this.saved = saveSessionAction.isSaved();
             } else if (response == JOptionPane.CANCEL_OPTION) {

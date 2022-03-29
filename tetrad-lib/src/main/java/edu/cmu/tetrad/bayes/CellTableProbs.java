@@ -71,7 +71,7 @@ public final class CellTableProbs implements DiscreteProbs {
     /**
      * Creates a cell count table for the given data set.
      */
-    public CellTableProbs(final DataSet dataSet) {
+    public CellTableProbs(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException("Data set not provided.");
         }
@@ -80,22 +80,22 @@ public final class CellTableProbs implements DiscreteProbs {
         this.dims = new int[dataSet.getNumColumns()];
 
         for (int i = 0; i < this.dims.length; i++) {
-            final DiscreteVariable variable =
+            DiscreteVariable variable =
                     (DiscreteVariable) dataSet.getVariable(i);
             this.dims[i] = variable.getNumCategories();
         }
 
         int size = 1;
 
-        for (final int dim : this.dims) {
+        for (int dim : this.dims) {
             size *= dim;
         }
 
         this.cells = new int[size];
 
-        final int numRows = dataSet.getNumRows();
+        int numRows = dataSet.getNumRows();
 
-        final int[] point = new int[this.dims.length];
+        int[] point = new int[this.dims.length];
         this.missingValueCaseFound = false;
 
         point:
@@ -109,7 +109,7 @@ public final class CellTableProbs implements DiscreteProbs {
                 }
             }
 
-            final int cellIndex = getCellIndex(point);
+            int cellIndex = getCellIndex(point);
             this.cells[cellIndex]++;
             this.numPoints++;
         }
@@ -121,19 +121,19 @@ public final class CellTableProbs implements DiscreteProbs {
      * @return the estimated probability for the given cell. The order of the
      * variable values is the order of the variables in getVariable().
      */
-    public double getCellProb(final int[] variableValues) {
-        final int cellIndex = getCellIndex(variableValues);
-        final int cellCount = this.cells[cellIndex];
+    public double getCellProb(int[] variableValues) {
+        int cellIndex = getCellIndex(variableValues);
+        int cellCount = this.cells[cellIndex];
         return cellCount / (double) this.numPoints;
     }
 
     /**
      * @return the estimated probability of the given proposition.
      */
-    public double getProb(final Proposition assertion) {
+    public double getProb(Proposition assertion) {
 
         // Initialize to 0's.
-        final int[] variableValues = new int[assertion.getNumVariables()];
+        int[] variableValues = new int[assertion.getNumVariables()];
 
         for (int i = 0; i < assertion.getNumVariables(); i++) {
             variableValues[i] = CellTableProbs.nextValue(assertion, i, -1);
@@ -173,16 +173,16 @@ public final class CellTableProbs implements DiscreteProbs {
      * @return the estimated conditional probability for the given assertion
      * conditional on the given condition.
      */
-    public double getConditionalProb(final Proposition assertion,
-                                     final Proposition condition) {
+    public double getConditionalProb(Proposition assertion,
+                                     Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
                             "for the same Bayes IM.");
         }
 
-        final List<Node> assertionVars = assertion.getVariableSource().getVariables();
-        final List<Node> dataVars = this.dataSet.getVariables();
+        List<Node> assertionVars = assertion.getVariableSource().getVariables();
+        List<Node> dataVars = this.dataSet.getVariables();
 
         if (!assertionVars.equals(dataVars)) {
             throw new IllegalArgumentException(
@@ -192,7 +192,7 @@ public final class CellTableProbs implements DiscreteProbs {
                             "\n\tData vars: " + dataVars);
         }
 
-        final int[] variableValues = new int[condition.getNumVariables()];
+        int[] variableValues = new int[condition.getNumVariables()];
 
         for (int i = 0; i < condition.getNumVariables(); i++) {
             variableValues[i] = CellTableProbs.nextValue(condition, i, -1);
@@ -219,7 +219,7 @@ public final class CellTableProbs implements DiscreteProbs {
 
                     // Variable values should be in the order of the data set.
 
-                    final double cellProb = getCellProb(variableValues);
+                    double cellProb = getCellProb(variableValues);
                     boolean assertionHolds = true;
 
                     for (int j = 0; j < assertion.getNumVariables(); j++) {
@@ -275,7 +275,7 @@ public final class CellTableProbs implements DiscreteProbs {
      * @return the row in the table for the given node and combination of parent
      * values.
      */
-    private int getCellIndex(final int[] coords) {
+    private int getCellIndex(int[] coords) {
         int cellIndex = 0;
 
         if (isBoundsEnforced()) {
@@ -307,13 +307,13 @@ public final class CellTableProbs implements DiscreteProbs {
         return cellIndex;
     }
 
-    private static boolean hasNextValue(final Proposition proposition, final int variable,
-                                        final int curIndex) {
+    private static boolean hasNextValue(Proposition proposition, int variable,
+                                        int curIndex) {
         return CellTableProbs.nextValue(proposition, variable, curIndex) != -1;
     }
 
-    private static int nextValue(final Proposition proposition, final int variable,
-                                 final int curIndex) {
+    private static int nextValue(Proposition proposition, int variable,
+                                 int curIndex) {
         for (int i = curIndex + 1;
              i < proposition.getNumCategories(variable); i++) {
             if (proposition.isAllowed(variable, i)) {

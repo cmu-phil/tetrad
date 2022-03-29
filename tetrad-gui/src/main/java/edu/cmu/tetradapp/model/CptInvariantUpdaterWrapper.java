@@ -57,43 +57,43 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
 
     //============================CONSTRUCTORS==========================//
 
-    public CptInvariantUpdaterWrapper(final BayesImWrapper wrapper, final Parameters params) {
+    public CptInvariantUpdaterWrapper(BayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        final BayesIm bayesIm = wrapper.getBayesIm();
+        BayesIm bayesIm = wrapper.getBayesIm();
         setup(bayesIm, params);
     }
 
-    public CptInvariantUpdaterWrapper(final DirichletBayesImWrapper wrapper, final Parameters params) {
+    public CptInvariantUpdaterWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        final DirichletBayesIm bayesIm = wrapper.getDirichletBayesIm();
+        DirichletBayesIm bayesIm = wrapper.getDirichletBayesIm();
         setup(bayesIm, params);
     }
 
-    public CptInvariantUpdaterWrapper(final BayesEstimatorWrapper wrapper, final Parameters params) {
+    public CptInvariantUpdaterWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        final BayesIm bayesIm = wrapper.getEstimatedBayesIm();
+        BayesIm bayesIm = wrapper.getEstimatedBayesIm();
         setup(bayesIm, params);
     }
 
-    public CptInvariantUpdaterWrapper(final DirichletEstimatorWrapper wrapper, final Parameters params) {
+    public CptInvariantUpdaterWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        final DirichletBayesIm bayesIm = wrapper.getEstimatedBayesIm();
+        DirichletBayesIm bayesIm = wrapper.getEstimatedBayesIm();
         setup(bayesIm, params);
     }
 
-    public CptInvariantUpdaterWrapper(final EmBayesEstimatorWrapper wrapper, final Parameters params) {
+    public CptInvariantUpdaterWrapper(EmBayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        final BayesIm bayesIm = wrapper.getEstimateBayesIm();
+        BayesIm bayesIm = wrapper.getEstimateBayesIm();
         setup(bayesIm, params);
     }
 
@@ -117,13 +117,13 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     //============================PRIVATE METHODS=========================//
 
-    private void setup(final BayesIm bayesIm, final Parameters params) {
+    private void setup(BayesIm bayesIm, Parameters params) {
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
@@ -169,12 +169,12 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         TetradLogger.getInstance().reset();
     }
 
-    private String category(final Evidence evidence, final String nodeName, final int i) {
-        final DiscreteVariable variable = discreteVariable(evidence, nodeName);
+    private String category(Evidence evidence, String nodeName, int i) {
+        DiscreteVariable variable = discreteVariable(evidence, nodeName);
         return variable.getCategory(i);
     }
 
-    private DiscreteVariable discreteVariable(final Evidence evidence, final String nodeName) {
+    private DiscreteVariable discreteVariable(Evidence evidence, String nodeName) {
         return evidence.getVariable(nodeName);
     }
 
@@ -191,7 +191,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

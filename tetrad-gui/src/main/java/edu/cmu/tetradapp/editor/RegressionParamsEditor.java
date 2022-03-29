@@ -45,7 +45,7 @@ public final class RegressionParamsEditor extends JPanel implements ParameterEdi
     }
 
     public void setup() {
-        final RegressionParamsPanel panel =
+        RegressionParamsPanel panel =
                 new RegressionParamsPanel(this.params, this.parentModels);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(panel, BorderLayout.CENTER);
@@ -55,11 +55,11 @@ public final class RegressionParamsEditor extends JPanel implements ParameterEdi
         return true;
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         this.parentModels = parentModels;
     }
 }

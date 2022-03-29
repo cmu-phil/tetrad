@@ -71,7 +71,7 @@ public class Edge implements TetradSerializable, Comparable {
      * @param endpoint1 the endpoint at the first node
      * @param endpoint2 the endpoint at the second node
      */
-    public Edge(final Node node1, final Node node2, final Endpoint endpoint1, final Endpoint endpoint2) {
+    public Edge(Node node1, Node node2, Endpoint endpoint1, Endpoint endpoint2) {
         if (node1 == null || node2 == null) {
             throw new NullPointerException("Nodes must not be null. node1 = " + node1 + " node2 = " + node2);
         }
@@ -94,7 +94,7 @@ public class Edge implements TetradSerializable, Comparable {
         }
     }
 
-    public Edge(final Edge edge) {
+    public Edge(Edge edge) {
         this(edge.node1, edge.node2, edge.endpoint1, edge.endpoint2);
         this.lineColor = edge.getLineColor();
     }
@@ -137,11 +137,11 @@ public class Edge implements TetradSerializable, Comparable {
         return this.endpoint2;
     }
 
-    public final void setEndpoint1(final Endpoint e) {
+    public final void setEndpoint1(Endpoint e) {
         this.endpoint1 = e;
     }
 
-    public final void setEndpoint2(final Endpoint e) {
+    public final void setEndpoint2(Endpoint e) {
         this.endpoint2 = e;
     }
 
@@ -149,7 +149,7 @@ public class Edge implements TetradSerializable, Comparable {
      * @return the endpoint nearest to the given node.
      * @throws IllegalArgumentException if the given node is not along the edge.
      */
-    public final Endpoint getProximalEndpoint(final Node node) {
+    public final Endpoint getProximalEndpoint(Node node) {
         if (this.node1 == node) {
             return getEndpoint1();
         } else if (this.node2 == node) {
@@ -163,7 +163,7 @@ public class Edge implements TetradSerializable, Comparable {
      * @return the endpoint furthest from the given node.
      * @throws IllegalArgumentException if the given node is not along the edge.
      */
-    public final Endpoint getDistalEndpoint(final Node node) {
+    public final Endpoint getDistalEndpoint(Node node) {
         if (this.node1 == node) {
             return getEndpoint2();
         } else if (this.node2 == node) {
@@ -177,7 +177,7 @@ public class Edge implements TetradSerializable, Comparable {
      * Traverses the edge in an undirected fashion--given one node along the
      * edge, returns the node at the opposite end of the edge.
      */
-    public final Node getDistalNode(final Node node) {
+    public final Node getDistalNode(Node node) {
         if (this.node1 == node) {
             return this.node2;
         }
@@ -200,9 +200,9 @@ public class Edge implements TetradSerializable, Comparable {
      * @return true just in case the edge is pointing toward the given node--
      * that is, x --> node or x o--> node.
      */
-    public boolean pointsTowards(final Node node) {
-        final Endpoint proximal = getProximalEndpoint(node);
-        final Endpoint distal = getDistalEndpoint(node);
+    public boolean pointsTowards(Node node) {
+        Endpoint proximal = getProximalEndpoint(node);
+        Endpoint distal = getDistalEndpoint(node);
         return (proximal == Endpoint.ARROW && (distal == Endpoint.TAIL || distal == Endpoint.CIRCLE));
     }
 
@@ -217,10 +217,10 @@ public class Edge implements TetradSerializable, Comparable {
      * Produces a string representation of the edge.
      */
     public final String toString() {
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
 
-        final Endpoint endptTypeA = getEndpoint1();
-        final Endpoint endptTypeB = getEndpoint2();
+        Endpoint endptTypeA = getEndpoint1();
+        Endpoint endptTypeB = getEndpoint2();
 
         buf.append(getNode1());
         buf.append(" ");
@@ -247,7 +247,7 @@ public class Edge implements TetradSerializable, Comparable {
         buf.append(getNode2());
 
         // Bootstrapping edge type distribution
-        final List<EdgeTypeProbability> edgeTypeDist = getEdgeTypeProbabilities();
+        List<EdgeTypeProbability> edgeTypeDist = getEdgeTypeProbabilities();
         if (edgeTypeDist.size() > 0) {
             buf.append(" ");
 
@@ -259,8 +259,8 @@ public class Edge implements TetradSerializable, Comparable {
             }
 
             for (int i = 0; i < edgeTypeDist.size(); i++) {
-                final EdgeTypeProbability etp = edgeTypeDist.get(i);
-                final double prob = etp.getProbability();
+                EdgeTypeProbability etp = edgeTypeDist.get(i);
+                double prob = etp.getProbability();
                 if (prob > 0) {
                     String _type = "" + etp.getEdgeType();
                     switch (etp.getEdgeType()) {
@@ -295,9 +295,9 @@ public class Edge implements TetradSerializable, Comparable {
                     if (etp.getEdgeType() != EdgeType.nil) {
                         _type = n1 + " " + _type + " " + n2;
                     }
-                    final List<Property> properties = etp.getProperties();
+                    List<Property> properties = etp.getProperties();
                     if (properties != null && properties.size() > 0) {
-                        for (final Property property : properties) {
+                        for (Property property : properties) {
                             _type = _type + " " + property.toString();
                         }
                     }
@@ -307,9 +307,9 @@ public class Edge implements TetradSerializable, Comparable {
             }
         }
 
-        final List<Property> properties = getProperties();
+        List<Property> properties = getProperties();
         if (properties != null && properties.size() > 0) {
-            for (final Property property : properties) {
+            for (Property property : properties) {
                 buf.append(" ");
                 buf.append(property.toString());
             }
@@ -326,13 +326,13 @@ public class Edge implements TetradSerializable, Comparable {
      * Two edges are equal just in case they connect the same nodes and have the
      * same endpoints proximal to each node.
      */
-    public final boolean equals(final Object o) {
+    public final boolean equals(Object o) {
         if (o == this)
             return true;
         if (!(o instanceof Edge))
             return false;
 
-        final Edge edge = (Edge) o;
+        Edge edge = (Edge) o;
 
         if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
             Node node1 = this.getNode1();
@@ -359,15 +359,15 @@ public class Edge implements TetradSerializable, Comparable {
 
             return equal;
         } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            final String name1 = getNode1().getName();
-            final String name2 = getNode2().getName();
-            final String name1b = edge.getNode1().getName();
-            final String name2b = edge.getNode2().getName();
+            String name1 = getNode1().getName();
+            String name2 = getNode2().getName();
+            String name1b = edge.getNode1().getName();
+            String name2b = edge.getNode2().getName();
 
-            final Endpoint end1 = getEndpoint1();
-            final Endpoint end2 = getEndpoint2();
-            final Endpoint end1b = edge.getEndpoint1();
-            final Endpoint end2b = edge.getEndpoint2();
+            Endpoint end1 = getEndpoint1();
+            Endpoint end2 = getEndpoint2();
+            Endpoint end1b = edge.getEndpoint1();
+            Endpoint end2b = edge.getEndpoint2();
 
             if (name1.equals(name1b) && name2.equals(name2b)) {
                 return end1 == end1b && end2 == end2b;
@@ -378,10 +378,10 @@ public class Edge implements TetradSerializable, Comparable {
         }
     }
 
-    public int compareTo(final Object o) {
-        final Edge _edge = (Edge) o;
+    public int compareTo(Object o) {
+        Edge _edge = (Edge) o;
 
-        final int comp1 = getNode1().compareTo(_edge.getNode1());
+        int comp1 = getNode1().compareTo(_edge.getNode1());
 
         if (comp1 != 0) {
             return comp1;
@@ -392,7 +392,7 @@ public class Edge implements TetradSerializable, Comparable {
 
     // ===========================PRIVATE METHODS===========================//
 
-    private boolean pointingLeft(final Endpoint endpoint1, final Endpoint endpoint2) {
+    private boolean pointingLeft(Endpoint endpoint1, Endpoint endpoint2) {
         return (endpoint1 == Endpoint.ARROW && (endpoint2 == Endpoint.TAIL || endpoint2 == Endpoint.CIRCLE));
     }
 
@@ -409,7 +409,7 @@ public class Edge implements TetradSerializable, Comparable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
         if (this.node1 == null) {
@@ -437,7 +437,7 @@ public class Edge implements TetradSerializable, Comparable {
         return this.lineColor;
     }
 
-    public void setLineColor(final Color lineColor) {
+    public void setLineColor(Color lineColor) {
         if (lineColor != null) {
             this.lineColor = lineColor;
         }
@@ -447,17 +447,17 @@ public class Edge implements TetradSerializable, Comparable {
         return this.bold;
     }
 
-    public void setBold(final boolean bold) {
+    public void setBold(boolean bold) {
         this.bold = bold;
     }
 
-    public void addProperty(final Property property) {
+    public void addProperty(Property property) {
         if (!this.properties.contains(property)) {
             this.properties.add(property);
         }
     }
 
-    public void removeProperty(final Property property) {
+    public void removeProperty(Property property) {
         this.properties.remove(property);
     }
 
@@ -465,13 +465,13 @@ public class Edge implements TetradSerializable, Comparable {
         return new ArrayList<>(this.properties);
     }
 
-    public void addEdgeTypeProbability(final EdgeTypeProbability prob) {
+    public void addEdgeTypeProbability(EdgeTypeProbability prob) {
         if (!this.edgeTypeProbabilities.contains(prob)) {
             this.edgeTypeProbabilities.add(prob);
         }
     }
 
-    public void removeEdgeTypeProbability(final EdgeTypeProbability prob) {
+    public void removeEdgeTypeProbability(EdgeTypeProbability prob) {
         this.edgeTypeProbabilities.remove(prob);
     }
 

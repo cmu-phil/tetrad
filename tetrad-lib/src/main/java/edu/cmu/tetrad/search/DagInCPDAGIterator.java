@@ -46,15 +46,15 @@ public class DagInCPDAGIterator {
     private final LinkedList<Triple> colliders;
     private boolean allowNewColliders = true;
 
-    public DagInCPDAGIterator(final Graph CPDAG) {
+    public DagInCPDAGIterator(Graph CPDAG) {
         this(CPDAG, new Knowledge2(), false, true);
     }
 
-    public DagInCPDAGIterator(final Graph CPDAG, final IKnowledge knowledge) {
+    public DagInCPDAGIterator(Graph CPDAG, IKnowledge knowledge) {
         this(CPDAG, knowledge, false, true);
     }
 
-    public DagInCPDAGIterator(final Graph CPDAG, final boolean allowArbitraryOrientations) {
+    public DagInCPDAGIterator(Graph CPDAG, boolean allowArbitraryOrientations) {
         this(CPDAG, new Knowledge2(), allowArbitraryOrientations, true);
     }
 
@@ -67,8 +67,8 @@ public class DagInCPDAGIterator {
      *                                   made. May result in cyclic outputs.
      * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
      */
-    public DagInCPDAGIterator(final Graph CPDAG, final IKnowledge knowledge, final boolean allowArbitraryOrientations,
-                              final boolean allowNewColliders) {
+    public DagInCPDAGIterator(Graph CPDAG, IKnowledge knowledge, boolean allowArbitraryOrientations,
+                              boolean allowNewColliders) {
         if (knowledge == null) {
             this.knowledge = new Knowledge2();
         } else {
@@ -93,7 +93,7 @@ public class DagInCPDAGIterator {
 //            }
 //        }
 
-        final HashMap<Graph, Set<Edge>> changedEdges = new HashMap<>();
+        HashMap<Graph, Set<Edge>> changedEdges = new HashMap<>();
         changedEdges.put(CPDAG, new HashSet<Edge>());
 
         this.decoratedGraphs.add(new DecoratedGraph(CPDAG, getKnowledge(), changedEdges,
@@ -114,7 +114,7 @@ public class DagInCPDAGIterator {
      */
     public Graph next() {
         if (this.storedGraph != null) {
-            final Graph temp = this.storedGraph;
+            Graph temp = this.storedGraph;
             this.storedGraph = null;
 
             return temp;
@@ -128,7 +128,7 @@ public class DagInCPDAGIterator {
 
         do {
             while (!this.decoratedGraphs.isEmpty()) {
-                final DecoratedGraph graph = this.decoratedGraphs.removeLast();
+                DecoratedGraph graph = this.decoratedGraphs.removeLast();
 
                 if (graph.isOrientable()) {
                     this.decoratedGraphs.addLast(graph);
@@ -177,7 +177,7 @@ public class DagInCPDAGIterator {
         private Map<Graph, Set<Edge>> changedEdges = new HashMap<>();
         private boolean allowArbitraryOrientation = true;
 
-        public DecoratedGraph(final Graph graph, final IKnowledge knowledge, final Map<Graph, Set<Edge>> changedEdges, final boolean allowArbitraryOrientation) {
+        public DecoratedGraph(Graph graph, IKnowledge knowledge, Map<Graph, Set<Edge>> changedEdges, boolean allowArbitraryOrientation) {
             this.graph = graph;
             this.edge = findUndirectedEdge(graph);
             this.knowledge = knowledge;
@@ -187,8 +187,8 @@ public class DagInCPDAGIterator {
 
         //=============================PUBLIC METHODS=======================//
 
-        private Edge findUndirectedEdge(final Graph graph) {
-            for (final Edge edge : graph.getEdges()) {
+        private Edge findUndirectedEdge(Graph graph) {
+            for (Edge edge : graph.getEdges()) {
                 if (Edges.isUndirectedEdge(edge) || Edges.isBidirectedEdge(edge)) {
                     return edge;
                 }
@@ -218,8 +218,8 @@ public class DagInCPDAGIterator {
                 return false;
             }
 
-            final Node node1 = this.edge.getNode1();
-            final Node node2 = this.edge.getNode2();
+            Node node1 = this.edge.getNode1();
+            Node node2 = this.edge.getNode2();
 
             return (!this.triedLeft && !this.graph.isAncestorOf(node1, node2) &&
                     !getKnowledge().isForbidden(node2.getName(), node1.getName())) ||
@@ -235,9 +235,9 @@ public class DagInCPDAGIterator {
 
             if (!this.triedLeft && !this.graph.isAncestorOf(this.edge.getNode1(), this.edge.getNode2()) &&
                     !getKnowledge().isForbidden(this.edge.getNode2().getName(), this.edge.getNode1().getName())) {
-                final Set<Edge> edges = new HashSet<>();
+                Set<Edge> edges = new HashSet<>();
 
-                final Graph graph = new EdgeListGraph(this.graph);
+                Graph graph = new EdgeListGraph(this.graph);
                 graph.removeEdges(this.edge.getNode1(), this.edge.getNode2());
 
                 graph.addDirectedEdge(this.edge.getNode2(), this.edge.getNode1());
@@ -246,17 +246,17 @@ public class DagInCPDAGIterator {
                 edges.add(graph.getEdge(this.edge.getNode2(), this.edge.getNode1()));
                 edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
 
-                final MeekRules meek = new MeekRules();
+                MeekRules meek = new MeekRules();
                 meek.setKnowledge(getKnowledge());
                 meek.orientImplied(graph);
 
                 // Keep track of changed edges for highlighting
-                final Set<Edge> changedEdges = meek.getChangedEdges().keySet();
+                Set<Edge> changedEdges = meek.getChangedEdges().keySet();
 
                 edges.addAll(changedEdges);
                 this.getChangedEdges().put(graph, edges);
 
-                for (final Edge edge : edges) {
+                for (Edge edge : edges) {
                     graph.setHighlighted(edge, true);
                 }
 
@@ -268,9 +268,9 @@ public class DagInCPDAGIterator {
 
             if (!this.triedRight && !this.graph.isAncestorOf(this.edge.getNode2(), this.edge.getNode1()) &&
                     !getKnowledge().isForbidden(this.edge.getNode1().getName(), this.edge.getNode2().getName())) {
-                final Set<Edge> edges = new HashSet<>();
+                Set<Edge> edges = new HashSet<>();
 
-                final Graph graph = new EdgeListGraph(this.graph);
+                Graph graph = new EdgeListGraph(this.graph);
                 graph.removeEdges(this.edge.getNode1(), this.edge.getNode2());
                 graph.addDirectedEdge(this.edge.getNode1(), this.edge.getNode2());
                 graph.setHighlighted(graph.getEdge(this.edge.getNode1(), this.edge.getNode2()), true);
@@ -278,13 +278,13 @@ public class DagInCPDAGIterator {
                 edges.add(graph.getEdge(this.edge.getNode1(), this.edge.getNode2()));
                 edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
 
-                final MeekRules meek = new MeekRules();
+                MeekRules meek = new MeekRules();
                 meek.setKnowledge(getKnowledge());
                 meek.orientImplied(graph);
 
                 this.getChangedEdges().put(graph, edges);
 
-                for (final Edge edge : edges) {
+                for (Edge edge : edges) {
                     graph.setHighlighted(edge, true);
                 }
 
@@ -298,7 +298,7 @@ public class DagInCPDAGIterator {
             return null;
         }
 
-        private void fail(final Graph graph, final String label) {
+        private void fail(Graph graph, String label) {
             if (this.knowledge.isViolatedBy(graph)) {
                 throw new IllegalArgumentException("IKnowledge violated: " + label);
             }
@@ -312,7 +312,7 @@ public class DagInCPDAGIterator {
             return this.changedEdges;
         }
 
-        public void setChangedEdges(final Map<Graph, Set<Edge>> changedEdges) {
+        public void setChangedEdges(Map<Graph, Set<Edge>> changedEdges) {
             this.changedEdges = changedEdges;
         }
 
@@ -320,7 +320,7 @@ public class DagInCPDAGIterator {
             return this.allowArbitraryOrientation;
         }
 
-        public void setAllowArbitraryOrientation(final boolean allowArbitraryOrientation) {
+        public void setAllowArbitraryOrientation(boolean allowArbitraryOrientation) {
             this.allowArbitraryOrientation = allowArbitraryOrientation;
         }
     }

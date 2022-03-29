@@ -55,7 +55,7 @@ class DiscDetIndepParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public DiscDetIndepParamsEditor(final Parameters params) {
+    public DiscDetIndepParamsEditor(Parameters params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
@@ -63,11 +63,11 @@ class DiscDetIndepParamsEditor extends JComponent {
                 NumberFormatUtil.getInstance().getNumberFormat());
 
         this.alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
                     params().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -75,11 +75,11 @@ class DiscDetIndepParamsEditor extends JComponent {
 
         this.depthField = new IntTextField(params.getInt("depth", -1), 5);
         this.depthField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+            public int filter(int value, int oldValue) {
                 try {
                     params().set("depth", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -97,14 +97,14 @@ class DiscDetIndepParamsEditor extends JComponent {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         if (this.alphaField != null) {
-            final Box b1 = Box.createHorizontalBox();
+            Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Alpha:"));
             b1.add(Box.createHorizontalGlue());
             b1.add(this.alphaField);
             add(b1);
         }
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Depth:"));
         b2.add(Box.createHorizontalGlue());
         b2.add(this.depthField);

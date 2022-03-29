@@ -50,15 +50,15 @@ public class LayoutSelection implements Transferable {
     /**
      * Constructs a new selection with the given list of session nodes.
      */
-    public LayoutSelection(final Graph layoutGraph) {
+    public LayoutSelection(Graph layoutGraph) {
         if (layoutGraph == null) {
             throw new NullPointerException("Layout graph must not be null.");
         }
 
-        final Object result;
+        Object result;
         try {
             result = new MarshalledObject(layoutGraph).get();
-        } catch (final Exception e1) {
+        } catch (Exception e1) {
             e1.printStackTrace();
             throw new IllegalStateException("Could not clone.");
         }
@@ -76,7 +76,7 @@ public class LayoutSelection implements Transferable {
      *                                                          supported.
      * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
      */
-    public Object getTransferData(final DataFlavor flavor)
+    public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
         if (!isDataFlavorSupported(flavor)) {
             throw new UnsupportedFlavorException(flavor);
@@ -90,7 +90,7 @@ public class LayoutSelection implements Transferable {
      * @return whether or not the specified data flavor is supported for this
      * object.
      */
-    public boolean isDataFlavorSupported(final DataFlavor flavor) {
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
     }
 

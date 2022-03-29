@@ -54,7 +54,7 @@ public final class IndexedParent implements TetradSerializable {
     /**
      * Constructs a new index parent.
      */
-    public IndexedParent(final int index, final int lag) {
+    public IndexedParent(int index, int lag) {
 
         if (index < 0) {
             throw new IllegalArgumentException("Index must be >= 0: " + index);
@@ -97,14 +97,14 @@ public final class IndexedParent implements TetradSerializable {
     /**
      * Returns true iff the lags and indices are equal.
      */
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
         if (!(o instanceof IndexedParent)) {
             return false;
         }
-        final IndexedParent c = (IndexedParent) o;
+        IndexedParent c = (IndexedParent) o;
         return c.getIndex() == this.getIndex() && c.getLag() == this.getLag();
     }
 
@@ -128,7 +128,7 @@ public final class IndexedParent implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

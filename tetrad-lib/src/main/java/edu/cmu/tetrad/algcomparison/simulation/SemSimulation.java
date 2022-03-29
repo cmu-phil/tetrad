@@ -31,21 +31,21 @@ public class SemSimulation implements Simulation {
     private List<Graph> graphs = new ArrayList<>();
     private List<SemIm> ims = new ArrayList<>();
 
-    public SemSimulation(final RandomGraph graph) {
+    public SemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
-    public SemSimulation(final SemPm pm) {
-        final SemGraph graph = pm.getGraph();
+    public SemSimulation(SemPm pm) {
+        SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
         this.randomGraph = new SingleGraph(graph);
         this.pm = pm;
     }
 
-    public SemSimulation(final SemIm im) {
-        final SemGraph graph = im.getSemPm().getGraph();
+    public SemSimulation(SemIm im) {
+        SemGraph graph = im.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
-        final Graph graph2 = new EdgeListGraph(graph);
+        Graph graph2 = new EdgeListGraph(graph);
         this.randomGraph = new SingleGraph(graph2);
         this.im = new SemIm(im);
         this.pm = new SemPm(im.getSemPm());
@@ -54,7 +54,7 @@ public class SemSimulation implements Simulation {
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 
         // This should always create new data
 //        if (!newModel && !dataSets.isEmpty()) return;
@@ -80,13 +80,13 @@ public class SemSimulation implements Simulation {
                 dataSet = DataUtils.standardizeData(dataSet);
             }
 
-            final double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
+            double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
 
             if (variance > 0) {
                 for (int k = 0; k < dataSet.getNumRows(); k++) {
                     for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                        final double d = dataSet.getDouble(k, j);
-                        final double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        double d = dataSet.getDouble(k, j);
+                        double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
                         dataSet.setDouble(k, j, d + norm);
                     }
                 }
@@ -102,12 +102,12 @@ public class SemSimulation implements Simulation {
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
@@ -118,7 +118,7 @@ public class SemSimulation implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
         if (!(this.randomGraph instanceof SingleGraph)) {
             parameters.addAll(this.randomGraph.getParameters());
@@ -155,8 +155,8 @@ public class SemSimulation implements Simulation {
         return DataType.Continuous;
     }
 
-    private DataSet simulate(final Graph graph, final Parameters parameters) {
-        final boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
+    private DataSet simulate(Graph graph, Parameters parameters) {
+        boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
         SemIm im = this.im;
 

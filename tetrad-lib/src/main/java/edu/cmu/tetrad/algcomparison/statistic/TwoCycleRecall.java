@@ -26,18 +26,18 @@ public class TwoCycleRecall implements Statistic {
     }
 
     @Override
-    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
-        final ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        final double TwoCycleTp = adjConfusion.getTwoCycleTp();
-        final double TwoCycleFn = adjConfusion.getTwoCycleFn();
-        final double recall = TwoCycleTp / (TwoCycleTp + TwoCycleFn);
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
+        double TwoCycleTp = adjConfusion.getTwoCycleTp();
+        double TwoCycleFn = adjConfusion.getTwoCycleFn();
+        double recall = TwoCycleTp / (TwoCycleTp + TwoCycleFn);
 //        if (recall == 0) recall = Double.NaN;
         return recall;
 
     }
 
     @Override
-    public double getNormValue(final double value) {
+    public double getNormValue(double value) {
         return value;
     }
 }

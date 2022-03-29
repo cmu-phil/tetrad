@@ -71,7 +71,7 @@ public final class PermutationGenerator {
      *
      * @param a the number of objects being selected from.
      */
-    public PermutationGenerator(final int a) {
+    public PermutationGenerator(int a) {
         if ((a < 0)) {
             throw new IllegalArgumentException();
         }
@@ -108,7 +108,7 @@ public final class PermutationGenerator {
         // its expected maximum (i + diff) and perform the fill() operation
         // at that index.
         while (--i > -1) {
-            final LinkedList<Integer> h = new LinkedList<>();
+            LinkedList<Integer> h = new LinkedList<>();
 
             for (int j = i; j < this.choiceLocal.length; j++) {
                 h.add(this.choiceLocal[j]);
@@ -140,8 +140,8 @@ public final class PermutationGenerator {
      * @param a the number of objects being selected from.
      */
     @SuppressWarnings("SameParameterValue")
-    public static void testPrint(final int a) {
-        final PermutationGenerator cg = new PermutationGenerator(a);
+    public static void testPrint(int a) {
+        PermutationGenerator cg = new PermutationGenerator(a);
         int[] choice;
 
         System.out.println();
@@ -153,7 +153,7 @@ public final class PermutationGenerator {
             if (choice.length == 0) {
                 System.out.println("zero-length array");
             } else {
-                for (final int aChoice : choice) {
+                for (int aChoice : choice) {
                     System.out.print(aChoice + "\t");
                 }
 
@@ -178,10 +178,10 @@ public final class PermutationGenerator {
      * @param index the index to begin this incrementing operation.
      * @param h     the list of integers at index or later.
      */
-    private void fill(final int index, LinkedList<Integer> h) {
+    private void fill(int index, LinkedList<Integer> h) {
         h = new LinkedList<>(h);
-        final int t = h.indexOf(this.choiceLocal[index]);
-        final Integer newVal = h.get(t + 1);
+        int t = h.indexOf(this.choiceLocal[index]);
+        Integer newVal = h.get(t + 1);
         this.choiceLocal[index] = newVal;
         h.remove(newVal);
 

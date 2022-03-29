@@ -91,16 +91,16 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     /**
      * Constructs a data wrapper using a new DataSet as data model.
      */
-    public DataWrapper(final Parameters parameters) {
+    public DataWrapper(Parameters parameters) {
         setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<Node>()));
         this.parameters = parameters;
     }
 
-    public DataWrapper(final Simulation wrapper, final Parameters parameters) {
+    public DataWrapper(Simulation wrapper, Parameters parameters) {
         this.name = wrapper.getName();
         this.dataModelList = new DataModelList();
 
-        for (final DataModel model : wrapper.getDataModels()) {
+        for (DataModel model : wrapper.getDataModels()) {
             if (model instanceof DataSet) {
                 this.dataModelList.add(((DataSet) model).copy());
             } else if (model instanceof CorrelationMatrix) {
@@ -119,13 +119,13 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     /**
      * Copy constructor.
      */
-    public DataWrapper(final DataWrapper wrapper, final Parameters parameters) {
+    public DataWrapper(DataWrapper wrapper, Parameters parameters) {
         this.name = wrapper.name;
-        final DataModelList dataModelList = new DataModelList();
+        DataModelList dataModelList = new DataModelList();
         int selected = -1;
 
         for (int i = 0; i < wrapper.getDataModelList().size(); i++) {
-            final DataModel model = wrapper.getDataModelList().get(i);
+            DataModel model = wrapper.getDataModelList().get(i);
 
             if (model instanceof DataSet) {
                 dataModelList.add(((DataSet) model).copy());
@@ -162,71 +162,71 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     /**
      * Constructs a data wrapper using a new DataSet as data model.
      */
-    public DataWrapper(final DataSet dataSet) {
+    public DataWrapper(DataSet dataSet) {
         setDataModel(dataSet);
     }
 
-    public DataWrapper(final Graph graph, final Parameters parameters) {
+    public DataWrapper(Graph graph, Parameters parameters) {
         if (graph == null) {
             throw new NullPointerException();
         }
 
-        final List<Node> nodes = graph.getNodes();
-        final List<Node> variables = new LinkedList<>();
+        List<Node> nodes = graph.getNodes();
+        List<Node> variables = new LinkedList<>();
 
-        for (final Object node1 : nodes) {
-            final Node node = (Node) node1;
-            final String name = node.getName();
-            final NodeType nodetype = node.getNodeType();
+        for (Object node1 : nodes) {
+            Node node = (Node) node1;
+            String name = node.getName();
+            NodeType nodetype = node.getNodeType();
             if (nodetype == NodeType.MEASURED) {
-                final ContinuousVariable var = new ContinuousVariable(name);
+                ContinuousVariable var = new ContinuousVariable(name);
                 variables.add(var);
             }
         }
 
-        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(0, variables.size()), variables);
-        final DataModelList dataModelList = new DataModelList();
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(0, variables.size()), variables);
+        DataModelList dataModelList = new DataModelList();
         dataModelList.add(dataSet);
         this.dataModelList = dataModelList;
     }
 
-    public DataWrapper(final DagWrapper dagWrapper, final Parameters parameters) {
+    public DataWrapper(DagWrapper dagWrapper, Parameters parameters) {
         this(dagWrapper.getDag(), parameters);
     }
 
-    public DataWrapper(final SemGraphWrapper wrapper, final Parameters parameters) {
+    public DataWrapper(SemGraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), parameters);
     }
 
-    public DataWrapper(final GraphWrapper wrapper, final Parameters parameters) {
+    public DataWrapper(GraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), parameters);
     }
 
-    public DataWrapper(final RegressionRunner regression, final DataWrapper wrapper, final Parameters parameters) {
+    public DataWrapper(RegressionRunner regression, DataWrapper wrapper, Parameters parameters) {
         this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel(), parameters);
     }
 
-    public DataWrapper(final RegressionRunner regression, final Simulation wrapper, final Parameters parameters) {
+    public DataWrapper(RegressionRunner regression, Simulation wrapper, Parameters parameters) {
         this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel(), parameters);
     }
 
     // Computes regression predictions.
-    public DataWrapper(final RegressionResult result, final DataSet data, final Parameters parameters) {
+    public DataWrapper(RegressionResult result, DataSet data, Parameters parameters) {
 //        if (!data.isContinuous()) {
 //            throw new IllegalArgumentException("Must provide a continuous data set.");
 //        }
 
-        final DataSet data2 = data.copy();
-        final String predictedVariable = nextVariableName("Pred", data);
+        DataSet data2 = data.copy();
+        String predictedVariable = nextVariableName("Pred", data);
         data2.addVariable(new ContinuousVariable(predictedVariable));
 
-        final String[] regressorNames = result.getRegressorNames();
+        String[] regressorNames = result.getRegressorNames();
 
         for (int i = 0; i < data.getNumRows(); i++) {
-            final double[] x = new double[regressorNames.length];
+            double[] x = new double[regressorNames.length];
 
             for (int j = 0; j < regressorNames.length; j++) {
-                final Node variable = data.getVariable(regressorNames[j]);
+                Node variable = data.getVariable(regressorNames[j]);
 
                 if (variable == null) {
                     throw new NullPointerException("Variable " + variable + " doesn't "
@@ -240,19 +240,19 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
                 x[j] = data.getDouble(i, data.getColumn(variable));
             }
 
-            final double yHat = result.getPredictedValue(x);
+            double yHat = result.getPredictedValue(x);
             data2.setDouble(i, data2.getColumn(data2.getVariable(predictedVariable)), yHat);
         }
 
-        final DataModelList dataModelList = new DataModelList();
+        DataModelList dataModelList = new DataModelList();
         dataModelList.add(data2);
         this.dataModelList = dataModelList;
     }
 
-    public DataWrapper(final MimBuildRunner mimBuild, final Parameters parameters) {
-        final ICovarianceMatrix cov = mimBuild.getCovMatrix();
+    public DataWrapper(MimBuildRunner mimBuild, Parameters parameters) {
+        ICovarianceMatrix cov = mimBuild.getCovMatrix();
 
-        final DataModelList dataModelList = new DataModelList();
+        DataModelList dataModelList = new DataModelList();
         dataModelList.add(cov);
         this.dataModelList = dataModelList;
     }
@@ -265,7 +265,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
      * @param base the base string.
      * @return the first string in the sequence not already being used.
      */
-    private String nextVariableName(final String base, final DataSet data) {
+    private String nextVariableName(String base, DataSet data) {
 
         // Variable names should start with "1."
         int i = -1;
@@ -281,7 +281,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
                 name = base + i;
             }
 
-            for (final Node node1 : data.getVariables()) {
+            for (Node node1 : data.getVariables()) {
                 if (node1.getName().equals(name)) {
                     continue loop;
                 }
@@ -316,14 +316,14 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     public List<DataModel> getDataModels() {
-        final List<DataModel> dataModels = new ArrayList<>();
-        for (final DataModel model : this.dataModelList) {
+        List<DataModel> dataModels = new ArrayList<>();
+        for (DataModel model : this.dataModelList) {
             dataModels.add(model);
         }
         return dataModels;
     }
 
-    public void setDataModelList(final DataModelList dataModelList) {
+    public void setDataModelList(DataModelList dataModelList) {
         if (dataModelList == null) {
             throw new NullPointerException("Data model list not provided.");
         }
@@ -334,7 +334,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
      * @return the data model for this wrapper.
      */
     public DataModel getSelectedDataModel() {
-        final DataModelList modelList = getDataModelList();
+        DataModelList modelList = getDataModelList();
         return modelList.getSelectedModel();
     }
 
@@ -349,7 +349,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         if (dataModel instanceof DataModelList) {
             this.dataModelList = (DataModelList) dataModel;
         } else {
-            final DataModelList dataModelList = new DataModelList();
+            DataModelList dataModelList = new DataModelList();
             dataModelList.add(dataModel);
             this.dataModelList = dataModelList;
         }
@@ -359,7 +359,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         return getSelectedDataModel().getKnowledge();
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         getSelectedDataModel().setKnowledge(knowledge);
     }
 
@@ -388,7 +388,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     /**
      * Sets the source graph.
      */
-    protected void setSourceGraph(final Graph sourceGraph) {
+    protected void setSourceGraph(Graph sourceGraph) {
         this.sourceGraph = sourceGraph;
     }
 
@@ -420,7 +420,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -429,7 +429,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -442,13 +442,13 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         return this.parameters;
     }
 
-    public void setParameters(final Parameters parameters) {
+    public void setParameters(Parameters parameters) {
         this.parameters = parameters;
     }
 
     public List<String> getVariableNames() {
-        final List<String> variableNames = new ArrayList<>();
-        for (final Node n : getVariables()) {
+        List<String> variableNames = new ArrayList<>();
+        for (Node n : getVariables()) {
             variableNames.add(n.getName());
         }
         return variableNames;
@@ -456,7 +456,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     @Override
     public Map<String, String> getParamSettings() {
-        final Map<String, String> paramSettings = new HashMap<>();
+        Map<String, String> paramSettings = new HashMap<>();
 
         if (this.dataModelList == null) {
             System.out.println();
@@ -465,7 +465,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         if (this.dataModelList.size() > 1) {
             paramSettings.put("# Datasets", Integer.toString(this.dataModelList.size()));
         } else {
-            final DataModel dataModel = this.dataModelList.get(0);
+            DataModel dataModel = this.dataModelList.get(0);
 
             if (dataModel instanceof CovarianceMatrix) {
                 if (!paramSettings.containsKey("# Nodes")) {
@@ -484,7 +484,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     @Override
-    public void setAllParamSettings(final Map<String, String> paramSettings) {
+    public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = paramSettings;
     }
 

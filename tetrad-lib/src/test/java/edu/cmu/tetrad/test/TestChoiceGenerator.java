@@ -46,7 +46,7 @@ public class TestChoiceGenerator {
         final int a = 10;
         final int b = 3;
 
-        final int numCombinations = ChoiceGenerator.getNumCombinations(a, b);
+        int numCombinations = ChoiceGenerator.getNumCombinations(a, b);
 
         assertEquals(120, numCombinations);
     }
@@ -56,14 +56,14 @@ public class TestChoiceGenerator {
         final int a = 4;
         final int b = 2;
 
-        final int numCombinations = DepthChoiceGenerator.getNumCombinations(a, b);
+        int numCombinations = DepthChoiceGenerator.getNumCombinations(a, b);
 
         assertEquals(11, numCombinations);
     }
 
     @Test
     public void testPrintPermutationGenerator() {
-        final PermutationGenerator gen = new PermutationGenerator(4);
+        PermutationGenerator gen = new PermutationGenerator(4);
         int count = 0;
 
         while (gen.next() != null) {
@@ -75,7 +75,7 @@ public class TestChoiceGenerator {
 
     @Test
     public void testPrintSelectionGenerator() {
-        final SelectionGenerator gen = new SelectionGenerator(4);
+        SelectionGenerator gen = new SelectionGenerator(4);
         int count = 0;
 
         while (gen.next() != null) {
@@ -93,7 +93,7 @@ public class TestChoiceGenerator {
     public void testChoiceGeneratorCounts() {
         for (int a = 0; a <= 20; a++) {
             for (int b = 0; b <= a; b++) {
-                final ChoiceGenerator generator = new ChoiceGenerator(a, b);
+                ChoiceGenerator generator = new ChoiceGenerator(a, b);
 
                 int n = 0;
 
@@ -109,7 +109,7 @@ public class TestChoiceGenerator {
                     denominator *= k - b;
                 }
 
-                final long numChoices = numerator / denominator;
+                long numChoices = numerator / denominator;
 
                 if (n != numChoices) {
                     fail("a = " + a + " b = " + b + " numChoices = " + numChoices + " n = " + n);

@@ -46,7 +46,7 @@ final class SubsetContinuousVariablesAction extends AbstractAction {
     /**
      * Creates a new action to remove discrete columns.
      */
-    public SubsetContinuousVariablesAction(final DataEditor editor) {
+    public SubsetContinuousVariablesAction(DataEditor editor) {
         super("Copy Continuous Variables");
 
         if (editor == null) {
@@ -59,16 +59,16 @@ final class SubsetContinuousVariablesAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final DataModel selectedDataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataModel selectedDataModel = getDataEditor().getSelectedDataModel();
 
         if (selectedDataModel instanceof DataSet) {
             DataSet dataSet = (DataSet) selectedDataModel;
 
-            final List variables = dataSet.getVariables();
+            List variables = dataSet.getVariables();
             int n = 0;
 
-            for (final Object variable : variables) {
+            for (Object variable : variables) {
                 if (variable instanceof ContinuousVariable) {
                     n++;
                 }
@@ -80,7 +80,7 @@ final class SubsetContinuousVariablesAction extends AbstractAction {
                 return;
             }
 
-            final int[] indices = new int[n];
+            int[] indices = new int[n];
             int m = -1;
 
             for (int i = 0; i < variables.size(); i++) {
@@ -91,7 +91,7 @@ final class SubsetContinuousVariablesAction extends AbstractAction {
 
             dataSet = dataSet.subsetColumns(indices);
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(dataSet);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();

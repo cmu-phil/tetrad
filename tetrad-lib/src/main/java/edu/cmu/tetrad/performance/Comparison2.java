@@ -42,13 +42,13 @@ public class Comparison2 {
      * Simulates data from model parameterizing the given DAG, and runs the
      * algorithm on that data, printing out error statistics.
      */
-    public static ComparisonResult compare(final ComparisonParameters params) {
+    public static ComparisonResult compare(ComparisonParameters params) {
         DataSet dataSet = null;
         Graph trueDag = null;
         IndependenceTest test = null;
         Score score = null;
 
-        final ComparisonResult result = new ComparisonResult(params);
+        ComparisonResult result = new ComparisonResult(params);
 
         if (params.isDataFromFile()) {
 
@@ -57,14 +57,14 @@ public class Comparison2 {
              */
             final String path = "/Users/dmalinsky/Documents/research/data/danexamples";
 
-            final File dir = new File(path);
-            final File[] files = dir.listFiles();
+            File dir = new File(path);
+            File[] files = dir.listFiles();
 
             if (files == null) {
                 throw new NullPointerException("No files in " + path);
             }
 
-            for (final File file : files) {
+            for (File file : files) {
 
                 if (file.getName().startsWith("graph") && file.getName().contains(String.valueOf(params.getGraphNum()))
                         && file.getName().endsWith(".g.txt")) {
@@ -75,20 +75,20 @@ public class Comparison2 {
 
             }
 
-            final String trialGraph = String.valueOf(params.getGraphNum()).concat("-").concat(String.valueOf(params.getTrial())).concat(".dat.txt");
+            String trialGraph = String.valueOf(params.getGraphNum()).concat("-").concat(String.valueOf(params.getTrial())).concat(".dat.txt");
 
-            for (final File file : files) {
+            for (File file : files) {
 
                 if (file.getName().startsWith("graph") && file.getName().endsWith(trialGraph)) {
 
-                    final Path dataFile = Paths.get(path.concat("/").concat(file.getName()));
+                    Path dataFile = Paths.get(path.concat("/").concat(file.getName()));
                     final Delimiter delimiter = Delimiter.TAB;
 
                     if (params.getDataType() == ComparisonParameters.DataType.Continuous) {
                         try {
-                            final ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
+                            ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
                             dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
-                        } catch (final IOException e) {
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
 
@@ -97,9 +97,9 @@ public class Comparison2 {
 
                     } else {
                         try {
-                            final VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, delimiter);
+                            VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, delimiter);
                             dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
-                        } catch (final IOException e) {
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
 
@@ -115,7 +115,7 @@ public class Comparison2 {
         } // end isDataFromFile()
 
         if (params.isNoData()) {
-            final List<Node> nodes = new ArrayList<>();
+            List<Node> nodes = new ArrayList<>();
             for (int i = 0; i < params.getNumVars(); i++) {
                 nodes.add(new ContinuousVariable("X" + (i + 1)));
             }
@@ -496,8 +496,8 @@ public class Comparison2 {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            final SvarFci search = new SvarFci(test);
-            final IKnowledge knowledge = Comparison2.getKnowledge(trueDag);
+            SvarFci search = new SvarFci(test);
+            IKnowledge knowledge = Comparison2.getKnowledge(trueDag);
             search.setKnowledge(knowledge);
             result.setResultGraph(search.search());
             result.setCorrectResult(new TsDagToPag(trueDag).convert());
@@ -505,9 +505,9 @@ public class Comparison2 {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }
 
-        final long time2 = System.currentTimeMillis();
+        long time2 = System.currentTimeMillis();
 
-        final long elapsed = time2 - time1;
+        long elapsed = time2 - time1;
         result.setElapsed(elapsed);
 
         result.setTrueDag(trueDag);
@@ -528,14 +528,14 @@ public class Comparison2 {
 //        return null;
 //    }
     // changed return type of 'summarize' to TextTable
-    public static TextTable summarize(final List<ComparisonResult> results, final List<TableColumn> tableColumns) {
+    public static TextTable summarize(List<ComparisonResult> results, List<TableColumn> tableColumns) {
 
-        final List<Node> variables = new ArrayList<>();
-        for (final TableColumn column : tableColumns) {
+        List<Node> variables = new ArrayList<>();
+        for (TableColumn column : tableColumns) {
             variables.add(new ContinuousVariable(column.toString()));
         }
 
-        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
         dataSet.setNumberFormat(new DecimalFormat("0"));
 
         for (int i = 0; i < results.size(); i++) {
@@ -544,13 +544,13 @@ public class Comparison2 {
 
         System.out.println();
 
-        for (final ComparisonResult _result : results) {
-            final Graph correctGraph = _result.getCorrectResult();
-            final Graph resultGraph = _result.getResultGraph();
+        for (ComparisonResult _result : results) {
+            Graph correctGraph = _result.getCorrectResult();
+            Graph resultGraph = _result.getResultGraph();
 
-            final GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison2(correctGraph, resultGraph);
+            GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison2(correctGraph, resultGraph);
 
-            final int newRow = dataSet.getNumRows();
+            int newRow = dataSet.getNumRows();
 
             if (tableColumns.contains(TableColumn.AdjCor)) {
                 dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AdjCor), comparison.getAdjCor());
@@ -601,7 +601,7 @@ public class Comparison2 {
             }
         }
 
-        final int[] cols = new int[tableColumns.size()];
+        int[] cols = new int[tableColumns.size()];
         for (int i = 0; i < cols.length; i++) {
             cols[i] = i;
         }
@@ -609,8 +609,8 @@ public class Comparison2 {
         return Comparison2.getTextTable(dataSet, cols, new DecimalFormat("0.00")); //deleted .toString()
     }
 
-    private static TextTable getTextTable(final DataSet dataSet, final int[] columns, final NumberFormat nf) {
-        final TextTable table = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
+    private static TextTable getTextTable(DataSet dataSet, int[] columns, NumberFormat nf) {
+        TextTable table = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
 
         table.setToken(0, 0, "Run #");
 
@@ -628,7 +628,7 @@ public class Comparison2 {
             }
         }
 
-        final NumberFormat nf2 = new DecimalFormat("0.00");
+        NumberFormat nf2 = new DecimalFormat("0.00");
 
         for (int j = 0; j < columns.length; j++) {
             double sum = 0.0;
@@ -637,7 +637,7 @@ public class Comparison2 {
                 sum += dataSet.getDouble(i, columns[j]);
             }
 
-            final double avg = sum / dataSet.getNumRows();
+            double avg = sum / dataSet.getNumRows();
 
             table.setToken(dataSet.getNumRows() + 2 - 1, j + 1, nf2.format(avg));
         }
@@ -647,16 +647,16 @@ public class Comparison2 {
         return table;
     }
 
-    public static IKnowledge getKnowledge(final Graph graph) {
+    public static IKnowledge getKnowledge(Graph graph) {
 //        System.out.println("Entering getKnowledge ... ");
         int numLags = 1; // need to fix this!
-        final List<Node> variables = graph.getNodes();
-        final List<Integer> laglist = new ArrayList<>();
-        final IKnowledge knowledge = new Knowledge2();
+        List<Node> variables = graph.getNodes();
+        List<Integer> laglist = new ArrayList<>();
+        IKnowledge knowledge = new Knowledge2();
         int lag;
-        for (final Node node : variables) {
-            final String varName = node.getName();
-            final String tmp;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
@@ -671,19 +671,19 @@ public class Comparison2 {
 //        System.out.println("Variable list before the sort = " + variables);
         Collections.sort(variables, new Comparator<Node>() {
             @Override
-            public int compare(final Node o1, final Node o2) {
-                final String name1 = Comparison2.getNameNoLag(o1);
-                final String name2 = Comparison2.getNameNoLag(o2);
+            public int compare(Node o1, Node o2) {
+                String name1 = Comparison2.getNameNoLag(o1);
+                String name2 = Comparison2.getNameNoLag(o2);
 
 //                System.out.println("name 1 = " + name1);
 //                System.out.println("name 2 = " + name2);
-                final String prefix1 = Comparison2.getPrefix(name1);
-                final String prefix2 = Comparison2.getPrefix(name2);
+                String prefix1 = Comparison2.getPrefix(name1);
+                String prefix2 = Comparison2.getPrefix(name2);
 
 //                System.out.println("prefix 1 = " + prefix1);
 //                System.out.println("prefix 2 = " + prefix2);
-                final int index1 = Comparison2.getIndex(name1);
-                final int index2 = Comparison2.getIndex(name2);
+                int index1 = Comparison2.getIndex(name1);
+                int index2 = Comparison2.getIndex(name2);
 
 //                System.out.println("index 1 = " + index1);
 //                System.out.println("index 2 = " + index2);
@@ -700,9 +700,9 @@ public class Comparison2 {
         });
 
 //        System.out.println("Variable list after the sort = " + variables);
-        for (final Node node : variables) {
-            final String varName = node.getName();
-            final String tmp;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
 //                laglist.add(lag);
@@ -718,8 +718,8 @@ public class Comparison2 {
         return knowledge;
     }
 
-    public static String getNameNoLag(final Object obj) {
-        final String tempS = obj.toString();
+    public static String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
             return tempS;
         } else {
@@ -727,7 +727,7 @@ public class Comparison2 {
         }
     }
 
-    public static String getPrefix(final String s) {
+    public static String getPrefix(String s) {
 //        int y = 0;
 //        for (int i = s.length() - 1; i >= 0; i--) {
 //            try {
@@ -745,23 +745,23 @@ public class Comparison2 {
         return s.substring(0, 1);
     }
 
-    public static int getIndex(final String s) {
+    public static int getIndex(String s) {
         int y = 0;
         for (int i = s.length() - 1; i >= 0; i--) {
             try {
                 y = Integer.parseInt(s.substring(i));
-            } catch (final NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 return y;
             }
         }
         throw new IllegalArgumentException("Not integer suffix.");
     }
 
-    public static int getLag(final String s) {
+    public static int getLag(String s) {
         if (s.indexOf(':') == -1) {
             return 0;
         }
-        final String tmp = s.substring(s.indexOf(':') + 1);
+        String tmp = s.substring(s.indexOf(':') + 1);
         return (Integer.parseInt(tmp));
     }
 

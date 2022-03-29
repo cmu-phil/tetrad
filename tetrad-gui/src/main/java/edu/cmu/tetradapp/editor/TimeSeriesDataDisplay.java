@@ -39,7 +39,7 @@ public class TimeSeriesDataDisplay extends JPanel
     /**
      * Constructor. Takes a DataSet as a model.
      */
-    public TimeSeriesDataDisplay(final TimeSeriesData model) {
+    public TimeSeriesDataDisplay(TimeSeriesData model) {
         this.timeSerieaDataDisplayJTable = new TimeSeriesDataDisplayJTable(model);
         setLayout(new BorderLayout());
         add(new JScrollPane(this.timeSerieaDataDisplayJTable), BorderLayout.CENTER);

@@ -57,7 +57,7 @@ public class BayesImEditorObs extends JPanel {
     /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
-    public BayesImEditorObs(final BayesImWrapperObs wrapper, final BayesIm bayesIm) {
+    public BayesImEditorObs(BayesImWrapperObs wrapper, BayesIm bayesIm) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -66,17 +66,17 @@ public class BayesImEditorObs extends JPanel {
         init(bayesIm);
     }
 
-    private void init(final BayesIm bayesIm) {
+    private void init(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
 
-        final BayesPm bayesPm = bayesIm.getBayesPm();
-        final Graph graph = bayesPm.getDag();
-        final GraphWorkbench workbench = new GraphWorkbench(graph);
+        BayesPm bayesPm = bayesIm.getBayesPm();
+        Graph graph = bayesPm.getDag();
+        GraphWorkbench workbench = new GraphWorkbench(graph);
 
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
         menuBar.add(file);
         //file.add(new SaveBayesImXmlAction(this));
         //file.add(new LoadBayesImXmlAction(wrapper, this));
@@ -89,19 +89,19 @@ public class BayesImEditorObs extends JPanel {
         this.wizard.enableEditing(false);
 
         this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
         });
 
-        final JScrollPane workbenchScroll = new JScrollPane(workbench);
-        final JScrollPane wizardScroll = new JScrollPane(getWizard());
+        JScrollPane workbenchScroll = new JScrollPane(workbench);
+        JScrollPane wizardScroll = new JScrollPane(getWizard());
 
         workbenchScroll.setPreferredSize(new Dimension(450, 450));
 
-        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, wizardScroll);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
@@ -109,7 +109,7 @@ public class BayesImEditorObs extends JPanel {
 
         setName("Bayes IM Obs Editor");
         getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorClosing".equals(evt.getPropertyName())) {
                     firePropertyChange("editorClosing", null, getName());
                 }
@@ -130,15 +130,15 @@ public class BayesImEditorObs extends JPanel {
     /**
      * Constructs a new instanted model editor from a Bayes IM wrapper.
      */
-    public BayesImEditorObs(final BayesImWrapperObs bayesImWrapperObs) {
+    public BayesImEditorObs(BayesImWrapperObs bayesImWrapperObs) {
         this(bayesImWrapperObs, bayesImWrapperObs.getBayesIm());
     }
 
     /**
      * Sets the name of this editor.
      */
-    public void setName(final String name) {
-        final String oldName = getName();
+    public void setName(String name) {
+        String oldName = getName();
         super.setName(name);
         firePropertyChange("name", oldName, getName());
     }
@@ -150,7 +150,7 @@ public class BayesImEditorObs extends JPanel {
         return this.wizard;
     }
 
-    public void getBayesIm(final BayesIm bayesIm) {
+    public void getBayesIm(BayesIm bayesIm) {
         this.wrapper.setBayesIm(bayesIm);
         removeAll();
         init(this.wrapper.getBayesIm());

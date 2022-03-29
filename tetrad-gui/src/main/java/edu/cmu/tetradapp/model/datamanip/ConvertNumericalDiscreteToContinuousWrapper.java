@@ -35,25 +35,25 @@ import edu.cmu.tetradapp.model.PcRunner;
 public class ConvertNumericalDiscreteToContinuousWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public ConvertNumericalDiscreteToContinuousWrapper(final DataWrapper data, final Parameters params) {
+    public ConvertNumericalDiscreteToContinuousWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
 
-        final DataModelList dataSets = data.getDataModelList();
-        final DataModelList convertedDataSets = new DataModelList();
+        DataModelList dataSets = data.getDataModelList();
+        DataModelList convertedDataSets = new DataModelList();
 
-        for (final DataModel dataModel : dataSets) {
+        for (DataModel dataModel : dataSets) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
 
-            final DataSet originalData = (DataSet) dataModel;
-            final DataSet convertedData;
+            DataSet originalData = (DataSet) dataModel;
+            DataSet convertedData;
 
             try {
                 convertedData = DataUtils.convertNumericalDiscreteToContinuous(originalData);
-            } catch (final NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 throw new RuntimeException("There were some non-numeric values in that dataset.");
             }
 

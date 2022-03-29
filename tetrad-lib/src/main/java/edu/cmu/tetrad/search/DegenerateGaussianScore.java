@@ -70,7 +70,7 @@ public class DegenerateGaussianScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public DegenerateGaussianScore(final DataSet dataSet) {
+    public DegenerateGaussianScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -78,11 +78,11 @@ public class DegenerateGaussianScore implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         // The number of instances.
-        final int n = dataSet.getNumRows();
+        int n = dataSet.getNumRows();
         this.embedding = new HashMap<>();
 
-        final List<Node> A = new ArrayList<>();
-        final List<double[]> B = new ArrayList<>();
+        List<Node> A = new ArrayList<>();
+        List<double[]> B = new ArrayList<>();
 
         int index = 0;
 
@@ -90,19 +90,19 @@ public class DegenerateGaussianScore implements Score {
         int i_ = 0;
         while (i_ < this.variables.size()) {
 
-            final Node v = this.variables.get(i_);
+            Node v = this.variables.get(i_);
 
             if (v instanceof DiscreteVariable) {
 
-                final Map<List<Integer>, Integer> keys = new HashMap<>();
-                final Map<Integer, List<Integer>> keysReverse = new HashMap<>();
+                Map<List<Integer>, Integer> keys = new HashMap<>();
+                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
                 for (int j = 0; j < n; j++) {
-                    final List<Integer> key = new ArrayList<>();
+                    List<Integer> key = new ArrayList<>();
                     key.add(this.dataSet.getInt(j, i_));
                     if (!keys.containsKey(key)) {
                         keys.put(key, i);
                         keysReverse.put(i, key);
-                        final Node v_ = new ContinuousVariable("V__" + ++index);
+                        Node v_ = new ContinuousVariable("V__" + ++index);
                         A.add(v_);
                         B.add(new double[n]);
                         i++;
@@ -124,13 +124,13 @@ public class DegenerateGaussianScore implements Score {
             } else {
 
                 A.add(v);
-                final double[] b = new double[n];
+                double[] b = new double[n];
                 for (int j = 0; j < n; j++) {
                     b[j] = this.dataSet.getDouble(j, i_);
                 }
 
                 B.add(b);
-                final List<Integer> index2 = new ArrayList<>();
+                List<Integer> index2 = new ArrayList<>();
                 index2.add(i);
                 this.embedding.put(i_, index2);
                 i++;
@@ -138,7 +138,7 @@ public class DegenerateGaussianScore implements Score {
 
             }
         }
-        final double[][] B_ = new double[n][B.size()];
+        double[][] B_ = new double[n][B.size()];
         for (int j = 0; j < B.size(); j++) {
             for (int k = 0; k < n; k++) {
                 B_[k][j] = B.get(j)[k];
@@ -146,11 +146,11 @@ public class DegenerateGaussianScore implements Score {
         }
 
         // The continuous variables of the post-embedding dataset.
-        final RealMatrix D = new BlockRealMatrix(B_);
+        RealMatrix D = new BlockRealMatrix(B_);
         this.ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
         this.nodesHash = new HashedMap<>();
 
-        final List<Node> variables = dataSet.getVariables();
+        List<Node> variables = dataSet.getVariables();
 
         for (int j = 0; j < variables.size(); j++) {
             this.nodesHash.put(variables.get(j), j);
@@ -161,19 +161,19 @@ public class DegenerateGaussianScore implements Score {
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(final int i, final int... parents) {
+    public double localScore(int i, int... parents) {
 
-        final List<Integer> rows = getRows(i, parents);
-        final int N = rows.size();
+        List<Integer> rows = getRows(i, parents);
+        int N = rows.size();
 
-        final List<Integer> B = new ArrayList<>();
-        final List<Integer> A = new ArrayList<>(this.embedding.get(i));
-        for (final int i_ : parents) {
+        List<Integer> B = new ArrayList<>();
+        List<Integer> A = new ArrayList<>(this.embedding.get(i));
+        for (int i_ : parents) {
             B.addAll(this.embedding.get(i_));
         }
 
-        final int[] A_ = new int[A.size() + B.size()];
-        final int[] B_ = new int[B.size()];
+        int[] A_ = new int[A.size() + B.size()];
+        int[] B_ = new int[B.size()];
         for (int i_ = 0; i_ < A.size(); i_++) {
             A_[i_] = A.get(i_);
         }
@@ -182,36 +182,36 @@ public class DegenerateGaussianScore implements Score {
             B_[i_] = B.get(i_);
         }
 
-        final int dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2;
-        final double ldetA = log(getCov(rows, A_).det());
-        final double ldetB = log(getCov(rows, B_).det());
+        int dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2;
+        double ldetA = log(getCov(rows, A_).det());
+        double ldetB = log(getCov(rows, B_).det());
 
-        final double lik = N * (ldetB - ldetA + DegenerateGaussianScore.L2PE * (B_.length - A_.length));
+        double lik = N * (ldetB - ldetA + DegenerateGaussianScore.L2PE * (B_.length - A_.length));
         return 2 * lik + 2 * calculateStructurePrior(parents.length) - dof * getPenaltyDiscount() * log(N);
     }
 
-    private double calculateStructurePrior(final int k) {
+    private double calculateStructurePrior(int k) {
         if (this.structurePrior <= 0) {
             return 0;
         } else {
-            final double n = this.variables.size() - 1;
-            final double p = this.structurePrior / n;
+            double n = this.variables.size() - 1;
+            double p = this.structurePrior / n;
             return k * log(p) + (n - k) * log(1.0 - p);
         }
     }
 
 
-    public double localScoreDiff(final int x, final int y, final int[] z) {
+    public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
+    public double localScoreDiff(int x, int y) {
         return localScore(y, x) - localScore(y);
     }
 
-    private int[] append(final int[] parents, final int extra) {
-        final int[] all = new int[parents.length + 1];
+    private int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
@@ -220,14 +220,14 @@ public class DegenerateGaussianScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(final int i, final int parent) {
+    public double localScore(int i, int parent) {
         return localScore(i, new int[]{parent});
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
+    public double localScore(int i) {
         return localScore(i, new int[0]);
     }
 
@@ -236,7 +236,7 @@ public class DegenerateGaussianScore implements Score {
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
+    public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
@@ -246,8 +246,8 @@ public class DegenerateGaussianScore implements Score {
     }
 
     @Override
-    public Node getVariable(final String targetName) {
-        for (final Node node : this.variables) {
+    public Node getVariable(String targetName) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -262,7 +262,7 @@ public class DegenerateGaussianScore implements Score {
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 
@@ -270,7 +270,7 @@ public class DegenerateGaussianScore implements Score {
         return this.penaltyDiscount;
     }
 
-    public void setPenaltyDiscount(final double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
@@ -278,27 +278,27 @@ public class DegenerateGaussianScore implements Score {
         return this.structurePrior;
     }
 
-    public void setStructurePrior(final double structurePrior) {
+    public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
     }
 
     @Override
     public String toString() {
-        final NumberFormat nf = new DecimalFormat("0.00");
+        NumberFormat nf = new DecimalFormat("0.00");
         return "Degenerate Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
     }
 
     // Subsample of the continuous mixedVariables conditioning on the given cols.
-    private Matrix getCov(final List<Integer> rows, final int[] cols) {
+    private Matrix getCov(List<Integer> rows, int[] cols) {
         if (rows.isEmpty()) return new Matrix(0, 0);
-        final Matrix cov = new Matrix(cols.length, cols.length);
+        Matrix cov = new Matrix(cols.length, cols.length);
 
         for (int i = 0; i < cols.length; i++) {
             for (int j = 0; j < cols.length; j++) {
                 double mui = 0.0;
                 double muj = 0.0;
 
-                for (final int k : rows) {
+                for (int k : rows) {
                     mui += this.ddata.getDouble(k, cols[i]);
                     muj += this.ddata.getDouble(k, cols[j]);
                 }
@@ -308,11 +308,11 @@ public class DegenerateGaussianScore implements Score {
 
                 double _cov = 0.0;
 
-                for (final int k : rows) {
+                for (int k : rows) {
                     _cov += (this.ddata.getDouble(k, cols[i]) - mui) * (this.ddata.getDouble(k, cols[j]) - muj);
                 }
 
-                final double mean = _cov / (rows.size());
+                double mean = _cov / (rows.size());
                 cov.set(i, j, mean);
             }
         }
@@ -320,25 +320,25 @@ public class DegenerateGaussianScore implements Score {
         return cov;
     }
 
-    private List<Integer> getRows(final int i, final int[] parents) {
-        final List<Integer> rows = new ArrayList<>();
+    private List<Integer> getRows(int i, int[] parents) {
+        List<Integer> rows = new ArrayList<>();
 
         K:
         for (int k = 0; k < this.dataSet.getNumRows(); k++) {
-            final Node ii = this.variables.get(i);
+            Node ii = this.variables.get(i);
 
-            final List<Integer> A = new ArrayList<>(this.embedding.get(this.nodesHash.get(ii)));
+            List<Integer> A = new ArrayList<>(this.embedding.get(this.nodesHash.get(ii)));
 
-            for (final int j : A) {
+            for (int j : A) {
                 if (Double.isNaN(this.ddata.getDouble(k, j))) continue K;
             }
 
-            for (final int p : parents) {
-                final Node pp = this.variables.get(i);
+            for (int p : parents) {
+                Node pp = this.variables.get(i);
 
-                final List<Integer> AA = new ArrayList<>(this.embedding.get(this.nodesHash.get(pp)));
+                List<Integer> AA = new ArrayList<>(this.embedding.get(this.nodesHash.get(pp)));
 
-                for (final int j : AA) {
+                for (int j : AA) {
                     if (Double.isNaN(this.ddata.getDouble(k, j))) continue K;
                 }
             }

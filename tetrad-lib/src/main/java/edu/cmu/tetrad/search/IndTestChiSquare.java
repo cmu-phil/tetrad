@@ -86,7 +86,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @param dataSet the discrete data set.
      * @param alpha   the significance level of the tests.
      */
-    public IndTestChiSquare(final DataSet dataSet, final double alpha) {
+    public IndTestChiSquare(DataSet dataSet, double alpha) {
 
         // The g square test requires as parameters: (a) the data set
         // itself, (b) an array containing the number of values for
@@ -108,19 +108,19 @@ public final class IndTestChiSquare implements IndependenceTest {
     /**
      * Creates a new IndTestChiSquare for a subset of the nodes.
      */
-    public IndependenceTest indTestSubset(final List<Node> nodes) {
+    public IndependenceTest indTestSubset(List<Node> nodes) {
         if (nodes.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        for (final Node variable : nodes) {
+        for (Node variable : nodes) {
             if (!this.variables.contains(variable)) {
                 throw new IllegalArgumentException(
                         "All nodes must be original nodes");
             }
         }
 
-        final int[] indices = new int[nodes.size()];
+        int[] indices = new int[nodes.size()];
         int j = -1;
 
         for (int i = 0; i < this.variables.size(); i++) {
@@ -131,8 +131,8 @@ public final class IndTestChiSquare implements IndependenceTest {
             indices[++j] = i;
         }
 
-        final DataSet newDataSet = this.dataSet.subsetColumns(indices);
-        final double alpha = this.chiSquareTest.getAlpha();
+        DataSet newDataSet = this.dataSet.subsetColumns(indices);
+        double alpha = this.chiSquareTest.getAlpha();
         return new IndTestChiSquare(newDataSet, alpha);
     }
 
@@ -166,14 +166,14 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @param z the list of conditioning varNames.
      * @return true iff x _||_ y | z.
      */
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (final Node v : z) {
+        for (Node v : z) {
             if (v == null) {
                 throw new NullPointerException();
             }
@@ -181,7 +181,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
-        final int[] testIndices = new int[2 + z.size()];
+        int[] testIndices = new int[2 + z.size()];
 
         testIndices[0] = this.variables.indexOf(x);
         testIndices[1] = this.variables.indexOf(y);
@@ -198,13 +198,13 @@ public final class IndTestChiSquare implements IndependenceTest {
             }
         }
 
-        final ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices);
+        ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices);
         this.xSquare = result.getXSquare();
         this.df = result.getDf();
         this.pValue = result.getPValue();
 
         if (result.isIndep()) {
-            final String sb = "INDEPENDENCE ACCEPTED: " +
+            String sb = "INDEPENDENCE ACCEPTED: " +
                     SearchLogUtils.independenceFact(x, y, z) +
                     "\tp = " + nf.format(result.getPValue()) +
                     "\tx^2 = " + nf.format(result.getXSquare()) +
@@ -217,17 +217,17 @@ public final class IndTestChiSquare implements IndependenceTest {
         return result.isIndep();
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isDependent(Node x, Node y, List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -236,12 +236,12 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @param x1 The one variable whose determination by z we want to know.
      * @return true if it is estimated that z determines x or z determines y.
      */
-    public boolean determines(final List<Node> z, final Node x1) {
+    public boolean determines(List<Node> z, Node x1) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (final Node aZ : z) {
+        for (Node aZ : z) {
             if (aZ == null) {
                 throw new NullPointerException();
             }
@@ -249,7 +249,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
-        final int[] testIndices = new int[1 + z.size()];
+        int[] testIndices = new int[1 + z.size()];
         testIndices[0] = this.variables.indexOf(x1);
 
         for (int i = 0; i < z.size(); i++) {
@@ -266,11 +266,11 @@ public final class IndTestChiSquare implements IndependenceTest {
 
         //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
 
-        final boolean countDetermined =
+        boolean countDetermined =
                 this.chiSquareTest.isDetermined(testIndices, getDeterminationP());
 
         if (countDetermined) {
-            final StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.append("Determination found: ").append(x1).append(
                     " is determined by {");
 
@@ -300,7 +300,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      *
      * @param alpha the new significance level.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         this.chiSquareTest.setAlpha(alpha);
     }
 
@@ -316,17 +316,17 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
-        for (final Node variable1 : variables) {
+        List<Node> variables = getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
     }
 
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+            Node variable = getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -336,7 +336,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     public String toString() {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         return "Chi Square, alpha = " + nf.format(getAlpha());
     }
 
@@ -387,7 +387,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     @Override
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

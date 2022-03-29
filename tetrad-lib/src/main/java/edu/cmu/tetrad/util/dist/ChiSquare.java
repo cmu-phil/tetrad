@@ -59,7 +59,7 @@ public class ChiSquare implements Distribution {
         return new ChiSquare();
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0 && value >= 0.0) {
             this.df = value;
         } else {
@@ -67,7 +67,7 @@ public class ChiSquare implements Distribution {
         }
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
             return this.df;
         } else {
@@ -75,7 +75,7 @@ public class ChiSquare implements Distribution {
         }
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "DF";
         } else {
@@ -114,7 +114,7 @@ public class ChiSquare implements Distribution {
      * @throws ClassNotFoundException If the class of an object in the stream
      *                                is not in the project.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

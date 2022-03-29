@@ -27,24 +27,24 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
 
-    public LoadContinuousDataSmithSim(final String path, final int index) {
+    public LoadContinuousDataSmithSim(String path, int index) {
         this.path = path;
         this.index = index;
-        final String structure = new File(path).getName();
+        String structure = new File(path).getName();
         this.parametersValues.set("Structure", structure + " " + index);
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
         if (!this.dataSets.isEmpty()) return;
         this.dataSets = new ArrayList<>();
 
-        final File dir2 = new File(this.path + "/models");
+        File dir2 = new File(this.path + "/models");
 
         if (dir2.exists()) {
-            final File[] files = dir2.listFiles();
+            File[] files = dir2.listFiles();
 
-            for (final File file : files) {
+            for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 if (!file.getName().contains("sim" + this.index + ".")) continue;
 
@@ -62,12 +62,12 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
             }
         }
 
-        final File dir = new File(this.path + "/data");
+        File dir = new File(this.path + "/data");
 
         if (dir.exists()) {
-            final File[] files = dir.listFiles();
+            File[] files = dir.listFiles();
 
-            for (final File file : files) {
+            for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 if (!file.getName().contains("sim" + this.index + ".")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
@@ -76,13 +76,13 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
                             "*", true, Delimiter.TAB);
 
                     if (dataSet.getVariables().size() > this.graph.getNumNodes()) {
-                        final List<Node> nodes = new ArrayList<>();
+                        List<Node> nodes = new ArrayList<>();
                         for (int i = 0; i < this.graph.getNumNodes(); i++) nodes.add(dataSet.getVariable(i));
                         dataSet = dataSet.subsetColumns(nodes);
                     }
 
                     this.dataSets.add(dataSet);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());
                     e.printStackTrace();
                 }
@@ -100,21 +100,21 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graph;
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
     public String getDescription() {
         try {
-            final StringBuilder b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
             b.append("Smith sim " + this.index).append("\n\n");
             return b.toString();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -140,18 +140,18 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     }
 
 
-    public Graph readGraph(final File file) {
+    public Graph readGraph(File file) {
         try {
-            final DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
+            DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
-            final List<Node> variables = data.getVariables();
+            List<Node> variables = data.getVariables();
 
-            final List<Node> _variables = new ArrayList<>();
+            List<Node> _variables = new ArrayList<>();
             for (int i = 0; i < variables.size(); i++) {
                 _variables.add(new ContinuousVariable(variables.get(i).getName()));
             }
 
-            final Graph graph = new EdgeListGraph(_variables);
+            Graph graph = new EdgeListGraph(_variables);
 
             for (int i = 0; i < _variables.size(); i++) {
                 for (int j = 0; j < _variables.size(); j++) {
@@ -164,7 +164,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
             }
 
             return graph;
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

@@ -46,7 +46,7 @@ final class SplitCasesAction extends AbstractAction {
     /**
      * Creates new action to discretize columns.
      */
-    public SplitCasesAction(final DataEditor editor) {
+    public SplitCasesAction(DataEditor editor) {
         super("Split Data by Cases");
 
         if (editor == null) {
@@ -59,21 +59,21 @@ final class SplitCasesAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final DataModel selectedDataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataModel selectedDataModel = getDataEditor().getSelectedDataModel();
 
         if (!(selectedDataModel instanceof DataSet)) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Requires a tabular data set.");
         }
 
-        final List<Node> selectedVariables = new LinkedList<>();
+        List<Node> selectedVariables = new LinkedList<>();
 
-        final DataSet dataSet = (DataSet) selectedDataModel;
-        final int numColumns = dataSet.getNumColumns();
+        DataSet dataSet = (DataSet) selectedDataModel;
+        int numColumns = dataSet.getNumColumns();
 
         for (int i = 0; i < numColumns; i++) {
-            final Node variable = dataSet.getVariable(i);
+            Node variable = dataSet.getVariable(i);
 
             if (dataSet.isSelected(variable)) {
                 selectedVariables.add(variable);

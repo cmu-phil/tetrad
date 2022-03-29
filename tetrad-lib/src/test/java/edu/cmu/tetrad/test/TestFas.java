@@ -46,18 +46,18 @@ public class TestFas {
         final int numVars = 10;
         final double edgesPerNode = 1.0;
 
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        final Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode), 30, 15, 15, false, true);
+        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode), 30, 15, 15, false, true);
 
-        final IndependenceTest test = new IndTestDSep(graph);
+        IndependenceTest test = new IndTestDSep(graph);
 
-        final Graph fasGraph = new Fas(test).search();
-        final Graph pcGraph = new Pc(test).search();
+        Graph fasGraph = new Fas(test).search();
+        Graph pcGraph = new Pc(test).search();
 
         assertEquals(fasGraph, GraphUtils.undirectedGraph(pcGraph));
     }

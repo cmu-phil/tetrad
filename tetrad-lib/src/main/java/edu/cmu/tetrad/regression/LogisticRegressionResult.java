@@ -116,9 +116,9 @@ public class LogisticRegressionResult implements TetradSerializable {
      * @param probs         the array of P-values for the regression
      *                      coefficients.
      */
-    private LogisticRegressionResult(final String target, final String[] variableNames, final double[] xMeans, final double[] xStdDevs,
-                                     final int numRegressors, final int ny0, final int ny1, final double[] coefs,
-                                     final double[] stdErrs, final double[] probs, final double intercept, final String result, final double logLikelihood) {
+    private LogisticRegressionResult(String target, String[] variableNames, double[] xMeans, double[] xStdDevs,
+                                     int numRegressors, int ny0, int ny1, double[] coefs,
+                                     double[] stdErrs, double[] probs, double intercept, String result, double logLikelihood) {
 
 
         if (variableNames.length != numRegressors) {
@@ -167,7 +167,7 @@ public class LogisticRegressionResult implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static LogisticRegressionResult serializableInstance() {
-        final double[] values = {1.0, 2.0};
+        double[] values = {1.0, 2.0};
         return new LogisticRegressionResult("X1", new String[]{"X2"}, values, values, 1, 2, 3,
                 values, values, values, 1.5, "", 0.0);
     }
@@ -274,7 +274,7 @@ public class LogisticRegressionResult implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
         if (this.xMeans == null) {

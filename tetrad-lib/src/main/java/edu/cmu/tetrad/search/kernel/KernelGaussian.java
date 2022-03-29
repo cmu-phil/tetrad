@@ -41,7 +41,7 @@ public final class KernelGaussian implements Kernel {
      *
      * @param sigma the bandwidth
      */
-    public KernelGaussian(final double sigma) {
+    public KernelGaussian(double sigma) {
         if (sigma <= 0)
             throw new IllegalArgumentException("Sigma must be > 0");
         this.sigma = sigma;
@@ -53,7 +53,7 @@ public final class KernelGaussian implements Kernel {
      * @param dataset dataet containing variable used to set bandwidth
      * @param node    variable used to set bandwidth
      */
-    public KernelGaussian(final DataSet dataset, final Node node) {
+    public KernelGaussian(DataSet dataset, Node node) {
         setMedianBandwidth(dataset, node);
     }
 
@@ -70,15 +70,15 @@ public final class KernelGaussian implements Kernel {
      * @param i first point
      * @param j second point
      */
-    public double eval(final double i, final double j) {
-        final double evalKernel = Math.exp(-.5 * (Math.pow((i - j), 2) / Math.pow(this.sigma, 2)));
+    public double eval(double i, double j) {
+        double evalKernel = Math.exp(-.5 * (Math.pow((i - j), 2) / Math.pow(this.sigma, 2)));
         return evalKernel;
     }
 
     /**
      * Default setting of bandwidth based on median distance heuristic
      */
-    public void setDefaultBw(final DataSet dataset, final Node node) {
+    public void setDefaultBw(DataSet dataset, Node node) {
         setMedianBandwidth(dataset, node);
     }
 
@@ -89,11 +89,11 @@ public final class KernelGaussian implements Kernel {
      * @param dataset dataet containing variable used to set bandwidth
      * @param node    variable used to set bandwidth
      */
-    public void setMedianBandwidth(final DataSet dataset, final Node node) {
-        final int col = dataset.getColumn(node);
-        final int m = dataset.getNumRows();
+    public void setMedianBandwidth(DataSet dataset, Node node) {
+        int col = dataset.getColumn(node);
+        int m = dataset.getNumRows();
 
-        final double[] diff = new double[(int) Math.pow(m, 2) - m];
+        double[] diff = new double[(int) Math.pow(m, 2) - m];
         int c = 0;
         for (int i = 0; i < (m - 1); i++) {
             for (int j = (i + 1); j < m; j++) {
@@ -107,10 +107,10 @@ public final class KernelGaussian implements Kernel {
 
     // private method for finding median distance
 
-    private double find(final double[] a, final int from, final int to) {
+    private double find(double[] a, int from, int to) {
         int low = from;
         int high = to;
-        final int median = (low + high) / 2;
+        int median = (low + high) / 2;
         do {
             if (high <= low) {
                 return a[median];
@@ -121,7 +121,7 @@ public final class KernelGaussian implements Kernel {
                 }
                 return a[median];
             }
-            final int middle = (low + high) / 2;
+            int middle = (low + high) / 2;
             if (a[middle] > a[high]) {
                 swap(a, middle, high);
             }
@@ -160,8 +160,8 @@ public final class KernelGaussian implements Kernel {
         while (true);
     }
 
-    private void swap(final double[] a, final int i1, final int i2) {
-        final double temp = a[i1];
+    private void swap(double[] a, int i1, int i2) {
+        double temp = a[i1];
         a[i1] = a[i2];
         a[i2] = temp;
     }

@@ -40,7 +40,7 @@ public class SepsetsGreedy implements SepsetProducer {
     private boolean verbose;
     private Graph dag;
 
-    public SepsetsGreedy(final Graph graph, final IndependenceTest independenceTest, final SepsetMap extraSepsets, final int depth) {
+    public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
@@ -50,41 +50,41 @@ public class SepsetsGreedy implements SepsetProducer {
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest score value.
      */
-    public List<Node> getSepset(final Node i, final Node k) {
+    public List<Node> getSepset(Node i, Node k) {
         return getSepsetGreedy(i, k);
     }
 
-    public boolean isCollider(final Node i, final Node j, final Node k) {
-        final List<Node> set = getSepsetGreedy(i, k);
+    public boolean isCollider(Node i, Node j, Node k) {
+        List<Node> set = getSepsetGreedy(i, k);
         return set != null && !set.contains(j);
     }
 
-    public boolean isNoncollider(final Node i, final Node j, final Node k) {
-        final List<Node> set = getSepsetGreedy(i, k);
+    public boolean isNoncollider(Node i, Node j, Node k) {
+        List<Node> set = getSepsetGreedy(i, k);
         return set != null && set.contains(j);
     }
 
-    private List<Node> getSepsetGreedy(final Node i, final Node k) {
+    private List<Node> getSepsetGreedy(Node i, Node k) {
         if (this.extraSepsets != null) {
-            final List<Node> v = this.extraSepsets.get(i, k);
+            List<Node> v = this.extraSepsets.get(i, k);
 
             if (v != null) {
                 return v;
             }
         }
 
-        final List<Node> adji = this.graph.getAdjacentNodes(i);
-        final List<Node> adjk = this.graph.getAdjacentNodes(k);
+        List<Node> adji = this.graph.getAdjacentNodes(i);
+        List<Node> adjk = this.graph.getAdjacentNodes(k);
         adji.remove(k);
         adjk.remove(i);
 
         for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), Math.max(adji.size(), adjk.size())); d++) {
             if (d <= adji.size()) {
-                final ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    final List<Node> v = GraphUtils.asList(choice, adji);
+                    List<Node> v = GraphUtils.asList(choice, adji);
 
                     if (getIndependenceTest().isIndependent(i, k, v)) {
                         return v;
@@ -93,11 +93,11 @@ public class SepsetsGreedy implements SepsetProducer {
             }
 
             if (d <= adjk.size()) {
-                final ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    final List<Node> v = GraphUtils.asList(choice, adjk);
+                    List<Node> v = GraphUtils.asList(choice, adjk);
 
                     if (getIndependenceTest().isIndependent(i, k, v)) {
                         return v;
@@ -110,7 +110,7 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     @Override
-    public boolean isIndependent(final Node a, final Node b, final List<Node> c) {
+    public boolean isIndependent(Node a, Node b, List<Node> c) {
         return this.independenceTest.isIndependent(a, b, c);
     }
 
@@ -138,7 +138,7 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     @Override
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -150,7 +150,7 @@ public class SepsetsGreedy implements SepsetProducer {
         }
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         this.depth = depth;
     }
 }

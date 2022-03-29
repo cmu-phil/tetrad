@@ -60,12 +60,12 @@ public class BooleanFunction implements TetradSerializable {
      * @param parents an array containing each of the parents (lagged factors)
      *                of a given factor.
      */
-    public BooleanFunction(final IndexedParent[] parents) {
+    public BooleanFunction(IndexedParent[] parents) {
         if (parents == null) {
             throw new NullPointerException();
         }
 
-        for (final IndexedParent parent : parents) {
+        for (IndexedParent parent : parents) {
             if (parent == null) {
                 throw new NullPointerException();
             }
@@ -86,7 +86,7 @@ public class BooleanFunction implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BooleanFunction serializableInstance() {
-        final IndexedParent[] parents = new IndexedParent[2];
+        IndexedParent[] parents = new IndexedParent[2];
         parents[0] = new IndexedParent(0, 1);
         parents[1] = new IndexedParent(1, 2);
         return new BooleanFunction(parents);
@@ -110,7 +110,7 @@ public class BooleanFunction implements TetradSerializable {
      *
      * @see #getRow
      */
-    public boolean getValue(final int row) {
+    public boolean getValue(int row) {
         return this.lookupTable[row];
     }
 
@@ -121,7 +121,7 @@ public class BooleanFunction implements TetradSerializable {
      *
      * @see #getRow
      */
-    public void setValue(final int row, final boolean value) {
+    public void setValue(int row, boolean value) {
         this.lookupTable[row] = value;
     }
 
@@ -143,7 +143,7 @@ public class BooleanFunction implements TetradSerializable {
      *                     <code>getParents</code>.
      * @see #getParents
      */
-    public int getRow(final boolean[] parentValues) {
+    public int getRow(boolean[] parentValues) {
 
         int row = 0;
 
@@ -168,7 +168,7 @@ public class BooleanFunction implements TetradSerializable {
      */
     public boolean[] getParentValues(int row) {
 
-        final boolean[] parentValues = new boolean[this.parents.length];
+        boolean[] parentValues = new boolean[this.parents.length];
 
         if (row >= this.lookupTable.length) {
             throw new IllegalArgumentException();
@@ -207,7 +207,7 @@ public class BooleanFunction implements TetradSerializable {
         // unbroken CPDAG. -2 means the pattern was broken, -1 means
         // no value was encounntered yet, 0 means false, and 1 means
         // true.
-        final int[] lastValues = new int[2];
+        int[] lastValues = new int[2];
 
         // Find the first parent such that all the true's or all the
         // false's map to the same value in the same value.
@@ -218,8 +218,8 @@ public class BooleanFunction implements TetradSerializable {
             for (int row = 0; row < this.lookupTable.length; row++) {
 
                 // 0 means false, 1 means true.
-                final int value = this.lookupTable[row] ? 1 : 0;
-                final int parentValue = (row / jump) % 2 == 0 ? 1 : 0;
+                int value = this.lookupTable[row] ? 1 : 0;
+                int parentValue = (row / jump) % 2 == 0 ? 1 : 0;
 
                 if (-2 == lastValues[parentValue]) {
 
@@ -264,7 +264,7 @@ public class BooleanFunction implements TetradSerializable {
      */
     public boolean isEffective() {
 
-        final boolean[] result = new boolean[this.parents.length];
+        boolean[] result = new boolean[this.parents.length];
 
         for (int row = 0; row < this.lookupTable.length; row++) {
             int jump = 1;
@@ -296,7 +296,7 @@ public class BooleanFunction implements TetradSerializable {
      */
     public String toString() {
 
-        final StringBuilder buf = new StringBuilder("\nBoolean Function:");
+        StringBuilder buf = new StringBuilder("\nBoolean Function:");
 
         for (int i = 0; i < this.lookupTable.length; i++) {
             buf.append("\n").append(i).append("\t");
@@ -321,7 +321,7 @@ public class BooleanFunction implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

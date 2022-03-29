@@ -54,19 +54,19 @@ final class SaveSessionAsAction extends AbstractAction {
      * Performs the action of saving a session to a file.
      */
     @Override
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         // Get the frontmost SessionWrapper.
-        final SessionEditorIndirectRef sessionEditorRef
+        SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
-        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        final SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
-        final SessionWrapper sessionWrapper = workbench.getSessionWrapper();
-        final TetradMetadata metadata = new TetradMetadata();
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
+        SessionWrapper sessionWrapper = workbench.getSessionWrapper();
+        TetradMetadata metadata = new TetradMetadata();
 
         // Select the file to save this to.
-        final String sessionSaveLocation
+        String sessionSaveLocation
                 = Preferences.userRoot().get("sessionSaveLocation", "");
-        final File file = EditorUtils.getSaveFileWithPath(sessionEditor.getName(), "tet",
+        File file = EditorUtils.getSaveFileWithPath(sessionEditor.getName(), "tet",
                 JOptionUtils.centeringComp(), true, "Save Session As...", sessionSaveLocation);
 
         if (file == null) {
@@ -87,14 +87,14 @@ final class SaveSessionAsAction extends AbstractAction {
         sessionWrapper.setName(file.getName());
         sessionEditor.setName(file.getName());
 
-        try (final ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
+        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
             objOut.writeObject(metadata);
             objOut.writeObject(sessionWrapper);
 
             sessionWrapper.setSessionChanged(false);
             sessionWrapper.setNewSession(false);
             this.saved = true;
-        } catch (final IOException exception) {
+        } catch (IOException exception) {
             exception.printStackTrace(System.err);
 
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),

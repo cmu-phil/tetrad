@@ -63,7 +63,7 @@ public class BayesPmEditor extends JPanel
      * Constructs a new editor for parameterized models (for now only for Bayes
      * net parameterized models).
      */
-    public BayesPmEditor(final BayesPmWrapper wrapper) {
+    public BayesPmEditor(BayesPmWrapper wrapper) {
         this.wrapper = wrapper;
         setLayout(new BorderLayout());
 
@@ -76,7 +76,7 @@ public class BayesPmEditor extends JPanel
         validate();
 
         if (wrapper.getNumModels() > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
+            JComboBox<Integer> comp = new JComboBox<>();
 
             for (int i = 0; i < wrapper.getNumModels(); i++) {
                 comp.addItem(i + 1);
@@ -84,7 +84,7 @@ public class BayesPmEditor extends JPanel
 
             comp.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
                     setEditorPanel();
                     validate();
@@ -93,7 +93,7 @@ public class BayesPmEditor extends JPanel
 
             comp.setMaximumSize(comp.getPreferredSize());
 
-            final Box b = Box.createHorizontalBox();
+            Box b = Box.createHorizontalBox();
             b.add(new JLabel("Using model"));
             b.add(comp);
             b.add(new JLabel("from "));
@@ -105,7 +105,7 @@ public class BayesPmEditor extends JPanel
     }
 
     private void setEditorPanel() {
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
         if (this.wrapper.getBayesPm().getDag().getNumNodes() == 0) {
@@ -114,25 +114,25 @@ public class BayesPmEditor extends JPanel
 
         setLayout(new BorderLayout());
 
-        final Graph graph = this.wrapper.getBayesPm().getDag();
-        final GraphWorkbench workbench = new GraphWorkbench(graph);
+        Graph graph = this.wrapper.getBayesPm().getDag();
+        GraphWorkbench workbench = new GraphWorkbench(graph);
         workbench.enableEditing(false);
-        final BayesPmEditorWizard wizard = new BayesPmEditorWizard(this.wrapper.getBayesPm(), workbench);
+        BayesPmEditorWizard wizard = new BayesPmEditorWizard(this.wrapper.getBayesPm(), workbench);
 
-        final JScrollPane workbenchScroll = new JScrollPane(workbench);
-        final JScrollPane wizardScroll = new JScrollPane(wizard);
+        JScrollPane workbenchScroll = new JScrollPane(workbench);
+        JScrollPane wizardScroll = new JScrollPane(wizard);
 
         workbenchScroll.setPreferredSize(new Dimension(450, 450));
         wizardScroll.setPreferredSize(new Dimension(450, 450));
 
-        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, wizardScroll);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
         panel.add(splitPane, BorderLayout.CENTER);
 
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
@@ -152,7 +152,7 @@ public class BayesPmEditor extends JPanel
      * G
      * Reacts to property change events.
      */
-    public void propertyChange(final PropertyChangeEvent e) {
+    public void propertyChange(PropertyChangeEvent e) {
         if ("editorClosing".equals(e.getPropertyName())) {
             firePropertyChange("editorClosing", null, getName());
         }
@@ -171,8 +171,8 @@ public class BayesPmEditor extends JPanel
     /**
      * Sets the name fo the Bayes PM.
      */
-    public void setName(final String name) {
-        final String oldName = getName();
+    public void setName(String name) {
+        String oldName = getName();
         super.setName(name);
         firePropertyChange("name", oldName, getName());
     }
@@ -191,7 +191,7 @@ public class BayesPmEditor extends JPanel
     /**
      * True iff the editing of measured variables is allowed.
      */
-    public void setEditingMeasuredVariablesAllowed(final boolean editingMeasuredVariablesAllowed) {
+    public void setEditingMeasuredVariablesAllowed(boolean editingMeasuredVariablesAllowed) {
         this.editingMeasuredVariablesAllowed = editingMeasuredVariablesAllowed;
         this.wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
     }
@@ -206,7 +206,7 @@ public class BayesPmEditor extends JPanel
     /**
      * True iff the editing of latent variables is allowed.
      */
-    public void setEditingLatentVariablesAllowed(final boolean editingLatentVariablesAllowed) {
+    public void setEditingLatentVariablesAllowed(boolean editingLatentVariablesAllowed) {
         this.editingLatentVariablesAllowed = editingLatentVariablesAllowed;
         this.wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
     }

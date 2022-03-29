@@ -38,7 +38,7 @@ public class NumberFormatUtil {
 
         try {
             this.nf = new DecimalFormat(Preferences.userRoot().get("numberFormat", "0.0000"));
-        } catch (final Exception e) {
+        } catch (Exception e) {
             this.nf = new DecimalFormat("0.0000");
         }
 
@@ -57,7 +57,7 @@ public class NumberFormatUtil {
      * @param nf Ibid.
      * @throws NullPointerException if nf is null.
      */
-    public void setNumberFormat(final NumberFormat nf) {
+    public void setNumberFormat(NumberFormat nf) {
         if (nf == null) {
             throw new NullPointerException();
         }

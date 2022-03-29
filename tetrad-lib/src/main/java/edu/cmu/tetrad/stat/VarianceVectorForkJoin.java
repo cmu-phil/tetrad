@@ -37,7 +37,7 @@ public class VarianceVectorForkJoin implements Variance {
 
     private final int numOfThreads;
 
-    public VarianceVectorForkJoin(final float[][] data, final int numOfThreads) {
+    public VarianceVectorForkJoin(float[][] data, int numOfThreads) {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
@@ -45,10 +45,10 @@ public class VarianceVectorForkJoin implements Variance {
     }
 
     @Override
-    public float[] compute(final boolean biasCorrected) {
-        final float[] means = new float[this.numOfCols];
+    public float[] compute(boolean biasCorrected) {
+        float[] means = new float[this.numOfCols];
 
-        final ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
         pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));
         pool.invoke(new VarianceAction(this.data, means, biasCorrected, 0, this.numOfCols - 1));
         pool.shutdown();
@@ -66,7 +66,7 @@ public class VarianceVectorForkJoin implements Variance {
         private final int start;
         private final int end;
 
-        public VarianceAction(final float[][] data, final float[] means, final boolean biasCorrected, final int start, final int end) {
+        public VarianceAction(float[][] data, float[] means, boolean biasCorrected, int start, int end) {
             this.data = data;
             this.means = means;
             this.biasCorrected = biasCorrected;
@@ -76,11 +76,11 @@ public class VarianceVectorForkJoin implements Variance {
 
         private void computeVariance() {
             for (int col = this.start; col <= this.end; col++) {
-                final float mean = this.means[col];
+                float mean = this.means[col];
                 float value = 0;
                 float squareValue = 0;
                 for (int row = 0; row < VarianceVectorForkJoin.this.numOfRows; row++) {
-                    final float val = this.data[row][col] - mean;
+                    float val = this.data[row][col] - mean;
                     squareValue += val * val;
                     value += val;
                 }
@@ -92,14 +92,14 @@ public class VarianceVectorForkJoin implements Variance {
 
         @Override
         protected void compute() {
-            final int length = this.end - this.start;
-            final int limit = VarianceVectorForkJoin.this.numOfCols / VarianceVectorForkJoin.this.numOfThreads;
-            final int delta = VarianceVectorForkJoin.this.numOfCols % VarianceVectorForkJoin.this.numOfThreads;
-            final int size = limit + delta;
+            int length = this.end - this.start;
+            int limit = VarianceVectorForkJoin.this.numOfCols / VarianceVectorForkJoin.this.numOfThreads;
+            int delta = VarianceVectorForkJoin.this.numOfCols % VarianceVectorForkJoin.this.numOfThreads;
+            int size = limit + delta;
             if (length <= size) {
                 computeVariance();
             } else {
-                final int middle = (this.end + this.start) / 2;
+                int middle = (this.end + this.start) / 2;
                 ForkJoinTask.invokeAll(new VarianceAction(this.data, this.means, this.biasCorrected, this.start, middle), new VarianceAction(this.data, this.means, this.biasCorrected, middle + 1, this.end));
             }
         }
@@ -115,7 +115,7 @@ public class VarianceVectorForkJoin implements Variance {
         private final int start;
         private final int end;
 
-        public MeanAction(final float[][] data, final float[] means, final int start, final int end) {
+        public MeanAction(float[][] data, float[] means, int start, int end) {
             this.data = data;
             this.means = means;
             this.start = start;
@@ -134,14 +134,14 @@ public class VarianceVectorForkJoin implements Variance {
 
         @Override
         protected void compute() {
-            final int length = this.end - this.start;
-            final int limit = VarianceVectorForkJoin.this.numOfCols / VarianceVectorForkJoin.this.numOfThreads;
-            final int delta = VarianceVectorForkJoin.this.numOfCols % VarianceVectorForkJoin.this.numOfThreads;
-            final int size = limit + delta;
+            int length = this.end - this.start;
+            int limit = VarianceVectorForkJoin.this.numOfCols / VarianceVectorForkJoin.this.numOfThreads;
+            int delta = VarianceVectorForkJoin.this.numOfCols % VarianceVectorForkJoin.this.numOfThreads;
+            int size = limit + delta;
             if (length <= size) {
                 computeMean();
             } else {
-                final int middle = (this.end + this.start) / 2;
+                int middle = (this.end + this.start) / 2;
                 ForkJoinTask.invokeAll(new MeanAction(this.data, this.means, this.start, middle), new MeanAction(this.data, this.means, middle + 1, this.end));
             }
         }

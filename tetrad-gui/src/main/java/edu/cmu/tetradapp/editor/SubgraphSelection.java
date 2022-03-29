@@ -54,13 +54,13 @@ class SubgraphSelection implements Transferable {
     /**
      * Constructs a new selection with the given list of graph nodes.
      */
-    public SubgraphSelection(final List graphElements) {
+    public SubgraphSelection(List graphElements) {
         if (graphElements == null) {
             throw new NullPointerException(
                     "List of graph elements must " + "not be null.");
         }
 
-        for (final Object graphElement : graphElements) {
+        for (Object graphElement : graphElements) {
             if (!(graphElement instanceof Node ||
                     graphElement instanceof Edge)) {
                 throw new IllegalArgumentException("Model node list contains " +
@@ -69,10 +69,10 @@ class SubgraphSelection implements Transferable {
             }
         }
 
-        final Object result;
+        Object result;
         try {
             result = new MarshalledObject(graphElements).get();
-        } catch (final Exception e1) {
+        } catch (Exception e1) {
             e1.printStackTrace();
             throw new IllegalStateException("Could not clone.");
         }
@@ -90,13 +90,13 @@ class SubgraphSelection implements Transferable {
      *                                    supported.
      * @see DataFlavor#getRepresentationClass
      */
-    public Object getTransferData(final DataFlavor flavor)
+    public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
         if (!isDataFlavorSupported(flavor)) {
             throw new UnsupportedFlavorException(flavor);
         }
 
-        final List returnList = this.graphElements;
+        List returnList = this.graphElements;
         this.graphElements = null;
         return returnList;
     }
@@ -106,7 +106,7 @@ class SubgraphSelection implements Transferable {
      * @return whether or not the specified data flavor is supported for this
      * object.
      */
-    public boolean isDataFlavorSupported(final DataFlavor flavor) {
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
     }
 

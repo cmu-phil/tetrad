@@ -44,7 +44,7 @@ public class MNLRScore implements Score {
     // Log number of instances
     private final double logn;
 
-    public MNLRScore(final DataSet dataSet, final double structurePrior, final int fDegree) {
+    public MNLRScore(DataSet dataSet, double structurePrior, int fDegree) {
 
         if (dataSet == null) {
             throw new NullPointerException();
@@ -56,26 +56,26 @@ public class MNLRScore implements Score {
         this.logn = Math.log(dataSet.getNumRows());
     }
 
-    public double localScore(final int i, final int... parents) {
+    public double localScore(int i, int... parents) {
 
-        final double lik = this.likelihood.getLik(i, parents);
-        final double dof = this.likelihood.getDoF(i, parents);
-        final double sp = this.likelihood.getStructurePrior(parents.length);
+        double lik = this.likelihood.getLik(i, parents);
+        double dof = this.likelihood.getDoF(i, parents);
+        double sp = this.likelihood.getStructurePrior(parents.length);
 
         return 2.0 * lik - dof * this.logn + sp;
     }
 
-    public double localScoreDiff(final int x, final int y, final int[] z) {
+    public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
+    public double localScoreDiff(int x, int y) {
         return localScore(y, x) - localScore(y);
     }
 
-    private int[] append(final int[] parents, final int extra) {
-        final int[] all = new int[parents.length + 1];
+    private int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
@@ -84,14 +84,14 @@ public class MNLRScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(final int i, final int parent) {
+    public double localScore(int i, int parent) {
         return localScore(i, new int[]{parent});
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
+    public double localScore(int i) {
         return localScore(i, new int[0]);
     }
 
@@ -100,7 +100,7 @@ public class MNLRScore implements Score {
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
+    public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
@@ -110,9 +110,9 @@ public class MNLRScore implements Score {
     }
 
     @Override
-    public Node getVariable(final String targetName) {
+    public Node getVariable(String targetName) {
 
-        for (final Node node : this.variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -127,7 +127,7 @@ public class MNLRScore implements Score {
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 

@@ -61,43 +61,43 @@ public class JunctionTreeAlgorithmTest {
     @Ignore
     @Test
     public void testJointProbGivenParents() throws IOException {
-        final String graphFile = this.getClass().getResource("/jta/graph2.txt").getFile();
-        final String dataFile = this.getClass().getResource("/jta/data2.txt").getFile();
+        String graphFile = this.getClass().getResource("/jta/graph2.txt").getFile();
+        String dataFile = this.getClass().getResource("/jta/data2.txt").getFile();
 
-        final Graph graph = readInGraph(Paths.get(graphFile));
-        final DataModel dataModel = readInDiscreteData(Paths.get(dataFile));
+        Graph graph = readInGraph(Paths.get(graphFile));
+        DataModel dataModel = readInDiscreteData(Paths.get(dataFile));
 
-        final BayesPm bayesPm = createBayesPm(dataModel, graph);
-        final BayesIm bayesIm = createEmBayesEstimator(dataModel, bayesPm);
+        BayesPm bayesPm = createBayesPm(dataModel, graph);
+        BayesIm bayesIm = createEmBayesEstimator(dataModel, bayesPm);
 
-        final int x = bayesIm.getNodeIndex(bayesIm.getNode("x"));
-        final int y = bayesIm.getNodeIndex(bayesIm.getNode("y"));
-        final int z = bayesIm.getNodeIndex(bayesIm.getNode("z"));
-        final int w = bayesIm.getNodeIndex(bayesIm.getNode("w"));
+        int x = bayesIm.getNodeIndex(bayesIm.getNode("x"));
+        int y = bayesIm.getNodeIndex(bayesIm.getNode("y"));
+        int z = bayesIm.getNodeIndex(bayesIm.getNode("z"));
+        int w = bayesIm.getNodeIndex(bayesIm.getNode("w"));
 
-        final int[] nodes = {x, y};
-        final int[] values = {0, 0};
-        final int[] parents = {z, w};
-        final int[] parentValues = {0, 0};
+        int[] nodes = {x, y};
+        int[] values = {0, 0};
+        int[] parents = {z, w};
+        int[] parentValues = {0, 0};
 
-        final JunctionTreeAlgorithm jta = new JunctionTreeAlgorithm(bayesIm);
+        JunctionTreeAlgorithm jta = new JunctionTreeAlgorithm(bayesIm);
 
-        final double probXYGivenZW = jta.getConditionalProbabilities(nodes, values, parents, parentValues);  // 0.24614443432733896
+        double probXYGivenZW = jta.getConditionalProbabilities(nodes, values, parents, parentValues);  // 0.24614443432733896
     }
 
     @Ignore
     @Test
     public void testJointProbability() {
-        final String graphFile = this.getClass().getResource("/jta/graph.txt").getFile();
-        final String dataFile = this.getClass().getResource("/jta/data.txt").getFile();
+        String graphFile = this.getClass().getResource("/jta/graph.txt").getFile();
+        String dataFile = this.getClass().getResource("/jta/data.txt").getFile();
         try {
-            final JunctionTreeAlgorithm jta = getJunctionTreeAlgorithm(graphFile, dataFile);
-            for (final int[] values : JunctionTreeAlgorithmTest.THREE_NODE_VALUES) {
+            JunctionTreeAlgorithm jta = getJunctionTreeAlgorithm(graphFile, dataFile);
+            for (int[] values : JunctionTreeAlgorithmTest.THREE_NODE_VALUES) {
                 JunctionTreeAlgorithmTest.printExampleProof(jta, values);
                 System.out.printf("JTA: %f%n", jta.getJointProbabilityAll(values));
                 System.out.println();
             }
-        } catch (final IOException exception) {
+        } catch (IOException exception) {
             exception.printStackTrace(System.err);
         }
     }
@@ -105,20 +105,20 @@ public class JunctionTreeAlgorithmTest {
     @Ignore
     @Test
     public void testJunctionTree() {
-        final String graphFile = this.getClass().getResource("/jta/graph.txt").getFile();
-        final String dataFile = this.getClass().getResource("/jta/data.txt").getFile();
+        String graphFile = this.getClass().getResource("/jta/graph.txt").getFile();
+        String dataFile = this.getClass().getResource("/jta/data.txt").getFile();
         try {
-            final JunctionTreeAlgorithm jta = getJunctionTreeAlgorithm(graphFile, dataFile);
+            JunctionTreeAlgorithm jta = getJunctionTreeAlgorithm(graphFile, dataFile);
 
-            final DecimalFormat df = new DecimalFormat("#.######");
+            DecimalFormat df = new DecimalFormat("#.######");
             df.setRoundingMode(RoundingMode.CEILING);
             final int multiplier = 1000000;
 
             // P(v1=0|v2=0)
             int iNode = 0;
             int value = 0;
-            final int[] parents = {1};
-            final int[] parentValues = {0};
+            int[] parents = {1};
+            int[] parentValues = {0};
             double conProb = jta.getConditionalProbability(iNode, value, parents, parentValues);
             long actual = (long) (Double.parseDouble(df.format(conProb)) * multiplier);
             long expected = 433334;
@@ -154,25 +154,25 @@ public class JunctionTreeAlgorithmTest {
             expected = 196768;
             Assert.assertEquals(expected, actual);
 
-            final Node[] nodes = jta.getNodes().toArray(new Node[jta.getNumberOfNodes()]);
+            Node[] nodes = jta.getNodes().toArray(new Node[jta.getNumberOfNodes()]);
             System.out.printf("P(%s=%d%s) = %f%n",
                     nodes[iNode].getName(),
                     value,
                     printString(parents, parentValues, nodes),
                     jta.getConditionalProbability(iNode, value, parents, parentValues));
-        } catch (final IOException exception) {
+        } catch (IOException exception) {
             exception.printStackTrace(System.err);
         }
     }
 
-    private static void printExampleProof(final JunctionTreeAlgorithm jta, final int[] values) {
+    private static void printExampleProof(JunctionTreeAlgorithm jta, int[] values) {
         final int v1 = 0;
         final int v2 = 1;
         final int v3 = 2;
 
-        final double v1GivenV2 = jta.getConditionalProbability(v1, values[v1], new int[]{v2}, new int[]{values[v2]});
-        final double v2Parent = jta.getMarginalProbability(v2, values[v2]);
-        final double v3Givenv2 = jta.getConditionalProbability(v3, values[v3], new int[]{v2}, new int[]{values[v2]});
+        double v1GivenV2 = jta.getConditionalProbability(v1, values[v1], new int[]{v2}, new int[]{values[v2]});
+        double v2Parent = jta.getMarginalProbability(v2, values[v2]);
+        double v3Givenv2 = jta.getConditionalProbability(v3, values[v3], new int[]{v2}, new int[]{values[v2]});
 
         System.out.println(
                 Arrays.stream(values)
@@ -186,19 +186,19 @@ public class JunctionTreeAlgorithmTest {
         System.out.printf("P(v1=0|v2=0)P(v2=0)P(v3=0|v2=0) = %f%n", v1GivenV2 * v2Parent * v3Givenv2);
     }
 
-    private JunctionTreeAlgorithm getJunctionTreeAlgorithm(final String graphFile, final String dataFile) throws IOException {
-        final Graph graph = readInGraph(Paths.get(graphFile));
-        final DataModel dataModel = readInDiscreteData(Paths.get(dataFile));
+    private JunctionTreeAlgorithm getJunctionTreeAlgorithm(String graphFile, String dataFile) throws IOException {
+        Graph graph = readInGraph(Paths.get(graphFile));
+        DataModel dataModel = readInDiscreteData(Paths.get(dataFile));
 
         return new JunctionTreeAlgorithm(graph, dataModel);
     }
 
-    private String printString(final int[] parents, final int[] parentValues, final Node[] nodes) {
-        final StringBuilder sb = new StringBuilder();
+    private String printString(int[] parents, int[] parentValues, Node[] nodes) {
+        StringBuilder sb = new StringBuilder();
 
         if (parentValues != null && parentValues.length > 0) {
             sb.append("|");
-            final int len = parents.length - 1;
+            int len = parents.length - 1;
             for (int i = 0; i < len; i++) {
                 sb.append(String.format("%s=%d,", nodes[parents[i]].getName(), parentValues[i]));
             }
@@ -208,13 +208,13 @@ public class JunctionTreeAlgorithmTest {
         return sb.toString().trim();
     }
 
-    private BayesPm createBayesPm(final DataModel dataModel, final Graph graph) {
-        final Dag dag = new Dag(dataModel.getVariables());
+    private BayesPm createBayesPm(DataModel dataModel, Graph graph) {
+        Dag dag = new Dag(dataModel.getVariables());
         (new Dag(graph)).getEdges().forEach(edge -> {
-            final Node node1 = dag.getNode(edge.getNode1().getName());
-            final Node node2 = dag.getNode(edge.getNode2().getName());
-            final Endpoint endpoint1 = edge.getEndpoint1();
-            final Endpoint endpoint2 = edge.getEndpoint2();
+            Node node1 = dag.getNode(edge.getNode1().getName());
+            Node node2 = dag.getNode(edge.getNode2().getName());
+            Endpoint endpoint1 = edge.getEndpoint1();
+            Endpoint endpoint2 = edge.getEndpoint2();
 
             dag.addEdge(new Edge(node1, node2, endpoint1, endpoint2));
         });
@@ -222,11 +222,11 @@ public class JunctionTreeAlgorithmTest {
         return new BayesPm(dag);
     }
 
-    private BayesIm createEmBayesEstimator(final DataModel dataModel, final BayesPm bayesPm) {
+    private BayesIm createEmBayesEstimator(DataModel dataModel, BayesPm bayesPm) {
         return (new EmBayesEstimator(bayesPm, (DataSet) dataModel)).getEstimatedIm();
     }
 
-    private DataModel readInDiscreteData(final Path file) throws IOException {
+    private DataModel readInDiscreteData(Path file) throws IOException {
         // specify data properties
         final Delimiter delimiter = Delimiter.TAB;
         final char quoteCharacter = '"';
@@ -235,21 +235,21 @@ public class JunctionTreeAlgorithmTest {
         final boolean hasHeader = true;
 
         // create a data reader specifically for the data
-        final VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(file, delimiter);
+        VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(file, delimiter);
         dataReader.setCommentMarker(commentMarker);
         dataReader.setQuoteCharacter(quoteCharacter);
         dataReader.setMissingDataMarker(missingValueMarker);
         dataReader.setHasHeader(hasHeader);
 
         // read in the data
-        final Data data = dataReader.readInData();
+        Data data = dataReader.readInData();
 
         // convert the data read in to Tetrad data model
         return DataConvertUtils.toDataModel(data);
     }
 
-    private Graph readInGraph(final Path file) throws IOException {
-        try (final Reader reader = Files.newBufferedReader(file)) {
+    private Graph readInGraph(Path file) throws IOException {
+        try (Reader reader = Files.newBufferedReader(file)) {
             return GraphUtils.readerToGraphTxt(reader);
         }
     }

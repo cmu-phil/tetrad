@@ -33,12 +33,12 @@ public class DSeparationTest implements IndependenceWrapper {
 
     }
 
-    public DSeparationTest(final Graph graph) {
+    public DSeparationTest(Graph graph) {
         this.graph = graph;
     }
 
     @Override
-    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         if (dataSet == null) {
             return new IndTestDSep(this.graph);
         } else {
@@ -61,7 +61,7 @@ public class DSeparationTest implements IndependenceWrapper {
         return new ArrayList<>();
     }
 
-    public void setGraph(final Graph graph) {
+    public void setGraph(Graph graph) {
         this.graph = graph;
     }
 

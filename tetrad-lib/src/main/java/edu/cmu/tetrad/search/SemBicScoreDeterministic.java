@@ -73,7 +73,7 @@ public class SemBicScoreDeterministic implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScoreDeterministic(final ICovarianceMatrix covariances) {
+    public SemBicScoreDeterministic(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -86,26 +86,26 @@ public class SemBicScoreDeterministic implements Score {
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(final int i, final int... parents) {
-        for (final int p : parents) if (this.forbidden.contains(p)) return Double.NaN;
-        final double small = getDeterminismThreshold();
+    public double localScore(int i, int... parents) {
+        for (int p : parents) if (this.forbidden.contains(p)) return Double.NaN;
+        double small = getDeterminismThreshold();
 
         double s2 = getCovariances().getValue(i, i);
-        final int p = parents.length;
+        int p = parents.length;
 
-        final Matrix covxx = getSelection(getCovariances(), parents, parents);
-        final Vector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+        Matrix covxx = getSelection(getCovariances(), parents, parents);
+        Vector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
 
         try {
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
-        } catch (final SingularMatrixException e) {
+        } catch (SingularMatrixException e) {
             s2 = 0;
         }
 
 //        System.out.println(s2);
 
-        final int n = getSampleSize();
-        final int k = 2 * p + 1;
+        int n = getSampleSize();
+        int k = 2 * p + 1;
 
         if (s2 < small) {
             s2 = 0;
@@ -121,12 +121,12 @@ public class SemBicScoreDeterministic implements Score {
 
 
     @Override
-    public double localScoreDiff(final int x, final int y, final int[] z) {
+    public double localScoreDiff(int x, int y, int[] z) {
 
 
-        final double v1 = localScore(y, append(z, x));
-        final double v2 = localScore(y, z);
-        final double v3 = localScore(y, x);
+        double v1 = localScore(y, append(z, x));
+        double v2 = localScore(y, z);
+        double v3 = localScore(y, x);
 
         if (Double.isNaN(v1) && !Double.isNaN(v2) && !Double.isNaN(v3)) {
             return Double.NaN;
@@ -138,14 +138,14 @@ public class SemBicScoreDeterministic implements Score {
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
+    public double localScoreDiff(int x, int y) {
         return localScoreDiff(x, y, new int[0]);
 
 //        return localScore(y, x) - localScore(y);
     }
 
-    private int[] append(final int[] parents, final int extra) {
-        final int[] all = new int[parents.length + 1];
+    private int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 1, parents.length);
         all[0] = extra;
         return all;
@@ -154,7 +154,7 @@ public class SemBicScoreDeterministic implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(final int i, final int parent) {
+    public double localScore(int i, int parent) {
         return localScore(i, new int[]{parent});
 
 //        double residualVariance = getCovariances().getValue(i, i);
@@ -187,7 +187,7 @@ public class SemBicScoreDeterministic implements Score {
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
+    public double localScore(int i) {
         return localScore(i, new int[0]);
 //        double residualVariance = getCovariances().getValue(i, i);
 //        int n = getSampleSize();
@@ -211,11 +211,11 @@ public class SemBicScoreDeterministic implements Score {
         return this.ignoreLinearDependent;
     }
 
-    public void setIgnoreLinearDependent(final boolean ignoreLinearDependent) {
+    public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
         this.ignoreLinearDependent = ignoreLinearDependent;
     }
 
-    public void setOut(final PrintStream out) {
+    public void setOut(PrintStream out) {
         this.out = out;
     }
 
@@ -232,7 +232,7 @@ public class SemBicScoreDeterministic implements Score {
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
+    public boolean isEffectEdge(double bump) {
         return bump > 0;//-0.25 * getPenaltyDiscount() * Math.log(sampleSize);
     }
 
@@ -240,7 +240,7 @@ public class SemBicScoreDeterministic implements Score {
         throw new UnsupportedOperationException();
     }
 
-    public void setPenaltyDiscount(final double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
@@ -248,7 +248,7 @@ public class SemBicScoreDeterministic implements Score {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -257,33 +257,33 @@ public class SemBicScoreDeterministic implements Score {
         return this.variables;
     }
 
-    private Matrix getSelection(final ICovarianceMatrix cov, final int[] rows, final int[] cols) {
+    private Matrix getSelection(ICovarianceMatrix cov, int[] rows, int[] cols) {
         return cov.getSelection(rows, cols);
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
-    private boolean printMinimalLinearlyDependentSet(final int[] parents, final ICovarianceMatrix cov) {
+    private boolean printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
 
-        final List<Node> _parents = new ArrayList<>();
-        for (final int p : parents) _parents.add(this.variables.get(p));
+        List<Node> _parents = new ArrayList<>();
+        for (int p : parents) _parents.add(this.variables.get(p));
 
-        final DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            final int[] sel = new int[choice.length];
-            final List<Node> _sel = new ArrayList<>();
+            int[] sel = new int[choice.length];
+            List<Node> _sel = new ArrayList<>();
             for (int m = 0; m < choice.length; m++) {
                 sel[m] = parents[m];
                 _sel.add(this.variables.get(sel[m]));
             }
 
-            final Matrix m = cov.getSelection(sel, sel);
+            Matrix m = cov.getSelection(sel, sel);
 
 
             try {
                 m.inverse();
-            } catch (final Exception e2) {
+            } catch (Exception e2) {
                 this.forbidden.add(sel[0]);
                 this.out.println("### Linear dependence among variables: " + _sel);
                 this.out.println("### Removing " + _sel.get(0));
@@ -294,29 +294,29 @@ public class SemBicScoreDeterministic implements Score {
         return false;
     }
 
-    private int[] getMinimalLinearlyDependentSet(final int i, final int[] parents, final ICovarianceMatrix cov) {
-        final double small = getDeterminismThreshold();
+    private int[] getMinimalLinearlyDependentSet(int i, int[] parents, ICovarianceMatrix cov) {
+        double small = getDeterminismThreshold();
 
-        final List<Node> _parents = new ArrayList<>();
-        for (final int p : parents) _parents.add(this.variables.get(p));
+        List<Node> _parents = new ArrayList<>();
+        for (int p : parents) _parents.add(this.variables.get(p));
 
-        final DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            final int[] sel = new int[choice.length];
-            final List<Node> _sel = new ArrayList<>();
+            int[] sel = new int[choice.length];
+            List<Node> _sel = new ArrayList<>();
             for (int m = 0; m < choice.length; m++) {
                 sel[m] = parents[m];
                 _sel.add(this.variables.get(sel[m]));
             }
 
-            final Matrix m = cov.getSelection(sel, sel);
+            Matrix m = cov.getSelection(sel, sel);
 
             double s2 = getCovariances().getValue(i, i);
 
-            final Matrix covxx = getSelection(getCovariances(), parents, parents);
-            final Vector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+            Matrix covxx = getSelection(getCovariances(), parents, parents);
+            Vector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
 
             if (s2 <= small) {
@@ -327,7 +327,7 @@ public class SemBicScoreDeterministic implements Score {
 
             try {
                 m.inverse();
-            } catch (final Exception e2) {
+            } catch (Exception e2) {
 //                forbidden.add(sel[0]);
                 this.out.println("### Linear dependence among variables: " + _sel);
                 this.out.println("### Removing " + _sel.get(0));
@@ -338,36 +338,36 @@ public class SemBicScoreDeterministic implements Score {
         return new int[0];
     }
 
-    private int[] getMaximalLinearlyDependentSet(final int i, final int[] parents, final ICovarianceMatrix cov) {
-        final double small = getDeterminismThreshold();
+    private int[] getMaximalLinearlyDependentSet(int i, int[] parents, ICovarianceMatrix cov) {
+        double small = getDeterminismThreshold();
 
-        final List<Node> _parents = new ArrayList<>();
-        for (final int p : parents) _parents.add(this.variables.get(p));
+        List<Node> _parents = new ArrayList<>();
+        for (int p : parents) _parents.add(this.variables.get(p));
 
-        final DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            final int[] sel0 = new int[choice.length];
+            int[] sel0 = new int[choice.length];
 
-            final List<Integer> all = new ArrayList<>();
+            List<Integer> all = new ArrayList<>();
             for (int w = 0; w < parents.length; w++) all.add(parents[w]);
             for (int w = 0; w < sel0.length; w++) all.remove(sel0[w]);
-            final int[] sel = new int[all.size()];
+            int[] sel = new int[all.size()];
             for (int w = 0; w < all.size(); w++) sel[w] = all.get(w);
 
-            final List<Node> _sel = new ArrayList<>();
+            List<Node> _sel = new ArrayList<>();
             for (int m = 0; m < choice.length; m++) {
                 sel[m] = parents[m];
                 _sel.add(this.variables.get(sel[m]));
             }
 
-            final Matrix m = cov.getSelection(sel, sel);
+            Matrix m = cov.getSelection(sel, sel);
 
             double s2 = getCovariances().getValue(i, i);
 
-            final Matrix covxx = getSelection(getCovariances(), parents, parents);
-            final Vector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+            Matrix covxx = getSelection(getCovariances(), parents, parents);
+            Vector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
 
             if (s2 <= small) {
@@ -378,7 +378,7 @@ public class SemBicScoreDeterministic implements Score {
 
             try {
                 m.inverse();
-            } catch (final Exception e2) {
+            } catch (Exception e2) {
 //                forbidden.add(sel[0]);
                 this.out.println("### Linear dependence among variables: " + _sel);
                 this.out.println("### Removing " + _sel.get(0));
@@ -389,29 +389,29 @@ public class SemBicScoreDeterministic implements Score {
         return new int[0];
     }
 
-    private void printDeterminism(final int i, final int[] parents) {
-        final List<Node> _sel = new ArrayList<>();
+    private void printDeterminism(int i, int[] parents) {
+        List<Node> _sel = new ArrayList<>();
 
         for (int m = 0; m < parents.length; m++) {
             _sel.add(this.variables.get(parents[m]));
         }
 
-        final Node x = this.variables.get(i);
+        Node x = this.variables.get(i);
 //        System.out.println(SearchLogUtils.determinismDetected(_sel, x));
     }
 
-    private void setCovariances(final ICovarianceMatrix covariances) {
+    private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
     }
 
-    public void setVariables(final List<Node> variables) {
+    public void setVariables(List<Node> variables) {
         this.covariances.setVariables(variables);
         this.variables = variables;
     }
 
     @Override
-    public Node getVariable(final String targetName) {
-        for (final Node node : this.variables) {
+    public Node getVariable(String targetName) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -426,29 +426,29 @@ public class SemBicScoreDeterministic implements Score {
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
-        final int i = this.variables.indexOf(y);
+    public boolean determines(List<Node> z, Node y) {
+        int i = this.variables.indexOf(y);
 
-        final int[] parents = new int[z.size()];
+        int[] parents = new int[z.size()];
 
         for (int t = 0; t < z.size(); t++) {
             parents[t] = this.variables.indexOf(z.get(t));
         }
 
-        final double small = getDeterminismThreshold();
+        double small = getDeterminismThreshold();
 
         try {
             double s2 = getCovariances().getValue(i, i);
 
-            final Matrix covxx = getSelection(getCovariances(), parents, parents);
-            final Vector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+            Matrix covxx = getSelection(getCovariances(), parents, parents);
+            Vector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
 
             if (s2 <= small) {
                 printDeterminism(i, parents);
                 return true;
             }
-        } catch (final Exception e) {
+        } catch (Exception e) {
             printDeterminism(i, parents);
         }
 
@@ -459,7 +459,7 @@ public class SemBicScoreDeterministic implements Score {
         return this.determinismThreshold;
     }
 
-    public void setDeterminismThreshold(final double determinismThreshold) {
+    public void setDeterminismThreshold(double determinismThreshold) {
         this.determinismThreshold = determinismThreshold;
     }
 }

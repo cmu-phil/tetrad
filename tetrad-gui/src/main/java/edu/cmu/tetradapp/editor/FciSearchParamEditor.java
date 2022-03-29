@@ -74,7 +74,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
     public FciSearchParamEditor() {
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -82,7 +82,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException();
         }
@@ -99,24 +99,24 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
         DataModel dataModel1 = null;
         Graph graph = null;
 
-        for (final Object parentModel1 : this.parentModels) {
+        for (Object parentModel1 : this.parentModels) {
             if (parentModel1 instanceof DataWrapper) {
-                final DataWrapper dataWrapper = (DataWrapper) parentModel1;
+                DataWrapper dataWrapper = (DataWrapper) parentModel1;
                 dataModel1 = dataWrapper.getSelectedDataModel();
             }
 
             if (parentModel1 instanceof GraphWrapper) {
-                final GraphWrapper graphWrapper = (GraphWrapper) parentModel1;
+                GraphWrapper graphWrapper = (GraphWrapper) parentModel1;
                 graph = graphWrapper.getGraph();
             }
 
             if (parentModel1 instanceof DagWrapper) {
-                final DagWrapper dagWrapper = (DagWrapper) parentModel1;
+                DagWrapper dagWrapper = (DagWrapper) parentModel1;
                 graph = dagWrapper.getDag();
             }
 
             if (parentModel1 instanceof SemGraphWrapper) {
-                final SemGraphWrapper semGraphWrapper = (SemGraphWrapper) parentModel1;
+                SemGraphWrapper semGraphWrapper = (SemGraphWrapper) parentModel1;
                 graph = semGraphWrapper.getGraph();
             }
         }
@@ -124,7 +124,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
         if (dataModel1 != null) {
             varNames = new ArrayList(dataModel1.getVariableNames());
         } else if (graph != null) {
-            final Iterator<Node> it = graph.getNodes().iterator();
+            Iterator<Node> it = graph.getNodes().iterator();
             varNames = new ArrayList();
 
             Node temp;
@@ -144,31 +144,31 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
 
         this.params.set("varNames", varNames);
 
-        final IntTextField depthField =
+        IntTextField depthField =
                 new IntTextField(this.params.getInt("depth", -1), 4);
         depthField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+            public int filter(int value, int oldValue) {
                 try {
                     FciSearchParamEditor.this.params.set("depth", value);
                     return value;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
         });
 
-        final double alpha = this.params.getDouble("alpha", 0.001);
+        double alpha = this.params.getDouble("alpha", 0.001);
 
         if (!Double.isNaN(alpha)) {
             this.alphaField =
                     new DoubleTextField(alpha, 4, NumberFormatUtil.getInstance().getNumberFormat());
             this.alphaField.setFilter(new DoubleTextField.Filter() {
-                public double filter(final double value, final double oldValue) {
+                public double filter(double value, double oldValue) {
                     try {
                         FciSearchParamEditor.this.params.set("alpha", 0.001);
                         Preferences.userRoot().putDouble("alpha", value);
                         return value;
-                    } catch (final Exception e) {
+                    } catch (Exception e) {
                         return oldValue;
                     }
                 }
@@ -178,14 +178,14 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
         setBorder(new MatteBorder(10, 10, 10, 10, this.getBackground()));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Knowledge:"));
         b1.add(Box.createGlue());
         add(b1);
         add(Box.createVerticalStrut(10));
 
         if (!Double.isNaN(alpha)) {
-            final Box b2 = Box.createHorizontalBox();
+            Box b2 = Box.createHorizontalBox();
             b2.add(new JLabel("Alpha Value:"));
             b2.add(Box.createGlue());
             b2.add(this.alphaField);
@@ -193,7 +193,7 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
             add(Box.createVerticalStrut(10));
         }
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Search Depth:"));
         b3.add(Box.createGlue());
         b3.add(depthField);

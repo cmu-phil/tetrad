@@ -24,49 +24,49 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
 
-    public LoadContinuousDataAndSingleGraphKun(final String path, final String prefix) {
+    public LoadContinuousDataAndSingleGraphKun(String path, String prefix) {
         this.path = path;
         this.prefix = prefix;
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
         this.covs = new ArrayList<>();
 
-        final File dir = new File(this.path);
+        File dir = new File(this.path);
 
         if (dir.exists()) {
             for (int i = 1; i <= 20; i++) {
-                final File f = new File(this.path, this.prefix + i + ".txt");
+                File f = new File(this.path, this.prefix + i + ".txt");
                 try {
                     this.covs.add(DataUtils.parseCovariance(f, "//", DelimiterType.WHITESPACE, '\"', "*"));
-                } catch (final IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
 
-        final File graphFile = new File("/Users/user/Downloads//graph/graph1.txt");
+        File graphFile = new File("/Users/user/Downloads//graph/graph1.txt");
         this.graph = GraphUtils.loadGraphTxt(graphFile);
 
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graph;
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.covs.get(index);
     }
 
     public String getDescription() {
         try {
-            final StringBuilder b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
             b.append("Load data sets and graphs from a directory.").append("\n\n");
             return b.toString();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

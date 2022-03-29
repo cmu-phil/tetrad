@@ -121,7 +121,7 @@ public final class SvarFci implements GraphSearch {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public SvarFci(final IndependenceTest independenceTest) {
+    public SvarFci(IndependenceTest independenceTest) {
         if (independenceTest == null || this.knowledge == null) {
             throw new NullPointerException();
         }
@@ -138,7 +138,7 @@ public final class SvarFci implements GraphSearch {
      * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
      * search over.
      */
-    public SvarFci(final IndependenceTest independenceTest, final List<Node> searchVars) {
+    public SvarFci(IndependenceTest independenceTest, List<Node> searchVars) {
         if (independenceTest == null || this.knowledge == null) {
             throw new NullPointerException();
         }
@@ -146,10 +146,10 @@ public final class SvarFci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
 
-        final Set<Node> remVars = new HashSet<>();
-        for (final Node node1 : this.variables) {
+        Set<Node> remVars = new HashSet<>();
+        for (Node node1 : this.variables) {
             boolean search = false;
-            for (final Node node2 : searchVars) {
+            for (Node node2 : searchVars) {
                 if (node1.getName().equals(node2.getName())) {
                     search = true;
                 }
@@ -170,7 +170,7 @@ public final class SvarFci implements GraphSearch {
         return this.depth;
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0: " + depth);
@@ -192,17 +192,17 @@ public final class SvarFci implements GraphSearch {
 ////        return search(new Fas(getIndependenceTest()));
 //    }
 
-    public Graph search(final List<Node> nodes) {
+    public Graph search(List<Node> nodes) {
         return search(new Fasts(getIndependenceTest()));
 //        return search(new Fas(getIndependenceTest()));
     }
 
 
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
-    public Graph search(final IFas fas) {
+    public Graph search(IFas fas) {
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
@@ -215,23 +215,23 @@ public final class SvarFci implements GraphSearch {
 
         this.graph.reorientAllWith(Endpoint.CIRCLE);
 
-        final SepsetProducer sp = new SepsetsPossibleDsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
+        SepsetProducer sp = new SepsetsPossibleDsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
         sp.setVerbose(this.verbose);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
         if (isPossibleDsepSearchDone()) {
 //            long time1 = System.currentTimeMillis();
-            final SvarFciOrient svarFciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
+            SvarFciOrient svarFciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
             svarFciOrient.setKnowledge(this.knowledge);
             svarFciOrient.ruleR0(this.graph);
 //            new SvarFciOrient(new SepsetsSet(this.sepsets, independenceTest), independenceTest).ruleR0(graph);
 
-            for (final Edge edge : new ArrayList<>(this.graph.getEdges())) {
-                final Node x = edge.getNode1();
-                final Node y = edge.getNode2();
+            for (Edge edge : new ArrayList<>(this.graph.getEdges())) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
-                final List<Node> sepset = sp.getSepset(x, y);
+                List<Node> sepset = sp.getSepset(x, y);
 
                 if (sepset != null) {
                     this.graph.removeEdge(x, y);
@@ -267,15 +267,15 @@ public final class SvarFci implements GraphSearch {
         }
 
         // Step CI C (Zhang's step F3.)
-        final long time5 = System.currentTimeMillis();
+        long time5 = System.currentTimeMillis();
         //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
 //        fciOrientbk(getKnowledge(), graph, variables);
 //        new FciOrient(graph, new Sepsets(this.sepsets)).ruleR0(new Sepsets(this.sepsets));
 
-        final long time6 = System.currentTimeMillis();
+        long time6 = System.currentTimeMillis();
         this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
 
-        final SvarFciOrient fciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
+        SvarFciOrient fciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
@@ -296,7 +296,7 @@ public final class SvarFci implements GraphSearch {
         return this.knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -316,7 +316,7 @@ public final class SvarFci implements GraphSearch {
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
-    public void setCompleteRuleSetUsed(final boolean completeRuleSetUsed) {
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
@@ -324,7 +324,7 @@ public final class SvarFci implements GraphSearch {
         return this.possibleDsepSearchDone;
     }
 
-    public void setPossibleDsepSearchDone(final boolean possibleDsepSearchDone) {
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
@@ -338,7 +338,7 @@ public final class SvarFci implements GraphSearch {
     /**
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(final int maxPathLength) {
+    public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
         }
@@ -353,7 +353,7 @@ public final class SvarFci implements GraphSearch {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -364,7 +364,7 @@ public final class SvarFci implements GraphSearch {
         return this.independenceTest;
     }
 
-    public void setTruePag(final Graph truePag) {
+    public void setTruePag(Graph truePag) {
         this.truePag = truePag;
     }
 
@@ -372,15 +372,15 @@ public final class SvarFci implements GraphSearch {
         return this.penaltyDiscount;
     }
 
-    public void setPenaltyDiscount(final double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
     //===========================PRIVATE METHODS=========================//
 
-    private void buildIndexing(final List<Node> nodes) {
+    private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
-        for (final Node node : nodes) {
+        for (Node node : nodes) {
             this.hashIndices.put(node, this.variables.indexOf(node));
         }
     }
@@ -388,20 +388,20 @@ public final class SvarFci implements GraphSearch {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(final IKnowledge bk, final Graph graph, final List<Node> variables) {
+    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
         this.logger.log("info", "Starting BK Orientation.");
 
-        for (final Iterator<KnowledgeEdge> it =
+        for (Iterator<KnowledgeEdge> it =
              bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            final KnowledgeEdge edge = it.next();
+            KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
 
             if (from == null || to == null) {
@@ -418,17 +418,17 @@ public final class SvarFci implements GraphSearch {
             this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        for (final Iterator<KnowledgeEdge> it =
+        for (Iterator<KnowledgeEdge> it =
              bk.requiredEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            final KnowledgeEdge edge = it.next();
+            KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -450,35 +450,35 @@ public final class SvarFci implements GraphSearch {
         return this.possibleDsepDepth;
     }
 
-    public void setPossibleDsepDepth(final int possibleDsepDepth) {
+    public void setPossibleDsepDepth(int possibleDsepDepth) {
         this.possibleDsepDepth = possibleDsepDepth;
     }
 
     // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     // this version removes edges from graph instead of list of adjacencies
-    private void removeSimilarPairs(final IndependenceTest test, final Node x, final Node y, final List<Node> condSet) {
+    private void removeSimilarPairs(IndependenceTest test, Node x, Node y, List<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
         System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
         if (x.getName().equals("time") || y.getName().equals("time")) {
             System.out.println("Not removing similar pairs b/c variable pair includes time.");
             return;
         }
-        for (final Node tempNode : condSet) {
+        for (Node tempNode : condSet) {
             if (tempNode.getName().equals("time")) {
                 System.out.println("Not removing similar pairs b/c conditioning set includes time.");
                 return;
             }
         }
-        final int ntiers = this.knowledge.getNumTiers();
-        final int indx_tier = this.knowledge.isInWhichTier(x);
-        final int indy_tier = this.knowledge.isInWhichTier(y);
-        final int max_tier = Math.max(indx_tier, indy_tier);
-        final int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int ntiers = this.knowledge.getNumTiers();
+        int indx_tier = this.knowledge.isInWhichTier(x);
+        int indy_tier = this.knowledge.isInWhichTier(y);
+        int max_tier = Math.max(indx_tier, indy_tier);
+        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        final List tier_x = this.knowledge.getTier(indx_tier);
+        List tier_x = this.knowledge.getTier(indx_tier);
 //            Collections.sort(tier_x);
-        final List tier_y = this.knowledge.getTier(indy_tier);
+        List tier_y = this.knowledge.getTier(indy_tier);
 //            Collections.sort(tier_y);
 
         int i;
@@ -504,14 +504,14 @@ public final class SvarFci implements GraphSearch {
             }
 
             if (this.knowledge.getTier(i).size() == 1) continue;
-            final String A;
-            final Node x1;
-            final String B;
-            final Node y1;
+            String A;
+            Node x1;
+            String B;
+            Node y1;
             if (indx_tier >= indy_tier) {
-                final List tmp_tier1 = this.knowledge.getTier(i + tier_diff);
+                List tmp_tier1 = this.knowledge.getTier(i + tier_diff);
 //                   Collections.sort(tmp_tier1);
-                final List tmp_tier2 = this.knowledge.getTier(i);
+                List tmp_tier2 = this.knowledge.getTier(i);
 //                   Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
@@ -524,14 +524,14 @@ public final class SvarFci implements GraphSearch {
                 //adjacencies.get(y1).remove(x1);
                 this.graph.removeEdge(x1, y1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
-                final List<Node> condSetAB = new ArrayList<>();
-                for (final Node tempNode : condSet) {
+                List<Node> condSetAB = new ArrayList<>();
+                for (Node tempNode : condSet) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
 
-                    final int ind_temptier = this.knowledge.isInWhichTier(tempNode);
-                    final List temptier = this.knowledge.getTier(ind_temptier);
+                    int ind_temptier = this.knowledge.isInWhichTier(tempNode);
+                    List temptier = this.knowledge.getTier(ind_temptier);
 //                       Collections.sort(temptier);
                     int ind_temp = -1;
                     for (int j = 0; j < temptier.size(); ++j) {
@@ -544,8 +544,8 @@ public final class SvarFci implements GraphSearch {
                             break;
                         }
                     }
-                    final int cond_diff = indx_tier - ind_temptier;
-                    final int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
+                    int cond_diff = indx_tier - ind_temptier;
+                    int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
 //                    System.out.println("tempNode = " + tempNode);
 //                    System.out.println("ind_temptier = " + ind_temptier);
 //                    System.out.println("indx_tier = " + indx_tier);
@@ -561,9 +561,9 @@ public final class SvarFci implements GraphSearch {
                                 + "of window, so not added to SepSet");
                         continue;
                     }
-                    final List new_tier = this.knowledge.getTier(condAB_tier);
+                    List new_tier = this.knowledge.getTier(condAB_tier);
 //                       Collections.sort(new_tier);
-                    final String tempNode1 = (String) new_tier.get(ind_temp);
+                    String tempNode1 = (String) new_tier.get(ind_temp);
                     System.out.println("adding variable " + tempNode1 + " to SepSet");
                     condSetAB.add(test.getVariable(tempNode1));
                 }
@@ -572,9 +572,9 @@ public final class SvarFci implements GraphSearch {
             } else {
                 //System.out.println("############## WARNING (removeSimilarPairs): did not catch x,y pair " + x + ", " + y);
                 //System.out.println();
-                final List tmp_tier1 = this.knowledge.getTier(i);
+                List tmp_tier1 = this.knowledge.getTier(i);
 //                   Collections.sort(tmp_tier1);
-                final List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
+                List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
 //                   Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
@@ -587,14 +587,14 @@ public final class SvarFci implements GraphSearch {
                 //adjacencies.get(y1).remove(x1);
                 this.graph.removeEdge(x1, y1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
-                final List<Node> condSetAB = new ArrayList<>();
-                for (final Node tempNode : condSet) {
+                List<Node> condSetAB = new ArrayList<>();
+                for (Node tempNode : condSet) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
 
-                    final int ind_temptier = this.knowledge.isInWhichTier(tempNode);
-                    final List temptier = this.knowledge.getTier(ind_temptier);
+                    int ind_temptier = this.knowledge.isInWhichTier(tempNode);
+                    List temptier = this.knowledge.getTier(ind_temptier);
 //                       Collections.sort(temptier);
                     int ind_temp = -1;
                     for (int j = 0; j < temptier.size(); ++j) {
@@ -604,8 +604,8 @@ public final class SvarFci implements GraphSearch {
                         }
                     }
 
-                    final int cond_diff = indx_tier - ind_temptier;
-                    final int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
+                    int cond_diff = indx_tier - ind_temptier;
+                    int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
 //                   System.out.println("tempNode = " + tempNode);
 //                   System.out.println("ind_temptier = " + ind_temptier);
 //                   System.out.println("indx_tier = " + indx_tier);
@@ -621,9 +621,9 @@ public final class SvarFci implements GraphSearch {
                                 + "of window, so not added to SepSet");
                         continue;
                     }
-                    final List new_tier = this.knowledge.getTier(condAB_tier);
+                    List new_tier = this.knowledge.getTier(condAB_tier);
 //                       Collections.sort(new_tier);
-                    final String tempNode1 = (String) new_tier.get(ind_temp);
+                    String tempNode1 = (String) new_tier.get(ind_temp);
                     System.out.println("adding variable " + tempNode1 + " to SepSet");
                     condSetAB.add(test.getVariable(tempNode1));
                 }
@@ -633,8 +633,8 @@ public final class SvarFci implements GraphSearch {
         }
     }
 
-    public String getNameNoLag(final Object obj) {
-        final String tempS = obj.toString();
+    public String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
             return tempS;
         } else return tempS.substring(0, tempS.indexOf(':'));

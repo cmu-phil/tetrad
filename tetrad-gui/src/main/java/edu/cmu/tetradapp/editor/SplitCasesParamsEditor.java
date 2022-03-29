@@ -84,7 +84,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
     //================================PUBLIC METHODS=======================//
 
-    private void setNumSplits(final int numSplits) {
+    private void setNumSplits(int numSplits) {
         if (numSplits < 1) {
             throw new IllegalArgumentException("Number of splits must be " +
                     "at least 1.");
@@ -92,8 +92,8 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
         this.params.set("numSplits", numSplits);
         this.splitEditorPanel.removeAll();
-        final SplitCasesSpec defaultSpec = SplitCasesParamsEditor.getDefaultSpec(this.dataSet.getNumRows(), numSplits);
-        final SplitEditor splitEditor = new SplitEditor(defaultSpec);
+        SplitCasesSpec defaultSpec = SplitCasesParamsEditor.getDefaultSpec(this.dataSet.getNumRows(), numSplits);
+        SplitEditor splitEditor = new SplitEditor(defaultSpec);
         this.params.set("splitCasesSpec", defaultSpec);
         this.splitEditorPanel.add(splitEditor, BorderLayout.CENTER);
         this.splitEditorPanel.revalidate();
@@ -390,12 +390,12 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
                 leftSplitFields[i + 1].setFilter(
                         new IntTextField.Filter() {
-                            public int filter(int value, final int oldValue) {
+                            public int filter(int value, int oldValue) {
                                 if (label == null) {
                                     return oldValue;
                                 }
 
-                                final int index = (Integer) label;
+                                int index = (Integer) label;
 
                                 if (index - 1 > 0 &&
                                         !(SplitEditor.this.breakpoints[index - 2] < value)) {

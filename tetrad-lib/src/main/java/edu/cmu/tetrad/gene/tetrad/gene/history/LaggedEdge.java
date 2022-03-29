@@ -49,7 +49,7 @@ public class LaggedEdge implements TetradSerializable {
     /**
      * Creates new LaggedEdge
      */
-    public LaggedEdge(final String factor, final LaggedFactor laggedFactor) {
+    public LaggedEdge(String factor, LaggedFactor laggedFactor) {
         if (factor == null) {
             throw new NullPointerException("Edge name must not be null");
         }
@@ -95,7 +95,7 @@ public class LaggedEdge implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

@@ -36,7 +36,7 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
     private final Map<String, Integer> values;
     private List<String> categories;
 
-    public MixedTabularDataColumn(final DataColumn dataColumn) {
+    public MixedTabularDataColumn(DataColumn dataColumn) {
         this.dataColumn = dataColumn;
         this.values = dataColumn.isDiscrete() ? new TreeMap<>() : null;
     }
@@ -47,7 +47,7 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
     }
 
     @Override
-    public Integer getEncodeValue(final String value) {
+    public Integer getEncodeValue(String value) {
         return (this.values == null)
                 ? DISCRETE_MISSING_VALUE
                 : this.values.get(value);
@@ -56,10 +56,10 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
     @Override
     public void recategorize() {
         if (this.values != null) {
-            final Set<String> keyset = this.values.keySet();
+            Set<String> keyset = this.values.keySet();
             this.categories = new ArrayList<>(keyset.size());
             int count = 0;
-            for (final String key : keyset) {
+            for (String key : keyset) {
                 this.values.put(key, count++);
                 this.categories.add(key);
             }
@@ -67,7 +67,7 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
     }
 
     @Override
-    public void setValue(final String value) {
+    public void setValue(String value) {
         if (this.values != null) {
             this.values.put(value, null);
         }

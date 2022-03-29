@@ -68,7 +68,7 @@ public class TestCpc {
      */
     @Test
     public void testSearch3() {
-        final IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge2();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
@@ -82,23 +82,23 @@ public class TestCpc {
         final int numVars = 6;
         final int numEdges = 6;
 
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
                 7, 5, 5, false));
 
-        final SemPm semPm = new SemPm(trueGraph);
-        final SemIm semIm = new SemIm(semPm);
-        final DataSet _dataSet = semIm.simulateData(1000, false);
+        SemPm semPm = new SemPm(trueGraph);
+        SemIm semIm = new SemIm(semPm);
+        DataSet _dataSet = semIm.simulateData(1000, false);
 
-        final IndependenceTest test = new IndTestFisherZ(_dataSet, 0.05);
+        IndependenceTest test = new IndTestFisherZ(_dataSet, 0.05);
 
-        final Cpc search = new Cpc(test);
-        final Graph resultGraph = search.search();
+        Cpc search = new Cpc(test);
+        Graph resultGraph = search.search();
 
     }
 
@@ -106,20 +106,20 @@ public class TestCpc {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkSearch(final String inputGraph, final String outputGraph) {
+    private void checkSearch(String inputGraph, String outputGraph) {
 
         // Set up graph and node objects.
-        final Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        final IndependenceTest independence = new IndTestDSep(graph);
-        final GraphSearch search = new Cpc(independence);
+        IndependenceTest independence = new IndTestDSep(graph);
+        GraphSearch search = new Cpc(independence);
 
         // Run search
         Graph resultGraph = search.search();
 
         // Build comparison graph.
-        final Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -133,24 +133,24 @@ public class TestCpc {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(final String inputGraph, final String outputGraph,
-                                    final IKnowledge knowledge) {
+    private void checkWithKnowledge(String inputGraph, String outputGraph,
+                                    IKnowledge knowledge) {
         // Set up graph and node objects.
-        final Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        final IndependenceTest independence = new IndTestDSep(graph);
-        final Cpc cpc = new Cpc(independence);
+        IndependenceTest independence = new IndTestDSep(graph);
+        Cpc cpc = new Cpc(independence);
 
         // Set up search.
 //        IndependenceTest independence = new IndTestGraph(graph);
         cpc.setKnowledge(knowledge);
 
         // Run search
-        final Graph resultGraph = cpc.search();
+        Graph resultGraph = cpc.search();
 
         // Build comparison graph.
-        final Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // Do test.
         assertTrue(resultGraph.equals(trueGraph));

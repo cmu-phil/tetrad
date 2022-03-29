@@ -48,7 +48,7 @@ final class RandomSamplerAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public RandomSamplerAction(final DataEditor editor) {
+    public RandomSamplerAction(DataEditor editor) {
         super("Random Sample (Without Replacement)");
 
         if (editor == null) {
@@ -61,11 +61,11 @@ final class RandomSamplerAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final DataModel dataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataModel dataModel = getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            final DataSet dataSet = (DataSet) dataModel;
+            DataSet dataSet = (DataSet) dataModel;
 
             if (dataSet.getNumRows() == 0) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -73,8 +73,8 @@ final class RandomSamplerAction extends AbstractAction {
                 return;
             }
 
-            final JComponent editor = editor();
-            final int selection = JOptionPane.showOptionDialog(
+            JComponent editor = editor();
+            int selection = JOptionPane.showOptionDialog(
                     JOptionUtils.centeringComp(), editor, "Sample Size",
                     JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, new String[]{"Done", "Cancel"}, "Done");
@@ -84,14 +84,14 @@ final class RandomSamplerAction extends AbstractAction {
             }
 
             try {
-                final DataSet newDataSet =
+                DataSet newDataSet =
                         RandomSampler.sample(dataSet, getSampleSize());
 
-                final DataModelList list = new DataModelList();
+                DataModelList list = new DataModelList();
                 list.add(newDataSet);
                 getDataEditor().reset(list);
                 getDataEditor().selectFirstTab();
-            } catch (final Exception e1) {
+            } catch (Exception e1) {
                 String s = e1.getMessage();
 
                 if (s == null || "".equals(s)) {
@@ -107,31 +107,31 @@ final class RandomSamplerAction extends AbstractAction {
     }
 
     private JComponent editor() {
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        final IntTextField sampleSizeField = new IntTextField(getSampleSize(), 6);
+        IntTextField sampleSizeField = new IntTextField(getSampleSize(), 6);
         sampleSizeField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+            public int filter(int value, int oldValue) {
                 try {
                     setSampleSize(value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "The input dataset will be sampled with replacement to create a new" +
                 "<br>dataset with the number of samples entered below." +
                 "<br>The editable default sample size is 100." + "</html>"));
 
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" + "<i>Sample size:  </i>" + "</html>"));
         b7.add(sampleSizeField);
@@ -145,7 +145,7 @@ final class RandomSamplerAction extends AbstractAction {
         return panel;
     }
 
-    private void setSampleSize(final int sampleSize) {
+    private void setSampleSize(int sampleSize) {
         if (sampleSize < 1) {
             throw new IllegalArgumentException("Sample size Must be greater than or equal to 1.");
         }

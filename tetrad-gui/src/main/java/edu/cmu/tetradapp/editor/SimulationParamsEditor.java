@@ -40,7 +40,7 @@ public class SimulationParamsEditor extends JPanel implements ParameterEditor {
     public SimulationParamsEditor() {
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -48,8 +48,8 @@ public class SimulationParamsEditor extends JPanel implements ParameterEditor {
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
-        final Object[] parentModels1 = parentModels;
+    public void setParentModels(Object[] parentModels) {
+        Object[] parentModels1 = parentModels;
     }
 
     public void setup() {

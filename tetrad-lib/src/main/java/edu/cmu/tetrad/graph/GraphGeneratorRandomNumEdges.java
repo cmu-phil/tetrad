@@ -116,7 +116,7 @@ public final class GraphGeneratorRandomNumEdges {
      *
      * @param structure One of ANY_DAG, POLYTREE, or CONNECTED_DAG.
      */
-    public GraphGeneratorRandomNumEdges(final int structure) {
+    public GraphGeneratorRandomNumEdges(int structure) {
         switch (structure) {
             case GraphGeneratorRandomNumEdges.ANY_DAG:
                 break;
@@ -147,7 +147,7 @@ public final class GraphGeneratorRandomNumEdges {
      *
      * @param numNodes Must be an integer >= 4.
      */
-    public void setNumNodes(final int numNodes) {
+    public void setNumNodes(int numNodes) {
         if (numNodes < 4) {
             throw new IllegalArgumentException("Number of nodes must be >= 4.");
         }
@@ -176,7 +176,7 @@ public final class GraphGeneratorRandomNumEdges {
         return this.minEdges;
     }
 
-    public void setMinEdges(final int minEdges) {
+    public void setMinEdges(int minEdges) {
         if (minEdges < 0) {
             throw new IllegalArgumentException("Min edges must be >= 0.");
         }
@@ -223,27 +223,27 @@ public final class GraphGeneratorRandomNumEdges {
     }
 
     public Dag getDag() {
-        final Dag dag = new Dag();
+        Dag dag = new Dag();
 
-        final List<Node> nodes = new ArrayList<>();
-        final NumberFormat nf = NumberFormat.getInstance();
+        List<Node> nodes = new ArrayList<>();
+        NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(0);
 
-        final int numDigits = (int) Math.ceil(Math.log(this.numNodes) / Math.log(10.0));
+        int numDigits = (int) Math.ceil(Math.log(this.numNodes) / Math.log(10.0));
         nf.setMinimumIntegerDigits(numDigits);
 
         for (int i = 1; i <= getNumNodes(); i++) {
-            final GraphNode node = new GraphNode("X" + nf.format(i));
+            GraphNode node = new GraphNode("X" + nf.format(i));
             dag.addNode(node);
             nodes.add(node);
         }
 
         for (int i = 0; i < getNumNodes(); i++) {
-            final Node child = nodes.get(i);
+            Node child = nodes.get(i);
 
             if (this.parentMatrix[i][0] != 1) {
                 for (int j = 1; j < this.parentMatrix[i][0]; j++) {
-                    final Node parent = nodes.get(this.parentMatrix[i][j]);
+                    Node parent = nodes.get(this.parentMatrix[i][j]);
                     dag.addDirectedEdge(parent, child);
                 }
             }
@@ -254,7 +254,7 @@ public final class GraphGeneratorRandomNumEdges {
     }
 
     public String toString() {
-        final String buf = "\nStructural information for generated graph:" +
+        String buf = "\nStructural information for generated graph:" +
                 "\n\tNumber of nodes:" + getNumNodes() +
                 "\n\tNumber of transitions between samples:" + getNumIterations();
 
@@ -302,15 +302,15 @@ public final class GraphGeneratorRandomNumEdges {
      * This method only works after adding an edge, not after removing an edge.
      */
     private boolean isAcyclic() {
-        final boolean[] visited = new boolean[getNumNodes()];
+        boolean[] visited = new boolean[getNumNodes()];
         boolean noCycle = true;
-        final int[] list = new int[getNumNodes() + 1];
+        int[] list = new int[getNumNodes() + 1];
         int index = 0;
         int lastIndex = 1;
         list[0] = this.randomParent;
         visited[this.randomParent] = true;
         while (index < lastIndex && noCycle) {
-            final int currentNode = list[index];
+            int currentNode = list[index];
             int i = 1;
 
             // verify parents of getModel node
@@ -336,7 +336,7 @@ public final class GraphGeneratorRandomNumEdges {
      * Initializes the graph to have no edges.
      */
     private void initializeGraphAsEmpty() {
-        final int max = getNumNodes();
+        int max = getNumNodes();
 
         this.parentMatrix = new int[getNumNodes()][max];
         this.childMatrix = new int[getNumNodes()][max];
@@ -358,10 +358,10 @@ public final class GraphGeneratorRandomNumEdges {
      * Sets randomParent-->randomChild to a random edge, chosen uniformly.
      */
     private void sampleEdge() {
-        final int rand = RandomUtil.getInstance().nextInt(
+        int rand = RandomUtil.getInstance().nextInt(
                 getNumNodes() * (getNumNodes() - 1));
         this.randomParent = rand / (getNumNodes() - 1);
-        final int rest = rand - this.randomParent * (getNumNodes() - 1);
+        int rest = rand - this.randomParent * (getNumNodes() - 1);
         if (rest >= this.randomParent) {
             this.randomChild = rest + 1;
         } else {

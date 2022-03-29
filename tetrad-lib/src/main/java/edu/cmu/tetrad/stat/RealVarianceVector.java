@@ -31,14 +31,14 @@ public class RealVarianceVector implements RealVariance {
 
     private final int numOfCols;
 
-    public RealVarianceVector(final double[][] data) {
+    public RealVarianceVector(double[][] data) {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
     }
 
     private double[] computeMeans() {
-        final double[] mean = new double[this.numOfCols];
+        double[] mean = new double[this.numOfCols];
         for (int col = 0; col < this.numOfCols; col++) {
             double sum = 0;
             for (int row = 0; row < this.numOfRows; row++) {
@@ -51,15 +51,15 @@ public class RealVarianceVector implements RealVariance {
     }
 
     @Override
-    public double[] compute(final boolean biasCorrected) {
-        final double[] meanVariance = computeMeans();
+    public double[] compute(boolean biasCorrected) {
+        double[] meanVariance = computeMeans();
 
         for (int col = 0; col < this.numOfCols; col++) {
-            final double mean = meanVariance[col];
+            double mean = meanVariance[col];
             double value = 0;
             double squareValue = 0;
             for (int row = 0; row < this.numOfRows; row++) {
-                final double val = this.data[row][col] - mean;
+                double val = this.data[row][col] - mean;
                 squareValue += val * val;
                 value += val;
             }

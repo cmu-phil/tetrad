@@ -49,7 +49,7 @@ public final class Endpoint implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private Endpoint(final String name) {
+    private Endpoint(String name) {
         this.name = name;
     }
 

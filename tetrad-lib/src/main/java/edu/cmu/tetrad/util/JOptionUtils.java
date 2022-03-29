@@ -37,7 +37,7 @@ public class JOptionUtils {
      *
      * @param component Ibid.
      */
-    public static void setCenteringComp(final JComponent component) {
+    public static void setCenteringComp(JComponent component) {
         JOptionUtils.COMPONENT = component;
     }
 

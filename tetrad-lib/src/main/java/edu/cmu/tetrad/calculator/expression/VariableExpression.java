@@ -41,7 +41,7 @@ public class VariableExpression implements Expression {
     private final String variable;
 
 
-    public VariableExpression(final String variable) {
+    public VariableExpression(String variable) {
         if (variable == null) {
             throw new NullPointerException("variable is null.");
         }
@@ -62,13 +62,13 @@ public class VariableExpression implements Expression {
     }
 
 
-    public Double evaluateGeneric(final Context context) {
+    public Double evaluateGeneric(Context context) {
         return context.getValue(this.variable);
     }
 
 
-    public double evaluate(final Context context) {
-        final Double value = context.getValue(this.variable);
+    public double evaluate(Context context) {
+        Double value = context.getValue(this.variable);
 
         if (value == null) {
             throw new IllegalArgumentException(this.variable + " was not assigned a value.");
@@ -95,11 +95,11 @@ public class VariableExpression implements Expression {
     }
 
     @Override
-    public RealDistribution getRealDistribution(final Context context) {
+    public RealDistribution getRealDistribution(Context context) {
         return null;
     }
 
-    public IntegerDistribution getIntegerDistribution(final Context context) {
+    public IntegerDistribution getIntegerDistribution(Context context) {
         return null;
     }
 }

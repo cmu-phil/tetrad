@@ -38,8 +38,8 @@ public class Glasso implements Algorithm {
 
     static final long serialVersionUID = 23L;
 
-    public Graph search(final DataModel ds, final Parameters parameters) {
-        final DataSet _data = (DataSet) ds;
+    public Graph search(DataModel ds, Parameters parameters) {
+        DataSet _data = (DataSet) ds;
 
         for (int j = 0; j < _data.getNumColumns(); j++) {
             for (int i = 0; i < _data.getNumRows(); i++) {
@@ -50,10 +50,10 @@ public class Glasso implements Algorithm {
         }
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final DoubleMatrix2D cov = new DenseDoubleMatrix2D(DataUtils.getContinuousDataSet(ds)
+            DoubleMatrix2D cov = new DenseDoubleMatrix2D(DataUtils.getContinuousDataSet(ds)
                     .getCovarianceMatrix().toArray());
 
-            final edu.cmu.tetrad.search.Glasso glasso = new edu.cmu.tetrad.search.Glasso(cov);
+            edu.cmu.tetrad.search.Glasso glasso = new edu.cmu.tetrad.search.Glasso(cov);
             glasso.setMaxit(parameters.getInt(Params.MAXIT));
             glasso.setIa(parameters.getBoolean(Params.IA));
             glasso.setIs(parameters.getBoolean(Params.IS));
@@ -62,11 +62,11 @@ public class Glasso implements Algorithm {
             glasso.setThr(parameters.getDouble(Params.THR));
             glasso.setRhoAllEqual(1.0);
 
-            final edu.cmu.tetrad.search.Glasso.Result result = glasso.search();
-            final Matrix wwi = new Matrix(result.getWwi().toArray());
+            edu.cmu.tetrad.search.Glasso.Result result = glasso.search();
+            Matrix wwi = new Matrix(result.getWwi().toArray());
 
-            final List<Node> variables = ds.getVariables();
-            final Graph resultGraph = new EdgeListGraph(variables);
+            List<Node> variables = ds.getVariables();
+            Graph resultGraph = new EdgeListGraph(variables);
 
             for (int i = 0; i < variables.size(); i++) {
                 for (int j = i + 1; j < variables.size(); j++) {
@@ -78,10 +78,10 @@ public class Glasso implements Algorithm {
 
             return resultGraph;
         } else {
-            final Glasso algorithm = new Glasso();
+            Glasso algorithm = new Glasso();
 
-            final DataSet data = (DataSet) ds;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) ds;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -106,7 +106,7 @@ public class Glasso implements Algorithm {
         }
     }
 
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
@@ -121,7 +121,7 @@ public class Glasso implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        final List<String> params = new ArrayList<>();
+        List<String> params = new ArrayList<>();
         params.add(Params.MAXIT);
         params.add(Params.IA);
         params.add(Params.IS);

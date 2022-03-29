@@ -56,7 +56,7 @@ public class SemImWrapper implements SessionModel {
     private String modelSourceName;
 
     //============================CONSTRUCTORS==========================//
-    public SemImWrapper(final SemIm semIm) {
+    public SemImWrapper(SemIm semIm) {
         setSemIm(semIm);
     }
 
@@ -74,12 +74,12 @@ public class SemImWrapper implements SessionModel {
 //        }
 //    }
 
-    public SemImWrapper(final Simulation simulation) {
+    public SemImWrapper(Simulation simulation) {
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
         }
 
-        final edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
 
         if (_simulation == null) {
             throw new NullPointerException("No data sets have been simulated.");
@@ -105,7 +105,7 @@ public class SemImWrapper implements SessionModel {
         this.modelSourceName = simulation.getName();
     }
 
-    public SemImWrapper(final SemPmWrapper semPmWrapper, final Parameters params) {
+    public SemImWrapper(SemPmWrapper semPmWrapper, Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
@@ -113,8 +113,8 @@ public class SemImWrapper implements SessionModel {
         setSemIm(new SemIm(semPmWrapper.getSemPms().get(semPmWrapper.getModelIndex()), params));
     }
 
-    public SemImWrapper(final SemPmWrapper semPmWrapper, final SemImWrapper oldSemImWrapper,
-                        final Parameters params) {
+    public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
+                        Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
@@ -123,8 +123,8 @@ public class SemImWrapper implements SessionModel {
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        final SemPm semPm = new SemPm(semPmWrapper.getSemPm());
-        final SemIm oldSemIm = oldSemImWrapper.getSemIm();
+        SemPm semPm = new SemPm(semPmWrapper.getSemPm());
+        SemIm oldSemIm = oldSemImWrapper.getSemIm();
 
         if (!params.getBoolean("retainPreviousValues", false)) {
             setSemIm(new SemIm(semPm, params));
@@ -133,7 +133,7 @@ public class SemImWrapper implements SessionModel {
         }
     }
 
-    public SemImWrapper(final SemUpdaterWrapper semUpdaterWrapper) {
+    public SemImWrapper(SemUpdaterWrapper semUpdaterWrapper) {
         if (semUpdaterWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
@@ -141,7 +141,7 @@ public class SemImWrapper implements SessionModel {
         setSemIm(semUpdaterWrapper.getSemUpdater().getUpdatedSemIm());
     }
 
-    private void setSemIm(final SemIm updatedSemIm) {
+    private void setSemIm(SemIm updatedSemIm) {
         this.semIms = new ArrayList<>();
         this.semIms.add(new SemIm(updatedSemIm));
 
@@ -158,8 +158,8 @@ public class SemImWrapper implements SessionModel {
 //        setSemIm(semImWrapper.getSemIm());
 //    }
 
-    public SemImWrapper(final PValueImproverWrapper wrapper) {
-        final SemIm oldSemIm = wrapper.getNewSemIm();
+    public SemImWrapper(PValueImproverWrapper wrapper) {
+        SemIm oldSemIm = wrapper.getNewSemIm();
         setSemIm(oldSemIm);
     }
 
@@ -188,12 +188,12 @@ public class SemImWrapper implements SessionModel {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     //======================== Private methods =======================//
-    private void log(final int i, final SemIm pm) {
+    private void log(int i, SemIm pm) {
         TetradLogger.getInstance().log("info", "Linear SEM IM");
         TetradLogger.getInstance().log("info", "IM # " + (i + 1));
         TetradLogger.getInstance().log("im", pm.toString());
@@ -212,7 +212,7 @@ public class SemImWrapper implements SessionModel {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -245,7 +245,7 @@ public class SemImWrapper implements SessionModel {
         return this.modelSourceName;
     }
 
-    public void setModelIndex(final int modelIndex) {
+    public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 }

@@ -15,7 +15,7 @@ public class IntSextad implements TetradSerializable {
     private final int m;
     private final int n;
 
-    public IntSextad(final int i, final int j, final int k, final int l, final int m, final int n) {
+    public IntSextad(int i, int j, int k, int l, int m, int n) {
         testDistinctness(i, j, k, l, m, n);
         this.i = i;
         this.j = j;
@@ -33,7 +33,7 @@ public class IntSextad implements TetradSerializable {
     }
 
 
-    private void testDistinctness(final int i, final int j, final int k, final int l, final int m, final int n) {
+    private void testDistinctness(int i, int j, int k, int l, int m, int n) {
         if (i == j || i == k || i == l || i == m || i == n) {
             throw new IllegalArgumentException("Nodes not distinct.");
         }
@@ -85,17 +85,17 @@ public class IntSextad implements TetradSerializable {
         return hash;
     }
 
-    public boolean equals(final Object o) {
-        final IntSextad sextad = (IntSextad) o;
+    public boolean equals(Object o) {
+        IntSextad sextad = (IntSextad) o;
 
-        final boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
+        boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
                 this.i == sextad.i && this.j == sextad.k && this.k == sextad.j ||
                 this.i == sextad.j && this.j == sextad.i && this.k == sextad.k ||
                 this.i == sextad.j && this.j == sextad.k && this.k == sextad.i ||
                 this.i == sextad.k && this.j == sextad.i && this.k == sextad.j ||
                 this.i == sextad.k && this.j == sextad.j && this.k == sextad.i;
 
-        final boolean rightEquals = this.l == sextad.l && this.m == sextad.m && this.n == sextad.n ||
+        boolean rightEquals = this.l == sextad.l && this.m == sextad.m && this.n == sextad.n ||
                 this.l == sextad.l && this.m == sextad.n && this.n == sextad.m ||
                 this.l == sextad.m && this.m == sextad.l && this.n == sextad.n ||
                 this.l == sextad.m && this.m == sextad.n && this.n == sextad.l ||
@@ -110,7 +110,7 @@ public class IntSextad implements TetradSerializable {
     }
 
     public List<Integer> getNodes() {
-        final List<Integer> nodes = new ArrayList<>();
+        List<Integer> nodes = new ArrayList<>();
         nodes.add(this.i);
         nodes.add(this.j);
         nodes.add(this.k);

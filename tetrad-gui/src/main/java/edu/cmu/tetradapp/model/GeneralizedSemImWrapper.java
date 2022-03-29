@@ -59,14 +59,14 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
     private boolean showErrors;
 
     //==============================CONSTRUCTORS==========================//
-    public GeneralizedSemImWrapper(final Simulation simulation) {
+    public GeneralizedSemImWrapper(Simulation simulation) {
         List<GeneralizedSemIm> semIms = new ArrayList<>();
 
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
         }
 
-        final edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
 
         if (_simulation == null) {
             throw new NullPointerException("No data sets have been simulated.");
@@ -89,7 +89,7 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
         }
     }
 
-    private GeneralizedSemImWrapper(final GeneralizedSemPm semPm) {
+    private GeneralizedSemImWrapper(GeneralizedSemPm semPm) {
         if (semPm == null) {
             throw new NullPointerException("SEM PM must not be null.");
         }
@@ -101,11 +101,11 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
      * Creates a new BayesPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public GeneralizedSemImWrapper(final GeneralizedSemPmWrapper wrapper) {
+    public GeneralizedSemImWrapper(GeneralizedSemPmWrapper wrapper) {
         this(wrapper.getSemPm());
     }
 
-    public GeneralizedSemImWrapper(final GeneralizedSemPmWrapper genSemPm, final SemImWrapper imWrapper) {
+    public GeneralizedSemImWrapper(GeneralizedSemPmWrapper genSemPm, SemImWrapper imWrapper) {
         this.semIms.add(new GeneralizedSemIm(genSemPm.getSemPm(), imWrapper.getSemIm()));
     }
 
@@ -136,7 +136,7 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -153,7 +153,7 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -161,12 +161,12 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
         return this.showErrors;
     }
 
-    public void setShowErrors(final boolean showErrors) {
+    public void setShowErrors(boolean showErrors) {
         this.showErrors = showErrors;
     }
 
     //======================= Private methods ====================//
-    private void log(final GeneralizedSemIm im) {
+    private void log(GeneralizedSemIm im) {
         TetradLogger.getInstance().log("info", "Generalized SEM IM");
         TetradLogger.getInstance().log("im", im.toString());
     }

@@ -62,7 +62,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 
     //==============================CONSTRUCTORS==========================//
 
-    public GeneralizedSemEstimatorWrapper(final GeneralizedSemPmWrapper semPm, final DataWrapper data) {
+    public GeneralizedSemEstimatorWrapper(GeneralizedSemPmWrapper semPm, DataWrapper data) {
         if (semPm == null) {
             throw new NullPointerException("SEM PM must not be null.");
         }
@@ -85,7 +85,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 //    }
 
     public void execute() {
-        final GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
+        GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
         this.estIm = estimator.estimate(this.semPm, this.data);
         this.report = estimator.getReport();
     }
@@ -114,7 +114,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -127,7 +127,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -135,13 +135,13 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
         return this.showErrors;
     }
 
-    public void setShowErrors(final boolean showErrors) {
+    public void setShowErrors(boolean showErrors) {
         this.showErrors = showErrors;
     }
 
     //======================= Private methods ====================//
 
-    private void log(final GeneralizedSemIm im) {
+    private void log(GeneralizedSemIm im) {
         TetradLogger.getInstance().log("info", "Generalized SEM IM");
         TetradLogger.getInstance().log("im", im.toString());
     }
@@ -170,7 +170,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
         return this.semPm;
     }
 
-    public void setSemPm(final GeneralizedSemPm semPm) {
+    public void setSemPm(GeneralizedSemPm semPm) {
         this.semPm = semPm;
     }
 

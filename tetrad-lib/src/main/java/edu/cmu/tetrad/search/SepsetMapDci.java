@@ -61,7 +61,7 @@ public final class SepsetMapDci {
     public SepsetMapDci() {
     }
 
-    public SepsetMapDci(final SepsetMapDci map) {
+    public SepsetMapDci(SepsetMapDci map) {
         this.sepsets = new HashMap<>(map.sepsets);
         this.sepsetSets = new HashMap<>(map.sepsetSets);
     }
@@ -78,21 +78,21 @@ public final class SepsetMapDci {
     /**
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
      */
-    public void set(final Node x, final Node y, final List<Node> z) {
-        final Set<Node> pair = new HashSet<>(2);
+    public void set(Node x, Node y, List<Node> z) {
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
         if (this.sepsets.get(pair) == null) {
             this.sepsets.put(pair, z);
         } else {
-            final List<Node> newSet = new ArrayList<>(this.sepsets.get(pair));
+            List<Node> newSet = new ArrayList<>(this.sepsets.get(pair));
             newSet.addAll(z);
             this.sepsets.put(pair, newSet);
         }
         if (this.sepsetSets.containsKey(pair)) {
             this.sepsetSets.get(pair).add(new ArrayList<>(z));
         } else {
-            final List<List<Node>> condSets = new ArrayList<>();
+            List<List<Node>> condSets = new ArrayList<>();
             condSets.add(new ArrayList<>(z));
             this.sepsetSets.put(pair, condSets);
         }
@@ -102,8 +102,8 @@ public final class SepsetMapDci {
      * Retrieves the sepset previously set for {x, y}, or null if no such set
      * was previously set.
      */
-    public List<Node> get(final Node x, final Node y) {
-        final Set<Node> pair = new HashSet<>(2);
+    public List<Node> get(Node x, Node y) {
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
         return this.sepsets.get(pair);
@@ -113,14 +113,14 @@ public final class SepsetMapDci {
      * Retrieves the set of all condioning sets for {x, y} or null if no such
      * set was ever set
      */
-    public List<List<Node>> getSet(final Node x, final Node y) {
-        final Set<Node> pair = new HashSet<>(2);
+    public List<List<Node>> getSet(Node x, Node y) {
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
         return this.sepsetSets.get(pair);
     }
 
-    public void set(final Node x, final LinkedHashSet<Node> z) {
+    public void set(Node x, LinkedHashSet<Node> z) {
         if (this.parents.get(x) != null) {
             this.parents.get(x).addAll(z);
         } else {
@@ -128,7 +128,7 @@ public final class SepsetMapDci {
         }
     }
 
-    public LinkedHashSet<Node> get(final Node x) {
+    public LinkedHashSet<Node> get(Node x) {
         return this.parents.get(x) == null ? new LinkedHashSet<Node>() : this.parents.get(x);
     }
 
@@ -136,12 +136,12 @@ public final class SepsetMapDci {
         return this.sepsets.keySet();
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (!(o instanceof SepsetMapDci)) {
             return false;
         }
 
-        final SepsetMapDci _sepset = (SepsetMapDci) o;
+        SepsetMapDci _sepset = (SepsetMapDci) o;
         return this.sepsets.equals(_sepset.sepsets) && this.sepsetSets.equals(_sepset.sepsetSets);
     }
 
@@ -159,7 +159,7 @@ public final class SepsetMapDci {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

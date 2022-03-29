@@ -78,7 +78,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     /**
      * Creates a cell count table for the given data set.
      */
-    public DirichletDataSetProbs(final DataSet dataSet, final double symmValue) {
+    public DirichletDataSetProbs(DataSet dataSet, double symmValue) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -92,7 +92,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
         this.dims = new int[dataSet.getNumColumns()];
 
         for (int i = 0; i < this.dims.length; i++) {
-            final DiscreteVariable variable =
+            DiscreteVariable variable =
                     (DiscreteVariable) dataSet.getVariable(i);
             this.dims[i] = variable.getNumCategories();
         }
@@ -106,8 +106,8 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      * @return the estimated probability for the given cell. The order of the
      * variable values is the order of the variables in getVariable().
      */
-    public double getCellProb(final int[] variableValues) {
-        final int[] point = new int[this.dims.length];
+    public double getCellProb(int[] variableValues) {
+        int[] point = new int[this.dims.length];
         int count = 0;
 
         for (int i = 0; i < this.numRows; i++) {
@@ -126,8 +126,8 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     /**
      * @return the estimated probability of the given proposition.
      */
-    public double getProb(final Proposition assertion) {
-        final int[] point = new int[this.dims.length];
+    public double getProb(Proposition assertion) {
+        int[] point = new int[this.dims.length];
         int count = 0;
 
         for (int i = 0; i < this.numRows; i++) {
@@ -147,16 +147,16 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      * @return the estimated conditional probability for the given assertion
      * conditional on the given condition.
      */
-    public double getConditionalProb(final Proposition assertion,
-                                     final Proposition condition) {
+    public double getConditionalProb(Proposition assertion,
+                                     Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
                             "for the same Bayes IM.");
         }
 
-        final List<Node> assertionVars = assertion.getVariableSource().getVariables();
-        final List<Node> dataVars = this.dataSet.getVariables();
+        List<Node> assertionVars = assertion.getVariableSource().getVariables();
+        List<Node> dataVars = this.dataSet.getVariables();
 
         if (!assertionVars.equals(dataVars)) {
             throw new IllegalArgumentException(
@@ -166,7 +166,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
                             "\n\tData vars: " + dataVars);
         }
 
-        final int[] point = new int[this.dims.length];
+        int[] point = new int[this.dims.length];
 
         double count1 = 1.0;
         double count2 = 1.0;
@@ -223,7 +223,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     /**
      * True iff bounds checking is performed on variable values indices.
      */
-    public void setBoundsEnforced(final boolean boundsEnforced) {
+    public void setBoundsEnforced(boolean boundsEnforced) {
         this.boundsEnforced = boundsEnforced;
     }
 }

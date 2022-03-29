@@ -57,7 +57,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
 
     //============================CONSTRUCTORS============================//
 
-    public WFgesRunner(final DataWrapper[] dataWrappers, final Parameters params) {
+    public WFgesRunner(DataWrapper[] dataWrappers, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
@@ -79,15 +79,15 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     public void execute() {
         System.out.println("A");
 
-        final DataSet dataSet = (DataSet) getDataModel();
+        DataSet dataSet = (DataSet) getDataModel();
 
-        final Parameters params = getParams();
+        Parameters params = getParams();
 
-        final double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
+        double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
-        final WFges fges = new WFges(dataSet);
+        WFges fges = new WFges(dataSet);
         fges.setPenaltyDiscount(penaltyDiscount);
-        final Graph graph = fges.search();
+        Graph graph = fges.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
@@ -161,8 +161,8 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return type;
     }
 
-    private boolean allContinuous(final List<DataModel> dataModels) {
-        for (final DataModel dataModel : dataModels) {
+    private boolean allContinuous(List<DataModel> dataModels) {
+        for (DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isContinuous() || dataModel instanceof ICovarianceMatrix) {
                     return false;
@@ -173,8 +173,8 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return true;
     }
 
-    private boolean allDiscrete(final List<DataModel> dataModels) {
-        for (final DataModel dataModel : dataModels) {
+    private boolean allDiscrete(List<DataModel> dataModels) {
+        for (DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isDiscrete()) {
                     return false;
@@ -185,7 +185,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return true;
     }
 
-    public void setIndex(final int index) {
+    public void setIndex(int index) {
         if (index < -1) {
             throw new IllegalArgumentException("Must be in >= -1: " + index);
         }
@@ -216,7 +216,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();
     }
 
@@ -225,7 +225,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     }
 
     public ImpliedOrientation getMeekRules() {
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
@@ -233,7 +233,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        final Parameters params = getParams();
+        Parameters params = getParams();
         this.paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getDouble("penaltyDiscount", 4)));
         return this.paramSettings;
     }
@@ -243,12 +243,12 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return "FGES";
     }
 
-    public void propertyChange(final PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }
 
-    private void firePropertyChange(final PropertyChangeEvent evt) {
-        for (final PropertyChangeListener l : getListeners()) {
+    private void firePropertyChange(PropertyChangeEvent evt) {
+        for (PropertyChangeListener l : getListeners()) {
             l.propertyChange(evt);
         }
     }
@@ -260,7 +260,7 @@ public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return this.listeners;
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
+    public void addPropertyChangeListener(PropertyChangeListener l) {
         if (!getListeners().contains(l)) getListeners().add(l);
     }
 

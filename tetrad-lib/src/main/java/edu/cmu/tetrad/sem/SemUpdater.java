@@ -51,13 +51,13 @@ public class SemUpdater implements TetradSerializable {
     private SemEvidence evidence;
     private final SemIm semIm;
 
-    public SemUpdater(final SemIm semIm) {
+    public SemUpdater(SemIm semIm) {
         if (semIm == null) {
             throw new NullPointerException();
         }
 
         this.semIm = semIm;
-        final SemEvidence evidence = new SemEvidence(this.semIm);
+        SemEvidence evidence = new SemEvidence(this.semIm);
         setEvidence(evidence);
     }
 
@@ -76,7 +76,7 @@ public class SemUpdater implements TetradSerializable {
      * Sets new evidence for the updater. Once this is called, old updating
      * results should not longer be available.
      */
-    public void setEvidence(final SemEvidence evidence) {
+    public void setEvidence(SemEvidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
@@ -98,10 +98,10 @@ public class SemUpdater implements TetradSerializable {
     public SemIm getUpdatedSemIm() {
 
         // First manipulate the old semIm.
-        final SemIm manipulatedSemIm = getManipulatedSemIm();
+        SemIm manipulatedSemIm = getManipulatedSemIm();
 
         // Get out the means and implied covariances.
-        final Vector means = new Vector(manipulatedSemIm.getVariableNodes().size());
+        Vector means = new Vector(manipulatedSemIm.getVariableNodes().size());
 
         for (int i = 0; i < means.size(); i++) {
             means.set(i, manipulatedSemIm.getMean(manipulatedSemIm.getVariableNodes().get(i)));
@@ -110,20 +110,20 @@ public class SemUpdater implements TetradSerializable {
 //        System.out.println("vars = " + semIm.getVariableNodes());
 //        System.out.println("means = " + means);
 
-        final Matrix implcov = manipulatedSemIm.getImplCovar(true);
+        Matrix implcov = manipulatedSemIm.getImplCovar(true);
 
         // Updating on x2 = X.
-        final SemEvidence evidence = getEvidence();
-        final List<Node> nodesInEvidence = new ArrayList<>(evidence.getNodesInEvidence());
+        SemEvidence evidence = getEvidence();
+        List<Node> nodesInEvidence = new ArrayList<>(evidence.getNodesInEvidence());
 
 //        System.out.println("evidence = " + evidence);
 
-        final List<Node> XVars = new ArrayList<>(evidence.getNodesInEvidence());
-        final List<Node> YVars = new ArrayList<>(manipulatedSemIm.getVariableNodes());
+        List<Node> XVars = new ArrayList<>(evidence.getNodesInEvidence());
+        List<Node> YVars = new ArrayList<>(manipulatedSemIm.getVariableNodes());
         YVars.removeAll(nodesInEvidence);
 
-        final int[] xIndices = new int[XVars.size()];
-        final int[] yIndices = new int[YVars.size()];
+        int[] xIndices = new int[XVars.size()];
+        int[] yIndices = new int[YVars.size()];
 
         for (int i = 0; i < XVars.size(); i++) {
             xIndices[i] = manipulatedSemIm.getVariableNodes().indexOf(XVars.get(i));
@@ -133,22 +133,22 @@ public class SemUpdater implements TetradSerializable {
             yIndices[i] = manipulatedSemIm.getVariableNodes().indexOf(YVars.get(i));
         }
 
-        final Matrix covyx = implcov.getSelection(yIndices, xIndices);
-        final Matrix varx = implcov.getSelection(xIndices, xIndices);
+        Matrix covyx = implcov.getSelection(yIndices, xIndices);
+        Matrix varx = implcov.getSelection(xIndices, xIndices);
 
-        final Vector EX = means.viewSelection(xIndices);
-        final Vector EY = means.viewSelection(yIndices);
+        Vector EX = means.viewSelection(xIndices);
+        Vector EY = means.viewSelection(yIndices);
 
-        final int[] x2 = new int[nodesInEvidence.size()];
-        final Vector X = new Vector(nodesInEvidence.size());
+        int[] x2 = new int[nodesInEvidence.size()];
+        Vector X = new Vector(nodesInEvidence.size());
 
         for (int i = 0; i < nodesInEvidence.size(); i++) {
-            final Node _node = nodesInEvidence.get(i);
+            Node _node = nodesInEvidence.get(i);
             x2[i] = evidence.getNodeIndex(_node);
         }
 
         for (int i = 0; i < nodesInEvidence.size(); i++) {
-            final int j = evidence.getNodeIndex(nodesInEvidence.get(i));
+            int j = evidence.getNodeIndex(nodesInEvidence.get(i));
             X.set(i, evidence.getProposition().getValue(j));
         }
 
@@ -157,10 +157,10 @@ public class SemUpdater implements TetradSerializable {
 //        System.out.println("X = " + X);
 //        System.out.println("EX = " + EX);
 //        System.out.println("EY = " + EY);
-        final Vector xminusex = X.minus(EX);
+        Vector xminusex = X.minus(EX);
 
         Vector mu = new Vector(manipulatedSemIm.getVariableNodes().size());
-        final DoubleMatrix2D sigma2 = new DenseDoubleMatrix2D(manipulatedSemIm.getErrCovar().toArray());
+        DoubleMatrix2D sigma2 = new DenseDoubleMatrix2D(manipulatedSemIm.getErrCovar().toArray());
 
         if (xminusex.size() == 0) {
             mu = new Vector(means.toArray());
@@ -168,10 +168,10 @@ public class SemUpdater implements TetradSerializable {
 
 //            System.out.println("xminusex = " + xminusex);
 
-            final Vector times = (covyx.times(varx.inverse())).times(xminusex);
+            Vector times = (covyx.times(varx.inverse())).times(xminusex);
 //            System.out.println("times = " + times);
 
-            final Vector YHatX = EY.plus(times);
+            Vector YHatX = EY.plus(times);
 
 //            System.out.println("YHatX = " + YHatX);
 
@@ -192,23 +192,23 @@ public class SemUpdater implements TetradSerializable {
     }
 
     public SemIm getManipulatedSemIm() {
-        final SemGraph graph = getSemIm().getSemPm().getGraph();
-        final SemGraph manipulatedGraph = createManipulatedGraph(graph);
+        SemGraph graph = getSemIm().getSemPm().getGraph();
+        SemGraph manipulatedGraph = createManipulatedGraph(graph);
         return SemIm.retainValues(getSemIm(), manipulatedGraph);
     }
 
     /**
      * Alters the graph by removing edges from parents to manipulated variables.
      */
-    private SemGraph createManipulatedGraph(final Graph graph) {
-        final SemGraph updatedGraph = new SemGraph(graph);
+    private SemGraph createManipulatedGraph(Graph graph) {
+        SemGraph updatedGraph = new SemGraph(graph);
 
         for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
             if (this.evidence.isManipulated(i)) {
-                final Node node = this.evidence.getNode(i);
-                final List<Node> parents = updatedGraph.getParents(node);
+                Node node = this.evidence.getNode(i);
+                List<Node> parents = updatedGraph.getParents(node);
 
-                for (final Node parent : parents) {
+                for (Node parent : parents) {
                     if (parent.getNodeType() == NodeType.ERROR) {
                         continue;
                     }

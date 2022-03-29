@@ -194,7 +194,7 @@ public class SessionNode implements Node {
     /**
      * Creates a new session node capable of implementing the given model class.
      */
-    public SessionNode(final Class modelClass) {
+    public SessionNode(Class modelClass) {
         this("???", modelClass.getName(), new Class[]{modelClass});
     }
 
@@ -207,7 +207,7 @@ public class SessionNode implements Node {
      *                    string.
      * @param modelClass  A single model class associated with this session node.
      */
-    public SessionNode(final String boxType, final String displayName, final Class modelClass) {
+    public SessionNode(String boxType, String displayName, Class modelClass) {
         this(boxType, displayName, new Class[]{modelClass});
     }
 
@@ -215,7 +215,7 @@ public class SessionNode implements Node {
      * Creates a new session node with the given name capable of implementing
      * the given model classes.
      */
-    public SessionNode(final Class[] modelClasses) {
+    public SessionNode(Class[] modelClasses) {
         this("???", "???", modelClasses);
     }
 
@@ -233,8 +233,8 @@ public class SessionNode implements Node {
      * @param modelClasses An array of model classes associated with this
      *                     session node.
      */
-    public SessionNode(final String boxType, final String displayName,
-                       final Class[] modelClasses) {
+    public SessionNode(String boxType, String displayName,
+                       Class[] modelClasses) {
         setBoxType(boxType);
         setDisplayName(displayName);
 
@@ -275,7 +275,7 @@ public class SessionNode implements Node {
      * together provides some combination of possible model classes that can be
      * used as a constructor to some one of the model classes for this node.
      */
-    public boolean addParent(final SessionNode parent) {
+    public boolean addParent(SessionNode parent) {
         if (this.parents.contains(parent)) {
             return false;
         }
@@ -286,21 +286,21 @@ public class SessionNode implements Node {
 
         // Construct a list of the parents of this node
         // (SessionNode's) together with the new putative parent.
-        final List<SessionNode> newParents = new ArrayList<>(this.parents);
+        List<SessionNode> newParents = new ArrayList<>(this.parents);
         newParents.add(parent);
 
-        for (final Class modelClass : this.modelClasses) {
+        for (Class modelClass : this.modelClasses) {
             // Put all of the model classes of the nodes into a
             // single two-dimensional array. At the same time,
             // construct an int[] array containing the number of
             // model classes for each node. Use this int[] array
             // to construct a generator for all the combinations
             // of model nodes.
-            final Class[][] parentClasses = new Class[newParents.size()][];
-            final int[] numModels = new int[newParents.size()];
+            Class[][] parentClasses = new Class[newParents.size()][];
+            int[] numModels = new int[newParents.size()];
 
             for (int j = 0; j < newParents.size(); j++) {
-                final SessionNode node = newParents.get(j);
+                SessionNode node = newParents.get(j);
                 parentClasses[j] = node.getModelClasses();
                 numModels[j] = parentClasses[j].length;
             }
@@ -326,11 +326,11 @@ public class SessionNode implements Node {
         return false;
     }
 
-    public boolean isConsistentParent(final SessionNode parent) {
+    public boolean isConsistentParent(SessionNode parent) {
         return isConsistentParent(parent, null);
     }
 
-    public boolean isConsistentParent(final SessionNode parent, final List<SessionNode> existingNodes) {
+    public boolean isConsistentParent(SessionNode parent, List<SessionNode> existingNodes) {
         if (this.parents.contains(parent)) {
             return false;
         }
@@ -341,26 +341,26 @@ public class SessionNode implements Node {
 
         // Construct a list of the parents of this node
         // (SessionNode's) together with the new putative parent.
-        final List<SessionNode> newParents = new ArrayList<>(this.parents);
+        List<SessionNode> newParents = new ArrayList<>(this.parents);
         newParents.add(parent);
 
-        final Class[] thisClass = new Class[1];
+        Class[] thisClass = new Class[1];
 
         if (getModel() != null) {
             thisClass[0] = getModel().getClass();
         }
 
-        for (final Class modelClass : getModel() != null ? thisClass : this.modelClasses) {
+        for (Class modelClass : getModel() != null ? thisClass : this.modelClasses) {
             // Put all of the model classes of the nodes into a
             // single two-dimensional array. At the same time,
             // construct an int[] array containing the number of
             // model classes for each node. Use this int[] array
             // to construct a generator for all the combinations
             // of model nodes.
-            final Class[][] parentClasses = new Class[newParents.size()][];
+            Class[][] parentClasses = new Class[newParents.size()][];
 
             for (int j = 0; j < newParents.size(); j++) {
-                final SessionNode node = newParents.get(j);
+                SessionNode node = newParents.get(j);
                 parentClasses[j] = node.getModelClasses();
             }
 
@@ -377,7 +377,7 @@ public class SessionNode implements Node {
      * the user is asked whether to add parent and update parent's desendents or
      * to cancel the operation.
      */
-    public boolean addParent2(final SessionNode parent) {
+    public boolean addParent2(SessionNode parent) {
         if (this.parents.contains(parent)) {
             return false;
         }
@@ -388,21 +388,21 @@ public class SessionNode implements Node {
 
         // Construct a list of the parents of this node
         // (SessionNode's) together with the new putative parent.
-        final List<SessionNode> newParents = new ArrayList<>(this.parents);
+        List<SessionNode> newParents = new ArrayList<>(this.parents);
         newParents.add(parent);
 
-        for (final Class modelClass : this.modelClasses) {
+        for (Class modelClass : this.modelClasses) {
             // Put all of the model classes of the nodes into a
             // single two-dimensional array. At the same time,
             // construct an int[] array containing the number of
             // model classes for each node. Use this int[] array
             // to construct a generator for all the combinations
             // of model nodes.
-            final Class[][] parentClasses = new Class[newParents.size()][];
-            final int[] numModels = new int[newParents.size()];
+            Class[][] parentClasses = new Class[newParents.size()][];
+            int[] numModels = new int[newParents.size()];
 
             for (int j = 0; j < newParents.size(); j++) {
-                final SessionNode node = newParents.get(j);
+                SessionNode node = newParents.get(j);
                 parentClasses[j] = node.getModelClasses();
                 numModels[j] = parentClasses[j].length;
             }
@@ -445,7 +445,7 @@ public class SessionNode implements Node {
     /**
      * Removes a parent from the node.
      */
-    public boolean removeParent(final SessionNode parent) {
+    public boolean removeParent(SessionNode parent) {
         if (this.parents.contains(parent)) {
             this.parents.remove(parent);
             parent.removeChild(this);
@@ -476,7 +476,7 @@ public class SessionNode implements Node {
      * Adds a child to the node, provided this node can be added as a parent to
      * the child node.
      */
-    public boolean addChild(final SessionNode child) {
+    public boolean addChild(SessionNode child) {
         if (!this.children.contains(child)) {
             child.addParent(this);
 
@@ -492,14 +492,14 @@ public class SessionNode implements Node {
     /**
      * @return true iff the given node is child of this node.
      */
-    public boolean containsChild(final SessionNode child) {
+    public boolean containsChild(SessionNode child) {
         return this.children.contains(child);
     }
 
     /**
      * Removes a child from the node.
      */
-    public boolean removeChild(final SessionNode child) {
+    public boolean removeChild(SessionNode child) {
         if (this.children.contains(child)) {
             child.removeParent(this);
 
@@ -536,12 +536,12 @@ public class SessionNode implements Node {
      * @return true iff this node contains a model when this method completes.
      * @throws RuntimeException if the model could not be created.
      */
-    public boolean createModel(final boolean simulation) {
+    public boolean createModel(boolean simulation) {
         if (getModel() == null) {
             if (this.lastModelClass != null) {
                 try {
                     createModel(this.lastModelClass, simulation);
-                } catch (final Exception e) {
+                } catch (Exception e) {
 
                     // Allows creation of models downstream to continue
                     // once BayesPM is changed to SemPm... jdramsey 3/30/2005
@@ -567,7 +567,7 @@ public class SessionNode implements Node {
      *                          InvocationTargetException. In this case, a stack trace is printed to
      *                          System.err.
      */
-    public void createModel(final Class modelClass, final boolean simulation)
+    public void createModel(Class modelClass, boolean simulation)
             throws Exception {
         if (!Arrays.asList(this.modelClasses).contains(modelClass)) {
             throw new IllegalArgumentException("Class not among possible "
@@ -581,10 +581,10 @@ public class SessionNode implements Node {
 
         // Collect up the parentModels from the parents. If any model is
         // null, throw an exception.
-        final List<Object> parentModels = listParentModels();
+        List<Object> parentModels = listParentModels();
 
         // If param not null, add it to the list of parentModels.
-        final Object param = getParam(modelClass);
+        Object param = getParam(modelClass);
         this.model = null;
 
         List<Object> expandedModels = new ArrayList<>(parentModels);
@@ -620,7 +620,7 @@ public class SessionNode implements Node {
 
         // If we're running a simulation, try executing the model.
         if (this.model instanceof Executable) {
-            final Executable executable = (Executable) this.model;
+            Executable executable = (Executable) this.model;
 
             try {
 
@@ -628,7 +628,7 @@ public class SessionNode implements Node {
                 if (simulation) {
                     executable.execute();
                 }
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e.getMessage());
             }
@@ -639,9 +639,9 @@ public class SessionNode implements Node {
         return this.loggerConfig;
     }
 
-    public TetradLoggerConfig getLoggerConfig(final Class modelClass) {
-        final TetradLoggerConfig oldConfig = this.loggerConfig;
-        final TetradLoggerConfig newConfig = TetradLogger.getInstance().getLoggerForClass(modelClass);
+    public TetradLoggerConfig getLoggerConfig(Class modelClass) {
+        TetradLoggerConfig oldConfig = this.loggerConfig;
+        TetradLoggerConfig newConfig = TetradLogger.getInstance().getLoggerForClass(modelClass);
 
         if (oldConfig != null && newConfig == null) {
             return oldConfig;
@@ -650,7 +650,7 @@ public class SessionNode implements Node {
         // Copy event activations over.
         if (oldConfig != null && newConfig != null) {
             for (TetradLoggerConfig.Event event : newConfig.getSupportedEvents()) {
-                for (final TetradLoggerConfig.Event _event : oldConfig.getSupportedEvents()) {
+                for (TetradLoggerConfig.Event _event : oldConfig.getSupportedEvents()) {
                     if (event.getId().equals(_event.getId())) {
                         newConfig.setEventActive(_event.getId(), oldConfig.isEventActive(_event.getId()));
                     }
@@ -694,7 +694,7 @@ public class SessionNode implements Node {
     /**
      * Sets the model classes to the new array of model classes.
      */
-    public final void setModelClasses(final Class[] modelClasses) {
+    public final void setModelClasses(Class[] modelClasses) {
         for (int i = 0; i < modelClasses.length; i++) {
             if (modelClasses[i] == null) {
                 throw new NullPointerException(
@@ -714,16 +714,16 @@ public class SessionNode implements Node {
      * possible to construct a model in one of the legal classes for this node
      * using the parent models as arguments to some constructor in that class.
      */
-    public Class[] getConsistentModelClasses(final boolean exact) {
-        final List<Class> classes = new ArrayList<>();
-        final List<SessionNode> parents = new ArrayList<>(this.parents);
-        final Class[][] parentModelClasses = new Class[parents.size()][1];
+    public Class[] getConsistentModelClasses(boolean exact) {
+        List<Class> classes = new ArrayList<>();
+        List<SessionNode> parents = new ArrayList<>(this.parents);
+        Class[][] parentModelClasses = new Class[parents.size()][1];
 
         // Construct the parent model classes; they must all be
         // non-null.
         for (int i = 0; i < parents.size(); i++) {
-            final SessionNode sessionNode = parents.get(i);
-            final Object model = sessionNode.getModel();
+            SessionNode sessionNode = parents.get(i);
+            Object model = sessionNode.getModel();
 
             if (model != null) {
                 parentModelClasses[i][0] = model.getClass();
@@ -765,14 +765,14 @@ public class SessionNode implements Node {
     /**
      * Adds a session listener.
      */
-    public void addSessionListener(final SessionListener l) {
+    public void addSessionListener(SessionListener l) {
         getSessionSupport().addSessionListener(l);
     }
 
     /**
      * Removes a session listener.
      */
-    public void removeSessionListener(final SessionListener l) {
+    public void removeSessionListener(SessionListener l) {
         getSessionSupport().removeSessionListener(l);
     }
 
@@ -795,15 +795,15 @@ public class SessionNode implements Node {
      */
     public void resetToFreshlyCreated() {
         if (!isFreshlyCreated()) {
-            final Set<SessionNode> _parents = new HashSet<>(this.parents);
-            final Set<SessionNode> _children
+            Set<SessionNode> _parents = new HashSet<>(this.parents);
+            Set<SessionNode> _children
                     = new HashSet<>(this.children);
 
-            for (final SessionNode _parent : _parents) {
+            for (SessionNode _parent : _parents) {
                 removeParent(_parent);
             }
 
-            for (final SessionNode a_children : _children) {
+            for (SessionNode a_children : _children) {
                 removeChild(a_children);
             }
 
@@ -820,17 +820,17 @@ public class SessionNode implements Node {
      * Removes any parents or children of the node that are not in the given
      * list.
      */
-    public void restrictConnectionsToList(final List sessionNodes) {
+    public void restrictConnectionsToList(List sessionNodes) {
 
         // Remove any parents or children from any node if those parents
         // or children are not in the list.
-        for (final SessionNode sessionNode : getParents()) {
+        for (SessionNode sessionNode : getParents()) {
             if (!sessionNodes.contains(sessionNode)) {
                 removeParent(sessionNode);
             }
         }
 
-        for (final SessionNode sessionNode1 : getChildren()) {
+        for (SessionNode sessionNode1 : getChildren()) {
             if (!sessionNodes.contains(sessionNode1)) {
                 removeChild(sessionNode1);
             }
@@ -861,14 +861,14 @@ public class SessionNode implements Node {
      * classes of the parent and child SessionNodes are equal. We dare not check
      * equality of parents and children outright for fear of circularity.</p>
      */
-    public boolean isStructurallyIdentical(final SessionNode node) {
+    public boolean isStructurallyIdentical(SessionNode node) {
         if (node == null) {
             return false;
         }
 
         // Check equality of possible model classes.
-        final Set<Class> set1 = new HashSet<>(Arrays.asList(getModelClasses()));
-        final Set<Class> set2
+        Set<Class> set1 = new HashSet<>(Arrays.asList(getModelClasses()));
+        Set<Class> set2
                 = new HashSet<>(Arrays.asList(node.getModelClasses()));
 
         if (!set1.equals(set2)) {
@@ -876,8 +876,8 @@ public class SessionNode implements Node {
         }
 
         // Check equality of model parameter type arrays.
-        final Class[] arr1 = this.getModelParamTypes();
-        final Class[] arr2 = node.getModelParamTypes();
+        Class[] arr1 = this.getModelParamTypes();
+        Class[] arr2 = node.getModelParamTypes();
 
         if ((arr1 != null) && (arr2 != null)) {
             if (arr1.length != arr2.length) {
@@ -897,8 +897,8 @@ public class SessionNode implements Node {
 //        }
 
         // Check equality of models.
-        final Object model1 = getModel();
-        final Object model2 = node.getModel();
+        Object model1 = getModel();
+        Object model2 = node.getModel();
 
         if ((model1 == null) && (model2 != null)) {
             return false;
@@ -911,8 +911,8 @@ public class SessionNode implements Node {
         // Check equality of parent session model classes.
         set1.clear();
 
-        for (final SessionNode sessionNode : getParents()) {
-            final Object model = sessionNode.getModel();
+        for (SessionNode sessionNode : getParents()) {
+            Object model = sessionNode.getModel();
 
             if (model != null) {
                 set1.add(model.getClass());
@@ -921,8 +921,8 @@ public class SessionNode implements Node {
 
         set2.clear();
 
-        for (final SessionNode sessionNode1 : node.getParents()) {
-            final Object model = sessionNode1.getModel();
+        for (SessionNode sessionNode1 : node.getParents()) {
+            Object model = sessionNode1.getModel();
 
             if (model != null) {
                 set2.add(model.getClass());
@@ -936,8 +936,8 @@ public class SessionNode implements Node {
         // Check equality of child session node model classes.
         set1.clear();
 
-        for (final SessionNode sessionNode2 : this.getChildren()) {
-            final Object model = sessionNode2.getModel();
+        for (SessionNode sessionNode2 : this.getChildren()) {
+            Object model = sessionNode2.getModel();
 
             if (model != null) {
                 set1.add(model.getClass());
@@ -946,8 +946,8 @@ public class SessionNode implements Node {
 
         set2.clear();
 
-        for (final SessionNode sessionNode3 : node.getChildren()) {
-            final Object model = sessionNode3.getModel();
+        for (SessionNode sessionNode3 : node.getChildren()) {
+            Object model = sessionNode3.getModel();
 
             if (model != null) {
                 set2.add(model.getClass());
@@ -967,7 +967,7 @@ public class SessionNode implements Node {
     /**
      * Sets the (optional) name for this node. May be null.
      */
-    public final void setBoxType(final String boxType) {
+    public final void setBoxType(String boxType) {
         if (boxType == null) {
             throw new NullPointerException();
         }
@@ -978,9 +978,9 @@ public class SessionNode implements Node {
     /**
      * Sets the parameter object for the given model class to the given object.
      */
-    public void putParam(final Class modelClass, final Parameters param) {
+    public void putParam(Class modelClass, Parameters param) {
         if (param instanceof SessionListener) {
-            final SessionListener listener = (SessionListener) param;
+            SessionListener listener = (SessionListener) param;
             getSessionSupport().addSessionListener(listener);
         }
 
@@ -990,32 +990,32 @@ public class SessionNode implements Node {
     /**
      * Gets the parameter object for the givem model class.
      */
-    public Parameters getParam(final Class modelClass) {
+    public Parameters getParam(Class modelClass) {
         return this.paramMap.get(modelClass);
     }
 
     /**
      * Removes the parameter object for the given model class.
      */
-    public void removeParam(final Class modelClass) {
-        final Object param = this.paramMap.get(modelClass);
+    public void removeParam(Class modelClass) {
+        Object param = this.paramMap.get(modelClass);
 
         if (param != null && param instanceof SessionListener) {
-            final SessionListener listener = (SessionListener) param;
+            SessionListener listener = (SessionListener) param;
             getSessionSupport().removeSessionListener(listener);
         }
 
         this.paramMap.remove(modelClass);
     }
 
-    public Object[] getModelConstructorArguments(final Class modelClass) {
-        final List<Object> parentModels = getParentModels();
+    public Object[] getModelConstructorArguments(Class modelClass) {
+        List<Object> parentModels = getParentModels();
         parentModels.add(getParam(modelClass));
-        final Constructor[] constructors = modelClass.getConstructors();
+        Constructor[] constructors = modelClass.getConstructors();
 
-        for (final Constructor constructor : constructors) {
-            final Class[] parameterTypes = constructor.getParameterTypes();
-            final Object[] arguments = assignParameters(parameterTypes, parentModels);
+        for (Constructor constructor : constructors) {
+            Class[] parameterTypes = constructor.getParameterTypes();
+            Object[] arguments = assignParameters(parameterTypes, parentModels);
 
             if (arguments != null) {
                 return arguments;
@@ -1031,7 +1031,7 @@ public class SessionNode implements Node {
     }
 
     @Override
-    public void setName(final String name) {
+    public void setName(String name) {
 
     }
 
@@ -1041,7 +1041,7 @@ public class SessionNode implements Node {
     }
 
     @Override
-    public void setNodeType(final NodeType nodeType) {
+    public void setNodeType(NodeType nodeType) {
 
     }
 
@@ -1058,7 +1058,7 @@ public class SessionNode implements Node {
     }
 
     @Override
-    public void setCenterX(final int centerX) {
+    public void setCenterX(int centerX) {
 
     }
 
@@ -1068,27 +1068,27 @@ public class SessionNode implements Node {
     }
 
     @Override
-    public void setCenterY(final int centerY) {
+    public void setCenterY(int centerY) {
 
     }
 
     @Override
-    public void setCenter(final int centerX, final int centerY) {
+    public void setCenter(int centerX, int centerY) {
 
     }
 
     @Override
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
+    public void addPropertyChangeListener(PropertyChangeListener l) {
 
     }
 
     @Override
-    public Node like(final String name) {
+    public Node like(String name) {
         return null;
     }
 
     @Override
-    public int compareTo(final Node node) {
+    public int compareTo(Node node) {
         return 0;
     }
 
@@ -1097,21 +1097,21 @@ public class SessionNode implements Node {
      * control.) Reset to true every time an edge is added; edge adds must be
      * disallowed individually. To disallow the next edge add, set to false.
      */
-    public void setNextEdgeAddAllowed(final boolean nextEdgeAddAllowed) {
+    public void setNextEdgeAddAllowed(boolean nextEdgeAddAllowed) {
         this.nextEdgeAddAllowed = nextEdgeAddAllowed;
     }
 
-    public boolean existsParameterizedConstructor(final Class modelClass) {
-        final Object param = getParam(modelClass);
-        final List parentModels = listParentModels();
+    public boolean existsParameterizedConstructor(Class modelClass) {
+        Object param = getParam(modelClass);
+        List parentModels = listParentModels();
         parentModels.add(param);
 
         try {
-            final Constructor[] constructors = modelClass.getConstructors();
+            Constructor[] constructors = modelClass.getConstructors();
 
-            for (final Constructor constructor : constructors) {
-                final Class[] parameterTypes = constructor.getParameterTypes();
-                final Object[] arguments = assignParameters(parameterTypes, parentModels);
+            for (Constructor constructor : constructors) {
+                Class[] parameterTypes = constructor.getParameterTypes();
+                Object[] arguments = assignParameters(parameterTypes, parentModels);
 
                 if (arguments != null) {
                     return true;
@@ -1119,9 +1119,9 @@ public class SessionNode implements Node {
             }
 
             return false;
-        } catch (final RuntimeException e) {
+        } catch (RuntimeException e) {
             throw e;
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Could not construct model.", e);
         }
     }
@@ -1130,7 +1130,7 @@ public class SessionNode implements Node {
         return this.repetition;
     }
 
-    public void setRepetition(final int repetition) {
+    public void setRepetition(int repetition) {
         if (repetition < 1) {
             throw new IllegalArgumentException("Repetition must be >= 1.");
         }
@@ -1155,19 +1155,19 @@ public class SessionNode implements Node {
                 return false;
             }
 
-            final SessionModel temp = this.model;
+            SessionModel temp = this.model;
             this.model = new MarshalledObject<>(this.model).get();
             this.model.setName(getDisplayName());
 
             if (this.model instanceof ParamsResettable
                     && temp instanceof ParamsResettable) {
-                final Object resettableParams = ((ParamsResettable) temp).getResettableParams();
+                Object resettableParams = ((ParamsResettable) temp).getResettableParams();
                 ((ParamsResettable) this.model).resetParams(resettableParams);
             }
 
             this.savedModel = temp;
             return true;
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -1194,17 +1194,17 @@ public class SessionNode implements Node {
      * contained in the given List of nodes, in the sense that the model class
      * has a constructor that can take the models of the nodes as arguments.
      */
-    public boolean isConsistentModelClass(final Class<Type1> modelClass, final List nodes, final boolean exact) {
+    public boolean isConsistentModelClass(Class<Type1> modelClass, List nodes, boolean exact) {
 
         // Put all of the model classes of the nodes into a single
         // two-dimensional array. At the same time, construct an int[]
         // array containing the number of model classes for each
         // node. Use this int[] array to construct a generator for all
         // the combinations of model nodes.
-        final Class[][] nodeClasses = new Class[nodes.size()][];
+        Class[][] nodeClasses = new Class[nodes.size()][];
 
         for (int i = 0; i < nodes.size(); i++) {
-            final SessionNode node = (SessionNode) nodes.get(i);
+            SessionNode node = (SessionNode) nodes.get(i);
             nodeClasses[i] = node.getModelClasses();
         }
 
@@ -1218,25 +1218,25 @@ public class SessionNode implements Node {
      * parent nodes to be added one at a time to this node, whether or not any
      * of the nodes in question have non-null models.</p>
      */
-    public boolean existsConstructor(final Class modelClass, final Class[] argumentTypes) {
-        for (final Class argumentType1 : argumentTypes) {
+    public boolean existsConstructor(Class modelClass, Class[] argumentTypes) {
+        for (Class argumentType1 : argumentTypes) {
             if (argumentType1 == null) {
                 throw new IllegalArgumentException(
                         "Argument classes must be " + "non-null");
             }
         }
 
-        final Constructor[] constructors = modelClass.getConstructors();
+        Constructor[] constructors = modelClass.getConstructors();
 
         loop:
-        for (final Constructor constructor : constructors) {
-            final Class[] parameterTypes = constructor.getParameterTypes();
-            final List<Class> remainingParameterTypes
+        for (Constructor constructor : constructors) {
+            Class[] parameterTypes = constructor.getParameterTypes();
+            List<Class> remainingParameterTypes
                     = new ArrayList<>(Arrays.asList(parameterTypes));
 
             loop2:
-            for (final Class argumentType : argumentTypes) {
-                final Class type = findMatchingType(remainingParameterTypes, argumentType);
+            for (Class argumentType : argumentTypes) {
+                Class type = findMatchingType(remainingParameterTypes, argumentType);
 
                 if (type == null) {
                     continue loop;
@@ -1256,9 +1256,9 @@ public class SessionNode implements Node {
      * Returns the first class c in <code>classes</code> that <code>clazz</code>
      * is assignable to.</p>
      */
-    public Class getAssignableClass(final List classes, final Class clazz) {
-        for (final Object aClass : classes) {
-            final Class assignableTo = (Class) aClass;
+    public Class getAssignableClass(List classes, Class clazz) {
+        for (Object aClass : classes) {
+            Class assignableTo = (Class) aClass;
             if (assignableTo.isAssignableFrom(clazz)) {
                 return assignableTo;
             }
@@ -1278,13 +1278,13 @@ public class SessionNode implements Node {
      * @param objects        a List of objects. (The nulls will be automatically thrown
      *                       out for this one.)
      */
-    public Object[] assignParameters(final Class[] parameterTypes, final List objects)
+    public Object[] assignParameters(Class[] parameterTypes, List objects)
             throws RuntimeException {
         if (parameterTypes.length > 5) {
             System.out.println("Oops");
         }
 
-        for (final Class parameterType1 : parameterTypes) {
+        for (Class parameterType1 : parameterTypes) {
             if (parameterType1 == null) {
                 throw new NullPointerException(
                         "Parameter types must all be non-null.");
@@ -1297,14 +1297,14 @@ public class SessionNode implements Node {
         // an object cannot be found, return null. If there are any
         // objects left over, return null. Otherwise, return the
         // constructed argument array.
-        final Object[] arguments = new Object[parameterTypes.length];
-        final List<Object> _objects = removeNulls(objects);
+        Object[] arguments = new Object[parameterTypes.length];
+        List<Object> _objects = removeNulls(objects);
 
         if (parameterTypes.length != _objects.size()) {
             return null;
         }
 
-        final PermutationGenerator gen = new PermutationGenerator(parameterTypes.length);
+        PermutationGenerator gen = new PermutationGenerator(parameterTypes.length);
         int[] perm;
         boolean foundAConstructor = false;
 
@@ -1313,8 +1313,8 @@ public class SessionNode implements Node {
 
             for (int i = 0; i < perm.length; i++) {
 
-                final Class<?> parameterType = parameterTypes[i];
-                final Class<?> aClass = _objects.get(perm[i]).getClass();
+                Class<?> parameterType = parameterTypes[i];
+                Class<?> aClass = _objects.get(perm[i]).getClass();
 
                 if (parameterType.isAssignableFrom(aClass)) {
                     arguments[i] = _objects.get(perm[i]);
@@ -1336,9 +1336,9 @@ public class SessionNode implements Node {
         }
     }
 
-    public boolean assignClasses(final Class[] constructorTypes, final Class[] modelTypes, final boolean exact, final List<SessionNode> existingNodes)
+    public boolean assignClasses(Class[] constructorTypes, Class[] modelTypes, boolean exact, List<SessionNode> existingNodes)
             throws RuntimeException {
-        for (final Class parameterType1 : constructorTypes) {
+        for (Class parameterType1 : constructorTypes) {
             if (parameterType1 == null) {
                 throw new NullPointerException(
                         "Parameter types must all be non-null.");
@@ -1350,15 +1350,15 @@ public class SessionNode implements Node {
         if (existingNodes != null) {
             existingNodes.remove(this);
 
-            for (final Class<?> type : constructorTypes) {
+            for (Class<?> type : constructorTypes) {
                 if (type.equals(Parameters.class)) {
                     continue;
                 }
                 boolean foundNode = false;
 
                 FOR:
-                for (final SessionNode node : existingNodes) {
-                    for (final Class<?> clazz : node.getModelClasses()) {
+                for (SessionNode node : existingNodes) {
+                    for (Class<?> clazz : node.getModelClasses()) {
                         if (clazz.equals(type)) {
                             foundNode = true;
                             break FOR;
@@ -1386,19 +1386,19 @@ public class SessionNode implements Node {
             return false;
         }
 
-        final PermutationGenerator gen0 = new PermutationGenerator(constructorTypes.length);
+        PermutationGenerator gen0 = new PermutationGenerator(constructorTypes.length);
         int[] paramPerm;
 
         while ((paramPerm = gen0.next()) != null) {
-            final PermutationGenerator gen = new PermutationGenerator(modelTypes.length);
+            PermutationGenerator gen = new PermutationGenerator(modelTypes.length);
             int[] modelPerm;
 
             while ((modelPerm = gen.next()) != null) {
                 boolean allAssigned = true;
 
                 for (int i = 0; i < modelPerm.length; i++) {
-                    final Class<?> constructorType = constructorTypes[paramPerm[i]];
-                    final Class<?> modelType = modelTypes[modelPerm[i]];
+                    Class<?> constructorType = constructorTypes[paramPerm[i]];
+                    Class<?> modelType = modelTypes[modelPerm[i]];
 
                     if (!constructorType.isAssignableFrom(modelType)) {
                         allAssigned = false;
@@ -1417,10 +1417,10 @@ public class SessionNode implements Node {
         return false;
     }
 
-    private int numWithoutParams(final Class[] modelTypes) {
+    private int numWithoutParams(Class[] modelTypes) {
         int n = 0;
 
-        for (final Class clazz : modelTypes) {
+        for (Class clazz : modelTypes) {
             if (clazz != Parameters.class) {
                 n++;
             }
@@ -1433,9 +1433,9 @@ public class SessionNode implements Node {
      * @return an array with a combination of particular values for variables
      * given an array indicating the number of values for each variable.
      */
-    public int[] getValueCombination(int index, final int[] numValues) {
+    public int[] getValueCombination(int index, int[] numValues) {
 
-        final int[] values = new int[numValues.length];
+        int[] values = new int[numValues.length];
 
         for (int i = numValues.length - 1; i >= 0; i--) {
             values[i] = index % numValues[i];
@@ -1448,10 +1448,10 @@ public class SessionNode implements Node {
     /**
      * @return the product of the entries in the given array.
      */
-    public int getProduct(final int[] arr) {
+    public int getProduct(int[] arr) {
         int n = 1;
 
-        for (final int anArr : arr) {
+        for (int anArr : arr) {
             n *= anArr;
         }
 
@@ -1475,7 +1475,7 @@ public class SessionNode implements Node {
     /**
      * @return true iff the given node is parent of this node.
      */
-    private boolean containsParent(final SessionNode parent) {
+    private boolean containsParent(SessionNode parent) {
         return this.parents.contains(parent);
     }
 
@@ -1496,10 +1496,10 @@ public class SessionNode implements Node {
     }
 
     private List<Object> getParentModels() {
-        final List<Object> models = new ArrayList<>();
+        List<Object> models = new ArrayList<>();
 
-        for (final SessionNode node : this.parents) {
-            final SessionModel model = node.getModel();
+        for (SessionNode node : this.parents) {
+            SessionModel model = node.getModel();
 
             if (model != null) {
                 models.add(model);
@@ -1512,10 +1512,10 @@ public class SessionNode implements Node {
     }
 
     private List<Object> listParentModels() {
-        final List<Object> models = new ArrayList<>();
+        List<Object> models = new ArrayList<>();
 
-        for (final SessionNode node : this.parents) {
-            final Object model = node.getModel();
+        for (SessionNode node : this.parents) {
+            Object model = node.getModel();
 
 //            if (model == null) {
 //                throw new RuntimeException(
@@ -1533,7 +1533,7 @@ public class SessionNode implements Node {
      * Creates model using the given arguments, if possible. If not possible,
      * the field this.model is unchanged.
      */
-    private void createModelUsingArguments(final Class modelClass, final List<Object> models)
+    private void createModelUsingArguments(Class modelClass, List<Object> models)
             throws Exception {
         if (!(SessionModel.class.isAssignableFrom(modelClass))) {
             throw new ClassCastException(
@@ -1542,20 +1542,20 @@ public class SessionNode implements Node {
 
         // Try to find a constructor of the model class that exactly
         // matches the types of these models.
-        final Constructor[] constructors = modelClass.getConstructors();
+        Constructor[] constructors = modelClass.getConstructors();
 
-        for (final Constructor constructor : constructors) {
-            final Class[] constructorTypes = constructor.getParameterTypes();
+        for (Constructor constructor : constructors) {
+            Class[] constructorTypes = constructor.getParameterTypes();
             Object[] arguments = null;
 
             if (constructorTypes.length == 2 && constructorTypes[0].isArray()
                     && constructorTypes[1] == Parameters.class) {
-                final List<Object> _objects = new ArrayList<>();
-                final Class<?> c1 = constructorTypes[0].getComponentType();
+                List<Object> _objects = new ArrayList<>();
+                Class<?> c1 = constructorTypes[0].getComponentType();
                 Parameters parameters = null;
 
                 for (int i = 0; i < models.size(); i++) {
-                    final Class<?> c2 = models.get(i).getClass();
+                    Class<?> c2 = models.get(i).getClass();
 
                     if ((c1.isAssignableFrom(c2))) {
                         _objects.add(models.get(i));
@@ -1571,7 +1571,7 @@ public class SessionNode implements Node {
                 }
 
                 if (parameters != null) {
-                    final Object o = Array.newInstance(c1, _objects.size());
+                    Object o = Array.newInstance(c1, _objects.size());
 
                     for (int i = 0; i < _objects.size(); i++) {
                         Array.set(o, i, _objects.get(i));
@@ -1579,7 +1579,7 @@ public class SessionNode implements Node {
 
                     arguments = new Object[]{o, parameters};
                 } else {
-                    final Object o = Array.newInstance(c1, _objects.size());
+                    Object o = Array.newInstance(c1, _objects.size());
                     for (int i = 0; i < _objects.size(); i++) {
                         Array.set(o, i, _objects.get(i));
                     }
@@ -1600,18 +1600,18 @@ public class SessionNode implements Node {
                 try {
                     this.model = (SessionModel) constructor.newInstance(arguments);
                     this.model.setName(getDisplayName());
-                } catch (final InstantiationException e) {
+                } catch (InstantiationException e) {
                     e.printStackTrace();
                     continue;
 //                    throw e;
-                } catch (final IllegalAccessException e) {
+                } catch (IllegalAccessException e) {
                     e.printStackTrace();
                     continue;
 //                    throw e;
-                } catch (final InvocationTargetException e) {
-                    final String packagePath = modelClass.getName();
-                    final int begin = packagePath.lastIndexOf('.') + 1;
-                    final String name = packagePath.substring(begin);
+                } catch (InvocationTargetException e) {
+                    String packagePath = modelClass.getName();
+                    int begin = packagePath.lastIndexOf('.') + 1;
+                    String name = packagePath.substring(begin);
 
                     if (e.getTargetException() instanceof ThreadDeath) {
                         e.printStackTrace();
@@ -1646,16 +1646,16 @@ public class SessionNode implements Node {
     /**
      * New version 2015901.
      */
-    private boolean isConsistentModelClass(final Class modelClass, final Class[][] parentClasses, final boolean exact,
-                                           final List<SessionNode> existingNodes) {
-        final Constructor[] constructors = modelClass.getConstructors();
+    private boolean isConsistentModelClass(Class modelClass, Class[][] parentClasses, boolean exact,
+                                           List<SessionNode> existingNodes) {
+        Constructor[] constructors = modelClass.getConstructors();
 
         // If the constructor takes the special form of an array followed by Parameters,
         // public Clazz(C1[] c1, Parameters paramters);
         // just check to make sure all models besides Parameters are of class C1.
         L:
-        for (final Constructor constructor : constructors) {
-            final Class<?>[] constructorTypes = constructor.getParameterTypes();
+        for (Constructor constructor : constructors) {
+            Class<?>[] constructorTypes = constructor.getParameterTypes();
 
             boolean hasParameters = false;
 
@@ -1675,8 +1675,8 @@ public class SessionNode implements Node {
                         boolean found = false;
 
                         for (int j = 0; j < parentClasses[i].length; j++) {
-                            final Class<?> c1 = constructorTypes[0].getComponentType();
-                            final Class<?> c2 = parentClasses[i][j];
+                            Class<?> c1 = constructorTypes[0].getComponentType();
+                            Class<?> c2 = parentClasses[i][j];
 
                             if (c2 == Parameters.class || c1.isAssignableFrom(c2)) {
                                 found = true;
@@ -1693,7 +1693,7 @@ public class SessionNode implements Node {
                 }
             }
 
-            final List<List<Class>> summary = new ArrayList<>();
+            List<List<Class>> summary = new ArrayList<>();
 
             for (int i = 0; i < parentClasses.length; i++) {
                 summary.add(new ArrayList<Class>());
@@ -1711,7 +1711,7 @@ public class SessionNode implements Node {
                 }
             }
 
-            final int[] dims = new int[parentClasses.length];
+            int[] dims = new int[parentClasses.length];
 
             for (int i = 0; i < parentClasses.length; i++) {
                 dims[i] = summary.get(i).size();
@@ -1720,13 +1720,13 @@ public class SessionNode implements Node {
                 }
             }
 
-            final CombinationIterator iterator = new CombinationIterator(dims);
+            CombinationIterator iterator = new CombinationIterator(dims);
 
             while (iterator.hasNext()) {
                 if (hasParameters) {
-                    final int[] comb = iterator.next();
+                    int[] comb = iterator.next();
 
-                    final Class[] modelTypes = new Class[comb.length + 1];
+                    Class[] modelTypes = new Class[comb.length + 1];
 
                     for (int i = 0; i < comb.length; i++) {
                         modelTypes[i] = summary.get(i).get(comb[i]);
@@ -1738,9 +1738,9 @@ public class SessionNode implements Node {
                         return true;
                     }
                 } else {
-                    final int[] comb = iterator.next();
+                    int[] comb = iterator.next();
 
-                    final Class[] modelTypes = new Class[comb.length];
+                    Class[] modelTypes = new Class[comb.length];
 
                     for (int i = 0; i < comb.length; i++) {
                         modelTypes[i] = summary.get(i).get(comb[i]);
@@ -1756,9 +1756,9 @@ public class SessionNode implements Node {
         return false;
     }
 
-    private Class findMatchingType(final List<Class> parameterTypes,
-                                   final Class argumentType) {
-        for (final Class type : parameterTypes) {
+    private Class findMatchingType(List<Class> parameterTypes,
+                                   Class argumentType) {
+        for (Class type : parameterTypes) {
             if (type.isAssignableFrom(argumentType)) {
                 return type;
             }
@@ -1767,10 +1767,10 @@ public class SessionNode implements Node {
         return null;
     }
 
-    private List<Object> removeNulls(final List objects) {
-        final List<Object> _objects = new ArrayList<>();
+    private List<Object> removeNulls(List objects) {
+        List<Object> _objects = new ArrayList<>();
 
-        for (final Object o : objects) {
+        for (Object o : objects) {
             if (o != null) {
                 _objects.add(o);
             }
@@ -1787,18 +1787,18 @@ public class SessionNode implements Node {
             return;
         }
 
-        for (final Class clazz : this.modelParamTypes) {
+        for (Class clazz : this.modelParamTypes) {
             if (clazz == null) {
                 return;
             }
         }
 
         // Collect up the model types from the parents.
-        final List<Class<? extends Object>> list1
+        List<Class<? extends Object>> list1
                 = new ArrayList<>();
 
-        for (final SessionNode node : this.parents) {
-            final Object model = node.getModel();
+        for (SessionNode node : this.parents) {
+            Object model = node.getModel();
 
             if (model != null) {
                 list1.add(model.getClass());
@@ -1806,7 +1806,7 @@ public class SessionNode implements Node {
         }
 
         // Make a second list of the stored model param types.
-        final List<Class> list2 = Arrays.asList(this.modelParamTypes);
+        List<Class> list2 = Arrays.asList(this.modelParamTypes);
 
         // If the lists aren't equal, destroy the model.
         if (!list1.contains(list2) || !list2.contains(list1)) {
@@ -1823,7 +1823,7 @@ public class SessionNode implements Node {
         if (this.sessionSupport == null) {
             this.sessionSupport = new SessionSupport(this);
 
-            for (final SessionNode child : this.children) {
+            for (SessionNode child : this.children) {
                 this.sessionSupport.addSessionListener(
                         child.getSessionHandler());
             }
@@ -1836,7 +1836,7 @@ public class SessionNode implements Node {
         return this.displayName;
     }
 
-    public final void setDisplayName(final String displayName) {
+    public final void setDisplayName(String displayName) {
         if (displayName == null) {
             throw new NullPointerException();
 
@@ -1859,7 +1859,7 @@ public class SessionNode implements Node {
     }
 
     @Override
-    public void setNodeVariableType(final NodeVariableType nodeVariableType) {
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
@@ -1874,7 +1874,7 @@ public class SessionNode implements Node {
          * destroys one of the arguments used to create the model, then the
          * model of this node has to be destroyed.
          */
-        public void modelDestroyed(final SessionEvent event) {
+        public void modelDestroyed(SessionEvent event) {
             reassessModel();
         }
 
@@ -1883,16 +1883,16 @@ public class SessionNode implements Node {
          * this event is sent downstream so that certain parameter objects can
          * reset themselves.
          */
-        public void executionStarted(final SessionEvent event) {
+        public void executionStarted(SessionEvent event) {
 
             // Restart the getModel param object if necessary.
-            final Object model = getModel();
+            Object model = getModel();
 
-            for (final Class clazz : SessionNode.this.modelClasses) {
-                final Object param = getParam(clazz);
+            for (Class clazz : SessionNode.this.modelClasses) {
+                Object param = getParam(clazz);
 
                 if (param instanceof ExecutionRestarter) {
-                    final ExecutionRestarter restarter = (ExecutionRestarter) param;
+                    ExecutionRestarter restarter = (ExecutionRestarter) param;
                     restarter.newExecution();
                 }
             }
@@ -1924,7 +1924,7 @@ public class SessionNode implements Node {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -1963,17 +1963,17 @@ public class SessionNode implements Node {
     }
 
     @Override
-    public Object getAttribute(final String key) {
+    public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(final String key) {
+    public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(final String key, final Object value) {
+    public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
     }
 

@@ -42,19 +42,19 @@ import java.util.List;
 class MimBuildIndTestParamsEditor extends JComponent {
     private final Parameters params;
 
-    public MimBuildIndTestParamsEditor(final Parameters params) {
+    public MimBuildIndTestParamsEditor(Parameters params) {
         this.params = params;
 
-        final NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
+        NumberFormat smallNumberFormat = new DecimalFormat("0E00");
+        DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
         alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
                     getParams().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -158,7 +158,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
 //        add(b3);
 //        add(Box.createVerticalStrut(2));
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Alpha:"));
         b4.add(Box.createHorizontalStrut(10));
         b4.add(Box.createHorizontalGlue());

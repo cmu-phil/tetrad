@@ -59,7 +59,7 @@ public final class FasLofs implements GraphSearch {
     /**
      * @param dataSet These datasets to analyze.
      */
-    public FasLofs(DataSet dataSet, final Lofs2.Rule rule) {
+    public FasLofs(DataSet dataSet, Lofs2.Rule rule) {
         this.dataSet = dataSet;
         this.rule = rule;
     }
@@ -76,31 +76,31 @@ public final class FasLofs implements GraphSearch {
      * and some of the adjacencies may be two-cycles.
      */
     public Graph search() {
-        final long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
 
-        final SemBicScore score = new SemBicScore(new CovarianceMatrix(this.dataSet));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(this.dataSet));
         score.setPenaltyDiscount(this.penaltyDiscount);
-        final IndependenceTest test = new IndTestScore(score, this.dataSet);
+        IndependenceTest test = new IndTestScore(score, this.dataSet);
 
         System.out.println("FAS");
 
-        final Fas fas = new Fas(test);
+        Fas fas = new Fas(test);
         fas.setStable(true);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
         fas.setKnowledge(this.knowledge);
-        final Graph G0 = fas.search();
+        Graph G0 = fas.search();
 
         System.out.println("LOFS orientation, rule " + this.rule);
 
-        final Lofs2 lofs2 = new Lofs2(G0, Collections.singletonList(this.dataSet));
+        Lofs2 lofs2 = new Lofs2(G0, Collections.singletonList(this.dataSet));
         lofs2.setRule(this.rule);
         lofs2.setKnowledge(this.knowledge);
-        final Graph graph = lofs2.orient();
+        Graph graph = lofs2.orient();
 
         System.out.println("Done");
 
-        final long stop = System.currentTimeMillis();
+        long stop = System.currentTimeMillis();
         this.elapsed = stop - start;
 
         return graph;
@@ -117,7 +117,7 @@ public final class FasLofs implements GraphSearch {
      * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1.
      *              unlimited. Making this too high may results in statistical errors.
      */
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         this.depth = depth;
     }
 
@@ -141,7 +141,7 @@ public final class FasLofs implements GraphSearch {
      *                        The default is 1, though a higher value is recommended, say,
      *                        2, 3, or 4.
      */
-    public void setPenaltyDiscount(final double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
@@ -155,13 +155,13 @@ public final class FasLofs implements GraphSearch {
     /**
      * @param knowledge Knowledge of forbidden and required edges.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     //======================================== PRIVATE METHODS ====================================//
 
-    private boolean knowledgeOrients(final Node left, final Node right) {
+    private boolean knowledgeOrients(Node left, Node right) {
         return this.knowledge.isForbidden(right.getName(), left.getName()) || this.knowledge.isRequired(left.getName(), right.getName());
     }
 

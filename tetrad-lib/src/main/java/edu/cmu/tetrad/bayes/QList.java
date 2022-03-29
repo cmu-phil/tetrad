@@ -43,14 +43,14 @@ final class QList {
 
     /////////////////////////////////////////////////////////////////
     // intialize an empty QList: Q(emptyset) = 1
-    public QList(final int nVariables) {
+    public QList(int nVariables) {
         this.nVariables = nVariables;
         initialize();
     }
 
     /////////////////////////////////////////////////////////////////
     // initialize with a probability term
-    public QList(final int nVariables, final int[] probTerm) {
+    public QList(int nVariables, int[] probTerm) {
         this.nVariables = nVariables;
         initialize();
 
@@ -62,7 +62,7 @@ final class QList {
     /////////////////////////////////////////////////////////////////
     // copy an existing QList
     //
-    private QList(final QList q) {
+    private QList(QList q) {
         this.nVariables = q.nVariables;
         initialize();
 
@@ -89,8 +89,8 @@ final class QList {
     /////////////////////////////////////////////////////////////////
     // append a term to the end
     //
-    public void add(final QList q, final int[] sumOverVariables, final boolean inNumerator) {
-        final QList qAdd = new QList(this.nVariables);
+    public void add(QList q, int[] sumOverVariables, boolean inNumerator) {
+        QList qAdd = new QList(this.nVariables);
 
         qAdd.initialize();
 
@@ -115,7 +115,7 @@ final class QList {
     // index1: the numbering of terms in the linked list
     // index2: the depth of recursive sublists
     //
-    public void printQList(final int index1, int index2) {
+    public void printQList(int index1, int index2) {
         System.out.println("======= " + index1 + "  " + index2 +
                 ": printQList");
         System.out.println("inNumerator: " + this.inNumerator);
@@ -156,16 +156,16 @@ final class QList {
     // compute the numeric value of the expression in qPTS
     // by using the RowSummingExactUpdater
     //
-    public double computeValue(final BayesIm bayesIm, final int[] fixedVarValues) {
+    public double computeValue(BayesIm bayesIm, int[] fixedVarValues) {
         double resultAll = 0.0;
         double resultOneConfig;
         double resultNextTerm = 1.0;
 
         // updater with no evidence
 
-        final int nNodes = bayesIm.getNumNodes();
+        int nNodes = bayesIm.getNumNodes();
 
-        final int[] loopVarValues = new int[nNodes];
+        int[] loopVarValues = new int[nNodes];
 
         // starting loop variable configuration
         for (int i = 0; i < nNodes; i++) {
@@ -200,8 +200,8 @@ final class QList {
                     }
                 }
 
-                final int[] pVar = new int[nVarInMarginal];
-                final int[] pValues = new int[nVarInMarginal];
+                int[] pVar = new int[nVarInMarginal];
+                int[] pValues = new int[nVarInMarginal];
                 int pIndex = 0;
                 for (int i = 0; i < nNodes; i++) {
                     if (this.probTerm[i] == 1) {
@@ -249,12 +249,12 @@ final class QList {
 				if (flag)
 				{
 				 */
-                final Proposition prop = Proposition.tautology(bayesIm);
+                Proposition prop = Proposition.tautology(bayesIm);
                 for (int i = 0; i < nVarInMarginal; i++) {
                     prop.setCategory(pVar[i], pValues[i]);
                 }
                 // restrict the proposition to only observed variables
-                final Proposition propObs =
+                Proposition propObs =
                         new Proposition(((MlBayesImObs) bayesIm).getBayesImObs(), prop);
 
                 resultOneConfig = ((MlBayesImObs) bayesIm).getJPD().getProb(propObs);

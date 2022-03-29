@@ -31,13 +31,13 @@ public class VanderbiltInterIambnPcMbSearchRunner extends AbstractMBSearchRunner
     static final long serialVersionUID = 23L;
 
 
-    public VanderbiltInterIambnPcMbSearchRunner(final DataWrapper data, final Parameters params) {
+    public VanderbiltInterIambnPcMbSearchRunner(DataWrapper data, Parameters params) {
         super(data.getSelectedDataModel(), params);
     }
 
 
     public void execute() throws Exception {
-        final IambnPc search = new IambnPc(getIndependenceTest());
+        IambnPc search = new IambnPc(getIndependenceTest());
         this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());
     }

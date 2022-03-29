@@ -62,7 +62,7 @@ public class Simulation extends DataWrapper implements
     private Simulation() {
     }
 
-    public Simulation(final Parameters parameters) {
+    public Simulation(Parameters parameters) {
         if (this.simulation == null) {
             // By default there shouldn't be a simulation until the users create one - Zhou
             //this.simulation = new BayesNetSimulation(new RandomForward());
@@ -72,9 +72,9 @@ public class Simulation extends DataWrapper implements
         }
     }
 
-    public Simulation(final GraphSource graphSource, final Parameters parameters) {
+    public Simulation(GraphSource graphSource, Parameters parameters) {
         if (graphSource instanceof Simulation) {
-            final Simulation simulation = (Simulation) graphSource;
+            Simulation simulation = (Simulation) graphSource;
             this.simulation = simulation.simulation;
             this.parameters = new Parameters(simulation.parameters);
             this.name = simulation.name + ".copy";
@@ -88,7 +88,7 @@ public class Simulation extends DataWrapper implements
             setSourceGraph(graphSource.getGraph());
 
             if (parameters.getParametersNames().contains("simulationsDropdownPreference")) {
-                final String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
+                String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
                 this.simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()));
 
                 // Re-simuation whenever graph source changed and "Execute" button is clicked.
@@ -99,85 +99,85 @@ public class Simulation extends DataWrapper implements
         }
     }
 
-    public Simulation(final BayesImWrapper wrapper, final Parameters parameters) {
+    public Simulation(BayesImWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final BayesImWrapperObs wrapper, final Parameters parameters) {
+    public Simulation(BayesImWrapperObs wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final BayesPmWrapper wrapper, final Parameters parameters) {
+    public Simulation(BayesPmWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getBayesPm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final BayesEstimatorWrapper wrapper, final Parameters parameters) {
+    public Simulation(BayesEstimatorWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final DirichletBayesImWrapper wrapper, final Parameters parameters) {
+    public Simulation(DirichletBayesImWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getDirichletBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final DirichletEstimatorWrapper wrapper, final Parameters parameters) {
+    public Simulation(DirichletEstimatorWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final CptInvariantUpdaterWrapper wrapper, final Parameters parameters) {
+    public Simulation(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getBayesUpdater().getManipulatedBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final SemPmWrapper wrapper, final Parameters parameters) {
+    public Simulation(SemPmWrapper wrapper, Parameters parameters) {
         this.simulation = new SemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final SemImWrapper wrapper, final Parameters parameters) {
+    public Simulation(SemImWrapper wrapper, Parameters parameters) {
         this.simulation = new SemSimulation(wrapper.getSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final StandardizedSemImWrapper wrapper, final Parameters parameters) {
+    public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) {
         this.simulation = new StandardizedSemSimulation(wrapper.getStandardizedSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final SemEstimatorWrapper wrapper, final Parameters parameters) {
+    public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) {
         this.simulation = new SemSimulation(wrapper.getEstimatedSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final SemUpdaterWrapper wrapper, final Parameters parameters) {
+    public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) {
         this.simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final GeneralizedSemPmWrapper wrapper, final Parameters parameters) {
+    public Simulation(GeneralizedSemPmWrapper wrapper, Parameters parameters) {
         this.simulation = new GeneralSemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(final GeneralizedSemImWrapper wrapper, final Parameters parameters) {
+    public Simulation(GeneralizedSemImWrapper wrapper, Parameters parameters) {
         if (wrapper.getSemIms().size() != 1) {
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
         }
@@ -187,7 +187,7 @@ public class Simulation extends DataWrapper implements
         createSimulation();
     }
 
-    public Simulation(final DataWrapper dataWrapper, final Parameters parameters) {
+    public Simulation(DataWrapper dataWrapper, Parameters parameters) {
         if (this.simulation == null) {
             this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
             this.inputDataModelList = dataWrapper.getDataModelList();
@@ -201,7 +201,7 @@ public class Simulation extends DataWrapper implements
         return this.simulation;
     }
 
-    public void setSimulation(final edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, final Parameters parameters) {
+    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
         this.simulation = simulation;
         this.parameters = parameters;
     }
@@ -219,7 +219,7 @@ public class Simulation extends DataWrapper implements
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -230,14 +230,14 @@ public class Simulation extends DataWrapper implements
     /**
      * Sets the data model.
      */
-    public void setDataModel(final DataModel dataModel) {
+    public void setDataModel(DataModel dataModel) {
     }
 
     /**
      * @return the list of models.
      */
     public DataModelList getDataModelList() {
-        final DataModelList list = new DataModelList();
+        DataModelList list = new DataModelList();
 
         for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
             list.add(this.simulation.getDataModel(i));
@@ -250,7 +250,7 @@ public class Simulation extends DataWrapper implements
      * @return the list of models.
      */
     public List<DataModel> getDataModels() {
-        final List<DataModel> list = new ArrayList<>();
+        List<DataModel> list = new ArrayList<>();
 
         for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
             list.add(this.simulation.getDataModel(i));
@@ -259,11 +259,11 @@ public class Simulation extends DataWrapper implements
         return list;
     }
 
-    public void setDataModelList(final DataModelList dataModelList) {
+    public void setDataModelList(DataModelList dataModelList) {
         throw new UnsupportedOperationException();
     }
 
-    public void setParameters(final Parameters parameters) {
+    public void setParameters(Parameters parameters) {
         this.parameters = parameters;
     }
 
@@ -285,7 +285,7 @@ public class Simulation extends DataWrapper implements
      * Returns all of the graphs in the simulation, in order.
      */
     public List<Graph> getGraphs() {
-        final List<Graph> graphs = new ArrayList<>();
+        List<Graph> graphs = new ArrayList<>();
 
         for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
             graphs.add(this.simulation.getTrueGraph(i));
@@ -298,7 +298,7 @@ public class Simulation extends DataWrapper implements
         return this.fixedSimulation;
     }
 
-    public void setFixedSimulation(final boolean fixedSimulation) {
+    public void setFixedSimulation(boolean fixedSimulation) {
         this.fixedSimulation = fixedSimulation;
     }
 
@@ -306,7 +306,7 @@ public class Simulation extends DataWrapper implements
         return this.fixedGraph;
     }
 
-    public void setFixedGraph(final boolean fixedGraph) {
+    public void setFixedGraph(boolean fixedGraph) {
         this.fixedGraph = fixedGraph;
     }
 
@@ -318,7 +318,7 @@ public class Simulation extends DataWrapper implements
         }
     }
 
-    public void setSimulation(final edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
+    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
         this.simulation = simulation;
     }
 

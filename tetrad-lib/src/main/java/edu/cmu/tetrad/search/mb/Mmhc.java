@@ -56,7 +56,7 @@ public class Mmhc implements GraphSearch {
 
     //=============================CONSTRUCTORS==========================//
 
-    public Mmhc(final IndependenceTest test, final DataSet dataSet) {
+    public Mmhc(IndependenceTest test, DataSet dataSet) {
         this.depth = -1;
         this.independenceTest = test;
         this.data = dataSet;
@@ -82,29 +82,29 @@ public class Mmhc implements GraphSearch {
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      */
     public Graph search() {
-        final List<Node> variables = this.independenceTest.getVariables();
-        final Mmmb mmmb = new Mmmb(this.independenceTest, getDepth(), true);
-        final Map<Node, List<Node>> pc = new HashMap<>();
+        List<Node> variables = this.independenceTest.getVariables();
+        Mmmb mmmb = new Mmmb(this.independenceTest, getDepth(), true);
+        Map<Node, List<Node>> pc = new HashMap<>();
 
-        for (final Node x : variables) {
+        for (Node x : variables) {
             pc.put(x, mmmb.getPc(x));
         }
 
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        for (final Node x : variables) {
+        for (Node x : variables) {
             graph.addNode(x);
         }
 
-        for (final Node x : variables) {
-            for (final Node y : pc.get(x)) {
+        for (Node x : variables) {
+            for (Node y : pc.get(x)) {
                 if (!graph.isAdjacentTo(x, y)) {
                     graph.addUndirectedEdge(x, y);
                 }
             }
         }
 
-        final FgesOrienter orienter = new FgesOrienter(this.data);
+        FgesOrienter orienter = new FgesOrienter(this.data);
         orienter.orient(graph);
         return graph;
     }
@@ -113,7 +113,7 @@ public class Mmhc implements GraphSearch {
         return this.knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -121,7 +121,7 @@ public class Mmhc implements GraphSearch {
         this.knowledge = knowledge;
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         this.depth = depth;
     }
 }

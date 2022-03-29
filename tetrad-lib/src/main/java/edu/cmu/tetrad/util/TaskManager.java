@@ -15,7 +15,7 @@ public class TaskManager {
         return TaskManager.instance;
     }
 
-    public void setCanceled(final boolean canceled) {
+    public void setCanceled(boolean canceled) {
         this.canceled = canceled;
     }
 

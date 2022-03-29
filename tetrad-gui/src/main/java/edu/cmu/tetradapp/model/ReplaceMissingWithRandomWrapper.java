@@ -46,8 +46,8 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
 
     //============================CONSTRUCTORS=============================//
 
-    public ReplaceMissingWithRandomWrapper(final DataWrapper wrapper) {
-        final DataSet dataSet =
+    public ReplaceMissingWithRandomWrapper(DataWrapper wrapper) {
+        DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 
         this.outputDataSet = DataUtils.replaceMissingWithRandom(dataSet);
@@ -86,7 +86,7 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

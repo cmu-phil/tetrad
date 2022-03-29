@@ -38,27 +38,27 @@ import java.util.ArrayList;
  * Writes PNG files.
  */
 class PngWriter {
-    public static void writePng(Graph graph, final File file) {
+    public static void writePng(Graph graph, File file) {
 //        circleLayout(graph, 200, 200, 175);
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
         // Remove self-loops.
         graph = new EdgeListGraph(graph);
 
-        for (final Node node : graph.getNodes()) {
-            for (final Edge edge : new ArrayList<>(graph.getEdges(node, node))) {
+        for (Node node : graph.getNodes()) {
+            for (Edge edge : new ArrayList<>(graph.getEdges(node, node))) {
                 graph.removeEdge(edge);
             }
         }
 
-        final GraphWorkbench workbench = new GraphWorkbench(graph);
+        GraphWorkbench workbench = new GraphWorkbench(graph);
 
         int maxx = 0;
         int maxy = 0;
 
-        for (final Node node : graph.getNodes()) {
+        for (Node node : graph.getNodes()) {
             if (node.getCenterX() > maxx) {
                 maxx = node.getCenterX();
             }
@@ -71,21 +71,21 @@ class PngWriter {
         workbench.setSize(new Dimension(maxx + 50, maxy + 50));
         panel.add(workbench, BorderLayout.CENTER);
 
-        final JDialog dialog = new JDialog();
+        JDialog dialog = new JDialog();
         dialog.add(workbench);
         dialog.pack();
 
-        final Dimension size = workbench.getSize();
-        final BufferedImage image = new BufferedImage(size.width, size.height,
+        Dimension size = workbench.getSize();
+        BufferedImage image = new BufferedImage(size.width, size.height,
                 BufferedImage.TYPE_BYTE_INDEXED);
-        final Graphics2D graphics = image.createGraphics();
+        Graphics2D graphics = image.createGraphics();
         workbench.paint(graphics);
         image.flush();
 
         // Write the image to resultFile.
         try {
             ImageIO.write(image, "PNG", file);
-        } catch (final IOException e1) {
+        } catch (IOException e1) {
             throw new RuntimeException("Could not write to " + file, e1);
         }
     }

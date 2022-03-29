@@ -62,16 +62,16 @@ public class BdeuScoreImages implements IBDeuScore {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public BdeuScoreImages(final List<DataModel> dataModels) {
+    public BdeuScoreImages(List<DataModel> dataModels) {
         if (dataModels == null) {
             throw new NullPointerException();
         }
 
-        final List<BDeuScore> scores = new ArrayList<>();
+        List<BDeuScore> scores = new ArrayList<>();
 
-        for (final DataModel model : dataModels) {
+        for (DataModel model : dataModels) {
             if (model instanceof DataSet) {
-                final DataSet dataSet = (DataSet) model;
+                DataSet dataSet = (DataSet) model;
 
                 if (!dataSet.isDiscrete()) {
                     throw new IllegalArgumentException("Datasets must be discrete.");
@@ -83,7 +83,7 @@ public class BdeuScoreImages implements IBDeuScore {
             }
         }
 
-        final List<Node> variables = scores.get(0).getVariables();
+        List<Node> variables = scores.get(0).getVariables();
 
         for (int i = 2; i < scores.size(); i++) {
             scores.get(i).setVariables(variables);
@@ -94,10 +94,10 @@ public class BdeuScoreImages implements IBDeuScore {
     }
 
 
-    public double localScoreDiff(final int x, final int y, final int[] z) {
+    public double localScoreDiff(int x, int y, int[] z) {
         double sum = 0.0;
 
-        for (final BDeuScore score : this.scores) {
+        for (BDeuScore score : this.scores) {
             sum += score.localScoreDiff(x, y, z);
         }
 
@@ -105,34 +105,34 @@ public class BdeuScoreImages implements IBDeuScore {
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
+    public double localScoreDiff(int x, int y) {
         return localScoreDiff(x, y, new int[0]);
     }
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(final int i, final int[] parents) {
+    public double localScore(int i, int[] parents) {
         double sum = 0.0;
 
-        for (final BDeuScore score : this.scores) {
+        for (BDeuScore score : this.scores) {
             sum += score.localScore(i, parents);
         }
 
         return sum / this.scores.size();
     }
 
-    public double localScore(final int i, final int[] parents, final int index) {
+    public double localScore(int i, int[] parents, int index) {
         return localScoreOneDataSet(i, parents, index);
     }
 
-    private double localScoreOneDataSet(final int i, final int[] parents, final int index) {
+    private double localScoreOneDataSet(int i, int[] parents, int index) {
         return this.scores.get(index).localScore(i, parents);
     }
 
 
-    int[] append(final int[] parents, final int extra) {
-        final int[] all = new int[parents.length + 1];
+    int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
@@ -141,10 +141,10 @@ public class BdeuScoreImages implements IBDeuScore {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(final int i, final int parent) {
+    public double localScore(int i, int parent) {
         double sum = 0.0;
 
-        for (final BDeuScore score : this.scores) {
+        for (BDeuScore score : this.scores) {
             sum += score.localScore(i, parent);
         }
 
@@ -154,22 +154,22 @@ public class BdeuScoreImages implements IBDeuScore {
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
+    public double localScore(int i) {
         double sum = 0.0;
 
-        for (final BDeuScore score : this.scores) {
+        for (BDeuScore score : this.scores) {
             sum += score.localScore(i);
         }
 
         return sum / this.scores.size();
     }
 
-    public void setOut(final PrintStream out) {
+    public void setOut(PrintStream out) {
         this.out = out;
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
+    public boolean isEffectEdge(double bump) {
         return false;
     }
 
@@ -181,7 +181,7 @@ public class BdeuScoreImages implements IBDeuScore {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -196,39 +196,39 @@ public class BdeuScoreImages implements IBDeuScore {
     }
 
     // Calculates the BIC score.
-    private double score(final double residualVariance, final int n, final int p, final double c) {
+    private double score(double residualVariance, int n, int p, double c) {
         return -n * Math.log(residualVariance) - c * (p + 1) * Math.log(n);
     }
 
-    private Matrix getSelection1(final ICovarianceMatrix cov, final int[] rows) {
+    private Matrix getSelection1(ICovarianceMatrix cov, int[] rows) {
         return cov.getSelection(rows, rows);
     }
 
-    private Vector getSelection2(final ICovarianceMatrix cov, final int[] rows, final int k) {
+    private Vector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
         return cov.getSelection(rows, new int[]{k}).getColumn(0);
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
-    private void printMinimalLinearlyDependentSet(final int[] parents, final ICovarianceMatrix cov) {
-        final List<Node> _parents = new ArrayList<>();
-        for (final int p : parents) _parents.add(this.variables.get(p));
+    private void printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
+        List<Node> _parents = new ArrayList<>();
+        for (int p : parents) _parents.add(this.variables.get(p));
 
-        final DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            final int[] sel = new int[choice.length];
-            final List<Node> _sel = new ArrayList<>();
+            int[] sel = new int[choice.length];
+            List<Node> _sel = new ArrayList<>();
             for (int m = 0; m < choice.length; m++) {
                 sel[m] = parents[m];
                 _sel.add(this.variables.get(sel[m]));
             }
 
-            final Matrix m = cov.getSelection(sel, sel);
+            Matrix m = cov.getSelection(sel, sel);
 
             try {
                 m.inverse();
-            } catch (final Exception e2) {
+            } catch (Exception e2) {
                 this.out.println("### Linear dependence among variables: " + _sel);
             }
         }
@@ -238,8 +238,8 @@ public class BdeuScoreImages implements IBDeuScore {
         return this.samplePrior;
     }
 
-    public void setSamplePrior(final double samplePrior) {
-        for (final BDeuScore score : this.scores) {
+    public void setSamplePrior(double samplePrior) {
+        for (BDeuScore score : this.scores) {
             score.setSamplePrior(samplePrior);
         }
         this.samplePrior = samplePrior;
@@ -249,16 +249,16 @@ public class BdeuScoreImages implements IBDeuScore {
         return this.structurePrior;
     }
 
-    public void setStructurePrior(final double structurePrior) {
-        for (final BDeuScore score : this.scores) {
+    public void setStructurePrior(double structurePrior) {
+        for (BDeuScore score : this.scores) {
             score.setStructurePrior(structurePrior);
         }
         this.structurePrior = structurePrior;
     }
 
     @Override
-    public Node getVariable(final String targetName) {
-        for (final Node node : this.variables) {
+    public Node getVariable(String targetName) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -273,7 +273,7 @@ public class BdeuScoreImages implements IBDeuScore {
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 

@@ -26,44 +26,44 @@ public class HsimRepeatAutoRun {
     private char delimiter = ',';
 
     //*********Constructors*************//
-    public HsimRepeatAutoRun(final DataSet indata) {
+    public HsimRepeatAutoRun(DataSet indata) {
         //need to turn indata into a VerticalIntDataBox still !!!!!!!!!!!!!!!!!11
         //first check if indata is already the right type
         if (((BoxDataSet) indata).getDataBox() instanceof VerticalIntDataBox) {
             this.data = indata;
         } else {
-            final VerticalIntDataBox dataVertBox = HsimUtils.makeVertIntBox(indata);
+            VerticalIntDataBox dataVertBox = HsimUtils.makeVertIntBox(indata);
             this.data = new BoxDataSet(dataVertBox, indata.getVariables());
         }
     }
 
-    public HsimRepeatAutoRun(final String readfilename, final char delim) {
-        final String workingDirectory = System.getProperty("user.dir");
+    public HsimRepeatAutoRun(String readfilename, char delim) {
+        String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        final Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<String>();
         eVars.add("MULT");
-        final Path dataFile = Paths.get(readfilename);
+        Path dataFile = Paths.get(readfilename);
 
-        final VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
+        VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
         try {
             this.data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
-        } catch (final Exception IOException) {
+        } catch (Exception IOException) {
             IOException.printStackTrace();
         }
         //if (verbose) System.out.println("Vertical cols: " + dataSet.getNumColumns() + " rows: " + dataSet.getNumRows());
     }
 
     //***************PUBLIC METHODS********************//
-    public double[] run(final int resimSize, final int repeat) {
+    public double[] run(int resimSize, int repeat) {
         //parameter: set of positive integers, which are resimSize values.
-        final List<Integer> schedule = new ArrayList<Integer>();
+        List<Integer> schedule = new ArrayList<Integer>();
 
         for (int i = 0; i < repeat; i++) {
             schedule.add(resimSize);
         }
 
         //Arrays.asList(5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5);
-        final double[] evalTotal;
+        double[] evalTotal;
         evalTotal = new double[5];
         evalTotal[0] = 0;
         evalTotal[1] = 0;
@@ -80,9 +80,9 @@ public class HsimRepeatAutoRun {
         Integer count3 = 1;
         Integer count4 = 1;
 
-        for (final Integer i : schedule) {
+        for (Integer i : schedule) {
             //count++;
-            final HsimAutoRun study = new HsimAutoRun(this.data);
+            HsimAutoRun study = new HsimAutoRun(this.data);
             //this is done differently if write is true. in that case, HsimAutoRun will be used differently
             if (this.write) {
                 study.setWrite(true);
@@ -132,19 +132,19 @@ public class HsimRepeatAutoRun {
     }
 
     //*************************Methods for setting private variables***********//
-    public void setVerbose(final boolean verbosity) {
+    public void setVerbose(boolean verbosity) {
         this.verbose = verbosity;
     }
 
-    public void setWrite(final boolean setwrite) {
+    public void setWrite(boolean setwrite) {
         this.write = setwrite;
     }
 
-    public void setFilenameOut(final String filename) {
+    public void setFilenameOut(String filename) {
         this.filenameOut = filename;
     }
 
-    public void setDelimiter(final char delim) {
+    public void setDelimiter(char delim) {
         this.delimiter = delim;
     }
 }

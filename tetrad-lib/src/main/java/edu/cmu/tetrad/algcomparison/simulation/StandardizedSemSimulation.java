@@ -27,25 +27,25 @@ public class StandardizedSemSimulation implements Simulation {
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
 
-    public StandardizedSemSimulation(final RandomGraph graph) {
+    public StandardizedSemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
-    public StandardizedSemSimulation(final SemPm pm) {
-        final SemGraph graph = pm.getGraph();
+    public StandardizedSemSimulation(SemPm pm) {
+        SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
         this.randomGraph = new SingleGraph(graph);
         this.pm = pm;
     }
 
-    public StandardizedSemSimulation(final StandardizedSemIm im) {
+    public StandardizedSemSimulation(StandardizedSemIm im) {
         this.randomGraph = new SingleGraph(im.getSemPm().getGraph());
         this.standardizedIm = im;
         this.pm = im.getSemPm();
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
         Graph graph = this.randomGraph.createGraph(parameters);
@@ -62,19 +62,19 @@ public class StandardizedSemSimulation implements Simulation {
 
             this.graphs.add(graph);
 
-            final DataSet dataSet = simulate(graph, parameters);
+            DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
             this.dataSets.add(dataSet);
         }
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
@@ -85,7 +85,7 @@ public class StandardizedSemSimulation implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
         if (!(this.randomGraph instanceof SingleGraph)) {
             parameters.addAll(this.randomGraph.getParameters());
@@ -107,7 +107,7 @@ public class StandardizedSemSimulation implements Simulation {
         return DataType.Continuous;
     }
 
-    private DataSet simulate(final Graph graph, final Parameters parameters) {
+    private DataSet simulate(Graph graph, Parameters parameters) {
         if (this.standardizedIm == null) {
             SemPm pm = this.pm;
 

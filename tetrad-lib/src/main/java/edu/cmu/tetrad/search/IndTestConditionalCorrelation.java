@@ -88,7 +88,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The q level of the test.
      */
-    public IndTestConditionalCorrelation(final DataSet dataSet, final double alpha) {
+    public IndTestConditionalCorrelation(DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -97,7 +97,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
             throw new IllegalArgumentException("Q mut be in [0, 1]");
         }
 
-        final List<Node> nodes = dataSet.getVariables();
+        List<Node> nodes = dataSet.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
 
@@ -111,20 +111,20 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
 
-        final double score = this.cci.isIndependent(x, y, z);
+        double score = this.cci.isIndependent(x, y, z);
         this.score = score;
-        final double p = this.cci.getPValue(score);
+        double p = this.cci.getPValue(score);
 
         if (this.verbose) {
-            final IndependenceFact fact = new IndependenceFact(x, y, z);
+            IndependenceFact fact = new IndependenceFact(x, y, z);
 
-            final String s;
+            String s;
 
             if (p > this.alpha) {
                 s = fact + " INDEPENDENT p = " + p;
@@ -139,18 +139,18 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
         return p > this.alpha;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+    public boolean isIndependent(Node x, Node y, Node... z) {
         return isIndependent(x, y, Arrays.asList(z));
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
-        final double score = this.cci.isIndependent(x, y, z);
-        final double p = this.cci.getPValue(score);
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        double score = this.cci.isIndependent(x, y, z);
+        double p = this.cci.getPValue(score);
         return p < this.alpha;
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -162,7 +162,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -189,8 +189,8 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(final String name) {
-        for (final Node node : this.variables) {
+    public Node getVariable(String name) {
+        for (Node node : this.variables) {
             if (node.getName().equals(name)) return node;
         }
 
@@ -201,9 +201,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
-        for (final Node variable1 : variables) {
+        List<Node> variables = getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -213,7 +213,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
-    public boolean determines(final List<Node> z, final Node x) throws UnsupportedOperationException {
+    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -250,7 +250,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     }
 
     @Override
-    public double getScoreForFact(final IndependenceFact fact) {
+    public double getScoreForFact(IndependenceFact fact) {
         return this.cci.isIndependent(fact.getX(), fact.getY(), fact.getZ());
     }
 
@@ -265,7 +265,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -276,7 +276,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
         return this.cci.getNumFunctions();
     }
 
-    public void setNumFunctions(final int numFunctions) {
+    public void setNumFunctions(int numFunctions) {
         this.cci.setNumFunctions(numFunctions);
     }
 
@@ -284,23 +284,23 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
         return this.cci.getWidth();
     }
 
-    public void setKernelMultiplier(final double multiplier) {
+    public void setKernelMultiplier(double multiplier) {
         this.cci.setWidth(multiplier);
     }
 
-    public void setKernel(final ConditionalCorrelationIndependence.Kernel kernel) {
+    public void setKernel(ConditionalCorrelationIndependence.Kernel kernel) {
         this.cci.setKernelMultiplier(kernel);
     }
 
-    public void setBasis(final ConditionalCorrelationIndependence.Basis basis) {
+    public void setBasis(ConditionalCorrelationIndependence.Basis basis) {
         this.cci.setBasis(basis);
     }
 
-    public void setFastFDR(final boolean fastFDR) {
+    public void setFastFDR(boolean fastFDR) {
         this.fastFDR = fastFDR;
     }
 
-    public void setKernelRegressionSampleSize(final int i) {
+    public void setKernelRegressionSampleSize(int i) {
         this.cci.setKernelRegressionSampleSize(i);
     }
 }

@@ -28,37 +28,37 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
 
-    public LoadMadelynData(final String directory, final String suffix, final int structure) {
+    public LoadMadelynData(String directory, String suffix, int structure) {
         this.directory = directory;
         this.suffix = suffix;
         this.structure = structure;
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
         this.dataSets = new ArrayList<>();
 
         for (int run = 1; run <= 10; run++) {
-            final File file = new File(this.directory + "/structure_" + this.structure + "_coeff" + run + "_" + this.suffix + ".txt");
+            File file = new File(this.directory + "/structure_" + this.structure + "_coeff" + run + "_" + this.suffix + ".txt");
 
             System.out.println("Loading data from " + file.getAbsolutePath());
 
             try {
-                final DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"',
+                DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"',
                         "*", true, Delimiter.TAB);
                 this.dataSets.add(dataSet);
 
                 if (!(dataSet.isContinuous())) {
                     throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
                 }
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 System.out.println("Couldn't parse " + file.getAbsolutePath());
             }
         }
 
-        final File parent = new File(new File(this.directory).getParent());
+        File parent = new File(new File(this.directory).getParent());
 
-        final File file2 = new File(parent + "/structure_" + this.structure + "_graph.txt");
+        File file2 = new File(parent + "/structure_" + this.structure + "_graph.txt");
         System.out.println("Loading graph from " + file2.getAbsolutePath());
         this.graph = GraphUtils.loadGraphTxt(file2);
         GraphUtils.circleLayout(this.graph, 225, 200, 150);
@@ -73,21 +73,21 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graph;
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
     public String getDescription() {
         try {
-            final StringBuilder b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
             b.append("Load data sets and graphs from a directory.").append("\n\n");
             return b.toString();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

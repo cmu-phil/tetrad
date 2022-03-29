@@ -53,17 +53,17 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public TimeSeriesIndTestParamsEditor(final Parameters simulator) {
+    public TimeSeriesIndTestParamsEditor(Parameters simulator) {
         this.params = simulator;
 
         this.alphaField = new DoubleTextField(getLagIndTestParams().getDouble("alpha", 0.001), 5,
                 NumberFormatUtil.getInstance().getNumberFormat());
         this.alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
                     getLagIndTestParams().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -71,11 +71,11 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
 
         this.numLagsField = new IntTextField((getLagIndTestParams()).getInt("numLags", 1), 3);
         this.numLagsField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+            public int filter(int value, int oldValue) {
                 try {
                     getLagIndTestParams().set("numLags", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -91,7 +91,7 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
      */
     private void buildGui() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Alpha:"));
         b1.add(Box.createHorizontalGlue());
         b1.add(this.alphaField);
@@ -103,17 +103,17 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
         //        b2.add(windowSizeField);
         //        add(b2);
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Num Lags:"));
         b3.add(Box.createHorizontalGlue());
         b3.add(this.numLagsField);
         add(b3);
         add(Box.createVerticalGlue());
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Num Times:"));
         b4.add(Box.createHorizontalGlue());
-        final int numTimePoints = getLagIndTestParams().getInt("numTimePoints", 0);
+        int numTimePoints = getLagIndTestParams().getInt("numTimePoints", 0);
         b4.add(new JLabel(Integer.toString(numTimePoints)));
         add(b4);
         add(Box.createVerticalGlue());

@@ -40,12 +40,12 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
     public PcAll() {
     }
 
-    public PcAll(final IndependenceWrapper test) {
+    public PcAll(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.PcAll.ColliderDiscovery colliderDiscovery;
 
@@ -79,7 +79,7 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
                     throw new IllegalArgumentException("Not a choice.");
             }
 
-            final edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(this.test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(this.test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
             search.setKnowledge(this.knowledge);
@@ -104,10 +104,10 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
             return search.search();
         } else {
-            final PcAll pcAll = new PcAll(this.test);
+            PcAll pcAll = new PcAll(this.test);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -134,7 +134,7 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
@@ -150,7 +150,7 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.CONCURRENT_FAS);
         parameters.add(Params.COLLIDER_DISCOVERY_RULE);
@@ -170,7 +170,7 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -180,7 +180,7 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
     }
 
     @Override
-    public void setIndependenceWrapper(final IndependenceWrapper test) {
+    public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 

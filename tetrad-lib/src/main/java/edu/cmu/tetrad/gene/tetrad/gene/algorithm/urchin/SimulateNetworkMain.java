@@ -23,9 +23,9 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 
 
 public class SimulateNetworkMain {
-    public static void main(final String[] argv) {
+    public static void main(String[] argv) {
 
-        final double[] inputs = new double[4];
+        double[] inputs = new double[4];
         inputs[1] = 0.0;
 
         /*
@@ -43,7 +43,7 @@ public class SimulateNetworkMain {
         inputs[2] = 1.0;
         inputs[3] = 1.0;
 
-        final NetBuilderModel nbm = new NetBuilderModel(inputs, 401);
+        NetBuilderModel nbm = new NetBuilderModel(inputs, 401);
     }
 }
 

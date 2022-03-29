@@ -59,8 +59,8 @@ class EvidenceWizardMultiple extends JPanel {
      * form P(Node=c1|Parent1=c2, Parent2=c2,...); values for these parameters
      * are probabilities ranging from 0.0 to 1.0.
      */
-    public EvidenceWizardMultiple(final UpdaterWrapper updaterWrapper,
-                                  final GraphWorkbench workbench) {
+    public EvidenceWizardMultiple(UpdaterWrapper updaterWrapper,
+                                  GraphWorkbench workbench) {
         if (updaterWrapper == null) {
             throw new NullPointerException();
         }
@@ -77,11 +77,11 @@ class EvidenceWizardMultiple extends JPanel {
         setBorder(new MatteBorder(10, 10, 10, 10, getBackground()));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        final JButton calcMarginalsAndJointButton =
+        JButton calcMarginalsAndJointButton =
                 new JButton("Calculate Marginals and Joint");
 
         // Do Layout.
-        final Box b0 = Box.createHorizontalBox();
+        Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel("<html>" +
                 "Select a set of nodes (by holding down the shift key) whose" +
                 "<br>marginals you would like to see given the evidence indicated" +
@@ -95,7 +95,7 @@ class EvidenceWizardMultiple extends JPanel {
         add(this.evidenceEditor);
         add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalGlue());
         b2.add(calcMarginalsAndJointButton);
         add(b2);
@@ -103,43 +103,43 @@ class EvidenceWizardMultiple extends JPanel {
 
         // Add listeners.
         calcMarginalsAndJointButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final List<DisplayNode> selectedGraphNodes =
+            public void actionPerformed(ActionEvent e) {
+                List<DisplayNode> selectedGraphNodes =
                         getWorkbench().getSelectedNodes();
 
                 getUpdaterWrapper().getBayesUpdater().setEvidence(EvidenceWizardMultiple.this.evidenceEditor.getEvidence());
 
-                final Graph updatedGraph = getUpdaterWrapper().getBayesUpdater().getManipulatedGraph();
+                Graph updatedGraph = getUpdaterWrapper().getBayesUpdater().getManipulatedGraph();
                 getWorkbench().setGraph(updatedGraph);
 
-                final BayesIm manipulatedIm = getUpdaterWrapper()
+                BayesIm manipulatedIm = getUpdaterWrapper()
                         .getBayesUpdater().getManipulatedBayesIm();
 
-                final List<Node> selectedNodes = new LinkedList<>();
+                List<Node> selectedNodes = new LinkedList<>();
 
-                for (final DisplayNode selectedGraphNode : selectedGraphNodes) {
-                    final Node tetradNode = selectedGraphNode.getModelNode();
-                    final String selectedNodeName = tetradNode.getName();
-                    final Node selectedNode = updatedGraph.getNode(selectedNodeName);
+                for (DisplayNode selectedGraphNode : selectedGraphNodes) {
+                    Node tetradNode = selectedGraphNode.getModelNode();
+                    String selectedNodeName = tetradNode.getName();
+                    Node selectedNode = updatedGraph.getNode(selectedNodeName);
                     selectedNodes.add(selectedNode);
                 }
 
-                for (final Node node : selectedNodes) {
+                for (Node node : selectedNodes) {
                     getWorkbench().selectNode(node);
                 }
 
                 Collections.sort(selectedNodes, new Comparator<Node>() {
-                    public int compare(final Node o1, final Node o2) {
-                        final String name1 = o1.getName();
-                        final String name2 = o2.getName();
+                    public int compare(Node o1, Node o2) {
+                        String name1 = o1.getName();
+                        String name2 = o2.getName();
                         return name1.compareTo(name2);
                     }
                 });
 
-                final JTextArea marginalsArea = new JTextArea();
+                JTextArea marginalsArea = new JTextArea();
                 marginalsArea.setEditable(false);
 
-                final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
                 if (selectedNodes.size() == 0) {
                     marginalsArea.append("\nNo nodes selected.");
@@ -156,21 +156,21 @@ class EvidenceWizardMultiple extends JPanel {
         });
     }
 
-    private void appendMarginals(final List<Node> selectedNodes,
-                                 final JTextArea marginalsArea, final BayesIm manipulatedIm, final NumberFormat nf) {
-        final BayesPm bayesPm = manipulatedIm.getBayesPm();
+    private void appendMarginals(List<Node> selectedNodes,
+                                 JTextArea marginalsArea, BayesIm manipulatedIm, NumberFormat nf) {
+        BayesPm bayesPm = manipulatedIm.getBayesPm();
 
         marginalsArea.append("MARGINALS FOR SELECTED VARIABLES:\n");
 
-        for (final Node selectedNode : selectedNodes) {
+        for (Node selectedNode : selectedNodes) {
             marginalsArea.append(
                     "\nVariable " + selectedNode.getName() + ":\n");
 
-            final int nodeIndex = manipulatedIm.getNodeIndex(selectedNode);
+            int nodeIndex = manipulatedIm.getNodeIndex(selectedNode);
 
             for (int j = 0; j < bayesPm.getNumCategories(selectedNode); j++) {
-                final double prob = getUpdaterWrapper().getBayesUpdater().getMarginal(nodeIndex, j);
-                final double logOdds = Math.log(prob / (1. - prob));
+                double prob = getUpdaterWrapper().getBayesUpdater().getMarginal(nodeIndex, j);
+                double logOdds = Math.log(prob / (1. - prob));
 
                 marginalsArea.append("Category " +
                         bayesPm.getCategory(selectedNode, j) + ": p = " +
@@ -181,23 +181,23 @@ class EvidenceWizardMultiple extends JPanel {
         }
     }
 
-    private void appendJoint(final List<Node> selectedNodes, final JTextArea marginalsArea,
-                             final BayesIm manipulatedIm, final NumberFormat nf) {
+    private void appendJoint(List<Node> selectedNodes, JTextArea marginalsArea,
+                             BayesIm manipulatedIm, NumberFormat nf) {
         if (!getUpdaterWrapper().getBayesUpdater().isJointMarginalSupported()) {
             marginalsArea.append("\n\n(Calculation of joint not supported " +
                     "for this updater.)");
             return;
         }
 
-        final BayesPm bayesPm = manipulatedIm.getBayesPm();
-        final int numNodes = selectedNodes.size();
-        final int[] dims = new int[numNodes];
-        final int[] variables = new int[numNodes];
+        BayesPm bayesPm = manipulatedIm.getBayesPm();
+        int numNodes = selectedNodes.size();
+        int[] dims = new int[numNodes];
+        int[] variables = new int[numNodes];
         int numRows = 1;
 
         for (int i = 0; i < numNodes; i++) {
-            final Node node = selectedNodes.get(i);
-            final int numCategories = bayesPm.getNumCategories(node);
+            Node node = selectedNodes.get(i);
+            int numCategories = bayesPm.getNumCategories(node);
             variables[i] = manipulatedIm.getNodeIndex(node);
             dims[i] = numCategories;
             numRows *= numCategories;
@@ -212,14 +212,14 @@ class EvidenceWizardMultiple extends JPanel {
         marginalsArea.append("Joint\tLog odds\n");
 
         for (int row = 0; row < numRows; row++) {
-            final int[] values = getCategories(row, dims);
-            final double prob = getUpdaterWrapper().getBayesUpdater().getJointMarginal(variables, values);
-            final double logOdds = Math.log(prob / (1. - prob));
+            int[] values = getCategories(row, dims);
+            double prob = getUpdaterWrapper().getBayesUpdater().getJointMarginal(variables, values);
+            double logOdds = Math.log(prob / (1. - prob));
 
             marginalsArea.append("\n");
 
             for (int j = 0; j < numNodes; j++) {
-                final Node node = selectedNodes.get(j);
+                Node node = selectedNodes.get(j);
                 marginalsArea.append(bayesPm.getCategory(node, values[j]));
                 marginalsArea.append("\t");
             }
@@ -229,8 +229,8 @@ class EvidenceWizardMultiple extends JPanel {
         }
     }
 
-    private int[] getCategories(int row, final int[] dims) {
-        final int[] values = new int[dims.length];
+    private int[] getCategories(int row, int[] dims) {
+        int[] values = new int[dims.length];
 
         for (int i = dims.length - 1; i >= 0; i--) {
             values[i] = row % dims[i];

@@ -79,7 +79,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     private final Image image;
 
 
-    public StdDisplayComp(final String imagePath) {
+    public StdDisplayComp(String imagePath) {
         this.nameLabel = new JLabel(" ");
         this.acronymLabel = new JLabel("No model");
         this.image = ImageUtils.getImage(this, imagePath);
@@ -91,7 +91,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      *
      * @param selected the selection status of the node (true or false).
      */
-    public void setSelected(final boolean selected) {
+    public void setSelected(boolean selected) {
         this.selected = selected;
         setBorder(null);
         repaint();
@@ -101,12 +101,12 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         return this.selected;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         super.setName(name);
         this.nameLabel.setText(name);
     }
 
-    public void setAcronym(final String acronym) {
+    public void setAcronym(String acronym) {
         this.acronymLabel.setText(acronym);
         layoutComponents();
     }
@@ -116,11 +116,11 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
                 getSize().height - 1);
     }
 
-    public boolean contains(final int x, final int y) {
+    public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
 
-    public void setHasModel(final boolean hasModel) {
+    public void setHasModel(boolean hasModel) {
         if (hasModel) {
             this.unselectedColor = StdDisplayComp.HAS_MODEL_COLOR;
         } else {
@@ -133,8 +133,8 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      * Paints the background of the component (since it has to be a
      * JComponent).
      */
-    public void paint(final Graphics g) {
-        final Graphics2D g2 = (Graphics2D) g;
+    public void paint(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
         g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : this.unselectedColor);
         g2.fill(getShape());
         g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedEdgeColor() : DisplayNodeUtils.getNodeEdgeColor());
@@ -149,17 +149,17 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         setBackground(DisplayNodeUtils.getNodeFillColor());
         setFont(DisplayNodeUtils.getFont());
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
         // Add icon to name label.
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel(new ImageIcon(this.image)));
         b1.add(Box.createHorizontalGlue());
         b.add(b1);
 
         // Construct name label.
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalGlue());
         b2.add(Box.createHorizontalStrut(5));
         b2.add(this.nameLabel);
@@ -168,7 +168,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         b.add(b2);
 
         // Construct acronym label.
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(Box.createHorizontalGlue());
         b3.add(Box.createHorizontalStrut(5));
         this.acronymLabel.setFont(StdDisplayComp.SMALL_FONT);

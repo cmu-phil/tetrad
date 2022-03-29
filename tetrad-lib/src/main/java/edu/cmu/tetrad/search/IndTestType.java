@@ -78,7 +78,7 @@ public final class IndTestType implements TetradSerializable {
     /**
      * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
-    protected IndTestType(final String name, final DataType type) {
+    protected IndTestType(String name, DataType type) {
         this.name = name;
         this.dataType = type;
     }

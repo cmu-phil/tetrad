@@ -38,15 +38,15 @@ import java.util.Arrays;
 public final class ModeInterpolator implements DataFilter {
 
 
-    public DataSet filter(final DataSet dataSet) {
-        final DataSet newDataSet = dataSet.copy();
+    public DataSet filter(DataSet dataSet) {
+        DataSet newDataSet = dataSet.copy();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            final Node var = dataSet.getVariable(j);
+            Node var = dataSet.getVariable(j);
             if (var instanceof DiscreteVariable) {
-                final DiscreteVariable variable = (DiscreteVariable) var;
-                final int numCategories = variable.getNumCategories();
-                final int[] categoryCounts = new int[numCategories];
+                DiscreteVariable variable = (DiscreteVariable) var;
+                int numCategories = variable.getNumCategories();
+                int[] categoryCounts = new int[numCategories];
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (dataSet.getInt(i, j) == DiscreteVariable.MISSING_VALUE) {
@@ -72,7 +72,7 @@ public final class ModeInterpolator implements DataFilter {
                     }
                 }
             } else if (dataSet.getVariable(j) instanceof ContinuousVariable) {
-                final double[] data = new double[dataSet.getNumRows()];
+                double[] data = new double[dataSet.getNumRows()];
                 int k = -1;
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {

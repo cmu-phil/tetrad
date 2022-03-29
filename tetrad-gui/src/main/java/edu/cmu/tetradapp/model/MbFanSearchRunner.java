@@ -63,45 +63,45 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public MbFanSearchRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public MbFanSearchRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public MbFanSearchRunner(final DataWrapper dataWrapper, final Parameters params) {
+    public MbFanSearchRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbFanSearchRunner(final Graph graph, final Parameters params) {
+    public MbFanSearchRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbFanSearchRunner(final GraphWrapper dagWrapper, final Parameters params) {
+    public MbFanSearchRunner(GraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public MbFanSearchRunner(final DagWrapper dagWrapper, final Parameters params) {
+    public MbFanSearchRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public MbFanSearchRunner(final SemGraphWrapper dagWrapper,
-                             final Parameters params) {
+    public MbFanSearchRunner(SemGraphWrapper dagWrapper,
+                             Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public MbFanSearchRunner(final IndependenceFactsModel model, final Parameters params) {
+    public MbFanSearchRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public MbFanSearchRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public MbFanSearchRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -121,17 +121,17 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        final int pcDepth = getParams().getInt("depth", -1);
-        final Mbfs mbfs =
+        int pcDepth = getParams().getInt("depth", -1);
+        Mbfs mbfs =
                 new Mbfs(getIndependenceTest(), pcDepth);
-        final Parameters params = getParams();
+        Parameters params = getParams();
         if (params instanceof Parameters) {
             mbfs.setAggressivelyPreventCycles(params.getBoolean("aggressivelyPreventCycles", false));
         }
-        final IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
         mbfs.setKnowledge(knowledge);
-        final String targetName = getParams().getString("targetName", null);
-        final Graph graph = mbfs.search(targetName);
+        String targetName = getParams().getString("targetName", null);
+        Graph graph = mbfs.search(targetName);
         setResultGraph(graph);
 
         if (getSourceGraph() != null) {
@@ -152,8 +152,8 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        final Parameters params = getParams();
-        final IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
+        Parameters params = getParams();
+        IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 
@@ -178,7 +178,7 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -200,7 +200,7 @@ public class MbFanSearchRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<>();
     }
 

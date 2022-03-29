@@ -36,13 +36,13 @@ public class BayesianConstraintInferenceTest {
      */
     public void testMain() {
         final String casFile = "sample_data/cooper.data/small_data.cas";
-        final String[] args = {
+        String[] args = {
                 "--cas", casFile
         };
         BayesianConstraintInference.main(args);
     }
 
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         new BayesianConstraintInferenceTest().testMain();
     }
 }

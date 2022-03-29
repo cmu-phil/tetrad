@@ -45,7 +45,7 @@ public class CombinationIterator implements Iterator {
      * @param maxValues An int array consisting of the maximum values of each variable,
      *                  in order.
      */
-    public CombinationIterator(final int[] maxValues) {
+    public CombinationIterator(int[] maxValues) {
         this.numValues = maxValues.length;
         this.values = new int[this.numValues];
         this.maxValues = maxValues;
@@ -64,7 +64,7 @@ public class CombinationIterator implements Iterator {
      * @return an int[] array with the next combination.
      */
     public int[] next() {
-        final int[] clone = new int[this.numValues];
+        int[] clone = new int[this.numValues];
         System.arraycopy(this.values, 0, clone, 0, this.numValues);
 
         int i;

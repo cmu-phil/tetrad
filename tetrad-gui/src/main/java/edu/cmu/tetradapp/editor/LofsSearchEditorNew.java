@@ -68,7 +68,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     /**
      * Opens up an editor to let the user view the given PcRunner.
      */
-    public LofsSearchEditorNew(final LofsRunner runner) {
+    public LofsSearchEditorNew(LofsRunner runner) {
         super(runner, "Result Graph");
     }
 
@@ -87,14 +87,14 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         return getWorkbench().getModelNodesToDisplay();
     }
 
-    public void layoutByGraph(final Graph graph) {
+    public void layoutByGraph(Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        final GraphWorkbench resultWorkbench = getWorkbench();
-        final Graph graph = resultWorkbench.getGraph();
-        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        GraphWorkbench resultWorkbench = getWorkbench();
+        Graph graph = resultWorkbench.getGraph();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -109,10 +109,10 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(final String resultLabel) {
+    protected void setup(String resultLabel) {
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
-        final JTabbedPane tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
 
         add(tabbedPane, BorderLayout.CENTER);
@@ -123,15 +123,15 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        final Parameters searchParams = getAlgorithmRunner().getParams();
+        Parameters searchParams = getAlgorithmRunner().getParams();
 
         this.strongerDirection = new JCheckBox("Stronger Direction");
 
         this.strongerDirection.setSelected(searchParams.getBoolean("orientStrongerDirection", true));
 
         this.strongerDirection.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JCheckBox button = (JCheckBox) actionEvent.getSource();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JCheckBox button = (JCheckBox) actionEvent.getSource();
                 searchParams.set("orientStrongerDirection", button.isSelected());
             }
         });
@@ -177,7 +177,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         zeta = new DoubleTextField(searchParams.getDouble("zeta", 1), 5,
                 new DecimalFormat("0.0#####"));
         zeta.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 searchParams.set("dataSet", value);
                 return value;
             }
@@ -186,17 +186,17 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         this.label1 = new JLabel("Cutoff = ");
         this.label2 = new JLabel("Range = ");
 
-        final JPanel toolbar = new JPanel();
+        JPanel toolbar = new JPanel();
 
         getExecuteButton().setText("Execute*");
         getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 execute();
             }
         });
 
 
-        final JComboBox rulebox = new JComboBox();
+        JComboBox rulebox = new JComboBox();
         rulebox.addItem("R1");
         rulebox.addItem("R2");
         rulebox.addItem("R3");
@@ -286,7 +286,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 
         });
 
-        final JComboBox scoreBox = new JComboBox();
+        JComboBox scoreBox = new JComboBox();
         scoreBox.addItem("Anderson Darling");
         scoreBox.addItem("Absolute Value");
         scoreBox.addItem("Log Cosh");
@@ -351,54 +351,54 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
             }
         });
 
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
         b1.add(getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
         b2.add(getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b3b = Box.createHorizontalBox();
+        Box b3b = Box.createHorizontalBox();
         b3b.add(new JLabel("Rule:"));
         b3b.add(Box.createHorizontalGlue());
         b3b.add(rulebox);
         b3b.add(Box.createHorizontalGlue());
         b1.add(b3b);
 
-        final Box b3c = Box.createHorizontalBox();
+        Box b3c = Box.createHorizontalBox();
         b3c.add(this.strongerDirection);
         b3c.add(Box.createHorizontalGlue());
         b1.add(b3c);
 
-        final Box b3f = Box.createHorizontalBox();
+        Box b3f = Box.createHorizontalBox();
         b3f.add(this.label1);
         b3f.add(this.epsilon);
         b3f.add(Box.createHorizontalGlue());
         b1.add(b3f);
 
-        final Box b3f3 = Box.createHorizontalBox();
+        Box b3f3 = Box.createHorizontalBox();
         b3f3.add(this.label2);
         b3f3.add(this.zeta);
         b3f3.add(Box.createHorizontalGlue());
         b1.add(b3f3);
 
-        final Box b3e = Box.createHorizontalBox();
+        Box b3e = Box.createHorizontalBox();
         b3e.add(new JLabel("SL coef = "));
         b3e.add(this.selfLoopStrength);
         b3e.add(Box.createHorizontalGlue());
         b1.add(b3e);
 
-        final Box b3g = Box.createHorizontalBox();
+        Box b3g = Box.createHorizontalBox();
         b3g.add(new JLabel("Score:"));
         b3g.add(scoreBox);
         b3g.add(Box.createHorizontalGlue());
         b1.add(b3g);
 
-        final Box b4 = Box.createHorizontalBox();
-        final JLabel label = new JLabel("<html>" + "*Please note that some" +
+        Box b4 = Box.createHorizontalBox();
+        JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -436,9 +436,9 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     }
 
 
-    protected void addSpecialMenus(final JMenuBar menuBar) {
+    protected void addSpecialMenus(JMenuBar menuBar) {
         if (!(getAlgorithmRunner() instanceof IGesRunner)) {
-            final JMenu test = new JMenu("Independence");
+            JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
             IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -455,13 +455,13 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 //            }
         }
 
-        final JMenu graph = new JMenu("Graph");
-        final JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
+        JMenu graph = new JMenu("Graph");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        final JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
-        final JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
-        final JMenuItem nextGraph = new JMenuItem("Next Graph");
-        final JMenuItem previousGraph = new JMenuItem("Previous Graph");
+        JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
+        JMenuItem nextGraph = new JMenuItem("Next Graph");
+        JMenuItem previousGraph = new JMenuItem("Previous Graph");
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
@@ -486,8 +486,8 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         menuBar.add(graph);
 
         showDags.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Window owner = (Window) getTopLevelAncestor();
+            public void actionPerformed(ActionEvent e) {
+                Window owner = (Window) getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
@@ -495,8 +495,8 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                         // Needs to be a CPDAG search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
-                        final AlgorithmRunner runner = getAlgorithmRunner();
-                        final Graph graph = runner.getGraph();
+                        AlgorithmRunner runner = getAlgorithmRunner();
+                        Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -506,10 +506,10 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                             return;
                         }
 
-                        final CPDAGDisplay display = new CPDAGDisplay(graph);
-                        final GraphWorkbench workbench = getWorkbench();
+                        CPDAGDisplay display = new CPDAGDisplay(graph);
+                        GraphWorkbench workbench = getWorkbench();
 
-                        final EditorWindow editorWindow =
+                        EditorWindow editorWindow =
                                 new EditorWindow(display, "Independence Facts",
                                         "Close", false, workbench);
                         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -531,17 +531,17 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 //        });
 
         dagInCPDAG.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph graph = new EdgeListGraph(getGraph());
+            public void actionPerformed(ActionEvent e) {
+                Graph graph = new EdgeListGraph(getGraph());
 
                 // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
-                for (final Edge edge : graph.getEdges()) {
+                for (Edge edge : graph.getEdges()) {
                     if (Edges.isBidirectedEdge(edge)) {
                         graph.removeEdge(edge);
                     }
                 }
 
-                final Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);
@@ -552,10 +552,10 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         });
 
         gesOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final DataModel dataModel = getAlgorithmRunner().getDataModel();
+            public void actionPerformed(ActionEvent e) {
+                DataModel dataModel = getAlgorithmRunner().getDataModel();
 
-                final Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
+                Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
 
                 getGraphHistory().add(graph);
                 getWorkbench().setGraph(graph);
@@ -565,8 +565,8 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         });
 
         nextGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph next = getGraphHistory().next();
+            public void actionPerformed(ActionEvent e) {
+                Graph next = getGraphHistory().next();
                 getWorkbench().setGraph(next);
                 ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(next);
                 firePropertyChange("modelChanged", null, null);
@@ -574,8 +574,8 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         });
 
         previousGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph previous = getGraphHistory().previous();
+            public void actionPerformed(ActionEvent e) {
+                Graph previous = getGraphHistory().previous();
                 getWorkbench().setGraph(previous);
                 ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(previous);
                 firePropertyChange("modelChanged", null, null);
@@ -595,11 +595,11 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        final Parameters params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
-    public void setTestType(final IndTestType testType) {
+    public void setTestType(IndTestType testType) {
         super.setTestType(testType);
     }
 
@@ -607,7 +607,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         return super.getTestType();
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
@@ -618,11 +618,11 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     //================================PRIVATE METHODS====================//
 
     private JPanel getParamsPanel() {
-        final JPanel paramsPanel = new JPanel();
+        JPanel paramsPanel = new JPanel();
 
-        final Box b2 = Box.createVerticalBox();
+        Box b2 = Box.createVerticalBox();
 
-        final JComponent indTestParamBox = getIndTestParamBox();
+        JComponent indTestParamBox = getIndTestParamBox();
         if (indTestParamBox != null) {
             b2.add(indTestParamBox);
         }
@@ -640,14 +640,14 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(final Parameters params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
         if (params instanceof Parameters) {
             if (getAlgorithmRunner() instanceof IFgesRunner) {
-                final IFgesRunner gesRunner = ((IFgesRunner) getAlgorithmRunner());
+                IFgesRunner gesRunner = ((IFgesRunner) getAlgorithmRunner());
                 return new FgesIndTestParamsEditor(params, gesRunner.getType());
             }
         }
@@ -680,7 +680,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         return new IndTestParamsEditor(params);
     }
 
-    protected void doDefaultArrangement(final Graph resultGraph) {
+    protected void doDefaultArrangement(Graph resultGraph) {
         if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
                     getLatestWorkbenchGraph());

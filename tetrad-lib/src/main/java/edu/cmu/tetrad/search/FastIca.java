@@ -236,7 +236,7 @@ public class FastIca {
      *          variables. It is assumed that there are no missing
      *          values.
      */
-    public FastIca(final Matrix X, final int numComponents) {
+    public FastIca(Matrix X, int numComponents) {
         this.X = X;
         this.numComponents = numComponents;
     }
@@ -257,7 +257,7 @@ public class FastIca {
      * (the default). if algorithmType == DEFLATION the components are extracted
      * one at a time.
      */
-    public void setAlgorithmType(final int algorithmType) {
+    public void setAlgorithmType(int algorithmType) {
         if (!(algorithmType == FastIca.DEFLATION || algorithmType == FastIca.PARALLEL)) {
             throw new IllegalArgumentException("Value should be DEFLATION or PARALLEL.");
         }
@@ -275,7 +275,7 @@ public class FastIca {
     /**
      * The function type to be used, either LOGCOSH or EXP.
      */
-    public void setFunction(final int function) {
+    public void setFunction(int function) {
         if (!(function == FastIca.LOGCOSH || function == FastIca.EXP)) {
             throw new IllegalArgumentException("Value should be LOGCOSH or EXP.");
         }
@@ -295,7 +295,7 @@ public class FastIca {
      * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
      * == "logcosh"'
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (!(alpha >= 1 && alpha <= 2)) {
             throw new IllegalArgumentException("Alpha should be in range [1, 2].");
         }
@@ -315,7 +315,7 @@ public class FastIca {
      * A logical value indicating whether rows of the data matrix 'X' should be
      * standardized beforehand.
      */
-    public void setRowNorm(final boolean colNorm) {
+    public void setRowNorm(boolean colNorm) {
         this.rowNorm = colNorm;
     }
 
@@ -329,7 +329,7 @@ public class FastIca {
     /**
      * Maximum number of iterations to perform.
      */
-    public void setMaxIterations(final int maxIterations) {
+    public void setMaxIterations(int maxIterations) {
         if (maxIterations < 1) {
             TetradLogger.getInstance().log("info", "maxIterations should be positive.");
         }
@@ -349,7 +349,7 @@ public class FastIca {
      * A positive scalar giving the tolerance at which the un-mixing matrix is
      * considered to have converged.
      */
-    public void setTolerance(final double tolerance) {
+    public void setTolerance(double tolerance) {
         if (!(tolerance > 0)) {
             TetradLogger.getInstance().log("info", "Tolerance should be positive.");
         }
@@ -367,7 +367,7 @@ public class FastIca {
     /**
      * A logical value indicating the level of output as the algorithm runs.
      */
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -383,7 +383,7 @@ public class FastIca {
      * Initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
      * then a matrix of normal r.v.'s is used.
      */
-    public void setWInit(final Matrix wInit) {
+    public void setWInit(Matrix wInit) {
         this.wInit = wInit;
     }
 
@@ -394,8 +394,8 @@ public class FastIca {
      * @return this list, as an FastIca.IcaResult object.
      */
     public IcaResult findComponents() {
-        final int n = this.X.columns();
-        final int p = this.X.rows();
+        int n = this.X.columns();
+        int p = this.X.rows();
 
         if (this.numComponents > Math.min(n, p)) {
             TetradLogger.getInstance().log("info", "Requested number of components is too large.");
@@ -429,11 +429,11 @@ public class FastIca {
         }
 
         // Whiten.
-        final Matrix cov = this.X.times(this.X.transpose()).scalarMult(1.0 / n);
+        Matrix cov = this.X.times(this.X.transpose()).scalarMult(1.0 / n);
 
-        final SingularValueDecomposition s = new SingularValueDecomposition(new BlockRealMatrix(cov.toArray()));
-        final Matrix D = new Matrix(s.getS().getData());
-        final Matrix U = new Matrix(s.getU().getData());
+        SingularValueDecomposition s = new SingularValueDecomposition(new BlockRealMatrix(cov.toArray()));
+        Matrix D = new Matrix(s.getS().getData());
+        Matrix U = new Matrix(s.getU().getData());
 
         for (int i = 0; i < D.rows(); i++) {
             D.set(i, i, 1.0 / Math.sqrt(D.get(i, i)));
@@ -443,8 +443,8 @@ public class FastIca {
 //        K = K.scalarMult(-1); // This SVD gives -U from R's SVD.
         K = K.getPart(0, this.numComponents - 1, 0, p - 1);
 
-        final Matrix X1 = K.times(this.X);
-        final Matrix b;
+        Matrix X1 = K.times(this.X);
+        Matrix b;
 
         if (this.algorithmType == FastIca.DEFLATION) {
             b = icaDeflation(X1, this.tolerance, this.function, this.alpha,
@@ -456,17 +456,17 @@ public class FastIca {
             throw new IllegalStateException();
         }
 
-        final Matrix w = b.times(K);
-        final Matrix S = w.times(this.X);
+        Matrix w = b.times(K);
+        Matrix S = w.times(this.X);
         return new IcaResult(this.X, K, w, S);
 
     }
 
     //==============================PRIVATE METHODS==========================//
 
-    private Matrix icaDeflation(final Matrix X,
-                                final double tolerance, final int function, final double alpha,
-                                final int maxIterations, final boolean verbose, final Matrix wInit) {
+    private Matrix icaDeflation(Matrix X,
+                                double tolerance, int function, double alpha,
+                                int maxIterations, boolean verbose, Matrix wInit) {
         if (verbose && function == FastIca.LOGCOSH) {
             TetradLogger.getInstance().log("info", "Deflation FastIca using lgcosh approx. to neg-entropy function");
         }
@@ -475,7 +475,7 @@ public class FastIca {
             TetradLogger.getInstance().log("info", "Deflation FastIca using exponential approx. to neg-entropy function");
         }
 
-        final Matrix W = new Matrix(X.rows(), X.rows());
+        Matrix W = new Matrix(X.rows(), X.rows());
 
         for (int i = 0; i < X.rows(); i++) {
             if (verbose) {
@@ -486,7 +486,7 @@ public class FastIca {
 
             if (i > 0) {
                 for (int u = 0; u < i; u++) {
-                    final double k = w.dotProduct(W.getRow(u));
+                    double k = w.dotProduct(W.getRow(u));
                     w = w.minus(W.getRow(u).scalarMult(k));
                 }
             }
@@ -497,22 +497,22 @@ public class FastIca {
             double _tolerance = Double.POSITIVE_INFINITY;
 
             while (_tolerance > tolerance && ++it <= maxIterations) {
-                final Vector wx = X.transpose().times(w);
+                Vector wx = X.transpose().times(w);
 
-                final Vector gwx0 = new Vector(X.columns());
+                Vector gwx0 = new Vector(X.columns());
 
                 for (int j = 0; j < X.columns(); j++) {
                     gwx0.set(j, g(alpha, wx.get(j)));
                 }
 
-                final Matrix gwx = new Matrix(X.rows(), X.columns());
+                Matrix gwx = new Matrix(X.rows(), X.columns());
 
                 for (int _i = 0; _i < X.rows(); _i++) {
                     gwx.assignRow(i, gwx0);
                 }
 
                 // A weighting of X by gwx0.
-                final Matrix xgwx = new Matrix(X.rows(), X.columns());
+                Matrix xgwx = new Matrix(X.rows(), X.columns());
 
                 for (int _i = 0; _i < X.rows(); _i++) {
                     for (int j = 0; j < X.columns(); j++) {
@@ -520,27 +520,27 @@ public class FastIca {
                     }
                 }
 
-                final Vector v1 = new Vector(X.rows());
+                Vector v1 = new Vector(X.rows());
 
                 for (int k = 0; k < X.rows(); k++) {
                     v1.set(k, mean(xgwx.getRow(k)));
                 }
 
-                final Vector g_wx = new Vector(X.columns());
+                Vector g_wx = new Vector(X.columns());
 
                 for (int k = 0; k < X.columns(); k++) {
-                    final double t = g(alpha, wx.get(k));
+                    double t = g(alpha, wx.get(k));
                     g_wx.set(k, (1.0 - t * t));
                 }
 
                 Vector v2 = w.copy();
-                final double meanGwx = mean(g_wx);
+                double meanGwx = mean(g_wx);
                 v2 = v2.scalarMult(meanGwx);
 
                 Vector w1 = v1.minus(v2);
 
                 if (i > 0) {
-                    final Vector t = w1.like();
+                    Vector t = w1.like();
 
                     for (int u = 0; u < i; u++) {
                         double k = 0.0;
@@ -582,7 +582,7 @@ public class FastIca {
         return W;
     }
 
-    private double g(final double alpha, final double y) {
+    private double g(double alpha, double y) {
         if (this.function == FastIca.LOGCOSH) {
             return tanh(alpha * y);
         } else if (this.function == FastIca.EXP) {
@@ -592,7 +592,7 @@ public class FastIca {
         }
     }
 
-    private double mean(final Vector v) {
+    private double mean(Vector v) {
         double sum = 0.0;
 
         for (int i = 0; i < v.size(); i++) {
@@ -602,7 +602,7 @@ public class FastIca {
         return sum / v.size();
     }
 
-    private double sumOfSquares(final Vector v) {
+    private double sumOfSquares(Vector v) {
         double sum = 0.0;
 
         for (int i = 0; i < v.size(); i++) {
@@ -612,19 +612,19 @@ public class FastIca {
         return sum;
     }
 
-    private double rms(final Vector w) {
-        final double ssq = sumOfSquares(w);
+    private double rms(Vector w) {
+        double ssq = sumOfSquares(w);
         return Math.sqrt(ssq);
     }
 
-    private Matrix icaParallel(final Matrix X, final int numComponents,
-                               final double tolerance, final int function, final double alpha,
-                               final int maxIterations, final boolean verbose, final Matrix wInit) {
-        final int p = X.columns();
+    private Matrix icaParallel(Matrix X, int numComponents,
+                               double tolerance, int function, double alpha,
+                               int maxIterations, boolean verbose, Matrix wInit) {
+        int p = X.columns();
         Matrix W = wInit;
 
-        final SingularValueDecomposition sW = new SingularValueDecomposition(new BlockRealMatrix(W.toArray()));
-        final Matrix D = new Matrix(sW.getS().getData());
+        SingularValueDecomposition sW = new SingularValueDecomposition(new BlockRealMatrix(W.toArray()));
+        Matrix D = new Matrix(sW.getS().getData());
         for (int i = 0; i < D.rows(); i++) D.set(i, i, 1.0 / D.get(i, i));
 
         Matrix WTemp = new Matrix(sW.getU().getData()).times(D);
@@ -641,8 +641,8 @@ public class FastIca {
         }
 
         while (_tolerance > tolerance && it < maxIterations) {
-            final Matrix wx = W.times(X);
-            final Matrix gwx = new Matrix(numComponents, p);
+            Matrix wx = W.times(X);
+            Matrix gwx = new Matrix(numComponents, p);
 
             for (int i = 0; i < numComponents; i++) {
                 for (int j = 0; j < p; j++) {
@@ -650,18 +650,18 @@ public class FastIca {
                 }
             }
 
-            final Matrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
-            final Matrix g_wx = gwx.like();
+            Matrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
+            Matrix g_wx = gwx.like();
 
             for (int i = 0; i < g_wx.rows(); i++) {
                 for (int j = 0; j < g_wx.columns(); j++) {
-                    final double v = g_wx.get(i, j);
-                    final double w = alpha * (1.0 - v * v);
+                    double v = g_wx.get(i, j);
+                    double w = alpha * (1.0 - v * v);
                     g_wx.set(i, j, w);
                 }
             }
 
-            final Vector V20 = new Vector(numComponents);
+            Vector V20 = new Vector(numComponents);
 
             for (int k = 0; k < numComponents; k++) {
                 V20.set(k, mean(g_wx.getRow(k)));
@@ -671,9 +671,9 @@ public class FastIca {
             v2 = v2.times(W);
             W1 = v1.minus(v2);
 
-            final SingularValueDecomposition sW1 = new SingularValueDecomposition(new BlockRealMatrix(W1.toArray()));
-            final Matrix U = new Matrix(sW1.getU().getData());
-            final Matrix sD = new Matrix(sW1.getS().getData());
+            SingularValueDecomposition sW1 = new SingularValueDecomposition(new BlockRealMatrix(W1.toArray()));
+            Matrix U = new Matrix(sW1.getU().getData());
+            Matrix sD = new Matrix(sW1.getS().getData());
             for (int i = 0; i < sD.rows(); i++)
                 sD.set(i, i, 1.0 / sD.get(i, i));
 
@@ -682,12 +682,12 @@ public class FastIca {
             W1Temp = W1Temp.times(W1);
             W1 = W1Temp;
 
-            final Matrix d1 = W1.times(W.transpose());
-            final Vector d = d1.diag();
+            Matrix d1 = W1.times(W.transpose());
+            Vector d = d1.diag();
             _tolerance = Double.NEGATIVE_INFINITY;
 
             for (int i = 0; i < d.size(); i++) {
-                final double m = Math.abs(Math.abs(d.get(i)) - 1);
+                double m = Math.abs(Math.abs(d.get(i)) - 1);
                 if (m > _tolerance) _tolerance = m;
             }
 
@@ -703,19 +703,19 @@ public class FastIca {
         return W;
     }
 
-    private Matrix scale(final Matrix x) {
+    private Matrix scale(Matrix x) {
         for (int i = 0; i < x.rows(); i++) {
-            final Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
+            Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
             x.assignRow(i, u);
         }
 
         return x;
     }
 
-    private Matrix center(final Matrix x) {
+    private Matrix center(Matrix x) {
         for (int i = 0; i < x.rows(); i++) {
-            final Vector u = x.getRow(i);
-            final double mean = mean(u);
+            Vector u = x.getRow(i);
+            double mean = mean(u);
 
             for (int j = 0; j < x.columns(); j++) {
                 x.set(i, j, x.get(i, j) - mean);
@@ -748,8 +748,8 @@ public class FastIca {
         private final Matrix W;
         private final Matrix S;
 
-        public IcaResult(final Matrix X, final Matrix K, final Matrix W,
-                         final Matrix S) {
+        public IcaResult(Matrix X, Matrix K, Matrix W,
+                         Matrix S) {
             this.X = X;
             this.K = K;
             this.W = W;
@@ -773,7 +773,7 @@ public class FastIca {
         }
 
         public String toString() {
-            final StringBuilder buf = new StringBuilder();
+            StringBuilder buf = new StringBuilder();
 
             buf.append("\n\nX:\n");
             buf.append(this.X);

@@ -91,7 +91,7 @@ public final class CpcOrienter implements Reorienter {
 
     //=============================CONSTRUCTORS==========================//
 
-    public CpcOrienter(final IndependenceTest independenceTest, final IKnowledge knowledge) {
+    public CpcOrienter(IndependenceTest independenceTest, IKnowledge knowledge) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -114,7 +114,7 @@ public final class CpcOrienter implements Reorienter {
         return this.knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -126,7 +126,7 @@ public final class CpcOrienter implements Reorienter {
         return this.depth;
     }
 
-    public final void setDepth(final int depth) {
+    public final void setDepth(int depth) {
         this.depth = depth;
     }
 
@@ -161,10 +161,10 @@ public final class CpcOrienter implements Reorienter {
     /**
      * Runs PC on just the given variable, all of which must be in the domain of the independence test.
      */
-    public void orient(final Graph graph) {
+    public void orient(Graph graph) {
         TetradLogger.getInstance().log("info", "Starting CPC Orienter algorithm.");
         TetradLogger.getInstance().log("info", "Independence test = " + this.independenceTest + ".");
-        final long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
@@ -184,9 +184,9 @@ public final class CpcOrienter implements Reorienter {
 //        graph.fullyConnect(Endpoint.TAIL);
 
         this.graph = graph;
-        final Set<Edge> edges = graph.getEdges();
+        Set<Edge> edges = graph.getEdges();
 
-        for (final Edge edge : edges) {
+        for (Edge edge : edges) {
             graph.removeEdge(edge);
             graph.addEdge(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
         }
@@ -212,12 +212,12 @@ public final class CpcOrienter implements Reorienter {
 
         SearchGraphUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
         orientUnshieldedTriples(this.knowledge, getIndependenceTest(), this.depth);
-        final MeekRules meekRules = new MeekRules();
+        MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
-        final long endTime = System.currentTimeMillis();
+        long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - startTime;
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
@@ -231,20 +231,20 @@ public final class CpcOrienter implements Reorienter {
     private void logTriples() {
         TetradLogger.getInstance().log("info", "\nCollider triples judged from sepsets:");
 
-        for (final Triple triple : getColliderTriples()) {
+        for (Triple triple : getColliderTriples()) {
             TetradLogger.getInstance().log("collider", "Collider: " + triple);
         }
 
         TetradLogger.getInstance().log("info", "\nNoncollider triples judged from sepsets:");
 
-        for (final Triple triple : getNoncolliderTriples()) {
+        for (Triple triple : getNoncolliderTriples()) {
             TetradLogger.getInstance().log("noncollider", "Noncollider: " + triple);
         }
 
         TetradLogger.getInstance().log("info", "\nAmbiguous triples judged from sepsets (i.e. list of triples for which " +
                 "\nthere is ambiguous data about whether they are colliders or not):");
 
-        for (final Triple triple : getAmbiguousTriples()) {
+        for (Triple triple : getAmbiguousTriples()) {
             TetradLogger.getInstance().log("ambiguous", "Ambiguous: " + triple);
         }
     }
@@ -275,27 +275,27 @@ public final class CpcOrienter implements Reorienter {
     //==========================PRIVATE METHODS===========================//
 
     @SuppressWarnings("SameParameterValue")
-    private void orientUnshieldedTriples(final IKnowledge knowledge,
-                                         final IndependenceTest test, final int depth) {
+    private void orientUnshieldedTriples(IKnowledge knowledge,
+                                         IndependenceTest test, int depth) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
 
-        for (final Node y : this.graph.getNodes()) {
-            final List<Node> adjacentNodes = this.graph.getAdjacentNodes(y);
+        for (Node y : this.graph.getNodes()) {
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(y);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                final Node x = adjacentNodes.get(combination[0]);
-                final Node z = adjacentNodes.get(combination[1]);
+                Node x = adjacentNodes.get(combination[0]);
+                Node z = adjacentNodes.get(combination[1]);
 
                 if (this.graph.isAdjacentTo(x, z)) {
                     continue;
@@ -303,7 +303,7 @@ public final class CpcOrienter implements Reorienter {
 
                 this.allTriples.add(new Triple(x, y, z));
 
-                final TripleType type = getTripleType(x, y, z, test, depth);
+                TripleType type = getTripleType(x, y, z, test, depth);
 
                 System.out.println(new Triple(x, y, z) + " " + type);
 
@@ -317,7 +317,7 @@ public final class CpcOrienter implements Reorienter {
 
                     this.colliderTriples.add(new Triple(x, y, z));
                 } else if (type == TripleType.AMBIGUOUS) {
-                    final Triple triple = new Triple(x, y, z);
+                    Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
                     this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 } else {
@@ -329,13 +329,13 @@ public final class CpcOrienter implements Reorienter {
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
     }
 
-    private boolean colliderAllowed(final Node x, final Node y, final Node z, final IKnowledge knowledge) {
+    private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
         return CpcOrienter.isArrowpointAllowed1(x, y, knowledge) &&
                 CpcOrienter.isArrowpointAllowed1(z, y, knowledge);
     }
 
-    private TripleType getTripleType(final Node x, final Node y, final Node z,
-                                     final IndependenceTest test, final int depth) {
+    private TripleType getTripleType(Node x, Node y, Node z,
+                                     IndependenceTest test, int depth) {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 
@@ -353,11 +353,11 @@ public final class CpcOrienter implements Reorienter {
         _depth = Math.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
-            final ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
+            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                final List<Node> condSet = CpcOrienter.asList(choice, _nodes);
+                List<Node> condSet = CpcOrienter.asList(choice, _nodes);
 
                 if (test.isIndependent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -383,11 +383,11 @@ public final class CpcOrienter implements Reorienter {
         _depth = Math.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
-            final ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
+            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                final List<Node> condSet = CpcOrienter.asList(choice, _nodes);
+                List<Node> condSet = CpcOrienter.asList(choice, _nodes);
 
                 if (test.isIndependent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -426,18 +426,18 @@ public final class CpcOrienter implements Reorienter {
         }
     }
 
-    private static List<Node> asList(final int[] indices, final List<Node> nodes) {
-        final List<Node> list = new LinkedList<>();
+    private static List<Node> asList(int[] indices, List<Node> nodes) {
+        List<Node> list = new LinkedList<>();
 
-        for (final int i : indices) {
+        for (int i : indices) {
             list.add(nodes.get(i));
         }
 
         return list;
     }
 
-    private static boolean isArrowpointAllowed1(final Node from, final Node to,
-                                                final IKnowledge knowledge) {
+    private static boolean isArrowpointAllowed1(Node from, Node to,
+                                                IKnowledge knowledge) {
         if (knowledge == null) {
             return true;
         }

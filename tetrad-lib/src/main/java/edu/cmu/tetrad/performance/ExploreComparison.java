@@ -13,7 +13,7 @@ import java.util.List;
 public class ExploreComparison {
 
     private void runFromSimulation() {
-        final ComparisonParameters params = new ComparisonParameters();
+        ComparisonParameters params = new ComparisonParameters();
         params.setDataType(ComparisonParameters.DataType.Continuous);
         params.setAlgorithm(ComparisonParameters.Algorithm.FGES2);
 //        params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
@@ -23,7 +23,7 @@ public class ExploreComparison {
         params.setNumEdges(100);
         params.setPenaltyDiscount(4);
 
-        final List<ComparisonResult> results = new ArrayList<>();
+        List<ComparisonResult> results = new ArrayList<>();
 
         for (int sampleSize = 1000; sampleSize <= 1000; sampleSize += 100) {
             params.setSampleSize(sampleSize);
@@ -41,7 +41,7 @@ public class ExploreComparison {
         System.out.println(Comparison.summarize(results, tableColumns));
     }
 
-    public static void main(final String... args) {
+    public static void main(String... args) {
         new ExploreComparison().runFromSimulation();
     }
 }

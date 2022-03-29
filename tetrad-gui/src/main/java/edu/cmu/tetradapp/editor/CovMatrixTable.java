@@ -67,7 +67,7 @@ class CovMatrixTable extends AbstractTableModel {
      *
      * @param covMatrix the covMatrix.
      */
-    public CovMatrixTable(final ICovarianceMatrix covMatrix) {
+    public CovMatrixTable(ICovarianceMatrix covMatrix) {
         this.covMatrix = covMatrix;
         this.editingMatrix = covMatrix.getMatrix().copy();
         this.editingMatrixPositiveDefinite =
@@ -103,13 +103,13 @@ class CovMatrixTable extends AbstractTableModel {
      * model, 'null' is returned. Otherwise, the value stored in the wrapped
      * table model at the given coordinates is returned.
      */
-    public Object getValueAt(final int row, final int col) {
+    public Object getValueAt(int row, int col) {
         final int firstDataRow = 4;
         final int firstDataCol = 1;
-        final int matrixRow = row - firstDataRow;
-        final int matrixCol = col - firstDataCol;
-        final int lastDataRow = firstDataRow + getNumVariables();
-        final int lastDataCol = firstDataCol + getNumVariables();
+        int matrixRow = row - firstDataRow;
+        int matrixCol = col - firstDataCol;
+        int lastDataRow = firstDataRow + getNumVariables();
+        int lastDataCol = firstDataCol + getNumVariables();
 
         if (row == 1 && col == 0) {
             return "Sample Size";
@@ -137,13 +137,13 @@ class CovMatrixTable extends AbstractTableModel {
         return null;
     }
 
-    public boolean isCellEditable(final int row, final int col) {
+    public boolean isCellEditable(int row, int col) {
         final int firstDataRow = 4;
         final int firstDataCol = 1;
-        final int matrixRow = row - firstDataRow;
-        final int matrixCol = col - firstDataCol;
-        final int lastDataRow = firstDataRow + getNumVariables();
-        final int lastDataCol = firstDataCol + getNumVariables();
+        int matrixRow = row - firstDataRow;
+        int matrixCol = col - firstDataCol;
+        int lastDataRow = firstDataRow + getNumVariables();
+        int lastDataCol = firstDataCol + getNumVariables();
 
         if (row == 1 && col == 1) {
             return true;
@@ -170,16 +170,16 @@ class CovMatrixTable extends AbstractTableModel {
 
     }
 
-    public void setValueAt(final Object aValue, final int row, final int col) {
+    public void setValueAt(Object aValue, int row, int col) {
         final int firstDataRow = 4;
         final int firstDataCol = 1;
-        final int matrixRow = row - firstDataRow;
-        final int matrixCol = col - firstDataCol;
-        final int lastDataRow = firstDataRow + getNumVariables();
-        final int lastDataCol = firstDataCol + getNumVariables();
+        int matrixRow = row - firstDataRow;
+        int matrixCol = col - firstDataCol;
+        int lastDataRow = firstDataRow + getNumVariables();
+        int lastDataCol = firstDataCol + getNumVariables();
 
         if (row == 1 && col == 1) {
-            final String value = (String) aValue;
+            String value = (String) aValue;
             this.covMatrix.setSampleSize(Integer.parseInt(value));
             this.pcs.firePropertyChange("modelChanged", null, null);
             fireTableDataChanged();
@@ -199,34 +199,34 @@ class CovMatrixTable extends AbstractTableModel {
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
                 (col >= firstDataCol) && (matrixCol <= matrixRow)) {
-            final String value = (String) aValue;
-            final double v = Double.parseDouble(value);
+            String value = (String) aValue;
+            double v = Double.parseDouble(value);
             setEditingValue(matrixRow, matrixCol, v);
             this.pcs.firePropertyChange("modelChanged", null, null);
             fireTableDataChanged();
         }
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.pcs.addPropertyChangeListener(listener);
     }
 
-    private void setVariableName(final int index, final String name) {
-        final List variables = getCovMatrix().getVariables();
+    private void setVariableName(int index, String name) {
+        List variables = getCovMatrix().getVariables();
 
         for (int i = 0; i < variables.size(); i++) {
-            final ContinuousVariable _variable =
+            ContinuousVariable _variable =
                     (ContinuousVariable) variables.get(i);
             if (name.equals(_variable.getName())) {
                 return;
             }
         }
 
-        final ContinuousVariable variable = (ContinuousVariable) variables.get(index);
+        ContinuousVariable variable = (ContinuousVariable) variables.get(index);
         variable.setName(name);
     }
 
-    private void setEditingValue(final int row, final int col, final double v) {
+    private void setEditingValue(int row, int col, double v) {
         if (row == col && v <= 0.0) {
             return;
         }
@@ -244,11 +244,11 @@ class CovMatrixTable extends AbstractTableModel {
         return getCovMatrix().getSampleSize();
     }
 
-    private String getVariableName(final int matrixRow) {
+    private String getVariableName(int matrixRow) {
         return getCovMatrix().getVariableName(matrixRow);
     }
 
-    private double getValue(final int matrixRow, final int matrixCol) {
+    private double getValue(int matrixRow, int matrixCol) {
         return this.editingMatrix.get(matrixRow, matrixCol);
     }
 

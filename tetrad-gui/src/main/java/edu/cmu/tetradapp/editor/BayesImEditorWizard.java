@@ -55,7 +55,7 @@ public final class BayesImEditorWizard extends JPanel {
 
     private boolean enableEditing = true;
 
-    public BayesImEditorWizard(final BayesIm bayesIm, final GraphWorkbench workbench) {
+    public BayesImEditorWizard(BayesIm bayesIm, GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -74,10 +74,10 @@ public final class BayesImEditorWizard extends JPanel {
         workbench.scrollWorkbenchToNode(
                 (Node) (this.varNamesComboBox.getSelectedItem()));
 
-        final JButton nextButton = new JButton("Next");
+        JButton nextButton = new JButton("Next");
         nextButton.setMnemonic('N');
 
-        final Node node = (Node) (this.varNamesComboBox.getSelectedItem());
+        Node node = (Node) (this.varNamesComboBox.getSelectedItem());
         this.editingTable = new BayesImNodeEditingTable(node, bayesIm);
         this.editingTable.addPropertyChangeListener((evt) -> {
             if ("modelChanged".equals(evt.getPropertyName())) {
@@ -85,7 +85,7 @@ public final class BayesImEditorWizard extends JPanel {
             }
         });
 
-        final JScrollPane scroll = new JScrollPane(this.editingTable);
+        JScrollPane scroll = new JScrollPane(this.editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
         this.tablePanel = new JPanel();
         this.tablePanel.setLayout(new BorderLayout());
@@ -93,30 +93,30 @@ public final class BayesImEditorWizard extends JPanel {
         this.editingTable.grabFocus();
 
         // Do Layout.
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("1. Choose the next variable to edit:  "));
         b1.add(this.varNamesComboBox);
         b1.add(nextButton);
         b1.add(Box.createHorizontalGlue());
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("2. Scroll to a row (that is, combination of "
                 + "parent values) in the table below."));
         b2.add(Box.createHorizontalGlue());
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("3. Click in the appropriate box and assign a probability"
                 + " to each value of the chosen"));
         b3.add(Box.createHorizontalGlue());
 
-        final Box b3a = Box.createHorizontalBox();
+        Box b3a = Box.createHorizontalBox();
         b3a.add(new JLabel("    variable in that row."));
         b3a.add(Box.createHorizontalGlue());
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(this.tablePanel, BorderLayout.CENTER);
 
-        final Box b5 = Box.createHorizontalBox();
+        Box b5 = Box.createHorizontalBox();
         b5.add(new JLabel("Right click in table to randomize."));
         b5.add(Box.createHorizontalGlue());
 
@@ -131,14 +131,14 @@ public final class BayesImEditorWizard extends JPanel {
 
         // Add listeners.
         this.varNamesComboBox.addActionListener((e) -> {
-            final Node n = (Node) (this.varNamesComboBox.getSelectedItem());
+            Node n = (Node) (this.varNamesComboBox.getSelectedItem());
             getWorkbench().scrollWorkbenchToNode(n);
             setCurrentNode(n);
         });
 
         nextButton.addActionListener((e) -> {
             int current = this.varNamesComboBox.getSelectedIndex();
-            final int max = this.varNamesComboBox.getItemCount();
+            int max = this.varNamesComboBox.getItemCount();
 
             ++current;
 
@@ -147,14 +147,14 @@ public final class BayesImEditorWizard extends JPanel {
                         "There are no more variables.");
             }
 
-            final int set = (current < max) ? current : 0;
+            int set = (current < max) ? current : 0;
 
             this.varNamesComboBox.setSelectedIndex(set);
         });
 
         workbench.addPropertyChangeListener((evt) -> {
             if (evt.getPropertyName().equals("selectedNodes")) {
-                final List selection = (List) (evt.getNewValue());
+                List selection = (List) (evt.getNewValue());
                 if (selection.size() == 1) {
                     this.varNamesComboBox.setSelectedItem(selection.get(0));
                 }
@@ -165,13 +165,13 @@ public final class BayesImEditorWizard extends JPanel {
         this.workbench = workbench;
     }
 
-    private JComboBox<Node> createVarNamesComboBox(final BayesIm bayesIm) {
-        final JComboBox<Node> varNameComboBox = new JComboBox<>();
+    private JComboBox<Node> createVarNamesComboBox(BayesIm bayesIm) {
+        JComboBox<Node> varNameComboBox = new JComboBox<>();
         varNameComboBox.setBackground(Color.white);
 
-        final Graph graph = bayesIm.getBayesPm().getDag();
+        Graph graph = bayesIm.getBayesPm().getDag();
 
-        final List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
+        List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
         Collections.sort(nodes);
         nodes.forEach(varNameComboBox::addItem);
 
@@ -186,8 +186,8 @@ public final class BayesImEditorWizard extends JPanel {
      * Sets the getModel display to reflect the stored values of the getModel
      * node.
      */
-    private void setCurrentNode(final Node node) {
-        final TableCellEditor cellEditor = this.editingTable.getCellEditor();
+    private void setCurrentNode(Node node) {
+        TableCellEditor cellEditor = this.editingTable.getCellEditor();
 
         if (cellEditor != null) {
             cellEditor.cancelCellEditing();
@@ -200,7 +200,7 @@ public final class BayesImEditorWizard extends JPanel {
             }
         });
 
-        final JScrollPane scroll = new JScrollPane(this.editingTable);
+        JScrollPane scroll = new JScrollPane(this.editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
 
         this.tablePanel.removeAll();
@@ -223,7 +223,7 @@ public final class BayesImEditorWizard extends JPanel {
         return this.enableEditing;
     }
 
-    public void enableEditing(final boolean enableEditing) {
+    public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {
             this.workbench.enableEditing(enableEditing);

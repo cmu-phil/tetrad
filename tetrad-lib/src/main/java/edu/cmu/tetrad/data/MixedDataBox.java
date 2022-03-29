@@ -46,7 +46,7 @@ public class MixedDataBox implements DataBox {
      * @param variables
      * @param numRows
      */
-    public MixedDataBox(final List<Node> variables, final int numRows) {
+    public MixedDataBox(List<Node> variables, int numRows) {
         this.variables = variables;
         this.numRows = numRows;
 
@@ -75,7 +75,7 @@ public class MixedDataBox implements DataBox {
      * @param continuousData continuous data
      * @param discreteData   discrete data
      */
-    public MixedDataBox(final List<Node> variables, final int numRows, final double[][] continuousData, final int[][] discreteData) {
+    public MixedDataBox(List<Node> variables, int numRows, double[][] continuousData, int[][] discreteData) {
         this.variables = variables;
         this.numRows = numRows;
         this.continuousData = continuousData;
@@ -95,7 +95,7 @@ public class MixedDataBox implements DataBox {
         }
 
         // ensure the number of variables for both datasets are the same
-        final int numOfVars = variables.size();
+        int numOfVars = variables.size();
         if (continuousData.length != numOfVars) {
             throw new IllegalArgumentException(String.format("Continuous Data: expect %d variables but found %d.", numOfVars, continuousData.length));
         }
@@ -106,17 +106,17 @@ public class MixedDataBox implements DataBox {
         for (int i = 0; i < numOfVars; i++) {
             // ensure there is data for either dataset, not both
             if ((continuousData[i] == null) == (discreteData[i] == null)) {
-                final String errMsg = String.format("Variable at index %d either has data for both discrete and continuous or has no data for both.", i);
+                String errMsg = String.format("Variable at index %d either has data for both discrete and continuous or has no data for both.", i);
                 throw new IllegalArgumentException(errMsg);
             }
 
             // ensure the number of rows for both dataset is consistent
             if (continuousData[i] != null && continuousData[i].length != numRows) {
-                final String errMsg = String.format("Continuous Data: Inconsistent row number at index %d.  Expect %d rows but found %d.", i, numRows, continuousData[i].length);
+                String errMsg = String.format("Continuous Data: Inconsistent row number at index %d.  Expect %d rows but found %d.", i, numRows, continuousData[i].length);
                 throw new IllegalArgumentException(errMsg);
             }
             if (discreteData[i] != null && discreteData[i].length != numRows) {
-                final String errMsg = String.format("Discrete Data: Inconsistent row number at index %d.  Expect %d rows but found %d.", i, numRows, discreteData[i].length);
+                String errMsg = String.format("Discrete Data: Inconsistent row number at index %d.  Expect %d rows but found %d.", i, numRows, discreteData[i].length);
                 throw new IllegalArgumentException(errMsg);
             }
         }
@@ -128,7 +128,7 @@ public class MixedDataBox implements DataBox {
      * @return
      */
     public static BoxDataSet serializableInstance() {
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
         for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
@@ -158,7 +158,7 @@ public class MixedDataBox implements DataBox {
      * @param value
      */
     @Override
-    public void set(final int row, final int col, final Number value) {
+    public void set(int row, int col, Number value) {
         if (value == null) {
             if (this.continuousData[col] != null) {
                 this.continuousData[col][row] = Double.NaN;
@@ -185,16 +185,16 @@ public class MixedDataBox implements DataBox {
      * missing (-99), null, is returned.
      */
     @Override
-    public Number get(final int row, final int col) {
+    public Number get(int row, int col) {
         if (col >= this.continuousData.length || row >= numRows()) {
             return null;
         }
 
         if (this.continuousData[col] != null) {
-            final double v = this.continuousData[col][row];
+            double v = this.continuousData[col][row];
             return v == Double.NaN ? null : v;
         } else if (this.discreteData[col] != null) {
-            final double v = this.discreteData[col][row];
+            double v = this.discreteData[col][row];
             return v == -99 ? null : v;
         }
 
@@ -206,7 +206,7 @@ public class MixedDataBox implements DataBox {
      */
     @Override
     public DataBox copy() {
-        final MixedDataBox box = new MixedDataBox(this.variables, numRows());
+        MixedDataBox box = new MixedDataBox(this.variables, numRows());
 
         for (int i = 0; i < numRows(); i++) {
             for (int j = 0; j < numCols(); j++) {
@@ -222,8 +222,8 @@ public class MixedDataBox implements DataBox {
      */
     @Override
     public DataBox like() {
-        final int[] rows = new int[numRows()];
-        final int[] cols = new int[numCols()];
+        int[] rows = new int[numRows()];
+        int[] cols = new int[numCols()];
 
         for (int i = 0; i < numRows(); i++) {
             rows[i] = i;
@@ -235,7 +235,7 @@ public class MixedDataBox implements DataBox {
         return viewSelection(rows, cols);
     }
 
-    public void addVariable(final Node variable) {
+    public void addVariable(Node variable) {
         this.variables.add(variable);
 
         this.continuousData = Arrays.copyOf(this.continuousData, this.continuousData.length + 1);
@@ -251,17 +251,17 @@ public class MixedDataBox implements DataBox {
     }
 
     @Override
-    public DataBox viewSelection(final int[] rows, final int[] cols) {
-        final List<Node> newVars = new ArrayList<>();
+    public DataBox viewSelection(int[] rows, int[] cols) {
+        List<Node> newVars = new ArrayList<>();
 
-        for (final int c : cols) {
+        for (int c : cols) {
             newVars.add(this.variables.get(c));
         }
 
-        final int row_num = rows.length;
-        final int col_num = cols.length;
+        int row_num = rows.length;
+        int col_num = cols.length;
 
-        final DataBox _dataBox = new MixedDataBox(newVars, row_num);
+        DataBox _dataBox = new MixedDataBox(newVars, row_num);
 
         for (int i = 0; i < row_num; i++) {
             for (int j = 0; j < col_num; j++) {

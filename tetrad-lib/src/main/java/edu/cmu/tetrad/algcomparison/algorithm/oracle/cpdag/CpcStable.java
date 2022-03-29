@@ -34,23 +34,23 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
     public CpcStable() {
     }
 
-    public CpcStable(final IndependenceWrapper test) {
+    public CpcStable(IndependenceWrapper test) {
         this.test = test;
     }
 
-    public CpcStable(final IndependenceWrapper test, final Algorithm algorithm) {
+    public CpcStable(IndependenceWrapper test, Algorithm algorithm) {
         this.test = test;
         this.algorithm = algorithm;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final Graph init = null;
+            Graph init = null;
             if (this.algorithm != null) {
 //                init = algorithm.search(dataSet, parameters);
             }
-            final PcAll search = new PcAll(this.test.getTest(dataSet, parameters));
+            PcAll search = new PcAll(this.test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
             search.setFasType(PcAll.FasType.STABLE);
@@ -60,10 +60,10 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            final CpcStable cpcStable = new CpcStable(this.test, this.algorithm);
+            CpcStable cpcStable = new CpcStable(this.test, this.algorithm);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, cpcStable, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, cpcStable, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -90,7 +90,7 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
@@ -106,7 +106,7 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
 
         parameters.add(Params.VERBOSE);
@@ -119,12 +119,12 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
-    public void setIndependenceWrapper(final IndependenceWrapper independenceWrapper) {
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
 

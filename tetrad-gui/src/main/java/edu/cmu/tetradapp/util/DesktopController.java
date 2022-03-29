@@ -50,7 +50,7 @@ public class DesktopController implements DesktopControllable {
      * application when needed. Done once when the Tetrad application is
      * launched.
      */
-    public static void setReference(final DesktopControllable component) {
+    public static void setReference(DesktopControllable component) {
         DesktopController.INSTANCE = component;
     }
 
@@ -66,15 +66,15 @@ public class DesktopController implements DesktopControllable {
         DesktopController.getInstance().exitProgram();
     }
 
-    public boolean existsSessionByName(final String name) {
+    public boolean existsSessionByName(String name) {
         return DesktopController.getInstance().existsSessionByName(name);
     }
 
-    public Session getSessionByName(final String name) {
+    public Session getSessionByName(String name) {
         return DesktopController.getInstance().getSessionByName(name);
     }
 
-    public void addSessionEditor(final SessionEditorIndirectRef editor) {
+    public void addSessionEditor(SessionEditorIndirectRef editor) {
         DesktopController.getInstance().addSessionEditor(editor);
     }
 
@@ -82,17 +82,17 @@ public class DesktopController implements DesktopControllable {
         DesktopController.getInstance().closeAllSessions();
     }
 
-    public void putMetadata(final SessionWrapperIndirectRef sessionWrapper,
-                            final TetradMetadataIndirectRef metadata) {
+    public void putMetadata(SessionWrapperIndirectRef sessionWrapper,
+                            TetradMetadataIndirectRef metadata) {
         DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
     }
 
     public TetradMetadataIndirectRef getTetradMetadata(
-            final SessionWrapperIndirectRef sessionWrapper) {
+            SessionWrapperIndirectRef sessionWrapper) {
         return DesktopController.getInstance().getTetradMetadata(sessionWrapper);
     }
 
-    public void addEditorWindow(final EditorWindowIndirectRef editorWindow, final int layer) {
+    public void addEditorWindow(EditorWindowIndirectRef editorWindow, int layer) {
         DesktopController.getInstance().addEditorWindow(editorWindow, layer);
     }
 
@@ -102,7 +102,7 @@ public class DesktopController implements DesktopControllable {
     }
 
     @Override
-    public void closeSessionByName(final String name) {
+    public void closeSessionByName(String name) {
         DesktopController.getInstance().closeSessionByName(name);
     }
 

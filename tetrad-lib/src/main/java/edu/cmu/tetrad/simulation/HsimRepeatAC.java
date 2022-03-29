@@ -24,37 +24,37 @@ public class HsimRepeatAC {
     private char delimiter = ',';
 
     //*********Constructors*************//
-    public HsimRepeatAC(final DataSet indata) {
+    public HsimRepeatAC(DataSet indata) {
         this.data = indata;
         //may need to make this part more complicated if CovarianceMatrix method is finicky
     }
 
-    public HsimRepeatAC(final String readfilename, final char delim) {
-        final String workingDirectory = System.getProperty("user.dir");
+    public HsimRepeatAC(String readfilename, char delim) {
+        String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        final Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<String>();
         eVars.add("MULT");
-        final Path dataFile = Paths.get(readfilename);
+        Path dataFile = Paths.get(readfilename);
 
-        final ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
+        ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
         try {
             this.data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
-        } catch (final Exception IOException) {
+        } catch (Exception IOException) {
             IOException.printStackTrace();
         }
     }
 
     //***************PUBLIC METHODS********************//
-    public double[] run(final int resimSize, final int repeat) {
+    public double[] run(int resimSize, int repeat) {
         //parameter: set of positive integers, which are resimSize values.
-        final List<Integer> schedule = new ArrayList<Integer>();
+        List<Integer> schedule = new ArrayList<Integer>();
 
         for (int i = 0; i < repeat; i++) {
             schedule.add(resimSize);
         }
 
         //Arrays.asList(5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5);
-        final double[] evalTotal;
+        double[] evalTotal;
         evalTotal = new double[5];
         evalTotal[0] = 0;
         evalTotal[1] = 0;
@@ -71,9 +71,9 @@ public class HsimRepeatAC {
         Integer count3 = 0;
         Integer count4 = 0;
 
-        for (final Integer i : schedule) {
+        for (Integer i : schedule) {
             //count++;
-            final HsimAutoC study = new HsimAutoC(this.data);
+            HsimAutoC study = new HsimAutoC(this.data);
             //this is done differently if write is true. in that case, HsimAutoC will be used differently
             if (this.write) {
                 study.setWrite(true);
@@ -123,19 +123,19 @@ public class HsimRepeatAC {
     }
 
     //*************************Methods for setting private variables***********//
-    public void setVerbose(final boolean verbosity) {
+    public void setVerbose(boolean verbosity) {
         this.verbose = verbosity;
     }
 
-    public void setWrite(final boolean setwrite) {
+    public void setWrite(boolean setwrite) {
         this.write = setwrite;
     }
 
-    public void setFilenameOut(final String filename) {
+    public void setFilenameOut(String filename) {
         this.filenameOut = filename;
     }
 
-    public void setDelimiter(final char delim) {
+    public void setDelimiter(char delim) {
         this.delimiter = delim;
     }
 }

@@ -60,8 +60,8 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     //=============================CONSTRUCTORS==========================//
 
-    public TabularComparison(final GraphSource model1, final GraphSource model2,
-                             final Parameters params) {
+    public TabularComparison(GraphSource model1, GraphSource model2,
+                             Parameters params) {
         this(model1, model2, null, params);
     }
 
@@ -70,8 +70,8 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
-    public TabularComparison(final GraphSource model1, final GraphSource model2,
-                             final DataWrapper dataWrapper, final Parameters params) {
+    public TabularComparison(GraphSource model1, GraphSource model2,
+                             DataWrapper dataWrapper, Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }
@@ -85,8 +85,8 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         this.referenceName = params.getString("referenceGraphName", null);
         this.targetName = params.getString("targetGraphName", null);
 
-        final String model1Name = model1.getName();
-        final String model2Name = model2.getName();
+        String model1Name = model1.getName();
+        String model2Name = model2.getName();
 
         if (this.referenceName.equals(model1Name)) {
             this.referenceGraph = model1.getGraph();
@@ -121,9 +121,9 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         this.statistics.add(new TwoCycleRecall());
         this.statistics.add(new TwoCycleFalsePositive());
 
-        final List<Node> variables = new ArrayList<>();
+        List<Node> variables = new ArrayList<>();
 
-        for (final Statistic statistic : this.statistics) {
+        for (Statistic statistic : this.statistics) {
             variables.add(new ContinuousVariable(statistic.getAbbreviation()));
         }
 
@@ -132,11 +132,11 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     private void addRecord() {
-        final int newRow = this.dataSet.getNumRows();
+        int newRow = this.dataSet.getNumRows();
 
         for (int j = 0; j < this.statistics.size(); j++) {
-            final Statistic statistic = this.statistics.get(j);
-            final double value = statistic.getValue(this.referenceGraph, this.targetGraph, null);
+            Statistic statistic = this.statistics.get(j);
+            double value = statistic.getValue(this.referenceGraph, this.targetGraph, null);
             this.dataSet.setDouble(newRow, j, value);
         }
     }
@@ -160,7 +160,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -176,7 +176,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -192,7 +192,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     @Override
-    public void setAllParamSettings(final Map<String, String> paramSettings) {
+    public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = new LinkedHashMap<>(paramSettings);
     }
 
@@ -208,7 +208,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         return this.targetName;
     }
 
-    public void setTargetName(final String targetName) {
+    public void setTargetName(String targetName) {
         this.targetName = targetName;
     }
 
@@ -216,7 +216,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         return this.referenceName;
     }
 
-    public void setReferenceName(final String referenceName) {
+    public void setReferenceName(String referenceName) {
         this.referenceName = referenceName;
     }
 

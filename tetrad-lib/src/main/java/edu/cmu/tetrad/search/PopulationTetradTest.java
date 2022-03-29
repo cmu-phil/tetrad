@@ -40,7 +40,7 @@ public class PopulationTetradTest implements TetradTest {
     private final boolean[] bvalues;
     private final double epsilon = 0.001;
 
-    public PopulationTetradTest(final CorrelationMatrix CorrelationMatrix) {
+    public PopulationTetradTest(CorrelationMatrix CorrelationMatrix) {
         this.CorrelationMatrix = CorrelationMatrix;
         this.bvalues = new boolean[3];
     }
@@ -63,15 +63,15 @@ public class PopulationTetradTest implements TetradTest {
      * (yet).
      */
 
-    public int tetradScore(final int v1, final int v2, final int v3, final int v4) {
+    public int tetradScore(int v1, int v2, int v3, int v4) {
         int count = 0;
 
-        final double p_12 = this.CorrelationMatrix.getValue(v1, v2);
-        final double p_13 = this.CorrelationMatrix.getValue(v1, v3);
-        final double p_14 = this.CorrelationMatrix.getValue(v1, v4);
-        final double p_23 = this.CorrelationMatrix.getValue(v2, v3);
-        final double p_24 = this.CorrelationMatrix.getValue(v2, v4);
-        final double p_34 = this.CorrelationMatrix.getValue(v3, v4);
+        double p_12 = this.CorrelationMatrix.getValue(v1, v2);
+        double p_13 = this.CorrelationMatrix.getValue(v1, v3);
+        double p_14 = this.CorrelationMatrix.getValue(v1, v4);
+        double p_23 = this.CorrelationMatrix.getValue(v2, v3);
+        double p_24 = this.CorrelationMatrix.getValue(v2, v4);
+        double p_34 = this.CorrelationMatrix.getValue(v3, v4);
 
         for (int i = 0; i < 3; i++) {
             this.bvalues[i] = false;
@@ -92,46 +92,46 @@ public class PopulationTetradTest implements TetradTest {
         return count;
     }
 
-    public boolean tetradScore3(final int v1, final int v2, final int v3, final int v4) {
+    public boolean tetradScore3(int v1, int v2, int v3, int v4) {
         return tetradScore(v1, v2, v3, v4) == 3;
     }
 
-    public boolean tetradScore1(final int v1, final int v2, final int v3, final int v4) {
+    public boolean tetradScore1(int v1, int v2, int v3, int v4) {
         if (tetradScore(v1, v2, v3, v4) != 1) {
             return false;
         }
         return this.bvalues[2];
     }
 
-    public boolean tetradHolds(final int v1, final int v2, final int v3, final int v4) {
-        final double p_12 = this.CorrelationMatrix.getValue(v1, v2);
-        final double p_13 = this.CorrelationMatrix.getValue(v1, v3);
-        final double p_24 = this.CorrelationMatrix.getValue(v2, v4);
-        final double p_34 = this.CorrelationMatrix.getValue(v3, v4);
+    public boolean tetradHolds(int v1, int v2, int v3, int v4) {
+        double p_12 = this.CorrelationMatrix.getValue(v1, v2);
+        double p_13 = this.CorrelationMatrix.getValue(v1, v3);
+        double p_24 = this.CorrelationMatrix.getValue(v2, v4);
+        double p_34 = this.CorrelationMatrix.getValue(v3, v4);
         this.bvalues[0] = Math.abs(p_12 * p_34 - p_13 * p_24) < this.epsilon;
         return this.bvalues[0];
     }
 
-    public boolean oneFactorTest(final int a, final int b, final int c, final int d) {
+    public boolean oneFactorTest(int a, int b, int c, int d) {
         return tetradScore3(a, b, c, d);
     }
 
-    public boolean oneFactorTest(final int a, final int b, final int c, final int d, final int e) {
+    public boolean oneFactorTest(int a, int b, int c, int d, int e) {
         return tetradScore3(a, b, c, d) && tetradScore3(a, b, c, e) &&
                 tetradScore3(b, c, d, e);
     }
 
-    public boolean oneFactorTest(final int a, final int b, final int c, final int d, final int e, final int f) {
+    public boolean oneFactorTest(int a, int b, int c, int d, int e, int f) {
         return tetradScore3(a, b, c, d) && tetradScore3(b, c, d, e) &&
                 tetradScore3(c, d, e, f);
     }
 
-    public boolean twoFactorTest(final int a, final int b, final int c, final int d) {
+    public boolean twoFactorTest(int a, int b, int c, int d) {
         tetradScore(a, b, c, d);
         return this.bvalues[2];
     }
 
-    public boolean twoFactorTest(final int a, final int b, final int c, final int d, final int e) {
+    public boolean twoFactorTest(int a, int b, int c, int d, int e) {
         tetradScore(a, b, d, e);
 
         if (!this.bvalues[2]) {
@@ -148,7 +148,7 @@ public class PopulationTetradTest implements TetradTest {
         return this.bvalues[2];
     }
 
-    public boolean twoFactorTest(final int a, final int b, final int c, final int d, final int e, final int f) {
+    public boolean twoFactorTest(int a, int b, int c, int d, int e, int f) {
         if (!twoFactorTest(a, b, c, d, e)) {
             return false;
         }
@@ -160,11 +160,11 @@ public class PopulationTetradTest implements TetradTest {
         return twoFactorTest(a, b, c, e, f);
     }
 
-    public double tetradPValue(final int v1, final int v2, final int v3, final int v4) {
+    public double tetradPValue(int v1, int v2, int v3, int v4) {
         return -1;
     }
 
-    public double tetradPValue(final int i1, final int j1, final int k1, final int l1, final int i2, final int j2, final int k2, final int l2) {
+    public double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2) {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -172,7 +172,7 @@ public class PopulationTetradTest implements TetradTest {
         return 0;
     }
 
-    public void setSignificance(final double sig) {
+    public void setSignificance(double sig) {
         throw new UnsupportedOperationException();
     }
 

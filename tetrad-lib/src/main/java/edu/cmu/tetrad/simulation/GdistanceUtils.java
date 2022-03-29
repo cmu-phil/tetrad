@@ -11,11 +11,11 @@ public class GdistanceUtils {
 
     //this method returns a list of percents of how many members of input
     //fall into the various buckets determined by the array of thresholds (ordered from least to greatest)
-    public static double[] histogram(final List<Double> input, final double[] thresholds) {
-        final double[] output;
+    public static double[] histogram(List<Double> input, double[] thresholds) {
+        double[] output;
         output = new double[Array.getLength(thresholds) + 1];
         //will use length of input list when calcing percents
-        final double total = input.size();
+        double total = input.size();
 
         //init output to be all 0s
         for (int i = 0; i < Array.getLength(output); i++) {
@@ -23,7 +23,7 @@ public class GdistanceUtils {
         }
 
         //go through input, iterate whichever box it falls into
-        for (final Double i : input) {
+        for (Double i : input) {
             boolean nobinfound = true;
             for (int j = 0; j < Array.getLength(thresholds); j++) {
                 if (i <= thresholds[j]) {

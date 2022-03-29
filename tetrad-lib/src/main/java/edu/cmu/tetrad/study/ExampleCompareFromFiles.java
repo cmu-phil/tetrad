@@ -41,8 +41,8 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class ExampleCompareFromFiles {
-    public static void main(final String... args) {
-        final Parameters parameters = new Parameters();
+    public static void main(String... args) {
+        Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 1);
 //        parameters.set("numMeasures", 20,100,1000);
@@ -55,7 +55,7 @@ public class ExampleCompareFromFiles {
         parameters.set("alpha", 1e-4);
 
 
-        final Statistics statistics = new Statistics();
+        Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("avgDegree"));
         statistics.add(new ParameterColumn("sampleSize"));
@@ -76,7 +76,7 @@ public class ExampleCompareFromFiles {
 //        statistics.setWeight("TP", 1.0);
 //        statistics.setWeight("TR", 0.5);
 
-        final Algorithms algorithms = new Algorithms();
+        Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new Gfci(new ChiSquare(), new BdeuScore()));
 //        algorithms.add(new Fci(new FisherZ()));
@@ -95,7 +95,7 @@ public class ExampleCompareFromFiles {
 //        algorithms.add(new PcMax(new FisherZ(), false));
 //        algorithms.add(new Pc(new FisherZ()));
 
-        final Comparison comparison = new Comparison();
+        Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(true);

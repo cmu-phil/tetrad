@@ -49,33 +49,33 @@ public final class TestSearchGraph {
      */
     @Test
     public void testDSeparation() {
-        final List<Node> nodes1 = new ArrayList<>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 7; i1++) {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        final EdgeListGraph graph = new EdgeListGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 7,
+        EdgeListGraph graph = new EdgeListGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 7,
                 30, 15, 15, true)));
 
-        final List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
         final int depth = -1;
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
-                final Node x = nodes.get(i);
-                final Node y = nodes.get(j);
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
 
-                final List<Node> theRest = new ArrayList<>(nodes);
+                List<Node> theRest = new ArrayList<>(nodes);
                 theRest.remove(x);
                 theRest.remove(y);
 
-                final DepthChoiceGenerator gen = new DepthChoiceGenerator(theRest.size(), depth);
+                DepthChoiceGenerator gen = new DepthChoiceGenerator(theRest.size(), depth);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    final List<Node> z = new LinkedList<>();
+                    List<Node> z = new LinkedList<>();
 
                     for (int k = 0; k < choice.length; k++) {
                         z.add(theRest.get(choice[k]));
@@ -96,40 +96,40 @@ public final class TestSearchGraph {
      */
     @Test
     public void testDSeparation2() {
-        final List<Node> nodes1 = new ArrayList<>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 7; i1++) {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        final EdgeListGraph graph = new EdgeListGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 14,
+        EdgeListGraph graph = new EdgeListGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 14,
                 30, 15, 15, true)));
 
-        final List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
         final int depth = -1;
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i; j < nodes.size(); j++) {
-                final Node x = nodes.get(i);
-                final Node y = nodes.get(j);
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
 
-                final List<Node> theRest = new ArrayList<>(nodes);
+                List<Node> theRest = new ArrayList<>(nodes);
 //                theRest.remove(x);
 //                theRest.remove(y);
 
-                final DepthChoiceGenerator gen = new DepthChoiceGenerator(theRest.size(), depth);
+                DepthChoiceGenerator gen = new DepthChoiceGenerator(theRest.size(), depth);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    final List<Node> z = new LinkedList<>();
+                    List<Node> z = new LinkedList<>();
 
                     for (int k = 0; k < choice.length; k++) {
                         z.add(theRest.get(choice[k]));
                     }
 
-                    final boolean dConnectedTo = graph.isDConnectedTo(x, y, z);
-                    final boolean dConnectedTo1 = graph.isDConnectedTo(y, x, z);
+                    boolean dConnectedTo = graph.isDConnectedTo(x, y, z);
+                    boolean dConnectedTo1 = graph.isDConnectedTo(y, x, z);
 
                     if (dConnectedTo != dConnectedTo1) {
                         System.out.println(x + " d connected to " + y + " given " + z);
@@ -166,22 +166,22 @@ public final class TestSearchGraph {
     }
 
     public void rtestDSeparation4() {
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 100; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 20, 100,
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 20, 100,
                 5, 5, 5, false));
 
         long start, stop;
         final int depth = -1;
 
-        final IndependenceTest test = new IndTestDSep(graph);
+        IndependenceTest test = new IndTestDSep(graph);
 
-        final Rfci fci = new Rfci(test);
-        final Fas fas = new Fas(test);
+        Rfci fci = new Rfci(test);
+        Fas fas = new Fas(test);
         start = System.currentTimeMillis();
         fci.setDepth(depth);
         fci.setVerbose(false);
@@ -193,13 +193,13 @@ public final class TestSearchGraph {
         System.out.println("Elapsed " + (stop - start));
         System.out.println("Per " + fas.getNumIndependenceTests() / (double) (stop - start));
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
-        final DataSet data = im.simulateData(1000, false);
-        final IndependenceTest test2 = new IndTestFisherZ(data, 0.001);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(1000, false);
+        IndependenceTest test2 = new IndTestFisherZ(data, 0.001);
 
-        final Rfci fci3 = new Rfci(test2);
-        final Fas fas2 = new Fas(test2);
+        Rfci fci3 = new Rfci(test2);
+        Fas fas2 = new Fas(test2);
         start = System.currentTimeMillis();
         fci3.setDepth(depth);
         fci3.search(fas2, fas2.getNodes());
@@ -211,13 +211,13 @@ public final class TestSearchGraph {
         System.out.println("Per " + fas.getNumIndependenceTests() / (double) (stop - start));
     }
 
-    private boolean dConnected(final Graph graph, final String x, final String y, final String... z) {
-        final Node _x = graph.getNode(x);
-        final Node _y = graph.getNode(y);
+    private boolean dConnected(Graph graph, String x, String y, String... z) {
+        Node _x = graph.getNode(x);
+        Node _y = graph.getNode(y);
 
-        final List<Node> _z = new ArrayList<>();
+        List<Node> _z = new ArrayList<>();
 
-        for (final String name : z) {
+        for (String name : z) {
             _z.add(graph.getNode(name));
         }
 
@@ -239,13 +239,13 @@ public final class TestSearchGraph {
 //
 //        Graph graph = gen.getDag();
 
-        final Graph graph = TestSearchGraph.weightedRandomGraph(250, 400);
+        Graph graph = TestSearchGraph.weightedRandomGraph(250, 400);
 
-        final List<Integer> degreeCounts = new ArrayList<>();
-        final Map<Integer, Integer> degreeCount = new HashMap<>();
+        List<Integer> degreeCounts = new ArrayList<>();
+        Map<Integer, Integer> degreeCount = new HashMap<>();
 
-        for (final Node node : graph.getNodes()) {
-            final int degree = graph.getNumEdges(node);
+        for (Node node : graph.getNodes()) {
+            int degree = graph.getNumEdges(node);
             degreeCounts.add(degree);
 
 
@@ -258,37 +258,37 @@ public final class TestSearchGraph {
 
         Collections.sort(degreeCounts);
         System.out.println(degreeCounts);
-        final List<Integer> _degrees = new ArrayList<>(degreeCount.keySet());
+        List<Integer> _degrees = new ArrayList<>(degreeCount.keySet());
         Collections.sort(_degrees);
 
-        for (final int i : _degrees) {
-            final int j = degreeCount.get(i);
+        for (int i : _degrees) {
+            int j = degreeCount.get(i);
 //            System.out.println(i + " " + j);
             System.out.println(log(i + 1) + " " + log(j));
         }
 
         System.out.println("\nCPL = " + TestSearchGraph.characteristicPathLength(graph));
 
-        final Graph erGraph = TestSearchGraph.erdosRenyiGraph(200, 200);
+        Graph erGraph = TestSearchGraph.erdosRenyiGraph(200, 200);
         System.out.println("\n ER CPL = " + TestSearchGraph.characteristicPathLength(erGraph));
     }
 
-    public static Graph erdosRenyiGraph(final int n, final int e) {
-        final List<Node> nodes = new ArrayList<>();
+    public static Graph erdosRenyiGraph(int n, int e) {
+        List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < n; i++) nodes.add(new GraphNode("X" + i));
 
-        final Graph graph = new EdgeListGraph(nodes);
+        Graph graph = new EdgeListGraph(nodes);
 
         for (int e0 = 0; e0 < e; e0++) {
-            final int i1 = RandomUtil.getInstance().nextInt(n);
-            final int i2 = RandomUtil.getInstance().nextInt(n);
+            int i1 = RandomUtil.getInstance().nextInt(n);
+            int i2 = RandomUtil.getInstance().nextInt(n);
 
             if (i1 == i2) {
                 e0--;
                 continue;
             }
 
-            final Edge edge = Edges.undirectedEdge(nodes.get(i1), nodes.get(i2));
+            Edge edge = Edges.undirectedEdge(nodes.get(i1), nodes.get(i2));
 
             if (graph.containsEdge(edge)) {
                 e0--;
@@ -301,16 +301,16 @@ public final class TestSearchGraph {
         return graph;
     }
 
-    public static Graph weightedRandomGraph(final int n, final int e) {
-        final List<Node> nodes = new ArrayList<>();
+    public static Graph weightedRandomGraph(int n, int e) {
+        List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < n; i++) nodes.add(new GraphNode("X" + i));
 
-        final Graph graph = new EdgeListGraph(nodes);
+        Graph graph = new EdgeListGraph(nodes);
 
         for (int e0 = 0; e0 < e; e0++) {
-            final int i1 = TestSearchGraph.weightedRandom(nodes, graph);
+            int i1 = TestSearchGraph.weightedRandom(nodes, graph);
 //            int i2 = RandomUtil.getInstance().nextInt(n);
-            final int i2 = TestSearchGraph.weightedRandom(nodes, graph);
+            int i2 = TestSearchGraph.weightedRandom(nodes, graph);
 
             if (!(TestSearchGraph.shortestPath(nodes.get(i1), nodes.get(i2), graph) < 9)) {
                 e0--;
@@ -322,7 +322,7 @@ public final class TestSearchGraph {
                 continue;
             }
 
-            final Edge edge = Edges.undirectedEdge(nodes.get(i1), nodes.get(i2));
+            Edge edge = Edges.undirectedEdge(nodes.get(i1), nodes.get(i2));
 
             if (graph.containsEdge(edge)) {
                 e0--;
@@ -332,9 +332,9 @@ public final class TestSearchGraph {
             graph.addEdge(edge);
         }
 
-        for (final Edge edge : graph.getEdges()) {
-            final Node n1 = edge.getNode1();
-            final Node n2 = edge.getNode2();
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
 
             if (!graph.isAncestorOf(n2, n1)) {
                 graph.removeEdge(edge);
@@ -349,29 +349,29 @@ public final class TestSearchGraph {
     }
 
     public void test11() {
-        final Node x = new GraphNode("X");
-        final List<Node> nodes = Collections.singletonList(x);
+        Node x = new GraphNode("X");
+        List<Node> nodes = Collections.singletonList(x);
 
-        final Graph g = new EdgeListGraph(nodes);
+        Graph g = new EdgeListGraph(nodes);
 
-        final Graph g2 = new EdgeListGraph(g);
+        Graph g2 = new EdgeListGraph(g);
 
         System.out.println();
     }
 
-    private static int shortestPath(final Node n1, Node n2, final Graph g) {
-        final Queue<Node> Q = new ArrayDeque<>();
-        final Map<Node, Node> V = new HashMap<>();
+    private static int shortestPath(Node n1, Node n2, Graph g) {
+        Queue<Node> Q = new ArrayDeque<>();
+        Map<Node, Node> V = new HashMap<>();
 
         Q.offer(n1);
         V.put(n1, null);
 
         while (!Q.isEmpty()) {
-            final Node m = Q.poll();
+            Node m = Q.poll();
 
             if (V.containsKey(n2)) break;
 
-            for (final Node p : g.getAdjacentNodes(m)) {
+            for (Node p : g.getAdjacentNodes(m)) {
                 if (V.containsKey(p)) continue;
 
                 Q.offer(p);
@@ -389,15 +389,15 @@ public final class TestSearchGraph {
         return s;
     }
 
-    private static int weightedRandom(final List<Node> nodes, final Graph graph) {
+    private static int weightedRandom(List<Node> nodes, Graph graph) {
         int total = 0;
-        final int n = nodes.size();
+        int n = nodes.size();
 
         for (int b = 0; b < n; b++) {
             total = TestSearchGraph.weight(nodes, graph, total, b);
         }
 
-        final int r = RandomUtil.getInstance().nextInt(total);
+        int r = RandomUtil.getInstance().nextInt(total);
 
         int count = 0;
         int index = 0;
@@ -413,22 +413,22 @@ public final class TestSearchGraph {
         return index;
     }
 
-    private static int weight(final List<Node> nodes, final Graph graph, int total, final int b) {
+    private static int weight(List<Node> nodes, Graph graph, int total, int b) {
         final double p = 1;
-        final int degree = graph.getNumEdges(nodes.get(b));
-        final int t = degree + 1;
+        int degree = graph.getNumEdges(nodes.get(b));
+        int t = degree + 1;
         total += pow(t, p);
         return total;
     }
 
-    private static double characteristicPathLength(final Graph g) {
-        final List<Node> nodes = g.getNodes();
+    private static double characteristicPathLength(Graph g) {
+        List<Node> nodes = g.getNodes();
         int total = 0;
         int count = 0;
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i; j < nodes.size(); j++) {
-                final int shortest = TestSearchGraph.shortestPath(nodes.get(i), nodes.get(j), g);
+                int shortest = TestSearchGraph.shortestPath(nodes.get(i), nodes.get(j), g);
                 total += shortest;
                 count++;
             }

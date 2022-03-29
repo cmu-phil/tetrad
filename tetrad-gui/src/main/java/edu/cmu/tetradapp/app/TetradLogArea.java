@@ -71,7 +71,7 @@ class TetradLogArea extends JPanel {
     /**
      * Constructs the log area.
      */
-    public TetradLogArea(final TetradDesktop tetradDesktop) {
+    public TetradLogArea(TetradDesktop tetradDesktop) {
         super(new BorderLayout());
         if (tetradDesktop == null) {
             throw new NullPointerException("The given desktop must not be null");
@@ -84,7 +84,7 @@ class TetradLogArea extends JPanel {
             this.stream = new TextAreaOutputStream(this.textArea);
             TetradLogger.getInstance().addOutputStream(this.stream);
         }
-        final JScrollPane pane = new JScrollPane(this.textArea);
+        JScrollPane pane = new JScrollPane(this.textArea);
         pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         // finally add the components to the panel.
@@ -108,20 +108,20 @@ class TetradLogArea extends JPanel {
      * Creates the header of the log display.
      */
     private JComponent createHeader() {
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setBackground(DisplayNodeUtils.getNodeFillColor());
         panel.setLayout(new BorderLayout());
 
-        final String path = TetradLogger.getInstance().getLatestFilePath();
+        String path = TetradLogger.getInstance().getLatestFilePath();
 
-        final JLabel label = new JLabel(path == null ? "Logging to console (select Setup... from Logging menu)" : "  Logging to " + path);
+        JLabel label = new JLabel(path == null ? "Logging to console (select Setup... from Logging menu)" : "  Logging to " + path);
         label.setFont(label.getFont().deriveFont(Font.BOLD, 12f));
         label.setBackground(DisplayNodeUtils.getNodeFillColor());
         label.setForeground(Color.WHITE);
         label.setOpaque(false);
         label.setBorder(new EmptyBorder(1, 2, 1, 2));
 
-        final Box b = Box.createHorizontalBox();
+        Box b = Box.createHorizontalBox();
 
         b.add(label);
         b.add(Box.createHorizontalGlue());
@@ -130,8 +130,8 @@ class TetradLogArea extends JPanel {
         return panel;
     }
 
-    private JButton getStyledButton(final String name, final JLabel label) {
-        final JButton stop = new JButton(name);
+    private JButton getStyledButton(String name, JLabel label) {
+        JButton stop = new JButton(name);
         stop.setFont(label.getFont().deriveFont(Font.BOLD, 12f));
         stop.setBackground(DisplayNodeUtils.getNodeFillColor());
         stop.setForeground(Color.WHITE);
@@ -150,42 +150,42 @@ class TetradLogArea extends JPanel {
 
 
         // build yes/no combo box.
-        final JComboBox activateCombo = new JComboBox(new String[]{"No", "Yes"});
+        JComboBox activateCombo = new JComboBox(new String[]{"No", "Yes"});
         activateCombo.setMaximumSize(activateCombo.getPreferredSize());
         activateCombo.setSelectedItem(TetradLogger.getInstance().isLogging() ? "Yes" : "No");
         activateCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JComboBox combo = (JComboBox) e.getSource();
+            public void actionPerformed(ActionEvent e) {
+                JComboBox combo = (JComboBox) e.getSource();
                 TetradLogger.getInstance().setLogging("Yes".equals(combo.getSelectedItem()));
             }
         });
 
-        final String saveLocation = TetradLogger.getInstance().getLoggingDirectory();
-        final JTextField saveField = new JTextField(saveLocation);
+        String saveLocation = TetradLogger.getInstance().getLoggingDirectory();
+        JTextField saveField = new JTextField(saveLocation);
         saveField.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JTextField field = (JTextField) e.getSource();
+            public void actionPerformed(ActionEvent e) {
+                JTextField field = (JTextField) e.getSource();
                 try {
                     TetradLogger.getInstance().setLoggingDirectory(field.getText());
-                } catch (final IllegalArgumentException ex) {
+                } catch (IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), ex.getMessage());
                 }
             }
         });
 
-        final JButton chooseButton = new JButton(" ... ");
+        JButton chooseButton = new JButton(" ... ");
         chooseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final String saveLocation = TetradLogger.getInstance().getLoggingDirectory();
+            public void actionPerformed(ActionEvent e) {
+                String saveLocation = TetradLogger.getInstance().getLoggingDirectory();
 
-                final JFileChooser chooser = new JFileChooser();
+                JFileChooser chooser = new JFileChooser();
                 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 chooser.setCurrentDirectory(new File(saveLocation));
 
-                final int ret = chooser.showOpenDialog(JOptionUtils.centeringComp());
+                int ret = chooser.showOpenDialog(JOptionUtils.centeringComp());
 
                 if (ret == JFileChooser.APPROVE_OPTION) {
-                    final File selectedFile = chooser.getSelectedFile();
+                    File selectedFile = chooser.getSelectedFile();
                     Preferences.userRoot().put("loggingDirectory", selectedFile.getAbsolutePath());
                     saveField.setText(selectedFile.getAbsolutePath());
                 }
@@ -193,12 +193,12 @@ class TetradLogArea extends JPanel {
         });
 
         chooseButton.setBorder(new EtchedBorder());
-        final JTextField prefixField = new JTextField(TetradLogger.getInstance().getLoggingFilePrefix());
+        JTextField prefixField = new JTextField(TetradLogger.getInstance().getLoggingFilePrefix());
 
         prefixField.addCaretListener(new CaretListener() {
-            public void caretUpdate(final CaretEvent e) {
-                final JTextField field = (JTextField) e.getSource();
-                final String text = field.getText();
+            public void caretUpdate(CaretEvent e) {
+                JTextField field = (JTextField) e.getSource();
+                String text = field.getText();
 
                 if (!text.matches("[a-zA-Z_]*")) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -214,40 +214,40 @@ class TetradLogArea extends JPanel {
         });
 
         // Do Layout.
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
         b1.add(TetradLogArea.createLogToBox());
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Output Directory:"));
         b4.add(Box.createHorizontalGlue());
         b1.add(b4);
 
-        final Box b5 = Box.createHorizontalBox();
+        Box b5 = Box.createHorizontalBox();
         b5.add(saveField);
         b5.add(chooseButton);
         b1.add(b5);
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b6 = Box.createHorizontalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(new JLabel("File Prefix:"));
         b6.add(Box.createHorizontalGlue());
         b1.add(b6);
 
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(prefixField);
         b1.add(b7);
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b8 = Box.createHorizontalBox();
+        Box b8 = Box.createHorizontalBox();
         b8.add(new JLabel("<html>" +
                 "Output will be written to sequentially numbered files, using the<br>" +
                 "given file prefix, in the given directory." +
                 "</html>"));
         b1.add(b8);
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.add(b1, BorderLayout.CENTER);
         return panel;
     }
@@ -259,26 +259,26 @@ class TetradLogArea extends JPanel {
      * Builds the output selection boxes.
      */
     private static Box createLogToBox() {
-        final Box box = Box.createHorizontalBox();
+        Box box = Box.createHorizontalBox();
         box.add(new JLabel("Log output to: "));
         box.add(Box.createHorizontalStrut(5));
 
-        final JCheckBox fileCheckBox = new JCheckBox(" File ");
+        JCheckBox fileCheckBox = new JCheckBox(" File ");
         fileCheckBox.setSelected(TetradLogger.getInstance().isFileLoggingEnabled());
         fileCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
         fileCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox box = (JCheckBox) e.getSource();
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox box = (JCheckBox) e.getSource();
                 TetradLogger.getInstance().setFileLoggingEnabled(box.isSelected());
             }
         });
 
-        final JCheckBox textareaCheckBox = new JCheckBox(" Log Display ");
+        JCheckBox textareaCheckBox = new JCheckBox(" Log Display ");
         textareaCheckBox.setSelected(TetradLogger.getInstance().isDisplayLogEnabled());
         textareaCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
         textareaCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox box = (JCheckBox) e.getSource();
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox box = (JCheckBox) e.getSource();
                 TetradLogger.getInstance().setDisplayLogEnabled(box.isSelected());
             }
         });
@@ -291,26 +291,26 @@ class TetradLogArea extends JPanel {
     }
 
     private JPanel viewLogsInstructions() {
-        final JPanel panel = new JPanel();
-        final JLabel label1 = new JLabel(
+        JPanel panel = new JPanel();
+        JLabel label1 = new JLabel(
                 "<html>The best advise for viewing your logs is to go to the log output directory" +
                         "<br>and open them using a text editor, like WordPad, or Emacs, or gEdit, that" +
                         "<br>can handle large text files. Your output directory is..." +
                         "</html>"
         );
 
-        final JTextField field = new JTextField(TetradLogger.getInstance().getLoggingDirectory());
+        JTextField field = new JTextField(TetradLogger.getInstance().getLoggingDirectory());
         field.setMaximumSize(new Dimension(500, 20));
         field.setEditable(false);
         field.setBackground(Color.WHITE);
 
-        final JLabel label = new JLabel("<html>Higher numbered files are more recent.</html>");
+        JLabel label = new JLabel("<html>Higher numbered files are more recent.</html>");
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
         b.add(label1);
         b.add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalGlue());
         b2.add(field);
         b2.add(Box.createHorizontalGlue());
@@ -352,12 +352,12 @@ class TetradLogArea extends JPanel {
      * Writes whatever is in the log display to the given file. Will display error messages if
      * any exceptions are thrown.
      */
-    private void writeLogToFile(final File file) {
+    private void writeLogToFile(File file) {
         try {
-            final FileWriter writer = new FileWriter(file);
+            FileWriter writer = new FileWriter(file);
             writer.write(this.textArea.getText());
             writer.close();
-        } catch (final IOException ex) {
+        } catch (IOException ex) {
             JOptionPane.showMessageDialog(this.desktop, "Error while trying to write to the selected file.");
         }
     }

@@ -61,7 +61,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     /**
      * Constructs a new directed acyclic graph (DAG).
      */
-    public KnowledgeGraph(final IKnowledge knowledge) {
+    public KnowledgeGraph(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -80,15 +80,15 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     //=============================PUBLIC METHODS==========================//
 
-    public final void transferNodesAndEdges(final Graph graph)
+    public final void transferNodesAndEdges(Graph graph)
             throws IllegalArgumentException {
         this.getGraph().transferNodesAndEdges(graph);
-        for (final Node node : this.getGraph().getNodes()) {
+        for (Node node : this.getGraph().getNodes()) {
             node.getAllAttributes().clear();
         }
     }
 
-    public final void transferAttributes(final Graph graph)
+    public final void transferAttributes(Graph graph)
             throws IllegalArgumentException {
         this.getGraph().transferAttributes(graph);
     }
@@ -109,59 +109,59 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     /**
      * States whether x-y-x is an underline triple or not.
      */
-    public boolean isAmbiguousTriple(final Node x, final Node y, final Node z) {
+    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
         return getGraph().isAmbiguousTriple(x, y, z);
     }
 
     /**
      * States whether x-y-x is an underline triple or not.
      */
-    public boolean isUnderlineTriple(final Node x, final Node y, final Node z) {
+    public boolean isUnderlineTriple(Node x, Node y, Node z) {
         return getGraph().isUnderlineTriple(x, y, z);
     }
 
     /**
      * States whether x-y-x is an underline triple or not.
      */
-    public boolean isDottedUnderlineTriple(final Node x, final Node y, final Node z) {
+    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
         return getGraph().isDottedUnderlineTriple(x, y, z);
     }
 
-    public void addAmbiguousTriple(final Node x, final Node y, final Node z) {
+    public void addAmbiguousTriple(Node x, Node y, Node z) {
         getGraph().addAmbiguousTriple(x, y, z);
     }
 
-    public void addUnderlineTriple(final Node x, final Node y, final Node z) {
+    public void addUnderlineTriple(Node x, Node y, Node z) {
         getGraph().addUnderlineTriple(x, y, z);
     }
 
-    public void addDottedUnderlineTriple(final Node x, final Node y, final Node z) {
+    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
         getGraph().addDottedUnderlineTriple(x, y, z);
     }
 
-    public void removeAmbiguousTriple(final Node x, final Node y, final Node z) {
+    public void removeAmbiguousTriple(Node x, Node y, Node z) {
         getGraph().removeAmbiguousTriple(x, y, z);
     }
 
-    public void removeUnderlineTriple(final Node x, final Node y, final Node z) {
+    public void removeUnderlineTriple(Node x, Node y, Node z) {
         getGraph().removeUnderlineTriple(x, y, z);
     }
 
-    public void removeDottedUnderlineTriple(final Node x, final Node y, final Node z) {
+    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
         getGraph().removeDottedUnderlineTriple(x, y, z);
     }
 
 
-    public void setAmbiguousTriples(final Set<Triple> triples) {
+    public void setAmbiguousTriples(Set<Triple> triples) {
         getGraph().setAmbiguousTriples(triples);
     }
 
-    public void setUnderLineTriples(final Set<Triple> triples) {
+    public void setUnderLineTriples(Set<Triple> triples) {
         getGraph().setUnderLineTriples(triples);
     }
 
 
-    public void setDottedUnderLineTriples(final Set<Triple> triples) {
+    public void setDottedUnderLineTriples(Set<Triple> triples) {
         getGraph().setDottedUnderLineTriples(triples);
     }
 
@@ -169,15 +169,15 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getCausalOrdering();
     }
 
-    public void setHighlighted(final Edge edge, final boolean highlighted) {
+    public void setHighlighted(Edge edge, boolean highlighted) {
         getGraph().setHighlighted(edge, highlighted);
     }
 
-    public boolean isHighlighted(final Edge edge) {
+    public boolean isHighlighted(Edge edge) {
         return getGraph().isHighlighted(edge);
     }
 
-    public boolean isParameterizable(final Node node) {
+    public boolean isParameterizable(Node node) {
         return false;
     }
 
@@ -195,12 +195,12 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     @Override
-    public List<Node> getSepset(final Node n1, final Node n2) {
+    public List<Node> getSepset(Node n1, Node n2) {
         return this.graph.getSepset(n1, n2);
     }
 
     @Override
-    public void setNodes(final List<Node> nodes) {
+    public void setNodes(List<Node> nodes) {
         this.graph.setNodes(nodes);
     }
 
@@ -208,11 +208,11 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getNodeNames();
     }
 
-    public void fullyConnect(final Endpoint endpoint) {
+    public void fullyConnect(Endpoint endpoint) {
         getGraph().fullyConnect(endpoint);
     }
 
-    public void reorientAllWith(final Endpoint endpoint) {
+    public void reorientAllWith(Endpoint endpoint) {
         getGraph().reorientAllWith(endpoint);
     }
 
@@ -220,15 +220,15 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getEndpointMatrix();
     }
 
-    public List<Node> getAdjacentNodes(final Node node) {
+    public List<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
 
-    public List<Node> getNodesInTo(final Node node, final Endpoint endpoint) {
+    public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
         return getGraph().getNodesInTo(node, endpoint);
     }
 
-    public List<Node> getNodesOutTo(final Node node, final Endpoint n) {
+    public List<Node> getNodesOutTo(Node node, Endpoint n) {
         return getGraph().getNodesOutTo(node, n);
     }
 
@@ -236,35 +236,35 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getNodes();
     }
 
-    public boolean removeEdge(final Node node1, final Node node2) {
+    public boolean removeEdge(Node node1, Node node2) {
         return removeEdge(getEdge(node1, node2));
     }
 
-    public boolean removeEdges(final Node node1, final Node node2) {
+    public boolean removeEdges(Node node1, Node node2) {
         return getGraph().removeEdges(node1, node2);
     }
 
-    public boolean isAdjacentTo(final Node nodeX, final Node nodeY) {
+    public boolean isAdjacentTo(Node nodeX, Node nodeY) {
         return getGraph().isAdjacentTo(nodeX, nodeY);
     }
 
-    public boolean setEndpoint(final Node node1, final Node node2, final Endpoint endpoint) {
+    public boolean setEndpoint(Node node1, Node node2, Endpoint endpoint) {
         return getGraph().setEndpoint(node1, node2, endpoint);
     }
 
-    public Endpoint getEndpoint(final Node node1, final Node node2) {
+    public Endpoint getEndpoint(Node node1, Node node2) {
         return getGraph().getEndpoint(node1, node2);
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         return getGraph().equals(o);
     }
 
-    public Graph subgraph(final List<Node> nodes) {
+    public Graph subgraph(List<Node> nodes) {
         return getGraph().subgraph(nodes);
     }
 
-    public boolean existsDirectedPathFromTo(final Node node1, final Node node2) {
+    public boolean existsDirectedPathFromTo(Node node1, Node node2) {
         return getGraph().existsDirectedPathFromTo(node1, node2);
     }
 
@@ -273,43 +273,43 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().findCycle();
     }
 
-    public boolean existsUndirectedPathFromTo(final Node node1, final Node node2) {
+    public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
         return getGraph().existsUndirectedPathFromTo(node1, node2);
     }
 
-    public boolean existsSemiDirectedPathFromTo(final Node node1, final Set node2) {
+    public boolean existsSemiDirectedPathFromTo(Node node1, Set node2) {
         return getGraph().existsSemiDirectedPathFromTo(node1, node2);
     }
 
-    public boolean addDirectedEdge(final Node nodeA, final Node nodeB) {
+    public boolean addDirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addUndirectedEdge(final Node nodeA, final Node nodeB) {
+    public boolean addUndirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addNondirectedEdge(final Node nodeA, final Node nodeB) {
+    public boolean addNondirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addPartiallyOrientedEdge(final Node nodeA, final Node nodeB) {
+    public boolean addPartiallyOrientedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addBidirectedEdge(final Node nodeA, final Node nodeB) {
+    public boolean addBidirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addEdge(final Edge edge) {
+    public boolean addEdge(Edge edge) {
         if (!(edge instanceof KnowledgeModelEdge)) {
             return false;
         }
-        final KnowledgeModelEdge _edge = (KnowledgeModelEdge) edge;
-        final KnowledgeModelNode _node1 = (KnowledgeModelNode) _edge.getNode1();
-        final KnowledgeModelNode _node2 = (KnowledgeModelNode) _edge.getNode2();
-        final String from = _node1.getName();
-        final String to = _node2.getName();
+        KnowledgeModelEdge _edge = (KnowledgeModelEdge) edge;
+        KnowledgeModelNode _node1 = (KnowledgeModelNode) _edge.getNode1();
+        KnowledgeModelNode _node2 = (KnowledgeModelNode) _edge.getNode2();
+        String from = _node1.getName();
+        String to = _node2.getName();
 
         if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_EXPLICITLY) {
             this.knowledge.setForbidden(from, to);
@@ -339,19 +339,19 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return false;
     }
 
-    public boolean addNode(final Node node) {
+    public boolean addNode(Node node) {
         return getGraph().addNode(node);
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
+    public void addPropertyChangeListener(PropertyChangeListener l) {
         getGraph().addPropertyChangeListener(l);
     }
 
-    public boolean containsEdge(final Edge edge) {
+    public boolean containsEdge(Edge edge) {
         return getGraph().containsEdge(edge);
     }
 
-    public boolean containsNode(final Node node) {
+    public boolean containsNode(Node node) {
         return getGraph().containsNode(node);
     }
 
@@ -359,15 +359,15 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getEdges();
     }
 
-    public List<Edge> getEdges(final Node node) {
+    public List<Edge> getEdges(Node node) {
         return getGraph().getEdges(node);
     }
 
-    public List<Edge> getEdges(final Node node1, final Node node2) {
+    public List<Edge> getEdges(Node node1, Node node2) {
         return getGraph().getEdges(node1, node2);
     }
 
-    public Node getNode(final String name) {
+    public Node getNode(String name) {
         return getGraph().getNode(name);
     }
 
@@ -379,16 +379,16 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getNumNodes();
     }
 
-    public int getNumEdges(final Node node) {
+    public int getNumEdges(Node node) {
         return getGraph().getNumEdges(node);
     }
 
-    public boolean removeEdge(final Edge edge) {
-        final KnowledgeModelEdge _edge = (KnowledgeModelEdge) edge;
-        final KnowledgeModelNode _node1 = (KnowledgeModelNode) _edge.getNode1();
-        final KnowledgeModelNode _node2 = (KnowledgeModelNode) _edge.getNode2();
-        final String from = _node1.getName();
-        final String to = _node2.getName();
+    public boolean removeEdge(Edge edge) {
+        KnowledgeModelEdge _edge = (KnowledgeModelEdge) edge;
+        KnowledgeModelNode _node1 = (KnowledgeModelNode) _edge.getNode1();
+        KnowledgeModelNode _node2 = (KnowledgeModelNode) _edge.getNode2();
+        String from = _node1.getName();
+        String to = _node2.getName();
 
         if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_EXPLICITLY) {
             getKnowledge().removeForbidden(from, to);
@@ -409,18 +409,18 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().removeEdge(edge);
     }
 
-    public boolean removeEdges(final Collection edges) {
+    public boolean removeEdges(Collection edges) {
         boolean removed = false;
 
-        for (final Object edge1 : edges) {
-            final Edge edge = (Edge) edge1;
+        for (Object edge1 : edges) {
+            Edge edge = (Edge) edge1;
             removed = removed || removeEdge(edge);
         }
 
         return removed;
     }
 
-    public boolean removeNode(final Node node) {
+    public boolean removeNode(Node node) {
         return getGraph().removeNode(node);
     }
 
@@ -428,7 +428,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         getGraph().clear();
     }
 
-    public boolean removeNodes(final List<Node> nodes) {
+    public boolean removeNodes(List<Node> nodes) {
         return getGraph().removeNodes(nodes);
     }
 
@@ -436,31 +436,31 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().existsDirectedCycle();
     }
 
-    public boolean isDirectedFromTo(final Node node1, final Node node2) {
+    public boolean isDirectedFromTo(Node node1, Node node2) {
         return getGraph().isDirectedFromTo(node1, node2);
     }
 
-    public boolean isUndirectedFromTo(final Node node1, final Node node2) {
+    public boolean isUndirectedFromTo(Node node1, Node node2) {
         return getGraph().isUndirectedFromTo(node1, node2);
     }
 
-    public boolean defVisible(final Edge edge) {
+    public boolean defVisible(Edge edge) {
         return getGraph().defVisible(edge);
     }
 
-    public boolean isDefNoncollider(final Node node1, final Node node2, final Node node3) {
+    public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefNoncollider(node1, node2, node3);
     }
 
-    public boolean isDefCollider(final Node node1, final Node node2, final Node node3) {
+    public boolean isDefCollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefCollider(node1, node2, node3);
     }
 
-    public boolean existsTrek(final Node node1, final Node node2) {
+    public boolean existsTrek(Node node1, Node node2) {
         return getGraph().existsTrek(node1, node2);
     }
 
-    public List<Node> getChildren(final Node node) {
+    public List<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
 
@@ -468,89 +468,89 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getConnectivity();
     }
 
-    public List<Node> getDescendants(final List<Node> nodes) {
+    public List<Node> getDescendants(List<Node> nodes) {
         return getGraph().getDescendants(nodes);
     }
 
-    public Edge getEdge(final Node node1, final Node node2) {
+    public Edge getEdge(Node node1, Node node2) {
         return getGraph().getEdge(node1, node2);
     }
 
-    public Edge getDirectedEdge(final Node node1, final Node node2) {
+    public Edge getDirectedEdge(Node node1, Node node2) {
         return getGraph().getDirectedEdge(node1, node2);
     }
 
-    public List<Node> getParents(final Node node) {
+    public List<Node> getParents(Node node) {
         return getGraph().getParents(node);
     }
 
-    public int getIndegree(final Node node) {
+    public int getIndegree(Node node) {
         return getGraph().getIndegree(node);
     }
 
     @Override
-    public int getDegree(final Node node) {
+    public int getDegree(Node node) {
         return getGraph().getDegree(node);
     }
 
-    public int getOutdegree(final Node node) {
+    public int getOutdegree(Node node) {
         return getGraph().getOutdegree(node);
     }
 
-    public boolean isAncestorOf(final Node node1, final Node node2) {
+    public boolean isAncestorOf(Node node1, Node node2) {
         return getGraph().isAncestorOf(node1, node2);
     }
 
-    public boolean possibleAncestor(final Node node1, final Node node2) {
+    public boolean possibleAncestor(Node node1, Node node2) {
         return getGraph().possibleAncestor(node1, node2);
     }
 
-    public List<Node> getAncestors(final List<Node> nodes) {
+    public List<Node> getAncestors(List<Node> nodes) {
         return getGraph().getAncestors(nodes);
     }
 
-    public boolean isChildOf(final Node node1, final Node node2) {
+    public boolean isChildOf(Node node1, Node node2) {
         return getGraph().isChildOf(node1, node2);
     }
 
-    public boolean isDescendentOf(final Node node1, final Node node2) {
+    public boolean isDescendentOf(Node node1, Node node2) {
         return getGraph().isDescendentOf(node1, node2);
     }
 
-    public boolean defNonDescendent(final Node node1, final Node node2) {
+    public boolean defNonDescendent(Node node1, Node node2) {
         return getGraph().defNonDescendent(node1, node2);
     }
 
-    public boolean isDConnectedTo(final Node node1, final Node node2,
-                                  final List<Node> conditioningNodes) {
+    public boolean isDConnectedTo(Node node1, Node node2,
+                                  List<Node> conditioningNodes) {
         return getGraph().isDConnectedTo(node1, node2, conditioningNodes);
     }
 
-    public boolean isDSeparatedFrom(final Node node1, final Node node2, final List<Node> z) {
+    public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
         return getGraph().isDSeparatedFrom(node1, node2, z);
     }
 
-    public boolean possDConnectedTo(final Node node1, final Node node2, final List<Node> z) {
+    public boolean possDConnectedTo(Node node1, Node node2, List<Node> z) {
         return getGraph().possDConnectedTo(node1, node2, z);
     }
 
-    public boolean existsInducingPath(final Node node1, final Node node2) {
+    public boolean existsInducingPath(Node node1, Node node2) {
         return getGraph().existsInducingPath(node1, node2);
     }
 
-    public boolean isParentOf(final Node node1, final Node node2) {
+    public boolean isParentOf(Node node1, Node node2) {
         return getGraph().isParentOf(node1, node2);
     }
 
-    public boolean isProperAncestorOf(final Node node1, final Node node2) {
+    public boolean isProperAncestorOf(Node node1, Node node2) {
         return getGraph().isProperAncestorOf(node1, node2);
     }
 
-    public boolean isProperDescendentOf(final Node node1, final Node node2) {
+    public boolean isProperDescendentOf(Node node1, Node node2) {
         return getGraph().isProperDescendentOf(node1, node2);
     }
 
-    public boolean isExogenous(final Node node) {
+    public boolean isExogenous(Node node) {
         return getGraph().isExogenous(node);
     }
 
@@ -572,7 +572,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     @Override
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return null;
     }
 
@@ -582,7 +582,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     @Override
-    public void setPag(final boolean pag) {
+    public void setPag(boolean pag) {
         this.pag = pag;
     }
 
@@ -592,7 +592,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     @Override
-    public void setCPDAG(final boolean CPDAG) {
+    public void setCPDAG(boolean CPDAG) {
         this.CPDAG = CPDAG;
     }
 
@@ -602,17 +602,17 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     @Override
-    public Object getAttribute(final String key) {
+    public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(final String key) {
+    public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(final String key, final Object value) {
+    public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
     }
 

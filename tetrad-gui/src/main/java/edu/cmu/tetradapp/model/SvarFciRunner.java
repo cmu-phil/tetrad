@@ -49,52 +49,52 @@ public class SvarFciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-    public SvarFciRunner(final DataWrapper dataWrapper, final Parameters params) {
+    public SvarFciRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SvarFciRunner(final GraphSource graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public SvarFciRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
 
-    public SvarFciRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public SvarFciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public SvarFciRunner(final Graph graph, final Parameters params) {
+    public SvarFciRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
-    public SvarFciRunner(final Graph graph, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public SvarFciRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
-    public SvarFciRunner(final TimeLagGraphWrapper model, final Parameters params/*, KnowledgeBoxModel knowledgeBoxModel*/) {
+    public SvarFciRunner(TimeLagGraphWrapper model, Parameters params/*, KnowledgeBoxModel knowledgeBoxModel*/) {
         super(model.getGraph(), params);
         this.knowledge = model.getKnowledge();
     }
 
-    public SvarFciRunner(final GraphWrapper graphWrapper, final Parameters params) {
+    public SvarFciRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public SvarFciRunner(final DagWrapper dagWrapper, final Parameters params) {
+    public SvarFciRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public SvarFciRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
+    public SvarFciRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public SvarFciRunner(final IndependenceFactsModel model, final Parameters params) {
+    public SvarFciRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public SvarFciRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public SvarFciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -118,9 +118,9 @@ public class SvarFciRunner extends AbstractAlgorithmRunner
         if (this.knowledge == null) {
             this.knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
         } /*else {knowledge = this.knowledge;}*/
-        final Parameters searchParams = getParams();
+        Parameters searchParams = getParams();
 
-        final Parameters params = searchParams;
+        Parameters params = searchParams;
 
 //            Cfci fciSearch =
 //                    new Cfci(getIndependenceTest(), knowledge);
@@ -132,19 +132,19 @@ public class SvarFciRunner extends AbstractAlgorithmRunner
 //            }
 //
 //            setResultGraph(graph);
-        final Graph graph;
+        Graph graph;
 
         if (params.getBoolean("rfciUsed", false)) {
             System.out.println("WARNING: there is no RFCI option for SavarFCI! Just using SvarFCI.");
 //            Rfci fci = new Rfci(getIndependenceTest());
-            final SvarFci fci = new SvarFci(getIndependenceTest());
+            SvarFci fci = new SvarFci(getIndependenceTest());
             fci.setKnowledge(this.knowledge);
             fci.setCompleteRuleSetUsed(true);
             fci.setMaxPathLength(params.getInt("maxReachablePathLength", -1));
             fci.setDepth(params.getInt("depth", -1));
             graph = fci.search();
         } else {
-            final SvarFci fci = new SvarFci(getIndependenceTest());
+            SvarFci fci = new SvarFci(getIndependenceTest());
             fci.setKnowledge(this.knowledge);
             fci.setCompleteRuleSetUsed(true);
             fci.setPossibleDsepSearchDone(params.getBoolean("possibleDsepDone", true));
@@ -171,14 +171,14 @@ public class SvarFciRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        final Parameters params = getParams();
-        final IndTestType testType;
+        Parameters params = getParams();
+        IndTestType testType;
 
         if (getParams() instanceof Parameters) {
-            final Parameters _params = params;
+            Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         } else {
-            final Parameters _params = params;
+            Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
@@ -194,7 +194,7 @@ public class SvarFciRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        final List<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<>();
 //        names.add("Definite ColliderDiscovery");
 //        names.add("Definite Noncolliders");
         return names;
@@ -203,9 +203,9 @@ public class SvarFciRunner extends AbstractAlgorithmRunner
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
-        final List<List<Triple>> triplesList = new ArrayList<>();
-        final Graph graph = getGraph();
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
+        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));
         return triplesList;

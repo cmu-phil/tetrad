@@ -79,7 +79,7 @@ public class LogUtils {
      * @param stream The OutputStream to be added to logging.
      * @param level  The level at which logging events will be printed.
      */
-    public void add(final OutputStream stream, final Level level) {
+    public void add(OutputStream stream, Level level) {
         if (stream == null) {
             throw new NullPointerException();
         }
@@ -88,14 +88,14 @@ public class LogUtils {
             throw new NullPointerException();
         }
 
-        final SimpleFormatter formatter = new SimpleFormatter() {
-            public synchronized String format(final LogRecord record) {
+        SimpleFormatter formatter = new SimpleFormatter() {
+            public synchronized String format(LogRecord record) {
                 return record.getMessage() +
                         "\n";
             }
         };
 
-        final StreamHandler handler = new StreamHandler(stream, formatter);
+        StreamHandler handler = new StreamHandler(stream, formatter);
         handler.setLevel(level);
         this.streams.put(stream, handler);
 
@@ -108,8 +108,8 @@ public class LogUtils {
      * @param stream The OutputStream whose level is to change.
      * @param level  The new level.
      */
-    public void setLevel(final OutputStream stream, final Level level) {
-        final Handler handler = this.streams.get(stream);
+    public void setLevel(OutputStream stream, Level level) {
+        Handler handler = this.streams.get(stream);
 
         if (handler != null) {
             handler.setLevel(level);
@@ -121,12 +121,12 @@ public class LogUtils {
      *
      * @param stream Ibid.
      */
-    private void remove(final OutputStream stream) {
+    private void remove(OutputStream stream) {
         if (stream == null) {
             return;
         }
 
-        final Handler handler = this.streams.get(stream);
+        Handler handler = this.streams.get(stream);
 
         if (handler == null) {
             return;
@@ -145,41 +145,41 @@ public class LogUtils {
      * Removes all streams from logging.
      */
     public void clear() {
-        for (final OutputStream stream : this.streams.keySet()) {
+        for (OutputStream stream : this.streams.keySet()) {
             remove(stream);
         }
     }
 
-    public void severe(final String s) {
+    public void severe(String s) {
         getLogger().severe(s);
     }
 
-    public void warning(final String s) {
+    public void warning(String s) {
         getLogger().warning(s);
         flushAll();
     }
 
-    public void config(final String s) {
+    public void config(String s) {
         getLogger().config(s);
         flushAll();
     }
 
-    public void info(final String s) {
+    public void info(String s) {
         getLogger().info(s);
         flushAll();
     }
 
-    public void fine(final String s) {
+    public void fine(String s) {
         getLogger().fine(s);
         flushAll();
     }
 
-    public void finer(final String s) {
+    public void finer(String s) {
         getLogger().finer(s);
         flushAll();
     }
 
-    public void finest(final String s) {
+    public void finest(String s) {
         getLogger().finest(s);
         flushAll();
     }
@@ -189,8 +189,8 @@ public class LogUtils {
     }
 
     private void flushAll() {
-        for (final OutputStream stream : this.streams.keySet()) {
-            final Handler handler = this.streams.get(stream);
+        for (OutputStream stream : this.streams.keySet()) {
+            Handler handler = this.streams.get(stream);
             handler.flush();
         }
     }

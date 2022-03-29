@@ -60,12 +60,12 @@ public class SemGraphWrapper implements GraphSource,
     private Parameters parameters = new Parameters();
 
     // =============================CONSTRUCTORS==========================//
-    public SemGraphWrapper(final GraphSource graphSource, final Parameters parameters) {
+    public SemGraphWrapper(GraphSource graphSource, Parameters parameters) {
         if (graphSource instanceof Simulation) {
-            final Simulation simulation = (Simulation) graphSource;
-            final List<Graph> graphs = simulation.getGraphs();
+            Simulation simulation = (Simulation) graphSource;
+            List<Graph> graphs = simulation.getGraphs();
             this.graphs = new ArrayList<>();
-            for (final Graph graph : graphs) {
+            for (Graph graph : graphs) {
                 this.graphs.add(new SemGraph(graph));
             }
 
@@ -79,7 +79,7 @@ public class SemGraphWrapper implements GraphSource,
         log();
     }
 
-    public SemGraphWrapper(final SemGraph graph) {
+    public SemGraphWrapper(SemGraph graph) {
         if (graph == null) {
             throw new NullPointerException("MAG must not be null.");
         }
@@ -90,9 +90,9 @@ public class SemGraphWrapper implements GraphSource,
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
-    public SemGraphWrapper(final Parameters params) {
+    public SemGraphWrapper(Parameters params) {
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            final SemGraph semGraph = new SemGraph();
+            SemGraph semGraph = new SemGraph();
             semGraph.setShowErrorTerms(false);
             setSemGraph(semGraph);
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
@@ -107,16 +107,16 @@ public class SemGraphWrapper implements GraphSource,
         log();
     }
 
-    public SemGraphWrapper(final SemGraphWrapper graphWrapper, final Parameters params) {
+    public SemGraphWrapper(SemGraphWrapper graphWrapper, Parameters params) {
         this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             try {
-                final SemGraph semGraph = new SemGraph(graphWrapper.getSemGraph());
+                SemGraph semGraph = new SemGraph(graphWrapper.getSemGraph());
                 semGraph.setShowErrorTerms(false);
                 setSemGraph(semGraph);
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                final SemGraph semGraph = new SemGraph();
+                SemGraph semGraph = new SemGraph();
                 semGraph.setShowErrorTerms(false);
                 setSemGraph(semGraph);
             }
@@ -127,10 +127,10 @@ public class SemGraphWrapper implements GraphSource,
         log();
     }
 
-    public SemGraphWrapper(final DagWrapper graphWrapper, final Parameters params) {
+    public SemGraphWrapper(DagWrapper graphWrapper, Parameters params) {
         this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            final SemGraph semGraph = new SemGraph(graphWrapper.getDag());
+            SemGraph semGraph = new SemGraph(graphWrapper.getDag());
             semGraph.setShowErrorTerms(false);
             setSemGraph(semGraph);
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
@@ -140,9 +140,9 @@ public class SemGraphWrapper implements GraphSource,
         log();
     }
 
-    public SemGraphWrapper(final GraphWrapper graphWrapper, final Parameters params) {
+    public SemGraphWrapper(GraphWrapper graphWrapper, Parameters params) {
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            final SemGraph semGraph = new SemGraph(graphWrapper.getGraph());
+            SemGraph semGraph = new SemGraph(graphWrapper.getGraph());
             semGraph.setShowErrorTerms(false);
             setSemGraph(semGraph);
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
@@ -153,17 +153,17 @@ public class SemGraphWrapper implements GraphSource,
         log();
     }
 
-    public SemGraphWrapper(final AbstractAlgorithmRunner wrapper) {
+    public SemGraphWrapper(AbstractAlgorithmRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
 
-    public SemGraphWrapper(final DataWrapper wrapper) {
+    public SemGraphWrapper(DataWrapper wrapper) {
         if (wrapper instanceof Simulation) {
-            final Simulation simulation = (Simulation) wrapper;
+            Simulation simulation = (Simulation) wrapper;
             this.graphs = new ArrayList<>();
 
-            for (final Graph graph : simulation.getGraphs()) {
-                final SemGraph semGraph = new SemGraph(graph);
+            for (Graph graph : simulation.getGraphs()) {
+                SemGraph semGraph = new SemGraph(graph);
                 semGraph.setShowErrorTerms(false);
                 this.graphs.add(semGraph);
             }
@@ -178,44 +178,44 @@ public class SemGraphWrapper implements GraphSource,
         GraphUtils.circleLayout(getGraph(), 200, 200, 150);
     }
 
-    public SemGraphWrapper(final BayesPmWrapper wrapper) {
+    public SemGraphWrapper(BayesPmWrapper wrapper) {
         this(new SemGraph(wrapper.getBayesPm().getDag()));
     }
 
-    public SemGraphWrapper(final BayesImWrapper wrapper) {
+    public SemGraphWrapper(BayesImWrapper wrapper) {
         this(new SemGraph(wrapper.getBayesIm().getBayesPm().getDag()));
     }
 
-    public SemGraphWrapper(final BayesEstimatorWrapper wrapper) {
+    public SemGraphWrapper(BayesEstimatorWrapper wrapper) {
         this(new SemGraph(wrapper.getEstimatedBayesIm().getBayesPm().getDag()));
     }
 
-    public SemGraphWrapper(final CptInvariantUpdaterWrapper wrapper) {
+    public SemGraphWrapper(CptInvariantUpdaterWrapper wrapper) {
         this(new SemGraph(wrapper.getBayesUpdater().getManipulatedGraph()));
     }
 
-    public SemGraphWrapper(final SemPmWrapper wrapper) {
+    public SemGraphWrapper(SemPmWrapper wrapper) {
         this(new SemGraph(wrapper.getSemPm().getGraph()));
     }
 
-    public SemGraphWrapper(final SemImWrapper wrapper) {
+    public SemGraphWrapper(SemImWrapper wrapper) {
         this(new SemGraph(wrapper.getSemIm().getSemPm().getGraph()));
     }
 
-    public SemGraphWrapper(final SemEstimatorWrapper wrapper) {
+    public SemGraphWrapper(SemEstimatorWrapper wrapper) {
         this(new SemGraph(wrapper.getSemEstimator().getEstimatedSem()
                 .getSemPm().getGraph()));
     }
 
-    public SemGraphWrapper(final RegressionRunner wrapper) {
+    public SemGraphWrapper(RegressionRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
 
-    public SemGraphWrapper(final BuildPureClustersRunner wrapper) {
+    public SemGraphWrapper(BuildPureClustersRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
 
-    public SemGraphWrapper(final MimBuildRunner wrapper) {
+    public SemGraphWrapper(MimBuildRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
 
@@ -233,7 +233,7 @@ public class SemGraphWrapper implements GraphSource,
         return (SemGraph) getGraph();
     }
 
-    public void setSemGraph(final SemGraph graph) {
+    public void setSemGraph(SemGraph graph) {
         this.graphs = new ArrayList<>();
         graph.setShowErrorTerms(false);
         this.graphs.add(graph);
@@ -259,7 +259,7 @@ public class SemGraphWrapper implements GraphSource,
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s) throws IOException,
+    private void readObject(ObjectInputStream s) throws IOException,
             ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -272,7 +272,7 @@ public class SemGraphWrapper implements GraphSource,
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -294,7 +294,7 @@ public class SemGraphWrapper implements GraphSource,
 
     @Override
     public Map<String, String> getParamSettings() {
-        final Map<String, String> paramSettings = new HashMap<>();
+        Map<String, String> paramSettings = new HashMap<>();
         if (!paramSettings.containsKey("# Vars")) {
             paramSettings.put("# Nodes", Integer.toString(getSemGraph().getNumNodes()));
         }
@@ -306,7 +306,7 @@ public class SemGraphWrapper implements GraphSource,
     }
 
     @Override
-    public void setAllParamSettings(final Map<String, String> paramSettings) {
+    public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = paramSettings;
     }
 
@@ -323,7 +323,7 @@ public class SemGraphWrapper implements GraphSource,
         return this.numModels;
     }
 
-    public void setNumModels(final int numModels) {
+    public void setNumModels(int numModels) {
         this.numModels = numModels;
     }
 
@@ -331,7 +331,7 @@ public class SemGraphWrapper implements GraphSource,
         return this.modelIndex;
     }
 
-    public void setModelIndex(final int modelIndex) {
+    public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
@@ -339,11 +339,11 @@ public class SemGraphWrapper implements GraphSource,
         return this.modelSourceName;
     }
 
-    public void setModelSourceName(final String modelSourceName) {
+    public void setModelSourceName(String modelSourceName) {
         this.modelSourceName = modelSourceName;
     }
 
-    public void setGraph(final Graph graph) {
+    public void setGraph(Graph graph) {
         this.graphs = new ArrayList<>();
         this.graphs.add(new SemGraph(graph));
         log();

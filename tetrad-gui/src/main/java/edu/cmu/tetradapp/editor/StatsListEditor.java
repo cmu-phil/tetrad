@@ -30,7 +30,7 @@ public class StatsListEditor extends JPanel {
     private Graph referenceGraph;
     private JTextArea area;
 
-    public StatsListEditor(final TabularComparison comparison) {
+    public StatsListEditor(TabularComparison comparison) {
         this.comparison = comparison;
         this.params = comparison.getParams();
         this.targetGraph = comparison.getTargetGraph();
@@ -40,11 +40,11 @@ public class StatsListEditor extends JPanel {
     }
 
     private void setup() {
-        final JMenuBar menubar = menubar();
+        JMenuBar menubar = menubar();
         show(menubar);
     }
 
-    private void show(final JMenuBar menubar) {
+    private void show(JMenuBar menubar) {
         setLayout(new BorderLayout());
         add(menubar, BorderLayout.NORTH);
         add(getTableDisplay(), BorderLayout.CENTER);
@@ -64,10 +64,10 @@ public class StatsListEditor extends JPanel {
         this.area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
         this.area.setPreferredSize(new Dimension(700, 1200));
 
-        final JScrollPane pane = new JScrollPane(this.area);
+        JScrollPane pane = new JScrollPane(this.area);
         pane.setPreferredSize(new Dimension(700, 700));
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
         b.add(pane);
 
         return b;
@@ -75,7 +75,7 @@ public class StatsListEditor extends JPanel {
 
     @NotNull
     private String tableTextWithHeader() {
-        final TextTable table = tableText();
+        TextTable table = tableText();
         return "Comparing target " + this.comparison.getTargetName() + " to reference " + this.comparison.getReferenceName()
                 + "\n\n" + table;
     }
@@ -86,28 +86,28 @@ public class StatsListEditor extends JPanel {
             throw new IllegalArgumentException();
         }
 
-        final Graph _targetGraph = GraphUtils.replaceNodes(this.targetGraph, this.referenceGraph.getNodes());
+        Graph _targetGraph = GraphUtils.replaceNodes(this.targetGraph, this.referenceGraph.getNodes());
 
-        final List<Statistic> statistics = statistics();
+        List<Statistic> statistics = statistics();
 
-        final TextTable table = new TextTable(statistics.size(), 3);
-        final NumberFormat nf = new DecimalFormat("0.###");
+        TextTable table = new TextTable(statistics.size(), 3);
+        NumberFormat nf = new DecimalFormat("0.###");
 
-        final List<String> abbr = new ArrayList<>();
-        final List<String> desc = new ArrayList<>();
-        final List<Double> vals = new ArrayList<>();
+        List<String> abbr = new ArrayList<>();
+        List<String> desc = new ArrayList<>();
+        List<Double> vals = new ArrayList<>();
 
-        for (final Statistic statistic : statistics) {
+        for (Statistic statistic : statistics) {
             try {
                 vals.add(statistic.getValue(this.referenceGraph, _targetGraph, this.dataModel));
                 abbr.add(statistic.getAbbreviation());
                 desc.add(statistic.getDescription());
-            } catch (final Exception ignored) {
+            } catch (Exception ignored) {
             }
         }
 
         for (int i = 0; i < abbr.size(); i++) {
-            final double value = vals.get(i);
+            double value = vals.get(i);
             table.setToken(i, 2, Double.isNaN(value) ? "-" : "" + nf.format(value));
             table.setToken(i, 0, abbr.get(i));
             table.setToken(i, 1, desc.get(i));
@@ -119,7 +119,7 @@ public class StatsListEditor extends JPanel {
 
     @NotNull
     private List<Statistic> statistics() {
-        final List<Statistic> statistics = new ArrayList<>();
+        List<Statistic> statistics = new ArrayList<>();
 
         statistics.add(new BicTrue());
         statistics.add(new BicEst());
@@ -166,16 +166,16 @@ public class StatsListEditor extends JPanel {
 
     @NotNull
     private JMenuBar menubar() {
-        final JMenuBar menubar = new JMenuBar();
-        final JMenu menu = new JMenu("Compare To...");
-        final JMenuItem graph = new JCheckBoxMenuItem("DAG");
+        JMenuBar menubar = new JMenuBar();
+        JMenu menu = new JMenu("Compare To...");
+        JMenuItem graph = new JCheckBoxMenuItem("DAG");
         graph.setBackground(Color.WHITE);
-        final JMenuItem cpdag = new JCheckBoxMenuItem("CPDAG");
+        JMenuItem cpdag = new JCheckBoxMenuItem("CPDAG");
         cpdag.setBackground(Color.YELLOW);
-        final JMenuItem pag = new JCheckBoxMenuItem("PAG");
+        JMenuItem pag = new JCheckBoxMenuItem("PAG");
         pag.setBackground(Color.GREEN.brighter().brighter());
 
-        final ButtonGroup group = new ButtonGroup();
+        ButtonGroup group = new ButtonGroup();
         group.add(graph);
         group.add(cpdag);
         group.add(pag);

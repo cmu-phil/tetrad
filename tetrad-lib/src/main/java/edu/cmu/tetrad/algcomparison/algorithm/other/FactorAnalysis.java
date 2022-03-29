@@ -23,38 +23,38 @@ import java.util.Vector;
 public class FactorAnalysis implements Algorithm {
     static final long serialVersionUID = 23L;
 
-    public Graph search(final DataModel ds, final Parameters parameters) {
+    public Graph search(DataModel ds, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
 
-            final DataSet selectedModel = (DataSet) ds;
+            DataSet selectedModel = (DataSet) ds;
 
             if (selectedModel == null) {
                 throw new NullPointerException("Data not specified.");
             }
 
-            final edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(selectedModel);
+            edu.cmu.tetrad.search.FactorAnalysis analysis = new edu.cmu.tetrad.search.FactorAnalysis(selectedModel);
             analysis.setThreshold(parameters.getDouble("convergenceThreshold"));
             analysis.setNumFactors(parameters.getInt("numFactors"));
 
-            final double threshold = parameters.getDouble("fa_threshold");
+            double threshold = parameters.getDouble("fa_threshold");
 
-            final Matrix unrotatedSolution = analysis.successiveResidual();
-            final Matrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
+            Matrix unrotatedSolution = analysis.successiveResidual();
+            Matrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
 
-            final SemGraph graph = new SemGraph();
+            SemGraph graph = new SemGraph();
 
-            final Vector<Node> observedVariables = new Vector<>();
+            Vector<Node> observedVariables = new Vector<>();
 
-            for (final Node a : selectedModel.getVariables()) {
+            for (Node a : selectedModel.getVariables()) {
                 graph.addNode(a);
                 observedVariables.add(a);
             }
 
-            final Vector<Node> factors = new Vector<>();
+            Vector<Node> factors = new Vector<>();
 
             if (parameters.getBoolean("useVarimax")) {
                 for (int i = 0; i < rotatedSolution.columns(); i++) {
-                    final ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
+                    ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
                     factor.setNodeType(NodeType.LATENT);
                     graph.addNode(factor);
                     factors.add(factor);
@@ -69,7 +69,7 @@ public class FactorAnalysis implements Algorithm {
                 }
             } else {
                 for (int i = 0; i < unrotatedSolution.columns(); i++) {
-                    final ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
+                    ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
                     factor.setNodeType(NodeType.LATENT);
                     graph.addNode(factor);
                     factors.add(factor);
@@ -85,7 +85,7 @@ public class FactorAnalysis implements Algorithm {
             }
 
             if (parameters.getBoolean(Params.VERBOSE)) {
-                final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
                 String output = "Unrotated Factor Loading Matrix:\n";
 
@@ -102,10 +102,10 @@ public class FactorAnalysis implements Algorithm {
 
             return graph;
         } else {
-            final FactorAnalysis algorithm = new FactorAnalysis();
+            FactorAnalysis algorithm = new FactorAnalysis();
 
-            final DataSet data = (DataSet) ds;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) ds;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -130,8 +130,8 @@ public class FactorAnalysis implements Algorithm {
         }
     }
 
-    private String tableString(final Matrix matrix, final NumberFormat nf, final double threshold) {
-        final TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
+    private String tableString(Matrix matrix, NumberFormat nf, double threshold) {
+        TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
 
         for (int i = 0; i < matrix.rows() + 1; i++) {
             for (int j = 0; j < matrix.columns() + 1; j++) {
@@ -140,7 +140,7 @@ public class FactorAnalysis implements Algorithm {
                 } else if (i == 0 && j > 0) {
                     table.setToken(0, j, "Factor " + j);
                 } else if (i > 0 && j > 0) {
-                    final double coefficient = matrix.get(i - 1, j - 1);
+                    double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
                     token += Math.abs(coefficient) > threshold ? "*" : " ";
                     table.setToken(i, j, token);
@@ -152,7 +152,7 @@ public class FactorAnalysis implements Algorithm {
 
     }
 
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
@@ -167,7 +167,7 @@ public class FactorAnalysis implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        final List<String> params = new ArrayList<>();
+        List<String> params = new ArrayList<>();
         params.add("fa_threshold");
         params.add("numFactors");
         params.add("useVarimax");

@@ -60,21 +60,21 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      * Constructs a wrapper for the given DataWrapper.
      */
 
-    public BuildPureClustersRunner(final DataWrapper dataWrapper,
-                                   final Parameters pureClustersParams) {
+    public BuildPureClustersRunner(DataWrapper dataWrapper,
+                                   Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
 
     }
 
-    public BuildPureClustersRunner(final DataWrapper dataWrapper, final SemImWrapper semImWrapper,
-                                   final Parameters pureClustersParams) {
+    public BuildPureClustersRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
+                                   Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = this.semIm.getSemPm().getGraph();
     }
 
-    public BuildPureClustersRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper,
-                                   final Parameters pureClustersParams) {
+    public BuildPureClustersRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
+                                   Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }
@@ -95,15 +95,15 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      * implemented in the extending class.
      */
     public void execute() {
-        final boolean rKey = getParams().getBoolean("BPCrDown", false);
+        boolean rKey = getParams().getBoolean("BPCrDown", false);
 
-        final BpcAlgorithmType algorithm = (BpcAlgorithmType) getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS);
+        BpcAlgorithmType algorithm = (BpcAlgorithmType) getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS);
 
-        final Graph searchGraph;
+        Graph searchGraph;
 
         if (rKey) {
-            final Washdown washdown;
-            final Object source = getData();
+            Washdown washdown;
+            Object source = getData();
 
             if (source instanceof DataSet) {
                 washdown = new Washdown((DataSet) source, getParams().getDouble("alpha", 0.001));
@@ -113,11 +113,11 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
             searchGraph = washdown.search();
         } else {
-            final TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+            TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
 
             if (algorithm == BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN) {
-                final BpcTetradPurifyWashdown bpc;
-                final Object source = getData();
+                BpcTetradPurifyWashdown bpc;
+                Object source = getData();
 
                 if (source instanceof DataSet) {
                     bpc = new BpcTetradPurifyWashdown(
@@ -133,10 +133,10 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
                 searchGraph = bpc.search();
             } else if (algorithm == BpcAlgorithmType.BUILD_PURE_CLUSTERS) {
-                final BuildPureClusters bpc;
-                final DataModel source = getData();
+                BuildPureClusters bpc;
+                DataModel source = getData();
 
-                final TestType testType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+                TestType testType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
 
                 if (source instanceof ICovarianceMatrix) {
                     bpc = new BuildPureClusters((ICovarianceMatrix) source,
@@ -224,14 +224,14 @@ public class BuildPureClustersRunner extends AbstractMimRunner
         }
 
         if (this.semIm != null) {
-            final List<List<Node>> partition = MimUtils.convertToClusters2(searchGraph);
+            List<List<Node>> partition = MimUtils.convertToClusters2(searchGraph);
 
-            final List<String> variableNames = ReidentifyVariables.reidentifyVariables2(partition, this.trueGraph, (DataSet) getData());
+            List<String> variableNames = ReidentifyVariables.reidentifyVariables2(partition, this.trueGraph, (DataSet) getData());
             rename(searchGraph, partition, variableNames);
 //            searchGraph = reidentifyVariables2(searchGraph, semIm);
         } else if (this.trueGraph != null) {
-            final List<List<Node>> partition = MimUtils.convertToClusters2(searchGraph);
-            final List<String> variableNames = ReidentifyVariables.reidentifyVariables1(partition, this.trueGraph);
+            List<List<Node>> partition = MimUtils.convertToClusters2(searchGraph);
+            List<String> variableNames = ReidentifyVariables.reidentifyVariables1(partition, this.trueGraph);
             rename(searchGraph, partition, variableNames);
 //            searchGraph = reidentifyVariables(searchGraph, trueGraph);
         }
@@ -239,24 +239,24 @@ public class BuildPureClustersRunner extends AbstractMimRunner
         System.out.println("Search Graph " + searchGraph);
 
         try {
-            final Graph graph = new MarshalledObject<>(searchGraph).get();
+            Graph graph = new MarshalledObject<>(searchGraph).get();
             GraphUtils.circleLayout(graph, 200, 200, 150);
             GraphUtils.fruchtermanReingoldLayout(graph);
             setResultGraph(graph);
             setClusters(MimUtils.convertToClusters(graph, getData().getVariables()));
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
-    private void rename(final Graph searchGraph, final List<List<Node>> partition, final List<String> variableNames) {
-        for (final Node node : searchGraph.getNodes()) {
+    private void rename(Graph searchGraph, List<List<Node>> partition, List<String> variableNames) {
+        for (Node node : searchGraph.getNodes()) {
             if (!(node.getNodeType() == NodeType.LATENT)) {
                 continue;
             }
 
-            final List<Node> children = searchGraph.getChildren(node);
+            List<Node> children = searchGraph.getChildren(node);
             children.removeAll(ReidentifyVariables.getLatents(searchGraph));
 
             for (int i = 0; i < partition.size(); i++) {
@@ -272,10 +272,10 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     }
 
     public java.util.List<Node> getVariables() {
-        final List<Node> latents = new ArrayList<>();
+        List<Node> latents = new ArrayList<>();
 
-        for (final String name : getVariableNames()) {
-            final Node node = new ContinuousVariable(name);
+        for (String name : getVariableNames()) {
+            Node node = new ContinuousVariable(name);
             node.setNodeType(NodeType.LATENT);
             latents.add(node);
         }
@@ -284,7 +284,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     }
 
     public List<String> getVariableNames() {
-        final List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
+        List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
                 getData().getVariables());
         return ClusterUtils.generateLatentNames(partition.size());
     }

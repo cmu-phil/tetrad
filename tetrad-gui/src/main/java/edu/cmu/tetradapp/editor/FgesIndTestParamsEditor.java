@@ -234,18 +234,18 @@ class FgesIndTestParamsEditor extends JComponent {
             b4b.add(depth);
             this.add(b4b);
         } else if (type == FgesRunner.Type.GRAPH) {
-            final Box b8 = Box.createHorizontalBox();
+            Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num CPDAGs to Save"));
             b8.add(Box.createHorizontalGlue());
             b8.add(this.numCPDAGsToSave);
             add(b8);
 
-            final Box b4a = Box.createHorizontalBox();
+            Box b4a = Box.createHorizontalBox();
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
             b4a.add(this.faithfulnessAssumed);
             add(b4a);
 
-            final Box b4b = Box.createHorizontalBox();
+            Box b4b = Box.createHorizontalBox();
             b4b.add(new JLabel("Depth "));
             b4b.add(Box.createHorizontalGlue());
             b4b.add(this.depth);

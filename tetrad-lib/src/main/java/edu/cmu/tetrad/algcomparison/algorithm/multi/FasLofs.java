@@ -27,28 +27,28 @@ public class FasLofs implements Algorithm, HasKnowledge {
     private final Lofs2.Rule rule;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FasLofs(final Lofs2.Rule rule) {
+    public FasLofs(Lofs2.Rule rule) {
         this.rule = rule;
     }
 
-    private Graph getGraph(final edu.cmu.tetrad.search.FasLofs search) {
+    private Graph getGraph(edu.cmu.tetrad.search.FasLofs search) {
         return search.search();
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final edu.cmu.tetrad.search.FasLofs search = new edu.cmu.tetrad.search.FasLofs((DataSet) dataSet, this.rule);
+            edu.cmu.tetrad.search.FasLofs search = new edu.cmu.tetrad.search.FasLofs((DataSet) dataSet, this.rule);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             search.setKnowledge(this.knowledge);
             return getGraph(search);
         } else {
-            final FasLofs fasLofs = new FasLofs(this.rule);
+            FasLofs fasLofs = new FasLofs(this.rule);
             //fasLofs.setKnowledge(knowledge);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, fasLofs, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, fasLofs, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -75,7 +75,7 @@ public class FasLofs implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
@@ -91,7 +91,7 @@ public class FasLofs implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.PENALTY_DISCOUNT);
 
@@ -106,7 +106,7 @@ public class FasLofs implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

@@ -19,7 +19,7 @@ public class ParameterColumn implements Statistic {
      * @param parameter The name of the parameter to list. If this parameter
      *                  does not exist, '*' is output.
      */
-    public ParameterColumn(final String parameter) {
+    public ParameterColumn(String parameter) {
         this.parameter = parameter;
     }
 
@@ -44,7 +44,7 @@ public class ParameterColumn implements Statistic {
      * This value is obtained by the Comparison class internally.
      * @throws UnsupportedOperationException
      */
-    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         throw new UnsupportedOperationException();
     }
 
@@ -54,7 +54,7 @@ public class ParameterColumn implements Statistic {
      * will thow an exception.
      * @throws UnsupportedOperationException
      */
-    public double getNormValue(final double value) {
+    public double getNormValue(double value) {
         throw new UnsupportedOperationException();
     }
 }

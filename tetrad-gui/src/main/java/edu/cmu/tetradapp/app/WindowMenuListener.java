@@ -61,7 +61,7 @@ final class WindowMenuListener implements MenuListener, ActionListener {
      * Constructs the window menu listener.  Requires to be told which object
      * the window menu is and which object the desktop pane is.
      */
-    public WindowMenuListener(final JMenu windowMenu, final TetradDesktop desktop) {
+    public WindowMenuListener(JMenu windowMenu, TetradDesktop desktop) {
 
         if (windowMenu == null) {
             throw new NullPointerException("Window menu must not be null.");
@@ -82,13 +82,13 @@ final class WindowMenuListener implements MenuListener, ActionListener {
      *
      * @param e the menu event.
      */
-    public void menuCanceled(final MenuEvent e) {
+    public void menuCanceled(MenuEvent e) {
     }
 
     /**
      * Required for the MenuListener interface; unused.
      */
-    public void menuDeselected(final MenuEvent e) {
+    public void menuDeselected(MenuEvent e) {
     }
 
     /**
@@ -99,16 +99,16 @@ final class WindowMenuListener implements MenuListener, ActionListener {
      * @param e the menu event indicating that the window menu has been
      *          selected.
      */
-    public void menuSelected(final MenuEvent e) {
+    public void menuSelected(MenuEvent e) {
 
         this.windowMenu.removeAll();
         this.itemsToFrames.clear();
 
-        final JInternalFrame[] layer0Frames = this.desktop.getDesktopPane().getAllFramesInLayer(0);
-        final List<String> titles = new ArrayList<>();
-        final Map<String, JInternalFrame> titlesToFrames = new HashMap<>();
+        JInternalFrame[] layer0Frames = this.desktop.getDesktopPane().getAllFramesInLayer(0);
+        List<String> titles = new ArrayList<>();
+        Map<String, JInternalFrame> titlesToFrames = new HashMap<>();
 
-        for (final JInternalFrame layer0Frame : layer0Frames) {
+        for (JInternalFrame layer0Frame : layer0Frames) {
             String title = layer0Frame.getTitle();
             title = ((title == null) ||
                     title.equals("")) ? "[untitled]" : title;
@@ -118,9 +118,9 @@ final class WindowMenuListener implements MenuListener, ActionListener {
 
         Collections.sort(titles);
 
-        for (final Object title1 : titles) {
-            final String title = (String) title1;
-            final JMenuItem item = new JMenuItem(title);
+        for (Object title1 : titles) {
+            String title = (String) title1;
+            JMenuItem item = new JMenuItem(title);
             this.windowMenu.add(item);
             item.addActionListener(this);
             this.itemsToFrames.put(item, titlesToFrames.get(title));
@@ -134,10 +134,10 @@ final class WindowMenuListener implements MenuListener, ActionListener {
      * @param e the action event indicating which internal frame should be moved
      *          to the front.
      */
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
-        final Object item = e.getSource();
-        final JInternalFrame frame = this.itemsToFrames.get(item);
+        Object item = e.getSource();
+        JInternalFrame frame = this.itemsToFrames.get(item);
         frame.moveToFront();
         if (frame.getContentPane().getComponents().length > 0) {
             this.desktop.setMainTitle(frame.getContentPane().getComponent(0).getName());

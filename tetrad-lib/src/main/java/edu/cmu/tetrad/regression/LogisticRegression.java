@@ -72,7 +72,7 @@ public class LogisticRegression implements TetradSerializable {
      * A mixed data set. The targets of regresson must be binary. Regressors must be continuous or binary.
      * Other variables don't matter.
      */
-    public LogisticRegression(final DataSet dataSet) {
+    public LogisticRegression(DataSet dataSet) {
         this.dataSet = dataSet;
         this.dataCols = dataSet.getDoubleData().transpose().toArray();
         setRows(new int[dataSet.getNumRows()]);
@@ -89,45 +89,45 @@ public class LogisticRegression implements TetradSerializable {
     /**
      * x must be binary; regressors must be continuous or binary.
      */
-    public Result regress(final DiscreteVariable x, final List<Node> regressors) {
+    public Result regress(DiscreteVariable x, List<Node> regressors) {
         if (!binary(x)) {
             throw new IllegalArgumentException("Target must be binary.");
         }
 
-        for (final Node node : regressors) {
+        for (Node node : regressors) {
             if (!(node instanceof ContinuousVariable || binary(node))) {
                 throw new IllegalArgumentException("Regressors must be continuous or binary.");
             }
         }
 
-        final double[][] _regressors = new double[regressors.size()][getRows().length];
+        double[][] _regressors = new double[regressors.size()][getRows().length];
 
         for (int j = 0; j < regressors.size(); j++) {
-            final int col = this.dataSet.getColumn(regressors.get(j));
-            final double[] dataCol = this.dataCols[col];
+            int col = this.dataSet.getColumn(regressors.get(j));
+            double[] dataCol = this.dataCols[col];
 
             for (int i = 0; i < getRows().length; i++) {
                 _regressors[j][i] = dataCol[getRows()[i]];
             }
         }
 
-        final int[] target = new int[getRows().length];
-        final int col = this.dataSet.getColumn(this.dataSet.getVariable(x.getName()));
+        int[] target = new int[getRows().length];
+        int col = this.dataSet.getColumn(this.dataSet.getVariable(x.getName()));
 
         for (int i = 0; i < getRows().length; i++) {
             target[i] = this.dataSet.getInt(getRows()[i], col);
         }
 
-        final List<String> regressorNames = new ArrayList<>();
+        List<String> regressorNames = new ArrayList<>();
 
-        for (final Node node : regressors) {
+        for (Node node : regressors) {
             regressorNames.add(node.getName());
         }
 
         return regress(target, x.getName(), _regressors, regressorNames);
     }
 
-    private boolean binary(final Node x) {
+    private boolean binary(Node x) {
         return x instanceof DiscreteVariable && ((DiscreteVariable) x).getNumCategories() == 2;
     }
 
@@ -139,13 +139,13 @@ public class LogisticRegression implements TetradSerializable {
      * <p>
      * This implements an iterative search.
      */
-    private Result regress(final int[] target, final String targetName, final double[][] regressors, final List<String> regressorNames) {
+    private Result regress(int[] target, String targetName, double[][] regressors, List<String> regressorNames) {
 
-        final double[][] x;
-        final double[] c1;
+        double[][] x;
+        double[] c1;
 
-        final int numRegressors = regressors.length;
-        final int numCases = target.length;
+        int numRegressors = regressors.length;
+        int numCases = target.length;
 
         // make a new matrix x with all the columns of regressors
         // but with first column all 1.0's.
@@ -161,11 +161,11 @@ public class LogisticRegression implements TetradSerializable {
             c1[i] = 1.0;
         }
 
-        final double[] xMeans = new double[numRegressors + 1];
-        final double[] xStdDevs = new double[numRegressors + 1];
+        double[] xMeans = new double[numRegressors + 1];
+        double[] xStdDevs = new double[numRegressors + 1];
 
-        final double[] y0 = new double[numCases];
-        final double[] y1 = new double[numCases];
+        double[] y0 = new double[numCases];
+        double[] y1 = new double[numCases];
         for (int i = 0; i < numCases; i++) {
             y0[i] = 0;
             y1[i] = 0;
@@ -206,16 +206,16 @@ public class LogisticRegression implements TetradSerializable {
 
         //report = report + ("Iteration history...\n");
 
-        final double[] par = new double[numRegressors + 1];
-        final double[] parStdErr = new double[numRegressors + 1];
-        final double[] coefficients;
+        double[] par = new double[numRegressors + 1];
+        double[] parStdErr = new double[numRegressors + 1];
+        double[] coefficients;
 
         par[0] = Math.log((double) ny1 / (double) ny0);
         for (int j = 1; j <= numRegressors; j++) {
             par[j] = 0.0;
         }
 
-        final double[][] arr = new double[numRegressors + 1][numRegressors + 2];
+        double[][] arr = new double[numRegressors + 1][numRegressors + 2];
 
         double lnV;
         double ln1mV;
@@ -236,7 +236,7 @@ public class LogisticRegression implements TetradSerializable {
             }
 
             for (int i = 0; i < nc; i++) {
-                final double q;
+                double q;
                 double v = par[0];
 
                 for (int j = 1; j <= numRegressors; j++) {
@@ -265,7 +265,7 @@ public class LogisticRegression implements TetradSerializable {
                 ll = ll - 2.0 * y1[i] * lnV - 2.0 * y0[i] * ln1mV;
 
                 for (int j = 0; j <= numRegressors; j++) {
-                    final double xij = x[j][i];
+                    double xij = x[j][i];
                     arr[j][numRegressors + 1] +=
                             xij * (y1[i] * (1.0 - v) + y0[i] * (-v));
 
@@ -314,30 +314,30 @@ public class LogisticRegression implements TetradSerializable {
 //        Node targNode = new GraphNode(targetName);
 //        outgraph.addNode(targNode);
 
-        final double chiSq = llN - ll;
+        double chiSq = llN - ll;
 
         //Indicates whether each coefficient is significant at the alpha level.
-        final String[] sigMarker = new String[numRegressors];
-        final double[] pValues = new double[numRegressors + 1];
-        final double[] zScores = new double[numRegressors + 1];
+        String[] sigMarker = new String[numRegressors];
+        double[] pValues = new double[numRegressors + 1];
+        double[] zScores = new double[numRegressors + 1];
 
         for (int j = 1; j <= numRegressors; j++) {
             par[j] = par[j] / xStdDevs[j];
             parStdErr[j] = Math.sqrt(arr[j][j]) / xStdDevs[j];
             par[0] = par[0] - par[j] * xMeans[j];
-            final double zScore = par[j] / parStdErr[j];
-            final double prob = norm(Math.abs(zScore));
+            double zScore = par[j] / parStdErr[j];
+            double prob = norm(Math.abs(zScore));
 
             pValues[j] = prob;
             zScores[j] = zScore;
         }
 
         parStdErr[0] = Math.sqrt(arr[0][0]);
-        final double zScore = par[0] / parStdErr[0];
+        double zScore = par[0] / parStdErr[0];
         pValues[0] = norm(zScore);
         zScores[0] = zScore;
 
-        final double intercept = par[0];
+        double intercept = par[0];
 
         coefficients = par;
 
@@ -347,8 +347,8 @@ public class LogisticRegression implements TetradSerializable {
         );
     }
 
-    private double norm(final double z) {
-        final double q = z * z;
+    private double norm(double z) {
+        double q = z * z;
         final double piOver2 = Math.PI / 2.0;
 
         if (Math.abs(q) > 7.0) {
@@ -370,7 +370,7 @@ public class LogisticRegression implements TetradSerializable {
     /**
      * Sets the alpha level.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
@@ -381,7 +381,7 @@ public class LogisticRegression implements TetradSerializable {
         return this.rows;
     }
 
-    public void setRows(final int[] rows) {
+    public void setRows(int[] rows) {
         this.rows = rows;
     }
 
@@ -415,10 +415,10 @@ public class LogisticRegression implements TetradSerializable {
          * @param probs         the array of P-values for the regression
          *                      coefficients.
          */
-        public Result(final String target, final List<String> regressorNames, final double[] xMeans, final double[] xStdDevs,
-                      final int numRegressors, final int ny0, final int ny1, final double[] coefs,
-                      final double[] stdErrs, final double[] probs, final double intercept, final double logLikelihood,
-                      final String[] sigmMarker, final double chiSq, final double alpha) {
+        public Result(String target, List<String> regressorNames, double[] xMeans, double[] xStdDevs,
+                      int numRegressors, int ny0, int ny1, double[] coefs,
+                      double[] stdErrs, double[] probs, double intercept, double logLikelihood,
+                      String[] sigmMarker, double chiSq, double alpha) {
 
 
             if (regressorNames.size() != numRegressors) {
@@ -555,7 +555,7 @@ public class LogisticRegression implements TetradSerializable {
         }
 
         public String toString() {
-            final NumberFormat nf = new DecimalFormat("0.0000");
+            NumberFormat nf = new DecimalFormat("0.0000");
             String report = "";
 
             report = report + (this.ny0 + " cases have " + this.target + " = 0; " + this.ny1 +
@@ -599,7 +599,7 @@ public class LogisticRegression implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

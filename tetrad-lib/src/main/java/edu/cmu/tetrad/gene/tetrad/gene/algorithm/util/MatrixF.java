@@ -37,7 +37,7 @@ public class MatrixF extends BasicMatrix {
      * Creates a matrix with name <code>mname</code>, and <code>nrows</code>
      * rows.
      */
-    public MatrixF(final String mname, final int nrows) {
+    public MatrixF(String mname, int nrows) {
         super(mname, nrows);
     }
 
@@ -59,7 +59,7 @@ public class MatrixF extends BasicMatrix {
      * the total needed to fill the matrix.  If it has more elements an illegal
      * argument exception will be generated.
      */
-    public MatrixF(final String fname) throws IOException {
+    public MatrixF(String fname) throws IOException {
         super(fname);
     }
 
@@ -73,7 +73,7 @@ public class MatrixF extends BasicMatrix {
     /**
      * Casts double value x to float and assigns it to element (r,c)
      */
-    public void setDoubleValue(final int r, final int c, final double x) {
+    public void setDoubleValue(int r, int c, double x) {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }
@@ -87,7 +87,7 @@ public class MatrixF extends BasicMatrix {
     /**
      * Returns the value stored at element (r,c) as a double
      */
-    public double getDoubleValue(final int r, final int c) {
+    public double getDoubleValue(int r, int c) {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }
@@ -97,7 +97,7 @@ public class MatrixF extends BasicMatrix {
     /**
      * Assigns float x to matrix element at (r, c)
      */
-    public void setValue(final int r, final int c, final float x) {
+    public void setValue(int r, int c, float x) {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }
@@ -108,7 +108,7 @@ public class MatrixF extends BasicMatrix {
      * Assigns double x to matrix element at (r, c).  This method checks that
      * the double x can be converted to a float without causing overflow.
      */
-    public void setValue(final int r, final int c, final double x) {
+    public void setValue(int r, int c, double x) {
         if ((x < BasicMatrix.MIN_FLOAT) || (x > BasicMatrix.MAX_FLOAT)) {
             throw new IllegalArgumentException(
                     "Integer " + x + " cannot be stored as a float");
@@ -122,7 +122,7 @@ public class MatrixF extends BasicMatrix {
     /**
      * Returns the value stored at element (r,c)
      */
-    public float getValue(final int r, final int c) {
+    public float getValue(int r, int c) {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }

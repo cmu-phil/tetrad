@@ -30,17 +30,17 @@ public class Pcd implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final IndTestScore test;
+            IndTestScore test;
 
             if (dataSet instanceof ICovarianceMatrix) {
-                final SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
+                SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
                 score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
                 score.setDeterminismThreshold(parameters.getDouble(Params.DETERMINISM_THRESHOLD));
                 test = new IndTestScore(score);
             } else if (dataSet instanceof DataSet) {
-                final SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
+                SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
                 score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
                 score.setDeterminismThreshold(parameters.getDouble(Params.DETERMINISM_THRESHOLD));
                 test = new IndTestScore(score);
@@ -48,16 +48,16 @@ public class Pcd implements Algorithm, HasKnowledge {
                 throw new IllegalArgumentException("Expecting a dataset or a covariance matrix.");
             }
 
-            final edu.cmu.tetrad.search.Pcd search = new edu.cmu.tetrad.search.Pcd(test);
+            edu.cmu.tetrad.search.Pcd search = new edu.cmu.tetrad.search.Pcd(test);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            final Pcd algorithm = new Pcd();
+            Pcd algorithm = new Pcd();
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -84,7 +84,7 @@ public class Pcd implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.cpdagForDag(graph);
     }
 
@@ -100,7 +100,7 @@ public class Pcd implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.DEPTH);
         parameters.add(Params.DETERMINISM_THRESHOLD);
@@ -116,7 +116,7 @@ public class Pcd implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

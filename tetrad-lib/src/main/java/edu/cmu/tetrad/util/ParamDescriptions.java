@@ -39,7 +39,7 @@ public final class ParamDescriptions {
         final String VALUE_TYPE_DOUBLE = "Double";
         final String VALUE_TYPE_BOOLEAN = "Boolean";
 
-        final Set<String> PARAM_VALUE_TYPES = new HashSet<>(Arrays.asList(
+        Set<String> PARAM_VALUE_TYPES = new HashSet<>(Arrays.asList(
                 VALUE_TYPE_STRING,
                 VALUE_TYPE_INTEGER,
                 VALUE_TYPE_DOUBLE,
@@ -47,21 +47,21 @@ public final class ParamDescriptions {
         ));
 
         // Read the copied maunal/index.html from within the jar
-        try (final InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
             if (inputStream != null) {
                 doc = Jsoup.parse(inputStream, "UTF-8", "");
             }
-        } catch (final IOException ex) {
+        } catch (IOException ex) {
             ParamDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
 
         // Get the description of each parameter
         if (doc != null) {
-            final Elements elements = doc.getElementsByClass("parameter_description");
+            Elements elements = doc.getElementsByClass("parameter_description");
 
-            for (final Element element : elements) {
-                final String paramName = element.id();
-                final String valueType = Objects.requireNonNull(doc.getElementById(paramName + "_value_type")).text().trim();
+            for (Element element : elements) {
+                String paramName = element.id();
+                String valueType = Objects.requireNonNull(doc.getElementById(paramName + "_value_type")).text().trim();
 
                 // Add params that don't have value types for spalsh screen error
                 if (!PARAM_VALUE_TYPES.contains(valueType)) {
@@ -69,9 +69,9 @@ public final class ParamDescriptions {
                 } else {
                     String shortDescription = Objects.requireNonNull(doc.getElementById(paramName + "_short_desc")).text().trim();
                     String longDescription = Objects.requireNonNull(doc.getElementById(paramName + "_long_desc")).text().trim();
-                    final String defaultValue = Objects.requireNonNull(doc.getElementById(paramName + "_default_value")).text().trim();
-                    final String lowerBound = Objects.requireNonNull(doc.getElementById(paramName + "_lower_bound")).text().trim();
-                    final String upperBound = Objects.requireNonNull(doc.getElementById(paramName + "_upper_bound")).text().trim();
+                    String defaultValue = Objects.requireNonNull(doc.getElementById(paramName + "_default_value")).text().trim();
+                    String lowerBound = Objects.requireNonNull(doc.getElementById(paramName + "_lower_bound")).text().trim();
+                    String upperBound = Objects.requireNonNull(doc.getElementById(paramName + "_upper_bound")).text().trim();
 
                     if (shortDescription.equals("")) {
                         shortDescription = String.format("Missing short description for %s", paramName);
@@ -88,19 +88,19 @@ public final class ParamDescriptions {
                     ParamDescription paramDescription = null;
 
                     if (valueType.equalsIgnoreCase(VALUE_TYPE_INTEGER)) {
-                        final Integer defaultValueInt = Integer.parseInt(defaultValue);
-                        final int lowerBoundInt = Integer.parseInt(lowerBound);
-                        final int upperBoundInt = Integer.parseInt(upperBound);
+                        Integer defaultValueInt = Integer.parseInt(defaultValue);
+                        int lowerBoundInt = Integer.parseInt(lowerBound);
+                        int upperBoundInt = Integer.parseInt(upperBound);
 
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueInt, lowerBoundInt, upperBoundInt);
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_DOUBLE)) {
-                        final Double defaultValueDouble = Double.parseDouble(defaultValue);
-                        final double lowerBoundDouble = Double.parseDouble(lowerBound);
-                        final double upperBoundDouble = Double.parseDouble(upperBound);
+                        Double defaultValueDouble = Double.parseDouble(defaultValue);
+                        double lowerBoundDouble = Double.parseDouble(lowerBound);
+                        double upperBoundDouble = Double.parseDouble(upperBound);
 
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueDouble, lowerBoundDouble, upperBoundDouble);
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_BOOLEAN)) {
-                        final Boolean defaultValueBoolean = defaultValue.equalsIgnoreCase("true");
+                        Boolean defaultValueBoolean = defaultValue.equalsIgnoreCase("true");
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueBoolean);
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_STRING)) {
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValue);
@@ -119,15 +119,15 @@ public final class ParamDescriptions {
         return ParamDescriptions.INSTANCE;
     }
 
-    public ParamDescription get(final String name) {
-        final ParamDescription paramDesc = this.map.get(name);
+    public ParamDescription get(String name) {
+        ParamDescription paramDesc = this.map.get(name);
 
         return (paramDesc == null)
                 ? new ParamDescription(name, String.format("Please add a description for %s to the manual.", name), "", 0)
                 : paramDesc;
     }
 
-    public void put(final String name, final ParamDescription paramDescription) {
+    public void put(String name, ParamDescription paramDescription) {
         this.map.put(name, paramDescription);
     }
 

@@ -46,7 +46,7 @@ public class BpcTetradPurifyWashdown {
     private final boolean depthOne = false;
     private EdgeListGraph depthOneGraph;
 
-    public BpcTetradPurifyWashdown(final ICovarianceMatrix cov, final TestType testType, final double alpha) {
+    public BpcTetradPurifyWashdown(ICovarianceMatrix cov, TestType testType, double alpha) {
         this.cov = cov;
         this.variables = cov.getVariables();
         this.test = new ContinuousTetradTest(cov, testType, alpha);
@@ -54,7 +54,7 @@ public class BpcTetradPurifyWashdown {
         this.indTest = new IndTestFisherZ(cov, alpha);
     }
 
-    public BpcTetradPurifyWashdown(final DataSet dataSet, final TestType testType, final double alpha) {
+    public BpcTetradPurifyWashdown(DataSet dataSet, TestType testType, double alpha) {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.test = new ContinuousTetradTest(dataSet, testType, alpha);
@@ -62,8 +62,8 @@ public class BpcTetradPurifyWashdown {
     }
 
     public Graph search() {
-        final IPurify purify = new PurifyTetradBased2(this.test);
-        final List<Node> variables = new ArrayList<>(this.variables);
+        IPurify purify = new PurifyTetradBased2(this.test);
+        List<Node> variables = new ArrayList<>(this.variables);
         List<List<Node>> clustering = new ArrayList<>();
         List<Node> disgards;
         List<Node> _disgards;
@@ -75,21 +75,21 @@ public class BpcTetradPurifyWashdown {
             disgards = calculateDisgards(clustering, variables);
         } while (!new HashSet<>(disgards).equals(new HashSet<>(_disgards)));
 
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        for (final List<Node> cluster : new ArrayList<>(clustering)) {
+        for (List<Node> cluster : new ArrayList<>(clustering)) {
             if (cluster.size() < 3) {
                 clustering.remove(cluster);
             }
         }
 
         for (int i = 0; i < clustering.size(); i++) {
-            final List<Node> cluster = clustering.get(i);
-            final Node latent = new GraphNode("_L" + (i + 1));
+            List<Node> cluster = clustering.get(i);
+            Node latent = new GraphNode("_L" + (i + 1));
             latent.setNodeType(NodeType.LATENT);
             graph.addNode(latent);
 
-            for (final Node node : cluster) {
+            for (Node node : cluster) {
                 graph.addNode(node);
                 graph.addDirectedEdge(latent, node);
             }
@@ -99,12 +99,12 @@ public class BpcTetradPurifyWashdown {
 
     }
 
-    private List<Node> calculateDisgards(final List<List<Node>> clustering, final List<Node> variables) {
-        final List<Node> disgards = new ArrayList<>();
+    private List<Node> calculateDisgards(List<List<Node>> clustering, List<Node> variables) {
+        List<Node> disgards = new ArrayList<>();
 
         NODE:
-        for (final Node node : variables) {
-            for (final List<Node> cluster : clustering) {
+        for (Node node : variables) {
+            for (List<Node> cluster : clustering) {
                 if (cluster.contains(node)) {
                     continue NODE;
                 }

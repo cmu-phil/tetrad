@@ -91,7 +91,7 @@ class QQPlotDisplayPanel extends JPanel {
     /**
      * Constructs the histogram dipslay panel given the initial histogram to display.
      */
-    public QQPlotDisplayPanel(final QQPlot qqPlot) {
+    public QQPlotDisplayPanel(QQPlot qqPlot) {
         this.qqPlot = qqPlot;
 
         if (qqPlot == null) {
@@ -107,7 +107,7 @@ class QQPlotDisplayPanel extends JPanel {
     /**
      * Updates the histogram that is dispalyed to the given one.
      */
-    public synchronized void updateQQPlot(final QQPlot qqPlot) {
+    public synchronized void updateQQPlot(QQPlot qqPlot) {
         if (qqPlot == null) {
             throw new NullPointerException("The given q-q plot must not be null");
         }
@@ -117,7 +117,7 @@ class QQPlotDisplayPanel extends JPanel {
     }
 
 
-    public String getToolTipText(final MouseEvent evt) {
+    public String getToolTipText(MouseEvent evt) {
         return null;
     }
 
@@ -125,12 +125,12 @@ class QQPlotDisplayPanel extends JPanel {
     /**
      * Paints the histogram and related items.
      */
-    public void paintComponent(final Graphics graphics) {
+    public void paintComponent(Graphics graphics) {
         // set up variables.
         this.rectMap.clear();
-        final Graphics2D g2d = (Graphics2D) graphics;
+        Graphics2D g2d = (Graphics2D) graphics;
         final int height = QQPlotDisplayPanel.HEIGHT - QQPlotDisplayPanel.PADDING;
-        final FontMetrics fontMetrics = g2d.getFontMetrics();
+        FontMetrics fontMetrics = g2d.getFontMetrics();
         // draw background/surrounding box.
         g2d.setColor(this.getBackground());
         g2d.fillRect(0, 0, QQPlotDisplayPanel.WIDTH + 2 * QQPlotDisplayPanel.SPACE, QQPlotDisplayPanel.HEIGHT);
@@ -144,14 +144,14 @@ class QQPlotDisplayPanel extends JPanel {
         g2d.setColor(QQPlotDisplayPanel.LINE_COLOR);
         g2d.drawString(this.format.format(Math.floor(this.qqPlot.getMinSample())), QQPlotDisplayPanel.PADDING + 5, height + 15);
         g2d.drawLine(QQPlotDisplayPanel.PADDING, height + QQPlotDisplayPanel.DASH, QQPlotDisplayPanel.PADDING, height);
-        final String maxStr = this.format.format((int) Math.ceil(this.qqPlot.getMaxSample()));
+        String maxStr = this.format.format((int) Math.ceil(this.qqPlot.getMaxSample()));
         g2d.drawString(maxStr, QQPlotDisplayPanel.WIDTH - fontMetrics.stringWidth(maxStr), height + 15);
         g2d.drawLine(QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE, height + QQPlotDisplayPanel.DASH, QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE, height);
 
         // draw the side line
         g2d.setColor(QQPlotDisplayPanel.LINE_COLOR);
         final int topY = 0;
-        final String top = "" + Math.ceil(this.qqPlot.getMaxSample());
+        String top = "" + Math.ceil(this.qqPlot.getMaxSample());
         g2d.drawString(top, QQPlotDisplayPanel.PADDING - fontMetrics.stringWidth(top), topY + 10);
         g2d.drawLine(QQPlotDisplayPanel.PADDING - QQPlotDisplayPanel.DASH, topY, QQPlotDisplayPanel.PADDING, topY);
         g2d.drawString(Math.floor(this.qqPlot.getMinSample()) + "", QQPlotDisplayPanel.PADDING - fontMetrics.stringWidth(Math.floor(this.qqPlot.getMinIdeal()) + ""), height - 2);
@@ -174,12 +174,12 @@ class QQPlotDisplayPanel extends JPanel {
         g2d.setColor(new Color(255, 0, 0));
 
         for (int i = 0; i < this.qqPlot.getDataSet().getNumRows(); i++) {
-            final double x = (this.qqPlot.getDataSet().getDouble(i, dataColumn));
-            final double y = (this.qqPlot.getComparisonVariable()[i]);
+            double x = (this.qqPlot.getDataSet().getDouble(i, dataColumn));
+            double y = (this.qqPlot.getComparisonVariable()[i]);
 
             if (x >= this.qqPlot.getMinSample() && x <= this.qqPlot.getMaxSample()
                     && y >= this.qqPlot.getMinSample() && y <= this.qqPlot.getMaxSample()) {
-                final double[] result = plotPoint(x, y, Math.floor(this.qqPlot.getMinSample()), Math.ceil(this.qqPlot.getMaxSample()));
+                double[] result = plotPoint(x, y, Math.floor(this.qqPlot.getMinSample()), Math.ceil(this.qqPlot.getMaxSample()));
 
                 g2d.fill(new Ellipse2D.Double(result[0], result[1], 4, 4));
             }
@@ -197,9 +197,9 @@ class QQPlotDisplayPanel extends JPanel {
         return this.displayString;
     }
 
-    private double[] plotPoint(final double x, final double y, final double minRange, final double maxRange) {
-        final double[] result = new double[2];
-        final double range = maxRange - minRange;
+    private double[] plotPoint(double x, double y, double minRange, double maxRange) {
+        double[] result = new double[2];
+        double range = maxRange - minRange;
         result[0] = (QQPlotDisplayPanel.WIDTH - 50) * ((y - minRange) / range) - 2 + 50;
         result[1] = QQPlotDisplayPanel.HEIGHT - (QQPlotDisplayPanel.HEIGHT - 50) * ((x - minRange) / range) - 2 - 50;
         //System.out.println("<" + result[0] +  ", " + result[1] + ">");
@@ -225,13 +225,13 @@ class QQPlotDisplayPanel extends JPanel {
 
     private class MouseMovementListener implements MouseMotionListener {
 
-        public void mouseDragged(final MouseEvent e) {
+        public void mouseDragged(MouseEvent e) {
 
         }
 
-        public void mouseMoved(final MouseEvent e) {
-            final Point point = e.getPoint();
-            for (final Rectangle rect : QQPlotDisplayPanel.this.rectMap.keySet()) {
+        public void mouseMoved(MouseEvent e) {
+            Point point = e.getPoint();
+            for (Rectangle rect : QQPlotDisplayPanel.this.rectMap.keySet()) {
                 if (rect.contains(point)) {
                     break;
                 }

@@ -30,11 +30,11 @@ public class FisherZScore implements ScoreWrapper {
     double alpha = 0.001;
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final double alpha = parameters.getDouble(Params.ALPHA);
+        double alpha = parameters.getDouble(Params.ALPHA);
         this.alpha = alpha;
-        final IndTestFisherZ test = new IndTestFisherZ((DataSet) dataSet, alpha);
+        IndTestFisherZ test = new IndTestFisherZ((DataSet) dataSet, alpha);
         return new ScoredIndTest(test);
     }
 
@@ -50,13 +50,13 @@ public class FisherZScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         return parameters;
     }
 
     @Override
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         return this.dataSet.getVariable(name);
     }
 }

@@ -34,7 +34,7 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
     private final List<N> variables;
     private final List<List<V>> rows;
 
-    public DataTableImpl(final List<? extends N> vars) {
+    public DataTableImpl(List<? extends N> vars) {
         this.variables = Collections.unmodifiableList(new ArrayList<>(vars));
         this.rows = new ArrayList<>();
     }
@@ -55,10 +55,10 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
     }
 
     @Override
-    public void addRow(final List<? extends V> row) {
-        final int
+    public void addRow(List<? extends V> row) {
+        int
                 m = row.size();
-        final int w = columnCount();
+        int w = columnCount();
 
         if (m != w)
             throw new IllegalArgumentException("Tried to insert a row of length " + m + " into a table of width " + w + ".");

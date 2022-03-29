@@ -72,11 +72,11 @@ public final class DataModelList extends AbstractList<DataModel>
     public DataModelList() {
     }
 
-    public DataModelList(final DataModelList dataModelList) {
+    public DataModelList(DataModelList dataModelList) {
 
         try {
             throw new NullPointerException();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -98,7 +98,7 @@ public final class DataModelList extends AbstractList<DataModel>
     /**
      * @return this model, as an Object.
      */
-    public DataModel get(final int index) {
+    public DataModel get(int index) {
         return this.modelList.get(index);
     }
 
@@ -121,7 +121,7 @@ public final class DataModelList extends AbstractList<DataModel>
         return this.knowledge.copy();
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -147,7 +147,7 @@ public final class DataModelList extends AbstractList<DataModel>
      * @param element the DataModel to be added. (Note that this must be a
      *                DataModel.)
      */
-    public void add(final int index, final DataModel element) {
+    public void add(int index, DataModel element) {
         this.modelList.add(index, element);
     }
 
@@ -188,8 +188,8 @@ public final class DataModelList extends AbstractList<DataModel>
      * @param index the index of the DataModel to remove.
      * @return the DataModel just removed.
      */
-    public DataModel remove(final int index) {
-        final DataModel removedObject = this.modelList.remove(index);
+    public DataModel remove(int index) {
+        DataModel removedObject = this.modelList.remove(index);
 
         if (removedObject == this.selectedModel) {
             this.selectedModel = null;
@@ -212,7 +212,7 @@ public final class DataModelList extends AbstractList<DataModel>
         }
     }
 
-    public void setSelectedModel(final DataModel model) {
+    public void setSelectedModel(DataModel model) {
         if (model == null) {
             throw new NullPointerException();
         }
@@ -232,7 +232,7 @@ public final class DataModelList extends AbstractList<DataModel>
     /**
      * Sets the name of the data model list..
      */
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -240,9 +240,9 @@ public final class DataModelList extends AbstractList<DataModel>
      * @return a string representation of the data model list.
      */
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
         buf.append("Data Model List <");
-        for (final Object aModelList : this.modelList) {
+        for (Object aModelList : this.modelList) {
             buf.append(aModelList).append(", ");
         }
         buf.append(">");
@@ -265,7 +265,7 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     @Override
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         return null;
     }
 
@@ -280,7 +280,7 @@ public final class DataModelList extends AbstractList<DataModel>
         return hashcode;
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
@@ -289,7 +289,7 @@ public final class DataModelList extends AbstractList<DataModel>
             return false;
         }
 
-        final DataModelList list = (DataModelList) o;
+        DataModelList list = (DataModelList) o;
 
         return this.name.equals(list.name) && this.modelList.equals(list.modelList) && this.knowledge.equals(list.knowledge) && this.selectedModel.equals(list.selectedModel);
 
@@ -308,7 +308,7 @@ public final class DataModelList extends AbstractList<DataModel>
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

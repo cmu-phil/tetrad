@@ -33,59 +33,59 @@ public class HsimAutoC {
 
     //*********Constructors*************//
     //contructor using a previously existing DataSet object
-    public HsimAutoC(final DataSet indata) {
+    public HsimAutoC(DataSet indata) {
         //first check if indata is already the right type
         this.data = indata;
         //may need to make this part more complicated if CovarianceMatrix method is finicky
     }
 
     //constructor that loads data from a file named readfilename, with delimiter delim
-    public HsimAutoC(final String readfilename, final char delim) {
-        final String workingDirectory = System.getProperty("user.dir");
+    public HsimAutoC(String readfilename, char delim) {
+        String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        final Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<String>();
         eVars.add("MULT");
-        final Path dataFile = Paths.get(readfilename);
+        Path dataFile = Paths.get(readfilename);
 
-        final ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
+        ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
         try {
             this.data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
-        } catch (final Exception IOException) {
+        } catch (Exception IOException) {
             IOException.printStackTrace();
         }
     }
 
     //***********Public methods*************//
-    public double[] run(final int resimSize) {
+    public double[] run(int resimSize) {
 
         double[] output;
         output = new double[5];
         //========first make the Dag for Hsim==========
-        final ICovarianceMatrix cov = new CovarianceMatrix(this.data);
-        final SemBicScore score = new SemBicScore(cov);
+        ICovarianceMatrix cov = new CovarianceMatrix(this.data);
+        SemBicScore score = new SemBicScore(cov);
 
         final double penaltyDiscount = 2.0;
-        final Fges fges = new Fges(score);
+        Fges fges = new Fges(score);
         fges.setVerbose(false);
         fges.setPenaltyDiscount(penaltyDiscount);
 
-        final Graph estGraph = fges.search();
+        Graph estGraph = fges.search();
         //if (verbose) System.out.println(estGraph);
 
-        final Graph estGraphDAG = SearchGraphUtils.dagFromCPDAG(estGraph);
-        final Dag estDAG = new Dag(estGraphDAG);
+        Graph estGraphDAG = SearchGraphUtils.dagFromCPDAG(estGraph);
+        Dag estDAG = new Dag(estGraphDAG);
         //Dag estDAG = new Dag(estGraph);
 
         //===========Identify the nodes to be resimulated===========
         //for this class, I'm going to choose variables for resimulation randomly, rather than building cliques
         //select a random node
-        final List<Node> remainingNodes = estGraph.getNodes();
+        List<Node> remainingNodes = estGraph.getNodes();
         int randIndex = new Random().nextInt(remainingNodes.size());
         Node randomnode = remainingNodes.get(randIndex);
         if (this.verbose) {
             System.out.println("the first node is " + randomnode);
         }
-        final List<Node> queue = new ArrayList<>();
+        List<Node> queue = new ArrayList<>();
         queue.add(randomnode);
         //while queue has size less than the resim size, grow it
         //if (verbose) System.out.println(queue);
@@ -98,22 +98,22 @@ public class HsimAutoC {
             queue.add(randomnode);
         }
 
-        final Set<Node> simnodes = new HashSet<Node>(queue);
+        Set<Node> simnodes = new HashSet<Node>(queue);
         if (this.verbose) {
             System.out.println("the resimmed nodes are " + simnodes);
         }
 
         //===========Apply the hybrid resimulation===============
-        final HsimContinuous hsimC = new HsimContinuous(estDAG, simnodes, this.data); //regularDataSet
-        final DataSet newDataSet = hsimC.hybridsimulate();
+        HsimContinuous hsimC = new HsimContinuous(estDAG, simnodes, this.data); //regularDataSet
+        DataSet newDataSet = hsimC.hybridsimulate();
 
         //write output to a new file
         if (this.write) {
             try {
-                final FileWriter fileWriter = new FileWriter(this.filenameOut);
+                FileWriter fileWriter = new FileWriter(this.filenameOut);
                 DataWriter.writeRectangularData(newDataSet, fileWriter, this.delimiter);
                 fileWriter.close();
-            } catch (final Exception IOException) {
+            } catch (Exception IOException) {
                 IOException.printStackTrace();
             }
         }
@@ -121,9 +121,9 @@ public class HsimAutoC {
         //=======Run FGS on the output data, and compare it to the original learned graph
         //Path dataFileOut = Paths.get(filenameOut);
         //edu.cmu.tetrad.io.DataReader dataReaderOut = new VerticalTabularDiscreteDataReader(dataFileOut, delimiter);
-        final ICovarianceMatrix newcov = new CovarianceMatrix(this.data);
-        final SemBicScore newscore = new SemBicScore(newcov);
-        final Fges fgesOut = new Fges(newscore);
+        ICovarianceMatrix newcov = new CovarianceMatrix(this.data);
+        SemBicScore newscore = new SemBicScore(newcov);
+        Fges fgesOut = new Fges(newscore);
         fgesOut.setVerbose(false);
         fgesOut.setPenaltyDiscount(2.0);
 
@@ -133,11 +133,11 @@ public class HsimAutoC {
         //doing the replaceNodes trick to fix some bugs
         estGraphOut = GraphUtils.replaceNodes(estGraphOut, estDAG.getNodes());
         //restrict the comparison to the simnodes and edges to their parents
-        final Set<Node> allParents = HsimUtils.getAllParents(estGraphOut, simnodes);
-        final Set<Node> addParents = HsimUtils.getAllParents(estDAG, simnodes);
+        Set<Node> allParents = HsimUtils.getAllParents(estGraphOut, simnodes);
+        Set<Node> addParents = HsimUtils.getAllParents(estDAG, simnodes);
         allParents.addAll(addParents);
         Graph estEvalGraphOut = HsimUtils.evalEdges(estGraphOut, simnodes, allParents);
-        final Graph estEvalGraph = HsimUtils.evalEdges(estDAG, simnodes, allParents);
+        Graph estEvalGraph = HsimUtils.evalEdges(estDAG, simnodes, allParents);
 
         //SearchGraphUtils.graphComparison(estGraph, estGraphOut, System.out);
         estEvalGraphOut = GraphUtils.replaceNodes(estEvalGraphOut, estEvalGraph.getNodes());
@@ -153,19 +153,19 @@ public class HsimAutoC {
     }
 
     //******* Methods for setting values to private variables****************//
-    public void setVerbose(final boolean verbosity) {
+    public void setVerbose(boolean verbosity) {
         this.verbose = verbosity;
     }
 
-    public void setWrite(final boolean setwrite) {
+    public void setWrite(boolean setwrite) {
         this.write = setwrite;
     }
 
-    public void setFilenameOut(final String filename) {
+    public void setFilenameOut(String filename) {
         this.filenameOut = filename;
     }
 
-    public void setDelimiter(final char delim) {
+    public void setDelimiter(char delim) {
         this.delimiter = delim;
     }
 }

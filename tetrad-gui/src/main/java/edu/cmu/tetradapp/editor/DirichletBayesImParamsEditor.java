@@ -49,7 +49,7 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
     public DirichletBayesImParamsEditor() {
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -57,7 +57,7 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         // does nothing.
     }
 
@@ -73,25 +73,25 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
     public void setup() {
         setLayout(new BorderLayout());
 
-        final JRadioButton manual = new JRadioButton();
-        final JRadioButton randomRetain = new JRadioButton();
+        JRadioButton manual = new JRadioButton();
+        JRadioButton randomRetain = new JRadioButton();
 
         manual.setText("Manually");
         randomRetain.setText("Using a symmetric prior for each row of each conditional" +
                 " probability table.");
 
-        final ButtonGroup group = new ButtonGroup();
+        ButtonGroup group = new ButtonGroup();
         group.add(manual);
         group.add(randomRetain);
 
-        final DoubleTextField symmetricAlphaField = new DoubleTextField(
+        DoubleTextField symmetricAlphaField = new DoubleTextField(
                 this.params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
         symmetricAlphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
                     DirichletBayesImParamsEditor.this.params.set("symmetricAlpha", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -108,36 +108,36 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
         }
 
         manual.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 getParams().set("initializationMode", "manual");
                 symmetricAlphaField.setEnabled(false);
             }
         });
 
         randomRetain.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 getParams().set("initializationMode", "symmetricPrior");
                 symmetricAlphaField.setEnabled(true);
             }
         });
 
         // continue workbench construction.
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel(
                 "Pseudocounts for this Dirichlet Bayes IM should be initialized:"));
         b2.add(Box.createHorizontalGlue());
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(manual);
         b3.add(Box.createHorizontalGlue());
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(randomRetain);
         b4.add(Box.createHorizontalGlue());
 
-        final Box b5 = Box.createHorizontalBox();
+        Box b5 = Box.createHorizontalBox();
         b5.add(Box.createRigidArea(new Dimension(30, 0)));
         b5.add(new JLabel("All pseudocounts = "));
         b5.add(symmetricAlphaField);

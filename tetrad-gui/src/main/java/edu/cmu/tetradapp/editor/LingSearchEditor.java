@@ -67,7 +67,7 @@ public class LingSearchEditor extends AbstractSearchEditor
 
     //=========================CONSTRUCTORS============================//
 
-    public LingSearchEditor(final LingRunner runner) {
+    public LingSearchEditor(LingRunner runner) {
         super(runner, "Result Graph");
     }
 
@@ -86,14 +86,14 @@ public class LingSearchEditor extends AbstractSearchEditor
         return getWorkbench().getModelNodesToDisplay();
     }
 
-    public void layoutByGraph(final Graph graph) {
+    public void layoutByGraph(Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        final GraphWorkbench resultWorkbench = getWorkbench();
-        final Graph graph = resultWorkbench.getGraph();
-        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        GraphWorkbench resultWorkbench = getWorkbench();
+        Graph graph = resultWorkbench.getGraph();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -108,7 +108,7 @@ public class LingSearchEditor extends AbstractSearchEditor
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(final String resultLabel) {
+    protected void setup(String resultLabel) {
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
         //JTabbedPane tabbedPane = new JTabbedPane();
@@ -127,7 +127,7 @@ public class LingSearchEditor extends AbstractSearchEditor
     }
 
     private LingDisplay lingDisplay() {
-        final Graph resultGraph = resultGraph();
+        Graph resultGraph = resultGraph();
         Ling.StoredGraphs storedGraphs = this.arrangeGraphs();
         LingDisplay display = new LingDisplay(storedGraphs);
 
@@ -160,8 +160,8 @@ public class LingSearchEditor extends AbstractSearchEditor
         Ling.StoredGraphs storedGraphs = runner.getStoredGraphs();
         if (storedGraphs == null) storedGraphs = new Ling.StoredGraphs();
 
-        final Graph latestWorkbenchGraph = (Graph) runner.getParams().get("sourceGraph", null);
-        final Graph sourceGraph = runner.getSourceGraph();
+        Graph latestWorkbenchGraph = (Graph) runner.getParams().get("sourceGraph", null);
+        Graph sourceGraph = runner.getSourceGraph();
 
         boolean arrangedAll = false;
 
@@ -200,15 +200,15 @@ public class LingSearchEditor extends AbstractSearchEditor
      * cannot count on a result graph having been found when the method
      */
     public void execute() {
-        final Window owner = (Window) getTopLevelAncestor();
+        Window owner = (Window) getTopLevelAncestor();
 
-        final WatchedProcess process = new WatchedProcess(owner) {
+        WatchedProcess process = new WatchedProcess(owner) {
             public void watch() {
                 getExecuteButton().setEnabled(false);
                 setErrorMessage(null);
 
                 if (!LingSearchEditor.this.knowledgeMessageShown) {
-                    final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+                    IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(),
@@ -221,14 +221,14 @@ public class LingSearchEditor extends AbstractSearchEditor
                 try {
                     storeLatestWorkbenchGraph();
                     getAlgorithmRunner().execute();
-                    final LingRunner runner = (LingRunner) getAlgorithmRunner();
+                    LingRunner runner = (LingRunner) getAlgorithmRunner();
                     arrangeGraphs();
                     LingSearchEditor.this.lingDisplay.resetGraphs(runner.getStoredGraphs());
-                } catch (final Exception e) {
-                    final CharArrayWriter writer1 = new CharArrayWriter();
-                    final PrintWriter writer2 = new PrintWriter(writer1);
+                } catch (Exception e) {
+                    CharArrayWriter writer1 = new CharArrayWriter();
+                    PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
-                    final String message = writer1.toString();
+                    String message = writer1.toString();
                     writer2.close();
 
                     e.printStackTrace(System.out);
@@ -254,7 +254,7 @@ public class LingSearchEditor extends AbstractSearchEditor
 
                 getWorkbenchScroll().setBorder(
                         new TitledBorder(getResultLabel()));
-                final Graph resultGraph = resultGraph();
+                Graph resultGraph = resultGraph();
 
                 doDefaultArrangement(resultGraph);
                 getWorkbench().setBackground(Color.WHITE);
@@ -270,7 +270,7 @@ public class LingSearchEditor extends AbstractSearchEditor
             }
         };
 
-        final Thread watcher = new Thread() {
+        Thread watcher = new Thread() {
             public void run() {
                 while (true) {
                     try {
@@ -280,7 +280,7 @@ public class LingSearchEditor extends AbstractSearchEditor
                             getExecuteButton().setEnabled(true);
                             return;
                         }
-                    } catch (final InterruptedException e) {
+                    } catch (InterruptedException e) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
@@ -296,26 +296,26 @@ public class LingSearchEditor extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        final JPanel toolbar = new JPanel();
+        JPanel toolbar = new JPanel();
 
         getExecuteButton().setText("Execute*");
         getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 execute();
             }
         });
 
-        final Box b1 = Box.createVerticalBox();
-        final Box b21 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
+        Box b21 = Box.createVerticalBox();
 
-        final Box b211 = Box.createHorizontalBox();
+        Box b211 = Box.createHorizontalBox();
         b211.add(new JLabel("Threshold "));
-        final Parameters params = getAlgorithmRunner().getParams();
-        final double pruneFactor = params.getDouble("threshold", 0.5);
-        final DoubleTextField field = new DoubleTextField(pruneFactor, 8, NumberFormatUtil.getInstance().getNumberFormat());
+        Parameters params = getAlgorithmRunner().getParams();
+        double pruneFactor = params.getDouble("threshold", 0.5);
+        DoubleTextField field = new DoubleTextField(pruneFactor, 8, NumberFormatUtil.getInstance().getNumberFormat());
 
         field.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 if (value > 0.0) {
                     setThreshold(value);
                     return value;
@@ -329,34 +329,34 @@ public class LingSearchEditor extends AbstractSearchEditor
 
         b21.add(b211);
 
-        final JPanel paramsPanel = new JPanel();
+        JPanel paramsPanel = new JPanel();
         paramsPanel.add(b21);
         paramsPanel.setBorder(new TitledBorder("Parameters"));
         b1.add(paramsPanel);
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
         b2.add(getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
         if (getAlgorithmRunner().getDataModel() instanceof DataSet) {
-            final Box b3 = Box.createHorizontalBox();
+            Box b3 = Box.createHorizontalBox();
             b3.add(Box.createGlue());
             b1.add(b3);
         }
 
         if (getAlgorithmRunner().getParams() instanceof Parameters) {
             b1.add(Box.createVerticalStrut(5));
-            final Box hBox = Box.createHorizontalBox();
+            Box hBox = Box.createHorizontalBox();
             hBox.add(Box.createHorizontalGlue());
             b1.add(hBox);
             b1.add(Box.createVerticalStrut(5));
         }
 
-        final Box b4 = Box.createHorizontalBox();
-        final JLabel label = new JLabel("<html>" + "*Please note that some" +
+        Box b4 = Box.createHorizontalBox();
+        JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -372,8 +372,8 @@ public class LingSearchEditor extends AbstractSearchEditor
     }
 
 
-    private void setThreshold(final double value) {
-        final Parameters params = getAlgorithmRunner().getParams();
+    private void setThreshold(double value) {
+        Parameters params = getAlgorithmRunner().getParams();
         params.set("threshold", value);
     }
 
@@ -389,9 +389,9 @@ public class LingSearchEditor extends AbstractSearchEditor
 //        });
     }
 
-    protected void addSpecialMenus(final JMenuBar menuBar) {
+    protected void addSpecialMenus(JMenuBar menuBar) {
         if (!(getAlgorithmRunner() instanceof IGesRunner)) {
-            final JMenu test = new JMenu("Independence");
+            JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
             IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -399,7 +399,7 @@ public class LingSearchEditor extends AbstractSearchEditor
             test.addSeparator();
         }
 
-        final JMenu graph = new JMenu("Graph");
+        JMenu graph = new JMenu("Graph");
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
@@ -418,12 +418,12 @@ public class LingSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        final Parameters params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
 
-    public void setTestType(final IndTestType testType) {
+    public void setTestType(IndTestType testType) {
         super.setTestType(testType);
     }
 
@@ -431,7 +431,7 @@ public class LingSearchEditor extends AbstractSearchEditor
         return super.getTestType();
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
@@ -441,7 +441,7 @@ public class LingSearchEditor extends AbstractSearchEditor
 
     //================================PRIVATE METHODS====================//
 
-    protected void doDefaultArrangement(final Graph resultGraph) {
+    protected void doDefaultArrangement(Graph resultGraph) {
         if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
                     getLatestWorkbenchGraph());

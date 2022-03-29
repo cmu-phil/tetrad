@@ -79,11 +79,11 @@ public class PcLocal implements GraphSearch {
     /**
      * Constructs a PC Local search with the given independence oracle.
      */
-    public PcLocal(final IndependenceTest independenceTest) {
+    public PcLocal(IndependenceTest independenceTest) {
         this(independenceTest, null);
     }
 
-    public PcLocal(final IndependenceTest independenceTest, final Graph graph) {
+    public PcLocal(IndependenceTest independenceTest, Graph graph) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -98,7 +98,7 @@ public class PcLocal implements GraphSearch {
         return this.aggressivelyPreventCycles;
     }
 
-    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -110,7 +110,7 @@ public class PcLocal implements GraphSearch {
         return this.knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -126,7 +126,7 @@ public class PcLocal implements GraphSearch {
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      */
     public Graph search() {
-        final long time1 = System.currentTimeMillis();
+        long time1 = System.currentTimeMillis();
 
         if (this.externalGraph != null) {
             this.graph = new EdgeListGraph(this.externalGraph);
@@ -144,10 +144,10 @@ public class PcLocal implements GraphSearch {
         this.meekRules.setKnowledge(this.knowledge);
 
         // This is the list of all changed nodes from the last iteration
-        final List<Node> nodes = getIndependenceTest().getVariables();
+        List<Node> nodes = getIndependenceTest().getVariables();
         buildIndexing(nodes);
 
-        final int numEdges = nodes.size() * (nodes.size() - 1) / 2;
+        int numEdges = nodes.size() * (nodes.size() - 1) / 2;
         int index = 0;
 
         for (int i = 0; i < nodes.size(); i++) {
@@ -158,14 +158,14 @@ public class PcLocal implements GraphSearch {
                     log("info", index + " of " + numEdges);
                 }
 
-                final Node x = nodes.get(i);
-                final Node y = nodes.get(j);
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
 
                 tryAddingEdge(x, y);
             }
         }
 
-        for (final Node node : nodes) {
+        for (Node node : nodes) {
             reorientNode(node);
 //            applyMeek(Collections.singletonList(node));
         }
@@ -174,28 +174,28 @@ public class PcLocal implements GraphSearch {
 
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
-        final long time2 = System.currentTimeMillis();
+        long time2 = System.currentTimeMillis();
         this.elapsedTime = time2 - time1;
 
         return this.graph;
     }
 
     // Maps adj to their indices for quick lookup.
-    private void buildIndexing(final List<Node> nodes) {
+    private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
-        for (final Node node : nodes) {
+        for (Node node : nodes) {
             this.hashIndices.put(node, nodes.indexOf(node));
         }
     }
 
-    private void log(final String info, final String message) {
+    private void log(String info, String message) {
         TetradLogger.getInstance().log(info, message);
         if ("info".equals(info)) {
             System.out.println(message);
         }
     }
 
-    private void tryAddingEdge(final Node x, final Node y) {
+    private void tryAddingEdge(Node x, Node y) {
         if (this.graph.isAdjacentTo(x, y)) {
             return;
         }
@@ -208,17 +208,17 @@ public class PcLocal implements GraphSearch {
             this.graph.addUndirectedEdge(x, y);
             reorient(x, y);
 
-            for (final Node w : this.graph.getAdjacentNodes(x)) {
+            for (Node w : this.graph.getAdjacentNodes(x)) {
                 tryRemovingEdge(w, x);
             }
 
-            for (final Node w : this.graph.getAdjacentNodes(y)) {
+            for (Node w : this.graph.getAdjacentNodes(y)) {
                 tryRemovingEdge(w, y);
             }
         }
     }
 
-    private void tryRemovingEdge(final Node x, final Node y) {
+    private void tryRemovingEdge(Node x, Node y) {
         if (!this.graph.isAdjacentTo(x, y)) return;
 
         if (sepset(x, y) != null) {
@@ -233,18 +233,18 @@ public class PcLocal implements GraphSearch {
 
     //================================PRIVATE METHODS=======================//
 
-    private List<Node> sepset(final Node x, final Node y) {
+    private List<Node> sepset(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Can't have x == y.");
 
         {
-            final List<Node> adj = this.graph.getAdjacentNodes(x);
+            List<Node> adj = this.graph.getAdjacentNodes(x);
             adj.remove(y);
 
-            final DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                final List<Node> cond = GraphUtils.asList(choice, adj);
+                List<Node> cond = GraphUtils.asList(choice, adj);
 
                 if (getIndependenceTest().isIndependent(x, y, cond)) {
                     if (this.recordSepsets) this.sepsetMap.set(x, y, cond);
@@ -254,14 +254,14 @@ public class PcLocal implements GraphSearch {
         }
 
         {
-            final List<Node> adj = this.graph.getAdjacentNodes(y);
+            List<Node> adj = this.graph.getAdjacentNodes(y);
             adj.remove(x);
 
-            final DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                final List<Node> cond = GraphUtils.asList(choice, adj);
+                List<Node> cond = GraphUtils.asList(choice, adj);
 
                 if (getIndependenceTest().isIndependent(x, y, cond)) {
                     if (this.recordSepsets) this.sepsetMap.set(x, y, cond);
@@ -273,21 +273,21 @@ public class PcLocal implements GraphSearch {
         return null;
     }
 
-    private List<Node> sepset2(final Node x, final Node y) {
+    private List<Node> sepset2(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Can have x == y.");
         return this.sepsetProducer.getSepset(x, y);
     }
 
 
-    private void reorient(final Node x, final Node y) {
-        final List<Node> n = new ArrayList<>();
+    private void reorient(Node x, Node y) {
+        List<Node> n = new ArrayList<>();
         n.add(x);
         n.add(y);
 
         reorientNode(y);
         reorientNode(x);
 
-        for (final Node c : getCommonAdjacents(x, y)) {
+        for (Node c : getCommonAdjacents(x, y)) {
             reorientNode(c);
             n.add(c);
         }
@@ -295,43 +295,43 @@ public class PcLocal implements GraphSearch {
 //        applyMeek(n);
     }
 
-    private Set<Node> getCommonAdjacents(final Node x, final Node y) {
-        final Set<Node> commonChildren = new HashSet<>(this.graph.getAdjacentNodes(x));
+    private Set<Node> getCommonAdjacents(Node x, Node y) {
+        Set<Node> commonChildren = new HashSet<>(this.graph.getAdjacentNodes(x));
         commonChildren.retainAll(this.graph.getAdjacentNodes(y));
         return commonChildren;
     }
 
-    private void reorientNode(final Node y) {
+    private void reorientNode(Node y) {
         unorientAdjacents(y);
         orientLocalColliders(y);
     }
 
-    private void reorientNode2(final Node y) {
-        final List<Node> adjy = this.graph.getAdjacentNodes(y);
+    private void reorientNode2(Node y) {
+        List<Node> adjy = this.graph.getAdjacentNodes(y);
         adjy.removeAll(this.graph.getChildren(y));
 
 
-        final DepthChoiceGenerator gen = new DepthChoiceGenerator(adjy.size(), adjy.size());
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(adjy.size(), adjy.size());
         int[] choice;
         double maxScore = Double.NEGATIVE_INFINITY;
         List<Node> maxParents = new ArrayList<>();
         unorientAdjacents(y);
 
         while ((choice = gen.next()) != null) {
-            final List<Node> parents = GraphUtils.asList(choice, adjy);
+            List<Node> parents = GraphUtils.asList(choice, adjy);
 
-            final Iterator<Node> pi = parents.iterator();
-            final int[] parentIndices = new int[parents.size()];
+            Iterator<Node> pi = parents.iterator();
+            int[] parentIndices = new int[parents.size()];
             int count = 0;
 
             while (pi.hasNext()) {
-                final Node nextParent = pi.next();
+                Node nextParent = pi.next();
                 parentIndices[count++] = this.hashIndices.get(nextParent);
             }
 
-            final int yIndex = this.hashIndices.get(y);
+            int yIndex = this.hashIndices.get(y);
 
-            final double _score = this.score.localScore(yIndex, parentIndices);
+            double _score = this.score.localScore(yIndex, parentIndices);
 
             if (_score > maxScore) {
                 maxScore = _score;
@@ -339,40 +339,40 @@ public class PcLocal implements GraphSearch {
             }
         }
 
-        for (final Node v : maxParents) {
+        for (Node v : maxParents) {
             this.graph.removeEdge(v, y);
             this.graph.addDirectedEdge(v, y);
         }
     }
 
-    private void applyMeek(final List<Node> y) {
-        final List<Node> start = new ArrayList<>();
-        for (final Node n : y) start.add(n);
+    private void applyMeek(List<Node> y) {
+        List<Node> start = new ArrayList<>();
+        for (Node n : y) start.add(n);
         this.meekRules.orientImplied(this.graph);
     }
 
-    private void unorientAdjacents(final Node y) {
-        for (final Node z : this.graph.getAdjacentNodes(y)) {
+    private void unorientAdjacents(Node y) {
+        for (Node z : this.graph.getAdjacentNodes(y)) {
             if (this.graph.isParentOf(y, z)) continue;
             this.graph.removeEdge(z, y);
             this.graph.addUndirectedEdge(z, y);
         }
     }
 
-    private void orientLocalColliders(final Node y) {
-        final List<Node> adjy = this.graph.getAdjacentNodes(y);
+    private void orientLocalColliders(Node y) {
+        List<Node> adjy = this.graph.getAdjacentNodes(y);
 
         for (int i = 0; i < adjy.size(); i++) {
             for (int j = i + 1; j < adjy.size(); j++) {
-                final Node z = adjy.get(i);
-                final Node w = adjy.get(j);
+                Node z = adjy.get(i);
+                Node w = adjy.get(j);
 
                 if (this.graph.isAncestorOf(y, z)) continue;
                 if (this.graph.isAncestorOf(y, w)) continue;
 
 //                if (z == w) continue;
                 if (this.graph.isAdjacentTo(z, w)) continue;
-                final List<Node> cond = sepset(z, w);
+                List<Node> cond = sepset(z, w);
 
                 if (cond != null && !cond.contains(y) && !this.knowledge.isForbidden(z.getName(), y.getName())
                         && !this.knowledge.isForbidden(w.getName(), y.getName())) {
@@ -386,8 +386,8 @@ public class PcLocal implements GraphSearch {
     /**
      * Checks if an arrowpoint is allowed by background knowledge.
      */
-    public static boolean isArrowpointAllowed(final Object from, final Object to,
-                                              final IKnowledge knowledge) {
+    public static boolean isArrowpointAllowed(Object from, Object to,
+                                              IKnowledge knowledge) {
         if (knowledge == null) {
             return true;
         }
@@ -395,7 +395,7 @@ public class PcLocal implements GraphSearch {
                 !knowledge.isForbidden(from.toString(), to.toString());
     }
 
-    public void setRecordSepsets(final boolean recordSepsets) {
+    public void setRecordSepsets(boolean recordSepsets) {
         this.recordSepsets = recordSepsets;
     }
 
@@ -405,16 +405,16 @@ public class PcLocal implements GraphSearch {
 
     // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
     // length at most 'bound'. Cycle checker in other words.
-    private boolean existsUnblockedSemiDirectedPath(final Node from, final Node to, final Set<Node> cond, final int bound) {
-        final Queue<Node> Q = new LinkedList<>();
-        final Set<Node> V = new HashSet<>();
+    private boolean existsUnblockedSemiDirectedPath(Node from, Node to, Set<Node> cond, int bound) {
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
         Q.offer(from);
         V.add(from);
         Node e = null;
         int distance = 0;
 
         while (!Q.isEmpty()) {
-            final Node t = Q.remove();
+            Node t = Q.remove();
             if (from != to && t == to) {
                 return true;
             }
@@ -425,9 +425,9 @@ public class PcLocal implements GraphSearch {
                 if (distance > (bound == -1 ? 1000 : bound)) return false;
             }
 
-            for (final Node u : this.graph.getAdjacentNodes(t)) {
-                final Edge edge = this.graph.getEdge(t, u);
-                final Node c = PcLocal.traverseSemiDirected(t, edge);
+            for (Node u : this.graph.getAdjacentNodes(t)) {
+                Edge edge = this.graph.getEdge(t, u);
+                Node c = PcLocal.traverseSemiDirected(t, edge);
                 if (c == null) continue;
                 if (cond.contains(c)) continue;
 
@@ -450,7 +450,7 @@ public class PcLocal implements GraphSearch {
     }
 
     // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(final Node node, final Edge edge) {
+    private static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
                 return edge.getNode2();
@@ -467,11 +467,11 @@ public class PcLocal implements GraphSearch {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 }

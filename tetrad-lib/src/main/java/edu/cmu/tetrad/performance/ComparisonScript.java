@@ -15,7 +15,7 @@ import java.util.List;
 public class ComparisonScript {
 
     private void runFromSimulation() {
-        final ComparisonParameters params = new ComparisonParameters();
+        ComparisonParameters params = new ComparisonParameters();
         params.setDataType(ComparisonParameters.DataType.Continuous); // Continuous or Discrete
         params.setNumVars(12); // number of variables
         params.setNumEdges(12); // number of edges
@@ -84,14 +84,14 @@ public class ComparisonScript {
             } else System.out.println("sample size = " + sampleSize);
 
 
-            for (final ComparisonParameters.Algorithm alg : algList) {
+            for (ComparisonParameters.Algorithm alg : algList) {
                 count++;
                 params.setAlgorithm(alg);
                 params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
                 params.setScore(ScoreType.SemBic);
                 // params.setOneEdgeFaithfulnessAssumed(false);
 
-                final List<ComparisonResult> resultsTrials = new ArrayList<>();
+                List<ComparisonResult> resultsTrials = new ArrayList<>();
                 for (int trial = 1; trial <= numTrials; trial++) {
                     params.setTrial(trial);
                     resultsTrials.add(Comparison2.compare(params));
@@ -121,7 +121,7 @@ public class ComparisonScript {
         System.out.println(avgTable);
     }
 
-    public static void main(final String... args) {
+    public static void main(String... args) {
         new ComparisonScript().runFromSimulation();
     }
 }

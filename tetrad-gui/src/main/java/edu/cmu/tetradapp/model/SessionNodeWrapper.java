@@ -63,7 +63,7 @@ public class SessionNodeWrapper extends GraphNode {
      * SessionWrapper. The name of the SessionNode is used as the name of the
      * SessionNodeWrapper. A button type may optionally be set.
      */
-    public SessionNodeWrapper(final SessionNode sessionNode) {
+    public SessionNodeWrapper(SessionNode sessionNode) {
         super(sessionNode.getDisplayName());
         this.sessionNode = sessionNode;
         setNodeType(NodeType.SESSION);
@@ -91,7 +91,7 @@ public class SessionNodeWrapper extends GraphNode {
      * Sets the session name. This method should be used in preference to
      * setName, which only sets the name in the superclass.
      */
-    public void setSessionName(final String name) {
+    public void setSessionName(String name) {
 //        if (!NamingProtocol.isLegalName(name)) {
 //            throw new IllegalArgumentException(
 //                    NamingProtocol.getProtocolDescription() + ": " + name);
@@ -119,7 +119,7 @@ public class SessionNodeWrapper extends GraphNode {
      * Sets the buttonType of the node, which is the buttonType of the wrapped
      * SessionNode.
      */
-    public void setButtonType(final String buttonType) {
+    public void setButtonType(String buttonType) {
         if (buttonType == null) {
             throw new NullPointerException("Button type cannot be null.");
         }
@@ -138,7 +138,7 @@ public class SessionNodeWrapper extends GraphNode {
         return this.sessionNode.getRepetition();
     }
 
-    public void setRepetition(final int repetition) {
+    public void setRepetition(int repetition) {
         this.sessionNode.setRepetition(repetition);
     }
 
@@ -156,7 +156,7 @@ public class SessionNodeWrapper extends GraphNode {
      * identity. In particular, change of name does not constitute change of
      * identity.
      */
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         return this == o;
     }
 
@@ -181,7 +181,7 @@ public class SessionNodeWrapper extends GraphNode {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

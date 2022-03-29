@@ -61,7 +61,7 @@ public class Lofs {
 
     //===============================CONSTRUCTOR============================//
 
-    public Lofs(final Graph CPDAG, final List<DataSet> dataSets)
+    public Lofs(Graph CPDAG, List<DataSet> dataSets)
             throws IllegalArgumentException {
 
         if (CPDAG == null) {
@@ -78,23 +78,23 @@ public class Lofs {
         this.regressions = new ArrayList<>();
         this.variables = dataSets.get(0).getVariables();
 
-        for (final DataSet dataSet : dataSets) {
+        for (DataSet dataSet : dataSets) {
             this.regressions.add(new RegressionDataset(dataSet));
         }
     }
 
     public Graph orient() {
-        final Graph skeleton = GraphUtils.undirectedGraph(getCPDAG());
-        final Graph graph = new EdgeListGraph(skeleton.getNodes());
+        Graph skeleton = GraphUtils.undirectedGraph(getCPDAG());
+        Graph graph = new EdgeListGraph(skeleton.getNodes());
 
-        final List<Node> nodes = skeleton.getNodes();
+        List<Node> nodes = skeleton.getNodes();
 //        Collections.shuffle(nodes);
 
         if (isR1Done()) {
             ruleR1(skeleton, graph, nodes);
         }
 
-        for (final Edge edge : skeleton.getEdges()) {
+        for (Edge edge : skeleton.getEdges()) {
             if (!graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
             }
@@ -111,21 +111,21 @@ public class Lofs {
         return graph;
     }
 
-    private void ruleR1(final Graph skeleton, final Graph graph, final List<Node> nodes) {
-        for (final Node node : nodes) {
-            final SortedMap<Double, String> scoreReports = new TreeMap<>();
+    private void ruleR1(Graph skeleton, Graph graph, List<Node> nodes) {
+        for (Node node : nodes) {
+            SortedMap<Double, String> scoreReports = new TreeMap<>();
 
-            final List<Node> adj = skeleton.getAdjacentNodes(node);
+            List<Node> adj = skeleton.getAdjacentNodes(node);
 
-            final DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
             int[] choice;
             double maxScore = Double.NEGATIVE_INFINITY;
             List<Node> parents = null;
 
             while ((choice = gen.next()) != null) {
-                final List<Node> _parents = GraphUtils.asList(choice, adj);
+                List<Node> _parents = GraphUtils.asList(choice, adj);
 
-                final double score = score(node, _parents);
+                double score = score(node, _parents);
                 scoreReports.put(-score, _parents.toString());
 
                 if (score > maxScore) {
@@ -134,7 +134,7 @@ public class Lofs {
                 }
             }
 
-            for (final double score : scoreReports.keySet()) {
+            for (double score : scoreReports.keySet()) {
                 TetradLogger.getInstance().log("score", "For " + node + " parents = " + scoreReports.get(score) + " score = " + -score);
             }
 
@@ -146,9 +146,9 @@ public class Lofs {
 
             if (normal(node, parents)) continue;
 
-            for (final Node _node : adj) {
+            for (Node _node : adj) {
                 if (parents.contains(_node)) {
-                    final Edge parentEdge = Edges.directedEdge(_node, node);
+                    Edge parentEdge = Edges.directedEdge(_node, node);
 
                     if (!graph.containsEdge(parentEdge)) {
                         graph.addEdge(parentEdge);
@@ -158,13 +158,13 @@ public class Lofs {
         }
     }
 
-    private void ruleR2(final Graph skeleton, final Graph graph) {
-        final Set<Edge> edgeList1 = skeleton.getEdges();
+    private void ruleR2(Graph skeleton, Graph graph) {
+        Set<Edge> edgeList1 = skeleton.getEdges();
 //        Collections.shuffle(edgeList1);
 
-        for (final Edge adj : edgeList1) {
-            final Node x = adj.getNode1();
-            final Node y = adj.getNode2();
+        for (Edge adj : edgeList1) {
+            Node x = adj.getNode1();
+            Node y = adj.getNode2();
 
             if (!isR2Orient2Cycles() && isTwoCycle(graph, x, y)) {
                 continue;
@@ -178,22 +178,22 @@ public class Lofs {
         }
     }
 
-    private boolean isTwoCycle(final Graph graph, final Node x, final Node y) {
-        final List<Edge> edges = graph.getEdges(x, y);
+    private boolean isTwoCycle(Graph graph, Node x, Node y) {
+        List<Edge> edges = graph.getEdges(x, y);
         return edges.size() == 2;
     }
 
-    private boolean isUndirected(final Graph graph, final Node x, final Node y) {
-        final List<Edge> edges = graph.getEdges(x, y);
+    private boolean isUndirected(Graph graph, Node x, Node y) {
+        List<Edge> edges = graph.getEdges(x, y);
         if (edges.size() == 1) {
-            final Edge edge = graph.getEdge(x, y);
+            Edge edge = graph.getEdge(x, y);
             return Edges.isUndirectedEdge(edge);
         }
 
         return false;
     }
 
-    private boolean normal(final Node node, final List<Node> parents) {
+    private boolean normal(Node node, List<Node> parents) {
         if (getAlpha() > .999) {
             return false;
         }
@@ -201,44 +201,44 @@ public class Lofs {
         return pValue(node, parents) > getAlpha();
     }
 
-    private void resolveOneEdgeMax(final Graph graph, Node x, Node y, final boolean strong, final Graph oldGraph) {
+    private void resolveOneEdgeMax(Graph graph, Node x, Node y, boolean strong, Graph oldGraph) {
         if (RandomUtil.getInstance().nextDouble() > 0.5) {
-            final Node temp = x;
+            Node temp = x;
             x = y;
             y = temp;
         }
 
         TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
-        final SortedMap<Double, String> scoreReports = new TreeMap<>();
+        SortedMap<Double, String> scoreReports = new TreeMap<>();
 
-        final List<Node> neighborsx = graph.getAdjacentNodes(x);
+        List<Node> neighborsx = graph.getAdjacentNodes(x);
         neighborsx.remove(y);
 
         double max = Double.NEGATIVE_INFINITY;
         boolean left = false;
         boolean right = false;
 
-        final DepthChoiceGenerator genx = new DepthChoiceGenerator(neighborsx.size(), neighborsx.size());
+        DepthChoiceGenerator genx = new DepthChoiceGenerator(neighborsx.size(), neighborsx.size());
         int[] choicex;
 
         while ((choicex = genx.next()) != null) {
-            final List<Node> condxMinus = GraphUtils.asList(choicex, neighborsx);
+            List<Node> condxMinus = GraphUtils.asList(choicex, neighborsx);
 
-            final List<Node> condxPlus = new ArrayList<>(condxMinus);
+            List<Node> condxPlus = new ArrayList<>(condxMinus);
             condxPlus.add(y);
 
-            final double xPlus = score(x, condxPlus);
-            final double xMinus = score(x, condxMinus);
+            double xPlus = score(x, condxPlus);
+            double xMinus = score(x, condxMinus);
 
-            final List<Node> neighborsy = graph.getAdjacentNodes(y);
+            List<Node> neighborsy = graph.getAdjacentNodes(y);
             neighborsy.remove(x);
 
-            final DepthChoiceGenerator geny = new DepthChoiceGenerator(neighborsy.size(), neighborsy.size());
+            DepthChoiceGenerator geny = new DepthChoiceGenerator(neighborsy.size(), neighborsy.size());
             int[] choicey;
 
             while ((choicey = geny.next()) != null) {
-                final List<Node> condyMinus = GraphUtils.asList(choicey, neighborsy);
+                List<Node> condyMinus = GraphUtils.asList(choicey, neighborsy);
 
 //                List<Node> parentsY = oldGraph.getParents(y);
 //                parentsY.remove(x);
@@ -246,11 +246,11 @@ public class Lofs {
 //                    continue;
 //                }
 
-                final List<Node> condyPlus = new ArrayList<>(condyMinus);
+                List<Node> condyPlus = new ArrayList<>(condyMinus);
                 condyPlus.add(x);
 
-                final double yPlus = score(y, condyPlus);
-                final double yMinus = score(y, condyMinus);
+                double yPlus = score(y, condyPlus);
+                double yMinus = score(y, condyMinus);
 
                 // Checking them all at once is expensive but avoids lexical ordering problems in the algorithm.
                 if (normal(y, condyPlus) || normal(x, condxMinus) || normal(x, condxPlus) || normal(y, condyMinus)) {
@@ -261,10 +261,10 @@ public class Lofs {
 
                 if (strong) {
                     if (yPlus <= xPlus + delta && xMinus <= yMinus + delta) {
-                        final double score = combinedScore(xPlus, yMinus);
+                        double score = combinedScore(xPlus, yMinus);
 
                         if (yPlus <= yMinus + delta && xMinus <= xPlus + delta) {
-                            final StringBuilder builder = new StringBuilder();
+                            StringBuilder builder = new StringBuilder();
 
                             builder.append("\nStrong " + y + "->" + x + " " + score);
                             builder.append("\n   Parents(" + x + ") = " + condxMinus);
@@ -278,7 +278,7 @@ public class Lofs {
                                 right = false;
                             }
                         } else {
-                            final StringBuilder builder = new StringBuilder();
+                            StringBuilder builder = new StringBuilder();
 
                             builder.append("\nNo directed edge " + x + "--" + y + " " + score);
                             builder.append("\n   Parents(" + x + ") = " + condxMinus);
@@ -287,10 +287,10 @@ public class Lofs {
                             scoreReports.put(-score, builder.toString());
                         }
                     } else if (xPlus <= yPlus + delta && yMinus <= xMinus + delta) {
-                        final double score = combinedScore(yPlus, xMinus);
+                        double score = combinedScore(yPlus, xMinus);
 
                         if (yMinus <= yPlus + delta && xPlus <= xMinus + delta) {
-                            final StringBuilder builder = new StringBuilder();
+                            StringBuilder builder = new StringBuilder();
 
                             builder.append("\nStrong " + x + "->" + y + " " + score);
                             builder.append("\n   Parents(" + x + ") = " + condxMinus);
@@ -304,7 +304,7 @@ public class Lofs {
                                 right = true;
                             }
                         } else {
-                            final StringBuilder builder = new StringBuilder();
+                            StringBuilder builder = new StringBuilder();
 
                             builder.append("\nNo directed edge " + x + "--" + y + " " + score);
                             builder.append("\n   Parents(" + x + ") = " + condxMinus);
@@ -313,9 +313,9 @@ public class Lofs {
                             scoreReports.put(-score, builder.toString());
                         }
                     } else if (yPlus <= xPlus + delta && yMinus <= xMinus + delta) {
-                        final double score = combinedScore(yPlus, xMinus);
+                        double score = combinedScore(yPlus, xMinus);
 
-                        final StringBuilder builder = new StringBuilder();
+                        StringBuilder builder = new StringBuilder();
 
                         builder.append("\nNo directed edge " + x + "--" + y + " " + score);
                         builder.append("\n   Parents(" + x + ") = " + condxMinus);
@@ -323,9 +323,9 @@ public class Lofs {
 
                         scoreReports.put(-score, builder.toString());
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
-                        final double score = combinedScore(yPlus, xMinus);
+                        double score = combinedScore(yPlus, xMinus);
 
-                        final StringBuilder builder = new StringBuilder();
+                        StringBuilder builder = new StringBuilder();
 
                         builder.append("\nNo directed edge " + x + "--" + y + " " + score);
                         builder.append("\n   Parents(" + x + ") = " + condxMinus);
@@ -335,9 +335,9 @@ public class Lofs {
                     }
                 } else {
                     if (yPlus <= xPlus + delta && xMinus <= yMinus + delta) {
-                        final double score = combinedScore(xPlus, yMinus);
+                        double score = combinedScore(xPlus, yMinus);
 
-                        final StringBuilder builder = new StringBuilder();
+                        StringBuilder builder = new StringBuilder();
 
                         builder.append("\nWeak " + y + "->" + x + " " + score);
                         builder.append("\n   Parents(" + x + ") = " + condxMinus);
@@ -351,9 +351,9 @@ public class Lofs {
                             right = false;
                         }
                     } else if (xPlus <= yPlus + delta && yMinus <= xMinus + delta) {
-                        final double score = combinedScore(yPlus, xMinus);
+                        double score = combinedScore(yPlus, xMinus);
 
-                        final StringBuilder builder = new StringBuilder();
+                        StringBuilder builder = new StringBuilder();
 
                         builder.append("\nWeak " + x + "->" + y + " " + score);
                         builder.append("\n   Parents(" + x + ") = " + condxMinus);
@@ -367,9 +367,9 @@ public class Lofs {
                             right = true;
                         }
                     } else if (yPlus <= xPlus + delta && yMinus <= xMinus + delta) {
-                        final double score = combinedScore(yPlus, xMinus);
+                        double score = combinedScore(yPlus, xMinus);
 
-                        final StringBuilder builder = new StringBuilder();
+                        StringBuilder builder = new StringBuilder();
 
                         builder.append("\nNo directed edge " + x + "--" + y + " " + score);
                         builder.append("\n   Parents(" + x + ") = " + condxMinus);
@@ -377,9 +377,9 @@ public class Lofs {
 
                         scoreReports.put(-score, builder.toString());
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
-                        final double score = combinedScore(yPlus, xMinus);
+                        double score = combinedScore(yPlus, xMinus);
 
-                        final StringBuilder builder = new StringBuilder();
+                        StringBuilder builder = new StringBuilder();
 
                         builder.append("\nNo directed edge " + x + "--" + y + " " + score);
                         builder.append("\n   Parents(" + x + ") = " + condxMinus);
@@ -391,7 +391,7 @@ public class Lofs {
             }
         }
 
-        for (final double score : scoreReports.keySet()) {
+        for (double score : scoreReports.keySet()) {
             TetradLogger.getInstance().log("info", scoreReports.get(score));
         }
 
@@ -410,11 +410,11 @@ public class Lofs {
         }
     }
 
-    private double combinedScore(final double score1, final double score2) {
+    private double combinedScore(double score1, double score2) {
         return score1 + score2;
     }
 
-    private double score(final Node y, final List<Node> parents) {
+    private double score(Node y, List<Node> parents) {
         if (this.score == Score.andersonDarling) {
             return andersonDarlingPASquareStar(y, parents);
         } else if (this.score == Score.kurtosis) {
@@ -432,25 +432,25 @@ public class Lofs {
 
     //=============================PRIVATE METHODS=========================//
 
-    private double localScoreA(final Node node, final List<Node> parents) {
+    private double localScoreA(Node node, List<Node> parents) {
         double score = 0.0;
 
-        final List<Double> _residuals = new ArrayList<>();
+        List<Double> _residuals = new ArrayList<>();
 
-        final Node _target = node;
-        final List<Node> _regressors = parents;
-        final Node target = getVariable(this.variables, _target.getName());
-        final List<Node> regressors = new ArrayList<>();
+        Node _target = node;
+        List<Node> _regressors = parents;
+        Node target = getVariable(this.variables, _target.getName());
+        List<Node> regressors = new ArrayList<>();
 
-        for (final Node _regressor : _regressors) {
-            final Node variable = getVariable(this.variables, _regressor.getName());
+        for (Node _regressor : _regressors) {
+            Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
 
         DATASET:
         for (int m = 0; m < this.dataSets.size(); m++) {
-            final RegressionResult result = this.regressions.get(m).regress(target, regressors);
-            final Vector residualsSingleDataset = result.getResiduals();
+            RegressionResult result = this.regressions.get(m).regress(target, regressors);
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -458,10 +458,10 @@ public class Lofs {
                 }
             }
 
-            final DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
+            DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
-            final double mean = Descriptive.mean(_residualsSingleDataset);
-            final double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
+            double mean = Descriptive.mean(_residualsSingleDataset);
+            double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
                     Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
             for (int i2 = 0; i2 < _residualsSingleDataset.size(); i2++) {
@@ -473,46 +473,46 @@ public class Lofs {
             }
         }
 
-        final double[] _f = new double[_residuals.size()];
+        double[] _f = new double[_residuals.size()];
 
 
         for (int k = 0; k < _residuals.size(); k++) {
             _f[k] = _residuals.get(k);
         }
 
-        final DoubleArrayList f = new DoubleArrayList(_f);
+        DoubleArrayList f = new DoubleArrayList(_f);
 
         for (int k = 0; k < _residuals.size(); k++) {
             f.set(k, Math.abs(f.get(k)));
         }
 
-        final double _mean = Descriptive.mean(f);
-        final double diff = _mean - Math.sqrt(2.0 / Math.PI);
+        double _mean = Descriptive.mean(f);
+        double diff = _mean - Math.sqrt(2.0 / Math.PI);
         score += diff * diff;
 
         return score;
     }
 
-    private double localScoreB(final Node node, final List<Node> parents) {
+    private double localScoreB(Node node, List<Node> parents) {
 
         double score = 0.0;
         double maxScore = Double.NEGATIVE_INFINITY;
 
-        final Node _target = node;
-        final List<Node> _regressors = parents;
-        final Node target = getVariable(this.variables, _target.getName());
-        final List<Node> regressors = new ArrayList<>();
+        Node _target = node;
+        List<Node> _regressors = parents;
+        Node target = getVariable(this.variables, _target.getName());
+        List<Node> regressors = new ArrayList<>();
 
-        for (final Node _regressor : _regressors) {
-            final Node variable = getVariable(this.variables, _regressor.getName());
+        for (Node _regressor : _regressors) {
+            Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
 
         DATASET:
         for (int m = 0; m < this.dataSets.size(); m++) {
-            final RegressionResult result = this.regressions.get(m).regress(target, regressors);
-            final Vector residualsSingleDataset = result.getResiduals();
-            final DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
+            RegressionResult result = this.regressions.get(m).regress(target, regressors);
+            Vector residualsSingleDataset = result.getResiduals();
+            DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -520,28 +520,28 @@ public class Lofs {
                 }
             }
 
-            final double mean = Descriptive.mean(_residualsSingleDataset);
-            final double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
+            double mean = Descriptive.mean(_residualsSingleDataset);
+            double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
                     Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
             for (int i2 = 0; i2 < _residualsSingleDataset.size(); i2++) {
                 _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2) - mean) / std);
             }
 
-            final double[] _f = new double[_residualsSingleDataset.size()];
+            double[] _f = new double[_residualsSingleDataset.size()];
 
             for (int k = 0; k < _residualsSingleDataset.size(); k++) {
                 _f[k] = _residualsSingleDataset.get(k);
             }
 
-            final DoubleArrayList f = new DoubleArrayList(_f);
+            DoubleArrayList f = new DoubleArrayList(_f);
 
             for (int k = 0; k < f.size(); k++) {
                 f.set(k, Math.abs(f.get(k)));
             }
 
-            final double _mean = Descriptive.mean(f);
-            final double diff = _mean - Math.sqrt(2.0 / Math.PI);
+            double _mean = Descriptive.mean(f);
+            double diff = _mean - Math.sqrt(2.0 / Math.PI);
             score += diff * diff;
 
             if (score > maxScore) {
@@ -550,28 +550,28 @@ public class Lofs {
         }
 
 
-        final double avg = score / this.dataSets.size();
+        double avg = score / this.dataSets.size();
 
         return avg;
     }
 
-    private double andersonDarlingPASquareStar(final Node node, final List<Node> parents) {
-        final List<Double> _residuals = new ArrayList<>();
+    private double andersonDarlingPASquareStar(Node node, List<Node> parents) {
+        List<Double> _residuals = new ArrayList<>();
 
-        final Node _target = node;
-        final List<Node> _regressors = parents;
-        final Node target = getVariable(this.variables, _target.getName());
-        final List<Node> regressors = new ArrayList<>();
+        Node _target = node;
+        List<Node> _regressors = parents;
+        Node target = getVariable(this.variables, _target.getName());
+        List<Node> regressors = new ArrayList<>();
 
-        for (final Node _regressor : _regressors) {
-            final Node variable = getVariable(this.variables, _regressor.getName());
+        for (Node _regressor : _regressors) {
+            Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
 
         DATASET:
         for (int m = 0; m < this.dataSets.size(); m++) {
-            final RegressionResult result = this.regressions.get(m).regress(target, regressors);
-            final Vector residualsSingleDataset = result.getResiduals();
+            RegressionResult result = this.regressions.get(m).regress(target, regressors);
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -579,10 +579,10 @@ public class Lofs {
                 }
             }
 
-            final DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
+            DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
-            final double mean = Descriptive.mean(_residualsSingleDataset);
-            final double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
+            double mean = Descriptive.mean(_residualsSingleDataset);
+            double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
                     Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
             // By centering the individual residual columns, all moments of the mixture become weighted averages of the moments
@@ -600,7 +600,7 @@ public class Lofs {
             }
         }
 
-        final double[] _f = new double[_residuals.size()];
+        double[] _f = new double[_residuals.size()];
 
         for (int k = 0; k < _residuals.size(); k++) {
             _f[k] = _residuals.get(k);
@@ -609,16 +609,16 @@ public class Lofs {
         return new AndersonDarlingTest(_f).getASquaredStar();
     }
 
-    private double andersonDarlingPASquareStarB(final Node node, final List<Node> parents) {
-        final List<Double> _residuals = new ArrayList<>();
+    private double andersonDarlingPASquareStarB(Node node, List<Node> parents) {
+        List<Double> _residuals = new ArrayList<>();
 
-        final Node _target = node;
-        final List<Node> _regressors = parents;
-        final Node target = getVariable(this.variables, _target.getName());
-        final List<Node> regressors = new ArrayList<>();
+        Node _target = node;
+        List<Node> _regressors = parents;
+        Node target = getVariable(this.variables, _target.getName());
+        List<Node> regressors = new ArrayList<>();
 
-        for (final Node _regressor : _regressors) {
-            final Node variable = getVariable(this.variables, _regressor.getName());
+        for (Node _regressor : _regressors) {
+            Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
 
@@ -626,8 +626,8 @@ public class Lofs {
 
         DATASET:
         for (int m = 0; m < this.dataSets.size(); m++) {
-            final RegressionResult result = this.regressions.get(m).regress(target, regressors);
-            final Vector residualsSingleDataset = result.getResiduals();
+            RegressionResult result = this.regressions.get(m).regress(target, regressors);
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -635,10 +635,10 @@ public class Lofs {
                 }
             }
 
-            final DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
+            DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
-            final double mean = Descriptive.mean(_residualsSingleDataset);
-            final double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
+            double mean = Descriptive.mean(_residualsSingleDataset);
+            double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
                     Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
             // By centering the individual residual columns, all moments of the mixture become weighted averages of the moments
@@ -651,7 +651,7 @@ public class Lofs {
                 }
             }
 
-            final double[] _f = new double[_residuals.size()];
+            double[] _f = new double[_residuals.size()];
 
             for (int k = 0; k < _residuals.size(); k++) {
                 _f[k] = _residuals.get(k);
@@ -663,23 +663,23 @@ public class Lofs {
         return sum / this.dataSets.size();
     }
 
-    private double pValue(final Node node, final List<Node> parents) {
-        final List<Double> _residuals = new ArrayList<>();
+    private double pValue(Node node, List<Node> parents) {
+        List<Double> _residuals = new ArrayList<>();
 
-        final Node _target = node;
-        final List<Node> _regressors = parents;
-        final Node target = getVariable(this.variables, _target.getName());
-        final List<Node> regressors = new ArrayList<>();
+        Node _target = node;
+        List<Node> _regressors = parents;
+        Node target = getVariable(this.variables, _target.getName());
+        List<Node> regressors = new ArrayList<>();
 
-        for (final Node _regressor : _regressors) {
-            final Node variable = getVariable(this.variables, _regressor.getName());
+        for (Node _regressor : _regressors) {
+            Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
 
         DATASET:
         for (int m = 0; m < this.dataSets.size(); m++) {
-            final RegressionResult result = this.regressions.get(m).regress(target, regressors);
-            final Vector residualsSingleDataset = result.getResiduals();
+            RegressionResult result = this.regressions.get(m).regress(target, regressors);
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -687,10 +687,10 @@ public class Lofs {
                 }
             }
 
-            final DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
+            DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
-            final double mean = Descriptive.mean(_residualsSingleDataset);
-            final double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
+            double mean = Descriptive.mean(_residualsSingleDataset);
+            double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
                     Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
             for (int i2 = 0; i2 < _residualsSingleDataset.size(); i2++) {
@@ -706,7 +706,7 @@ public class Lofs {
             }
         }
 
-        final double[] _f = new double[_residuals.size()];
+        double[] _f = new double[_residuals.size()];
 
         for (int k = 0; k < _residuals.size(); k++) {
             _f[k] = _residuals.get(k);
@@ -715,23 +715,23 @@ public class Lofs {
         return new AndersonDarlingTest(_f).getP();
     }
 
-    private double[] residual(final Node node, final List<Node> parents) {
-        final List<Double> _residuals = new ArrayList<>();
+    private double[] residual(Node node, List<Node> parents) {
+        List<Double> _residuals = new ArrayList<>();
 
-        final Node _target = node;
-        final List<Node> _regressors = parents;
-        final Node target = getVariable(this.variables, _target.getName());
-        final List<Node> regressors = new ArrayList<>();
+        Node _target = node;
+        List<Node> _regressors = parents;
+        Node target = getVariable(this.variables, _target.getName());
+        List<Node> regressors = new ArrayList<>();
 
-        for (final Node _regressor : _regressors) {
-            final Node variable = getVariable(this.variables, _regressor.getName());
+        for (Node _regressor : _regressors) {
+            Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
 
         DATASET:
         for (int m = 0; m < this.dataSets.size(); m++) {
-            final RegressionResult result = this.regressions.get(m).regress(target, regressors);
-            final Vector residualsSingleDataset = result.getResiduals();
+            RegressionResult result = this.regressions.get(m).regress(target, regressors);
+            Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (Double.isNaN(residualsSingleDataset.get(h))) {
@@ -739,9 +739,9 @@ public class Lofs {
                 }
             }
 
-            final DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
+            DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
-            final double mean = Descriptive.mean(_residualsSingleDataset);
+            double mean = Descriptive.mean(_residualsSingleDataset);
 //            double std = Descriptive.sd(Descriptive.variance(_residualsSingleDataset.size(),
 //                    Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
@@ -756,7 +756,7 @@ public class Lofs {
             }
         }
 
-        final double[] _f = new double[_residuals.size()];
+        double[] _f = new double[_residuals.size()];
 
         for (int k = 0; k < _residuals.size(); k++) {
             _f[k] = _residuals.get(k);
@@ -769,7 +769,7 @@ public class Lofs {
         return this.alpha;
     }
 
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Alpha is in range [0, 1]");
         }
@@ -781,8 +781,8 @@ public class Lofs {
         return this.CPDAG;
     }
 
-    private Node getVariable(final List<Node> variables, final String name) {
-        for (final Node node : variables) {
+    private Node getVariable(List<Node> variables, String name) {
+        for (Node node : variables) {
             if (name.equals(node.getName())) {
                 return node;
             }
@@ -795,7 +795,7 @@ public class Lofs {
         return this.r1Done;
     }
 
-    public void setR1Done(final boolean r1Done) {
+    public void setR1Done(boolean r1Done) {
         this.r1Done = r1Done;
     }
 
@@ -803,7 +803,7 @@ public class Lofs {
         return this.r2Done;
     }
 
-    public void setR2Done(final boolean r2Done) {
+    public void setR2Done(boolean r2Done) {
         this.r2Done = r2Done;
     }
 
@@ -811,7 +811,7 @@ public class Lofs {
         return this.meekDone;
     }
 
-    public void setMeekDone(final boolean meekDone) {
+    public void setMeekDone(boolean meekDone) {
         this.meekDone = meekDone;
     }
 
@@ -819,11 +819,11 @@ public class Lofs {
         return this.strongR2;
     }
 
-    public void setStrongR2(final boolean strongR2) {
+    public void setStrongR2(boolean strongR2) {
         this.strongR2 = strongR2;
     }
 
-    public void setR2Orient2Cycles(final boolean r2Orient2Cycles) {
+    public void setR2Orient2Cycles(boolean r2Orient2Cycles) {
         this.r2Orient2Cycles = r2Orient2Cycles;
     }
 
@@ -835,7 +835,7 @@ public class Lofs {
         return this.score;
     }
 
-    public void setScore(final Score score) {
+    public void setScore(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -847,7 +847,7 @@ public class Lofs {
         return this.meanCenterResiduals;
     }
 
-    public void setMeanCenterResiduals(final boolean meanCenterResiduals) {
+    public void setMeanCenterResiduals(boolean meanCenterResiduals) {
         this.meanCenterResiduals = meanCenterResiduals;
     }
 

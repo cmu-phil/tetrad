@@ -28,7 +28,7 @@ public class MNLRBicScore implements ScoreWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
         return new MNLRScore(DataUtils.getMixedDataSet(dataSet),
                 1,
                 parameters.getInt("fDegree", 1));
@@ -46,13 +46,13 @@ public class MNLRBicScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("fDegree");
         return parameters;
     }
 
     @Override
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         return null;
     }
 }

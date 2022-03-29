@@ -38,7 +38,7 @@ public class DelimiterUtils {
      * @return corresponding to enum delimiter, whitespace enum will be return
      * if char does not match any listed above. if
      */
-    public static Delimiter toDelimiter(final char delimiter) {
+    public static Delimiter toDelimiter(char delimiter) {
         switch (delimiter) {
             case '\t':
                 return Delimiter.TAB;

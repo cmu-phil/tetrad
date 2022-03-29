@@ -65,7 +65,7 @@ public class MultiDimIntTable {
      * @param dims An int[] array of length > 0, each element of which specifies
      *             the number of values of that dimension (> 0).
      */
-    public MultiDimIntTable(final int[] dims) {
+    public MultiDimIntTable(int[] dims) {
         reset(dims);
     }
 
@@ -76,7 +76,7 @@ public class MultiDimIntTable {
      * @return the row in the table for the given node and combination of parent
      * values.
      */
-    public synchronized int getCellIndex(final int[] coords) {
+    public synchronized int getCellIndex(int[] coords) {
         int cellIndex = 0;
 
         for (int i = 0; i < this.dims.length; i++) {
@@ -94,7 +94,7 @@ public class MultiDimIntTable {
      */
     @SuppressWarnings("SameParameterValue")
     public synchronized int[] getCoordinates(int cellIndex) {
-        final int[] coords = new int[this.dims.length];
+        int[] coords = new int[this.dims.length];
 
         for (int i = this.dims.length - 1; i >= 0; i--) {
             coords[i] = cellIndex % this.dims[i];
@@ -113,8 +113,8 @@ public class MultiDimIntTable {
      *               should be incremented (an integer).
      * @return the new value at that table cell.
      */
-    public synchronized long increment(final int[] coords, final int value) {
-        final int cellIndex = getCellIndex(coords);
+    public synchronized long increment(int[] coords, int value) {
+        int cellIndex = getCellIndex(coords);
 
         if (!this.cells.containsKey(cellIndex)) {
             this.cells.put(cellIndex, 0L);
@@ -134,8 +134,8 @@ public class MultiDimIntTable {
      * @return the new value at that table cell.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public synchronized long setValue(final int[] coords, final int value) {
-        final int cellIndex = getCellIndex(coords);
+    public synchronized long setValue(int[] coords, int value) {
+        int cellIndex = getCellIndex(coords);
         this.cells.put(cellIndex, (long) value);
         return this.cells.get(cellIndex);
     }
@@ -144,8 +144,8 @@ public class MultiDimIntTable {
      * @param coords The coordinates of the table cell to update.
      * @return the new value at that table cell.
      */
-    public synchronized long getValue(final int[] coords) {
-        final int cellIndex = getCellIndex(coords);
+    public synchronized long getValue(int[] coords) {
+        int cellIndex = getCellIndex(coords);
 
         if (this.cells == null || !this.cells.containsKey(cellIndex)) {
             return 0L;
@@ -175,7 +175,7 @@ public class MultiDimIntTable {
      * @param var an <code>int</code> value
      * @return an <code>int</code> value
      */
-    public synchronized int getDimension(final int var) {
+    public synchronized int getDimension(int var) {
         return this.dims[var];
     }
 
@@ -192,7 +192,7 @@ public class MultiDimIntTable {
      *
      * @param dims an <code>int[]</code> value
      */
-    public final synchronized void reset(final int[] dims) {
+    public final synchronized void reset(int[] dims) {
         if (dims == null) {
             this.cells = null;
         } else {
@@ -211,7 +211,7 @@ public class MultiDimIntTable {
             // Calculate length of cells[] array.
             this.numCells = 1;
 
-            for (final int dim : dims) {
+            for (int dim : dims) {
                 this.numCells *= dim;
             }
 
@@ -225,7 +225,7 @@ public class MultiDimIntTable {
         }
     }
 
-    public synchronized int getDims(final int varIndex) {
+    public synchronized int getDims(int varIndex) {
         return this.dims[varIndex];
     }
 }

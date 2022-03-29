@@ -70,8 +70,8 @@ public final class TestEdgeListGraph {
         this.graph.addDirectedEdge(this.x2, this.x3);
         this.graph.addDirectedEdge(this.x3, this.x4);
 
-        final List<Node> children = this.graph.getChildren(this.x1);
-        final List<Node> parents = this.graph.getParents(this.x4);
+        List<Node> children = this.graph.getChildren(this.x1);
+        List<Node> parents = this.graph.getParents(this.x4);
 
         assertEquals(children, Collections.singletonList(this.x2));
         assertEquals(parents, Collections.singletonList(this.x3));
@@ -83,10 +83,10 @@ public final class TestEdgeListGraph {
         assertTrue(!this.graph.existsDirectedCycle());
 
         // Copy the graph.
-        final Graph graph2 = new EdgeListGraph(this.graph);
+        Graph graph2 = new EdgeListGraph(this.graph);
         assertEquals(this.graph, graph2);
 
-        final Graph graph3 = new EdgeListGraph(this.graph);
+        Graph graph3 = new EdgeListGraph(this.graph);
         assertEquals(this.graph, graph3);
     }
 
@@ -108,7 +108,7 @@ public final class TestEdgeListGraph {
 
         try {
             this.graph.addDirectedEdge(this.x1, this.x3);
-        } catch (final IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             fail("This should have been ignored.");
         }
 
@@ -137,11 +137,11 @@ public final class TestEdgeListGraph {
 
         this.graph.addUndirectedEdge(this.x1, this.x2);
 
-        final List<Edge> edges = new ArrayList<>(this.graph.getEdges());
+        List<Edge> edges = new ArrayList<>(this.graph.getEdges());
 
-        final Edge e1 = edges.get(0);
+        Edge e1 = edges.get(0);
 
-        final Edge e2 = new Edge(this.x2, this.x1, Endpoint.TAIL, Endpoint.TAIL);
+        Edge e2 = new Edge(this.x2, this.x1, Endpoint.TAIL, Endpoint.TAIL);
 
         assertTrue(e1.equals(e2));
 
@@ -150,19 +150,19 @@ public final class TestEdgeListGraph {
 
     @Test
     public void test5() {
-        final Graph graph1 = GraphUtils.emptyGraph(3);
+        Graph graph1 = GraphUtils.emptyGraph(3);
 
-        final List<Node> nodes = graph1.getNodes();
+        List<Node> nodes = graph1.getNodes();
 
         graph1.addDirectedEdge(nodes.get(0), nodes.get(1));
         graph1.addDirectedEdge(nodes.get(1), nodes.get(2));
         graph1.addDirectedEdge(nodes.get(0), nodes.get(2));
 
-        final Graph graph2 = new EdgeListGraph(graph1);
+        Graph graph2 = new EdgeListGraph(graph1);
 
         graph2.removeEdge(nodes.get(0), nodes.get(1));
 
-        final int shd = SearchGraphUtils.structuralHammingDistance(graph1, graph2);
+        int shd = SearchGraphUtils.structuralHammingDistance(graph1, graph2);
 
         assertEquals(3, shd);
     }

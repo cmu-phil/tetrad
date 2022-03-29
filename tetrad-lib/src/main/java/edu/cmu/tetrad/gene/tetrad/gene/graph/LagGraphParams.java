@@ -17,7 +17,7 @@ public class LagGraphParams {
     private double percentUnregulated = 10;
     private final Parameters parameters;
 
-    public LagGraphParams(final Parameters parameters) {
+    public LagGraphParams(Parameters parameters) {
         this.parameters = parameters;
     }
 
@@ -29,7 +29,7 @@ public class LagGraphParams {
         return this.parameters.getInt("lagGraphVarsPerInd", this.varsPerInd);
     }
 
-    public void setVarsPerInd(final int varsPerInd) {
+    public void setVarsPerInd(int varsPerInd) {
         if (varsPerInd > 0) {
             this.parameters.set("lagGraphVarsPerInd", varsPerInd);
             this.varsPerInd = varsPerInd;
@@ -41,7 +41,7 @@ public class LagGraphParams {
         return this.parameters.getInt("lagGraphMlag", this.mlag);
     }
 
-    public void setMlag(final int mlag) {
+    public void setMlag(int mlag) {
         if (mlag > 0) {
             this.parameters.set("lagGraphMLag", mlag);
             this.mlag = mlag;
@@ -53,7 +53,7 @@ public class LagGraphParams {
         return this.parameters.getInt("lagGraphIndegree", this.indegree);
     }
 
-    public void setIndegree(final int indegree) {
+    public void setIndegree(int indegree) {
         if (indegree > 1) {
             this.indegree = indegree;
             this.parameters.set("lagGraphIndegree", indegree);
@@ -65,7 +65,7 @@ public class LagGraphParams {
         return this.indegreeType;
     }
 
-    public void setIndegreeType(final int indegreeType) {
+    public void setIndegreeType(int indegreeType) {
         switch (indegreeType) {
             case 0:
             case 1:
@@ -81,7 +81,7 @@ public class LagGraphParams {
         return this.percentUnregulated;
     }
 
-    public void setPercentUnregulated(final double percentUnregulated) {
+    public void setPercentUnregulated(double percentUnregulated) {
         if (percentUnregulated >= 0.0D && percentUnregulated <= 100.0D) {
             this.percentUnregulated = percentUnregulated;
         } else {
@@ -89,7 +89,7 @@ public class LagGraphParams {
         }
     }
 
-    private void readObject(final ObjectInputStream s) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
         switch (this.indegreeType) {
             case 0:

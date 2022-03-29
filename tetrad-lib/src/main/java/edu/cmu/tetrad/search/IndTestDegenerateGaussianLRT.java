@@ -68,7 +68,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         private final double lik;
         private final double dof;
 
-        private Ret(final double lik, final double dof) {
+        private Ret(double lik, double dof) {
             this.lik = lik;
             this.dof = dof;
         }
@@ -94,7 +94,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public IndTestDegenerateGaussianLRT(final DataSet dataSet) {
+    public IndTestDegenerateGaussianLRT(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -102,13 +102,13 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         // The number of instances.
-        final int n = dataSet.getNumRows();
+        int n = dataSet.getNumRows();
         this.embedding = new HashMap<>();
 
-        final List<Node> A = new ArrayList<>();
-        final List<double[]> B = new ArrayList<>();
+        List<Node> A = new ArrayList<>();
+        List<double[]> B = new ArrayList<>();
 
-        final Map<Node, Integer> nodesHash = new HashMap<>();
+        Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int j = 0; j < this.variables.size(); j++) {
             nodesHash.put(this.variables.get(j), j);
@@ -122,19 +122,19 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         int i_ = 0;
         while (i_ < this.variables.size()) {
 
-            final Node v = this.variables.get(i_);
+            Node v = this.variables.get(i_);
 
             if (v instanceof DiscreteVariable) {
 
-                final Map<List<Integer>, Integer> keys = new HashMap<>();
-                final Map<Integer, List<Integer>> keysReverse = new HashMap<>();
+                Map<List<Integer>, Integer> keys = new HashMap<>();
+                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
                 for (int j = 0; j < n; j++) {
-                    final List<Integer> key = new ArrayList<>();
+                    List<Integer> key = new ArrayList<>();
                     key.add(this.dataSet.getInt(j, i_));
                     if (!keys.containsKey(key)) {
                         keys.put(key, i);
                         keysReverse.put(i, key);
-                        final Node v_ = new ContinuousVariable("V__" + ++index);
+                        Node v_ = new ContinuousVariable("V__" + ++index);
                         A.add(v_);
                         B.add(new double[n]);
                         i++;
@@ -156,13 +156,13 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
             } else {
 
                 A.add(v);
-                final double[] b = new double[n];
+                double[] b = new double[n];
                 for (int j = 0; j < n; j++) {
                     b[j] = this.dataSet.getDouble(j, i_);
                 }
 
                 B.add(b);
-                final List<Integer> index2 = new ArrayList<>();
+                List<Integer> index2 = new ArrayList<>();
                 index2.add(i);
                 this.embedding.put(i_, index2);
                 i++;
@@ -171,7 +171,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
             }
         }
 
-        final double[][] B_ = new double[n][B.size()];
+        double[][] B_ = new double[n][B.size()];
         for (int j = 0; j < B.size(); j++) {
             for (int k = 0; k < n; k++) {
                 B_[k][j] = B.get(j)[k];
@@ -179,7 +179,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         }
 
         // The continuous variables of the post-embedding dataset.
-        final RealMatrix D = new BlockRealMatrix(B_);
+        RealMatrix D = new BlockRealMatrix(B_);
         this.ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
         this._ddata = this.ddata.getDoubleData().toArray();
     }
@@ -187,17 +187,17 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     /**
      * Calculates the sample log likelihood
      */
-    private Ret getlldof(final List<Integer> rows, final int i, final int... parents) {
-        final int N = rows.size();
+    private Ret getlldof(List<Integer> rows, int i, int... parents) {
+        int N = rows.size();
 
-        final List<Integer> B = new ArrayList<>();
-        final List<Integer> A = new ArrayList<>(this.embedding.get(i));
-        for (final int i_ : parents) {
+        List<Integer> B = new ArrayList<>();
+        List<Integer> A = new ArrayList<>(this.embedding.get(i));
+        for (int i_ : parents) {
             B.addAll(this.embedding.get(i_));
         }
 
-        final int[] A_ = new int[A.size() + B.size()];
-        final int[] B_ = new int[B.size()];
+        int[] A_ = new int[A.size() + B.size()];
+        int[] B_ = new int[B.size()];
         for (int i_ = 0; i_ < A.size(); i_++) {
             A_[i_] = A.get(i_);
         }
@@ -206,11 +206,11 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
             B_[i_] = B.get(i_);
         }
 
-        final double dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2.0;
-        final double ldetA = log(getCov(rows, A_).det());
-        final double ldetB = log(getCov(rows, B_).det());
+        double dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2.0;
+        double ldetA = log(getCov(rows, A_).det());
+        double ldetB = log(getCov(rows, B_).det());
 
-        final double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLRT.L2PE * (B_.length - A_.length);
+        double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLRT.L2PE * (B_.length - A_.length);
 
         return new Ret(lik, dof);
     }
@@ -218,7 +218,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     /**
      * @return an Independence test for a subset of the searchVariables.
      */
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
@@ -227,36 +227,36 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
 
-        final List<Node> allNodes = new ArrayList<>();
+        List<Node> allNodes = new ArrayList<>();
         allNodes.add(x);
         allNodes.add(y);
         allNodes.addAll(z);
 
-        final List<Integer> rows = getRows(allNodes, this.nodesHash);
+        List<Integer> rows = getRows(allNodes, this.nodesHash);
 
         if (rows.isEmpty()) return true;
 
-        final int _x = this.nodesHash.get(x);
-        final int _y = this.nodesHash.get(y);
+        int _x = this.nodesHash.get(x);
+        int _y = this.nodesHash.get(y);
 
-        final int[] list0 = new int[z.size() + 1];
-        final int[] list2 = new int[z.size()];
+        int[] list0 = new int[z.size() + 1];
+        int[] list2 = new int[z.size()];
 
         list0[0] = _x;
 
         for (int i = 0; i < z.size(); i++) {
-            final int _z = this.nodesHash.get(z.get(i));
+            int _z = this.nodesHash.get(z.get(i));
             list0[i + 1] = _z;
             list2[i] = _z;
         }
 
-        final Ret ret1 = getlldof(rows, _y, list0);
-        final Ret ret2 = getlldof(rows, _y, list2);
+        Ret ret1 = getlldof(rows, _y, list0);
+        Ret ret2 = getlldof(rows, _y, list2);
 
-        final double lik0 = ret1.getLik() - ret2.getLik();
-        final double dof0 = ret1.getDof() - ret2.getDof();
+        double lik0 = ret1.getLik() - ret2.getLik();
+        double dof0 = ret1.getDof() - ret2.getDof();
 
         if (dof0 <= 0) return true;
         if (this.alpha == 0) return true;
@@ -272,8 +272,8 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         return this.pValue > this.alpha;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
     }
 
@@ -282,12 +282,12 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isDependent(Node x, Node y, List<Node> z) {
         return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -311,17 +311,17 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
-        for (final Node variable1 : variables) {
+        List<Node> variables = getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
     }
 
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+            Node variable = getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -332,7 +332,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     /**
      * @return true if y is determined the variable in z.
      */
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
 
@@ -347,7 +347,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     /**
      * Sets the significance level.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
@@ -384,7 +384,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        final NumberFormat nf = new DecimalFormat("0.0000");
+        NumberFormat nf = new DecimalFormat("0.0000");
         return "Degenerate Gaussian, alpha = " + nf.format(getAlpha());
     }
 
@@ -394,19 +394,19 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     }
 
     @Override
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    private List<Integer> getRows(final List<Node> allVars, final Map<Node, Integer> nodesHash) {
-        final List<Integer> rows = new ArrayList<>();
+    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+        List<Integer> rows = new ArrayList<>();
 
         K:
         for (int k = 0; k < this.dataSet.getNumRows(); k++) {
-            for (final Node node : allVars) {
-                final List<Integer> A = new ArrayList<>(this.embedding.get(nodesHash.get(node)));
+            for (Node node : allVars) {
+                List<Integer> A = new ArrayList<>(this.embedding.get(nodesHash.get(node)));
 
-                for (final int i : A) {
+                for (int i : A) {
                     if (Double.isNaN(this.ddata.getDouble(k, i))) continue K;
                 }
             }
@@ -418,15 +418,15 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     }
 
     // Subsample of the continuous mixedVariables conditioning on the given cols.
-    private Matrix getCov(final List<Integer> rows, final int[] cols) {
-        final Matrix cov = new Matrix(cols.length, cols.length);
+    private Matrix getCov(List<Integer> rows, int[] cols) {
+        Matrix cov = new Matrix(cols.length, cols.length);
 
         for (int i = 0; i < cols.length; i++) {
             for (int j = 0; j < cols.length; j++) {
                 double mui = 0.0;
                 double muj = 0.0;
 
-                for (final int k : rows) {
+                for (int k : rows) {
                     mui += this._ddata[k][cols[i]];
                     muj += this._ddata[k][cols[j]];
                 }
@@ -436,12 +436,12 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
 
                 double _cov = 0.0;
 
-                for (final int k : rows) {
+                for (int k : rows) {
                     _cov += (this._ddata[k][cols[i]] - mui) * (this._ddata[k][cols[j]] - muj);
 //                    _cov += (ddata.getDouble(k, cols[i]) - mui) * (ddata.getDouble(k, cols[j]) - muj);
                 }
 
-                final double mean = _cov / (rows.size());
+                double mean = _cov / (rows.size());
                 cov.set(i, j, mean);
             }
         }

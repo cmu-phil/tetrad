@@ -20,8 +20,8 @@ public class PositiveCorr implements IndependenceWrapper {
     private double alpha = 0.001;
 
     @Override
-    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
-        final double alpha = parameters.getDouble("alpha");
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        double alpha = parameters.getDouble("alpha");
         this.alpha = alpha;
 
         if (dataSet instanceof DataSet) {
@@ -43,7 +43,7 @@ public class PositiveCorr implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> params = new ArrayList<>();
+        List<String> params = new ArrayList<>();
         params.add("alpha");
         return params;
     }

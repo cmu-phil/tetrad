@@ -132,7 +132,7 @@ class GeneralizedExpressionEditor extends JComponent {
      * @param semPm The GeneralizedSemPm that's being edited, containing <code>node</code>.
      * @param node  The node in <code>semPm</code> that's being edited.
      */
-    public GeneralizedExpressionEditor(final GeneralizedSemPm semPm, final Node node) {
+    public GeneralizedExpressionEditor(GeneralizedSemPm semPm, Node node) {
         if (semPm == null) {
             throw new NullPointerException("SEM PM must be provided.");
         }
@@ -150,21 +150,21 @@ class GeneralizedExpressionEditor extends JComponent {
         this.errorNode = semPm.getErrorNode(node);
         this.expressionString = semPm.getNodeExpressionString(node);
 
-        final StyleContext sc = new StyleContext();
-        final DefaultStyledDocument doc = new DefaultStyledDocument(sc);
+        StyleContext sc = new StyleContext();
+        DefaultStyledDocument doc = new DefaultStyledDocument(sc);
         this.expressionTextPane = new JTextPane(doc);
         this.resultTextPane = new JTextArea(semPm.getNodeExpressionString(node));
 
         try {
             // Add the text to the document
             doc.insertString(0, semPm.getNodeExpressionString(node), null);
-        } catch (final BadLocationException e) {
+        } catch (BadLocationException e) {
             throw new RuntimeException("Couldn't construct editor", e);
         }
 
         this.otherVariables = new LinkedHashSet<>();
 
-        for (final Node _node : semPm.getNodes()) {
+        for (Node _node : semPm.getNodes()) {
             if (semPm.getParents(node).contains(_node)) {
                 continue;
             }
@@ -172,7 +172,7 @@ class GeneralizedExpressionEditor extends JComponent {
             this.otherVariables.add(_node.getName());
         }
 
-        final ExpressionParser parser = new ExpressionParser(this.otherVariables, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
+        ExpressionParser parser = new ExpressionParser(this.otherVariables, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
         latestParser = parser;
 
         try {
@@ -634,7 +634,7 @@ class GeneralizedExpressionEditor extends JComponent {
             this.stringWidth = expressionString.length();
             this.recolorTime = System.currentTimeMillis();
             valueExpressionString = expressionString;
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             this.color = Color.RED;
             this.start = e.getErrorOffset();
             this.stringWidth = parser.getNextOffset() - e.getErrorOffset();
@@ -673,20 +673,20 @@ class GeneralizedExpressionEditor extends JComponent {
         this.latestParser = parser;
     }
 
-    private String parameterString(final ExpressionParser parser) {
-        final Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
+    private String parameterString(ExpressionParser parser) {
+        Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
 
-        for (final Node _node : this.semPm.getNodes()) {
+        for (Node _node : this.semPm.getNodes()) {
             parameters.remove(_node.getName());
         }
 
-        final List<String> parametersList = new ArrayList<>(parameters);
-        final StringBuilder buf = new StringBuilder();
+        List<String> parametersList = new ArrayList<>(parameters);
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < parametersList.size(); i++) {
             buf.append(parametersList.get(i));
 
-            final Set<Node> referencingNodes = this.semPm.getReferencingNodes(parametersList.get(i));
+            Set<Node> referencingNodes = this.semPm.getReferencingNodes(parametersList.get(i));
             referencingNodes.remove(this.node);
 
             if (referencingNodes.size() > 0) {
@@ -701,26 +701,26 @@ class GeneralizedExpressionEditor extends JComponent {
         return buf.toString();
     }
 
-    private String[] getExpressionTokens(final GeneralizedSemPm semPm, final Node node, final Map<String, String> expressionsMap) {
-        final List<String> _tokens = new ArrayList<>(expressionsMap.keySet());
+    private String[] getExpressionTokens(GeneralizedSemPm semPm, Node node, Map<String, String> expressionsMap) {
+        List<String> _tokens = new ArrayList<>(expressionsMap.keySet());
 
         if (node != null) {
             _tokens.add(semPm.getParents(node).size(), "-New Parameter-");
         }
 
-        final String[] expressionTokens = new String[_tokens.size()];
+        String[] expressionTokens = new String[_tokens.size()];
         int i = -1;
 
-        for (final String token : _tokens) {
+        for (String token : _tokens) {
             expressionTokens[++i] = token;
         }
         return expressionTokens;
     }
 
-    private Map<String, String> getExpressionMap(final GeneralizedSemPm semPm, final Node node) {
+    private Map<String, String> getExpressionMap(GeneralizedSemPm semPm, Node node) {
         // These are the expressions the user can choose from. The display form is on the left, and the template
         // form is on the. Obviously you use a % for a new parameter. In case you want to change it.
-        final String[][] expressions = {
+        String[][] expressions = {
                 {"+", " + "},
                 {"-", " - "},
                 {"*", " * "},
@@ -773,10 +773,10 @@ class GeneralizedExpressionEditor extends JComponent {
                 {"Mixture(a1, dist1, b1, dist2, ...)", "Mixture(%, Normal(%, %), %, Normal(%, %))"},
         };
 
-        final Map<String, String> expressionsMap = new LinkedHashMap<>();
+        Map<String, String> expressionsMap = new LinkedHashMap<>();
 
         if (node != null) {
-            final List<Node> parents = semPm.getParents(node);
+            List<Node> parents = semPm.getParents(node);
 
             for (int i = 0; i < parents.size(); i++) {
                 expressionsMap.put(parents.get(i).getName(), parents.get(i).getName());

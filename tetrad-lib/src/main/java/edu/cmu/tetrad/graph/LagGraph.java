@@ -44,12 +44,12 @@ public class LagGraph implements Graph {
     private final Map<String, Object> attributes = new HashMap<>();
 
     // New methods.
-    public boolean addVariable(final String variable) {
+    public boolean addVariable(String variable) {
         if (this.variables.contains(variable)) {
             return false;
         }
 
-        for (final String _variable : this.variables) {
+        for (String _variable : this.variables) {
             if (variable.equals(_variable)) {
                 return false;
             }
@@ -58,9 +58,9 @@ public class LagGraph implements Graph {
         this.variables.add(variable);
         this.laggedVariables.put(variable, new ArrayList<Node>());
 
-        for (final String node : this.variables) {
-            final List<Node> _lags = this.laggedVariables.get(node);
-            final GraphNode _newNode = new GraphNode(node + "." + _lags.size());
+        for (String node : this.variables) {
+            List<Node> _lags = this.laggedVariables.get(node);
+            GraphNode _newNode = new GraphNode(node + "." + _lags.size());
             _lags.add(_newNode);
             _newNode.setCenter(5, 5);
             addNode(_newNode);
@@ -77,37 +77,37 @@ public class LagGraph implements Graph {
     }
 
     // Modified methods from graph.
-    public boolean addDirectedEdge(final Node node1, final Node node2) {
+    public boolean addDirectedEdge(Node node1, Node node2) {
         return getGraph().addDirectedEdge(node1, node2);
     }
 
-    public boolean addNode(final Node node) {
+    public boolean addNode(Node node) {
         throw new UnsupportedOperationException();
     }
 
     // Wrapped methods from graph.
 
-    public boolean addBidirectedEdge(final Node node1, final Node node2) {
+    public boolean addBidirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addUndirectedEdge(final Node node1, final Node node2) {
+    public boolean addUndirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addNondirectedEdge(final Node node1, final Node node2) {
+    public boolean addNondirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addPartiallyOrientedEdge(final Node node1, final Node node2) {
+    public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addEdge(final Edge edge) {
+    public boolean addEdge(Edge edge) {
         throw new UnsupportedOperationException();
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener e) {
+    public void addPropertyChangeListener(PropertyChangeListener e) {
         getGraph().addPropertyChangeListener(e);
     }
 
@@ -115,11 +115,11 @@ public class LagGraph implements Graph {
         getGraph().clear();
     }
 
-    public boolean containsEdge(final Edge edge) {
+    public boolean containsEdge(Edge edge) {
         return getGraph().containsEdge(edge);
     }
 
-    public boolean containsNode(final Node node) {
+    public boolean containsNode(Node node) {
         return getGraph().containsNode(node);
     }
 
@@ -127,7 +127,7 @@ public class LagGraph implements Graph {
         return getGraph().existsDirectedCycle();
     }
 
-    public boolean existsDirectedPathFromTo(final Node node1, final Node node2) {
+    public boolean existsDirectedPathFromTo(Node node1, Node node2) {
         return getGraph().existsDirectedPathFromTo(node1, node2);
     }
 
@@ -136,39 +136,39 @@ public class LagGraph implements Graph {
         return getGraph().findCycle();
     }
 
-    public boolean existsUndirectedPathFromTo(final Node node1, final Node node2) {
+    public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
         return getGraph().existsUndirectedPathFromTo(node1, node2);
     }
 
-    public boolean existsSemiDirectedPathFromTo(final Node node1, final Set<Node> nodes) {
+    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes) {
         return getGraph().existsSemiDirectedPathFromTo(node1, nodes);
     }
 
-    public boolean existsInducingPath(final Node node1, final Node node2) {
+    public boolean existsInducingPath(Node node1, Node node2) {
         return getGraph().existsInducingPath(node1, node2);
     }
 
-    public boolean existsTrek(final Node node1, final Node node2) {
+    public boolean existsTrek(Node node1, Node node2) {
         return getGraph().existsTrek(node1, node2);
     }
 
-    public void fullyConnect(final Endpoint endpoint) {
+    public void fullyConnect(Endpoint endpoint) {
         throw new UnsupportedOperationException();
     }
 
-    public void reorientAllWith(final Endpoint endpoint) {
+    public void reorientAllWith(Endpoint endpoint) {
         getGraph().reorientAllWith(endpoint);
     }
 
-    public List<Node> getAdjacentNodes(final Node node) {
+    public List<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
 
-    public List<Node> getAncestors(final List<Node> nodes) {
+    public List<Node> getAncestors(List<Node> nodes) {
         return getGraph().getAncestors(nodes);
     }
 
-    public List<Node> getChildren(final Node node) {
+    public List<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
 
@@ -176,23 +176,23 @@ public class LagGraph implements Graph {
         return getGraph().getConnectivity();
     }
 
-    public List<Node> getDescendants(final List<Node> nodes) {
+    public List<Node> getDescendants(List<Node> nodes) {
         return getGraph().getDescendants(nodes);
     }
 
-    public Edge getEdge(final Node node1, final Node node2) {
+    public Edge getEdge(Node node1, Node node2) {
         return getGraph().getEdge(node1, node2);
     }
 
-    public Edge getDirectedEdge(final Node node1, final Node node2) {
+    public Edge getDirectedEdge(Node node1, Node node2) {
         return getGraph().getDirectedEdge(node1, node2);
     }
 
-    public List<Edge> getEdges(final Node node) {
+    public List<Edge> getEdges(Node node) {
         return getGraph().getEdges(node);
     }
 
-    public List<Edge> getEdges(final Node node1, final Node node2) {
+    public List<Edge> getEdges(Node node1, Node node2) {
         return getGraph().getEdges(node1, node2);
     }
 
@@ -200,7 +200,7 @@ public class LagGraph implements Graph {
         return getGraph().getEdges();
     }
 
-    public Endpoint getEndpoint(final Node node1, final Node node2) {
+    public Endpoint getEndpoint(Node node1, Node node2) {
         return getGraph().getEndpoint(node1, node2);
     }
 
@@ -208,16 +208,16 @@ public class LagGraph implements Graph {
         return getGraph().getEndpointMatrix();
     }
 
-    public int getIndegree(final Node node) {
+    public int getIndegree(Node node) {
         return getGraph().getIndegree(node);
     }
 
     @Override
-    public int getDegree(final Node node) {
+    public int getDegree(Node node) {
         return getGraph().getDegree(node);
     }
 
-    public Node getNode(final String name) {
+    public Node getNode(String name) {
         return getGraph().getNode(name);
     }
 
@@ -233,7 +233,7 @@ public class LagGraph implements Graph {
         return getGraph().getNumEdges();
     }
 
-    public int getNumEdges(final Node node) {
+    public int getNumEdges(Node node) {
         return getGraph().getNumEdges(node);
     }
 
@@ -241,131 +241,131 @@ public class LagGraph implements Graph {
         return getGraph().getNumNodes();
     }
 
-    public int getOutdegree(final Node node) {
+    public int getOutdegree(Node node) {
         return getGraph().getOutdegree(node);
     }
 
-    public List<Node> getParents(final Node node) {
+    public List<Node> getParents(Node node) {
         return getGraph().getParents(node);
     }
 
-    public boolean isAdjacentTo(final Node node1, final Node node2) {
+    public boolean isAdjacentTo(Node node1, Node node2) {
         return getGraph().isAdjacentTo(node1, node2);
     }
 
-    public boolean isAncestorOf(final Node node1, final Node node2) {
+    public boolean isAncestorOf(Node node1, Node node2) {
         return getGraph().isAncestorOf(node1, node2);
     }
 
-    public boolean possibleAncestor(final Node node1, final Node node2) {
+    public boolean possibleAncestor(Node node1, Node node2) {
         return getGraph().possibleAncestor(node1, node2);
     }
 
-    public boolean isChildOf(final Node node1, final Node node2) {
+    public boolean isChildOf(Node node1, Node node2) {
         return getGraph().isChildOf(node2, node2);
     }
 
-    public boolean isParentOf(final Node node1, final Node node2) {
+    public boolean isParentOf(Node node1, Node node2) {
         return getGraph().isParentOf(node1, node2);
     }
 
-    public boolean isProperAncestorOf(final Node node1, final Node node2) {
+    public boolean isProperAncestorOf(Node node1, Node node2) {
         return getGraph().isProperAncestorOf(node1, node2);
     }
 
-    public boolean isProperDescendentOf(final Node node1, final Node node2) {
+    public boolean isProperDescendentOf(Node node1, Node node2) {
         return getGraph().isProperDescendentOf(node1, node2);
     }
 
-    public boolean isDescendentOf(final Node node1, final Node node2) {
+    public boolean isDescendentOf(Node node1, Node node2) {
         return getGraph().isDescendentOf(node1, node2);
     }
 
-    public boolean defNonDescendent(final Node node1, final Node node2) {
+    public boolean defNonDescendent(Node node1, Node node2) {
         return getGraph().defNonDescendent(node1, node2);
     }
 
-    public boolean isDefNoncollider(final Node node1, final Node node2, final Node node3) {
+    public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefNoncollider(node1, node2, node3);
     }
 
-    public boolean isDefCollider(final Node node1, final Node node2, final Node node3) {
+    public boolean isDefCollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefCollider(node1, node2, node3);
     }
 
-    public boolean isDConnectedTo(final Node node1, final Node node2, final List<Node> z) {
+    public boolean isDConnectedTo(Node node1, Node node2, List<Node> z) {
         return getGraph().isDConnectedTo(node1, node2, z);
     }
 
-    public boolean isDSeparatedFrom(final Node node1, final Node node2, final List<Node> z) {
+    public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
         return getGraph().isDSeparatedFrom(node1, node2, z);
     }
 
-    public boolean possDConnectedTo(final Node node1, final Node node2, final List<Node> z) {
+    public boolean possDConnectedTo(Node node1, Node node2, List<Node> z) {
         return getGraph().possDConnectedTo(node1, node2, z);
     }
 
-    public boolean isDirectedFromTo(final Node node1, final Node node2) {
+    public boolean isDirectedFromTo(Node node1, Node node2) {
         return getGraph().isDirectedFromTo(node1, node2);
     }
 
-    public boolean isUndirectedFromTo(final Node node1, final Node node2) {
+    public boolean isUndirectedFromTo(Node node1, Node node2) {
         return getGraph().isUndirectedFromTo(node1, node2);
     }
 
-    public boolean defVisible(final Edge edge) {
+    public boolean defVisible(Edge edge) {
         return getGraph().defVisible(edge);
     }
 
-    public boolean isExogenous(final Node node) {
+    public boolean isExogenous(Node node) {
         return getGraph().isExogenous(node);
     }
 
-    public List<Node> getNodesInTo(final Node node, final Endpoint n) {
+    public List<Node> getNodesInTo(Node node, Endpoint n) {
         return getGraph().getNodesInTo(node, n);
     }
 
-    public List<Node> getNodesOutTo(final Node node, final Endpoint n) {
+    public List<Node> getNodesOutTo(Node node, Endpoint n) {
         return getGraph().getNodesOutTo(node, n);
     }
 
-    public boolean removeEdge(final Edge edge) {
+    public boolean removeEdge(Edge edge) {
         return getGraph().removeEdge(edge);
     }
 
-    public boolean removeEdge(final Node node1, final Node node2) {
+    public boolean removeEdge(Node node1, Node node2) {
         return getGraph().removeEdge(node1, node2);
     }
 
-    public boolean removeEdges(final Node node1, final Node node2) {
+    public boolean removeEdges(Node node1, Node node2) {
         return getGraph().removeEdges(node1, node2);
     }
 
-    public boolean removeEdges(final Collection<Edge> edges) {
+    public boolean removeEdges(Collection<Edge> edges) {
         return getGraph().removeEdges(edges);
     }
 
-    public boolean removeNode(final Node node) {
+    public boolean removeNode(Node node) {
         return getGraph().removeNode(node);
     }
 
-    public boolean removeNodes(final List<Node> nodes) {
+    public boolean removeNodes(List<Node> nodes) {
         return getGraph().removeNodes(nodes);
     }
 
-    public boolean setEndpoint(final Node from, final Node to, final Endpoint endPoint) {
+    public boolean setEndpoint(Node from, Node to, Endpoint endPoint) {
         return getGraph().setEndpoint(from, to, endPoint);
     }
 
-    public Graph subgraph(final List<Node> nodes) {
+    public Graph subgraph(List<Node> nodes) {
         return getGraph().subgraph(nodes);
     }
 
-    public void transferNodesAndEdges(final Graph graph) throws IllegalArgumentException {
+    public void transferNodesAndEdges(Graph graph) throws IllegalArgumentException {
         this.getGraph().transferNodesAndEdges(graph);
     }
 
-    public void transferAttributes(final Graph graph) throws IllegalArgumentException {
+    public void transferAttributes(Graph graph) throws IllegalArgumentException {
         this.getGraph().transferAttributes(graph);
     }
 
@@ -381,51 +381,51 @@ public class LagGraph implements Graph {
         return getGraph().getDottedUnderlines();
     }
 
-    public boolean isAmbiguousTriple(final Node x, final Node y, final Node z) {
+    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
         return getGraph().isAmbiguousTriple(x, y, z);
     }
 
-    public boolean isUnderlineTriple(final Node x, final Node y, final Node z) {
+    public boolean isUnderlineTriple(Node x, Node y, Node z) {
         return getGraph().isUnderlineTriple(x, y, z);
     }
 
-    public boolean isDottedUnderlineTriple(final Node x, final Node y, final Node z) {
+    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
         return getGraph().isDottedUnderlineTriple(x, y, z);
     }
 
-    public void addAmbiguousTriple(final Node x, final Node y, final Node Z) {
+    public void addAmbiguousTriple(Node x, Node y, Node Z) {
         getGraph().addAmbiguousTriple(x, y, Z);
     }
 
-    public void addUnderlineTriple(final Node x, final Node y, final Node Z) {
+    public void addUnderlineTriple(Node x, Node y, Node Z) {
         getGraph().addUnderlineTriple(x, y, Z);
     }
 
-    public void addDottedUnderlineTriple(final Node x, final Node y, final Node Z) {
+    public void addDottedUnderlineTriple(Node x, Node y, Node Z) {
         getGraph().addDottedUnderlineTriple(x, y, Z);
     }
 
-    public void removeAmbiguousTriple(final Node x, final Node y, final Node z) {
+    public void removeAmbiguousTriple(Node x, Node y, Node z) {
         getGraph().removeAmbiguousTriple(x, y, z);
     }
 
-    public void removeUnderlineTriple(final Node x, final Node y, final Node z) {
+    public void removeUnderlineTriple(Node x, Node y, Node z) {
         getGraph().removeUnderlineTriple(x, y, z);
     }
 
-    public void removeDottedUnderlineTriple(final Node x, final Node y, final Node z) {
+    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
         getGraph().removeDottedUnderlineTriple(x, y, z);
     }
 
-    public void setAmbiguousTriples(final Set<Triple> triples) {
+    public void setAmbiguousTriples(Set<Triple> triples) {
         getGraph().setAmbiguousTriples(triples);
     }
 
-    public void setUnderLineTriples(final Set<Triple> triples) {
+    public void setUnderLineTriples(Set<Triple> triples) {
         getGraph().setUnderLineTriples(triples);
     }
 
-    public void setDottedUnderLineTriples(final Set<Triple> triples) {
+    public void setDottedUnderLineTriples(Set<Triple> triples) {
         getGraph().setDottedUnderLineTriples(triples);
     }
 
@@ -433,15 +433,15 @@ public class LagGraph implements Graph {
         return getGraph().getCausalOrdering();
     }
 
-    public void setHighlighted(final Edge edge, final boolean highlighted) {
+    public void setHighlighted(Edge edge, boolean highlighted) {
         getGraph().setHighlighted(edge, highlighted);
     }
 
-    public boolean isHighlighted(final Edge edge) {
+    public boolean isHighlighted(Edge edge) {
         return getGraph().isHighlighted(edge);
     }
 
-    public boolean isParameterizable(final Node node) {
+    public boolean isParameterizable(Node node) {
         return getGraph().isParameterizable(node);
     }
 
@@ -459,12 +459,12 @@ public class LagGraph implements Graph {
     }
 
     @Override
-    public List<Node> getSepset(final Node n1, final Node n2) {
+    public List<Node> getSepset(Node n1, Node n2) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void setNodes(final List<Node> nodes) {
+    public void setNodes(List<Node> nodes) {
         this.graph.setNodes(nodes);
     }
 
@@ -472,7 +472,7 @@ public class LagGraph implements Graph {
         return this.graph;
     }
 
-    public void setGraph(final Dag graph) {
+    public void setGraph(Dag graph) {
         this.graph = graph;
     }
 
@@ -482,7 +482,7 @@ public class LagGraph implements Graph {
     }
 
     @Override
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return null;
     }
 
@@ -492,7 +492,7 @@ public class LagGraph implements Graph {
     }
 
     @Override
-    public void setPag(final boolean pag) {
+    public void setPag(boolean pag) {
         this.pag = pag;
     }
 
@@ -502,7 +502,7 @@ public class LagGraph implements Graph {
     }
 
     @Override
-    public void setCPDAG(final boolean CPDAG) {
+    public void setCPDAG(boolean CPDAG) {
         this.CPDAG = CPDAG;
     }
 
@@ -512,17 +512,17 @@ public class LagGraph implements Graph {
     }
 
     @Override
-    public Object getAttribute(final String key) {
+    public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(final String key) {
+    public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(final String key, final Object value) {
+    public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
     }
 

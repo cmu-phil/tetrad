@@ -40,7 +40,7 @@ public class DataReaderException extends RuntimeException {
      *
      * @param message the detail message.
      */
-    public DataReaderException(final String message) {
+    public DataReaderException(String message) {
         super(message);
     }
 
@@ -52,7 +52,7 @@ public class DataReaderException extends RuntimeException {
      * @param cause   the cause (which is saved for later retrieval by the
      *                {@link #getCause()} method).
      */
-    public DataReaderException(final String message, final Throwable cause) {
+    public DataReaderException(String message, Throwable cause) {
         super(message, cause);
     }
 

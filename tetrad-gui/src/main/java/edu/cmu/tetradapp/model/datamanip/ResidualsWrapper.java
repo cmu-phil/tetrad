@@ -42,16 +42,16 @@ public class ResidualsWrapper extends DataWrapper {
      *
      * @param data - Previous data (from the parent node)
      */
-    public ResidualsWrapper(final DataWrapper data, final DagWrapper dagWrapper, final Parameters params) {
-        final DataModelList list = data.getDataModelList();
-        final DataModelList newList = new DataModelList();
+    public ResidualsWrapper(DataWrapper data, DagWrapper dagWrapper, Parameters params) {
+        DataModelList list = data.getDataModelList();
+        DataModelList newList = new DataModelList();
 
-        for (final DataModel dataModel : list) {
+        for (DataModel dataModel : list) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
             DataSet dataSet = (DataSet) dataModel;
-            final Graph dag = dagWrapper.getGraph();
+            Graph dag = dagWrapper.getGraph();
             dataSet = RegressionUtils.residuals(dataSet, dag);
             newList.add(dataSet);
         }
@@ -63,16 +63,16 @@ public class ResidualsWrapper extends DataWrapper {
 
     }
 
-    public ResidualsWrapper(final DataWrapper data, final GraphWrapper graphWrapper, final Parameters params) {
-        final DataModelList list = data.getDataModelList();
-        final DataModelList newList = new DataModelList();
+    public ResidualsWrapper(DataWrapper data, GraphWrapper graphWrapper, Parameters params) {
+        DataModelList list = data.getDataModelList();
+        DataModelList newList = new DataModelList();
 
-        for (final DataModel dataModel : list) {
+        for (DataModel dataModel : list) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
             DataSet dataSet = (DataSet) dataModel;
-            final Graph graph = graphWrapper.getGraph();
+            Graph graph = graphWrapper.getGraph();
             dataSet = RegressionUtils.residuals(dataSet, graph);
             newList.add(dataSet);
         }
@@ -83,16 +83,16 @@ public class ResidualsWrapper extends DataWrapper {
         LogDataUtils.logDataModelList("Parent data in which each column has been replaced by its regression residuals.", getDataModelList());
     }
 
-    public ResidualsWrapper(final DataWrapper data, final SemGraphWrapper wrapper, final Parameters params) {
-        final DataModelList list = data.getDataModelList();
-        final DataModelList newList = new DataModelList();
+    public ResidualsWrapper(DataWrapper data, SemGraphWrapper wrapper, Parameters params) {
+        DataModelList list = data.getDataModelList();
+        DataModelList newList = new DataModelList();
 
-        for (final DataModel dataModel : list) {
+        for (DataModel dataModel : list) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
             DataSet dataSet = (DataSet) dataModel;
-            final Graph graph = wrapper.getGraph();
+            Graph graph = wrapper.getGraph();
             dataSet = RegressionUtils.residuals(dataSet, graph);
             newList.add(dataSet);
         }

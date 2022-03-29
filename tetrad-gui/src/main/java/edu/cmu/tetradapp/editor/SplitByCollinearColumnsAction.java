@@ -44,7 +44,7 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public SplitByCollinearColumnsAction(final DataEditor editor) {
+    public SplitByCollinearColumnsAction(DataEditor editor) {
         super("Split Data by Collinear Columns");
 
         if (editor == null) {
@@ -57,17 +57,17 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final DataModel dataModel = getDataEditor().getSelectedDataModel();
-        final CorrelationMatrix corrMatrix;
+    public void actionPerformed(ActionEvent e) {
+        DataModel dataModel = getDataEditor().getSelectedDataModel();
+        CorrelationMatrix corrMatrix;
 
         if (dataModel instanceof DataSet) {
             try {
-                final DataSet dataSet = (DataSet) dataModel;
-                final ICovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
+                DataSet dataSet = (DataSet) dataModel;
+                ICovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
                 corrMatrix = new CorrelationMatrix(covMatrix);
-            } catch (final Exception e1) {
-                final String message = e1.getMessage();
+            } catch (Exception e1) {
+                String message = e1.getMessage();
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         message);
                 e1.printStackTrace();
@@ -83,9 +83,9 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
             throw new RuntimeException(message);
         }
 
-        final CollinearityChooser collinearityChooser =
+        CollinearityChooser collinearityChooser =
                 new CollinearityChooser(this.dataEditor);
-        final int selection = JOptionPane.showOptionDialog(
+        int selection = JOptionPane.showOptionDialog(
                 JOptionUtils.centeringComp(), collinearityChooser,
                 "Degree of collinearity", JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null,
@@ -93,22 +93,22 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
 
         if (selection == 0 && confirmSplit(corrMatrix, dataModel,
                 (double) collinearityChooser.getCorrelationSize() / 100.)) {
-            final DataModelList splitData = new DataModelList();
-            final DataModelList splitData1 = getSplitData(corrMatrix, dataModel,
+            DataModelList splitData = new DataModelList();
+            DataModelList splitData1 = getSplitData(corrMatrix, dataModel,
                     (double) collinearityChooser.getCorrelationSize() / 100.,
                     splitData);
             getDataEditor().reset(splitData1);
         }
     }
 
-    private boolean confirmSplit(final CorrelationMatrix corrMatrix,
-                                 final DataModel dataModel, final double correlation) {
+    private boolean confirmSplit(CorrelationMatrix corrMatrix,
+                                 DataModel dataModel, double correlation) {
         int count = 0;
         for (int i = 0; i < dataModel.getVariableNames().size() - 1; i++) {
-            final int index1 = getMatrixIndex(corrMatrix,
+            int index1 = getMatrixIndex(corrMatrix,
                     dataModel.getVariableNames().get(i));
             for (int j = i + 1; j < dataModel.getVariableNames().size(); j++) {
-                final int index2 = getMatrixIndex(corrMatrix,
+                int index2 = getMatrixIndex(corrMatrix,
                         dataModel.getVariableNames().get(j));
                 if (Math.abs(corrMatrix.getValue(index1, index2)) > correlation) {
                     count++;
@@ -118,15 +118,15 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
         if (count == 0) {
             return false;
         }
-        final int total = (int) Math.pow(2, count);
-        final int selection = JOptionPane.showConfirmDialog(
+        int total = (int) Math.pow(2, count);
+        int selection = JOptionPane.showConfirmDialog(
                 JOptionUtils.centeringComp(), "This option will generate " +
                         total + " extra data sets. Continue?", "Confirmation",
                 JOptionPane.YES_NO_OPTION);
         return (selection == javax.swing.JOptionPane.YES_OPTION);
     }
 
-    private int getMatrixIndex(final CorrelationMatrix corrMatrix, final String key) {
+    private int getMatrixIndex(CorrelationMatrix corrMatrix, String key) {
         for (int i = 0; i < corrMatrix.getVariableNames().size(); i++) {
             if (corrMatrix.getVariableNames().get(i).equals(key)) {
                 return i;
@@ -135,19 +135,19 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
         return -1;
     }
 
-    private DataModelList getSplitData(final CorrelationMatrix corrMatrix,
-                                       final DataModel dataModel, final double correlation, final DataModelList modelList) {
+    private DataModelList getSplitData(CorrelationMatrix corrMatrix,
+                                       DataModel dataModel, double correlation, DataModelList modelList) {
         int index1 = -1, index2 = -1;
         boolean found = false;
 
         for (int i = 0;
              i < dataModel.getVariableNames().size() - 1 && !found; i++) {
-            final int index_i = getMatrixIndex(corrMatrix,
+            int index_i = getMatrixIndex(corrMatrix,
                     dataModel.getVariableNames().get(i));
             index1 = i;
             for (int j = i + 1;
                  j < dataModel.getVariableNames().size() && !found; j++) {
-                final int index_j = getMatrixIndex(corrMatrix,
+                int index_j = getMatrixIndex(corrMatrix,
                         dataModel.getVariableNames().get(j));
                 index2 = j;
                 if (Math.abs(corrMatrix.getValue(index_i, index_j)) >
@@ -163,9 +163,9 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
                 getSplitData(corrMatrix, dataModel, correlation, modelList);
                 getSplitData(corrMatrix, dataModel, correlation, modelList);
             } else { //CovarianceMatrix
-                final String[] subVarNames1 = new String[dataModel.getVariableNames()
+                String[] subVarNames1 = new String[dataModel.getVariableNames()
                         .size() - 1];
-                final String[] subVarNames2 = new String[dataModel.getVariableNames()
+                String[] subVarNames2 = new String[dataModel.getVariableNames()
                         .size() - 1];
                 int count1 = 0, count2 = 0;
                 for (int i = 0; i < dataModel.getVariableNames().size(); i++) {
@@ -178,10 +178,10 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
                                 dataModel.getVariableNames().get(i);
                     }
                 }
-                final ICovarianceMatrix newDataModel1 =
+                ICovarianceMatrix newDataModel1 =
                         ((ICovarianceMatrix) dataModel).getSubmatrix(
                                 subVarNames1);
-                final ICovarianceMatrix newDataModel2 =
+                ICovarianceMatrix newDataModel2 =
                         ((ICovarianceMatrix) dataModel).getSubmatrix(
                                 subVarNames2);
                 getSplitData(corrMatrix, newDataModel1, correlation, modelList);
@@ -208,24 +208,24 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
         /**
          * Constructs a new component with the given model classes.
          */
-        public CollinearityChooser(final DataEditor editor) {
+        public CollinearityChooser(DataEditor editor) {
 
             this.correlationSize = 95;
 
             setLayout(new BorderLayout());
 
-            final Box b1 = Box.createVerticalBox();
-            final Box b2 = Box.createHorizontalBox();
-            final JLabel l1 = new JLabel("Correlation threshold (x 100):");
+            Box b1 = Box.createVerticalBox();
+            Box b2 = Box.createHorizontalBox();
+            JLabel l1 = new JLabel("Correlation threshold (x 100):");
 
             l1.setForeground(Color.black);
             b2.add(l1);
             b2.add(Box.createGlue());
 
-            final IntTextField correlationSizeField = new IntTextField(95, 3);
+            IntTextField correlationSizeField = new IntTextField(95, 3);
             correlationSizeField.setFilter(
                     new IntTextField.Filter() {
-                        public int filter(final int value, final int oldValue) {
+                        public int filter(int value, int oldValue) {
                             if (value < 80 || value > 100) {
                                 JOptionPane.showMessageDialog(
                                         JOptionUtils.centeringComp(),

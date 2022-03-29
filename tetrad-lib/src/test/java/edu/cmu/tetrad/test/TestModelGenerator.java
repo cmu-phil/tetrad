@@ -39,13 +39,13 @@ public final class TestModelGenerator {
 
     @Test
     public void testGenerate() {
-        final Node x1 = new GraphNode("x1");
-        final Node x2 = new GraphNode("x2");
-        final Node x3 = new GraphNode("x3");
-        final Node x4 = new GraphNode("x4");
-        final Node x5 = new GraphNode("x5");
+        Node x1 = new GraphNode("x1");
+        Node x2 = new GraphNode("x2");
+        Node x3 = new GraphNode("x3");
+        Node x4 = new GraphNode("x4");
+        Node x5 = new GraphNode("x5");
         //        graph = new EdgeListGraph();
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
 
         graph.clear();
@@ -61,7 +61,7 @@ public final class TestModelGenerator {
         graph.addDirectedEdge(x2, x3);
         graph.addDirectedEdge(x3, x4);
 
-        final List<Graph> variants1 = ModelGenerator.generate(graph);
+        List<Graph> variants1 = ModelGenerator.generate(graph);
 
         assertEquals(17, variants1.size());
     }

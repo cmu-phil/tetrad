@@ -37,11 +37,11 @@ public class CopySelectedDatasetWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public CopySelectedDatasetWrapper(final DataWrapper data, final Parameters params) {
+    public CopySelectedDatasetWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
-        final DataModel model = data.getSelectedDataModel();
+        DataModel model = data.getSelectedDataModel();
         this.setDataModel(model);
         this.setSourceGraph(data.getSourceGraph());
 

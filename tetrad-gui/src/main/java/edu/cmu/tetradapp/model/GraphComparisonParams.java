@@ -107,25 +107,25 @@ public class GraphComparisonParams extends SessionAdapter
     //==========================PUBLIC METHODS===========================//
 
     public final void newExecution() {
-        final ContinuousVariable adjCorrect = new ContinuousVariable("ADJ_COR");
-        final ContinuousVariable adjFn = new ContinuousVariable("ADJ_FN");
-        final ContinuousVariable adjFp = new ContinuousVariable("ADJ_FP");
+        ContinuousVariable adjCorrect = new ContinuousVariable("ADJ_COR");
+        ContinuousVariable adjFn = new ContinuousVariable("ADJ_FN");
+        ContinuousVariable adjFp = new ContinuousVariable("ADJ_FP");
 
-        final ContinuousVariable arrowptCorrect = new ContinuousVariable("AHD_COR");
-        final ContinuousVariable arrowptFn = new ContinuousVariable("AHD_FN");
-        final ContinuousVariable arrowptFp = new ContinuousVariable("AHD_FP");
+        ContinuousVariable arrowptCorrect = new ContinuousVariable("AHD_COR");
+        ContinuousVariable arrowptFn = new ContinuousVariable("AHD_FN");
+        ContinuousVariable arrowptFp = new ContinuousVariable("AHD_FP");
 
-        final ContinuousVariable adjPrec = new ContinuousVariable("ADJ_PREC");
-        final ContinuousVariable adjRec = new ContinuousVariable("ADJ_REC");
-        final ContinuousVariable arrowptPrec = new ContinuousVariable("ARROWPT_PREC");
-        final ContinuousVariable arrowptRec = new ContinuousVariable("ARROWPT_REC");
-        final ContinuousVariable shd = new ContinuousVariable("SHD");
+        ContinuousVariable adjPrec = new ContinuousVariable("ADJ_PREC");
+        ContinuousVariable adjRec = new ContinuousVariable("ADJ_REC");
+        ContinuousVariable arrowptPrec = new ContinuousVariable("ARROWPT_PREC");
+        ContinuousVariable arrowptRec = new ContinuousVariable("ARROWPT_REC");
+        ContinuousVariable shd = new ContinuousVariable("SHD");
 
 //        ContinuousVariable twoCycleCorrect = new ContinuousVariable("TC_COR");
 //        ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
 //        ContinuousVariable twoCycleFp = new ContinuousVariable("TC_FP");
 
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
         variables.add(adjCorrect);
         variables.add(adjFn);
         variables.add(adjFp);
@@ -145,8 +145,8 @@ public class GraphComparisonParams extends SessionAdapter
         this.dataSet.setNumberFormat(new DecimalFormat("0"));
     }
 
-    public void addRecord(final GraphUtils.GraphComparison comparison) {
-        final int newRow = this.dataSet.getNumRows();
+    public void addRecord(GraphUtils.GraphComparison comparison) {
+        int newRow = this.dataSet.getNumRows();
         this.dataSet.setDouble(newRow, 0, comparison.getAdjCor());
         this.dataSet.setDouble(newRow, 1, comparison.getAdjFn());
         this.dataSet.setDouble(newRow, 2, comparison.getAdjFp());
@@ -169,7 +169,7 @@ public class GraphComparisonParams extends SessionAdapter
         return this.resetTableOnExecute;
     }
 
-    public void setResetTableOnExecute(final boolean resetTableOnExecute) {
+    public void setResetTableOnExecute(boolean resetTableOnExecute) {
         this.resetTableOnExecute = resetTableOnExecute;
     }
 
@@ -177,11 +177,11 @@ public class GraphComparisonParams extends SessionAdapter
         return this.keepLatents;
     }
 
-    public void setKeepLatents(final boolean keepLatents) {
+    public void setKeepLatents(boolean keepLatents) {
         this.keepLatents = keepLatents;
     }
 
-    public void setReferenceGraphName(final String name) {
+    public void setReferenceGraphName(String name) {
         this.referenceGraphName = name;
     }
 
@@ -202,12 +202,12 @@ public class GraphComparisonParams extends SessionAdapter
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
-    public void setTargetGraphName(final String targetGraphName) {
+    public void setTargetGraphName(String targetGraphName) {
         this.targetGraphName = targetGraphName;
     }
 

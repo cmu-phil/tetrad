@@ -27,22 +27,22 @@ public class SemThenDiscretize implements Simulation {
     private DataType dataType;
     private List<Node> shuffledOrder;
 
-    public SemThenDiscretize(final RandomGraph randomGraph) {
+    public SemThenDiscretize(RandomGraph randomGraph) {
         this.randomGraph = randomGraph;
         this.dataType = DataType.Mixed;
     }
 
-    public SemThenDiscretize(final RandomGraph randomGraph, final DataType dataType) {
+    public SemThenDiscretize(RandomGraph randomGraph, DataType dataType) {
         this.randomGraph = randomGraph;
         this.dataType = dataType;
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
-        final double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
+    public void createData(Parameters parameters, boolean newModel) {
+        double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
-        final boolean discrete = parameters.getString("dataType").equals("discrete");
-        final boolean continuous = parameters.getString("dataType").equals("continuous");
+        boolean discrete = parameters.getString("dataType").equals("discrete");
+        boolean continuous = parameters.getString("dataType").equals("continuous");
 
         if (discrete && percentDiscrete != 100.0) {
             throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 0.0.");
@@ -70,14 +70,14 @@ public class SemThenDiscretize implements Simulation {
 
             this.graphs.add(graph);
 
-            final DataSet dataSet = simulate(graph, parameters);
+            DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
             this.dataSets.add(dataSet);
         }
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
@@ -89,7 +89,7 @@ public class SemThenDiscretize implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = this.randomGraph.getParameters();
+        List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_CATEGORIES);
         parameters.add(Params.PERCENT_DISCRETE);
         parameters.add(Params.NUM_RUNS);
@@ -104,7 +104,7 @@ public class SemThenDiscretize implements Simulation {
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
@@ -113,18 +113,18 @@ public class SemThenDiscretize implements Simulation {
         return this.dataType;
     }
 
-    private DataSet simulate(final Graph graph, final Parameters parameters) {
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
-        final DataSet continuousData = im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
+    private DataSet simulate(Graph graph, Parameters parameters) {
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet continuousData = im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
 
         if (this.shuffledOrder == null) {
-            final List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
+            List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
             Collections.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
 
-        final Discretizer discretizer = new Discretizer(continuousData);
+        Discretizer discretizer = new Discretizer(continuousData);
 
         for (int i = 0; i < this.shuffledOrder.size() * parameters.getDouble(Params.PERCENT_DISCRETE) * 0.01; i++) {
             discretizer.equalIntervals(continuousData.getVariable(this.shuffledOrder.get(i).getName()),

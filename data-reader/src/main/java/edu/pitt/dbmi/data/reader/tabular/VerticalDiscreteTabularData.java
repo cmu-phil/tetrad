@@ -31,7 +31,7 @@ public class VerticalDiscreteTabularData implements DiscreteData {
     private final DiscreteDataColumn[] dataColumns;
     private final int[][] data;
 
-    public VerticalDiscreteTabularData(final DiscreteDataColumn[] dataColumns, final int[][] data) {
+    public VerticalDiscreteTabularData(DiscreteDataColumn[] dataColumns, int[][] data) {
         this.dataColumns = dataColumns;
         this.data = data;
     }

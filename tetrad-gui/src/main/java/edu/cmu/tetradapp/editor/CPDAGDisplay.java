@@ -51,8 +51,8 @@ import java.util.List;
 public class CPDAGDisplay extends JPanel implements GraphEditable {
     private GraphWorkbench workbench;
 
-    public CPDAGDisplay(final Graph graph) {
-        final List dags = SearchGraphUtils.generateCpdagDags(graph, false);
+    public CPDAGDisplay(Graph graph) {
+        List dags = SearchGraphUtils.generateCpdagDags(graph, false);
 
         if (dags.size() == 0) {
             JOptionPane.showMessageDialog(
@@ -61,41 +61,41 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
             return;
         }
 
-        final Graph dag = (Graph) dags.get(0);
+        Graph dag = (Graph) dags.get(0);
         this.workbench = new GraphWorkbench(dag);
 
-        final SpinnerNumberModel model =
+        SpinnerNumberModel model =
                 new SpinnerNumberModel(1, 1, dags.size(), 1);
         model.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent e) {
-                final int index = model.getNumber().intValue();
+            public void stateChanged(ChangeEvent e) {
+                int index = model.getNumber().intValue();
                 CPDAGDisplay.this.workbench.setGraph(
                         (Graph) dags.get(index - 1));
             }
         });
 
-        final JSpinner spinner = new JSpinner();
-        final JComboBox orient = new JComboBox(
+        JSpinner spinner = new JSpinner();
+        JComboBox orient = new JComboBox(
                 new String[]{"Orient --- only", "Orient ---, <->"});
         spinner.setModel(model);
-        final JLabel totalLabel = new JLabel(" of " + dags.size());
+        JLabel totalLabel = new JLabel(" of " + dags.size());
 
         orient.setMaximumSize(orient.getPreferredSize());
         orient.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JComboBox box = (JComboBox) e.getSource();
-                final String option = (String) box.getSelectedItem();
+            public void actionPerformed(ActionEvent e) {
+                JComboBox box = (JComboBox) e.getSource();
+                String option = (String) box.getSelectedItem();
 
                 if ("Orient --- only".equals(option)) {
-                    final List _dags = SearchGraphUtils.generateCpdagDags(graph, false);
+                    List _dags = SearchGraphUtils.generateCpdagDags(graph, false);
                     dags.clear();
                     dags.addAll(_dags);
-                    final SpinnerNumberModel model =
+                    SpinnerNumberModel model =
                             new SpinnerNumberModel(1, 1,
                                     dags.size(), 1);
                     model.addChangeListener(new ChangeListener() {
-                        public void stateChanged(final ChangeEvent e) {
-                            final int index =
+                        public void stateChanged(ChangeEvent e) {
+                            int index =
                                     model.getNumber().intValue();
                             CPDAGDisplay.this.workbench.setGraph(
                                     (Graph) dags.get(index - 1));
@@ -105,15 +105,15 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
                     totalLabel.setText(" of " + dags.size());
                     CPDAGDisplay.this.workbench.setGraph((Graph) dags.get(0));
                 } else if ("Orient ---, <->".equals(option)) {
-                    final List _dags = SearchGraphUtils.generateCpdagDags(graph, true);
+                    List _dags = SearchGraphUtils.generateCpdagDags(graph, true);
                     dags.clear();
                     dags.addAll(_dags);
-                    final SpinnerNumberModel model =
+                    SpinnerNumberModel model =
                             new SpinnerNumberModel(1, 1,
                                     dags.size(), 1);
                     model.addChangeListener(new ChangeListener() {
-                        public void stateChanged(final ChangeEvent e) {
-                            final int index =
+                        public void stateChanged(ChangeEvent e) {
+                            int index =
                                     model.getNumber().intValue();
                             CPDAGDisplay.this.workbench.setGraph(
                                     (Graph) dags.get(index - 1));
@@ -128,8 +128,8 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
 
         spinner.setPreferredSize(new Dimension(50, 20));
         spinner.setMaximumSize(spinner.getPreferredSize());
-        final Box b = Box.createVerticalBox();
-        final Box b1 = Box.createHorizontalBox();
+        Box b = Box.createVerticalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(Box.createHorizontalGlue());
         b1.add(orient);
         b1.add(Box.createHorizontalStrut(10));
@@ -143,10 +143,10 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
 
         b.add(b1);
 
-        final Box b2 = Box.createHorizontalBox();
-        final JPanel graphPanel = new JPanel();
+        Box b2 = Box.createHorizontalBox();
+        JPanel graphPanel = new JPanel();
         graphPanel.setLayout(new BorderLayout());
-        final JScrollPane jScrollPane = new JScrollPane(this.workbench);
+        JScrollPane jScrollPane = new JScrollPane(this.workbench);
         jScrollPane.setPreferredSize(new Dimension(400, 400));
         graphPanel.add(jScrollPane);
         graphPanel.setBorder(new TitledBorder("DAG in forbid_latent_common_causes"));
@@ -159,11 +159,11 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
     }
 
     public List getSelectedModelComponents() {
-        final Component[] components = getWorkbench().getComponents();
-        final List<TetradSerializable> selectedModelComponents =
+        Component[] components = getWorkbench().getComponents();
+        List<TetradSerializable> selectedModelComponents =
                 new ArrayList<>();
 
-        for (final Component comp : components) {
+        for (Component comp : components) {
             if (comp instanceof DisplayNode) {
                 selectedModelComponents.add(
                         ((DisplayNode) comp).getModelNode());
@@ -176,16 +176,16 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
         return selectedModelComponents;
     }
 
-    public void pasteSubsession(final List sessionElements, final Point upperLeft) {
+    public void pasteSubsession(List sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
         for (int i = 0; i < sessionElements.size(); i++) {
 
-            final Object o = sessionElements.get(i);
+            Object o = sessionElements.get(i);
 
             if (o instanceof GraphNode) {
-                final Node modelNode = (Node) o;
+                Node modelNode = (Node) o;
                 getWorkbench().selectNode(modelNode);
             }
         }
@@ -201,7 +201,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
         return this.workbench.getGraph();
     }
 
-    public void setGraph(final Graph graph) {
+    public void setGraph(Graph graph) {
         this.workbench.setGraph(graph);
     }
 
@@ -212,13 +212,13 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
      * @return this menu.
      */
     private JMenuBar menuBar() {
-        final JMenu edit = new JMenu("Edit");
-        final JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
+        JMenu edit = new JMenu("Edit");
+        JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
         copy.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
         edit.add(copy);
 
-        final JMenuBar menuBar = new JMenuBar();
+        JMenuBar menuBar = new JMenuBar();
         menuBar.add(edit);
 
         return menuBar;

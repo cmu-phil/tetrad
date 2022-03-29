@@ -41,7 +41,7 @@ public class Sextad implements TetradSerializable {
     private final Node m;
     private final Node n;
 
-    public Sextad(final Node i, final Node j, final Node k, final Node l, final Node m, final Node n) {
+    public Sextad(Node i, Node j, Node k, Node l, Node m, Node n) {
         testDistinctness(i, j, k, l, m, n);
         this.i = i;
         this.j = j;
@@ -51,7 +51,7 @@ public class Sextad implements TetradSerializable {
         this.n = n;
     }
 
-    public Sextad(final Node[] nodes) {
+    public Sextad(Node[] nodes) {
         if (nodes.length != 6) throw new IllegalArgumentException("Must provide exactly 6 nodes.");
 
         this.i = nodes[0];
@@ -69,16 +69,16 @@ public class Sextad implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static Sextad serializableInstance() {
-        final Node i = new GraphNode("i");
-        final Node j = new GraphNode("j");
-        final Node k = new GraphNode("k");
-        final Node l = new GraphNode("l");
-        final Node m = new GraphNode("m");
-        final Node n = new GraphNode("n");
+        Node i = new GraphNode("i");
+        Node j = new GraphNode("j");
+        Node k = new GraphNode("k");
+        Node l = new GraphNode("l");
+        Node m = new GraphNode("m");
+        Node n = new GraphNode("n");
         return new Sextad(i, j, k, l, m, n);
     }
 
-    private void testDistinctness(final Node i, final Node j, final Node k, final Node l, final Node m, final Node n) {
+    private void testDistinctness(Node i, Node j, Node k, Node l, Node m, Node n) {
         if (i == j || i == k || i == l || i == m || i == n) {
             throw new IllegalArgumentException("Nodes not distinct.");
         }
@@ -131,19 +131,19 @@ public class Sextad implements TetradSerializable {
         return hash;
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (!(o instanceof Sextad)) throw new IllegalArgumentException();
         if (o == null) return false;
-        final Sextad sextad = (Sextad) o;
+        Sextad sextad = (Sextad) o;
 
-        final boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
+        boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
                 this.i == sextad.i && this.j == sextad.k && this.k == sextad.j ||
                 this.i == sextad.j && this.j == sextad.i && this.k == sextad.k ||
                 this.i == sextad.j && this.j == sextad.k && this.k == sextad.i ||
                 this.i == sextad.k && this.j == sextad.i && this.k == sextad.j ||
                 this.i == sextad.k && this.j == sextad.j && this.k == sextad.i;
 
-        final boolean rightEquals = this.l == sextad.l && this.m == sextad.m && this.n == sextad.n ||
+        boolean rightEquals = this.l == sextad.l && this.m == sextad.m && this.n == sextad.n ||
                 this.l == sextad.l && this.m == sextad.n && this.n == sextad.m ||
                 this.l == sextad.m && this.m == sextad.l && this.n == sextad.n ||
                 this.l == sextad.m && this.m == sextad.n && this.n == sextad.l ||
@@ -158,7 +158,7 @@ public class Sextad implements TetradSerializable {
     }
 
     public List<Node> getNodes() {
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
         nodes.add(this.i);
         nodes.add(this.j);
         nodes.add(this.k);

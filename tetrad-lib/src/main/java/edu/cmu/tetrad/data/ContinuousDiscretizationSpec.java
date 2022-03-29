@@ -69,13 +69,13 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
 
     //============================CONSTRUCTORS==========================//
 
-    public ContinuousDiscretizationSpec(final double[] breakpoints, final List<String> categories) {
+    public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories) {
         this(breakpoints, categories, ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
     }
 
 
     @SuppressWarnings("SameParameterValue")
-    public ContinuousDiscretizationSpec(final double[] breakpoints, final List<String> categories, final int method) {
+    public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories, int method) {
         if (breakpoints == null) {
             throw new NullPointerException();
         }
@@ -103,7 +103,7 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
         return this.method;
     }
 
-    public void setMethod(final int method) {
+    public void setMethod(int method) {
         if (method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES && method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS && method != ContinuousDiscretizationSpec.NONE) {
             throw new IllegalArgumentException();
         }
@@ -131,7 +131,7 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

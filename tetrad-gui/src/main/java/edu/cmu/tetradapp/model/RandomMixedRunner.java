@@ -56,21 +56,21 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public RandomMixedRunner(final DataWrapper dataWrapper, final Parameters params) {
+    public RandomMixedRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public RandomMixedRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public RandomMixedRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     // Starts PC from the given graph.
-    public RandomMixedRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params) {
+    public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.externalGraph = graphWrapper.getGraph();
     }
 
-    public RandomMixedRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public RandomMixedRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.externalGraph = graphWrapper.getGraph();
     }
@@ -78,34 +78,34 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public RandomMixedRunner(final Graph graph, final Parameters params) {
+    public RandomMixedRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public RandomMixedRunner(final GraphWrapper graphWrapper, final Parameters params) {
+    public RandomMixedRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public RandomMixedRunner(final GraphWrapper graphWrapper, final KnowledgeBoxModel knowledgeBoxModel, final Parameters params) {
+    public RandomMixedRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public RandomMixedRunner(final DagWrapper dagWrapper, final Parameters params) {
+    public RandomMixedRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public RandomMixedRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
+    public RandomMixedRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public RandomMixedRunner(final GraphWrapper graphModel, final IndependenceFactsModel facts, final Parameters params) {
+    public RandomMixedRunner(GraphWrapper graphModel, IndependenceFactsModel facts, Parameters params) {
         super(graphModel.getGraph(), params, null, facts.getFacts());
     }
 
-    public RandomMixedRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public RandomMixedRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -120,7 +120,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
@@ -135,15 +135,15 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
 
     public void execute() {
 
-        final DataSet ds = (DataSet) getDataModelList().get(0);
+        DataSet ds = (DataSet) getDataModelList().get(0);
 
 //        WGfci fges = new WGfci(ds);
 //        fges.setCorrErrorsAlpha(4);
 //        Graph graph = fges.search();
 
-        final WFges fges = new WFges(ds);
+        WFges fges = new WFges(ds);
         fges.setPenaltyDiscount(12);
-        final Graph graph = fges.search();
+        Graph graph = fges.search();
 
 //        WFges fges = new WFges(ds);
 //        fges.setCorrErrorsAlpha(4);
@@ -193,7 +193,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -205,7 +205,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        final List<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<>();
 //        names.add("ColliderDiscovery");
 //        names.add("Noncolliders");
         return names;
@@ -215,8 +215,8 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
-        final List<List<Triple>> triplesList = new ArrayList<>();
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -237,7 +237,7 @@ public class RandomMixedRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        final Parameters params = getParams();
+        Parameters params = getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }

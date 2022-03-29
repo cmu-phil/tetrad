@@ -73,7 +73,7 @@ public class TestPcStableMax {
      */
     @Test
     public void testSearch4() {
-        final IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge2();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
@@ -96,11 +96,11 @@ public class TestPcStableMax {
                 ".29\t.25\t.34\t.37\t.13\t1.0\n" +
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
-        final char[] citesChars = citesString.toCharArray();
-        final ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
+        char[] citesChars = citesString.toCharArray();
+        ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
                 '\"', "*");
 
-        final IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge2();
 
         knowledge.addToTier(1, "ABILITY");
         knowledge.addToTier(2, "GPQ");
@@ -110,12 +110,12 @@ public class TestPcStableMax {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        final PcStableMax pc = new PcStableMax(new IndTestFisherZ(dataSet, 0.11));
+        PcStableMax pc = new PcStableMax(new IndTestFisherZ(dataSet, 0.11));
         pc.setKnowledge(knowledge);
 
-        final Graph CPDAG = pc.search();
+        Graph CPDAG = pc.search();
 
-        final Graph _true = new EdgeListGraph(CPDAG.getNodes());
+        Graph _true = new EdgeListGraph(CPDAG.getNodes());
 
         _true.addDirectedEdge(CPDAG.getNode("ABILITY"), CPDAG.getNode("CITES"));
         _true.addDirectedEdge(CPDAG.getNode("ABILITY"), CPDAG.getNode("GPQ"));
@@ -137,21 +137,21 @@ public class TestPcStableMax {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkSearch(final String inputGraph, final String outputGraph) {
+    private void checkSearch(String inputGraph, String outputGraph) {
 
         // Set up graph and node objects.
-        final Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        final IndependenceTest independence = new IndTestDSep(graph);
-        final Pc pc = new Pc(independence);
+        IndependenceTest independence = new IndTestDSep(graph);
+        Pc pc = new Pc(independence);
 
         // Run search
 //        Graph resultGraph = pc.search();
         Graph resultGraph = pc.search(new Fas(independence), independence.getVariables());
 
         // Build comparison graph.
-        final Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -163,23 +163,23 @@ public class TestPcStableMax {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(final String inputGraph, final String outputGraph,
-                                    final IKnowledge knowledge) {
+    private void checkWithKnowledge(String inputGraph, String outputGraph,
+                                    IKnowledge knowledge) {
         // Set up graph and node objects.
-        final Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        final IndependenceTest independence = new IndTestDSep(graph);
-        final PcStableMax pc = new PcStableMax(independence);
+        IndependenceTest independence = new IndTestDSep(graph);
+        PcStableMax pc = new PcStableMax(independence);
 
         // Set up search.
         pc.setKnowledge(knowledge);
 
         // Run search
-        final Graph resultGraph = pc.search();
+        Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        final Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // Do test.
         assertEquals(trueGraph, resultGraph);

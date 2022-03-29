@@ -65,7 +65,7 @@ public class DishModel implements TetradSerializable {
 
     //===============================CONSTRUCTORS========================//
 
-    public DishModel(final int numDishes, final double dishBumpStDev) {
+    public DishModel(int numDishes, double dishBumpStDev) {
 
         if (numDishes < 1) {
             throw new IllegalArgumentException(
@@ -82,7 +82,7 @@ public class DishModel implements TetradSerializable {
         this.dishBumps = new double[numDishes];
         this.setDishBumpStDev(dishBumpStDev);
 
-        final Distribution distribution =
+        Distribution distribution =
                 new Normal(100.0, dishBumpStDev);
 
         for (int i = 0; i < numDishes; i++) {
@@ -109,7 +109,7 @@ public class DishModel implements TetradSerializable {
     /**
      * Sets the number of the getModel dish.
      */
-    public void setDishNumber(final int dishNumber) {
+    public void setDishNumber(int dishNumber) {
 
         if ((dishNumber >= 0) && (dishNumber < this.dishBumps.length)) {
             this.dishNumber = dishNumber;
@@ -123,7 +123,7 @@ public class DishModel implements TetradSerializable {
      * Bumps the given expression value in the manner prescribed for the
      * getModel dish.
      */
-    public double bumpInitialization(final double expressionLevel) {
+    public double bumpInitialization(double expressionLevel) {
 
         //System.out.println(this.dishBumps[this.dishNumber]);
         return expressionLevel * this.dishBumps[this.dishNumber] / 100.0;
@@ -133,7 +133,7 @@ public class DishModel implements TetradSerializable {
         return this.dishBumpStDev;
     }
 
-    public void setDishBumpStDev(final double dishBumpStDev) {
+    public void setDishBumpStDev(double dishBumpStDev) {
         this.dishBumpStDev = dishBumpStDev;
     }
 
@@ -150,7 +150,7 @@ public class DishModel implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

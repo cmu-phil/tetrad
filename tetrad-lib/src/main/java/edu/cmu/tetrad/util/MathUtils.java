@@ -32,11 +32,11 @@ public class MathUtils {
      * @param x a double value.
      * @return the logistic function of x = 1 / (1 + exp(-x)).
      */
-    public static double logistic(final double x) {
+    public static double logistic(double x) {
         return 1. / (1. + Math.exp(-x));
     }
 
-    public static int factorial(final int n) {
+    public static int factorial(int n) {
         int i = 1;
 
         for (int j = 1; j <= n; j++) {
@@ -46,7 +46,7 @@ public class MathUtils {
         return i;
     }
 
-    public static double logFactorial(final int n) {
+    public static double logFactorial(int n) {
         double i = 0;
 
         for (int j = 1; j <= n; j++) {
@@ -56,7 +56,7 @@ public class MathUtils {
         return i;
     }
 
-    public static int choose(final int a, final int b) {
+    public static int choose(int a, int b) {
         if (a == 0 && b == 0) {
             return 1;
         } else if (a == 0 && b > 0) {
@@ -70,7 +70,7 @@ public class MathUtils {
         }
     }
 
-    public static double logChoose(final int a, final int b) {
+    public static double logChoose(int a, int b) {
         return MathUtils.logFactorial(a) - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b));
     }
 }

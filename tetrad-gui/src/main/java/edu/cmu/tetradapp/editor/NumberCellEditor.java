@@ -50,7 +50,7 @@ class NumberCellEditor extends DefaultCellEditor {
     /**
      * Constructs a new number cell editor.
      */
-    public NumberCellEditor(final NumberFormat nf) {
+    public NumberCellEditor(NumberFormat nf) {
         super(new JTextField());
 
         if (nf == null) {
@@ -71,13 +71,13 @@ class NumberCellEditor extends DefaultCellEditor {
              *
              * @param value this value.
              */
-            public void setValue(final Object value) {
+            public void setValue(Object value) {
                 if (value == null) {
                     NumberCellEditor.this.textField.setText(NumberCellEditor.this.emptyString);
                 } else if (value instanceof Integer) {
                     NumberCellEditor.this.textField.setText(value.toString());
                 } else if (value instanceof Double) {
-                    final double doubleValue = (Double) value;
+                    double doubleValue = (Double) value;
 
                     if (Double.isNaN(doubleValue)) {
                         NumberCellEditor.this.textField.setText(NumberCellEditor.this.emptyString);
@@ -108,7 +108,7 @@ class NumberCellEditor extends DefaultCellEditor {
         return this.emptyString;
     }
 
-    public void setEmptyString(final String emptyString) {
+    public void setEmptyString(String emptyString) {
         if (emptyString == null) {
             throw new NullPointerException();
         }

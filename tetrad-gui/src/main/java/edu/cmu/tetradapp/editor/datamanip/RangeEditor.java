@@ -88,7 +88,7 @@ final class RangeEditor extends JComponent {
      * Contructs the range editor given the variable that is being edited and
      * the continuous discreitization spec to base initial values on.
      */
-    public RangeEditor(final ContinuousDiscretizationSpec spec) {
+    public RangeEditor(ContinuousDiscretizationSpec spec) {
         this.breakpoints = spec.getBreakpoints();
         this.categories = spec.getCategories();
         this.editableRange = true;
@@ -114,13 +114,13 @@ final class RangeEditor extends JComponent {
      * Builds the editor.
      */
     private void buildEditor() {
-        final Box rangeEditor = Box.createVerticalBox();
+        Box rangeEditor = Box.createVerticalBox();
 
         createCategoryFields();
         createRangeFields();
 
         for (int i = 0; i < this.categories.size(); i++) {
-            final Box row = Box.createHorizontalBox();
+            Box row = Box.createHorizontalBox();
             row.add(Box.createRigidArea(new Dimension(10, 0)));
 
             row.add(new JLabel((i + 1) + ". "));
@@ -155,14 +155,14 @@ final class RangeEditor extends JComponent {
         this.categoryFields = new StringTextField[getNumCategories()];
 
         for (int i = 0; i < getNumCategories(); i++) {
-            final String category = this.categories.get(i);
+            String category = this.categories.get(i);
             this.categoryFields[i] = new StringTextField(category, 6);
-            final StringTextField _field = this.categoryFields[i];
+            StringTextField _field = this.categoryFields[i];
 
             this.categoryFields[i].setFilter(new StringTextField.Filter() {
-                public String filter(String value, final String oldValue) {
+                public String filter(String value, String oldValue) {
                     if (RangeEditor.this.labels.get(_field) != null) {
-                        final int index = RangeEditor.this.labels.get(_field);
+                        int index = RangeEditor.this.labels.get(_field);
 
                         if (value == null) {
                             value = RangeEditor.this.categories.get(index);
@@ -195,7 +195,7 @@ final class RangeEditor extends JComponent {
         this.leftRangeFields = new DoubleTextField[getNumCategories()];
         this.rightRangeFields = new DoubleTextField[getNumCategories()];
 
-        final int maxCategory = getNumCategories() - 1;
+        int maxCategory = getNumCategories() - 1;
 
         this.leftRangeFields[0] = new DoubleTextField(
                 Double.NEGATIVE_INFINITY, 6, NumberFormatUtil.getInstance().getNumberFormat());
@@ -234,12 +234,12 @@ final class RangeEditor extends JComponent {
             leftRangeFields[i + 1].setFilter(
                     new DoubleTextField.Filter() {
                         public double filter(double value,
-                                             final double oldValue) {
+                                             double oldValue) {
                             if (label == null) {
                                 return oldValue;
                             }
 
-                            final int index = (Integer) label;
+                            int index = (Integer) label;
 
                             if (index - 1 > 0 &&
                                     !(RangeEditor.this.breakpoints[index - 2] < value)) {
@@ -278,17 +278,17 @@ final class RangeEditor extends JComponent {
     private static final class BigLabel extends JLabel {
         private static final Font FONT = new Font("Dialog", Font.BOLD, 20);
 
-        public BigLabel(final String text) {
+        public BigLabel(String text) {
             super(text);
             setFont(BigLabel.FONT);
         }
     }
 
     private class MyFocusTraversalPolicy extends FocusTraversalPolicy {
-        public Component getComponentAfter(final Container focusCycleRoot,
-                                           final Component aComponent) {
-            final int index = RangeEditor.this.focusTraveralOrder.indexOf(aComponent);
-            final int size = RangeEditor.this.focusTraveralOrder.size();
+        public Component getComponentAfter(Container focusCycleRoot,
+                                           Component aComponent) {
+            int index = RangeEditor.this.focusTraveralOrder.indexOf(aComponent);
+            int size = RangeEditor.this.focusTraveralOrder.size();
 
             if (index != -1) {
                 return RangeEditor.this.focusTraveralOrder.get((index + 1) % size);
@@ -297,10 +297,10 @@ final class RangeEditor extends JComponent {
             }
         }
 
-        public Component getComponentBefore(final Container focusCycleRoot,
-                                            final Component aComponent) {
-            final int index = RangeEditor.this.focusTraveralOrder.indexOf(aComponent);
-            final int size = RangeEditor.this.focusTraveralOrder.size();
+        public Component getComponentBefore(Container focusCycleRoot,
+                                            Component aComponent) {
+            int index = RangeEditor.this.focusTraveralOrder.indexOf(aComponent);
+            int size = RangeEditor.this.focusTraveralOrder.size();
 
             if (index != -1) {
                 return RangeEditor.this.focusTraveralOrder.get((index - 1) % size);
@@ -309,15 +309,15 @@ final class RangeEditor extends JComponent {
             }
         }
 
-        public Component getFirstComponent(final Container focusCycleRoot) {
+        public Component getFirstComponent(Container focusCycleRoot) {
             return RangeEditor.this.focusTraveralOrder.getFirst();
         }
 
-        public Component getLastComponent(final Container focusCycleRoot) {
+        public Component getLastComponent(Container focusCycleRoot) {
             return RangeEditor.this.focusTraveralOrder.getLast();
         }
 
-        public Component getDefaultComponent(final Container focusCycleRoot) {
+        public Component getDefaultComponent(Container focusCycleRoot) {
             return getFirstComponent(focusCycleRoot);
         }
     }

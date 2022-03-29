@@ -72,12 +72,12 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         this.graphScorer = null;
     }
 
-    public ScoredGraphsWrapper(final Graph graph, final GraphScorer scorer) {
-        final List<Graph> dags = SearchGraphUtils.generateCpdagDags(graph, true);
+    public ScoredGraphsWrapper(Graph graph, GraphScorer scorer) {
+        List<Graph> dags = SearchGraphUtils.generateCpdagDags(graph, true);
         this.graphsToScores = new HashMap<>();
         this.graphScorer = scorer;
 
-        for (final Graph _graph : dags) {
+        for (Graph _graph : dags) {
             double score = Double.NaN;
 
             if (scorer != null) {
@@ -98,27 +98,27 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         log();
     }
 
-    public ScoredGraphsWrapper(final FgesRunner runner, final Parameters parameters) {
+    public ScoredGraphsWrapper(FgesRunner runner, Parameters parameters) {
         this(runner.getTopGraphs().get(runner.getIndex()).getGraph(), runner.getGraphScorer());
     }
 
-    public ScoredGraphsWrapper(final DagWrapper wrapper, final Parameters parameters) {
+    public ScoredGraphsWrapper(DagWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(final GraphWrapper wrapper, final Parameters parameters) {
+    public ScoredGraphsWrapper(GraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(final SemGraphWrapper wrapper, final Parameters parameters) {
+    public ScoredGraphsWrapper(SemGraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(final PcRunner wrapper, final Parameters parameters) {
+    public ScoredGraphsWrapper(PcRunner wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(final CpcRunner wrapper, final Parameters parameters) {
+    public ScoredGraphsWrapper(CpcRunner wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
@@ -134,9 +134,9 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     //==============================PUBLIC METHODS======================//
 
     public Map<Graph, Double> getGraphsToScores() {
-        final Map<Graph, Double> _graphsToScores = new LinkedHashMap<>();
+        Map<Graph, Double> _graphsToScores = new LinkedHashMap<>();
 
-        for (final Graph graph : this.graphsToScores.keySet()) {
+        for (Graph graph : this.graphsToScores.keySet()) {
             _graphsToScores.put(new EdgeListGraph(graph), this.graphsToScores.get(graph));
         }
 
@@ -148,7 +148,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -162,7 +162,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         TetradLogger.getInstance().log("all_graphs", "\nAll Graphs:\n");
         int index = 0;
 
-        for (final Graph graph : this.graphsToScores.keySet()) {
+        for (Graph graph : this.graphsToScores.keySet()) {
             TetradLogger.getInstance().log("all_graphs", "\nGraph #" + (++index));
             TetradLogger.getInstance().log("all_graphs", graph + "");
         }
@@ -182,7 +182,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -204,7 +204,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     /**
      * Sets a selected graph. Must be one of the graphs in <code>getGraphToScore().keySet</code>.
      */
-    public void setSelectedGraph(final Graph graph) {
+    public void setSelectedGraph(Graph graph) {
         if (!this.graphsToScores.containsKey(graph)) {
             throw new IllegalArgumentException("Not a graph in this set.");
         }

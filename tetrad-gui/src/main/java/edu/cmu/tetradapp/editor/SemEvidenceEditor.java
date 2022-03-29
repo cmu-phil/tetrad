@@ -44,7 +44,7 @@ class SemEvidenceEditor extends JPanel {
     private final SemEvidence evidence;
     private final Map checkBoxesToVariables = new HashMap();
 
-    public SemEvidenceEditor(final SemEvidence evidence) {
+    public SemEvidenceEditor(SemEvidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
@@ -53,32 +53,32 @@ class SemEvidenceEditor extends JPanel {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        final Box d = Box.createHorizontalBox();
+        Box d = Box.createHorizontalBox();
         d.add(new JLabel("Variable = value"));
         d.add(Box.createHorizontalGlue());
         d.add(new JLabel("Manipulated"));
         add(d);
 
         for (int i = 0; i < evidence.getNumNodes(); i++) {
-            final int _i = i;
-            final Box c = Box.createHorizontalBox();
-            final SemIm semIm = evidence.getSemIm();
-            final String name = (semIm.getVariableNodes().get(i)).getName();
-            final JLabel label = new JLabel(name + " =  ") {
+            int _i = i;
+            Box c = Box.createHorizontalBox();
+            SemIm semIm = evidence.getSemIm();
+            String name = (semIm.getVariableNodes().get(i)).getName();
+            JLabel label = new JLabel(name + " =  ") {
                 public Dimension getMaximumSize() {
                     return getPreferredSize();
                 }
             };
             c.add(label);
 
-            final DoubleTextField field = new DoubleTextField(
+            DoubleTextField field = new DoubleTextField(
                     evidence.getProposition().getValue(_i), 5, NumberFormatUtil.getInstance().getNumberFormat());
 
             field.setFilter((value, oldValue) -> {
                 try {
                     evidence.getProposition().setValue(_i, value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             });
@@ -87,21 +87,21 @@ class SemEvidenceEditor extends JPanel {
             c.add(Box.createHorizontalStrut(2));
             c.add(Box.createHorizontalGlue());
 
-            final JCheckBox checkbox = new JCheckBox() {
+            JCheckBox checkbox = new JCheckBox() {
                 public Dimension getMaximumSize() {
                     return getPreferredSize();
                 }
             };
             checkbox.setSelected(getEvidence().isManipulated(i));
             this.checkBoxesToVariables.put(checkbox, i);
-            final Map variablesToCheckboxes = new HashMap();
+            Map variablesToCheckboxes = new HashMap();
             variablesToCheckboxes.put(i, checkbox);
             checkbox.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
-                    final JCheckBox checkbox = (JCheckBox) e.getSource();
-                    final boolean selected = checkbox.isSelected();
-                    final Object o = SemEvidenceEditor.this.checkBoxesToVariables.get(checkbox);
-                    final int variable = (Integer) o;
+                public void actionPerformed(ActionEvent e) {
+                    JCheckBox checkbox = (JCheckBox) e.getSource();
+                    boolean selected = checkbox.isSelected();
+                    Object o = SemEvidenceEditor.this.checkBoxesToVariables.get(checkbox);
+                    int variable = (Integer) o;
 
                     getEvidence().setManipulated(variable, selected);
                 }

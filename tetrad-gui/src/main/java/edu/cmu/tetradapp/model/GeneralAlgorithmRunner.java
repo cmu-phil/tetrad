@@ -69,7 +69,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private transient List<IndependenceTest> independenceTests;
 
     //===========================CONSTRUCTORS===========================//
-    public GeneralAlgorithmRunner(final GeneralAlgorithmRunner runner, final Parameters parameters) {
+    public GeneralAlgorithmRunner(GeneralAlgorithmRunner runner, Parameters parameters) {
         this(runner.getDataWrapper(), runner, parameters, null, null);
         this.sourceGraph = runner.sourceGraph;
         this.knowledge = runner.knowledge;
@@ -77,7 +77,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         this.parameters = parameters;
     }
 
-    public GeneralAlgorithmRunner(final DataWrapper dataWrapper, final Parameters parameters) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters) {
         this(dataWrapper, null, parameters, null, null);
     }
 
@@ -86,18 +86,18 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public GeneralAlgorithmRunner(final DataWrapper dataWrapper, final Parameters parameters,
-                                  final KnowledgeBoxModel knowledgeBoxModel) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
+                                  KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
     }
 
-    public GeneralAlgorithmRunner(final DataWrapper dataWrapper, final GraphSource graphSource, final Parameters parameters) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
         this(dataWrapper, graphSource, parameters, null, null);
     }
 
-    public GeneralAlgorithmRunner(final DataWrapper dataWrapper, final GraphSource graphSource,
-                                  final KnowledgeBoxModel knowledgeBoxModel,
-                                  final Parameters parameters) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource,
+                                  KnowledgeBoxModel knowledgeBoxModel,
+                                  Parameters parameters) {
         this(dataWrapper, graphSource, parameters, knowledgeBoxModel, null);
     }
 
@@ -106,12 +106,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public GeneralAlgorithmRunner(final DataWrapper dataWrapper, final Parameters parameters,
-                                  final KnowledgeBoxModel knowledgeBoxModel, final IndependenceFactsModel facts) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
+                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, facts);
     }
 
-    public GeneralAlgorithmRunner(final DataWrapper dataWrapper, final GeneralAlgorithmRunner runner, final Parameters parameters) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters) {
         this(dataWrapper, null, parameters, null, null);
         this.algorithm = runner.algorithm;
     }
@@ -121,14 +121,14 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public GeneralAlgorithmRunner(final DataWrapper dataWrapper, final GeneralAlgorithmRunner runner, final Parameters parameters,
-                                  final KnowledgeBoxModel knowledgeBoxModel) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters,
+                                  KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
     }
 
-    public GeneralAlgorithmRunner(final DataWrapper dataWrapper, final GraphSource graphSource, final GeneralAlgorithmRunner runner,
-                                  final Parameters parameters) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
+                                  Parameters parameters) {
         this(dataWrapper, graphSource, parameters, null, null);
         this.algorithm = runner.algorithm;
     }
@@ -138,9 +138,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public GeneralAlgorithmRunner(final DataWrapper dataWrapper, final GraphSource graphSource, final GeneralAlgorithmRunner runner,
-                                  final Parameters parameters,
-                                  final KnowledgeBoxModel knowledgeBoxModel) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
+                                  Parameters parameters,
+                                  KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, graphSource, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
     }
@@ -148,25 +148,25 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     /**
      * Constucts a wrapper for the given graph.
      */
-    public GeneralAlgorithmRunner(final GraphSource graphSource, final GeneralAlgorithmRunner runner, final Parameters parameters) {
+    public GeneralAlgorithmRunner(GraphSource graphSource, GeneralAlgorithmRunner runner, Parameters parameters) {
         this(null, graphSource, parameters, null, null);
         this.algorithm = runner.algorithm;
     }
 
-    public GeneralAlgorithmRunner(final GraphSource graphSource, final Parameters parameters,
-                                  final KnowledgeBoxModel knowledgeBoxModel) {
+    public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters,
+                                  KnowledgeBoxModel knowledgeBoxModel) {
         this(null, graphSource, parameters, knowledgeBoxModel, null);
     }
 
-    public GeneralAlgorithmRunner(final IndependenceFactsModel model,
-                                  final Parameters parameters, final KnowledgeBoxModel knowledgeBoxModel) {
+    public GeneralAlgorithmRunner(IndependenceFactsModel model,
+                                  Parameters parameters, KnowledgeBoxModel knowledgeBoxModel) {
         this(null, null, parameters, knowledgeBoxModel, model);
     }
 
     /**
      * Constucts a wrapper for the given graph.
      */
-    public GeneralAlgorithmRunner(final GraphSource graphSource, final Parameters parameters) {
+    public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters) {
         this(null, graphSource, parameters, null, null);
     }
 
@@ -175,8 +175,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public GeneralAlgorithmRunner(final DataWrapper dataWrapper, final GraphSource graphSource, final Parameters parameters,
-                                  final KnowledgeBoxModel knowledgeBoxModel, final IndependenceFactsModel facts) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters,
+                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
         if (parameters == null) {
             throw new NullPointerException();
         }
@@ -204,7 +204,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
 
         if (dataWrapper != null) {
-            final List<String> names = this.dataWrapper.getVariableNames();
+            List<String> names = this.dataWrapper.getVariableNames();
             transferVarNamesToParams(names);
         }
 
@@ -222,13 +222,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     //============================PUBLIC METHODS==========================//
     @Override
     public void execute() {
-        final List<Graph> graphList = new ArrayList<>();
+        List<Graph> graphList = new ArrayList<>();
 
         if (this.independenceTests != null) {
             this.independenceTests.clear();
         }
 
-        final Algorithm algo = getAlgorithm();
+        Algorithm algo = getAlgorithm();
 
         if (algo instanceof HasKnowledge) {
             ((HasKnowledge) algo).setKnowledge(this.knowledge.copy());
@@ -237,12 +237,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         if (getDataModelList().size() == 0 && getSourceGraph() != null) {
             if (algo instanceof UsesScoreWrapper) {
                 // We inject the graph to the score to satisfy the tests like DSeparationScore - Zhou
-                final ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWrapper();
+                ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWrapper();
                 if (scoreWrapper instanceof DSeparationScore) {
                     ((DSeparationScore) scoreWrapper).setGraph(getSourceGraph());
                 }
             } else if (algo instanceof TakesIndependenceWrapper) {
-                final IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
+                IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
                 if (wrapper instanceof DSeparationTest) {
                     ((DSeparationTest) wrapper).setGraph(getSourceGraph());
                 }
@@ -260,7 +260,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         } else {
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
                 for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
-                    final List<DataSet> dataSets = getDataModelList().stream()
+                    List<DataSet> dataSets = getDataModelList().stream()
                             .map(e -> (DataSet) e)
                             .collect(Collectors.toCollection(ArrayList::new));
                     int randomSelectionSize = this.parameters.getInt("randomSelectionSize");
@@ -273,7 +273,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
                     Collections.shuffle(dataSets);
 
-                    final List<DataModel> sub = new ArrayList<>();
+                    List<DataModel> sub = new ArrayList<>();
                     for (int j = 0; j < randomSelectionSize; j++) {
                         sub.add(dataSets.get(j));
                     }
@@ -292,7 +292,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
                     getDataModelList().forEach(dataModel -> {
                         if (dataModel instanceof ICovarianceMatrix) {
-                            final ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
+                            ICovarianceMatrix dataSet = (ICovarianceMatrix) dataModel;
 
                             if (algo instanceof TakesGraph) {
                                 ((TakesGraph) algo).setGraph(this.sourceGraph);
@@ -304,7 +304,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                             graphList.add(this.algorithm.search(dataSet, this.parameters));
                         } else if (dataModel instanceof DataSet) {
-                            final DataSet dataSet = (DataSet) dataModel;
+                            DataSet dataSet = (DataSet) dataModel;
 
                             if (!dataSet.isContinuous()) {
                                 throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
@@ -329,12 +329,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                 if (algo != null) {
                     getDataModelList().forEach(data -> {
-                        final IKnowledge knowledgeFromData = data.getKnowledge();
+                        IKnowledge knowledgeFromData = data.getKnowledge();
                         if (!(knowledgeFromData == null || knowledgeFromData.getVariables().isEmpty())) {
                             this.knowledge = knowledgeFromData;
                         }
 
-                        final DataType algDataType = algo.getDataType();
+                        DataType algDataType = algo.getDataType();
 
                         if (algo instanceof TakesGraph) {
                             ((TakesGraph) algo).setGraph(this.sourceGraph);
@@ -360,11 +360,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         if (getKnowledge().getVariablesNotInTiers().size()
                 < getKnowledge().getVariables().size()) {
-            for (final Graph graph : graphList) {
+            for (Graph graph : graphList) {
                 SearchGraphUtils.arrangeByKnowledgeTiers(graph, getKnowledge());
             }
         } else {
-            for (final Graph graph : graphList) {
+            for (Graph graph : graphList) {
                 GraphUtils.circleLayout(graph, 225, 200, 150);
             }
         }
@@ -373,7 +373,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     public boolean hasMissingValues() {
-        final DataModelList dataModelList = getDataModelList();
+        DataModelList dataModelList = getDataModelList();
         if (dataModelList.containsEmptyData()) {
             return false;
         } else {
@@ -381,7 +381,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 return false;
             }
 
-            final DataSet dataSet = (DataSet) dataModelList.get(0);
+            DataSet dataSet = (DataSet) dataModelList.get(0);
 
             return dataSet.existsMissingValue();
         }
@@ -402,7 +402,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
-    public void setExternalGraph(final Graph graph) {
+    public void setExternalGraph(Graph graph) {
         this.externalGraph = graph;
     }
 
@@ -429,7 +429,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     @Override
     public final DataModel getDataModel() {
         if (this.dataWrapper != null) {
-            final DataModelList dataModelList = this.dataWrapper.getDataModelList();
+            DataModelList dataModelList = this.dataWrapper.getDataModelList();
 
             if (dataModelList.size() == 1) {
                 return dataModelList.get(0);
@@ -465,12 +465,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
-    public void resetParams(final Object params) {
+    public void resetParams(Object params) {
         this.parameters = (Parameters) params;
     }
 
     //===========================PRIVATE METHODS==========================//
-    private void transferVarNamesToParams(final List names) {
+    private void transferVarNamesToParams(List names) {
         getParameters().set("varNames", names);
     }
 
@@ -487,7 +487,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -502,7 +502,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             return this.independenceTests.get(0);
         }
 
-        final Algorithm algo = getAlgorithm();
+        Algorithm algo = getAlgorithm();
 
         if (getDataModelList().size() == 0 && getSourceGraph() != null) {
             // We inject the graph to the test to satisfy the tests like DSeparationTest - Zhou
@@ -511,7 +511,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 //                ((DSeparationTest) indTestWrapper).setGraph(getSourceGraph());
 //            }
 //
-            final IndependenceWrapper test = new DSeparationTest(getSourceGraph());
+            IndependenceWrapper test = new DSeparationTest(getSourceGraph());
 
             if (this.independenceTests == null) {
                 this.independenceTests = new ArrayList<>();
@@ -522,14 +522,14 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             this.independenceTests.add(test.getTest(null, this.parameters));
         } else if (algo instanceof TakesIndependenceWrapper) {
             if (getDataModelList().size() == 1) {
-                final IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) getAlgorithm()).getIndependenceWrapper();
+                IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) getAlgorithm()).getIndependenceWrapper();
 
                 if (this.independenceTests == null) {
                     this.independenceTests = new ArrayList<>();
                 }
 
                 // Grabbing this independence test for the independence tests interface. JR 2020.8.24
-                final IndependenceTest test = indTestWrapper.getTest(getDataModelList().get(0), this.parameters);
+                IndependenceTest test = indTestWrapper.getTest(getDataModelList().get(0), this.parameters);
                 this.independenceTests.add(test);
             }
 //            else if (getDataModelList().size() == 0 && getSourceGraph() != null) {
@@ -549,14 +549,14 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 //            }
         } else if (algo instanceof UsesScoreWrapper) {
             if (getDataModelList().size() == 1) {
-                final ScoreWrapper wrapper = ((UsesScoreWrapper) getAlgorithm()).getScoreWrapper();
+                ScoreWrapper wrapper = ((UsesScoreWrapper) getAlgorithm()).getScoreWrapper();
 
                 if (this.independenceTests == null) {
                     this.independenceTests = new ArrayList<>();
                 }
 
                 // Grabbing this independence score for the independence tests interface. JR 2020.8.24
-                final Score score = wrapper.getScore(getDataModelList().get(0), this.parameters);
+                Score score = wrapper.getScore(getDataModelList().get(0), this.parameters);
                 this.independenceTests.add(new IndTestScore(score));
             }
 //            else if (getDataModelList().size() == 0 && getSourceGraph() != null) {
@@ -590,7 +590,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -598,7 +598,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return this.algorithm;
     }
 
-    public void setAlgorithm(final Algorithm algorithm) {
+    public void setAlgorithm(Algorithm algorithm) {
         if (algorithm == null) {
             throw new NullPointerException("Algorithm not specified");
         }
@@ -611,7 +611,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return Collections.EMPTY_LIST;
     }
 
@@ -621,7 +621,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
-    public void setAllParamSettings(final Map<String, String> paramSettings) {
+    public void setAllParamSettings(Map<String, String> paramSettings) {
 
     }
 
@@ -662,14 +662,14 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return Collections.EMPTY_LIST;
     }
 
-    public List<Graph> getCompareGraphs(final List<Graph> graphs) {
+    public List<Graph> getCompareGraphs(List<Graph> graphs) {
         if (graphs == null) {
             throw new NullPointerException();
         }
 
-        final List<Graph> compareGraphs = new ArrayList<>();
+        List<Graph> compareGraphs = new ArrayList<>();
 
-        for (final Graph graph : graphs) {
+        for (Graph graph : graphs) {
             compareGraphs.add(this.algorithm.getComparisonGraph(graph));
         }
 

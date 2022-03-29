@@ -45,8 +45,8 @@ public final class AlgorithmModels {
     }
 
     private void refreshModels() {
-        final AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        final List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
+        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
                 ? algoAnno.getAnnotatedClasses()
                 : algoAnno.filterOutExperimental(algoAnno.getAnnotatedClasses());
         this.models = Collections.unmodifiableList(
@@ -55,10 +55,10 @@ public final class AlgorithmModels {
                         .sorted()
                         .collect(Collectors.toList()));
 
-        final Map<AlgType, List<AlgorithmModel>> map = new EnumMap<>(AlgType.class);
+        Map<AlgType, List<AlgorithmModel>> map = new EnumMap<>(AlgType.class);
 
         // initialize enum map
-        for (final AlgType algType : AlgType.values()) {
+        for (AlgType algType : AlgType.values()) {
             map.put(algType, new LinkedList<>());
         }
 
@@ -77,8 +77,8 @@ public final class AlgorithmModels {
         return AlgorithmModels.INSTANCE;
     }
 
-    private List<AlgorithmModel> filterInclusivelyByAllOrSpecificDataType(final List<AlgorithmModel> algorithmModels, final DataType dataType, final boolean multiDataSetAlgorithm) {
-        final AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+    private List<AlgorithmModel> filterInclusivelyByAllOrSpecificDataType(List<AlgorithmModel> algorithmModels, DataType dataType, boolean multiDataSetAlgorithm) {
+        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
 
         return (dataType == DataType.All)
                 ? algorithmModels
@@ -87,7 +87,7 @@ public final class AlgorithmModels {
                     return !multiDataSetAlgorithm || algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz());
                 })
                 .filter(e -> {
-                    for (final DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
+                    for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
                         if (dt == DataType.All || dt == dataType) {
                             return true;
                         }
@@ -97,11 +97,11 @@ public final class AlgorithmModels {
                 .collect(Collectors.toList());
     }
 
-    public List<AlgorithmModel> getModels(final DataType dataType, final boolean multiDataSetAlgorithm) {
+    public List<AlgorithmModel> getModels(DataType dataType, boolean multiDataSetAlgorithm) {
         return filterInclusivelyByAllOrSpecificDataType(this.models, dataType, multiDataSetAlgorithm);
     }
 
-    public List<AlgorithmModel> getModels(final AlgType algType, final DataType dataType, final boolean multiDataSetAlgorithm) {
+    public List<AlgorithmModel> getModels(AlgType algType, DataType dataType, boolean multiDataSetAlgorithm) {
         return this.modelMap.containsKey(algType)
                 ? filterInclusivelyByAllOrSpecificDataType(this.modelMap.get(algType), dataType, multiDataSetAlgorithm)
                 : Collections.EMPTY_LIST;

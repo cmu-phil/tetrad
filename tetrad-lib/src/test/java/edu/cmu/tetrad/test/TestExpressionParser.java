@@ -43,7 +43,7 @@ public class TestExpressionParser {
 
     @Test
     public void test1() {
-        final Map<String, Double> values = new HashMap<>();
+        Map<String, Double> values = new HashMap<>();
 
         values.put("b11", 1.0);
         values.put("X1", 2.0);
@@ -61,14 +61,14 @@ public class TestExpressionParser {
         values.put("T", 14.0);
         values.put("R", 15.0);
 
-        final Context context = new Context() {
-            public Double getValue(final String var) {
+        Context context = new Context() {
+            public Double getValue(String var) {
                 return values.get(var);
             }
         };
 
 
-        final Map<String, Double> formulasToEvaluations = new HashMap<>();
+        Map<String, Double> formulasToEvaluations = new HashMap<>();
 
         formulasToEvaluations.put("0", 0.0);
         formulasToEvaluations.put("b11*X1 + sin(X2) + B22*X2 + B12*X4+b13*X5", 100.14);
@@ -146,23 +146,23 @@ public class TestExpressionParser {
         formulasToEvaluations.put("IF(1 < 2 AND 3 < 4, 1, 2)", 1.0);
 
 
-        final ExpressionParser parser = new ExpressionParser();
+        ExpressionParser parser = new ExpressionParser();
 
         try {
-            for (final String formula : formulasToEvaluations.keySet()) {
-                final Expression expression = parser.parseExpression(formula);
+            for (String formula : formulasToEvaluations.keySet()) {
+                Expression expression = parser.parseExpression(formula);
 
-                final double value = expression.evaluate(context);
+                double value = expression.evaluate(context);
 
                 assertEquals(formulasToEvaluations.get(formula), value, 0.01);
             }
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
     public void test2() {
-        final Map<String, Double> values = new HashMap<>();
+        Map<String, Double> values = new HashMap<>();
 
         values.put("b11", 1.0);
         values.put("X1", 2.0);
@@ -182,13 +182,13 @@ public class TestExpressionParser {
         values.put("s2", 0.0);
         values.put("s3", 1.0);
 
-        final Context context = new Context() {
-            public Double getValue(final String var) {
+        Context context = new Context() {
+            public Double getValue(String var) {
                 return values.get(var);
             }
         };
 
-        final List<String> formulas = new ArrayList<>();
+        List<String> formulas = new ArrayList<>();
 //
         formulas.add("ChiSquare(s3)");
         formulas.add("Gamma(1, 1)");
@@ -209,14 +209,14 @@ public class TestExpressionParser {
         formulas.add("Split(0, 1, 5, 6)");
         formulas.add("Mixture(0.5, N(-2, 0.5), 0.5, N(2, 0.5))");
 //
-        final ExpressionParser parser = new ExpressionParser();
+        ExpressionParser parser = new ExpressionParser();
 
         try {
-            for (final String formula : formulas) {
-                final Expression expression = parser.parseExpression(formula);
-                final double value = expression.evaluate(context);
+            for (String formula : formulas) {
+                Expression expression = parser.parseExpression(formula);
+                double value = expression.evaluate(context);
             }
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             e.printStackTrace();
         }
     }
@@ -240,7 +240,7 @@ public class TestExpressionParser {
 //        String regex = regex5;
         final String regex = regex6;
 
-        final java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
         Matcher matcher = pattern.matcher("0.5");
         boolean matches = matcher.matches();
 
@@ -290,7 +290,7 @@ public class TestExpressionParser {
     // Formulas that should and should not fail.
     @Test
     public void test4() {
-        final Map<String, Integer> formulasToOffsets = new LinkedHashMap<>();
+        Map<String, Integer> formulasToOffsets = new LinkedHashMap<>();
 
         // -1 means it should parse.
         formulasToOffsets.put("X X", 2);
@@ -305,17 +305,17 @@ public class TestExpressionParser {
         formulasToOffsets.put("b1*X1 +@**!! b2 * X2", 7);
         formulasToOffsets.put("X7", 0);
 
-        final List<String> otherNodes = new ArrayList<>();
+        List<String> otherNodes = new ArrayList<>();
         otherNodes.add("X7");
 
-        final ExpressionParser parser = new ExpressionParser(otherNodes, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
+        ExpressionParser parser = new ExpressionParser(otherNodes, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
 
-        for (final String formula : formulasToOffsets.keySet()) {
+        for (String formula : formulasToOffsets.keySet()) {
             try {
                 parser.parseExpression(formula);
                 assertEquals(formulasToOffsets.get(formula).intValue(), -1);
-            } catch (final ParseException e) {
-                final int offset = e.getErrorOffset();
+            } catch (ParseException e) {
+                int offset = e.getErrorOffset();
                 assertEquals(formulasToOffsets.get(formula).intValue(), offset);
             }
         }
@@ -324,15 +324,15 @@ public class TestExpressionParser {
     // Test distribution means.
     @Test
     public void test5() {
-        final Map<String, Double> values = new HashMap<>();
+        Map<String, Double> values = new HashMap<>();
 
-        final Context context = new Context() {
-            public Double getValue(final String var) {
+        Context context = new Context() {
+            public Double getValue(String var) {
                 return values.get(var);
             }
         };
 
-        final Map<String, Double> formulas = new LinkedHashMap<>();
+        Map<String, Double> formulas = new LinkedHashMap<>();
 
         formulas.put("ChiSquare(1)", 1.0);
         formulas.put("Gamma(2, .5)", 1.0);
@@ -344,25 +344,25 @@ public class TestExpressionParser {
         formulas.put("Uniform(0, 1)", 0.5);
         formulas.put("Split(0, 1, 5, 6)", 3.0);
 
-        final ExpressionParser parser = new ExpressionParser();
+        ExpressionParser parser = new ExpressionParser();
 
         try {
-            for (final String formula : formulas.keySet()) {
-                final Expression expression = parser.parseExpression(formula);
+            for (String formula : formulas.keySet()) {
+                Expression expression = parser.parseExpression(formula);
 
                 double sum = 0.0;
                 final int sampleSize = 10000;
 
                 for (int i = 0; i < sampleSize; i++) {
-                    final double value = expression.evaluate(context);
+                    double value = expression.evaluate(context);
                     sum += value;
                 }
 
-                final double mean = sum / sampleSize;
+                double mean = sum / sampleSize;
 
                 assertEquals(formulas.get(formula), mean, 0.1);
             }
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             e.printStackTrace();
         }
     }

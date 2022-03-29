@@ -25,7 +25,7 @@ public class FaskVote {
 
     private final List<DataSet> dataSets;
 
-    public FaskVote(final List<DataSet> dataSets, final ScoreWrapper score, final IndependenceWrapper test) {
+    public FaskVote(List<DataSet> dataSets, ScoreWrapper score, IndependenceWrapper test) {
         this.dataSets = dataSets;
         this.score = score;
         this.test = test;
@@ -33,26 +33,26 @@ public class FaskVote {
 
     //======================================== PUBLIC METHODS ====================================//
 
-    public Graph search(final Parameters parameters) {
-        final List<DataModel> _dataSets = new ArrayList<>();
+    public Graph search(Parameters parameters) {
+        List<DataModel> _dataSets = new ArrayList<>();
 
-        for (final DataSet dataSet : this.dataSets) {
+        for (DataSet dataSet : this.dataSets) {
             _dataSets.add(DataUtils.standardizeData(dataSet));
         }
 
-        final ImagesSemBic imagesSemBic = new ImagesSemBic();
+        ImagesSemBic imagesSemBic = new ImagesSemBic();
         imagesSemBic.setKnowledge(this.knowledge);
-        final Graph G0 = imagesSemBic.search(_dataSets, parameters);
+        Graph G0 = imagesSemBic.search(_dataSets, parameters);
 
-        final List<Node> V = this.dataSets.get(0).getVariables();
-        final Graph G = new EdgeListGraph(V);
+        List<Node> V = this.dataSets.get(0).getVariables();
+        Graph G = new EdgeListGraph(V);
 
-        final List<Graph> fasks = new ArrayList<>();
+        List<Graph> fasks = new ArrayList<>();
 
-        final List<Node> nodes = G0.getNodes();
+        List<Node> nodes = G0.getNodes();
 
-        for (final DataSet dataSet : this.dataSets) {
-            final Fask fask = new Fask(dataSet,
+        for (DataSet dataSet : this.dataSets) {
+            Fask fask = new Fask(dataSet,
                     this.score.getScore(dataSet, parameters),
                     this.test.getTest(dataSet, parameters));
             fask.setExternalGraph(GraphUtils.undirectedGraph(G0));
@@ -75,18 +75,18 @@ public class FaskVote {
             fasks.add(g);
         }
 
-        for (final Edge edge : G0.getEdges()) {
-            final Node X = edge.getNode1();
-            final Node Y = edge.getNode2();
+        for (Edge edge : G0.getEdges()) {
+            Node X = edge.getNode1();
+            Node Y = edge.getNode2();
 
-            final Edge dir1 = Edges.directedEdge(X, Y);
-            final Edge dir2 = Edges.directedEdge(Y, X);
+            Edge dir1 = Edges.directedEdge(X, Y);
+            Edge dir2 = Edges.directedEdge(Y, X);
 
             int sum1 = 0;
             int sum2 = 0;
             int count = 0;
 
-            for (final Graph g : fasks) {
+            for (Graph g : fasks) {
                 if (g.containsEdge(dir1)) {
                     sum1++;
                 }
@@ -100,8 +100,8 @@ public class FaskVote {
                 }
             }
 
-            final double mean1 = sum1 / (double) count;
-            final double mean2 = sum2 / (double) count;
+            double mean1 = sum1 / (double) count;
+            double mean2 = sum2 / (double) count;
 
             System.out.println(X + " " + Y + " " + mean1 + " " + mean2);
 
@@ -124,7 +124,7 @@ public class FaskVote {
     /**
      * @param knowledge Knowledge of forbidden and required edges.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

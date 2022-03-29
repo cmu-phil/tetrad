@@ -62,24 +62,24 @@ public class MixedTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataWithNoHeader() throws IOException {
-        final Path dataFile = Paths.get(getClass().getResource("/data/tabular/mixed/no_header_sim_test_data.csv").getFile());
-        final MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+        Path dataFile = Paths.get(getClass().getResource("/data/tabular/mixed/no_header_sim_test_data.csv").getFile());
+        MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteCharacter);
         dataReader.setMissingDataMarker(this.missingValueMarker);
         dataReader.setHasHeader(false);
 
-        final Data data = dataReader.readInData();
+        Data data = dataReader.readInData();
         Assert.assertTrue(data instanceof MixedTabularData);
 
-        final MixedTabularData mixedTabularData = (MixedTabularData) data;
+        MixedTabularData mixedTabularData = (MixedTabularData) data;
 
-        final DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
-        final double[][] continuousData = mixedTabularData.getContinuousData();
-        final int[][] discreteData = mixedTabularData.getDiscreteData();
+        DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
+        double[][] continuousData = mixedTabularData.getContinuousData();
+        int[][] discreteData = mixedTabularData.getDiscreteData();
 
-        final int numOfRows = mixedTabularData.getNumOfRows();
-        final int numOfCols = (continuousData.length > 0)
+        int numOfRows = mixedTabularData.getNumOfRows();
+        int numOfCols = (continuousData.length > 0)
                 ? continuousData.length
                 : (discreteData.length > 0) ? discreteData.length : 0;
 
@@ -111,25 +111,25 @@ public class MixedTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataWithNoHeaderExcludingVariableByColumnNumbers() throws IOException {
-        final Path dataFile = Paths.get(getClass().getResource("/data/tabular/mixed/no_header_sim_test_data.csv").getFile());
-        final MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+        Path dataFile = Paths.get(getClass().getResource("/data/tabular/mixed/no_header_sim_test_data.csv").getFile());
+        MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteCharacter);
         dataReader.setMissingDataMarker(this.missingValueMarker);
         dataReader.setHasHeader(false);
 
-        final int[] excludedColumns = {5, 3, 8, 10, 11, 9};
-        final Data data = dataReader.readInData(excludedColumns);
+        int[] excludedColumns = {5, 3, 8, 10, 11, 9};
+        Data data = dataReader.readInData(excludedColumns);
         Assert.assertTrue(data instanceof MixedTabularData);
 
-        final MixedTabularData mixedTabularData = (MixedTabularData) data;
+        MixedTabularData mixedTabularData = (MixedTabularData) data;
 
-        final DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
-        final double[][] continuousData = mixedTabularData.getContinuousData();
-        final int[][] discreteData = mixedTabularData.getDiscreteData();
+        DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
+        double[][] continuousData = mixedTabularData.getContinuousData();
+        int[][] discreteData = mixedTabularData.getDiscreteData();
 
-        final int numOfRows = mixedTabularData.getNumOfRows();
-        final int numOfCols = (continuousData.length > 0)
+        int numOfRows = mixedTabularData.getNumOfRows();
+        int numOfCols = (continuousData.length > 0)
                 ? continuousData.length
                 : (discreteData.length > 0) ? discreteData.length : 0;
 
@@ -169,25 +169,25 @@ public class MixedTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataExcludingVariableByColumnNumbers() throws IOException {
-        final int[] columnsToExclude = {5, 3, 1, 8, 10, 11};
-        for (final Path dataFile : this.dataFiles) {
-            final MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+        int[] columnsToExclude = {5, 3, 1, 8, 10, 11};
+        for (Path dataFile : this.dataFiles) {
+            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
             dataReader.setCommentMarker(this.commentMarker);
             dataReader.setQuoteCharacter(this.quoteCharacter);
             dataReader.setMissingDataMarker(this.missingValueMarker);
             dataReader.setHasHeader(this.hasHeader);
 
-            final Data data = dataReader.readInData(columnsToExclude);
+            Data data = dataReader.readInData(columnsToExclude);
             Assert.assertTrue(data instanceof MixedTabularData);
 
-            final MixedTabularData mixedTabularData = (MixedTabularData) data;
+            MixedTabularData mixedTabularData = (MixedTabularData) data;
 
-            final DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
-            final double[][] continuousData = mixedTabularData.getContinuousData();
-            final int[][] discreteData = mixedTabularData.getDiscreteData();
+            DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
+            double[][] continuousData = mixedTabularData.getContinuousData();
+            int[][] discreteData = mixedTabularData.getDiscreteData();
 
-            final int numOfRows = mixedTabularData.getNumOfRows();
-            final int numOfCols = (continuousData == null)
+            int numOfRows = mixedTabularData.getNumOfRows();
+            int numOfCols = (continuousData == null)
                     ? (discreteData == null) ? 0 : discreteData.length
                     : continuousData.length;
 
@@ -212,25 +212,25 @@ public class MixedTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataExcludingDiscreteVariableByNames() throws IOException {
-        final Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X2", "X4", "X5", "X7", "X10"));
-        for (final Path dataFile : this.dataFiles) {
-            final MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+        Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X2", "X4", "X5", "X7", "X10"));
+        for (Path dataFile : this.dataFiles) {
+            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
             dataReader.setCommentMarker(this.commentMarker);
             dataReader.setQuoteCharacter(this.quoteCharacter);
             dataReader.setMissingDataMarker(this.missingValueMarker);
             dataReader.setHasHeader(this.hasHeader);
 
-            final Data data = dataReader.readInData(namesOfColumnsToExclude);
+            Data data = dataReader.readInData(namesOfColumnsToExclude);
             Assert.assertTrue(data instanceof MixedTabularData);
 
-            final MixedTabularData mixedTabularData = (MixedTabularData) data;
+            MixedTabularData mixedTabularData = (MixedTabularData) data;
 
-            final DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
-            final double[][] continuousData = mixedTabularData.getContinuousData();
-            final int[][] discreteData = mixedTabularData.getDiscreteData();
+            DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
+            double[][] continuousData = mixedTabularData.getContinuousData();
+            int[][] discreteData = mixedTabularData.getDiscreteData();
 
-            final int numOfRows = mixedTabularData.getNumOfRows();
-            final int numOfCols = (continuousData.length > 0)
+            int numOfRows = mixedTabularData.getNumOfRows();
+            int numOfCols = (continuousData.length > 0)
                     ? continuousData.length
                     : (discreteData.length > 0) ? discreteData.length : 0;
 
@@ -263,25 +263,25 @@ public class MixedTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataExcludingContinuousVariableByNames() throws IOException {
-        final Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X1", "X3", "X6", "X8", "X9"));
-        for (final Path dataFile : this.dataFiles) {
-            final MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+        Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X1", "X3", "X6", "X8", "X9"));
+        for (Path dataFile : this.dataFiles) {
+            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
             dataReader.setCommentMarker(this.commentMarker);
             dataReader.setQuoteCharacter(this.quoteCharacter);
             dataReader.setMissingDataMarker(this.missingValueMarker);
             dataReader.setHasHeader(this.hasHeader);
 
-            final Data data = dataReader.readInData(namesOfColumnsToExclude);
+            Data data = dataReader.readInData(namesOfColumnsToExclude);
             Assert.assertTrue(data instanceof MixedTabularData);
 
-            final MixedTabularData mixedTabularData = (MixedTabularData) data;
+            MixedTabularData mixedTabularData = (MixedTabularData) data;
 
-            final DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
-            final double[][] continuousData = mixedTabularData.getContinuousData();
-            final int[][] discreteData = mixedTabularData.getDiscreteData();
+            DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
+            double[][] continuousData = mixedTabularData.getContinuousData();
+            int[][] discreteData = mixedTabularData.getDiscreteData();
 
-            final int numOfRows = mixedTabularData.getNumOfRows();
-            final int numOfCols = (continuousData.length > 0)
+            int numOfRows = mixedTabularData.getNumOfRows();
+            int numOfCols = (continuousData.length > 0)
                     ? continuousData.length
                     : (discreteData.length > 0) ? discreteData.length : 0;
 
@@ -314,25 +314,25 @@ public class MixedTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataExcludingVariableByNames() throws IOException {
-        final Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X1", "X3", "X4", "X6", "X8", "X10"));
-        for (final Path dataFile : this.dataFiles) {
-            final MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+        Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X1", "X3", "X4", "X6", "X8", "X10"));
+        for (Path dataFile : this.dataFiles) {
+            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
             dataReader.setCommentMarker(this.commentMarker);
             dataReader.setQuoteCharacter(this.quoteCharacter);
             dataReader.setMissingDataMarker(this.missingValueMarker);
             dataReader.setHasHeader(this.hasHeader);
 
-            final Data data = dataReader.readInData(namesOfColumnsToExclude);
+            Data data = dataReader.readInData(namesOfColumnsToExclude);
             Assert.assertTrue(data instanceof MixedTabularData);
 
-            final MixedTabularData mixedTabularData = (MixedTabularData) data;
+            MixedTabularData mixedTabularData = (MixedTabularData) data;
 
-            final DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
-            final double[][] continuousData = mixedTabularData.getContinuousData();
-            final int[][] discreteData = mixedTabularData.getDiscreteData();
+            DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
+            double[][] continuousData = mixedTabularData.getContinuousData();
+            int[][] discreteData = mixedTabularData.getDiscreteData();
 
-            final int numOfRows = mixedTabularData.getNumOfRows();
-            final int numOfCols = (continuousData == null)
+            int numOfRows = mixedTabularData.getNumOfRows();
+            int numOfCols = (continuousData == null)
                     ? (discreteData == null) ? 0 : discreteData.length
                     : continuousData.length;
 
@@ -357,24 +357,24 @@ public class MixedTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInData() throws IOException {
-        for (final Path dataFile : this.dataFiles) {
-            final MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+        for (Path dataFile : this.dataFiles) {
+            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
             dataReader.setCommentMarker(this.commentMarker);
             dataReader.setQuoteCharacter(this.quoteCharacter);
             dataReader.setMissingDataMarker(this.missingValueMarker);
             dataReader.setHasHeader(this.hasHeader);
 
-            final Data data = dataReader.readInData();
+            Data data = dataReader.readInData();
             Assert.assertTrue(data instanceof MixedTabularData);
 
-            final MixedTabularData mixedTabularData = (MixedTabularData) data;
+            MixedTabularData mixedTabularData = (MixedTabularData) data;
 
-            final DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
-            final double[][] continuousData = mixedTabularData.getContinuousData();
-            final int[][] discreteData = mixedTabularData.getDiscreteData();
+            DiscreteDataColumn[] dataColumns = mixedTabularData.getDataColumns();
+            double[][] continuousData = mixedTabularData.getContinuousData();
+            int[][] discreteData = mixedTabularData.getDiscreteData();
 
-            final int numOfRows = mixedTabularData.getNumOfRows();
-            final int numOfCols = (continuousData == null)
+            int numOfRows = mixedTabularData.getNumOfRows();
+            int numOfCols = (continuousData == null)
                     ? (discreteData == null) ? 0 : discreteData.length
                     : continuousData.length;
 

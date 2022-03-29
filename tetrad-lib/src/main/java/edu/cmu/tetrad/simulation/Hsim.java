@@ -24,7 +24,7 @@ public class Hsim {
 
     //************Constructors***************//
 
-    public Hsim(final Dag thedag, final Set<Node> thesimnodes, final DataSet thedata) {
+    public Hsim(Dag thedag, Set<Node> thesimnodes, DataSet thedata) {
         if (thedata.isContinuous()) {
             throw new IllegalArgumentException(
                     "Hsim currently only accepts discrete data.");
@@ -50,9 +50,9 @@ public class Hsim {
         /**Find Markov Blankets for resimulated variables**/
         /**this needs to be made general, rather than only for two specific names nodes**/
         if (this.verbose) System.out.println("Finding a Markov blanket for resimulated nodes");
-        final Set<Node> mbAll = new HashSet<Node>(); //initialize an empty set of nodes;
+        Set<Node> mbAll = new HashSet<Node>(); //initialize an empty set of nodes;
         Set<Node> mbAdd = new HashSet<Node>(); //init set for adding
-        for (final Node node : this.simnodes) {
+        for (Node node : this.simnodes) {
             mbAdd = Hsim.mb(this.mydag, node); //find mb for that node
             mbAll.addAll(mbAdd); //use .addAll to add this mb to the set
         }
@@ -65,17 +65,17 @@ public class Hsim {
         if (this.verbose) System.out.println("Finding a subgraph over the Markov Blanket and Resimulated Nodes");
 
         //need a List as input for subgraph method, but mbAll is a Set
-        final List<Node> mbListAll = new ArrayList<Node>(mbAll);
-        final Graph subgraph = this.mydag.subgraph(mbListAll);
+        List<Node> mbListAll = new ArrayList<Node>(mbAll);
+        Graph subgraph = this.mydag.subgraph(mbListAll);
 
         /**Learn an instantiated model over the subgraph**/
         if (this.verbose) System.out.println("Learning an instantiated model for the subgraph");
 
         //learn a dirichlet IM for the subgraph using dataSet
-        final BayesPm subgraphPM = new BayesPm(subgraph);
-        final DirichletBayesIm subgraphIM = DirichletBayesIm.symmetricDirichletIm(subgraphPM, 1.0);
-        final DirichletEstimator estimator = new DirichletEstimator();
-        final DirichletBayesIm fittedsubgraphIM = DirichletEstimator.estimate(subgraphIM, this.data);
+        BayesPm subgraphPM = new BayesPm(subgraph);
+        DirichletBayesIm subgraphIM = DirichletBayesIm.symmetricDirichletIm(subgraphPM, 1.0);
+        DirichletEstimator estimator = new DirichletEstimator();
+        DirichletBayesIm fittedsubgraphIM = DirichletEstimator.estimate(subgraphIM, this.data);
         //if (verbose) System.out.println(fittedsubgraphIM.getVariable());
 
         /**Use the learned instantiated subgraph model to create the resimulated data**/
@@ -97,26 +97,26 @@ public class Hsim {
         //loop through each row of the data set, conditioning and drawing values each time.
         for (int row = 0; row < this.data.getNumRows(); row++) {
             //create a new evidence object
-            final Evidence evidence = Evidence.tautology(fittedsubgraphIM);
+            Evidence evidence = Evidence.tautology(fittedsubgraphIM);
 
             //need to define the set of variables being conditioned upon. Start with the outer set of MB
-            final Set<Node> mbOuter = mbAll;
+            Set<Node> mbOuter = mbAll;
             //need to remove the whole set of starters, not just some X and Y... how do? loop a .remove?
-            for (final Node node : this.simnodes) {
+            for (Node node : this.simnodes) {
                 mbOuter.remove(node);
             }
             //THIS SHOULD ALL BE INSIDE ANOTHER LOOP THROUGH THE RESIM VARS:
             //this actually needs to be more careful than a for each. I think a causal ordering of resim should be used?
-            final Set<Node> conditionNodes = mbOuter;
-            for (final Node node : this.simnodes) {
+            Set<Node> conditionNodes = mbOuter;
+            for (Node node : this.simnodes) {
                 //identify the conditioning set for this node, which is mbAll plus the previously resimmed nodes
 
                 //loop through all the nodes being conditioned upon, and set their values in the evidence prop
-                for (final Node i : conditionNodes) {
-                    final int nodeIndex = evidence.getNodeIndex(i.getName());
+                for (Node i : conditionNodes) {
+                    int nodeIndex = evidence.getNodeIndex(i.getName());
                     //how do i get the category index from a value in the data?
                     //int catIndex =
-                    final int nodeColumn = this.data.getColumn(i);
+                    int nodeColumn = this.data.getColumn(i);
                     //Pray to whoever you can think of that the CategoryIndex is just the int in the data
                     //According to this comment in the DataSet class, for the getInt method, we can do this:
                     //"For discrete variables, this returns the category index of the datum for the variable at that column."
@@ -125,13 +125,13 @@ public class Hsim {
 
 
                 //use the new Evidence object to create the updater
-                final RowSummingExactUpdater conditionUpdate = new RowSummingExactUpdater(fittedsubgraphIM, evidence);
+                RowSummingExactUpdater conditionUpdate = new RowSummingExactUpdater(fittedsubgraphIM, evidence);
 
                 //NEED THIS TO WORK FOR MORE THAN NODEX, needs to be arbitrary and looping
                 //use the updater to create the marginal distribution for nodeX:
                 //need to get nodeX's int index first
 
-                final int nodeIndex = evidence.getNodeIndex(node.getName());
+                int nodeIndex = evidence.getNodeIndex(node.getName());
 
                 //===complain if no node of that name is found, which makes nodeIndex = -1
                 if (nodeIndex == -1) {
@@ -149,11 +149,11 @@ public class Hsim {
                 //that would correspond to n different categories
                 //so, we're gonna see how many categories there are, call that n, and iterate from 0 to n-1
 
-                final int numCat = evidence.getNumCategories(nodeIndex);
+                int numCat = evidence.getNumCategories(nodeIndex);
 
                 //we generate a random number between 0 and 1, and then count prob mass for each cat until we hit it
-                final RandomUtil random = RandomUtil.getInstance();
-                final double cutoff = random.nextDouble();
+                RandomUtil random = RandomUtil.getInstance();
+                double cutoff = random.nextDouble();
                 //if (verbose) System.out.println(cutoff);
 
                 //****** turns out, this needs to be generalized outside of just X and Y as well. doh!*******//
@@ -165,7 +165,7 @@ public class Hsim {
                 //now iterate through the categories to see which one owns that probability mass real estate
                 for (int i = 0; i < numCat; i++) {
                     //for each category, calc the marginal conditional prob of nodeX having that value
-                    final double probability = conditionUpdate.getMarginal(nodeIndex, i);
+                    double probability = conditionUpdate.getMarginal(nodeIndex, i);
                     //if (verbose) System.out.println("cat " + i + " prob " + probability);
                     sum += probability;
 
@@ -194,11 +194,11 @@ public class Hsim {
 //========================================PRIVATE METHODS====================================//
 
     // Calculates the Markov blanket of a node in a graph.
-    private static Set<Node> mb(final Graph graph, final Node z) {
-        final Set<Node> mb = new HashSet<>(graph.getAdjacentNodes(z));
+    private static Set<Node> mb(Graph graph, Node z) {
+        Set<Node> mb = new HashSet<>(graph.getAdjacentNodes(z));
 
-        for (final Node c : graph.getChildren(z)) {
-            for (final Node p : graph.getParents(c)) {
+        for (Node c : graph.getChildren(z)) {
+            for (Node p : graph.getParents(c)) {
                 //make sure you don't add z itslef to the markov blanket
                 if (p != z) {
                     mb.add(p);
@@ -210,19 +210,19 @@ public class Hsim {
     }
 
     //***********Private methods for setting private variables***********//
-    private void setVerbose(final boolean verbosity) {
+    private void setVerbose(boolean verbosity) {
         this.verbose = verbosity;
     }
 
-    private void setDag(final Dag thedag) {
+    private void setDag(Dag thedag) {
         this.mydag = thedag;
     }
 
-    private void setSimnodes(final Set<Node> thenodes) {
+    private void setSimnodes(Set<Node> thenodes) {
         this.simnodes = thenodes;
     }
 
-    private void setData(final DataSet thedata) {
+    private void setData(DataSet thedata) {
         this.data = thedata;
     }
 }

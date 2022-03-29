@@ -168,7 +168,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         return this.outGraph;
     }
 
-    public void setResultGraph(final Graph graph) {
+    public void setResultGraph(Graph graph) {
         this.outGraph = graph;
     }
 
@@ -197,33 +197,33 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
             return;
         }
 
-        final DataSet regressorsDataSet = this.dataSets.get(getModelIndex()).copy();
-        final Node target = regressorsDataSet.getVariable(this.targetName);
+        DataSet regressorsDataSet = this.dataSets.get(getModelIndex()).copy();
+        Node target = regressorsDataSet.getVariable(this.targetName);
         regressorsDataSet.removeColumn(target);
 
-        final List<String> names = regressorsDataSet.getVariableNames();
+        List<String> names = regressorsDataSet.getVariableNames();
 
         //Get the list of regressors selected by the user
-        final List<Node> regressorNodes = new ArrayList<>();
+        List<Node> regressorNodes = new ArrayList<>();
 
-        for (final String s : this.regressorNames) {
+        for (String s : this.regressorNames) {
             regressorNodes.add(this.dataSets.get(getModelIndex()).getVariable(s));
         }
 
         //If the user selected none, use them all
         if (this.regressorNames.size() > 0) {
-            for (final String name1 : names) {
-                final Node regressorVar = regressorsDataSet.getVariable(name1);
+            for (String name1 : names) {
+                Node regressorVar = regressorsDataSet.getVariable(name1);
                 if (!this.regressorNames.contains(regressorVar.getName())) {
                     regressorsDataSet.removeColumn(regressorVar);
                 }
             }
         }
 
-        final int ncases = regressorsDataSet.getNumRows();
-        final int nvars = regressorsDataSet.getNumColumns();
+        int ncases = regressorsDataSet.getNumRows();
+        int nvars = regressorsDataSet.getNumColumns();
 
-        final double[][] regressors = new double[nvars][ncases];
+        double[][] regressors = new double[nvars][ncases];
 
         for (int i = 0; i < nvars; i++) {
             for (int j = 0; j < ncases; j++) {
@@ -231,7 +231,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
             }
         }
 
-        final LogisticRegression logRegression = new LogisticRegression(this.dataSets.get(getModelIndex()));
+        LogisticRegression logRegression = new LogisticRegression(this.dataSets.get(getModelIndex()));
         logRegression.setAlpha(this.alpha);
 
         this.result = logRegression.regress((DiscreteVariable) target, regressorNodes);
@@ -245,7 +245,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         throw new UnsupportedOperationException();
     }
 
-    public void setExternalGraph(final Graph graph) {
+    public void setExternalGraph(Graph graph) {
     }
 
     public Graph getExternalGraph() {
@@ -272,7 +272,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     @Override
-    public void setRegressorName(final List<String> predictors) {
+    public void setRegressorName(List<String> predictors) {
         this.regressorNames = predictors;
     }
 
@@ -281,7 +281,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     @Override
-    public void setTargetName(final String target) {
+    public void setTargetName(String target) {
         this.targetName = target;
     }
 
@@ -298,7 +298,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -307,7 +307,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -329,19 +329,19 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
      * @return the list of triples corresponding to
      * <code>getTripleClassificationNames</code> for the given node.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<>();
     }
 
     @Override
     public Map<String, String> getParamSettings() {
-        final Map<String, String> paramSettings = new HashMap<>();
+        Map<String, String> paramSettings = new HashMap<>();
         paramSettings.put("Algorithm", "Regression");
         return paramSettings;
     }
 
     @Override
-    public void setAllParamSettings(final Map<String, String> paramSettings) {
+    public void setAllParamSettings(Map<String, String> paramSettings) {
 //        Map<String, String> allParamsSettings = paramSettings;
     }
 
@@ -362,11 +362,11 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         return this.modelSourceName;
     }
 
-    public void setModelIndex(final int modelIndex) {
+    public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
-    public void setDataSet(final DataSet dataSet) {
+    public void setDataSet(DataSet dataSet) {
         this.dataSets = new ArrayList<>();
         this.dataSets.add(dataSet);
     }

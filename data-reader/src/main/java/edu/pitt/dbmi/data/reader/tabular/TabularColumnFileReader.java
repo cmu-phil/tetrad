@@ -44,21 +44,21 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TabularColumnFileReader.class);
 
-    public TabularColumnFileReader(final Path dataFile, final Delimiter delimiter) {
+    public TabularColumnFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
     @Override
-    public DataColumn[] readInDataColumns(final boolean isDiscrete) throws IOException {
+    public DataColumn[] readInDataColumns(boolean isDiscrete) throws IOException {
         return readInDataColumns(Collections.EMPTY_SET, isDiscrete);
     }
 
     @Override
-    public DataColumn[] readInDataColumns(final Set<String> namesOfColumnsToExclude, final boolean isDiscrete) throws IOException {
+    public DataColumn[] readInDataColumns(Set<String> namesOfColumnsToExclude, boolean isDiscrete) throws IOException {
         if (namesOfColumnsToExclude == null || namesOfColumnsToExclude.isEmpty()) {
             return getColumns(new int[0], isDiscrete);
         } else {
-            final Set<String> cleanedColumnNames = new HashSet<>();
+            Set<String> cleanedColumnNames = new HashSet<>();
             if (Character.isDefined(this.quoteCharacter)) {
                 namesOfColumnsToExclude.stream()
                         .filter(Objects::nonNull)
@@ -74,27 +74,27 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                         .forEach(cleanedColumnNames::add);
             }
 
-            final int[] columnsToExclude = toColumnNumbers(cleanedColumnNames);
+            int[] columnsToExclude = toColumnNumbers(cleanedColumnNames);
 
             return getColumns(columnsToExclude, isDiscrete);
         }
     }
 
     @Override
-    public DataColumn[] readInDataColumns(final int[] columnsToExclude, final boolean isDiscrete) throws IOException {
-        final int numOfCols = countNumberOfColumns();
-        final int[] sortedColsToExclude = Columns.sortNew(columnsToExclude);
-        final int[] validColsToExclude = Columns.extractValidColumnNumbers(numOfCols, sortedColsToExclude);
+    public DataColumn[] readInDataColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
+        int numOfCols = countNumberOfColumns();
+        int[] sortedColsToExclude = Columns.sortNew(columnsToExclude);
+        int[] validColsToExclude = Columns.extractValidColumnNumbers(numOfCols, sortedColsToExclude);
 
         return getColumns(validColsToExclude, isDiscrete);
     }
 
     @Override
-    public DataColumn[] generateColumns(final int[] columnsToExclude, final boolean isDiscrete) throws IOException {
-        final List<DataColumn> columns = new LinkedList<>();
+    public DataColumn[] generateColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
+        List<DataColumn> columns = new LinkedList<>();
 
-        final int[] sortedColsToExclude = Columns.sortNew(columnsToExclude);
-        final int numOfCols = countNumberOfColumns();
+        int[] sortedColsToExclude = Columns.sortNew(columnsToExclude);
+        int numOfCols = countNumberOfColumns();
         final String prefix = "C";
         int index = 0;
         for (int col = 1; col <= numOfCols && !Thread.currentThread().isInterrupted(); col++) {
@@ -108,47 +108,47 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
         return columns.toArray(new DataColumn[columns.size()]);
     }
 
-    private DataColumn[] getColumns(final int[] columnsToExclude, final boolean isDiscrete) throws IOException {
-        final List<DataColumn> columns = new LinkedList<>();
+    private DataColumn[] getColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
+        List<DataColumn> columns = new LinkedList<>();
 
-        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
             boolean finished = false;
 
-            final byte delimChar = this.delimiter.getByteValue();
+            byte delimChar = this.delimiter.getByteValue();
             byte prevChar = -1;
 
             // comment marker check
-            final byte[] comment = this.commentMarker.getBytes();
+            byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
             // excluded columns check
-            final int numOfExCols = columnsToExclude.length;
+            int numOfExCols = columnsToExclude.length;
             int exColsIndex = 0;
 
             int colNum = 0;
             int lineNum = 1;
-            final StringBuilder dataBuilder = new StringBuilder();
+            StringBuilder dataBuilder = new StringBuilder();
 
-            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
+            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                    final byte currChar = buffer[i];
+                    byte currChar = buffer[i];
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         finished = hasSeenNonblankChar && !skip;
                         if (finished) {
-                            final String value = dataBuilder.toString().trim();
+                            String value = dataBuilder.toString().trim();
                             dataBuilder.delete(0, dataBuilder.length());
 
                             colNum++;
                             if (numOfExCols == 0 || exColsIndex >= numOfExCols || colNum != columnsToExclude[exColsIndex]) {
                                 if (value.isEmpty()) {
-                                    final String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
+                                    String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
                                     TabularColumnFileReader.LOGGER.error(errMsg);
                                     throw new DataReaderException(errMsg);
                                 } else {
@@ -196,7 +196,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                final boolean isDelimiter;
+                                boolean isDelimiter;
                                 switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
@@ -206,7 +206,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                                 }
 
                                 if (isDelimiter) {
-                                    final String value = dataBuilder.toString().trim();
+                                    String value = dataBuilder.toString().trim();
                                     dataBuilder.delete(0, dataBuilder.length());
 
                                     colNum++;
@@ -214,7 +214,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                                         exColsIndex++;
                                     } else {
                                         if (value.isEmpty()) {
-                                            final String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
+                                            String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
                                             TabularColumnFileReader.LOGGER.error(errMsg);
                                             throw new DataReaderException(errMsg);
                                         } else {
@@ -235,13 +235,13 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
 
             finished = hasSeenNonblankChar && !skip;
             if (finished) {
-                final String value = dataBuilder.toString().trim();
+                String value = dataBuilder.toString().trim();
                 dataBuilder.delete(0, dataBuilder.length());
 
                 colNum++;
                 if (numOfExCols == 0 || exColsIndex >= numOfExCols || colNum != columnsToExclude[exColsIndex]) {
                     if (value.isEmpty()) {
-                        final String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
+                        String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
                         TabularColumnFileReader.LOGGER.error(errMsg);
                         throw new DataReaderException(errMsg);
                     } else {

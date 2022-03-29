@@ -34,33 +34,33 @@ public class SepsetsSet implements SepsetProducer {
     private double p;
     private boolean verbose;
 
-    public SepsetsSet(final SepsetMap sepsets, final IndependenceTest test) {
+    public SepsetsSet(SepsetMap sepsets, IndependenceTest test) {
         this.sepsets = sepsets;
         this.test = test;
     }
 
     @Override
-    public List<Node> getSepset(final Node a, final Node b) {
+    public List<Node> getSepset(Node a, Node b) {
         //isIndependent(a, b, sepsets.get(a, b));
         return this.sepsets.get(a, b);
     }
 
     @Override
-    public boolean isCollider(final Node i, final Node j, final Node k) {
-        final List<Node> sepset = this.sepsets.get(i, k);
+    public boolean isCollider(Node i, Node j, Node k) {
+        List<Node> sepset = this.sepsets.get(i, k);
         if (sepset == null) return false;
         else return !sepset.contains(j);
     }
 
     @Override
-    public boolean isNoncollider(final Node i, final Node j, final Node k) {
-        final List<Node> sepset = this.sepsets.get(i, k);
+    public boolean isNoncollider(Node i, Node j, Node k) {
+        List<Node> sepset = this.sepsets.get(i, k);
         isIndependent(i, k, this.sepsets.get(i, k));
         return sepset != null && sepset.contains(j);
     }
 
     @Override
-    public boolean isIndependent(final Node a, final Node b, final List<Node> c) {
+    public boolean isIndependent(Node a, Node b, List<Node> c) {
         return this.test.isIndependent(a, b, c);
     }
 
@@ -84,7 +84,7 @@ public class SepsetsSet implements SepsetProducer {
     }
 
     @Override
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 

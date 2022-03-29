@@ -34,7 +34,7 @@ public class ParameterCard extends AlgorithmParameterPanel {
 
     private final GeneralAlgorithmRunner algorithmRunner;
 
-    public ParameterCard(final GeneralAlgorithmRunner algorithmRunner) {
+    public ParameterCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
 
         initComponents();

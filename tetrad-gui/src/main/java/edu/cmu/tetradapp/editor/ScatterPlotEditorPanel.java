@@ -62,19 +62,19 @@ class ScatterPlotEditorPanel extends JPanel {
     /**
      * Constructs the editor panel given the initial scatter plot and the dataset.
      */
-    public ScatterPlotEditorPanel(final ScatterPlotOld scatterPlot, final DataSet dataSet) {
+    public ScatterPlotEditorPanel(ScatterPlotOld scatterPlot, DataSet dataSet) {
         //   construct components
         this.regressionBox = new JCheckBox();
         this.setLayout(new BorderLayout());
         // first build scatter plot and components used in the editor.
         this.scatterPlot = scatterPlot;
-        final Node selected = scatterPlot.getYVariable();
+        Node selected = scatterPlot.getYVariable();
         this.dataSet = dataSet;
         this.yVariableBox = new JComboBox();
         this.xVariableBox = new JComboBox();
-        final ListCellRenderer renderer = new VariableBoxRenderer();
+        ListCellRenderer renderer = new VariableBoxRenderer();
         this.yVariableBox.setRenderer(renderer);
-        for (final Node node : dataSet.getVariables()) {
+        for (Node node : dataSet.getVariables()) {
             if (node instanceof ContinuousVariable) {
                 this.yVariableBox.addItem(node);
                 if (node == selected) {
@@ -84,7 +84,7 @@ class ScatterPlotEditorPanel extends JPanel {
         }
 
         this.xVariableBox.setRenderer(renderer);
-        for (final Node node : dataSet.getVariables()) {
+        for (Node node : dataSet.getVariables()) {
             if (node instanceof ContinuousVariable) {
                 this.xVariableBox.addItem(node);
                 if (node == selected) {
@@ -95,7 +95,7 @@ class ScatterPlotEditorPanel extends JPanel {
 
         this.newCondBox = new JComboBox();
         this.newCondBox.setRenderer(renderer);
-        for (final Node node : dataSet.getVariables()) {
+        for (Node node : dataSet.getVariables()) {
             if (node instanceof ContinuousVariable) {
                 this.newCondBox.addItem(node);
                 if (node == selected) {
@@ -108,27 +108,27 @@ class ScatterPlotEditorPanel extends JPanel {
         this.add(buildEditArea(dataSet));
     }
 
-    private void changeScatterPlot(final ScatterPlotOld scatterPlot) {
+    private void changeScatterPlot(ScatterPlotOld scatterPlot) {
         this.scatterPlot = scatterPlot;
         // fire event
         this.firePropertyChange("histogramChange", null, scatterPlot);
     }
 
-    public static void setPreferredAsMax(final JComponent component) {
+    public static void setPreferredAsMax(JComponent component) {
         component.setMaximumSize(component.getPreferredSize());
 
     }
 
-    private Box buildEditArea(final DataSet dataset) {
+    private Box buildEditArea(DataSet dataset) {
         ScatterPlotEditorPanel.setPreferredAsMax(this.yVariableBox);
         ScatterPlotEditorPanel.setPreferredAsMax(this.xVariableBox);
         ScatterPlotEditorPanel.setPreferredAsMax(this.newCondBox);
 
-        final Box main2 = Box.createVerticalBox();
+        Box main2 = Box.createVerticalBox();
 
-        final Box main = Box.createVerticalBox();
+        Box main = Box.createVerticalBox();
 
-        final Box hBox2 = Box.createHorizontalBox();
+        Box hBox2 = Box.createHorizontalBox();
         hBox2.add(Box.createHorizontalStrut(10));
         hBox2.add(new JLabel("Select Variable for X-Axis: "));
         hBox2.add(Box.createHorizontalStrut(10));
@@ -136,7 +136,7 @@ class ScatterPlotEditorPanel extends JPanel {
         hBox2.add(Box.createHorizontalGlue());
         main.add(hBox2);
 
-        final Box hBox = Box.createHorizontalBox();
+        Box hBox = Box.createHorizontalBox();
         hBox.add(Box.createHorizontalStrut(10));
         hBox.add(new JLabel("Select Variable for Y-Axis: "));
         hBox.add(Box.createHorizontalStrut(10));
@@ -148,7 +148,7 @@ class ScatterPlotEditorPanel extends JPanel {
         this.xVariableBox.addActionListener(new ScatterListener(this));
         this.yVariableBox.addActionListener(new ScatterListener(this));
 
-        final Box hBox6 = Box.createHorizontalBox();
+        Box hBox6 = Box.createHorizontalBox();
         hBox6.add(Box.createHorizontalStrut(10));
         hBox6.add(new JLabel("Display Regression Line: "));
         hBox6.add(Box.createHorizontalStrut(10));
@@ -159,8 +159,8 @@ class ScatterPlotEditorPanel extends JPanel {
         this.regressionBox.addActionListener(new ScatterListener(this));
 
 
-        final JButton newCond = new JButton("Add New Conditional Variable");
-        final Box hBox3 = Box.createHorizontalBox();
+        JButton newCond = new JButton("Add New Conditional Variable");
+        Box hBox3 = Box.createHorizontalBox();
         hBox3.add(Box.createHorizontalStrut(10));
         this.newCondBox.setPreferredSize(new Dimension(50, 20));
         hBox3.add(this.newCondBox);
@@ -188,7 +188,7 @@ class ScatterPlotEditorPanel extends JPanel {
      * Redraws the scatter plot.
      */
     public void redrawScatterPlot() {
-        final ScatterPlotOld newPlot = new ScatterPlotOld(this.scatterPlot.getDataSet(), (ContinuousVariable) (this.yVariableBox.getSelectedItem()),
+        ScatterPlotOld newPlot = new ScatterPlotOld(this.scatterPlot.getDataSet(), (ContinuousVariable) (this.yVariableBox.getSelectedItem()),
                 (ContinuousVariable) (this.xVariableBox.getSelectedItem()));
         if (this.regressionBox.isSelected())
             newPlot.setDrawRegLine(true);
@@ -196,20 +196,20 @@ class ScatterPlotEditorPanel extends JPanel {
             boolean breakNow = false;
             //if(((JCheckBox)boxes.get(i)).isSelected())
             //{
-            final double low = ((JScrollBar) this.scrollers.get(i)).getValue();
-            final double high = ((JScrollBar) this.scrollers.get(i)).getValue() + ((JScrollBar) this.scrollers.get(i)).getVisibleAmount();
+            double low = ((JScrollBar) this.scrollers.get(i)).getValue();
+            double high = ((JScrollBar) this.scrollers.get(i)).getValue() + ((JScrollBar) this.scrollers.get(i)).getVisibleAmount();
             if (low > high) breakNow = true;
 
-            final ContinuousVariable currentNode = (ContinuousVariable) (this.condVariables.get(i));
-            final int variableIndex = newPlot.getDataSet().getColumn(currentNode);
+            ContinuousVariable currentNode = (ContinuousVariable) (this.condVariables.get(i));
+            int variableIndex = newPlot.getDataSet().getColumn(currentNode);
 
             //edit the index set here
-            final Vector newIndexSet = new Vector();
-            final Vector newComplementSet = new Vector();
+            Vector newIndexSet = new Vector();
+            Vector newComplementSet = new Vector();
             for (int j = 0; j < newPlot.getIndexSet().size(); j++) {
-                final int currentIndex = (Integer) newPlot.getIndexSet().get(j);
+                int currentIndex = (Integer) newPlot.getIndexSet().get(j);
                 //lookup value at this index
-                final double value = newPlot.getDataSet().getDouble(currentIndex, variableIndex);
+                double value = newPlot.getDataSet().getDouble(currentIndex, variableIndex);
                 //check if value is in the right interval -- if so we add to the new indexSet
                 if (value >= low && value <= high) {
                     newIndexSet.add(currentIndex);
@@ -231,8 +231,8 @@ class ScatterPlotEditorPanel extends JPanel {
 
     private static class VariableBoxRenderer extends DefaultListCellRenderer {
 
-        public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
-            final Node node = (Node) value;
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Node node = (Node) value;
             if (node == null) {
                 this.setText("");
             } else {
@@ -257,12 +257,12 @@ class SliderListener implements AdjustmentListener {
     private final ScatterPlotEditorPanel sp;
     private final int index;
 
-    public SliderListener(final ScatterPlotEditorPanel sp, final int index) {
+    public SliderListener(ScatterPlotEditorPanel sp, int index) {
         this.sp = sp;
         this.index = index;
     }
 
-    public void adjustmentValueChanged(final AdjustmentEvent evt) {
+    public void adjustmentValueChanged(AdjustmentEvent evt) {
         this.sp.redrawScatterPlot();
         ((JLabel) this.sp.slideLabels.get(this.index)).setText("Viewing Range: " +
                 "[" + ((JScrollBar) this.sp.scrollers.get(this.index)).getValue() + ", " +
@@ -275,20 +275,20 @@ class GranularityListener implements FocusListener, ActionListener {
     private final ScatterPlotEditorPanel sp;
     private final int index;
 
-    public GranularityListener(final ScatterPlotEditorPanel sp, final int index) {
+    public GranularityListener(ScatterPlotEditorPanel sp, int index) {
         this.sp = sp;
         this.index = index;
     }
 
-    public void focusGained(final FocusEvent evt) {
+    public void focusGained(FocusEvent evt) {
     }
 
-    public void actionPerformed(final ActionEvent evt) {
+    public void actionPerformed(ActionEvent evt) {
         focusLost(null);
     }
 
-    public void focusLost(final FocusEvent evt) {
-        final JScrollBar currentBar = ((JScrollBar) this.sp.scrollers.get(this.index));
+    public void focusLost(FocusEvent evt) {
+        JScrollBar currentBar = ((JScrollBar) this.sp.scrollers.get(this.index));
         currentBar.setValue((int) Math.floor(currentBar.getMinimum()));
         int newVisibleAmount = (int) Double.parseDouble(((JTextField) this.sp.granularity.get(this.index)).getText());
         if (newVisibleAmount > Math.ceil(currentBar.getMaximum()) - Math.floor(currentBar.getMinimum()))
@@ -302,11 +302,11 @@ class GranularityListener implements FocusListener, ActionListener {
 class ScatterListener implements ActionListener {
     private final ScatterPlotEditorPanel sp;
 
-    public ScatterListener(final ScatterPlotEditorPanel sp) {
+    public ScatterListener(ScatterPlotEditorPanel sp) {
         this.sp = sp;
     }
 
-    public void actionPerformed(final ActionEvent evt) {
+    public void actionPerformed(ActionEvent evt) {
         this.sp.redrawScatterPlot();
     }
 }
@@ -320,23 +320,23 @@ class AddVariableListener implements ActionListener {
     private final ScatterPlotEditorPanel sp;
     private final Box main;
 
-    public AddVariableListener(final Box main, final ScatterPlotEditorPanel sp) {
+    public AddVariableListener(Box main, ScatterPlotEditorPanel sp) {
         this.sp = sp;
         this.main = main;
     }
 
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         for (int i = 0; i < this.sp.boxes.size(); i++) {
             if (((Node) this.sp.newCondBox.getSelectedItem()).getName().equals(((Node) this.sp.condVariables.get(i)).getName())) {
                 return;
             }
         }
 
-        final int i = this.sp.boxes.size();
-        final Box hBox4 = Box.createHorizontalBox();
+        int i = this.sp.boxes.size();
+        Box hBox4 = Box.createHorizontalBox();
         hBox4.add(Box.createHorizontalStrut(10));
         this.sp.boxes.add(new JCheckBox());
-        final JButton removeButton = new JButton("Remove " + ((Node) this.sp.newCondBox.getSelectedItem()).getName());
+        JButton removeButton = new JButton("Remove " + ((Node) this.sp.newCondBox.getSelectedItem()).getName());
         //hBox4.add((JCheckBox)sp.boxes.get(i));
         hBox4.add(Box.createHorizontalStrut(10));
         this.sp.condVariables.add(this.sp.newCondBox.getSelectedItem());
@@ -356,36 +356,36 @@ class AddVariableListener implements ActionListener {
         this.main.add(hBox4);
 
         double min, max;
-        final int varIndex = this.sp.dataSet.getColumn(((Node) this.sp.newCondBox.getSelectedItem()));
+        int varIndex = this.sp.dataSet.getColumn(((Node) this.sp.newCondBox.getSelectedItem()));
         min = max = this.sp.dataSet.getDouble(0, varIndex);
 
         for (int j = 0; j < this.sp.dataSet.getNumRows(); j++) {
-            final double temp = this.sp.dataSet.getDouble(j, varIndex);
+            double temp = this.sp.dataSet.getDouble(j, varIndex);
             if (temp < min) min = temp;
             if (temp > max) max = temp;
         }
 
         this.sp.scrollers.add(new JScrollBar(Adjustable.HORIZONTAL, (int) Math.floor(min), 1, (int) Math.floor(min), (int) Math.ceil(max)));
 
-        final Box hBox10 = Box.createHorizontalBox();
+        Box hBox10 = Box.createHorizontalBox();
         hBox10.add(Box.createHorizontalStrut(10));
         hBox10.add((JScrollBar) this.sp.scrollers.get(i));
         this.main.add(hBox10);
 
         ((JScrollBar) this.sp.scrollers.get(i)).addAdjustmentListener(new SliderListener(this.sp, i));
 
-        final Box hBox12 = Box.createHorizontalBox();
+        Box hBox12 = Box.createHorizontalBox();
         hBox12.add(Box.createHorizontalStrut(10));
         hBox12.add(removeButton);
         this.main.add(hBox12);
 
         this.sp.slideLabels.add(new JLabel("Viewing Range: [" + ((JScrollBar) this.sp.scrollers.get(i)).getValue() + ", " + (((JScrollBar) this.sp.scrollers.get(i)).getValue() + ((JScrollBar) this.sp.scrollers.get(i)).getVisibleAmount()) + "]"));
-        final Box hBox11 = Box.createHorizontalBox();
+        Box hBox11 = Box.createHorizontalBox();
         hBox11.add(Box.createHorizontalStrut(10));
         hBox11.add((JLabel) this.sp.slideLabels.get(i));
         this.main.add(hBox11);
 
-        final JComponent[] toRemove = new JComponent[4];
+        JComponent[] toRemove = new JComponent[4];
         toRemove[0] = hBox4;
         toRemove[1] = hBox10;
         toRemove[2] = hBox11;
@@ -405,14 +405,14 @@ class RemovalListener implements ActionListener {
     private final int index;
     private final ScatterPlotEditorPanel sp;
 
-    public RemovalListener(final ScatterPlotEditorPanel sp, final JComponent container, final JComponent[] contained, final int index) {
+    public RemovalListener(ScatterPlotEditorPanel sp, JComponent container, JComponent[] contained, int index) {
         this.container = container;
         this.contained = contained;
         this.index = index;
         this.sp = sp;
     }
 
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         this.sp.boxes.remove(this.index);
         this.sp.granularity.remove(this.index);
         this.sp.slideLabels.remove(this.index);

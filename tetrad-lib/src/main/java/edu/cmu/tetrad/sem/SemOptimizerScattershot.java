@@ -60,8 +60,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
      * Optimizes the fitting function of the given Sem using the Powell method
      * from Numerical Recipes by adjusting the freeParameters of the Sem.
      */
-    public void optimize(final SemIm semIm) {
-        final Matrix sampleCovar = semIm.getSampleCovar();
+    public void optimize(SemIm semIm) {
+        Matrix sampleCovar = semIm.getSampleCovar();
 
         if (sampleCovar == null) {
             throw new NullPointerException("Sample covar has not been set.");
@@ -88,9 +88,9 @@ public class SemOptimizerScattershot implements SemOptimizer {
         for (int i = 0; i < this.numRestarts + 1; i++) {
             TetradLogger.getInstance().log("details", "Trial " + (i + 1));
 //            System.out.println("Trial " + (i + 1));
-            final SemIm _sem2 = new SemIm(semIm);
+            SemIm _sem2 = new SemIm(semIm);
             optimize2(_sem2);
-            final double chisq = _sem2.getChiSquare();
+            double chisq = _sem2.getChiSquare();
 
             if (Math.abs(chisq) < min) {
                 min = Math.abs(chisq);
@@ -104,14 +104,14 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
 //        new SemOptimizerPalCds().optimize2(_sem);
 
-        for (final Parameter param : semIm.getFreeParameters()) {
-            final Node nodeA = param.getNodeA();
-            final Node nodeB = param.getNodeB();
+        for (Parameter param : semIm.getFreeParameters()) {
+            Node nodeA = param.getNodeA();
+            Node nodeB = param.getNodeB();
 
-            final Node _nodeA = _sem.getVariableNode(nodeA.getName());
-            final Node _nodeB = _sem.getVariableNode(nodeB.getName());
+            Node _nodeA = _sem.getVariableNode(nodeA.getName());
+            Node _nodeB = _sem.getVariableNode(nodeB.getName());
 
-            final double value = _sem.getParamValue(_nodeA, _nodeB);
+            double value = _sem.getParamValue(_nodeA, _nodeB);
             semIm.setParamValue(param, value);
         }
 
@@ -120,7 +120,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
     }
 
     @Override
-    public void setNumRestarts(final int numRestarts) {
+    public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;
     }
 
@@ -133,10 +133,10 @@ public class SemOptimizerScattershot implements SemOptimizer {
         return "Sem Optimizer Scattershot";
     }
 
-    private void optimize2(final SemIm semIm) {
-        final FittingFunction f = new SemFittingFunction(semIm);
+    private void optimize2(SemIm semIm) {
+        FittingFunction f = new SemFittingFunction(semIm);
 
-        final double[] p = semIm.getFreeParamValues();
+        double[] p = semIm.getFreeParamValues();
 
         f.setAvoidNegativeVariances(true);
         iterateFindLowerRandom(f, p, 1.0, 1500);
@@ -154,16 +154,16 @@ public class SemOptimizerScattershot implements SemOptimizer {
         semIm.setFreeParamValues(p);
     }
 
-    private void iterateFindLowerRandom(final FittingFunction fcn, final double[] p,
-                                        final double range, final int iterations) {
+    private void iterateFindLowerRandom(FittingFunction fcn, double[] p,
+                                        double range, int iterations) {
         int t = 0;
 
         while (++t < 2000) {
-            final boolean found;
+            boolean found;
 
             try {
                 found = findLowerRandom(fcn, p, range, iterations);
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 return;
             }
 
@@ -176,26 +176,26 @@ public class SemOptimizerScattershot implements SemOptimizer {
     /**
      * @return true iff a new point was found with a lower score.
      */
-    private boolean findLowerRandom(final FittingFunction fcn, final double[] p,
-                                    final double width, final int numPoints) {
-        final double fP = fcn.evaluate(p);
+    private boolean findLowerRandom(FittingFunction fcn, double[] p,
+                                    double width, int numPoints) {
+        double fP = fcn.evaluate(p);
 
         if (Double.isNaN(fP)) {
             throw new IllegalArgumentException("Center point must evaluate!");
         }
 
         // This point will remain fixed, the center of the search.
-        final double[] fixedP = new double[p.length];
+        double[] fixedP = new double[p.length];
         System.arraycopy(p, 0, fixedP, 0, p.length);
 
         // This point will move around randomly. If it ever has a lower
         // score than p, it will be copied into p (and returned).
-        final double[] pTemp = new double[p.length];
+        double[] pTemp = new double[p.length];
         System.arraycopy(p, 0, pTemp, 0, p.length);
 
         for (int i = 0; i < numPoints; i++) {
             randomPointAboutCenter(pTemp, fixedP, width);
-            final double f = fcn.evaluate(pTemp);
+            double f = fcn.evaluate(pTemp);
 
             if (f == Double.POSITIVE_INFINITY) {
                 i--;
@@ -220,26 +220,26 @@ public class SemOptimizerScattershot implements SemOptimizer {
         return false;
     }
 
-    private boolean findLowerRandomLocal(final FittingFunction fcn, final double[] p,
-                                         final double width, final int numPoints) {
-        final double fP = fcn.evaluate(p);
+    private boolean findLowerRandomLocal(FittingFunction fcn, double[] p,
+                                         double width, int numPoints) {
+        double fP = fcn.evaluate(p);
 
         if (Double.isNaN(fP)) {
             throw new IllegalArgumentException("Center point must evaluate!");
         }
 
         // This point will remain fixed, the center of the search.
-        final double[] fixedP = new double[p.length];
+        double[] fixedP = new double[p.length];
         System.arraycopy(p, 0, fixedP, 0, p.length);
 
         // This point will move around randomly. If it ever has a lower
         // score than p, it will be copied into p (and returned).
-        final double[] pTemp = new double[p.length];
+        double[] pTemp = new double[p.length];
         System.arraycopy(p, 0, pTemp, 0, p.length);
 
         for (int i = 0; i < numPoints; i++) {
             randomPointAboutCenter(pTemp, fixedP, width);
-            final double f = fcn.evaluate(pTemp);
+            double f = fcn.evaluate(pTemp);
 
             if (f == Double.POSITIVE_INFINITY) {
                 i++;
@@ -256,9 +256,9 @@ public class SemOptimizerScattershot implements SemOptimizer {
         return false;
     }
 
-    private void randomPointAboutCenter(final double[] pTemp, final double[] fixedP, final double width) {
+    private void randomPointAboutCenter(double[] pTemp, double[] fixedP, double width) {
         for (int j = 0; j < pTemp.length; j++) {
-            final double v = getRandom().nextDouble();
+            double v = getRandom().nextDouble();
             pTemp[j] = fixedP[j] + (-width / 2.0 + width * v);
         }
     }
@@ -297,7 +297,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
         /**
          * Constructs a new CoefFittingFunction for the given Sem.
          */
-        public SemFittingFunction(final SemIm sem) {
+        public SemFittingFunction(SemIm sem) {
             this.sem = sem;
             this.freeParameters = sem.getFreeParameters();
         }
@@ -307,16 +307,16 @@ public class SemOptimizerScattershot implements SemOptimizer {
          * freeParameters values as given by the optimizer. These values are mapped
          * to parameter values.
          */
-        public double evaluate(final double[] parameters) {
+        public double evaluate(double[] parameters) {
             this.sem.setFreeParamValues(parameters);
 
-            for (final double parameter : parameters) {
+            for (double parameter : parameters) {
                 if (Double.isNaN(parameter) || Double.isInfinite(parameter)) {
                     return Double.POSITIVE_INFINITY;
                 }
             }
 
-            final double fml = this.sem.getScore();
+            double fml = this.sem.getScore();
 
             if (Double.isNaN(fml) || Double.isInfinite(fml)) {
                 return Double.POSITIVE_INFINITY;
@@ -342,7 +342,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
         }
 
         @Override
-        public void setAvoidNegativeVariances(final boolean avoidNegativeVariances) {
+        public void setAvoidNegativeVariances(boolean avoidNegativeVariances) {
             this.avoidNegativeVariances = avoidNegativeVariances;
         }
     }

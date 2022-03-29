@@ -45,7 +45,7 @@ public class GraphNodeError extends DisplayNode {
     /**
      * Constructs a display node for an error term.
      */
-    public GraphNodeError(final Node modelNode) {
+    public GraphNodeError(Node modelNode) {
         setModelNode(modelNode);
         if (modelNode.getNodeType() != NodeType.ERROR) {
             throw new IllegalArgumentException("GraphNodeError requires " +
@@ -65,9 +65,9 @@ public class GraphNodeError extends DisplayNode {
      * whose names should not be picked by the user as the new name for any
      * variable.
      */
-    public void doDoubleClickAction(final Graph graph) {
-        final List<Node> nodes = graph.getNodes();
-        final String newName = chooseNewVariableName(nodes);
+    public void doDoubleClickAction(Graph graph) {
+        List<Node> nodes = graph.getNodes();
+        String newName = chooseNewVariableName(nodes);
 
         if (this.getModelNode() != null) {
             this.getModelNode().setName(newName);
@@ -80,11 +80,11 @@ public class GraphNodeError extends DisplayNode {
 
     //==========================PRIVATE METHODS=========================//
 
-    private String chooseNewVariableName(final List<Node> nodes) {
+    private String chooseNewVariableName(List<Node> nodes) {
         String newName;
         loop:
         while (true) {
-            final JTextField nameField = new JTextField(8);
+            JTextField nameField = new JTextField(8);
 
             // This makes sure the name field has focus when the dialog (below)
             // is made visible, but that after this it allows other gadgets
@@ -92,9 +92,9 @@ public class GraphNodeError extends DisplayNode {
             nameField.addFocusListener(new FocusAdapter() {
                 boolean alreadyLostFocus;
 
-                public void focusLost(final FocusEvent e) {
+                public void focusLost(FocusEvent e) {
                     if (this.alreadyLostFocus) return;
-                    final JTextField field = (JTextField) e.getSource();
+                    JTextField field = (JTextField) e.getSource();
                     field.grabFocus();
                     this.alreadyLostFocus = true;
                 }
@@ -104,14 +104,14 @@ public class GraphNodeError extends DisplayNode {
             nameField.setCaretPosition(0);
             nameField.moveCaretPosition(getName().length());
 
-            final JPanel message = new JPanel();
+            JPanel message = new JPanel();
 
             message.add(new JLabel("Name:"));
             message.add(nameField);
 
-            final JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
+            JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
-            final JDialog dialog = pane.createDialog(this, "Node Properties");
+            JDialog dialog = pane.createDialog(this, "Node Properties");
 
             dialog.pack();
             dialog.setVisible(true);
@@ -126,7 +126,7 @@ public class GraphNodeError extends DisplayNode {
             }
             // Tests that newName is not in the nodes list.
             else if (nodes != null) {
-                for (final Node node : nodes) {
+                for (Node node : nodes) {
                     if (newName.equals(node.toString()) &&
                             !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(

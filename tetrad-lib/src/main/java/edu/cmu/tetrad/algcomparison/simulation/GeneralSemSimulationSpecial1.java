@@ -29,12 +29,12 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     private List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
 
-    public GeneralSemSimulationSpecial1(final RandomGraph randomGraph) {
+    public GeneralSemSimulationSpecial1(RandomGraph randomGraph) {
         this.randomGraph = randomGraph;
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
         Graph graph = this.randomGraph.createGraph(parameters);
@@ -51,20 +51,20 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
 
             this.graphs.add(graph);
 
-            final DataSet dataSet = simulate(graph, parameters);
+            DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
             this.dataSets.add(dataSet);
         }
     }
 
-    private DataSet simulate(final Graph graph, final Parameters parameters) {
-        final GeneralizedSemPm pm = getPm(graph);
-        final GeneralizedSemIm im = new GeneralizedSemIm(pm);
+    private DataSet simulate(Graph graph, Parameters parameters) {
+        GeneralizedSemPm pm = getPm(graph);
+        GeneralizedSemIm im = new GeneralizedSemIm(pm);
         return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
@@ -74,7 +74,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
@@ -89,22 +89,22 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = this.randomGraph.getParameters();
+        List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         return parameters;
     }
 
-    private GeneralizedSemPm getPm(final Graph graph) {
+    private GeneralizedSemPm getPm(Graph graph) {
 
-        final GeneralizedSemPm pm = new GeneralizedSemPm(graph);
+        GeneralizedSemPm pm = new GeneralizedSemPm(graph);
 
-        final List<Node> variablesNodes = pm.getVariableNodes();
-        final List<Node> errorNodes = pm.getErrorNodes();
+        List<Node> variablesNodes = pm.getVariableNodes();
+        List<Node> errorNodes = pm.getErrorNodes();
 
-        final Map<String, String> paramMap = new HashMap<>();
-        final String[] funcs = {"TSUM(NEW(B)*$)", "TSUM(NEW(B)*$+NEW(C)*sin(NEW(T)*$+NEW(A)))",
+        Map<String, String> paramMap = new HashMap<>();
+        String[] funcs = {"TSUM(NEW(B)*$)", "TSUM(NEW(B)*$+NEW(C)*sin(NEW(T)*$+NEW(A)))",
                 "TSUM(NEW(B)*(.5*$ + .5*(sqrt(abs(NEW(b)*$+NEW(exoErrorType))) ) ) )"};
         paramMap.put("s", "U(1,3)");
         paramMap.put("B", "Split(-1.0,-.0,.0,1.0)");
@@ -114,37 +114,37 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
         paramMap.put("exoErrorType", "U(-.5,.5)");
         paramMap.put("funcType", "U(1,5)");
 
-        final String nonlinearStructuralEdgesFunction = funcs[0];
-        final String nonlinearFactorMeasureEdgesFunction = funcs[0];
+        String nonlinearStructuralEdgesFunction = funcs[0];
+        String nonlinearFactorMeasureEdgesFunction = funcs[0];
 
         try {
-            for (final Node node : variablesNodes) {
+            for (Node node : variablesNodes) {
                 if (node.getNodeType() == NodeType.LATENT) {
-                    final String _template = TemplateExpander.getInstance().expandTemplate(
+                    String _template = TemplateExpander.getInstance().expandTemplate(
                             nonlinearStructuralEdgesFunction, pm, node);
                     pm.setNodeExpression(node, _template);
                 } else {
-                    final String _template = TemplateExpander.getInstance().expandTemplate(
+                    String _template = TemplateExpander.getInstance().expandTemplate(
                             nonlinearFactorMeasureEdgesFunction, pm, node);
                     pm.setNodeExpression(node, _template);
                 }
             }
 
-            for (final Node node : errorNodes) {
-                final String _template = TemplateExpander.getInstance().expandTemplate("U(-.5,.5)", pm, node);
+            for (Node node : errorNodes) {
+                String _template = TemplateExpander.getInstance().expandTemplate("U(-.5,.5)", pm, node);
                 pm.setNodeExpression(node, _template);
             }
 
-            final Set<String> parameters = pm.getParameters();
+            Set<String> parameters = pm.getParameters();
 
-            for (final String parameter : parameters) {
-                for (final String type : paramMap.keySet()) {
+            for (String parameter : parameters) {
+                for (String type : paramMap.keySet()) {
                     if (parameter.startsWith(type)) {
                         pm.setParameterExpression(parameter, paramMap.get(type));
                     }
                 }
             }
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             System.out.println(e);
         }
 

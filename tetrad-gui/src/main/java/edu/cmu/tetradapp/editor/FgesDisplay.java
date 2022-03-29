@@ -56,12 +56,12 @@ public class FgesDisplay extends JPanel implements GraphEditable {
     private final JLabel scoreLabel;
     private Indexable indexable;
 
-    public FgesDisplay(final Graph resultGraph, final List<ScoredGraph> topGraphs, final Indexable indexable) {
+    public FgesDisplay(Graph resultGraph, List<ScoredGraph> topGraphs, Indexable indexable) {
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
         this.indexable = indexable;
         this.topGraphs = topGraphs;
 
-        final int numCPDAGs = topGraphs.size();
+        int numCPDAGs = topGraphs.size();
 
         if (topGraphs.size() == 0) {
             this.workbench = new GraphWorkbench();
@@ -74,11 +74,11 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         this.scoreLabel = new JLabel();
         setCPDAG();
 
-        final SpinnerNumberModel model =
+        SpinnerNumberModel model =
                 new SpinnerNumberModel(numCPDAGs == 0 ? 1 : indexable.getIndex() + 1, 1, numCPDAGs == 0 ? 1 : numCPDAGs, 1);
 
         model.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent e) {
+            public void stateChanged(ChangeEvent e) {
                 getIndexable().setIndex((Integer) model.getValue() - 1);
                 setCPDAG();
             }
@@ -90,8 +90,8 @@ public class FgesDisplay extends JPanel implements GraphEditable {
 
         this.spinner.setPreferredSize(new Dimension(50, 20));
         this.spinner.setMaximumSize(this.spinner.getPreferredSize());
-        final Box b = Box.createVerticalBox();
-        final Box b1 = Box.createHorizontalBox();
+        Box b = Box.createVerticalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel(" Score = "));
         b1.add(this.scoreLabel);
@@ -101,10 +101,10 @@ public class FgesDisplay extends JPanel implements GraphEditable {
 
         b.add(b1);
 
-        final Box b2 = Box.createHorizontalBox();
-        final JPanel graphPanel = new JPanel();
+        Box b2 = Box.createHorizontalBox();
+        JPanel graphPanel = new JPanel();
         graphPanel.setLayout(new BorderLayout());
-        final JScrollPane jScrollPane = new JScrollPane(this.workbench);
+        JScrollPane jScrollPane = new JScrollPane(this.workbench);
         graphPanel.add(jScrollPane);
         b2.add(graphPanel);
         b.add(b2);
@@ -119,12 +119,12 @@ public class FgesDisplay extends JPanel implements GraphEditable {
     }
 
     private void setDisplayGraph() {
-        final int index = getIndexable().getIndex();
+        int index = getIndexable().getIndex();
 
         if (this.topGraphs.size() == 0) {
             this.workbench.setGraph(new EdgeListGraph());
         } else {
-            final ScoredGraph scoredGraph = this.topGraphs.get(index);
+            ScoredGraph scoredGraph = this.topGraphs.get(index);
             this.workbench.setGraph(scoredGraph.getGraph());
         }
     }
@@ -133,7 +133,7 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         if (this.topGraphs.isEmpty()) {
             this.scoreLabel.setText("*");
         } else {
-            final double score = this.topGraphs.get(getIndexable().getIndex()).getScore();
+            double score = this.topGraphs.get(getIndexable().getIndex()).getScore();
 
             if (Double.isNaN(score)) {
                 this.scoreLabel.setText("*");
@@ -144,11 +144,11 @@ public class FgesDisplay extends JPanel implements GraphEditable {
     }
 
     private void resetDisplay() {
-        final int numCPDAGs = this.topGraphs.size();
+        int numCPDAGs = this.topGraphs.size();
 
-        final SpinnerNumberModel model = new SpinnerNumberModel(numCPDAGs, 0, numCPDAGs, 1);
+        SpinnerNumberModel model = new SpinnerNumberModel(numCPDAGs, 0, numCPDAGs, 1);
         model.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent e) {
+            public void stateChanged(ChangeEvent e) {
                 getIndexable().setIndex((Integer) model.getValue() - 1);
                 setCPDAG();
             }
@@ -166,17 +166,17 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         setDisplayScore();
     }
 
-    public void resetGraphs(final List<ScoredGraph> topGraphs) {
+    public void resetGraphs(List<ScoredGraph> topGraphs) {
         this.topGraphs = topGraphs;
         resetDisplay();
     }
 
     public List getSelectedModelComponents() {
-        final Component[] components = getWorkbench().getComponents();
-        final List<TetradSerializable> selectedModelComponents =
+        Component[] components = getWorkbench().getComponents();
+        List<TetradSerializable> selectedModelComponents =
                 new ArrayList<>();
 
-        for (final Component comp : components) {
+        for (Component comp : components) {
             if (comp instanceof DisplayNode) {
                 selectedModelComponents.add(
                         ((DisplayNode) comp).getModelNode());
@@ -189,16 +189,16 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         return selectedModelComponents;
     }
 
-    public void pasteSubsession(final List sessionElements, final Point upperLeft) {
+    public void pasteSubsession(List sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
         for (int i = 0; i < sessionElements.size(); i++) {
 
-            final Object o = sessionElements.get(i);
+            Object o = sessionElements.get(i);
 
             if (o instanceof GraphNode) {
-                final Node modelNode = (Node) o;
+                Node modelNode = (Node) o;
                 getWorkbench().selectNode(modelNode);
             }
         }
@@ -214,7 +214,7 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         return this.workbench.getGraph();
     }
 
-    public void setGraph(final Graph graph) {
+    public void setGraph(Graph graph) {
         this.workbench.setGraph(graph);
     }
 
@@ -226,7 +226,7 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         return this.indexable;
     }
 
-    private void setIndexable(final Indexable indexable) {
+    private void setIndexable(Indexable indexable) {
         this.indexable = indexable;
     }
 }

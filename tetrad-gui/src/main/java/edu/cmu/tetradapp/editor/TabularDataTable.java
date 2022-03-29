@@ -71,14 +71,14 @@ class TabularDataTable extends AbstractTableModel {
      *
      * @param dataSet the dataSet.
      */
-    public TabularDataTable(final DataSet dataSet) {
+    public TabularDataTable(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
     /**
      * Note that returning null here has two effects. First, it
      */
-    public String getColumnName(final int col) {
+    public String getColumnName(int col) {
         return null;
     }
 
@@ -87,7 +87,7 @@ class TabularDataTable extends AbstractTableModel {
      * this number will be at least 100.
      */
     public int getRowCount() {
-        final int maxRowCount = this.dataSet.getNumRows() + 3;
+        int maxRowCount = this.dataSet.getNumRows() + 3;
         return (maxRowCount < 100) ? 100 : maxRowCount;
     }
 
@@ -109,9 +109,9 @@ class TabularDataTable extends AbstractTableModel {
      * given coordinates is returned.
      */
     @Override
-    public Object getValueAt(final int row, final int col) {
-        final int columnIndex = col - getNumLeadingCols();
-        final int rowIndex = row - 2;
+    public Object getValueAt(int row, int col) {
+        int columnIndex = col - getNumLeadingCols();
+        int rowIndex = row - 2;
 
 //        if (col == 1) {
 //            if (row == 1) {
@@ -124,7 +124,7 @@ class TabularDataTable extends AbstractTableModel {
 //        else
         if (col >= getNumLeadingCols()
                 && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
-            final Node variable = this.dataSet.getVariable(columnIndex);
+            Node variable = this.dataSet.getVariable(columnIndex);
 
             if (row == 0) {
                 // Append "-D" notation to discrete variables, "-C" for continuous
@@ -155,7 +155,7 @@ class TabularDataTable extends AbstractTableModel {
                             isCategoryNamesShown());
                 }
 
-                final Object value = this.dataSet.getObject(rowIndex, columnIndex);
+                Object value = this.dataSet.getObject(rowIndex, columnIndex);
 
                 if (((Variable) variable).isMissingValue(value)) {
                     return "*";
@@ -172,7 +172,7 @@ class TabularDataTable extends AbstractTableModel {
         return null;
     }
 
-    public boolean isCellEditable(final int row, final int col) {
+    public boolean isCellEditable(int row, int col) {
         return row > 0 && col >= 1;
     }
 
@@ -184,7 +184,7 @@ class TabularDataTable extends AbstractTableModel {
      * returned. Otherwise, the value stored in the wrapped table model at the
      * given coordinates is returned.
      */
-    public void setValueAt(final Object value, final int row, final int col) {
+    public void setValueAt(Object value, int row, int col) {
         this.dataSet.ensureColumns(col - getNumLeadingCols() + 1, new ArrayList<>());
         this.dataSet.ensureRows(row - getNumLeadingRows() + 1);
 
@@ -199,7 +199,7 @@ class TabularDataTable extends AbstractTableModel {
             } else if (row > 1) {
                 try {
                     pasteIntoColumn(row, col, value);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     this.pcs.firePropertyChange("modelChanged", null, null);
                     return;
@@ -214,10 +214,10 @@ class TabularDataTable extends AbstractTableModel {
     /**
      * Col index here is JTable index.
      */
-    private void addColumnsOutTo(final int col) {
+    private void addColumnsOutTo(int col) {
         for (int i = this.dataSet.getNumColumns() + getNumLeadingCols();
              i <= col; i++) {
-            final ContinuousVariable var = new ContinuousVariable("");
+            ContinuousVariable var = new ContinuousVariable("");
             this.dataSet.addVariable(var);
 
             System.out.println("Adding " + var + " col " + this.dataSet.getColumn(var));
@@ -226,7 +226,7 @@ class TabularDataTable extends AbstractTableModel {
         this.pcs.firePropertyChange("modelChanged", null, null);
     }
 
-    private String newColumnName(final String suggestedName) {
+    private String newColumnName(String suggestedName) {
         if (!existsColByName(suggestedName)) {
             return suggestedName;
         }
@@ -234,16 +234,16 @@ class TabularDataTable extends AbstractTableModel {
         int i = 0;
 
         while (true) {
-            final String proposedName = suggestedName + "-" + (++i);
+            String proposedName = suggestedName + "-" + (++i);
             if (!existsColByName(proposedName)) {
                 return proposedName;
             }
         }
     }
 
-    private boolean existsColByName(final String proposedName) {
+    private boolean existsColByName(String proposedName) {
         for (int i = 0; i < this.dataSet.getNumColumns(); i++) {
-            final String name = this.dataSet.getVariable(i).getName();
+            String name = this.dataSet.getVariable(i).getName();
             if (name.equals(proposedName)) {
                 return true;
             }
@@ -251,9 +251,9 @@ class TabularDataTable extends AbstractTableModel {
         return false;
     }
 
-    private void setColumnName(final int col, final Object value) {
-        final String oldName = this.dataSet.getVariable(col - getNumLeadingCols()).getName();
-        final String newName = (String) value;
+    private void setColumnName(int col, Object value) {
+        String oldName = this.dataSet.getVariable(col - getNumLeadingCols()).getName();
+        String newName = (String) value;
 
         if (oldName.equals(newName)) {
             return;
@@ -275,9 +275,9 @@ class TabularDataTable extends AbstractTableModel {
     /**
      * The row and column indices are JTable indices.
      */
-    private void pasteIntoColumn(final int row, final int col, Object value) {
-        final int dataRow = row - getNumLeadingRows();
-        final int dataCol = col - getNumLeadingCols();
+    private void pasteIntoColumn(int row, int col, Object value) {
+        int dataRow = row - getNumLeadingRows();
+        int dataCol = col - getNumLeadingCols();
         Node variable = this.dataSet.getVariable(dataCol);
 
         if (variable instanceof ContinuousVariable && value instanceof Number) {
@@ -289,7 +289,7 @@ class TabularDataTable extends AbstractTableModel {
             return;
         }
 
-        final String valueTrimmed = ((String) value).trim();
+        String valueTrimmed = ((String) value).trim();
         boolean quoted = false;
 
         if (valueTrimmed.startsWith("\"") && valueTrimmed.endsWith("\"")) {
@@ -312,9 +312,9 @@ class TabularDataTable extends AbstractTableModel {
         this.pcs.firePropertyChange("modelChanged", null, null);
     }
 
-    private boolean isEmpty(final DataSet dataSet, final int column) {
-        final Node variable = dataSet.getVariable(column);
-        final Object missingValue = ((Variable) variable).getMissingValueMarker();
+    private boolean isEmpty(DataSet dataSet, int column) {
+        Node variable = dataSet.getVariable(column);
+        Object missingValue = ((Variable) variable).getMissingValueMarker();
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             if (!(dataSet.getObject(i, column).equals(missingValue))) {
@@ -325,16 +325,16 @@ class TabularDataTable extends AbstractTableModel {
         return true;
     }
 
-    private Node swapDiscreteColumnForContinuous(final int col) {
-        final Node variable = this.dataSet.getVariable(col - getNumLeadingCols());
+    private Node swapDiscreteColumnForContinuous(int col) {
+        Node variable = this.dataSet.getVariable(col - getNumLeadingCols());
         if (variable == null) {
             throw new NullPointerException();
         }
         if (!isEmpty(this.dataSet, col - getNumLeadingCols())) {
             throw new IllegalArgumentException("Old column not empty.");
         }
-        final String name = variable.getName();
-        final DiscreteVariable var = new DiscreteVariable(name);
+        String name = variable.getName();
+        DiscreteVariable var = new DiscreteVariable(name);
         var.setCategoryNamesDisplayed(true);
         this.dataSet.removeColumn(col - getNumLeadingCols());
         this.dataSet.addVariable(col - getNumLeadingCols(), var);
@@ -342,11 +342,11 @@ class TabularDataTable extends AbstractTableModel {
         return var;
     }
 
-    private boolean isNumber(final String value) {
+    private boolean isNumber(String value) {
         try {
             Double.parseDouble(value);
             return true;
-        } catch (final NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return false;
         }
     }
@@ -358,7 +358,7 @@ class TabularDataTable extends AbstractTableModel {
         return this.dataSet;
     }
 
-    public void setDataSet(final DataSet data) {
+    public void setDataSet(DataSet data) {
         if (data == null) {
             throw new NullPointerException("Data set was null.");
         }
@@ -383,7 +383,7 @@ class TabularDataTable extends AbstractTableModel {
         return numLeadingCols;
     }
 
-    public void setCategoryNamesShown(final boolean selected) {
+    public void setCategoryNamesShown(boolean selected) {
         this.categoryNamesShown = selected;
         fireTableDataChanged();
     }
@@ -392,7 +392,7 @@ class TabularDataTable extends AbstractTableModel {
         return this.categoryNamesShown;
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.pcs.addPropertyChangeListener(listener);
     }
 }

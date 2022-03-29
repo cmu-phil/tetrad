@@ -112,13 +112,13 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      * contains the coordinates of x and y for each point.  I.e. points[i][0] is
      * the x coordinate and points[i][1] is the y coordinate of the ith point.
      */
-    public RocPlot(final double[][] points, final String title, final String info) {
+    public RocPlot(double[][] points, String title, String info) {
         this.points = points;
         this.info = info;
         /*
       The font used non-bold text.
      */
-        final Font font = new Font("Serif", Font.PLAIN, 12);
+        Font font = new Font("Serif", Font.PLAIN, 12);
         this.fm = getFontMetrics(font);
         this.titleFm = getFontMetrics(this.titleFont);
         setFont(font);
@@ -135,11 +135,11 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      * @param size the size of this component with respect to which the plot
      *             rectangle is calculated.
      */
-    private void calcPlotRect(final Dimension size) {
-        final int left = this.graphInsets.left;
-        final int top = this.graphInsets.top;
-        final int width = size.width - this.graphInsets.left - this.graphInsets.right;
-        final int height = size.height - this.graphInsets.top - this.graphInsets.bottom;
+    private void calcPlotRect(Dimension size) {
+        int left = this.graphInsets.left;
+        int top = this.graphInsets.top;
+        int width = size.width - this.graphInsets.left - this.graphInsets.right;
+        int height = size.height - this.graphInsets.top - this.graphInsets.bottom;
 
         this.plotRect = new Rectangle(left, top, width, height);
     }
@@ -149,8 +149,8 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      *
      * @param g the graphics context.
      */
-    private void drawBoundary(final Graphics g) {
-        final Rectangle r = getPlotRect();
+    private void drawBoundary(Graphics g) {
+        Rectangle r = getPlotRect();
         g.setColor(this.boundaryColor);
         g.drawRect(r.x, r.y, r.width, r.height);
     }
@@ -162,13 +162,13 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      *
      * @param g the graphics context.
      */
-    private void drawXTickMarks(final Graphics g) {
-        final Rectangle plotRect = getPlotRect();
-        final int yPos = plotRect.y + plotRect.height;
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private void drawXTickMarks(Graphics g) {
+        Rectangle plotRect = getPlotRect();
+        int yPos = plotRect.y + plotRect.height;
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         for (double d = 0.0; d <= 1.0; d += 0.1) {
-            final int xPos = getXPos(d);
+            int xPos = getXPos(d);
 
             g.setColor(this.boundaryColor);
             g.drawLine(xPos, yPos, xPos, yPos - 10);
@@ -181,23 +181,23 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      *
      * @param g the graphics context.
      */
-    private void drawYTickMarks(final Graphics g) {
-        final Rectangle plotRect = getPlotRect();
-        final int xPos = plotRect.x;
-        final NumberFormat nf = NumberFormat.getInstance();
+    private void drawYTickMarks(Graphics g) {
+        Rectangle plotRect = getPlotRect();
+        int xPos = plotRect.x;
+        NumberFormat nf = NumberFormat.getInstance();
 
         nf.setMinimumFractionDigits(1);
         nf.setMaximumFractionDigits(1);
 
         for (double d = 0.0; d <= 1.0; d += 0.1) {
-            final int yPos = getYPos(d);
+            int yPos = getYPos(d);
 
             g.setColor(this.boundaryColor);
             g.drawLine(xPos, yPos, xPos + 10, yPos);
 
-            final String str = nf.format(d);
-            final int strWid = this.fm.stringWidth(str);
-            final int strHgt = this.fm.getAscent();
+            String str = nf.format(d);
+            int strWid = this.fm.stringWidth(str);
+            int strHgt = this.fm.getAscent();
 
             g.drawString(str, xPos - strWid - 5, yPos + strHgt / 2);
         }
@@ -208,9 +208,9 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      *
      * @param g the graphics context.
      */
-    private void drawTitle(final Graphics g) {
-        final int stringWidth = this.titleFm.stringWidth(this.title);
-        final int stringHeight = this.titleFm.getHeight();
+    private void drawTitle(Graphics g) {
+        int stringWidth = this.titleFm.stringWidth(this.title);
+        int stringHeight = this.titleFm.getHeight();
 
         g.setFont(this.titleFont);
         g.setColor(this.titleColor);
@@ -237,8 +237,8 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      * @return a pixel x position which is the proportion x / (range from pi_e
      * to 1.0) from the left side of the unit square to the right.
      */
-    private int getXPos(final double x) {
-        final Rectangle r = getPlotRect();
+    private int getXPos(double x) {
+        Rectangle r = getPlotRect();
         final double range = 1.0;
         return r.x + (int) ((x / range) * (double) this.plotRect.width);
     }
@@ -248,8 +248,8 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      * @return a pixel y position which is the proportion x / 1.0 from the
      * bottom of the unit square to the top.
      */
-    private int getYPos(final double y) {
-        final Rectangle r = getPlotRect();
+    private int getYPos(double y) {
+        Rectangle r = getPlotRect();
         return r.y + r.height - (int) (y * (double) r.height);
     }
 
@@ -259,8 +259,8 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      *
      * @param g the graphics context.
      */
-    public void paint(final Graphics g) {
-        final Dimension size = getSize();
+    public void paint(Graphics g) {
+        Dimension size = getSize();
 
         if ((this.size == null) || !this.size.equals(size)) {
             this.size = size;
@@ -281,9 +281,9 @@ class RocPlot extends JPanel implements PropertyChangeListener {
 
         // Plot point or lines however you want. For lines, call this repeatedly
         // for relevant points.
-        for (final double[] point : this.points) {
-            final int x = getXPos(point[0]);
-            final int y = getYPos(point[1]);
+        for (double[] point : this.points) {
+            int x = getXPos(point[0]);
+            int y = getYPos(point[1]);
 
             //Draw an "x" at the point on the curve.
             g.drawLine(x - 2, y + 2, x + 2, y - 2);
@@ -297,17 +297,17 @@ class RocPlot extends JPanel implements PropertyChangeListener {
         g.drawString(this.info, getXPos(0.6), getYPos(0.2));
     }
 
-    private void drawXLabel(final Graphics g) {
+    private void drawXLabel(Graphics g) {
         g.setFont(this.fontBold);
-        final Rectangle plotRect = getPlotRect();
+        Rectangle plotRect = getPlotRect();
         /*
       The x axis label.
      */
         final String xLabel = "False Positive Fraction";
-        final int stringWidth = this.fm.stringWidth(xLabel);
+        int stringWidth = this.fm.stringWidth(xLabel);
 
         // where to begin drawing (the rotated image)
-        final Point translate = new Point(
+        Point translate = new Point(
                 plotRect.x + plotRect.width / 2 - stringWidth / 2,
                 getSize().height - 8);
 
@@ -315,25 +315,25 @@ class RocPlot extends JPanel implements PropertyChangeListener {
         g.drawString(xLabel, translate.x, translate.y);
     }
 
-    private void drawYLabel(final Graphics g) {
+    private void drawYLabel(Graphics g) {
         g.setFont(this.fontBold);
 
         // # radians to rotate.
         final double theta = -Math.PI / 2;
 
-        final Rectangle plotRect = getPlotRect();
+        Rectangle plotRect = getPlotRect();
         /*
       The y axis laabel.
      */
         final String yLabel = "True Positive Fraction";
-        final int stringWidth = this.fm.stringWidth(yLabel);
+        int stringWidth = this.fm.stringWidth(yLabel);
 
         // where to begin drawing (the rotated image)
-        final Point translate = new Point(this.fm.getAscent(),
+        Point translate = new Point(this.fm.getAscent(),
                 plotRect.y + (plotRect.height / 2 + stringWidth / 2));
 
-        final Graphics2D g2 = (Graphics2D) g;
-        final AffineTransform save = g2.getTransform();
+        Graphics2D g2 = (Graphics2D) g;
+        AffineTransform save = g2.getTransform();
 
         g2.translate(translate.x, translate.y);
         g2.rotate(theta);
@@ -345,10 +345,10 @@ class RocPlot extends JPanel implements PropertyChangeListener {
     }
 
     private void calcGraphInsets() {
-        final int top = this.titleFm.getHeight() + this.titleFm.getDescent() + 10;
-        final int left = (int) (2.5 * this.fm.getHeight());
-        final int bottom = 2 * this.fm.getHeight();
-        final int right = (int) (2.5 * this.fm.getHeight());
+        int top = this.titleFm.getHeight() + this.titleFm.getDescent() + 10;
+        int left = (int) (2.5 * this.fm.getHeight());
+        int bottom = 2 * this.fm.getHeight();
+        int right = (int) (2.5 * this.fm.getHeight());
 
         this.graphInsets = new Insets(top, left, bottom, right);
     }
@@ -358,7 +358,7 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      *
      * @param e the property change event.
      */
-    public void propertyChange(final PropertyChangeEvent e) {
+    public void propertyChange(PropertyChangeEvent e) {
         repaint();
     }
 }

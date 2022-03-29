@@ -98,7 +98,7 @@ public final class MagToPag {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public MagToPag(final Graph mag) {
+    public MagToPag(Graph mag) {
         this.mag = new EdgeListGraph(mag);
         this.variables.addAll(mag.getNodes());
         this.dsep = new IndTestDSep(mag);
@@ -110,7 +110,7 @@ public final class MagToPag {
         return this.depth;
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0: " + depth);
@@ -124,10 +124,10 @@ public final class MagToPag {
 
         setMaxPathLength(this.maxPathLength);
 
-        final Graph graph = new EdgeListGraph(this.mag);
+        Graph graph = new EdgeListGraph(this.mag);
         graph.reorientAllWith(Endpoint.CIRCLE);
 
-        final FciOrient fciOrient = new FciOrient(new DagSepsets(this.mag));
+        FciOrient fciOrient = new FciOrient(new DagSepsets(this.mag));
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         return fciOrient.orient(graph);
     }
@@ -137,7 +137,7 @@ public final class MagToPag {
         return this.knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -157,11 +157,11 @@ public final class MagToPag {
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
-    public void setCompleteRuleSetUsed(final boolean completeRuleSetUsed) {
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
-    public void setMaxPathLength(final int maxPathLength) {
+    public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
         }
@@ -177,7 +177,7 @@ public final class MagToPag {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 

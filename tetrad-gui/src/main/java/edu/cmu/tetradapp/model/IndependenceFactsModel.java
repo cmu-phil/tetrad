@@ -62,7 +62,7 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
         return new Knowledge2();
     }
 
-    public void add(final IndependenceFact fact) {
+    public void add(IndependenceFact fact) {
         this.facts.add(fact);
     }
 
@@ -70,11 +70,11 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
         return this.facts.toString();
     }
 
-    public void remove(final IndependenceFact fact) {
+    public void remove(IndependenceFact fact) {
         this.facts.remove(fact);
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -86,22 +86,22 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
         return this.facts;
     }
 
-    public static IndependenceFactsModel loadFacts(final Reader reader) throws IOException {
-        final IndependenceFactsModel facts = new IndependenceFactsModel();
-        final Set<String> names = new HashSet<>();
-        final Map<String, Node> nodes = new HashMap<>();
+    public static IndependenceFactsModel loadFacts(Reader reader) throws IOException {
+        IndependenceFactsModel facts = new IndependenceFactsModel();
+        Set<String> names = new HashSet<>();
+        Map<String, Node> nodes = new HashMap<>();
 
-        final BufferedReader in = new BufferedReader(reader);
+        BufferedReader in = new BufferedReader(reader);
         String line;
 
         while ((line = in.readLine()) != null) {
-            final String[] tokens = line.split("[ ,;_|]+");
+            String[] tokens = line.split("[ ,;_|]+");
 
             if (tokens.length == 0) continue;
             if (tokens.length < 2) throw new IllegalArgumentException(
                     "Must specify at least two variables--e.g. X1 X2, for X1 _||_ X2.");
 
-            for (final String token : tokens) {
+            for (String token : tokens) {
                 names.add(token);
 
                 if (!nodes.containsKey(token)) {
@@ -109,7 +109,7 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
                 }
             }
 
-            final List<Node> z = new ArrayList<>();
+            List<Node> z = new ArrayList<>();
 
             for (int i = 2; i < tokens.length; i++) {
                 z.add(nodes.get(tokens[i]));
@@ -121,7 +121,7 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
         return facts;
     }
 
-    public void setFacts(final IndependenceFacts facts) {
+    public void setFacts(IndependenceFacts facts) {
         this.facts = facts;
     }
 

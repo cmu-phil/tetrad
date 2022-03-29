@@ -65,35 +65,35 @@ final class FontSelectionAction extends AbstractAction
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final GraphicsEnvironment graphicsEnvironment =
+    public void actionPerformed(ActionEvent e) {
+        GraphicsEnvironment graphicsEnvironment =
                 GraphicsEnvironment.getLocalGraphicsEnvironment();
 
-        final String[] fontFamilies =
+        String[] fontFamilies =
                 graphicsEnvironment.getAvailableFontFamilyNames();
         this.fontFamilyBox = new JComboBox(fontFamilies);
         this.fontFamilyBox.setBackground(Color.white);
         this.fontFamilyBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 resetFont();
             }
         });
 
-        final String[] styles = {"Plain", "Italic", "Bold"};
+        String[] styles = {"Plain", "Italic", "Bold"};
         this.styleBox = new JComboBox(styles);
         this.styleBox.setBackground(Color.white);
         this.styleBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 resetFont();
             }
         });
 
-        final String[] sizes = {"8", "9", "10", "11", "12", "14", "16",
+        String[] sizes = {"8", "9", "10", "11", "12", "14", "16",
                 "18", "20", "22", "24", "26", "28", "36", "48", "72"};
         this.sizesBox = new JComboBox(sizes);
         this.sizesBox.setBackground(Color.white);
         this.sizesBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 resetFont();
             }
         });
@@ -107,37 +107,37 @@ final class FontSelectionAction extends AbstractAction
         this.testArea.setBorder(new CompoundBorder(new LineBorder(Color.DARK_GRAY),
                 new MatteBorder(3, 3, 3, 3, Color.WHITE)));
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
 
-        final Box b2 = Box.createVerticalBox();
-        final Box b3 = Box.createHorizontalBox();
+        Box b2 = Box.createVerticalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Font family:"));
         b3.add(Box.createHorizontalGlue());
         b2.add(b3);
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(Box.createHorizontalStrut(5));
         b4.add(this.fontFamilyBox);
         b2.add(b4);
 
-        final Box b5 = Box.createVerticalBox();
-        final Box b6 = Box.createHorizontalBox();
+        Box b5 = Box.createVerticalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(new JLabel("Font style:"));
         b6.add(Box.createHorizontalGlue());
         b5.add(b6);
 
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalStrut(5));
         b7.add(this.styleBox);
         b5.add(b7);
 
-        final Box b8 = Box.createVerticalBox();
-        final Box b9 = Box.createHorizontalBox();
+        Box b8 = Box.createVerticalBox();
+        Box b9 = Box.createHorizontalBox();
         b9.add(new JLabel("Size:"));
         b9.add(Box.createHorizontalGlue());
         b8.add(b9);
 
-        final Box b10 = Box.createHorizontalBox();
+        Box b10 = Box.createHorizontalBox();
         b10.add(Box.createHorizontalStrut(5));
         b10.add(this.sizesBox);
         b8.add(b10);
@@ -148,22 +148,22 @@ final class FontSelectionAction extends AbstractAction
         b1.add(Box.createHorizontalStrut(5));
         b1.add(b8);
 
-        final Box b11 = Box.createVerticalBox();
+        Box b11 = Box.createVerticalBox();
         b11.add(b1);
         b11.add(Box.createVerticalStrut(5));
 
-        final Box b12 = Box.createHorizontalBox();
+        Box b12 = Box.createHorizontalBox();
         b12.add(new JLabel("Preview:"));
         b12.add(Box.createHorizontalGlue());
 
-        final Box b13 = Box.createHorizontalBox();
+        Box b13 = Box.createHorizontalBox();
         b13.add(Box.createHorizontalStrut(5));
         b13.add(this.testArea);
 
         b11.add(b12);
         b11.add(b13);
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b11, BorderLayout.CENTER);
         panel.setBorder(new TitledBorder("Select the 'Plain' font:"));
@@ -174,11 +174,11 @@ final class FontSelectionAction extends AbstractAction
     }
 
     private void resetFont() {
-        final String family = (String) this.fontFamilyBox.getSelectedItem();
-        final String styleString = (String) this.styleBox.getSelectedItem();
-        final String sizeString = (String) this.sizesBox.getSelectedItem();
+        String family = (String) this.fontFamilyBox.getSelectedItem();
+        String styleString = (String) this.styleBox.getSelectedItem();
+        String sizeString = (String) this.sizesBox.getSelectedItem();
 
-        final int style;
+        int style;
 
         if ("Plain".equals(styleString)) {
             style = Font.PLAIN;
@@ -191,7 +191,7 @@ final class FontSelectionAction extends AbstractAction
                     "Unrecognized styleString: " + styleString);
         }
 
-        final int size = Integer.parseInt(sizeString);
+        int size = Integer.parseInt(sizeString);
 
         if (size < 1) {
             throw new IllegalArgumentException("Size Must be greater than or equal to 1: " + size);
@@ -204,7 +204,7 @@ final class FontSelectionAction extends AbstractAction
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 
     private Font getFont() {

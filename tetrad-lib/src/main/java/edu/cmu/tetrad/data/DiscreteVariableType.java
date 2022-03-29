@@ -51,7 +51,7 @@ public final class DiscreteVariableType implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private DiscreteVariableType(final String name) {
+    private DiscreteVariableType(String name) {
         this.name = name;
     }
 

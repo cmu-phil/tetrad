@@ -44,8 +44,8 @@ class TierList extends JScrollPane {
 
     private final Tier[] tiers;
 
-    public TierList(final IKnowledge know, final List<String> varNames,
-                    final TemporalTierEditor tierListEditor) {
+    public TierList(IKnowledge know, List<String> varNames,
+                    TemporalTierEditor tierListEditor) {
 
         super(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -81,9 +81,9 @@ class TierList extends JScrollPane {
 
         this.constList.setLayout(new BoxLayout(this.constList, BoxLayout.Y_AXIS));
 
-        final String[] names = varNames.toArray(new String[0]);
+        String[] names = varNames.toArray(new String[0]);
 
-        final String[] tierNames = new String[names.length + 1];
+        String[] tierNames = new String[names.length + 1];
 
         tierNames[0] = "Unspecified";
 
@@ -101,7 +101,7 @@ class TierList extends JScrollPane {
         this.tiers[names.length] = new Tier(this, -1, tierNames);
         //        constList.add(tiers[names.length]);
 
-        final Box b = Box.createHorizontalBox();
+        Box b = Box.createHorizontalBox();
         b.add(this.tiers[names.length]);
         //        b.add(Box.createGlue());
         this.constList.add(b);
@@ -112,7 +112,7 @@ class TierList extends JScrollPane {
             //	 		constList.add(tiers[i]);
 
 
-            final Box b1 = Box.createHorizontalBox();
+            Box b1 = Box.createHorizontalBox();
             b1.add(this.tiers[i]);
             //            b1.add(Box.createGlue());
             this.constList.add(b1);

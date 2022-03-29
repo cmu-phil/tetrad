@@ -37,14 +37,14 @@ public class ScoreModel implements Serializable, Comparable<ScoreModel> {
     private final String name;
     private final String description;
 
-    public ScoreModel(final AnnotatedClass<Score> score) {
+    public ScoreModel(AnnotatedClass<Score> score) {
         this.score = score;
         this.name = score.getAnnotation().name();
         this.description = ScoreDescriptions.getInstance().get(score.getAnnotation().command());
     }
 
     @Override
-    public int compareTo(final ScoreModel other) {
+    public int compareTo(ScoreModel other) {
         return this.score.getAnnotation().name().compareTo(other.score.getAnnotation().name());
     }
 

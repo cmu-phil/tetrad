@@ -38,11 +38,11 @@ public class CorrMatrixConverter extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    public CorrMatrixConverter(final DataWrapper wrapper, final Parameters params) {
-        final ICovarianceMatrix covMatrix;
+    public CorrMatrixConverter(DataWrapper wrapper, Parameters params) {
+        ICovarianceMatrix covMatrix;
 
         if (wrapper.getSelectedDataModel() instanceof DataSet) {
-            final DataSet dataSet = (DataSet) wrapper.getSelectedDataModel();
+            DataSet dataSet = (DataSet) wrapper.getSelectedDataModel();
 
             if (!(dataSet.isContinuous())) {
                 throw new RuntimeException("Only continuous data sets can be " +
@@ -51,7 +51,7 @@ public class CorrMatrixConverter extends DataWrapper {
 
             covMatrix = new CorrelationMatrix(dataSet);
         } else if (wrapper.getSelectedDataModel() instanceof ICovarianceMatrix) {
-            final ICovarianceMatrix covOrig = (ICovarianceMatrix) wrapper.getSelectedDataModel();
+            ICovarianceMatrix covOrig = (ICovarianceMatrix) wrapper.getSelectedDataModel();
             covMatrix = new CorrelationMatrix(covOrig);
         } else {
             throw new IllegalArgumentException("Expecting a continuous data set or a covariance matrix.");

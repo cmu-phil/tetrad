@@ -48,8 +48,8 @@ public class ParamConstraint implements TetradSerializable {
      * of relation imposed by the constraint. The SemIm is required because the
      * freeParameters' values are determined by it.
      */
-    public ParamConstraint(final SemIm semIm, final Parameter param1,
-                           final ParamConstraintType type, final double number) {
+    public ParamConstraint(SemIm semIm, Parameter param1,
+                           ParamConstraintType type, double number) {
         this.semIm = semIm;
         this.param1 = param1;
         this.param2 = null;
@@ -84,7 +84,7 @@ public class ParamConstraint implements TetradSerializable {
         return this.type;
     }
 
-    public void setType(final ParamConstraintType type) {
+    public void setType(ParamConstraintType type) {
         this.type = type;
     }
 
@@ -145,7 +145,7 @@ public class ParamConstraint implements TetradSerializable {
      *
      * @return true if the value would satisfy the constraint.
      */
-    public boolean wouldBeSatisfied(final double testValue) {
+    public boolean wouldBeSatisfied(double testValue) {
         return this.type == ParamConstraintType.NONE || this.param2 == null && (this.type == ParamConstraintType.EQ && testValue == this.number || this.type == ParamConstraintType.GT && testValue > this.number || this.type == ParamConstraintType.LT && testValue < this.number);
 
     }

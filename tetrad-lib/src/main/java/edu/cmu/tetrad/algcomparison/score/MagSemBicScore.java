@@ -28,10 +28,10 @@ public class MagSemBicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        final edu.cmu.tetrad.search.MagSemBicScore semBicScore;
+        edu.cmu.tetrad.search.MagSemBicScore semBicScore;
 
         if (dataSet instanceof DataSet) {
             semBicScore = new edu.cmu.tetrad.search.MagSemBicScore((DataSet) this.dataSet);
@@ -59,7 +59,7 @@ public class MagSemBicScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
         parameters.add(Params.SEM_BIC_RULE);
@@ -67,7 +67,7 @@ public class MagSemBicScore implements ScoreWrapper {
     }
 
     @Override
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         return this.dataSet.getVariable(name);
     }
 

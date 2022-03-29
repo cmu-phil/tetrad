@@ -39,14 +39,14 @@ public class StandardizeWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      */
-    private StandardizeWrapper(final DataWrapper data) {
+    private StandardizeWrapper(DataWrapper data) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
 
-        final DataSet dataSet = (DataSet) data.getDataModelList().get(0);
-        final Matrix matrix2D = DataUtils.standardizeData(dataSet.getDoubleData());
-        final DataSet _dataSet = new BoxDataSet(new VerticalDoubleDataBox(matrix2D.transpose().toArray()), data.getVariables());
+        DataSet dataSet = (DataSet) data.getDataModelList().get(0);
+        Matrix matrix2D = DataUtils.standardizeData(dataSet.getDoubleData());
+        DataSet _dataSet = new BoxDataSet(new VerticalDoubleDataBox(matrix2D.transpose().toArray()), data.getVariables());
         _dataSet.setName(dataSet.getName());
         setDataModel(_dataSet);
         setSourceGraph(data.getSourceGraph());
@@ -81,7 +81,7 @@ public class StandardizeWrapper extends DataWrapper {
      * @throws ClassNotFoundException
      */
     @SuppressWarnings("MethodMayBeStatic")
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

@@ -20,7 +20,7 @@ public class ParamDescription {
     private int lowerBoundInt = Integer.MIN_VALUE;
     private int upperBoundInt = Integer.MAX_VALUE;
 
-    public ParamDescription(final String paramName, final String shortDescription, final String longDescription, final Serializable defaultValue) {
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -39,7 +39,7 @@ public class ParamDescription {
         this.defaultValue = defaultValue;
     }
 
-    public ParamDescription(final String paramName, final String shortDescription, final String longDescription, final Serializable defaultValue, final int lowerBound, final int upperBound) {
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, int lowerBound, int upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -60,7 +60,7 @@ public class ParamDescription {
         this.upperBoundInt = upperBound;
     }
 
-    public ParamDescription(final String paramName, final String shortDescription, final String longDescription, final Serializable defaultValue, final double lowerBound, final double upperBound) {
+    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, double lowerBound, double upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -85,7 +85,7 @@ public class ParamDescription {
         return this.paramName;
     }
 
-    public void setParamName(final String paramName) {
+    public void setParamName(String paramName) {
         this.paramName = paramName;
     }
 
@@ -93,7 +93,7 @@ public class ParamDescription {
         return this.shortDescription;
     }
 
-    public void setShortDescription(final String shortDescription) {
+    public void setShortDescription(String shortDescription) {
         this.shortDescription = shortDescription;
     }
 
@@ -101,7 +101,7 @@ public class ParamDescription {
         return this.longDescription;
     }
 
-    public void setLongDescription(final String longDescription) {
+    public void setLongDescription(String longDescription) {
         this.longDescription = longDescription;
     }
 
@@ -109,7 +109,7 @@ public class ParamDescription {
         return this.defaultValue;
     }
 
-    public void setDefaultValue(final Serializable defaultValue) {
+    public void setDefaultValue(Serializable defaultValue) {
         this.defaultValue = defaultValue;
     }
 
@@ -117,7 +117,7 @@ public class ParamDescription {
         return this.lowerBoundDouble;
     }
 
-    public void setLowerBoundDouble(final double lowerBoundDouble) {
+    public void setLowerBoundDouble(double lowerBoundDouble) {
         this.lowerBoundDouble = lowerBoundDouble;
     }
 
@@ -125,7 +125,7 @@ public class ParamDescription {
         return this.upperBoundDouble;
     }
 
-    public void setUpperBoundDouble(final double upperBoundDouble) {
+    public void setUpperBoundDouble(double upperBoundDouble) {
         this.upperBoundDouble = upperBoundDouble;
     }
 
@@ -133,7 +133,7 @@ public class ParamDescription {
         return this.lowerBoundInt;
     }
 
-    public void setLowerBoundInt(final int lowerBoundInt) {
+    public void setLowerBoundInt(int lowerBoundInt) {
         this.lowerBoundInt = lowerBoundInt;
     }
 
@@ -141,7 +141,7 @@ public class ParamDescription {
         return this.upperBoundInt;
     }
 
-    public void setUpperBoundInt(final int upperBoundInt) {
+    public void setUpperBoundInt(int upperBoundInt) {
         this.upperBoundInt = upperBoundInt;
     }
 

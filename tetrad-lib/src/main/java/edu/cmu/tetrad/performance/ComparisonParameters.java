@@ -30,7 +30,7 @@ public class ComparisonParameters {
 
     }
 
-    public ComparisonParameters(final ComparisonParameters params) {
+    public ComparisonParameters(ComparisonParameters params) {
         this.dataType = params.dataType;
         this.resultType = params.resultType;
         this.numVars = params.numVars;
@@ -47,7 +47,7 @@ public class ComparisonParameters {
         this.dataFromFile = params.dataFromFile;
     }
 
-    public void setDataType(final DataType dataType) {
+    public void setDataType(DataType dataType) {
         if (this.dataType != null && this.dataType != dataType) {
             throw new IllegalArgumentException("Data type conflicts with previous data type.");
         }
@@ -55,7 +55,7 @@ public class ComparisonParameters {
         this.dataType = dataType;
     }
 
-    public void setResultType(final ResultType resultType) {
+    public void setResultType(ResultType resultType) {
         if (this.resultType != null && this.resultType != resultType) {
             throw new IllegalArgumentException("Result type conflicts with previous result type.");
         }
@@ -63,7 +63,7 @@ public class ComparisonParameters {
         this.resultType = resultType;
     }
 
-    public void setNumVars(final int numVars) {
+    public void setNumVars(int numVars) {
         if (numVars < 1) {
             throw new IllegalArgumentException("Number of variables must be >= 1.");
         }
@@ -71,7 +71,7 @@ public class ComparisonParameters {
         this.numVars = numVars;
     }
 
-    public void setNumEdges(final int numEdges) {
+    public void setNumEdges(int numEdges) {
         if (numEdges < 1) {
             throw new IllegalArgumentException("Number of edges must be >= 1.");
         }
@@ -79,7 +79,7 @@ public class ComparisonParameters {
         this.numEdges = numEdges;
     }
 
-    public void setSampleSize(final int sampleSize) {
+    public void setSampleSize(int sampleSize) {
         if (sampleSize < 1) {
             throw new IllegalArgumentException("Sample size must be >= 1.");
         }
@@ -87,11 +87,11 @@ public class ComparisonParameters {
         this.sampleSize = sampleSize;
     }
 
-    public void setIndependenceTest(final IndependenceTestType independenceTest) {
+    public void setIndependenceTest(IndependenceTestType independenceTest) {
         this.independenceTest = independenceTest;
     }
 
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0 || alpha > 1) {
             throw new IllegalArgumentException("Alpha must be in [0, 1]");
         }
@@ -100,11 +100,11 @@ public class ComparisonParameters {
     }
 
 
-    public void setPenaltyDiscount(final double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public void setScore(final ScoreType score) {
+    public void setScore(ScoreType score) {
         if (score == null) {
             throw new NullPointerException("Score not provided.");
         }
@@ -124,7 +124,7 @@ public class ComparisonParameters {
         this.score = score;
     }
 
-    public void setAlgorithm(final Algorithm algorithm) {
+    public void setAlgorithm(Algorithm algorithm) {
         this.algorithm = algorithm;
 
         ResultType resultType = null;
@@ -200,7 +200,7 @@ public class ComparisonParameters {
         return this.dataFile;
     }
 
-    public void setDataFile(final String dataFile) {
+    public void setDataFile(String dataFile) {
         this.dataFile = dataFile;
     }
 
@@ -209,7 +209,7 @@ public class ComparisonParameters {
     }
 
     public String toString() {
-        final StringBuilder b = new StringBuilder();
+        StringBuilder b = new StringBuilder();
 
         if (this.dataType != null) {
             b.append("\nData Type = " + this.dataType);
@@ -268,7 +268,7 @@ public class ComparisonParameters {
         return this.samplePrior;
     }
 
-    public void setSamplePrior(final double samplePrior) {
+    public void setSamplePrior(double samplePrior) {
         this.samplePrior = samplePrior;
     }
 
@@ -276,11 +276,11 @@ public class ComparisonParameters {
         return this.structurePrior;
     }
 
-    public void setStructurePrior(final double structurePrior) {
+    public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
     }
 
-    public void setOneEdgeFaithfulnessAssumed(final boolean oneEdgeFaithfulnessAssumed) {
+    public void setOneEdgeFaithfulnessAssumed(boolean oneEdgeFaithfulnessAssumed) {
         this.oneEdgeFaithfulnessAssumed = oneEdgeFaithfulnessAssumed;
     }
 
@@ -289,7 +289,7 @@ public class ComparisonParameters {
     }
 
 
-    public void setNoData(final boolean noData) {
+    public void setNoData(boolean noData) {
         this.noData = noData;
     }
 
@@ -301,15 +301,15 @@ public class ComparisonParameters {
         return this.dataFromFile;
     }
 
-    public void setDataFromFile(final boolean dataFromFile) {
+    public void setDataFromFile(boolean dataFromFile) {
         this.dataFromFile = dataFromFile;
     }
 
-    public void setGraphFile(final String graphFile) {
+    public void setGraphFile(String graphFile) {
         this.graphFile = graphFile;
     }
 
-    public void setGraphNum(final int graphNum) {
+    public void setGraphNum(int graphNum) {
         this.graphNum = graphNum;
     }
 
@@ -317,7 +317,7 @@ public class ComparisonParameters {
         return this.graphNum;
     }
 
-    public void setTrial(final int trial) {
+    public void setTrial(int trial) {
         this.trial = trial;
     }
 

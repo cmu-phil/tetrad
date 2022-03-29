@@ -37,12 +37,12 @@ public class TetradProperties {
     private final Map<String, String> props = new HashMap<>();
 
     private TetradProperties() {
-        final Properties properties = new Properties();
-        try (final InputStream inputStream = TetradProperties.class.getResourceAsStream("/tetrad-lib.properties")) {
+        Properties properties = new Properties();
+        try (InputStream inputStream = TetradProperties.class.getResourceAsStream("/tetrad-lib.properties")) {
             if (inputStream != null) {
                 properties.load(inputStream);
             }
-        } catch (final IOException exception) {
+        } catch (IOException exception) {
             exception.printStackTrace(System.err);
         }
 
@@ -57,7 +57,7 @@ public class TetradProperties {
         return this.props.keySet();
     }
 
-    public String getValue(final String property) {
+    public String getValue(String property) {
         if (property == null) {
             return null;
         }

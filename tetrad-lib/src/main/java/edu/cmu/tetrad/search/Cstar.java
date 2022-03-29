@@ -49,7 +49,7 @@ public class Cstar {
         private final double pi;
         private final double minBeta;
 
-        private Tuple(final Node cause, final Node effect, final double pi, final double minBeta) {
+        private Tuple(Node cause, Node effect, double pi, double minBeta) {
             this.cause = cause;
             this.effect = effect;
             this.pi = pi;
@@ -84,7 +84,7 @@ public class Cstar {
         private final int q;
         private final int p;
 
-        Record(final Node predictor, final Node target, final double pi, final double minEffect, final int q, final int p) {
+        Record(Node predictor, Node target, double pi, double minEffect, int q, int p) {
             this.causeNode = predictor;
             this.target = target;
             this.pi = pi;
@@ -129,8 +129,8 @@ public class Cstar {
      * @param possibleEffects The effect variables.
      * @param test            This test is only used to make more tests like it for subsamples.
      */
-    public LinkedList<LinkedList<Record>> getRecords(final DataSet dataSet, final List<Node> possibleCauses, final List<Node> possibleEffects,
-                                                     final IndependenceTest test) {
+    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects,
+                                                     IndependenceTest test) {
         return getRecords(dataSet, possibleCauses, possibleEffects, test, null);
     }
 
@@ -147,13 +147,13 @@ public class Cstar {
      *                        computed interim results will be loaded.
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects,
-                                                     final IndependenceTest test, final String path) {
+                                                     IndependenceTest test, String path) {
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
 
-        final int p = possibleCauses.size() * possibleEffects.size();
+        int p = possibleCauses.size() * possibleEffects.size();
 
-        final List<Integer> qs = new ArrayList<>();
+        List<Integer> qs = new ArrayList<>();
 
         for (int q = this.qFrom; q <= this.qTo; q += this.qIncrement) {
             if (q <= p) {
@@ -165,7 +165,7 @@ public class Cstar {
 
         if (qs.isEmpty()) return new LinkedList<>();
 
-        final LinkedList<LinkedList<Record>> allRecords = new LinkedList<>();
+        LinkedList<LinkedList<Record>> allRecords = new LinkedList<>();
 
         File _dir = null;
 
@@ -174,7 +174,7 @@ public class Cstar {
             _dir.mkdirs();
         }
 
-        final File dir = _dir;
+        File dir = _dir;
 
         if (dir != null) {
 
@@ -201,23 +201,23 @@ public class Cstar {
             throw new IllegalArgumentException("Expecting Fisher Z, Chi Square, Sem BIC, or Conditional Gaussian Score.");
         }
 
-        final List<Node> augmented = new ArrayList<>(possibleEffects);
+        List<Node> augmented = new ArrayList<>(possibleEffects);
         augmented.addAll(possibleCauses);
 
-        final List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
+        List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
 
         for (int t = 0; t < possibleEffects.size(); t++) {
             minimalEffects.add(new ConcurrentHashMap<>());
 
             for (int b = 0; b < getNumSubsamples(); b++) {
-                final Map<Node, Double> map = new ConcurrentHashMap<>();
-                for (final Node node : possibleCauses) map.put(node, 0.0);
+                Map<Node, Double> map = new ConcurrentHashMap<>();
+                for (Node node : possibleCauses) map.put(node, 0.0);
                 minimalEffects.get(t).put(b, map);
             }
         }
 
-        final int[] edgesTotal = new int[1];
-        final int[] edgesCount = new int[1];
+        int[] edgesTotal = new int[1];
+        int[] edgesCount = new int[1];
 
         class Task implements Callable<double[][]> {
             private final List<Node> possibleCauses;
@@ -225,7 +225,7 @@ public class Cstar {
             private final int k;
             private final DataSet _dataSet;
 
-            private Task(final int k, final List<Node> possibleCauses, final List<Node> possibleEffects, final DataSet _dataSet) {
+            private Task(int k, List<Node> possibleCauses, List<Node> possibleEffects, DataSet _dataSet) {
                 this.k = k;
                 this.possibleCauses = possibleCauses;
                 this.possibleEffects = possibleEffects;
@@ -234,8 +234,8 @@ public class Cstar {
 
             public double[][] call() {
                 try {
-                    final BootstrapSampler sampler = new BootstrapSampler();
-                    final DataSet sample;
+                    BootstrapSampler sampler = new BootstrapSampler();
+                    DataSet sample;
 
                     if (Cstar.this.sampleStyle == SampleStyle.BOOTSTRAP) {
                         sampler.setWithoutReplacements(false);
@@ -255,7 +255,7 @@ public class Cstar {
                         try {
                             pattern = GraphUtils.loadGraphTxt(new File(dir, "pattern." + (this.k + 1) + ".txt"));
                             effects = loadMatrix(new File(dir, "effects." + (this.k + 1) + ".txt"));
-                        } catch (final Exception e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
@@ -279,12 +279,12 @@ public class Cstar {
                             GraphUtils.saveGraph(pattern, new File(dir, "pattern." + (this.k + 1) + ".txt"), false);
                         }
 
-                        final Ida ida = new Ida(sample, pattern, this.possibleCauses);
+                        Ida ida = new Ida(sample, pattern, this.possibleCauses);
 
                         effects = new double[this.possibleCauses.size()][this.possibleEffects.size()];
 
                         for (int e = 0; e < this.possibleEffects.size(); e++) {
-                            final Map<Node, Double> minEffects = ida.calculateMinimumEffectsOnY(this.possibleEffects.get(e));
+                            Map<Node, Double> minEffects = ida.calculateMinimumEffectsOnY(this.possibleEffects.get(e));
 
                             for (int c = 0; c < this.possibleCauses.size(); c++) {
                                 effects[c][e] = minEffects.get(this.possibleCauses.get(c));
@@ -304,39 +304,39 @@ public class Cstar {
                     }
 
                     return effects;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
         }
 
-        final List<Callable<double[][]>> tasks = new ArrayList<>();
+        List<Callable<double[][]>> tasks = new ArrayList<>();
 
         for (int k = 0; k < getNumSubsamples(); k++) {
             tasks.add(new Task(k, possibleCauses, possibleEffects, dataSet));
         }
 
-        final List<double[][]> allEffects = runCallablesDoubleArray(tasks, getParallelism());
+        List<double[][]> allEffects = runCallablesDoubleArray(tasks, getParallelism());
 
-        final int avgEdges = (int) (edgesTotal[0] / (double) edgesCount[0]);
+        int avgEdges = (int) (edgesTotal[0] / (double) edgesCount[0]);
 //        avgEdges /= 2.0;
 
         qs.clear();
         qs.add(avgEdges);
 
 
-        final List<List<Double>> doubles = new ArrayList<>();
+        List<List<Double>> doubles = new ArrayList<>();
 //        List<Double> allDoubles = new ArrayList<>();
 
         for (int k = 0; k < getNumSubsamples(); k++) {
-            final double[][] effects = allEffects.get(k);
+            double[][] effects = allEffects.get(k);
 
             if (effects.length != possibleCauses.size() || effects[0].length != possibleEffects.size()) {
                 throw new IllegalStateException("Bootstrap " + (k + 1)
                         + " is damaged; delete the pattern and effect files for that bootstrap and rerun");
             }
 
-            final List<Double> _doubles = new ArrayList<>();
+            List<Double> _doubles = new ArrayList<>();
 
             for (int c = 0; c < possibleCauses.size(); c++) {
                 for (int e = 0; e < possibleEffects.size(); e++) {
@@ -353,7 +353,7 @@ public class Cstar {
             private final List<Node> possibleEffects;
             private final int q;
 
-            private Task2(final List<Node> possibleCauses, final List<Node> possibleEffects, final int q) {
+            private Task2(List<Node> possibleCauses, List<Node> possibleEffects, int q) {
                 this.possibleCauses = possibleCauses;
                 this.possibleEffects = possibleEffects;
                 this.q = q;
@@ -365,7 +365,7 @@ public class Cstar {
                         TetradLogger.getInstance().forceLogMessage("Examining q = " + this.q);
                     }
 
-                    final List<Tuple> tuples = new ArrayList<>();
+                    List<Tuple> tuples = new ArrayList<>();
 
                     for (int e = 0; e < this.possibleEffects.size(); e++) {
                         for (int c = 0; c < this.possibleCauses.size(); c++) {
@@ -376,7 +376,7 @@ public class Cstar {
                                     continue;
                                 }
 
-                                final double cutoff = doubles.get(k).get(this.q - 1);
+                                double cutoff = doubles.get(k).get(this.q - 1);
 
                                 if (allEffects.get(k)[c][e] >= cutoff) {
                                     count++;
@@ -384,10 +384,10 @@ public class Cstar {
                             }
 
 //                            if (count > 0) {
-                            final double pi = count / ((double) getNumSubsamples());
+                            double pi = count / ((double) getNumSubsamples());
                             if (pi < (this.q / (double) p)) continue;
-                            final Node cause = this.possibleCauses.get(c);
-                            final Node effect = this.possibleEffects.get(e);
+                            Node cause = this.possibleCauses.get(c);
+                            Node effect = this.possibleEffects.get(e);
                             tuples.add(new Tuple(cause, effect, pi,
                                     avgMinEffect(this.possibleCauses, this.possibleEffects, allEffects, cause, effect)));
 //                            }
@@ -402,24 +402,24 @@ public class Cstar {
                         }
                     });
 
-                    final LinkedList<Record> records = new LinkedList<>();
+                    LinkedList<Record> records = new LinkedList<>();
                     double sum = 0.0;
 
                     for (int i = 0; i < tuples.size() /*Math.min(q, tuples.size())*/; i++) {
-                        final Tuple tuple = tuples.get(i);
+                        Tuple tuple = tuples.get(i);
 
                         sum += tuple.getPi();
-                        final double avg = tuple.getMinBeta();
+                        double avg = tuple.getMinBeta();
 
-                        final Node causeNode = tuple.getCauseNode();
-                        final Node effectNode = tuple.getEffectNode();
+                        Node causeNode = tuple.getCauseNode();
+                        Node effectNode = tuple.getEffectNode();
 
                         records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, this.q, p));
                     }
 
                     allRecords.add(records);
                     return true;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -427,9 +427,9 @@ public class Cstar {
             }
         }
 
-        final List<Callable<Boolean>> task2s = new ArrayList<>();
+        List<Callable<Boolean>> task2s = new ArrayList<>();
 
-        for (final int q : qs) {
+        for (int q : qs) {
             task2s.add(new Task2(possibleCauses, possibleEffects, q));
         }
 
@@ -440,35 +440,35 @@ public class Cstar {
         return allRecords;
     }
 
-    private DataSet readData(final File dir, final String s) {
+    private DataSet readData(File dir, String s) {
         try {
-            final DataSet dataSet = DataUtils.loadContinuousData(new File(dir, s), "//", '*', "*", true, Delimiter.TAB);
+            DataSet dataSet = DataUtils.loadContinuousData(new File(dir, s), "//", '*', "*", true, Delimiter.TAB);
 
             TetradLogger.getInstance().forceLogMessage(
                     "Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
 
             return dataSet;
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void writeData(final DataSet dataSet, final File dir, final String s) {
+    private void writeData(DataSet dataSet, File dir, String s) {
         try {
-            final PrintStream out = new PrintStream(new FileOutputStream(new File(dir, s)));
+            PrintStream out = new PrintStream(new FileOutputStream(new File(dir, s)));
             out.println(dataSet.toString());
-        } catch (final FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private List<Node> readVars(final DataSet dataSet, final File dir, final String s) {
+    private List<Node> readVars(DataSet dataSet, File dir, String s) {
         try {
-            final List<Node> vars = new ArrayList<>();
+            List<Node> vars = new ArrayList<>();
 
-            final File file = new File(dir, s);
+            File file = new File(dir, s);
 
-            final BufferedReader in = new BufferedReader(new FileReader(file));
+            BufferedReader in = new BufferedReader(new FileReader(file));
             String line;
 
             while ((line = in.readLine()) != null) {
@@ -477,74 +477,74 @@ public class Cstar {
             }
 
             return vars;
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void writeVars(final List<Node> vars, final File dir, final String s) {
+    private void writeVars(List<Node> vars, File dir, String s) {
         try {
-            final File file = new File(dir, s);
+            File file = new File(dir, s);
 
-            final PrintStream out = new PrintStream(new FileOutputStream(file));
+            PrintStream out = new PrintStream(new FileOutputStream(file));
 
-            for (final Node node : vars) {
+            for (Node node : vars) {
                 out.println(node.getName());
             }
 
             out.flush();
-        } catch (final FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    private double avgMinEffect(final List<Node> possibleCauses, final List<Node> possibleEffects, final List<double[][]> allEffects,
-                                final Node causeNode, final Node effectNode) {
-        final List<Double> f = new ArrayList<>();
+    private double avgMinEffect(List<Node> possibleCauses, List<Node> possibleEffects, List<double[][]> allEffects,
+                                Node causeNode, Node effectNode) {
+        List<Double> f = new ArrayList<>();
 
         if (allEffects == null) {
             throw new NullPointerException("effects null");
         }
 
         for (int k = 0; k < getNumSubsamples(); k++) {
-            final int c = possibleCauses.indexOf(causeNode);
-            final int e = possibleEffects.indexOf(effectNode);
+            int c = possibleCauses.indexOf(causeNode);
+            int e = possibleEffects.indexOf(effectNode);
             f.add(allEffects.get(k)[c][e]);
         }
 
-        final double[] _f = new double[f.size()];
+        double[] _f = new double[f.size()];
         for (int b = 0; b < f.size(); b++) _f[b] = f.get(b);
         return StatUtils.mean(_f);
     }
 
-    public static LinkedList<Record> cStar(final LinkedList<LinkedList<Record>> allRecords) {
-        final Map<Edge, List<Record>> map = new HashMap<>();
+    public static LinkedList<Record> cStar(LinkedList<LinkedList<Record>> allRecords) {
+        Map<Edge, List<Record>> map = new HashMap<>();
 
-        for (final List<Record> records : allRecords) {
-            for (final Record record : records) {
-                final Edge edge = Edges.directedEdge(record.getCauseNode(), record.getEffectNode());
+        for (List<Record> records : allRecords) {
+            for (Record record : records) {
+                Edge edge = Edges.directedEdge(record.getCauseNode(), record.getEffectNode());
                 map.computeIfAbsent(edge, k -> new ArrayList<>());
                 map.get(edge).add(record);
             }
         }
 
-        final LinkedList<Record> cstar = new LinkedList<>();
+        LinkedList<Record> cstar = new LinkedList<>();
 
-        for (final Edge edge : map.keySet()) {
-            final List<Record> recordList = map.get(edge);
+        for (Edge edge : map.keySet()) {
+            List<Record> recordList = map.get(edge);
 
-            final double[] pis = new double[recordList.size()];
-            final double[] effects = new double[recordList.size()];
+            double[] pis = new double[recordList.size()];
+            double[] effects = new double[recordList.size()];
 
             for (int i = 0; i < recordList.size(); i++) {
                 pis[i] = recordList.get(i).getPi();
                 effects[i] = recordList.get(i).getMinBeta();
             }
 
-            final double medianPis = StatUtils.median(pis);
-            final double medianEffects = StatUtils.median(effects);
+            double medianPis = StatUtils.median(pis);
+            double medianEffects = StatUtils.median(effects);
 
-            final Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects,
+            Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects,
                     -1, -1);
             cstar.add(_record);
         }
@@ -563,16 +563,16 @@ public class Cstar {
     /**
      * Returns a text table from the given records
      */
-    public String makeTable(final LinkedList<Record> records, final boolean printTable) {
+    public String makeTable(LinkedList<Record> records, boolean printTable) {
         int numColumns = 8;
 
         if (this.trueDag != null) {
             numColumns++;
         }
 
-        final TextTable table = new TextTable(records.size() + 1, numColumns);
+        TextTable table = new TextTable(records.size() + 1, numColumns);
 //        table.setLatex(true);
-        final NumberFormat nf = new DecimalFormat("0.0000");
+        NumberFormat nf = new DecimalFormat("0.0000");
         int column = 0;
 
         table.setToken(0, column++, "Index");
@@ -596,16 +596,16 @@ public class Cstar {
             return "\nThere are no records above chance.\n";
         }
 
-        final int p = records.getLast().getP();
-        final int q = records.getLast().getQ();
+        int p = records.getLast().getP();
+        int q = records.getLast().getQ();
 
         int ancestorCount = 0;
 
         for (int i = 0; i < records.size(); i++) {
-            final Node cause = records.get(i).getCauseNode();
-            final Node effect = records.get(i).getEffectNode();
+            Node cause = records.get(i).getCauseNode();
+            Node effect = records.get(i).getEffectNode();
 
-            final int R = (i + 1);
+            int R = (i + 1);
             sumPi += records.get(i).getPi();
             column = 0;
 
@@ -618,13 +618,13 @@ public class Cstar {
             table.setToken(i + 1, column++, nf.format(records.get(i).getMinBeta()));
 //            table.setToken(i + 1, column++, nf.format(sumPi));
             table.setToken(i + 1, column++, nf.format(R - sumPi));
-            final double er = Cstar.er(records.get(i).getPi(), (i + 1), p);
+            double er = Cstar.er(records.get(i).getPi(), (i + 1), p);
             table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
-            final double pcer = Cstar.pcer(records.get(i).getPi(), (i + 1), p);
+            double pcer = Cstar.pcer(records.get(i).getPi(), (i + 1), p);
             table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(pcer));
 
             if (this.trueDag != null) {
-                final boolean ancestor = this.trueDag.isAncestorOf(this.trueDag.getNode(cause.getName()), this.trueDag.getNode(effect.getName()));
+                boolean ancestor = this.trueDag.isAncestorOf(this.trueDag.getNode(cause.getName()), this.trueDag.getNode(effect.getName()));
                 if (ancestor) ancestorCount++;
                 table.setToken(i + 1, column++, nf.format((R - ancestorCount)));
             }
@@ -638,12 +638,12 @@ public class Cstar {
     /**
      * Makes a graph of the estimated predictors to the effect.
      */
-    public Graph makeGraph(final List<Record> records) {
-        final List<Node> outNodes = new ArrayList<>();
+    public Graph makeGraph(List<Record> records) {
+        List<Node> outNodes = new ArrayList<>();
 
-        final Graph graph = new EdgeListGraph(outNodes);
+        Graph graph = new EdgeListGraph(outNodes);
 
-        for (final Record record : records) {
+        for (Record record : records) {
             graph.addNode(record.getCauseNode());
             graph.addNode(record.getEffectNode());
             graph.addDirectedEdge(record.getCauseNode(), record.getEffectNode());
@@ -652,39 +652,39 @@ public class Cstar {
         return graph;
     }
 
-    public void setNumSubsamples(final int numSubsamples) {
+    public void setNumSubsamples(int numSubsamples) {
         this.numSubsamples = numSubsamples;
     }
 
-    public void setParallelism(final int parallelism) {
+    public void setParallelism(int parallelism) {
         this.parallelism = parallelism;
     }
 
-    public void setqFrom(final int qFrom) {
+    public void setqFrom(int qFrom) {
         this.qFrom = qFrom;
     }
 
-    public void setqTo(final int qTo) {
+    public void setqTo(int qTo) {
         this.qTo = qTo;
     }
 
-    public void setqIncrement(final int qIncrement) {
+    public void setqIncrement(int qIncrement) {
         this.qIncrement = qIncrement;
     }
 
-    public void setPatternAlgorithm(final PatternAlgorithm patternAlgorithm) {
+    public void setPatternAlgorithm(PatternAlgorithm patternAlgorithm) {
         this.patternAlgorithm = patternAlgorithm;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setSampleStyle(final SampleStyle sampleStyle) {
+    public void setSampleStyle(SampleStyle sampleStyle) {
         this.sampleStyle = sampleStyle;
     }
 
-    public void setTrueDag(final Graph trueDag) {
+    public void setTrueDag(Graph trueDag) {
         this.trueDag = trueDag;
     }
 
@@ -698,33 +698,33 @@ public class Cstar {
         return this.parallelism;
     }
 
-    private Graph getPatternPcStable(final DataSet sample) {
-        final IndependenceTest test = getIndependenceTest(sample, this.test);
-        final PcStable pc = new PcStable(test);
+    private Graph getPatternPcStable(DataSet sample) {
+        IndependenceTest test = getIndependenceTest(sample, this.test);
+        PcStable pc = new PcStable(test);
         return pc.search();
     }
 
-    private Graph getPatternFges(final DataSet sample) {
-        final Score score = new ScoredIndTest(getIndependenceTest(sample, this.test));
-        final Fges fges = new Fges(score, 1);
+    private Graph getPatternFges(DataSet sample) {
+        Score score = new ScoredIndTest(getIndependenceTest(sample, this.test));
+        Fges fges = new Fges(score, 1);
         return fges.search();
     }
 
-    private IndependenceTest getIndependenceTest(final DataSet sample, final IndependenceTest test) {
+    private IndependenceTest getIndependenceTest(DataSet sample, IndependenceTest test) {
         if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
-            final SemBicScore score = new SemBicScore(new CorrelationMatrix(sample));
+            SemBicScore score = new SemBicScore(new CorrelationMatrix(sample));
             score.setPenaltyDiscount(((SemBicScore) ((IndTestScore) test).getWrappedScore()).getPenaltyDiscount());
             return new IndTestScore(score);
         } else if (test instanceof IndTestFisherZ) {
-            final double alpha = test.getAlpha();
+            double alpha = test.getAlpha();
             return new IndTestFisherZ(new CorrelationMatrix(sample), alpha);
         } else if (test instanceof ChiSquare) {
-            final double alpha = test.getAlpha();
+            double alpha = test.getAlpha();
             return new IndTestFisherZ(sample, alpha);
         } else if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof ConditionalGaussianScore) {
-            final ConditionalGaussianScore score = (ConditionalGaussianScore) ((IndTestScore) test).getWrappedScore();
-            final double penaltyDiscount = score.getPenaltyDiscount();
-            final ConditionalGaussianScore _score = new ConditionalGaussianScore(sample, 1, 0, false);
+            ConditionalGaussianScore score = (ConditionalGaussianScore) ((IndTestScore) test).getWrappedScore();
+            double penaltyDiscount = score.getPenaltyDiscount();
+            ConditionalGaussianScore _score = new ConditionalGaussianScore(sample, 1, 0, false);
             _score.setPenaltyDiscount(penaltyDiscount);
             return new IndTestScore(_score);
         } else {
@@ -733,66 +733,66 @@ public class Cstar {
     }
 
     // Meinhausen and Buhlmann E(|V|) bound
-    private static double er(final double pi, final double q, final double p) {
+    private static double er(double pi, double q, double p) {
         return p * Cstar.pcer(pi, q, p);
     }
 
     // Meinhausen and Buhlmann per comparison error rate (PCER)
-    private static double pcer(final double pi, final double q, final double p) {
+    private static double pcer(double pi, double q, double p) {
         return (q * q) / (p * p * (2 * pi - 1));
     }
 
-    private void saveMatrix(final double[][] effects, final File file) {
+    private void saveMatrix(double[][] effects, File file) {
         try {
-            final List<Node> vars = new ArrayList<>();
+            List<Node> vars = new ArrayList<>();
             for (int i = 0; i < effects[0].length; i++) vars.add(new ContinuousVariable("V" + (i + 1)));
-            final BoxDataSet data = new BoxDataSet(new DoubleDataBox(effects), vars);
+            BoxDataSet data = new BoxDataSet(new DoubleDataBox(effects), vars);
             if (file != null) {
-                final PrintStream out = new PrintStream(new FileOutputStream(file));
+                PrintStream out = new PrintStream(new FileOutputStream(file));
                 out.println(data);
             } else {
                 TetradLogger.getInstance().forceLogMessage(data.toString());
             }
-        } catch (final FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private double[][] loadMatrix(final File file) {
+    private double[][] loadMatrix(File file) {
         try {
-            final DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB);
+            DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB);
 
             TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
 
             return dataSet.getDoubleData().toArray();
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private List<double[][]> runCallablesDoubleArray(final List<Callable<double[][]>> tasks, final int parallelism) {
+    private List<double[][]> runCallablesDoubleArray(List<Callable<double[][]>> tasks, int parallelism) {
         if (tasks.isEmpty()) return new ArrayList<>();
 
-        final List<double[][]> results = new ArrayList<>();
+        List<double[][]> results = new ArrayList<>();
 
         if (parallelism == 1) {
-            for (final Callable<double[][]> task : tasks) {
+            for (Callable<double[][]> task : tasks) {
                 try {
                     results.add(task.call());
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         } else {
-            final ExecutorService executorService = Executors.newWorkStealingPool();
+            ExecutorService executorService = Executors.newWorkStealingPool();
 
             try {
-                final List<Future<double[][]>> futures = executorService.invokeAll(tasks);
+                List<Future<double[][]>> futures = executorService.invokeAll(tasks);
 
-                for (final Future<double[][]> future : futures) {
+                for (Future<double[][]> future : futures) {
                     results.add(future.get());
                 }
-            } catch (final InterruptedException | ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
 
@@ -802,7 +802,7 @@ public class Cstar {
                 if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
                     executorService.shutdownNow();
                 }
-            } catch (final InterruptedException e) {
+            } catch (InterruptedException e) {
                 executorService.shutdownNow();
             }
         }

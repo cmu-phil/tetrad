@@ -65,7 +65,7 @@ public class TetradMetadata
     public TetradMetadata() {
         try {
             this.version = Version.currentViewableVersion();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Can't retrive the current version of this tetrad release.");
         }
 
@@ -106,7 +106,7 @@ public class TetradMetadata
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

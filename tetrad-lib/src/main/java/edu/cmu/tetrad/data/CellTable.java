@@ -52,29 +52,29 @@ public final class CellTable {
      *
      * @param dims an <code>int[]</code> value
      */
-    public CellTable(final int[] dims) {
+    public CellTable(int[] dims) {
         this.table = new MultiDimIntTable(dims);
     }
 
-    public final synchronized void addToTable(final DataSet dataSet, final int[] indices) {
-        final int[] dims = new int[indices.length];
+    public final synchronized void addToTable(DataSet dataSet, int[] indices) {
+        int[] dims = new int[indices.length];
 
         for (int i = 0; i < indices.length; i++) {
-            final DiscreteVariable variable =
+            DiscreteVariable variable =
                     (DiscreteVariable) dataSet.getVariable(indices[i]);
             dims[i] = variable.getNumCategories();
         }
 
         this.table.reset(dims);
 
-        final int[] coords = new int[indices.length];
+        int[] coords = new int[indices.length];
 
         points:
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < indices.length; j++) {
                 try {
                     coords[j] = dataSet.getInt(i, indices[j]);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     coords[j] = dataSet.getInt(i, j);
                 }
@@ -92,7 +92,7 @@ public final class CellTable {
      * @param varIndex the index of the variable in question.
      * @return the number of dimensions of the variable.
      */
-    public final int getNumValues(final int varIndex) {
+    public final int getNumValues(int varIndex) {
         return this.table.getDims(varIndex);
     }
 
@@ -107,7 +107,7 @@ public final class CellTable {
      * @param coords an array of the sort described above.
      * @return the marginal sum specified.
      */
-    public final synchronized long calcMargin(final int[] coords) {
+    public final synchronized long calcMargin(int[] coords) {
         internalCoordCopy(coords);
 
         int sum = 0;
@@ -140,10 +140,10 @@ public final class CellTable {
      * @param marginVars an <code>int[]</code> value
      * @return an <code>int</code> value
      */
-    public final synchronized long calcMargin(final int[] coords, final int[] marginVars) {
+    public final synchronized long calcMargin(int[] coords, int[] marginVars) {
         internalCoordCopy(coords);
 
-        for (final int marginVar : marginVars) {
+        for (int marginVar : marginVars) {
             this.coordCopy[marginVar] = -1;
         }
 
@@ -154,7 +154,7 @@ public final class CellTable {
      * Makes a copy of the coordinate array so that the original is not messed
      * up.
      */
-    private synchronized void internalCoordCopy(final int[] coords) {
+    private synchronized void internalCoordCopy(int[] coords) {
         if ((this.coordCopy == null) ||
                 (this.coordCopy.length != coords.length)) {
             this.coordCopy = new int[coords.length];
@@ -167,11 +167,11 @@ public final class CellTable {
         return this.missingValue;
     }
 
-    public final void setMissingValue(final int missingValue) {
+    public final void setMissingValue(int missingValue) {
         this.missingValue = missingValue;
     }
 
-    public long getValue(final int[] testCell) {
+    public long getValue(int[] testCell) {
         return this.table.getValue(testCell);
     }
 }

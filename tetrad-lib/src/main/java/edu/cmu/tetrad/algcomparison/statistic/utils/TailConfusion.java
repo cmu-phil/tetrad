@@ -26,7 +26,7 @@ public class TailConfusion {
     private int TCfn;
     private int TCfp;
 
-    public TailConfusion(final Graph truth, final Graph est) {
+    public TailConfusion(Graph truth, Graph est) {
         this.truth = truth;
         this.est = est;
         this.tailsTp = 0;
@@ -43,10 +43,10 @@ public class TailConfusion {
         // Get edges from the true Graph to compute TruePositives, TrueNegatives and FalseNeagtives
         //    System.out.println(this.truth.getEdges());
 
-        for (final Edge edge : this.truth.getEdges()) {
+        for (Edge edge : this.truth.getEdges()) {
 
-            final List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
-            final Edge edge1;
+            List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            Edge edge1;
 
             if (edges1.size() == 1) {
                 edge1 = edges1.get(0);
@@ -66,8 +66,8 @@ public class TailConfusion {
             //      System.out.println(e1Est);
             //      System.out.println(e2Est);
 
-            final List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
-            final Edge edge2;
+            List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
+            Edge edge2;
 
             if (edges2.size() == 1) {
                 edge2 = edges2.get(0);
@@ -117,10 +117,10 @@ public class TailConfusion {
 // Get edges from the estimated graph to compute only FalsePositives
         // System.out.println(this.est.getEdges());
 
-        for (final Edge edge : this.est.getEdges()) {
+        for (Edge edge : this.est.getEdges()) {
 
-            final List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
-            final Edge edge1;
+            List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            Edge edge1;
 
             if (edges1.size() == 1) {
                 edge1 = edges1.get(0);
@@ -139,8 +139,8 @@ public class TailConfusion {
             //       System.out.println(e1Est);
             //       System.out.println(e2Est);
 
-            final List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
-            final Edge edge2;
+            List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
+            Edge edge2;
 
             if (edges2.size() == 1) {
                 edge2 = edges2.get(0);
@@ -178,11 +178,11 @@ public class TailConfusion {
         //allOriented.addAll(this.truth.getEdges());
         //allOriented.addAll(this.est.getEdges());
 
-        for (final Edge edge : this.truth.getEdges()) {
+        for (Edge edge : this.truth.getEdges()) {
 
 
-            final List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
-            final List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() == 2 && TwoCycle2.size() == 2) {
                 //              System.out.println("2-cycle correctly inferred " + TwoCycle1);
@@ -195,10 +195,10 @@ public class TailConfusion {
             }
         }
 
-        for (final Edge edge : this.est.getEdges()) {
+        for (Edge edge : this.est.getEdges()) {
 
-            final List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
-            final List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() != 2 && TwoCycle2.size() == 2) {
                 //              System.out.println("2-cycle falsely inferred" + TwoCycle2);

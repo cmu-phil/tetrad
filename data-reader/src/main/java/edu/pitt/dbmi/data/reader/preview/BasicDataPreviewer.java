@@ -40,12 +40,12 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicDataPreviewer.class);
 
-    public BasicDataPreviewer(final Path dataFile) {
+    public BasicDataPreviewer(Path dataFile) {
         super(dataFile);
     }
 
     @Override
-    public List<String> getPreviews(final int fromLine, final int toLine, final int numOfCharacters) throws IOException {
+    public List<String> getPreviews(int fromLine, int toLine, int numOfCharacters) throws IOException {
         // parameter validations
         checkLineNumberParameter(fromLine, toLine);
         checkCharacterNumberParameter(numOfCharacters);
@@ -53,33 +53,33 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
             return Collections.EMPTY_LIST;
         }
 
-        final List<String> linePreviews = new LinkedList<>();
+        List<String> linePreviews = new LinkedList<>();
         try {
             getPreviews(fromLine, toLine, numOfCharacters, linePreviews);
-        } catch (final ClosedByInterruptException exception) {
+        } catch (ClosedByInterruptException exception) {
             BasicDataPreviewer.LOGGER.error("", exception);
         }
 
         return linePreviews;
     }
 
-    protected void getPreviews(final int fromLine, final int toLine, final int numOfCharacters, final List<String> list) throws IOException {
-        try (final FileChannel fc = new RandomAccessFile(this.dataFile.toFile(), "r").getChannel()) {
-            final long fileSize = fc.size();
+    protected void getPreviews(int fromLine, int toLine, int numOfCharacters, List<String> list) throws IOException {
+        try (FileChannel fc = new RandomAccessFile(this.dataFile.toFile(), "r").getChannel()) {
+            long fileSize = fc.size();
             long position = 0;
             long size = (fileSize > Integer.MAX_VALUE) ? Integer.MAX_VALUE : fileSize;
 
-            final StringBuilder lineBuilder = new StringBuilder();
+            StringBuilder lineBuilder = new StringBuilder();
             boolean isDone = false;
             boolean skipLine = false;
             int lineNumber = 1;
             int charCount = 0;
             byte previousChar = -1;
             do {
-                final MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, size);
+                MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, size);
 
                 while (buffer.hasRemaining() && !isDone && !Thread.currentThread().isInterrupted()) {
-                    final byte currentChar = buffer.get();
+                    byte currentChar = buffer.get();
                     if (skipLine) {
                         if (currentChar == AbstractDataPreviewer.CARRIAGE_RETURN || currentChar == AbstractDataPreviewer.LINE_FEED) {
                             skipLine = false;

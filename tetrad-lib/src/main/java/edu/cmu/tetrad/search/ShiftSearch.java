@@ -49,11 +49,11 @@ public class ShiftSearch {
     private boolean scheduleStop;
     private boolean forwardSearch;
 
-    public ShiftSearch(final List<DataModel> dataSets) {
+    public ShiftSearch(List<DataModel> dataSets) {
         this(dataSets, null);
     }
 
-    public ShiftSearch(final List<DataModel> dataSets, final Graph measuredDag) {
+    public ShiftSearch(List<DataModel> dataSets, Graph measuredDag) {
         this.dataSets = dataSets;
     }
 
@@ -62,25 +62,25 @@ public class ShiftSearch {
             throw new IllegalStateException("Max shift should be >= 1: " + this.maxShift);
         }
 
-        final int numVars = ((DataSet) this.dataSets.get(0)).getNumColumns();
-        final List<Node> nodes = this.dataSets.get(0).getVariables();
+        int numVars = ((DataSet) this.dataSets.get(0)).getNumColumns();
+        List<Node> nodes = this.dataSets.get(0).getVariables();
         int[] shifts;
-        final int[] bestshifts = new int[numVars];
-        final int maxNumRows = ((DataSet) this.dataSets.get(0)).getNumRows() - this.maxShift;
+        int[] bestshifts = new int[numVars];
+        int maxNumRows = ((DataSet) this.dataSets.get(0)).getNumRows() - this.maxShift;
 
         double b = getAvgBic(this.dataSets);
 
         printShifts(bestshifts, b, nodes);
 
-        final DepthChoiceGenerator generator = new DepthChoiceGenerator(nodes.size(), getMaxNumShifts());
+        DepthChoiceGenerator generator = new DepthChoiceGenerator(nodes.size(), getMaxNumShifts());
         int[] choice;
 
         CHOICE:
         while ((choice = generator.next()) != null) {
             shifts = new int[nodes.size()];
 
-            final double zSize = Math.pow(getMaxShift(), choice.length);
-            final int iIndex = this.dataSets.get(0).getVariables().indexOf(this.dataSets.get(0).getVariable("I"));
+            double zSize = Math.pow(getMaxShift(), choice.length);
+            int iIndex = this.dataSets.get(0).getVariables().indexOf(this.dataSets.get(0).getVariable("I"));
 
             Z:
             for (int z = 0; z < zSize; z++) {
@@ -103,8 +103,8 @@ public class ShiftSearch {
 
                 }
 
-                final List<DataModel> _shiftedDataSets = getShiftedDataSets(shifts, maxNumRows);
-                final double _b = getAvgBic(_shiftedDataSets);
+                List<DataModel> _shiftedDataSets = getShiftedDataSets(shifts, maxNumRows);
+                double _b = getAvgBic(_shiftedDataSets);
 
                 if (_b < 0.999 * b) {
                     b = _b;
@@ -122,8 +122,8 @@ public class ShiftSearch {
         return bestshifts;
     }
 
-    private void printShifts(final int[] shifts, final double b, final List<Node> nodes) {
-        final StringBuilder buf = new StringBuilder();
+    private void printShifts(int[] shifts, double b, List<Node> nodes) {
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < shifts.length; i++) {
             buf.append(nodes.get(i) + "=" + shifts[i] + " ");
@@ -133,7 +133,7 @@ public class ShiftSearch {
         println(buf.toString());
     }
 
-    private void println(final String s) {
+    private void println(String s) {
         System.out.println(s);
 
         if (this.out != null) {
@@ -142,11 +142,11 @@ public class ShiftSearch {
         }
     }
 
-    private List<DataModel> getShiftedDataSets(final int[] shifts, final int maxNumRows) {
-        final List<DataModel> shiftedDataSets2 = new ArrayList<>();
+    private List<DataModel> getShiftedDataSets(int[] shifts, int maxNumRows) {
+        List<DataModel> shiftedDataSets2 = new ArrayList<>();
 
-        for (final DataModel dataSet : this.dataSets) {
-            final DataSet shiftedData = TimeSeriesUtils.createShiftedData((DataSet) dataSet, shifts);
+        for (DataModel dataSet : this.dataSets) {
+            DataSet shiftedData = TimeSeriesUtils.createShiftedData((DataSet) dataSet, shifts);
             shiftedDataSets2.add(shiftedData);
         }
 
@@ -155,35 +155,35 @@ public class ShiftSearch {
 //        return shiftedDataSets2;
     }
 
-    private List<DataSet> truncateDataSets(final List<DataSet> dataSets, final int topMargin, final int bottomMargin) {
-        final List<DataSet> truncatedData = new ArrayList<>();
+    private List<DataSet> truncateDataSets(List<DataSet> dataSets, int topMargin, int bottomMargin) {
+        List<DataSet> truncatedData = new ArrayList<>();
 
-        for (final DataSet dataSet : dataSets) {
-            final Matrix mat = dataSet.getDoubleData();
-            final Matrix mat2 = mat.getPart(topMargin, mat.rows() - topMargin - bottomMargin - 1, 0, mat.columns() - 1);
+        for (DataSet dataSet : dataSets) {
+            Matrix mat = dataSet.getDoubleData();
+            Matrix mat2 = mat.getPart(topMargin, mat.rows() - topMargin - bottomMargin - 1, 0, mat.columns() - 1);
             truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
         }
 
         return truncatedData;
     }
 
-    private List<DataModel> ensureNumRows(final List<DataModel> dataSets, final int numRows) {
-        final List<DataModel> truncatedData = new ArrayList<>();
+    private List<DataModel> ensureNumRows(List<DataModel> dataSets, int numRows) {
+        List<DataModel> truncatedData = new ArrayList<>();
 
-        for (final DataModel _dataSet : dataSets) {
-            final DataSet dataSet = (DataSet) _dataSet;
-            final Matrix mat = dataSet.getDoubleData();
-            final Matrix mat2 = mat.getPart(0, numRows - 1, 0, mat.columns() - 1);
+        for (DataModel _dataSet : dataSets) {
+            DataSet dataSet = (DataSet) _dataSet;
+            Matrix mat = dataSet.getDoubleData();
+            Matrix mat2 = mat.getPart(0, numRows - 1, 0, mat.columns() - 1);
             truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
         }
 
         return truncatedData;
     }
 
-    private double getAvgBic(final List<DataModel> dataSets) {
-        final SemBicScoreImages fgesScore = new SemBicScoreImages(dataSets);
+    private double getAvgBic(List<DataModel> dataSets) {
+        SemBicScoreImages fgesScore = new SemBicScoreImages(dataSets);
         fgesScore.setPenaltyDiscount(this.c);
-        final Fges images = new Fges(fgesScore);
+        Fges images = new Fges(fgesScore);
         images.setKnowledge(this.knowledge);
         images.search();
         return -images.getModelScore() / dataSets.size();
@@ -193,7 +193,7 @@ public class ShiftSearch {
         return this.maxShift;
     }
 
-    public void setMaxShift(final int maxShift) {
+    public void setMaxShift(int maxShift) {
         this.maxShift = maxShift;
     }
 
@@ -201,7 +201,7 @@ public class ShiftSearch {
         return this.knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -209,7 +209,7 @@ public class ShiftSearch {
         return this.c;
     }
 
-    public void setC(final int c) {
+    public void setC(int c) {
         this.c = c;
     }
 
@@ -217,11 +217,11 @@ public class ShiftSearch {
         return this.maxNumShifts;
     }
 
-    public void setMaxNumShifts(final int maxNumShifts) {
+    public void setMaxNumShifts(int maxNumShifts) {
         this.maxNumShifts = maxNumShifts;
     }
 
-    public void setOut(final OutputStream out) {
+    public void setOut(OutputStream out) {
         this.out = new PrintStream(out);
     }
 
@@ -229,7 +229,7 @@ public class ShiftSearch {
         this.scheduleStop = true;
     }
 
-    public void setForwardSearch(final boolean forwardSearch) {
+    public void setForwardSearch(boolean forwardSearch) {
         this.forwardSearch = forwardSearch;
     }
 }

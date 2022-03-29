@@ -66,7 +66,7 @@ public final class SelectionGenerator {
      *
      * @param a the number of objects being selected from.
      */
-    public SelectionGenerator(final int a) {
+    public SelectionGenerator(int a) {
         if ((a < 0)) {
             throw new IllegalArgumentException(
                     "a must be non-zero");
@@ -131,8 +131,8 @@ public final class SelectionGenerator {
      *
      * @param a the number of objects being selected from.
      */
-    public static void testPrint(final int a) {
-        final SelectionGenerator cg = new SelectionGenerator(a);
+    public static void testPrint(int a) {
+        SelectionGenerator cg = new SelectionGenerator(a);
         int[] selection;
 
         System.out.println();
@@ -144,7 +144,7 @@ public final class SelectionGenerator {
             if (selection.length == 0) {
                 System.out.println("zero-length array");
             } else {
-                for (final int aSelection : selection) {
+                for (int aSelection : selection) {
                     System.out.print(aSelection + "\t");
                 }
 

@@ -84,8 +84,8 @@ public class SimpleRandomizer implements GraphInitializer {
      */
     private double percentHousekeeping = 80.0;
 
-    public SimpleRandomizer(final int indegree, final int indegreeType, final int mlag,
-                            final double percentHousekeeping) {
+    public SimpleRandomizer(int indegree, int indegreeType, int mlag,
+                            double percentHousekeeping) {
 
         // Set indegree.
         if (indegree >= 2) {
@@ -130,15 +130,15 @@ public class SimpleRandomizer implements GraphInitializer {
     /**
      * Randomizes the graph.
      */
-    public void initialize(final LagGraph lagGraph) {
+    public void initialize(LagGraph lagGraph) {
         lagGraph.clearEdges();
 
-        final List factors = new ArrayList(lagGraph.getFactors());
+        List factors = new ArrayList(lagGraph.getFactors());
 
         // Add edges one time step back.
-        for (final Iterator it = factors.iterator(); it.hasNext(); ) {
-            final String factor = (String) it.next();
-            final LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
+        for (Iterator it = factors.iterator(); it.hasNext(); ) {
+            String factor = (String) it.next();
+            LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
 
             lagGraph.addEdge(factor, laggedFactor);
         }
@@ -146,15 +146,15 @@ public class SimpleRandomizer implements GraphInitializer {
         //        System.out.println("Indegree = " + indegree);
 
         // Add remaining edges for each factor.
-        for (final Iterator it = factors.iterator(); it.hasNext(); ) {
-            final String factor = (String) it.next();
+        for (Iterator it = factors.iterator(); it.hasNext(); ) {
+            String factor = (String) it.next();
 
             // Pick an indegree for this variable
             int extraEdges = 1;
 
             // Decide whether this is a housekeeping gene and if so
             // don't add any more edges.
-            final boolean isHousekeeping =
+            boolean isHousekeeping =
                     RandomUtil.getInstance().nextDouble() * 100 < this.percentHousekeeping;
 
             if (isHousekeeping) {
@@ -191,16 +191,16 @@ public class SimpleRandomizer implements GraphInitializer {
             while (i < extraEdges) {
 
                 // Pick a lag uniformly from {1, ..., mlag}.
-                final int lag = RandomUtil.getInstance().nextInt(
+                int lag = RandomUtil.getInstance().nextInt(
                         this.mlag) + 1;
 
                 // Pick a factor uniformly from {0, ..., numfactors}.
-                final int factorIndex = RandomUtil.getInstance().nextInt(
+                int factorIndex = RandomUtil.getInstance().nextInt(
                         lagGraph.getNumFactors());
 
                 // If that edge has not already been added, add it.
-                final String otherFactor = (String) factors.get(factorIndex);
-                final LaggedFactor laggedFactor = new LaggedFactor(otherFactor, lag);
+                String otherFactor = (String) factors.get(factorIndex);
+                LaggedFactor laggedFactor = new LaggedFactor(otherFactor, lag);
 
                 if (!lagGraph.existsEdge(factor, laggedFactor)) {
                     lagGraph.addEdge(factor, laggedFactor);

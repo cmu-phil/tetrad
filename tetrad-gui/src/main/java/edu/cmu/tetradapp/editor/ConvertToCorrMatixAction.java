@@ -42,7 +42,7 @@ final class ConvertToCorrMatixAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public ConvertToCorrMatixAction(final DataEditor editor) {
+    public ConvertToCorrMatixAction(DataEditor editor) {
         super("Correlation Matrix");
 
         if (editor == null) {
@@ -55,11 +55,11 @@ final class ConvertToCorrMatixAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final DataModel dataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataModel dataModel = getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            final DataSet dataSet = (DataSet) dataModel;
+            DataSet dataSet = (DataSet) dataModel;
 
             if (!(dataSet.isContinuous())) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -68,18 +68,18 @@ final class ConvertToCorrMatixAction extends AbstractAction {
                 return;
             }
 
-            final CorrelationMatrix corrMatrix = new CorrelationMatrix(dataSet);
+            CorrelationMatrix corrMatrix = new CorrelationMatrix(dataSet);
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(corrMatrix);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
         } else if (dataModel instanceof ICovarianceMatrix) {
-            final ICovarianceMatrix covarianceMatrix = (ICovarianceMatrix) dataModel;
-            final CorrelationMatrix corrMatrix =
+            ICovarianceMatrix covarianceMatrix = (ICovarianceMatrix) dataModel;
+            CorrelationMatrix corrMatrix =
                     new CorrelationMatrix(covarianceMatrix);
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(corrMatrix);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();

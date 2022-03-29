@@ -46,7 +46,7 @@ public class NoteEditor extends JPanel {
     /**
      * Constructs the editor given the model
      */
-    public NoteEditor(final NoteModel noteModel) {
+    public NoteEditor(NoteModel noteModel) {
         this.noteModel = noteModel;
         setup();
     }
@@ -54,7 +54,7 @@ public class NoteEditor extends JPanel {
     //============================ Private Methods =========================//
 
 
-    private boolean isLegal(final String text) {
+    private boolean isLegal(String text) {
 //        if (!NamingProtocol.isLegalName(text)) {
 //            JOptionPane.showMessageDialog(this, NamingProtocol.getProtocolDescription() + ": " + text);
 //            return false;
@@ -64,15 +64,15 @@ public class NoteEditor extends JPanel {
 
 
     private void setup() {
-        final Font font = new Font("Monospaced", Font.PLAIN, 14);
-        final JTextPane textPane = new JTextPane(this.noteModel.getNote());
-        final JTextField field = new StringTextField(this.noteModel.getName(), 20);
+        Font font = new Font("Monospaced", Font.PLAIN, 14);
+        JTextPane textPane = new JTextPane(this.noteModel.getNote());
+        JTextField field = new StringTextField(this.noteModel.getName(), 20);
 
         field.setFont(font);
         textPane.setFont(font);
         textPane.setCaretPosition(textPane.getStyledDocument().getLength());
 
-        final JScrollPane scroll = new JScrollPane(textPane);
+        JScrollPane scroll = new JScrollPane(textPane);
         scroll.setPreferredSize(new Dimension(400, 400));
 
         field.addFocusListener(new FieldListener(field));
@@ -80,7 +80,7 @@ public class NoteEditor extends JPanel {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.add(Box.createVerticalStrut(10));
 
-        final Box box = Box.createHorizontalBox();
+        Box box = Box.createHorizontalBox();
         box.add(new JLabel(" Name: "));
         box.add(field);
         box.add(Box.createHorizontalGlue());
@@ -88,7 +88,7 @@ public class NoteEditor extends JPanel {
         this.add(box);
         this.add(Box.createVerticalStrut(10));
 
-        final Box box1 = Box.createHorizontalBox();
+        Box box1 = Box.createHorizontalBox();
         box1.add(new JLabel(" Note Area: "));
         box1.add(Box.createHorizontalGlue());
 
@@ -103,19 +103,19 @@ public class NoteEditor extends JPanel {
         private String current;
         private final JTextField field;
 
-        public FieldListener(final JTextField field) {
+        public FieldListener(JTextField field) {
             this.field = field;
             this.current = field.getText();
         }
 
 
-        public void focusLost(final FocusEvent evt) {
+        public void focusLost(FocusEvent evt) {
             doAction();
         }
 
 
         private void doAction() {
-            final String text = this.field.getText();
+            String text = this.field.getText();
             if (this.current.equals(text)) {
                 return;
             }

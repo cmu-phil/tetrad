@@ -63,22 +63,22 @@ public class TimeoutComparisonTest {
     @Ignore
     @Test
     public void testTimeoutComparison() throws IOException {
-        final Parameters parameters = TimeoutComparisonTest.getParameters();
-        final Statistics statistics = TimeoutComparisonTest.getStatistics();
-        final Algorithms algorithms = TimeoutComparisonTest.getAlgorithms();
-        final Simulations simulations = TimeoutComparisonTest.getSimulations();
+        Parameters parameters = TimeoutComparisonTest.getParameters();
+        Statistics statistics = TimeoutComparisonTest.getStatistics();
+        Algorithms algorithms = TimeoutComparisonTest.getAlgorithms();
+        Simulations simulations = TimeoutComparisonTest.getSimulations();
 
-        final String resultsPath = TimeoutComparisonTest.tmpDir.newFolder("comparison").toString();
+        String resultsPath = TimeoutComparisonTest.tmpDir.newFolder("comparison").toString();
 
-        final TimeoutComparison comparisonEngine = TimeoutComparisonTest.getTetradComparisonEngine();
+        TimeoutComparison comparisonEngine = TimeoutComparisonTest.getTetradComparisonEngine();
         comparisonEngine.compareFromSimulations(resultsPath, simulations, algorithms, statistics, parameters, 60, TimeUnit.SECONDS);
 
         out.println("================================================================================");
         out.println("Output File:");
         out.println("================================================================================");
-        final Path outputFile = Paths.get(resultsPath, "Comparison.txt");
+        Path outputFile = Paths.get(resultsPath, "Comparison.txt");
         if (Files.exists(outputFile)) {
-            try (final Stream<String> stream = Files.lines(outputFile)) {
+            try (Stream<String> stream = Files.lines(outputFile)) {
                 stream.forEach(out::println);
             }
         }
@@ -86,7 +86,7 @@ public class TimeoutComparisonTest {
     }
 
     private static TimeoutComparison getTetradComparisonEngine() {
-        final TimeoutComparison comparison = new TimeoutComparison();
+        TimeoutComparison comparison = new TimeoutComparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(true);
@@ -97,21 +97,21 @@ public class TimeoutComparisonTest {
     }
 
     private static Simulations getSimulations() {
-        final Simulations simulations = new Simulations();
+        Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
 
         return simulations;
     }
 
     private static Algorithms getAlgorithms() {
-        final Algorithms algorithms = new Algorithms();
+        Algorithms algorithms = new Algorithms();
         algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
 
         return algorithms;
     }
 
     private static Statistics getStatistics() {
-        final Statistics statistics = new Statistics();
+        Statistics statistics = new Statistics();
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -127,7 +127,7 @@ public class TimeoutComparisonTest {
     }
 
     private static Parameters getParameters() {
-        final Parameters parameters = new Parameters();
+        Parameters parameters = new Parameters();
         parameters.set(Params.NUM_RUNS, 1);
         parameters.set(Params.NUM_MEASURES, 100);
         parameters.set(Params.AVG_DEGREE, 4, 6);

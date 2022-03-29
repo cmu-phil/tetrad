@@ -37,28 +37,28 @@ public class LTestBoolSearch {
 
     static int[][] cases = new int[LTestBoolSearch.ntimes][LTestBoolSearch.ngenes];
 
-    public static void main(final String[] argv) {
+    public static void main(String[] argv) {
 
-        final String fileName = argv[0];
+        String fileName = argv[0];
 
-        final InputStream s;
+        InputStream s;
         StringTokenizer st;
 
         try {
             s = new FileInputStream(fileName);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             System.out.println("Cannot open file " + fileName);
             return;
         }
 
-        final BufferedReader in = new BufferedReader(new InputStreamReader(s));
+        BufferedReader in = new BufferedReader(new InputStreamReader(s));
         for (int k = 0; k < LTestBoolSearch.ntimes; k++) {
             try {
                 st = new StringTokenizer(in.readLine());
                 for (int j = 0; j < LTestBoolSearch.ngenes; j++) {
                     LTestBoolSearch.cases[k][j] = Integer.parseInt(st.nextToken("\t"));
                 }
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 System.out.println("Read error in " + fileName);
                 return;
             }
@@ -72,9 +72,9 @@ public class LTestBoolSearch {
             }
         }
 
-        final String[] names = {"Wnt8", "Krl", "SoxB1", "Krox", "Otx", "Eve"};
+        String[] names = {"Wnt8", "Krl", "SoxB1", "Krox", "Otx", "Eve"};
 
-        final BoolSearch bs = new BoolSearch(LTestBoolSearch.cases, names);
+        BoolSearch bs = new BoolSearch(LTestBoolSearch.cases, names);
 
         bs.bool2(3);
     }

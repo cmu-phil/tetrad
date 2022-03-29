@@ -32,13 +32,13 @@ public class TabularDataColumn implements DataColumn {
     private final boolean generated;
     private boolean discrete;
 
-    public TabularDataColumn(final String name, final int columnNumber, final boolean generated) {
+    public TabularDataColumn(String name, int columnNumber, boolean generated) {
         this.name = name;
         this.columnNumber = columnNumber;
         this.generated = generated;
     }
 
-    public TabularDataColumn(final String name, final int columnNumber, final boolean generated, final boolean discrete) {
+    public TabularDataColumn(String name, int columnNumber, boolean generated, boolean discrete) {
         this.name = name;
         this.columnNumber = columnNumber;
         this.generated = generated;
@@ -71,7 +71,7 @@ public class TabularDataColumn implements DataColumn {
     }
 
     @Override
-    public void setDiscrete(final boolean discrete) {
+    public void setDiscrete(boolean discrete) {
         this.discrete = discrete;
     }
 

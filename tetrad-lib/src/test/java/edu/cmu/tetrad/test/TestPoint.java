@@ -36,14 +36,14 @@ public class TestPoint {
 
     @Test
     public void testPoint() {
-        final PointXy p = new PointXy(25, 50);
-        final PointXy q = new PointXy(35, 55);
-        final PointXy r = new PointXy(25, 50);
+        PointXy p = new PointXy(25, 50);
+        PointXy q = new PointXy(35, 55);
+        PointXy r = new PointXy(25, 50);
 
         assertTrue(!p.equals(q));
         assertEquals(p, r);
 
-        final PointXy s = new PointXy(q);
+        PointXy s = new PointXy(q);
 
         assertEquals(q, s);
     }

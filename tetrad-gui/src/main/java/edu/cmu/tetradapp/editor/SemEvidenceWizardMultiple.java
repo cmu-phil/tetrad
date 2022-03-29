@@ -58,8 +58,8 @@ class SemEvidenceWizardMultiple extends JPanel {
      * form P(Node=c1|Parent1=c2, Parent2=c2,...); values for these parameters
      * are probabilities ranging from 0.0 to 1.0.
      */
-    public SemEvidenceWizardMultiple(final SemUpdater semUpdater,
-                                     final GraphWorkbench workbench) {
+    public SemEvidenceWizardMultiple(SemUpdater semUpdater,
+                                     GraphWorkbench workbench) {
         if (semUpdater == null) {
             throw new NullPointerException();
         }
@@ -76,11 +76,11 @@ class SemEvidenceWizardMultiple extends JPanel {
         setBorder(new MatteBorder(10, 10, 10, 10, getBackground()));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        final JButton calcMarginalsAndJointButton =
+        JButton calcMarginalsAndJointButton =
                 new JButton("Calculate Marginals and Joint");
 
         // Do Layout.
-        final Box b0 = Box.createHorizontalBox();
+        Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel("<html>" +
                 "Select a set of nodes (by holding down the shift key) whose" +
                 "<br>marginals you would like to see given the evidence indicated" +
@@ -93,7 +93,7 @@ class SemEvidenceWizardMultiple extends JPanel {
         add(this.evidenceEditor);
         add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalGlue());
         b2.add(calcMarginalsAndJointButton);
         add(b2);
@@ -101,41 +101,41 @@ class SemEvidenceWizardMultiple extends JPanel {
 
         // Add listeners.
         calcMarginalsAndJointButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final List selectedGraphNodes = getWorkbench().getSelectedNodes();
+            public void actionPerformed(ActionEvent e) {
+                List selectedGraphNodes = getWorkbench().getSelectedNodes();
 
                 getSemUpdater().setEvidence(SemEvidenceWizardMultiple.this.evidenceEditor.getEvidence());
 
-                final Graph updatedGraph = getSemUpdater().getManipulatedGraph();
+                Graph updatedGraph = getSemUpdater().getManipulatedGraph();
                 getWorkbench().setGraph(updatedGraph);
 
-                final List selectedNodes = new LinkedList();
+                List selectedNodes = new LinkedList();
 
-                for (final Object selectedGraphNode : selectedGraphNodes) {
-                    final DisplayNode graphNode = (DisplayNode) selectedGraphNode;
-                    final Node tetradNode = graphNode.getModelNode();
-                    final String selectedNodeName = tetradNode.getName();
-                    final Node selectedNode = updatedGraph.getNode(selectedNodeName);
+                for (Object selectedGraphNode : selectedGraphNodes) {
+                    DisplayNode graphNode = (DisplayNode) selectedGraphNode;
+                    Node tetradNode = graphNode.getModelNode();
+                    String selectedNodeName = tetradNode.getName();
+                    Node selectedNode = updatedGraph.getNode(selectedNodeName);
                     selectedNodes.add(selectedNode);
                 }
 
-                for (final Object selectedNode1 : selectedNodes) {
-                    final Node node = (Node) selectedNode1;
+                for (Object selectedNode1 : selectedNodes) {
+                    Node node = (Node) selectedNode1;
                     getWorkbench().selectNode(node);
                 }
 
                 Collections.sort(selectedNodes, new Comparator<Node>() {
-                    public int compare(final Node o1, final Node o2) {
-                        final String name1 = o1.getName();
-                        final String name2 = o2.getName();
+                    public int compare(Node o1, Node o2) {
+                        String name1 = o1.getName();
+                        String name2 = o2.getName();
                         return name1.compareTo(name2);
                     }
                 });
 
-                final JTextArea marginalsArea = new JTextArea();
+                JTextArea marginalsArea = new JTextArea();
                 marginalsArea.setEditable(false);
 
-                final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
                 if (selectedNodes.size() == 0) {
                     marginalsArea.append("\nNo nodes selected.");

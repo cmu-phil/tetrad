@@ -44,7 +44,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     public GraphParamsEditor() {
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -53,15 +53,15 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         setup();
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         // Do nothing.
     }
 
     public void setup() {
-        final boolean cyclicAllowed = this.params.getBoolean("cyclicAllowed", false);
-        final RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed, this.params);
-        final RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor(this.params);
-        final RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
+        boolean cyclicAllowed = this.params.getBoolean("cyclicAllowed", false);
+        RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed, this.params);
+        RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor(this.params);
+        RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
 
         // construct the workbench.
         setLayout(new BorderLayout());
@@ -104,8 +104,8 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
 //            }
 //        });
 
-        final Box b1 = Box.createVerticalBox();
-        final Box b2 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
+        Box b2 = Box.createVerticalBox();
 
 //        Box b3 = Box.createHorizontalBox();
 //        b3.add(new JLabel("Make new graph:"));
@@ -127,12 +127,12 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         b1.add(b2);
         b1.add(Box.createVerticalStrut(5));
 
-        final JTabbedPane tabs = new JTabbedPane();
+        JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("DAG", randomDagEditor);
         tabs.add("MIM", randomMimEditor);
         tabs.add("Scale Free", randomScaleFreeEditor);
 
-        final String type = this.params.getString("randomGraphType", "Uniform");
+        String type = this.params.getString("randomGraphType", "Uniform");
 
         if (type.equals("Uniform")) {
             tabs.setSelectedIndex(0);
@@ -146,8 +146,8 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
 
         tabs.addChangeListener(new ChangeListener() {
             @Override
-            public void stateChanged(final ChangeEvent changeEvent) {
-                final JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
+            public void stateChanged(ChangeEvent changeEvent) {
+                JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
 
                 if (pane.getSelectedIndex() == 0) {
                     GraphParamsEditor.this.params.set("randomGraphType", "Uniform");
@@ -159,7 +159,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        final Box b6 = Box.createHorizontalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(tabs);
         b6.add(Box.createHorizontalGlue());
 

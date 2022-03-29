@@ -62,7 +62,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     private Dag graph;
 
     //=============================CONSTRUCTORS==========================//
-    public DagWrapper(final Dag graph) {
+    public DagWrapper(Dag graph) {
         if (graph == null) {
             throw new NullPointerException("Tetrad dag must not be null.");
         }
@@ -72,7 +72,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
-    public DagWrapper(final Parameters params) {
+    public DagWrapper(Parameters params) {
         this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             setDag(new Dag());
@@ -83,14 +83,14 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         log();
     }
 
-    public DagWrapper(final GraphSource graphSource, final Parameters parameters) {
+    public DagWrapper(GraphSource graphSource, Parameters parameters) {
         if (graphSource instanceof Simulation) {
-            final Simulation simulation = (Simulation) graphSource;
-            final List<Graph> graphs = simulation.getGraphs();
+            Simulation simulation = (Simulation) graphSource;
+            List<Graph> graphs = simulation.getGraphs();
 
             this.dags = new ArrayList<>();
 
-            for (final Graph graph : graphs) {
+            for (Graph graph : graphs) {
                 this.dags.add(new Dag(graph));
             }
 
@@ -104,47 +104,47 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         log();
     }
 
-    public DagWrapper(final AbstractAlgorithmRunner wrapper) {
+    public DagWrapper(AbstractAlgorithmRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final PcRunner wrapper) {
+    public DagWrapper(PcRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final CcdRunner2 wrapper) {
+    public DagWrapper(CcdRunner2 wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final MimBuildRunner wrapper) {
+    public DagWrapper(MimBuildRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final PurifyRunner wrapper) {
+    public DagWrapper(PurifyRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final BuildPureClustersRunner wrapper) {
+    public DagWrapper(BuildPureClustersRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final MbfsRunner wrapper) {
+    public DagWrapper(MbfsRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final CeFanSearchRunner wrapper) {
+    public DagWrapper(CeFanSearchRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final DataWrapper wrapper) {
+    public DagWrapper(DataWrapper wrapper) {
         if (wrapper instanceof Simulation) {
-            final Simulation simulation = (Simulation) wrapper;
+            Simulation simulation = (Simulation) wrapper;
 
-            final List<Graph> graphs = simulation.getGraphs();
+            List<Graph> graphs = simulation.getGraphs();
 
             this.dags = new ArrayList<>();
 
-            for (final Graph graph : graphs) {
+            for (Graph graph : graphs) {
                 this.dags.add(new Dag(graph));
             }
 
@@ -158,36 +158,36 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         GraphUtils.circleLayout(getGraph(), 200, 200, 150);
     }
 
-    public DagWrapper(final BayesPmWrapper wrapper) {
+    public DagWrapper(BayesPmWrapper wrapper) {
         this(new Dag(wrapper.getBayesPm().getDag()));
     }
 
-    public DagWrapper(final BayesImWrapper wrapper) {
+    public DagWrapper(BayesImWrapper wrapper) {
         this(new Dag(wrapper.getBayesIm().getBayesPm().getDag()));
     }
 
-    public DagWrapper(final BayesEstimatorWrapper wrapper) {
+    public DagWrapper(BayesEstimatorWrapper wrapper) {
         this(new Dag(wrapper.getEstimatedBayesIm().getBayesPm().getDag()));
     }
 
-    public DagWrapper(final CptInvariantUpdaterWrapper wrapper) {
+    public DagWrapper(CptInvariantUpdaterWrapper wrapper) {
         this(new Dag(wrapper.getBayesUpdater().getManipulatedGraph()));
     }
 
-    public DagWrapper(final SemPmWrapper wrapper) {
+    public DagWrapper(SemPmWrapper wrapper) {
         this(new Dag(wrapper.getSemPm().getGraph()));
     }
 
-    public DagWrapper(final SemImWrapper wrapper) {
+    public DagWrapper(SemImWrapper wrapper) {
         this(new Dag(wrapper.getSemIm().getSemPm().getGraph()));
     }
 
-    public DagWrapper(final SemEstimatorWrapper wrapper) {
+    public DagWrapper(SemEstimatorWrapper wrapper) {
         this(new Dag(wrapper.getSemEstimator().getEstimatedSem().getSemPm()
                 .getGraph()));
     }
 
-    public DagWrapper(final RegressionRunner wrapper) {
+    public DagWrapper(RegressionRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
@@ -205,7 +205,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         return this.dags.get(getModelIndex());
     }
 
-    public void setDag(final Dag graph) {
+    public void setDag(Dag graph) {
         this.dags = new ArrayList<>();
         this.dags.add(graph);
         log();
@@ -230,7 +230,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -248,7 +248,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -270,14 +270,14 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
 
     @Override
     public Map<String, String> getParamSettings() {
-        final Map<String, String> paramSettings = new HashMap<>();
+        Map<String, String> paramSettings = new HashMap<>();
         paramSettings.put("# Nodes", Integer.toString(getDag().getNumNodes()));
         paramSettings.put("# Edges", Integer.toString(getDag().getNumEdges()));
         return paramSettings;
     }
 
     @Override
-    public void setAllParamSettings(final Map<String, String> paramSettings) {
+    public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = paramSettings;
     }
 
@@ -302,17 +302,17 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         return this.modelSourceName;
     }
 
-    public void setModelIndex(final int modelIndex) {
+    public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
-    public void setGraph(final Graph graph) {
+    public void setGraph(Graph graph) {
         this.dags = new ArrayList<>();
         this.dags.add(new Dag(graph));
     }
 
     public List<Graph> getGraphs() {
-        final List<Graph> graphs = new ArrayList<>();
+        List<Graph> graphs = new ArrayList<>();
         graphs.addAll(this.dags);
         return graphs;
     }

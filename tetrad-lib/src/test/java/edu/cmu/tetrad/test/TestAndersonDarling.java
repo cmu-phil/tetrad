@@ -62,9 +62,9 @@ public final class TestAndersonDarling {
     public void test2() {
         RandomUtil.getInstance().setSeed(4838582394L);
 
-        final double[] x = rand1(100);
+        double[] x = rand1(100);
 
-        final double aa = new AndersonDarlingTest(x).getASquared();
+        double aa = new AndersonDarlingTest(x).getASquared();
 
         assertEquals(1.93, aa, 0.1);
     }
@@ -75,8 +75,8 @@ public final class TestAndersonDarling {
         return z;
     }
 
-    private double[] rand1(final int n) {
-        final double[] x = new double[n];
+    private double[] rand1(int n) {
+        double[] x = new double[n];
 
         for (int i = 0; i < x.length; i++) {
             x[i] = RandomUtil.getInstance().nextUniform(0, 1);
@@ -84,8 +84,8 @@ public final class TestAndersonDarling {
         return x;
     }
 
-    private double[] rand2(final int n) {
-        final double[] x = new double[n];
+    private double[] rand2(int n) {
+        double[] x = new double[n];
 
         for (int i = 0; i < x.length; i++) {
             x[i] = RandomUtil.getInstance().nextBeta(2, 5);
@@ -93,19 +93,19 @@ public final class TestAndersonDarling {
         return x;
     }
 
-    private double getS(final double[] x) {
-        final int n = x.length;
+    private double getS(double[] x) {
+        int n = x.length;
 
         double h = 0.0;
 
         for (int i = 0; i < n; i++) {
-            final double x1 = x[i];
-            final double a1 = Math.log(RandomUtil.getInstance().normalCdf(0, 1, x1));
+            double x1 = x[i];
+            double a1 = Math.log(RandomUtil.getInstance().normalCdf(0, 1, x1));
 
-            final double x2 = x[n - i - 1];
-            final double a2 = Math.log(1.0 - RandomUtil.getInstance().normalCdf(0, 1, x2));
+            double x2 = x[n - i - 1];
+            double a2 = Math.log(1.0 - RandomUtil.getInstance().normalCdf(0, 1, x2));
 
-            final double k = (2 * (i + 1) - 1) * (a1 + a2);
+            double k = (2 * (i + 1) - 1) * (a1 + a2);
             h += k;
         }
 
@@ -118,8 +118,8 @@ public final class TestAndersonDarling {
     private double[] standardize(double[] x) {
         x = Arrays.copyOf(x, x.length);
 
-        final double mean = StatUtils.mean(x);
-        final double sd = StatUtils.sd(x);
+        double mean = StatUtils.mean(x);
+        double sd = StatUtils.sd(x);
 
         for (int i = 0; i < x.length; i++) {
             x[i] = (x[i] - mean) / sd;

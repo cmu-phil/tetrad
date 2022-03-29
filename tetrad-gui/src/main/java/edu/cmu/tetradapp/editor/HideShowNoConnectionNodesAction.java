@@ -32,7 +32,7 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
      */
     private final GraphWorkbench workbench;
 
-    public HideShowNoConnectionNodesAction(final GraphWorkbench workbench) {
+    public HideShowNoConnectionNodesAction(GraphWorkbench workbench) {
         super("Hide/Show No Connections Node");
 
         if (workbench == null) {
@@ -44,12 +44,12 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
 
 
     @Override
-    public void actionPerformed(final ActionEvent e) {
-        final Graph graph = this.workbench.getGraph();
-        for (final Component comp : this.workbench.getComponents()) {
+    public void actionPerformed(ActionEvent e) {
+        Graph graph = this.workbench.getGraph();
+        for (Component comp : this.workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
-                final Node node = ((DisplayNode) comp).getModelNode();
-                final List<Edge> edges = graph.getEdges(node);
+                Node node = ((DisplayNode) comp).getModelNode();
+                List<Edge> edges = graph.getEdges(node);
                 if (edges == null || edges.isEmpty()) {
                     comp.setVisible(!comp.isVisible());
                 }
@@ -58,7 +58,7 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
     }
 
     @Override
-    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
 
     }
 

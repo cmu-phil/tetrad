@@ -44,8 +44,8 @@ public class BootstrapSamplerWrapper extends DataWrapper {
 
     //=============================CONSTRUCTORS===========================//
 
-    public BootstrapSamplerWrapper(final DataWrapper wrapper,
-                                   final Parameters params) {
+    public BootstrapSamplerWrapper(DataWrapper wrapper,
+                                   Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
@@ -54,13 +54,13 @@ public class BootstrapSamplerWrapper extends DataWrapper {
             throw new NullPointerException();
         }
 
-        final DataModelList bootstraps = new DataModelList();
-        final DataModelList oldDataSets = wrapper.getDataModelList();
+        DataModelList bootstraps = new DataModelList();
+        DataModelList oldDataSets = wrapper.getDataModelList();
 
-        for (final DataModel dataModel : oldDataSets) {
-            final DataSet dataSet = (DataSet) dataModel;
-            final BootstrapSampler sampler = new BootstrapSampler();
-            final DataSet bootstrap = sampler.sample(dataSet, params.getInt("sampleSize", 1000));
+        for (DataModel dataModel : oldDataSets) {
+            DataSet dataSet = (DataSet) dataModel;
+            BootstrapSampler sampler = new BootstrapSampler();
+            DataSet bootstrap = sampler.sample(dataSet, params.getInt("sampleSize", 1000));
             bootstraps.add(bootstrap);
             if (oldDataSets.getSelectedModel() == dataModel) {
                 bootstraps.setSelectedModel(bootstrap);
@@ -70,9 +70,9 @@ public class BootstrapSamplerWrapper extends DataWrapper {
         setDataModel(bootstraps);
         setSourceGraph(wrapper.getSourceGraph());
 
-        final DataModel dataModel = wrapper.getSelectedDataModel();
-        final DataSet dataSet = (DataSet) dataModel;
-        final BootstrapSampler sampler = new BootstrapSampler();
+        DataModel dataModel = wrapper.getSelectedDataModel();
+        DataSet dataSet = (DataSet) dataModel;
+        BootstrapSampler sampler = new BootstrapSampler();
         this.outputDataSet = sampler.sample(dataSet, params.getInt("sampleSize", 1000));
 
         LogDataUtils.logDataModelList("Bootstrap sample of data in the parent node.", getDataModelList());
@@ -107,7 +107,7 @@ public class BootstrapSamplerWrapper extends DataWrapper {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

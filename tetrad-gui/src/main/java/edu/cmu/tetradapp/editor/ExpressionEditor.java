@@ -99,7 +99,7 @@ class ExpressionEditor extends JPanel {
     /**
      * Creates the editor given the data set being worked on.
      */
-    public ExpressionEditor(final DataSet data, final String lhs, final String rhs) {
+    public ExpressionEditor(DataSet data, String lhs, String rhs) {
         this.parser = new ExpressionParser(data.getVariableNames(), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
 
         this.variable = new JTextField(5);
@@ -126,16 +126,16 @@ class ExpressionEditor extends JPanel {
         this.positionsListener = new PositionsFocusListener();
         this.expression.addFocusListener(this.positionsListener);
 
-        final Box box = Box.createHorizontalBox();
+        Box box = Box.createHorizontalBox();
         box.add(this.variable);
         box.add(Box.createHorizontalStrut(5));
         box.add(new JLabel("="));
         box.add(Box.createHorizontalStrut(5));
         box.add(this.expression);
-        final JCheckBox checkBox = new JCheckBox();
+        JCheckBox checkBox = new JCheckBox();
         checkBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox b = (JCheckBox) e.getSource();
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox b = (JCheckBox) e.getSource();
                 ExpressionEditor.this.remove = b.isSelected();
             }
         });
@@ -161,10 +161,10 @@ class ExpressionEditor extends JPanel {
             this.variable.grabFocus();
             throw new ParseException(NamingProtocol.getProtocolDescription(), 1);
         }
-        final String equation = this.variable.getText() + "=" + this.expression.getText();
+        String equation = this.variable.getText() + "=" + this.expression.getText();
         try {
             return this.parser.parseEquation(equation);
-        } catch (final ParseException ex) {
+        } catch (ParseException ex) {
             this.expression.setSelectionColor(Color.RED);
             this.expression.select(ex.getErrorOffset() - 1, this.expression.getText().length());
             this.expression.grabFocus();
@@ -177,7 +177,7 @@ class ExpressionEditor extends JPanel {
      * the fields in the editor.  The listener will only be notified of gain focus
      * events.
      */
-    public void addFieldFocusListener(final FocusListener listener) {
+    public void addFieldFocusListener(FocusListener listener) {
         this.listeners.add(listener);
     }
 
@@ -188,7 +188,7 @@ class ExpressionEditor extends JPanel {
      * @param var    - The variable to set.
      * @param append - States whether it should append to the field's getModel value or not.
      */
-    private void setVariable(final String var, final boolean append) {
+    private void setVariable(String var, boolean append) {
         if (append) {
             this.variable.setText(this.variable.getText() + var);
         } else {
@@ -203,15 +203,15 @@ class ExpressionEditor extends JPanel {
      * @param exp    - Expression value to set.
      * @param append States whether it should append to the field's getModel value or not.
      */
-    private void setExpression(final String exp, final boolean append) {
+    private void setExpression(String exp, boolean append) {
         if (exp == null) {
             return;
         }
         if (!this.selections.isEmpty()) {
             this.expression.grabFocus();
 
-            final int start = this.positionsListener.start;
-            final int end = this.positionsListener.end;
+            int start = this.positionsListener.start;
+            int end = this.positionsListener.end;
 
             if (start < end) {
 //                expression.select(start, end);
@@ -219,8 +219,8 @@ class ExpressionEditor extends JPanel {
                 this.expression.setCaretPosition(this.positionsListener.caretPosition);
             }
 
-            final String text = this.expression.getText();
-            final Selection selection = this.selections.remove(0);
+            String text = this.expression.getText();
+            Selection selection = this.selections.remove(0);
 
             if (caretInSelection(selection)) {
                 this.expression.setText(text.substring(0, selection.x) + exp + text.substring(selection.y));
@@ -236,8 +236,8 @@ class ExpressionEditor extends JPanel {
         }
 
         if (append) {
-            final String text = this.expression.getText();
-            final int caret = this.positionsListener.caretPosition;
+            String text = this.expression.getText();
+            int caret = this.positionsListener.caretPosition;
 //            String newText = text.substring(0, caret) + exp
 //                    + text.substring(caret, text.length());
 
@@ -260,12 +260,12 @@ class ExpressionEditor extends JPanel {
     /**
      * Adds the signature to the expression field.
      */
-    public void addExpressionSignature(final ExpressionSignature signature) {
+    public void addExpressionSignature(ExpressionSignature signature) {
         this.expression.grabFocus();
 
-        final int start = this.positionsListener.start;
-        final int end = this.positionsListener.end;
-        final int caret = this.positionsListener.caretPosition;
+        int start = this.positionsListener.start;
+        int end = this.positionsListener.end;
+        int caret = this.positionsListener.caretPosition;
 
         if (start < end) {
 //            expression.select(start, end);
@@ -273,12 +273,12 @@ class ExpressionEditor extends JPanel {
 //            expression.setCaretPosition(positionsListener.caretPosition);
         }
 
-        final String sig = signature.getSignature();
-        final String text = this.expression.getText();
-        final Selection selection = this.selections.isEmpty() ? null : this.selections.remove(0);
+        String sig = signature.getSignature();
+        String text = this.expression.getText();
+        Selection selection = this.selections.isEmpty() ? null : this.selections.remove(0);
         // if empty add the sig with any selections.
         if (selection == null || !caretInSelection(selection)) {
-            final String newText = text.substring(0, caret) + signature.getSignature()
+            String newText = text.substring(0, caret) + signature.getSignature()
                     + text.substring(caret);
 
 
@@ -289,7 +289,7 @@ class ExpressionEditor extends JPanel {
             return;
         }
         // otherwise there is a selections so we want to insert this sig in it.
-        final String replacedText = text.substring(0, selection.x) + sig + text.substring(selection.y);
+        String replacedText = text.substring(0, selection.x) + sig + text.substring(selection.y);
         this.expression.setText(replacedText);
         this.adjustSelections(selection, sig);
         addSelections(signature, replacedText, true);
@@ -307,7 +307,7 @@ class ExpressionEditor extends JPanel {
      *
      * @param append States whether it should append to the field's getModel value or not.
      */
-    public void insertLastFocused(final String symbol, final boolean append) {
+    public void insertLastFocused(String symbol, boolean append) {
         if (this.variable == this.lastFocused) {
             setVariable(symbol, append);
         } else {
@@ -327,8 +327,8 @@ class ExpressionEditor extends JPanel {
      * States whether the caret is in the getModel selection, if not false is returned and
      * all the selections are removed (as the user moved the caret around).
      */
-    private boolean caretInSelection(final Selection sel) {
-        final int caret = this.expression.getCaretPosition();
+    private boolean caretInSelection(Selection sel) {
+        int caret = this.expression.getCaretPosition();
         if (caret < sel.x || sel.y < caret) {
             this.selections.clear();
             return false;
@@ -340,12 +340,12 @@ class ExpressionEditor extends JPanel {
     /**
      * Adds the selections for the given signature in the given text.
      */
-    private void addSelections(final ExpressionSignature signature, String newText, final boolean addFirst) {
+    private void addSelections(ExpressionSignature signature, String newText, boolean addFirst) {
         int offset = 0;
         for (int i = 0; i < signature.getNumberOfArguments(); i++) {
-            final String arg = signature.getArgument(i);
-            final int index = newText.indexOf(arg);
-            final int end = index + arg.length();
+            String arg = signature.getArgument(i);
+            int index = newText.indexOf(arg);
+            int end = index + arg.length();
             if (0 <= index) {
                 if (addFirst) {
                     this.selections.add(i, new Selection(offset + index, offset + end));
@@ -360,8 +360,8 @@ class ExpressionEditor extends JPanel {
 
 
     private void fireGainedFocus() {
-        final FocusEvent evt = new FocusEvent(this, FocusEvent.FOCUS_GAINED);
-        for (final FocusListener l : this.listeners) {
+        FocusEvent evt = new FocusEvent(this, FocusEvent.FOCUS_GAINED);
+        for (FocusListener l : this.listeners) {
             l.focusGained(evt);
         }
     }
@@ -371,9 +371,9 @@ class ExpressionEditor extends JPanel {
      * Adjusts any getModel selections to the fact that the given selections was just
      * replaced by the given string.
      */
-    private void adjustSelections(final Selection selection, final String inserted) {
-        final int dif = (selection.y - selection.x) - inserted.length();
-        for (final Selection sel : this.selections) {
+    private void adjustSelections(Selection selection, String inserted) {
+        int dif = (selection.y - selection.x) - inserted.length();
+        for (Selection sel : this.selections) {
             sel.x = sel.x - dif;
             sel.y = sel.y - dif;
         }
@@ -387,7 +387,7 @@ class ExpressionEditor extends JPanel {
         System.out.println("Highlighting next selection.");
 
         if (!this.selections.isEmpty()) {
-            final Selection sel = this.selections.get(0);
+            Selection sel = this.selections.get(0);
             this.expression.setSelectionColor(ExpressionEditor.SELECTION);
             this.expression.select(sel.x, sel.y);
             this.expression.grabFocus();
@@ -404,7 +404,7 @@ class ExpressionEditor extends JPanel {
         private int x;
         private int y;
 
-        public Selection(final int x, final int y) {
+        public Selection(int x, int y) {
             this.x = x;
             this.y = y;
         }
@@ -418,16 +418,16 @@ class ExpressionEditor extends JPanel {
 
         private final JTextField field;
 
-        public VariableFocusListener(final JTextField field) {
+        public VariableFocusListener(JTextField field) {
             this.field = field;
         }
 
-        public void focusGained(final FocusEvent e) {
+        public void focusGained(FocusEvent e) {
             ExpressionEditor.this.lastFocused = this.field;
             fireGainedFocus();
         }
 
-        public void focusLost(final FocusEvent e) {
+        public void focusLost(FocusEvent e) {
 //            if (field.getText() != null && field.getText().length() != 0
 //                    && !NamingProtocol.isLegalName(field.getText())) {
 //                field.setToolTipText(NamingProtocol.getProtocolDescription());
@@ -448,11 +448,11 @@ class ExpressionEditor extends JPanel {
 //        private int startWhenFocusLost;
 //        private int endWhenFocusLost;
 
-        public ExpressionFocusListener(final JTextField field) {
+        public ExpressionFocusListener(JTextField field) {
             this.field = field;
         }
 
-        public void focusGained(final FocusEvent e) {
+        public void focusGained(FocusEvent e) {
             ExpressionEditor.this.lastFocused = this.field;
             fireGainedFocus();
 
@@ -460,7 +460,7 @@ class ExpressionEditor extends JPanel {
 //            this.endWhenFocusLost = -1;
         }
 
-        public void focusLost(final FocusEvent e) {
+        public void focusLost(FocusEvent e) {
             if (this.field.getText() == null || this.field.getText().length() == 0) {
                 return;
             }
@@ -506,8 +506,8 @@ class ExpressionEditor extends JPanel {
         private int end;
         private int caretPosition;
 
-        public void focusLost(final FocusEvent e) {
-            final JTextField textField = (JTextField) e.getSource();
+        public void focusLost(FocusEvent e) {
+            JTextField textField = (JTextField) e.getSource();
             this.start = textField.getSelectionStart();
             this.end = textField.getSelectionEnd();
             this.caretPosition = textField.getCaretPosition();

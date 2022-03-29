@@ -47,13 +47,13 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     public SvarGfci() {
     }
 
-    public SvarGfci(final IndependenceWrapper type, final ScoreWrapper score) {
+    public SvarGfci(IndependenceWrapper type, ScoreWrapper score) {
         this.test = type;
         this.score = score;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
 //    	if (!(dataSet instanceof TimeSeriesData)) {
 //            throw new IllegalArgumentException("You need a (labeled) time series data set to run SvarGFCI.");
 //        }
@@ -62,7 +62,7 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
             if (this.knowledge != null) {
                 dataSet.setKnowledge(this.knowledge);
             }
-            final edu.cmu.tetrad.search.SvarGFci search = new edu.cmu.tetrad.search.SvarGFci(this.test.getTest(dataSet, parameters),
+            edu.cmu.tetrad.search.SvarGFci search = new edu.cmu.tetrad.search.SvarGFci(this.test.getTest(dataSet, parameters),
                     this.score.getScore(dataSet, parameters));
             search.setKnowledge(this.knowledge);
 
@@ -70,10 +70,10 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
 
             return search.search();
         } else {
-            final SvarGfci algorithm = new SvarGfci(this.test, this.score);
+            SvarGfci algorithm = new SvarGfci(this.test, this.score);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -100,7 +100,7 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new TsDagToPag(new EdgeListGraph(graph)).convert();
     }
 
@@ -115,7 +115,7 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_INDEGREE);
@@ -131,7 +131,7 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -141,7 +141,7 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     @Override
-    public void setIndependenceWrapper(final IndependenceWrapper test) {
+    public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -151,7 +151,7 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     @Override
-    public void setScoreWrapper(final ScoreWrapper score) {
+    public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 

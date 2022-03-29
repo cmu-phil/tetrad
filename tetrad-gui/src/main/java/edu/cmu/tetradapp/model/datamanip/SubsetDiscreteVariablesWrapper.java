@@ -40,11 +40,11 @@ public class SubsetDiscreteVariablesWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public SubsetDiscreteVariablesWrapper(final DataWrapper data, final Parameters params) {
+    public SubsetDiscreteVariablesWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
-        final DataModel model = data.getSelectedDataModel();
+        DataModel model = data.getSelectedDataModel();
         if (!(model instanceof DataSet)) {
             throw new IllegalArgumentException("The given dataset must be tabular");
         }
@@ -68,7 +68,7 @@ public class SubsetDiscreteVariablesWrapper extends DataWrapper {
     //=========================== Private Methods =================================//
 
 
-    private static DataModel createModel(final DataSet data) {
+    private static DataModel createModel(DataSet data) {
 //        for (int i = data.getNumColumns() -1; i >= 0; i--) {
 //            if (!(data.getVariable(i) instanceof DiscreteVariable)) {
 //                data.removeColumn(i);
@@ -76,10 +76,10 @@ public class SubsetDiscreteVariablesWrapper extends DataWrapper {
 //        }
 //        return data;
 
-        final List<Node> variables = data.getVariables();
+        List<Node> variables = data.getVariables();
 
         int n = 0;
-        for (final Node variable : variables) {
+        for (Node variable : variables) {
             if (variable instanceof DiscreteVariable) {
                 n++;
             }
@@ -88,7 +88,7 @@ public class SubsetDiscreteVariablesWrapper extends DataWrapper {
             return new BoxDataSet(new DoubleDataBox(0, 0), new ArrayList<>());
         }
 
-        final int[] indices = new int[n];
+        int[] indices = new int[n];
         int m = 0;
         for (int i = 0; i < variables.size(); i++) {
             if (variables.get(i) instanceof DiscreteVariable) {

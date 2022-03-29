@@ -36,17 +36,17 @@ public class AnnotatedClassUtils {
     private AnnotatedClassUtils() {
     }
 
-    public static <T extends Annotation> List<AnnotatedClass<T>> getAnnotatedClasses(final String packageName, final Class<T> type) {
-        final Reflections reflections = new Reflections(packageName);
-        final Set<Class<?>> classes = reflections.getTypesAnnotatedWith(type);
+    public static <T extends Annotation> List<AnnotatedClass<T>> getAnnotatedClasses(String packageName, Class<T> type) {
+        Reflections reflections = new Reflections(packageName);
+        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(type);
 
         return classes.stream()
                 .map(e -> new AnnotatedClass<>(e, e.getAnnotation(type)))
                 .collect(Collectors.toList());
     }
 
-    public static <T extends Annotation> List<AnnotatedClass<T>> filterByAnnotations(final Class<? extends Annotation> annotation, final List<AnnotatedClass<T>> annotatedClasses) {
-        final List<AnnotatedClass<T>> list = new LinkedList<>();
+    public static <T extends Annotation> List<AnnotatedClass<T>> filterByAnnotations(Class<? extends Annotation> annotation, List<AnnotatedClass<T>> annotatedClasses) {
+        List<AnnotatedClass<T>> list = new LinkedList<>();
 
         if (annotatedClasses != null && !annotatedClasses.isEmpty()) {
             annotatedClasses.stream()

@@ -43,34 +43,34 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
     public FgesMb() {
     }
 
-    public FgesMb(final ScoreWrapper score) {
+    public FgesMb(ScoreWrapper score) {
         this.score = score;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final Score score = this.score.getScore(dataSet, parameters);
-            final edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
+            Score score = this.score.getScore(dataSet, parameters);
+            edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
 
-            final Object obj = parameters.get(Params.PRINT_STREAM);
+            Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
             }
 
             this.targetName = parameters.getString(Params.TARGET_NAME);
-            final Node target = this.score.getVariable(this.targetName);
+            Node target = this.score.getVariable(this.targetName);
 
             return search.search(Collections.singletonList(target));
         } else {
-            final FgesMb fgesMb = new FgesMb(this.score);
+            FgesMb fgesMb = new FgesMb(this.score);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMb, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMb, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -95,8 +95,8 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
-        final Node target = graph.getNode(this.targetName);
+    public Graph getComparisonGraph(Graph graph) {
+        Node target = graph.getNode(this.targetName);
         return GraphUtils.markovBlanketDag(target, new EdgeListGraph(graph));
     }
 
@@ -112,7 +112,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.TARGET_NAME);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_DEGREE);
@@ -127,7 +127,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -137,7 +137,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
     }
 
     @Override
-    public void setScoreWrapper(final ScoreWrapper score) {
+    public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 

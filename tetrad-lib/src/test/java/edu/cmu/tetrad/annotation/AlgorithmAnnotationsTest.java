@@ -36,21 +36,21 @@ public class AlgorithmAnnotationsTest {
 
     @Test
     public void testAnnotatedNameAttributeForUniqueness() {
-        final List<AnnotatedClass<Algorithm>> algorithms = AlgorithmAnnotations.getInstance().getAnnotatedClasses();
-        final List<String> values = algorithms.stream().map(e -> e.getAnnotation().name().toLowerCase()).collect(Collectors.toList());
+        List<AnnotatedClass<Algorithm>> algorithms = AlgorithmAnnotations.getInstance().getAnnotatedClasses();
+        List<String> values = algorithms.stream().map(e -> e.getAnnotation().name().toLowerCase()).collect(Collectors.toList());
 
-        final long actual = values.size();
-        final long expected = values.stream().distinct().count();
+        long actual = values.size();
+        long expected = values.stream().distinct().count();
         Assert.assertEquals("Annotation attribute 'name' is not unique.", expected, actual);
     }
 
     @Test
     public void testAnnotatedCommandAttributeForUniqueness() {
-        final List<AnnotatedClass<Algorithm>> algorithms = AlgorithmAnnotations.getInstance().getAnnotatedClasses();
-        final List<String> values = algorithms.stream().map(e -> e.getAnnotation().command().toLowerCase()).collect(Collectors.toList());
+        List<AnnotatedClass<Algorithm>> algorithms = AlgorithmAnnotations.getInstance().getAnnotatedClasses();
+        List<String> values = algorithms.stream().map(e -> e.getAnnotation().command().toLowerCase()).collect(Collectors.toList());
 
-        final long actual = values.size();
-        final long expected = values.stream().distinct().count();
+        long actual = values.size();
+        long expected = values.stream().distinct().count();
         Assert.assertEquals("Annotation attribute 'command' is not unique.", expected, actual);
     }
 

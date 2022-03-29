@@ -50,27 +50,27 @@ public class LinearFunction implements UpdateFunction {
      * Constructs a polyomial function where each factor is given a zero
      * polynomial.
      */
-    public LinearFunction(final LagGraph lagGraph) {
+    public LinearFunction(LagGraph lagGraph) {
         if (lagGraph == null) {
             throw new NullPointerException("Lag graph must not be null.");
         }
 
         this.polynomialFunction = new PolynomialFunction(lagGraph);
-        final IndexedLagGraph connectivity = this.polynomialFunction.getIndexedLagGraph();
+        IndexedLagGraph connectivity = this.polynomialFunction.getIndexedLagGraph();
 
         for (int i = 0; i < connectivity.getNumFactors(); i++) {
-            final List terms = new ArrayList();
+            List terms = new ArrayList();
 
             // Intercept.
             terms.add(new PolynomialTerm(0.0, new int[0]));
 
-            final int numParents = connectivity.getNumParents(i);
+            int numParents = connectivity.getNumParents(i);
             for (int j = 0; j < numParents; j++) {
 
-                final int[] vars = {j};
+                int[] vars = {j};
                 terms.add(new PolynomialTerm(1.0 / (double) numParents, vars));
             }
-            final Polynomial p = new Polynomial(terms);
+            Polynomial p = new Polynomial(terms);
             this.polynomialFunction.setPolynomial(i, p);
         }
     }
@@ -90,7 +90,7 @@ public class LinearFunction implements UpdateFunction {
     /**
      * Returns the value of the function.
      */
-    public double getValue(final int factorIndex, final double[][] history) {
+    public double getValue(int factorIndex, double[][] history) {
         return this.polynomialFunction.getValue(factorIndex, history);
     }
 
@@ -104,11 +104,11 @@ public class LinearFunction implements UpdateFunction {
     /**
      * Sets the intercept for the given factor.
      */
-    public boolean setIntercept(final String factor, final double intercept) {
-        final IndexedLagGraph connectivity =
+    public boolean setIntercept(String factor, double intercept) {
+        IndexedLagGraph connectivity =
                 this.polynomialFunction.getIndexedLagGraph();
 
-        final int factorIndex = connectivity.getIndex(factor);
+        int factorIndex = connectivity.getIndex(factor);
 
         return setIntercept(factorIndex, intercept);
     }
@@ -116,9 +116,9 @@ public class LinearFunction implements UpdateFunction {
     /**
      * Sets the intercept for the given factor.
      */
-    public boolean setIntercept(final int factor, final double intercept) {
-        final Polynomial p = this.polynomialFunction.getPolynomial(factor);
-        final PolynomialTerm term = p.findTerm(new int[0]);
+    public boolean setIntercept(int factor, double intercept) {
+        Polynomial p = this.polynomialFunction.getPolynomial(factor);
+        PolynomialTerm term = p.findTerm(new int[0]);
         if (term == null) {
             return false;
         }
@@ -130,12 +130,12 @@ public class LinearFunction implements UpdateFunction {
     /**
      * Sets the intercept for the given factor.
      */
-    public boolean setCoefficient(final String factor, final LaggedFactor parent,
-                                  final double intercept) {
-        final IndexedLagGraph connectivity = this.polynomialFunction.getIndexedLagGraph();
+    public boolean setCoefficient(String factor, LaggedFactor parent,
+                                  double intercept) {
+        IndexedLagGraph connectivity = this.polynomialFunction.getIndexedLagGraph();
 
-        final int factorIndex = connectivity.getIndex(factor);
-        final int parentIndex = connectivity.getIndex(factor, parent);
+        int factorIndex = connectivity.getIndex(factor);
+        int parentIndex = connectivity.getIndex(factor, parent);
 
         return setCoefficient(factorIndex, parentIndex, intercept);
     }
@@ -143,10 +143,10 @@ public class LinearFunction implements UpdateFunction {
     /**
      * Sets the coefficient for the given parent of the given factor.
      */
-    public boolean setCoefficient(final int factor, final int parent, final double coefficient) {
+    public boolean setCoefficient(int factor, int parent, double coefficient) {
 
-        final Polynomial p = this.polynomialFunction.getPolynomial(factor);
-        final PolynomialTerm term = p.findTerm(new int[]{parent});
+        Polynomial p = this.polynomialFunction.getPolynomial(factor);
+        PolynomialTerm term = p.findTerm(new int[]{parent});
 
         if (term == null) {
             return false;
@@ -162,7 +162,7 @@ public class LinearFunction implements UpdateFunction {
      * @param factor
      * @param distribution
      */
-    public void setErrorDistribution(final int factor, final Distribution distribution) {
+    public void setErrorDistribution(int factor, Distribution distribution) {
         this.polynomialFunction.setErrorDistribution(factor, distribution);
     }
 
@@ -172,7 +172,7 @@ public class LinearFunction implements UpdateFunction {
      * @param factor the factor in question.
      * @return the error distribution for <code>factor</code>.
      */
-    public Distribution getErrorDistribution(final int factor) {
+    public Distribution getErrorDistribution(int factor) {
         return this.polynomialFunction.getErrorDistribution(factor);
     }
 
@@ -180,8 +180,8 @@ public class LinearFunction implements UpdateFunction {
      * Prints out the linear function of each factor of its parents.
      */
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
-        final IndexedLagGraph connectivity = this.polynomialFunction.getIndexedLagGraph();
+        StringBuilder buf = new StringBuilder();
+        IndexedLagGraph connectivity = this.polynomialFunction.getIndexedLagGraph();
         buf.append("\n\nLinear Function:");
         for (int i = 0; i < connectivity.getNumFactors(); i++) {
             buf.append("\n\tFactor " + connectivity.getFactor(i) + " --> " +
@@ -219,7 +219,7 @@ public class LinearFunction implements UpdateFunction {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

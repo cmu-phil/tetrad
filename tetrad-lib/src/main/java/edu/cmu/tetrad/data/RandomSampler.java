@@ -38,8 +38,8 @@ public final class RandomSampler {
      * containing that number of samples by drawing with replacement from the
      * original dataset.
      */
-    public static DataSet sample(final DataSet dataSet,
-                                 final int newSampleSize) {
+    public static DataSet sample(DataSet dataSet,
+                                 int newSampleSize) {
         if (newSampleSize < 1) {
             throw new IllegalArgumentException("Sample size must be > 0.");
         }
@@ -53,7 +53,7 @@ public final class RandomSampler {
                     "generate " + newSampleSize + " samples without replacement.");
         }
 
-        final List<Integer> indices = new ArrayList<>(dataSet.getNumRows());
+        List<Integer> indices = new ArrayList<>(dataSet.getNumRows());
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             indices.add(i);
@@ -62,13 +62,13 @@ public final class RandomSampler {
         Collections.shuffle(indices);
 
         //Number of samples in input dataset
-        final int ncols = dataSet.getNumColumns();
+        int ncols = dataSet.getNumColumns();
 
-        final DataSet newDataSet =
+        DataSet newDataSet =
                 new BoxDataSet(new VerticalDoubleDataBox(newSampleSize, dataSet.getVariables().size()), dataSet.getVariables());
 
         for (int i = 0; i < newSampleSize; i++) {
-            final int oldCase = indices.get(i);
+            int oldCase = indices.get(i);
 
             for (int j = 0; j < ncols; j++) {
                 newDataSet.setObject(i, j, dataSet.getObject(oldCase, j));

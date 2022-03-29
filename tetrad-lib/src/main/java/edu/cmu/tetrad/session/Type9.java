@@ -31,10 +31,10 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 public class Type9 implements SessionModel, TetradSerializableExcluded {
     static final long serialVersionUID = 23L;
 
-    public Type9(final Type6 model1, final Parameters parameters) {
+    public Type9(Type6 model1, Parameters parameters) {
     }
 
-    public Type9(final Type7 model1, final Type8 model2, final Parameters parameters) {
+    public Type9(Type7 model1, Type8 model2, Parameters parameters) {
     }
 
     public static Type9 serializableInstance() {
@@ -44,7 +44,7 @@ public class Type9 implements SessionModel, TetradSerializableExcluded {
     /**
      * Sets the name of the session model.
      */
-    public void setName(final String name) {
+    public void setName(String name) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

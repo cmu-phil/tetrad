@@ -65,7 +65,7 @@ public final class CombinationGenerator {
      *             be >= 0.
      * @throws NullPointerException if dims is null.
      */
-    public CombinationGenerator(final int[] dims) {
+    public CombinationGenerator(int[] dims) {
         this.dims = dims;
         this.local = new int[dims.length];
         this.returned = new int[dims.length];
@@ -120,8 +120,8 @@ public final class CombinationGenerator {
      * @param dims An int array consisting of the number of dimensions for each
      *             variable, in order.
      */
-    public static void testPrint(final int[] dims) {
-        final CombinationGenerator cg = new CombinationGenerator(dims);
+    public static void testPrint(int[] dims) {
+        CombinationGenerator cg = new CombinationGenerator(dims);
         int[] choice;
 
         System.out.println();
@@ -141,7 +141,7 @@ public final class CombinationGenerator {
             if (choice.length == 0) {
                 System.out.println("zero-length array");
             } else {
-                for (final int aChoice : choice) {
+                for (int aChoice : choice) {
                     System.out.print(aChoice + "\t");
                 }
 
@@ -165,7 +165,7 @@ public final class CombinationGenerator {
      *
      * @param index the index to begin this incrementing operation.
      */
-    private void fill(final int index) {
+    private void fill(int index) {
         this.local[index]++;
 
         for (int i = index + 1; i < getNumObjects(); i++) {

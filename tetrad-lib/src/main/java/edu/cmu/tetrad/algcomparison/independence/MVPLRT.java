@@ -28,8 +28,8 @@ public class MVPLRT implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
-        final IndTestMVPLRT test = new IndTestMVPLRT(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("alpha"), parameters.getInt("fDegree"), parameters.getInt("discretize") > 0);
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        IndTestMVPLRT test = new IndTestMVPLRT(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("alpha"), parameters.getInt("fDegree"), parameters.getInt("discretize") > 0);
         return test;
     }
 
@@ -45,7 +45,7 @@ public class MVPLRT implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
         parameters.add("fDegree");
         parameters.add("discretize");

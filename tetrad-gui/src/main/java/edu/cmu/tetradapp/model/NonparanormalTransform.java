@@ -37,9 +37,9 @@ public class NonparanormalTransform extends DataWrapper {
     static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
-    public NonparanormalTransform(final DataWrapper wrapper, final Parameters params) {
-        final DataModel dataModel = wrapper.getSelectedDataModel();
-        final DataSet nonparanormalTransformed = DataUtils.getNonparanormalTransformed((DataSet) dataModel);
+    public NonparanormalTransform(DataWrapper wrapper, Parameters params) {
+        DataModel dataModel = wrapper.getSelectedDataModel();
+        DataSet nonparanormalTransformed = DataUtils.getNonparanormalTransformed((DataSet) dataModel);
         nonparanormalTransformed.setKnowledge(dataModel.getKnowledge().copy());
 
         setDataModel(nonparanormalTransformed);

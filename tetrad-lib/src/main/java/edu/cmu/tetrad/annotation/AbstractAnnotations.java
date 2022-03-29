@@ -36,9 +36,9 @@ public abstract class AbstractAnnotations<T extends Annotation> {
 
     protected final List<AnnotatedClass<T>> annotatedClasses;
 
-    public AbstractAnnotations(final String packageName, final Class<T> type) {
-        final Reflections reflections = new Reflections(packageName);
-        final Set<Class<?>> classes = reflections.getTypesAnnotatedWith(type);
+    public AbstractAnnotations(String packageName, Class<T> type) {
+        Reflections reflections = new Reflections(packageName);
+        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(type);
 
         this.annotatedClasses = classes.parallelStream()
                 .map(e -> new AnnotatedClass<>(e, e.getAnnotation(type)))
@@ -49,24 +49,24 @@ public abstract class AbstractAnnotations<T extends Annotation> {
         return Collections.unmodifiableList(this.annotatedClasses);
     }
 
-    public List<AnnotatedClass<T>> filterByAnnotation(final List<AnnotatedClass<T>> annoClasses, final Class<? extends Annotation> type) {
+    public List<AnnotatedClass<T>> filterByAnnotation(List<AnnotatedClass<T>> annoClasses, Class<? extends Annotation> type) {
         if (annoClasses == null || type == null) {
             return Collections.EMPTY_LIST;
         }
 
-        final List<AnnotatedClass<T>> list = annoClasses.stream()
+        List<AnnotatedClass<T>> list = annoClasses.stream()
                 .filter(e -> e.getClazz().isAnnotationPresent(type))
                 .collect(Collectors.toList());
 
         return Collections.unmodifiableList(list);
     }
 
-    public List<AnnotatedClass<T>> filterOutByAnnotation(final List<AnnotatedClass<T>> annoClasses, final Class<? extends Annotation> type) {
+    public List<AnnotatedClass<T>> filterOutByAnnotation(List<AnnotatedClass<T>> annoClasses, Class<? extends Annotation> type) {
         if (annoClasses == null || type == null) {
             return Collections.EMPTY_LIST;
         }
 
-        final List<AnnotatedClass<T>> list = annoClasses.stream()
+        List<AnnotatedClass<T>> list = annoClasses.stream()
                 .filter(e -> !e.getClazz().isAnnotationPresent(type))
                 .collect(Collectors.toList());
 

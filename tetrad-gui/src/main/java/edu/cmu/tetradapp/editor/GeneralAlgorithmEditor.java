@@ -72,7 +72,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     private final GeneralAlgorithmRunner algorithmRunner;
     private final TetradDesktop desktop;
 
-    public GeneralAlgorithmEditor(final GeneralAlgorithmRunner algorithmRunner) {
+    public GeneralAlgorithmEditor(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
         this.algorithmCard = new AlgorithmCard(algorithmRunner);
@@ -117,7 +117,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     }
 
     @Override
-    public void propertyChange(final PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt) {
         switch (evt.getPropertyName()) {
             case "algoFwdBtn":
                 this.algoFwdBtn.setEnabled((boolean) evt.getNewValue());
@@ -126,8 +126,8 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     }
 
     @Override
-    public void actionPerformed(final ActionEvent evt) {
-        final Object obj = evt.getSource();
+    public void actionPerformed(ActionEvent evt) {
+        Object obj = evt.getSource();
         if (obj == this.algoFwdBtn) {
             if (this.algorithmCard.isAllValid()) {
                 this.parameterCard.refresh();
@@ -142,11 +142,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
     }
 
-    public void setAlgorithmResult(final String jsonResult) {
+    public void setAlgorithmResult(String jsonResult) {
         this.jsonResult = jsonResult;
         System.out.println("json result: " + jsonResult);
 
-        final Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
+        Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
         this.algorithmRunner.getGraphs().clear();
         this.algorithmRunner.getGraphs().add(graph);
 
@@ -157,24 +157,24 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         showGraphCard();
     }
 
-    public void setAlgorithmErrorResult(final String errorResult) {
+    public void setAlgorithmErrorResult(String errorResult) {
         JOptionPane.showMessageDialog(this.desktop, this.jsonResult);
 
         throw new IllegalArgumentException(errorResult);
     }
 
     private void showNextCard() {
-        final CardLayout cardLayout = (CardLayout) getLayout();
+        CardLayout cardLayout = (CardLayout) getLayout();
         cardLayout.next(this);
     }
 
     private void showPreviousCard() {
-        final CardLayout cardLayout = (CardLayout) getLayout();
+        CardLayout cardLayout = (CardLayout) getLayout();
         cardLayout.previous(this);
     }
 
     private void showGraphCard() {
-        final CardLayout cardLayout = (CardLayout) getLayout();
+        CardLayout cardLayout = (CardLayout) getLayout();
         cardLayout.last(this);
     }
 
@@ -182,14 +182,14 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         new WatchedProcess((Window) getTopLevelAncestor()) {
             @Override
             public void watch() {
-                final AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
+                AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
                 if (algoModel != null) {
 //                    paramBkBtn.setEnabled(false);
 //                    paramFwdBtn.setEnabled(false);
 
                     if (algoModel.getAlgorithm().getAnnotation().algoType() != AlgType.orient_pairwise
                             && GeneralAlgorithmEditor.this.algorithmRunner.getDataModelList().getModelList().size() == 1) {
-                        final String algoName = algoModel.getAlgorithm().getAnnotation().name();
+                        String algoName = algoModel.getAlgorithm().getAnnotation().name();
                     }
 
                     try {
@@ -199,7 +199,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                         firePropertyChange("modelChanged", null, null);
                         GeneralAlgorithmEditor.this.graphCard.refresh();
                         showGraphCard();
-                    } catch (final Exception exception) {
+                    } catch (Exception exception) {
                         exception.printStackTrace(System.err);
 
                         JOptionPane.showMessageDialog(
@@ -218,9 +218,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     @Override
     public boolean finalizeEditor() {
-        final List<Graph> graphs = this.algorithmRunner.getGraphs();
+        List<Graph> graphs = this.algorithmRunner.getGraphs();
         if (graphs == null || graphs.isEmpty()) {
-            final int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
+            int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
                     JOptionPane.YES_NO_OPTION);
             return option == JOptionPane.YES_OPTION;
         }
@@ -235,7 +235,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         private final JComponent component;
         private final JButton button;
 
-        public SingleButtonCard(final JComponent component, final JButton button) {
+        public SingleButtonCard(JComponent component, JButton button) {
             this.component = component;
             this.button = button;
 
@@ -243,7 +243,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
 
         private void initComponents() {
-            final Dimension buttonSize = new Dimension(268, 25);
+            Dimension buttonSize = new Dimension(268, 25);
             this.button.setMinimumSize(buttonSize);
             this.button.setMaximumSize(buttonSize);
             this.button.setPreferredSize(buttonSize);
@@ -262,7 +262,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             }
 
             private void initComponents() {
-                final GroupLayout layout = new GroupLayout(this);
+                GroupLayout layout = new GroupLayout(this);
                 this.setLayout(layout);
                 layout.setHorizontalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)

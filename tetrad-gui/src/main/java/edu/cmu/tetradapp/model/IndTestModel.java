@@ -54,10 +54,10 @@ public class IndTestModel implements SessionModel {
     }
 
 
-    public IndTestModel(final IndTestProducer[] producers, final Parameters parameters) {
+    public IndTestModel(IndTestProducer[] producers, Parameters parameters) {
         this.indTestProducers = new ArrayList<>();
 
-        for (final IndTestProducer producer : producers) {
+        for (IndTestProducer producer : producers) {
             this.indTestProducers.add(producer);
         }
     }
@@ -67,7 +67,7 @@ public class IndTestModel implements SessionModel {
     }
 
     @Override
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -76,7 +76,7 @@ public class IndTestModel implements SessionModel {
         return this.name;
     }
 
-    public void setVars(final LinkedList<String> vars) {
+    public void setVars(LinkedList<String> vars) {
         this.vars = vars;
     }
 
@@ -88,7 +88,7 @@ public class IndTestModel implements SessionModel {
         return this.results;
     }
 
-    public void setResults(final List<List<IndependenceResult>> results) {
+    public void setResults(List<List<IndependenceResult>> results) {
         this.results = results;
     }
 }

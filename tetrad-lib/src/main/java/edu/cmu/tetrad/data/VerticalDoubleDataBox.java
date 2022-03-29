@@ -53,7 +53,7 @@ public class VerticalDoubleDataBox implements DataBox {
      * Constructs an 2D double array consisting entirely of missing values
      * (Double.NaN).
      */
-    public VerticalDoubleDataBox(final int rows, final int cols) {
+    public VerticalDoubleDataBox(int rows, int cols) {
         this.data = new double[cols][rows];
 
         for (int i = 0; i < rows; i++) {
@@ -69,10 +69,10 @@ public class VerticalDoubleDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D double data array as data.
      */
-    public VerticalDoubleDataBox(final double[][] data) {
-        final int length = data[0].length;
+    public VerticalDoubleDataBox(double[][] data) {
+        int length = data[0].length;
 
-        for (final double[] datum : data) {
+        for (double[] datum : data) {
             if (datum.length != length) {
                 throw new IllegalArgumentException("All columns must have same length.");
             }
@@ -86,7 +86,7 @@ public class VerticalDoubleDataBox implements DataBox {
     /**
      * Copies the data from the given data box into this one.
      */
-    public VerticalDoubleDataBox(final DataBox dataBox) {
+    public VerticalDoubleDataBox(DataBox dataBox) {
         this.data = new double[dataBox.numCols()][dataBox.numRows()];
 
         for (int i = 0; i < dataBox.numRows(); i++) {
@@ -103,7 +103,7 @@ public class VerticalDoubleDataBox implements DataBox {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
         for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
@@ -126,7 +126,7 @@ public class VerticalDoubleDataBox implements DataBox {
      * Sets the value at the given row/column to the given Number value.
      * The value used is number.doubleValue().
      */
-    public void set(final int row, final int col, final Number value) {
+    public void set(int row, int col, Number value) {
         if (value == null) {
             synchronized (this.data[col]) {
                 this.data[col][row] = Double.NaN;
@@ -142,7 +142,7 @@ public class VerticalDoubleDataBox implements DataBox {
      * @return the Number value at the given row and column. If the value
      * is missing (-99), null, is returned.
      */
-    public Number get(final int row, final int col) {
+    public Number get(int row, int col) {
         return this.data[col][row];
     }
 
@@ -158,7 +158,7 @@ public class VerticalDoubleDataBox implements DataBox {
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        final double[][] copy = new double[this.data.length][this.data[0].length];
+        double[][] copy = new double[this.data.length][this.data[0].length];
 
         for (int i = 0; i < this.data.length; i++) {
             System.arraycopy(this.data[i], 0, copy[i], 0, this.data[0].length);
@@ -171,8 +171,8 @@ public class VerticalDoubleDataBox implements DataBox {
      * @return a DataBox of type DoubleDataBox, but with the given dimensions.
      */
     public DataBox like() {
-        final int[] rows = new int[numRows()];
-        final int[] cols = new int[numCols()];
+        int[] rows = new int[numRows()];
+        int[] cols = new int[numCols()];
 
         for (int i = 0; i < numRows(); i++) rows[i] = i;
         for (int j = 0; j < numCols(); j++) cols[j] = j;
@@ -181,8 +181,8 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     @Override
-    public DataBox viewSelection(final int[] rows, final int[] cols) {
-        final DataBox _dataBox = new VerticalDoubleDataBox(rows.length, cols.length);
+    public DataBox viewSelection(int[] rows, int[] cols) {
+        DataBox _dataBox = new VerticalDoubleDataBox(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {

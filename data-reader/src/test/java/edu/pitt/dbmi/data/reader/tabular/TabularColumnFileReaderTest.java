@@ -68,9 +68,9 @@ public class TabularColumnFileReaderTest {
      */
     @Test
     public void testReadInDataColumnsWithSetOfColumnsToExclude() throws IOException {
-        final Set<String> columnNames = new HashSet<>(Arrays.asList("X1", "\"X3\"", "X5", " ", "X7", "X9", "", "X10", "X11"));
-        for (final Path dataFile : this.dataFiles) {
-            final TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, this.delimiter);
+        Set<String> columnNames = new HashSet<>(Arrays.asList("X1", "\"X3\"", "X5", " ", "X7", "X9", "", "X10", "X11"));
+        for (Path dataFile : this.dataFiles) {
+            TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, this.delimiter);
             fileReader.setCommentMarker(this.commentMarker);
             fileReader.setQuoteCharacter(this.quoteCharacter);
 
@@ -96,9 +96,9 @@ public class TabularColumnFileReaderTest {
      */
     @Test
     public void testReadInDataColumnsWithColumnsToExclude() throws IOException {
-        final int[] columnsToExclude = {0, 1, 5, 3, 7, -1};
-        for (final Path dataFile : this.dataFiles) {
-            final TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, this.delimiter);
+        int[] columnsToExclude = {0, 1, 5, 3, 7, -1};
+        for (Path dataFile : this.dataFiles) {
+            TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, this.delimiter);
             fileReader.setCommentMarker(this.commentMarker);
             fileReader.setQuoteCharacter(this.quoteCharacter);
 
@@ -124,8 +124,8 @@ public class TabularColumnFileReaderTest {
      */
     @Test
     public void testGenerateColumns() throws IOException {
-        for (final Path dataFile : this.dataFiles) {
-            final TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, this.delimiter);
+        for (Path dataFile : this.dataFiles) {
+            TabularColumnReader fileReader = new TabularColumnFileReader(dataFile, this.delimiter);
             fileReader.setCommentMarker(this.commentMarker);
             fileReader.setQuoteCharacter(this.quoteCharacter);
 

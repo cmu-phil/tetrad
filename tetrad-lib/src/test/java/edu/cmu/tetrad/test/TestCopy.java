@@ -44,8 +44,8 @@ public final class TestCopy {
      *
      * @author jdramsey
      */
-    public static void main(final String... args) {
-        final Parameters parameters = new Parameters();
+    public static void main(String... args) {
+        Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 100);
@@ -54,7 +54,7 @@ public final class TestCopy {
         parameters.set("alpha", 1e-4, 1e-3, 1e-2);
         parameters.set("penaltyDiscount", 1);
 
-        final Statistics statistics = new Statistics();
+        Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("sampleSize"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -73,16 +73,16 @@ public final class TestCopy {
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AHP", 1.0);
 
-        final Algorithms algorithms = new Algorithms();
+        Algorithms algorithms = new Algorithms();
 
         algorithms.add(new PC(new FisherZ()));
         algorithms.add(new PCMAX(new FisherZ()));
 
-        final Simulations simulations = new Simulations();
+        Simulations simulations = new Simulations();
 
         simulations.add(new SemSimulation(new RandomForward()));
 
-        final Comparison comparison = new Comparison();
+        Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);

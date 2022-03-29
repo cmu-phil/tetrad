@@ -53,21 +53,21 @@ final class CutSubsessionAction extends AbstractAction
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final SessionEditorIndirectRef sessionEditorRef =
+    public void actionPerformed(ActionEvent e) {
+        SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
-        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        final List modelElements = sessionEditor.getSelectedModelComponents();
-        final SubsessionSelection selection = new SubsessionSelection(modelElements);
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        List modelElements = sessionEditor.getSelectedModelComponents();
+        SubsessionSelection selection = new SubsessionSelection(modelElements);
         InternalClipboard.getInstance().setContents(selection, this);
-        final SessionEditorWorkbench graph = sessionEditor.getSessionWorkbench();
+        SessionEditorWorkbench graph = sessionEditor.getSessionWorkbench();
         graph.deleteSelectedObjects();
     }
 
     /**
      * Required by the ClipboardOwner interface; does nothing.
      */
-    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 }
 

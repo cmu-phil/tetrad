@@ -62,7 +62,7 @@ public class TextTable {
      * Construct the text table; the table has a fixed number of rows and
      * columns, each greater than zero.
      */
-    public TextTable(final int rows, final int columns) {
+    public TextTable(int rows, int columns) {
         if (rows <= 0 || columns <= 0) {
             throw new IllegalArgumentException();
         }
@@ -80,7 +80,7 @@ public class TextTable {
      * Sets the token at the given row and column, each of which must be >= 0
      * and less than the number of rows or columns, respectively.
      */
-    public void setToken(final int row, final int column, final String token) {
+    public void setToken(int row, int column, String token) {
         if (token == null) {
             throw new NullPointerException();
         }
@@ -99,7 +99,7 @@ public class TextTable {
     /**
      * @return the token at the given row and column.
      */
-    public String getTokenAt(final int row, final int column) {
+    public String getTokenAt(int row, int column) {
         return this.tokens[row][column];
     }
 
@@ -127,7 +127,7 @@ public class TextTable {
     /**
      * Sets the number of spaces between columns, to some number >= 0.
      */
-    public void setColumnSpacing(final int numSpaces) {
+    public void setColumnSpacing(int numSpaces) {
         if (numSpaces < 0) {
             throw new IllegalArgumentException();
         }
@@ -145,7 +145,7 @@ public class TextTable {
     /**
      * Sets the justification, either LEFT_JUSTIFIED or RIGHT_JUSTIFIED.
      */
-    public void setJustification(final int justification) {
+    public void setJustification(int justification) {
         if (!(justification == TextTable.LEFT_JUSTIFIED || justification == TextTable.RIGHT_JUSTIFIED)) {
             throw new IllegalArgumentException();
         }
@@ -154,19 +154,19 @@ public class TextTable {
     }
 
     public String toString() {
-        final StringBuilder buffer = new StringBuilder();
+        StringBuilder buffer = new StringBuilder();
 
-        final int[] colWidths = new int[this.tokens[0].length];
+        int[] colWidths = new int[this.tokens[0].length];
 
         for (int j = 0; j < this.tokens[0].length; j++) {
-            for (final String[] token : this.tokens) {
+            for (String[] token : this.tokens) {
                 if (token[j].length() > colWidths[j]) {
                     colWidths[j] = token[j].length();
                 }
             }
         }
 
-        for (final String[] token1 : this.tokens) {
+        for (String[] token1 : this.tokens) {
             for (int j = 0; j < this.tokens[0].length; j++) {
 
                 if (this.tabDelimited) {
@@ -180,7 +180,7 @@ public class TextTable {
                         buffer.append(' ');
                     }
 
-                    final int numPaddingSpaces = colWidths[j] - token1[j].length();
+                    int numPaddingSpaces = colWidths[j] - token1[j].length();
 
                     if (getJustification() == TextTable.RIGHT_JUSTIFIED) {
                         for (int k = 0; k < numPaddingSpaces; k++) {
@@ -204,7 +204,7 @@ public class TextTable {
         return buffer.toString();
     }
 
-    public void setTabDelimited(final boolean tabDelimited) {
+    public void setTabDelimited(boolean tabDelimited) {
         this.tabDelimited = tabDelimited;
     }
 }

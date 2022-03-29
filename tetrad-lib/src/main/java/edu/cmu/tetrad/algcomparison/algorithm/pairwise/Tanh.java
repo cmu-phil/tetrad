@@ -32,14 +32,14 @@ public class Tanh implements Algorithm, TakesExternalGraph {
     private Algorithm algorithm;
     private Graph externalGraph;
 
-    public Tanh(final Algorithm algorithm) {
+    public Tanh(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final Graph graph = this.algorithm.search(dataSet, parameters);
+            Graph graph = this.algorithm.search(dataSet, parameters);
 
             if (graph != null) {
                 this.externalGraph = graph;
@@ -48,21 +48,21 @@ public class Tanh implements Algorithm, TakesExternalGraph {
                         + "will orient the edges in the input graph using the data");
             }
 
-            final List<DataSet> dataSets = new ArrayList<>();
+            List<DataSet> dataSets = new ArrayList<>();
             dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
-            final Lofs2 lofs = new Lofs2(this.externalGraph, dataSets);
+            Lofs2 lofs = new Lofs2(this.externalGraph, dataSets);
             lofs.setRule(Lofs2.Rule.Tanh);
 
             return lofs.orient();
         } else {
-            final Tanh tanh = new Tanh(this.algorithm);
+            Tanh tanh = new Tanh(this.algorithm);
             if (this.externalGraph != null) {
                 tanh.setExternalGraph(this.externalGraph);
             }
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, tanh, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, tanh, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -88,7 +88,7 @@ public class Tanh implements Algorithm, TakesExternalGraph {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
@@ -105,7 +105,7 @@ public class Tanh implements Algorithm, TakesExternalGraph {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new LinkedList<>();
+        List<String> parameters = new LinkedList<>();
 
         if (this.algorithm != null && !this.algorithm.getParameters().isEmpty()) {
             parameters.addAll(this.algorithm.getParameters());
@@ -122,12 +122,12 @@ public class Tanh implements Algorithm, TakesExternalGraph {
     }
 
     @Override
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setExternalGraph(final Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This Tanh algorithm needs both data and a graph source as inputs; it \n"
                     + "will orient the edges in the input graph using the data.");

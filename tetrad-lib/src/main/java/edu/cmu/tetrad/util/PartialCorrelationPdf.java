@@ -71,7 +71,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      * @param n sample size
      * @param k the number of variables being compared.
      */
-    public PartialCorrelationPdf(final int n, final int k) {
+    public PartialCorrelationPdf(int n, int k) {
         this.n = n;
         this.k = k;
         /*
@@ -79,7 +79,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
       zero partial correlation.
 
       */
-        final double gammaRatio = gammaRatio(n, k);
+        double gammaRatio = gammaRatio(n, k);
         this.constant = (1 / Math.pow(Math.PI, 0.5)) * gammaRatio;
         this.outsideExp = (double) (n - k - 2) / 2.0;
     }
@@ -102,7 +102,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      * @param x the domain point.
      * @return the value of the function at x.
      */
-    public double valueAt(final double x) {
+    public double valueAt(double x) {
         return this.constant * Math.pow(1 - x * x, this.outsideExp);
     }
 
@@ -113,10 +113,10 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      * @param k the number of variables being compared.
      * @return this ratio.
      */
-    private double gammaRatio(final int n, final int k) {
-        final double top = (n - k + 1) / 2.0;
-        final double bottom = (n - k) / 2.0;
-        final double lngamma = ProbUtils.lngamma(top) - ProbUtils.lngamma(bottom);
+    private double gammaRatio(int n, int k) {
+        double top = (n - k + 1) / 2.0;
+        double bottom = (n - k) / 2.0;
+        double lngamma = ProbUtils.lngamma(top) - ProbUtils.lngamma(bottom);
         return Math.exp(lngamma);
     }
 

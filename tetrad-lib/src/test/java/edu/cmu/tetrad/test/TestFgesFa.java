@@ -38,16 +38,16 @@ public class TestFgesFa {
 
     public void test1() {
 
-        final Graph graph = GraphUtils.randomGraph(10, 0, 10,
+        Graph graph = GraphUtils.randomGraph(10, 0, 10,
                 100, 100, 100, false);
 
         System.out.println(graph);
 
-        final SemPm semPm = new SemPm(graph);
-        final SemIm semIm = new SemIm(semPm);
-        final DataSet dataSet = semIm.simulateData(1000, false);
+        SemPm semPm = new SemPm(graph);
+        SemIm semIm = new SemIm(semPm);
+        DataSet dataSet = semIm.simulateData(1000, false);
 
-        final Parameters parameters = new Parameters();
+        Parameters parameters = new Parameters();
         parameters.set(Params.PENALTY_DISCOUNT, 8);
         parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
         parameters.set(Params.FAITHFULNESS_ASSUMED, false);
@@ -58,13 +58,13 @@ public class TestFgesFa {
 
         parameters.set(Params.DETERMINISM_THRESHOLD, 1);
 
-        final GesMe alg = new GesMe();
-        final Graph CPDAG = alg.search(dataSet, parameters);
+        GesMe alg = new GesMe();
+        Graph CPDAG = alg.search(dataSet, parameters);
 
         System.out.println(CPDAG);
     }
 
-    public static void main(final String... args) {
+    public static void main(String... args) {
         new TestFgesFa().test1();
     }
 }

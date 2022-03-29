@@ -31,14 +31,14 @@ public class VarianceVector implements Variance {
 
     private final int numOfCols;
 
-    public VarianceVector(final float[][] data) {
+    public VarianceVector(float[][] data) {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
     }
 
     private float[] computeMeans() {
-        final float[] mean = new float[this.numOfCols];
+        float[] mean = new float[this.numOfCols];
         for (int col = 0; col < this.numOfCols; col++) {
             float sum = 0;
             for (int row = 0; row < this.numOfRows; row++) {
@@ -51,15 +51,15 @@ public class VarianceVector implements Variance {
     }
 
     @Override
-    public float[] compute(final boolean biasCorrected) {
-        final float[] meanVariance = computeMeans();
+    public float[] compute(boolean biasCorrected) {
+        float[] meanVariance = computeMeans();
 
         for (int col = 0; col < this.numOfCols; col++) {
-            final float mean = meanVariance[col];
+            float mean = meanVariance[col];
             float value = 0;
             float squareValue = 0;
             for (int row = 0; row < this.numOfRows; row++) {
-                final float val = this.data[row][col] - mean;
+                float val = this.data[row][col] - mean;
                 squareValue += val * val;
                 value += val;
             }

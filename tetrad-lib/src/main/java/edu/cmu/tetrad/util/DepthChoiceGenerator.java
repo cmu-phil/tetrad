@@ -94,7 +94,7 @@ public final class DepthChoiceGenerator {
      * @param a     the number of objects being selected from.
      * @param depth the maximum number of objects selected.
      */
-    public DepthChoiceGenerator(final int a, final int depth) {
+    public DepthChoiceGenerator(int a, int depth) {
         if ((a < 0) || depth < -1) {
             throw new IllegalArgumentException();
         }
@@ -110,7 +110,7 @@ public final class DepthChoiceGenerator {
         initialize();
     }
 
-    public static int getNumCombinations(final int a, final int b) {
+    public static int getNumCombinations(int a, int b) {
         int numCombinations = 0;
 
         for (int c = 0; c <= b; c++) {
@@ -185,8 +185,8 @@ public final class DepthChoiceGenerator {
      * @param depth the number of objects in the desired selection.
      */
     @SuppressWarnings("SameParameterValue")
-    public static void testPrint(final int a, final int depth) {
-        final DepthChoiceGenerator cg = new DepthChoiceGenerator(a, depth);
+    public static void testPrint(int a, int depth) {
+        DepthChoiceGenerator cg = new DepthChoiceGenerator(a, depth);
         int[] choice;
 
         System.out.println();
@@ -198,7 +198,7 @@ public final class DepthChoiceGenerator {
             if (choice.length == 0) {
                 System.out.println("zero-length array");
             } else {
-                for (final int aChoice : choice) {
+                for (int aChoice : choice) {
                     System.out.print(aChoice + "\t");
                 }
 
@@ -234,7 +234,7 @@ public final class DepthChoiceGenerator {
      *
      * @param index the index to begin this incrementing operation.
      */
-    private void fill(final int index) {
+    private void fill(int index) {
         this.choiceLocal[index]++;
 
         for (int i = index + 1; i < getB(); i++) {

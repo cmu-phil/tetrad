@@ -15,7 +15,7 @@ public class ScaleFree implements RandomGraph {
     static final long serialVersionUID = 23L;
 
     @Override
-    public edu.cmu.tetrad.graph.Graph createGraph(final Parameters parameters) {
+    public edu.cmu.tetrad.graph.Graph createGraph(Parameters parameters) {
         return GraphUtils.scaleFreeGraph(
                 parameters.getInt("numMeasures") + parameters.getInt("numLatents"),
                 parameters.getInt("numLatents"),
@@ -33,7 +33,7 @@ public class ScaleFree implements RandomGraph {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("numMeasures");
         parameters.add("numLatents");
         parameters.add("scaleFreeAlpha");

@@ -37,12 +37,12 @@ public class UndirectedToBidirectedWrapper extends GraphWrapper implements DoNot
     static final long serialVersionUID = 23L;
 
 
-    public UndirectedToBidirectedWrapper(final GraphSource source, final Parameters parameters) {
+    public UndirectedToBidirectedWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
-    public UndirectedToBidirectedWrapper(final Graph graph) {
+    public UndirectedToBidirectedWrapper(Graph graph) {
         super(UndirectedToBidirectedWrapper.pickDagFromCPDAG(graph), "Make Bidirected Edges Undirected");
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
@@ -56,7 +56,7 @@ public class UndirectedToBidirectedWrapper extends GraphWrapper implements DoNot
     //======================== Private Methods ================================//
 
 
-    private static Graph pickDagFromCPDAG(final Graph graph) {
+    private static Graph pickDagFromCPDAG(Graph graph) {
         return GraphUtils.undirectedToBidirected(graph);
     }
 

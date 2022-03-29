@@ -41,7 +41,7 @@ public class TestSimpleRandomizer extends TestCase {
     /**
      * Change the name of this constructor to match the name of the test class.
      */
-    public TestSimpleRandomizer(final String name) {
+    public TestSimpleRandomizer(String name) {
         super(name);
     }
 
@@ -64,27 +64,27 @@ public class TestSimpleRandomizer extends TestCase {
     public void testConstantIndegree() {
 
         // Pick an indegree.
-        final int indegree = RandomUtil.getInstance().nextInt(8) + 2;
+        int indegree = RandomUtil.getInstance().nextInt(8) + 2;
 
         // Pick mlag.
-        final int mlag = RandomUtil.getInstance().nextInt(9) + 1;
+        int mlag = RandomUtil.getInstance().nextInt(9) + 1;
 
         // Pick percent housekeeping.
-        final double percentHousekeeping =
+        double percentHousekeeping =
                 RandomUtil.getInstance().nextDouble() * 20.0;
 
         // Randomize
-        final SimpleRandomizer simpleRandomizer = new SimpleRandomizer(indegree,
+        SimpleRandomizer simpleRandomizer = new SimpleRandomizer(indegree,
                 SimpleRandomizer.CONSTANT, mlag, percentHousekeeping);
 
         simpleRandomizer.initialize(this.lagGraph);
 
         // Make sure all nonhousekeeping genes have indegree edges.
-        final SortedSet factors = this.lagGraph.getFactors();
+        SortedSet factors = this.lagGraph.getFactors();
 
-        for (final Iterator it = factors.iterator(); it.hasNext(); ) {
-            final String factor = (String) it.next();
-            final SortedSet parents = this.lagGraph.getParents(factor);
+        for (Iterator it = factors.iterator(); it.hasNext(); ) {
+            String factor = (String) it.next();
+            SortedSet parents = this.lagGraph.getParents(factor);
 
             // Make sure it's not a housekeeping gene.
             if (1 != parents.size()) {
@@ -100,17 +100,17 @@ public class TestSimpleRandomizer extends TestCase {
     public void testMeanIndegree() {
 
         // Pick an indegree.
-        final int indegree = RandomUtil.getInstance().nextInt(8) + 2;
+        int indegree = RandomUtil.getInstance().nextInt(8) + 2;
 
         // Pick mlag.
-        final int mlag = RandomUtil.getInstance().nextInt(9) + 1;
+        int mlag = RandomUtil.getInstance().nextInt(9) + 1;
 
         // Pick percent housekeeping.
-        final double percentHousekeeping =
+        double percentHousekeeping =
                 RandomUtil.getInstance().nextDouble() * 20.0;
 
         // Randomize
-        final SimpleRandomizer simpleRandomizer = new SimpleRandomizer(indegree,
+        SimpleRandomizer simpleRandomizer = new SimpleRandomizer(indegree,
                 SimpleRandomizer.MEAN, mlag, percentHousekeeping);
 
         simpleRandomizer.initialize(this.lagGraph);
@@ -119,11 +119,11 @@ public class TestSimpleRandomizer extends TestCase {
         // have a mean of indegree edges.
         int sum = 0;
         int numNonHousekeeping = 0;
-        final SortedSet factors = this.lagGraph.getFactors();
+        SortedSet factors = this.lagGraph.getFactors();
 
-        for (final Iterator it = factors.iterator(); it.hasNext(); ) {
-            final String factor = (String) it.next();
-            final SortedSet parents = this.lagGraph.getParents(factor);
+        for (Iterator it = factors.iterator(); it.hasNext(); ) {
+            String factor = (String) it.next();
+            SortedSet parents = this.lagGraph.getParents(factor);
 
             if (parents.size() > 1) {
                 numNonHousekeeping++;
@@ -137,7 +137,7 @@ public class TestSimpleRandomizer extends TestCase {
         }
 
         if (numNonHousekeeping > 0) {
-            final double mean = (double) sum / (double) numNonHousekeeping;
+            double mean = (double) sum / (double) numNonHousekeeping;
 
             // The mean of the nonhousekeeping genes should be the
             // specified indegree, to within 0.5.
@@ -152,28 +152,28 @@ public class TestSimpleRandomizer extends TestCase {
     public void testMaxIndegree() {
 
         // Pick an indegree.
-        final int indegree = RandomUtil.getInstance().nextInt(8) + 2;
+        int indegree = RandomUtil.getInstance().nextInt(8) + 2;
 
         // Pick mlag.
-        final int mlag = RandomUtil.getInstance().nextInt(9) + 1;
+        int mlag = RandomUtil.getInstance().nextInt(9) + 1;
 
         // Pick percent housekeeping.
-        final double percentHousekeeping =
+        double percentHousekeeping =
                 RandomUtil.getInstance().nextDouble() * 20.0;
 
         // Randomize
-        final SimpleRandomizer simpleRandomizer = new SimpleRandomizer(indegree,
+        SimpleRandomizer simpleRandomizer = new SimpleRandomizer(indegree,
                 SimpleRandomizer.MAX, mlag, percentHousekeeping);
 
         simpleRandomizer.initialize(this.lagGraph);
 
         // Make sure that the maximum number of edges is indegree.
         int max = 0;
-        final SortedSet factors = this.lagGraph.getFactors();
+        SortedSet factors = this.lagGraph.getFactors();
 
-        for (final Iterator it = factors.iterator(); it.hasNext(); ) {
-            final String factor = (String) it.next();
-            final SortedSet parents = this.lagGraph.getParents(factor);
+        for (Iterator it = factors.iterator(); it.hasNext(); ) {
+            String factor = (String) it.next();
+            SortedSet parents = this.lagGraph.getParents(factor);
 
             if (parents.size() > max) {
                 max = parents.size();

@@ -52,7 +52,7 @@ public class ShortDataBox implements DataBox {
     /**
      * Constructs an 2D short array consisting entirely of missing values (-99).
      */
-    public ShortDataBox(final int rows, final int cols) {
+    public ShortDataBox(int rows, int cols) {
         this.data = new short[rows][cols];
 
         for (int i = 0; i < rows; i++) {
@@ -68,10 +68,10 @@ public class ShortDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D short data array as data.
      */
-    public ShortDataBox(final short[][] data) {
-        final int length = data[0].length;
+    public ShortDataBox(short[][] data) {
+        int length = data[0].length;
 
-        for (final short[] datum : data) {
+        for (short[] datum : data) {
             if (datum.length != length) {
                 throw new IllegalArgumentException("All rows must have same length.");
             }
@@ -87,7 +87,7 @@ public class ShortDataBox implements DataBox {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
         for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
@@ -110,7 +110,7 @@ public class ShortDataBox implements DataBox {
      * Sets the value at the given row/column to the given Number value.
      * The value used is number.shortValue().
      */
-    public void set(final int row, final int col, final Number value) {
+    public void set(int row, int col, Number value) {
         if (value == null) {
             synchronized (this.data) {
                 this.data[row][col] = -99;
@@ -126,8 +126,8 @@ public class ShortDataBox implements DataBox {
      * @return the Number value at the given row and column. If the value
      * is missing (-99), null, is returned.
      */
-    public Number get(final int row, final int col) {
-        final short datum = this.data[row][col];
+    public Number get(int row, int col) {
+        short datum = this.data[row][col];
 
         if (datum == -99) {
             return null;
@@ -140,7 +140,7 @@ public class ShortDataBox implements DataBox {
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        final ShortDataBox box = new ShortDataBox(numRows(), numCols());
+        ShortDataBox box = new ShortDataBox(numRows(), numCols());
 
         for (int i = 0; i < numRows(); i++) {
             for (int j = 0; j < numCols(); j++) {
@@ -155,8 +155,8 @@ public class ShortDataBox implements DataBox {
      * @return a DataBox of type ShortDataBox, but with the given dimensions.
      */
     public DataBox like() {
-        final int[] rows = new int[numRows()];
-        final int[] cols = new int[numCols()];
+        int[] rows = new int[numRows()];
+        int[] cols = new int[numCols()];
 
         for (int i = 0; i < numRows(); i++) rows[i] = i;
         for (int j = 0; j < numCols(); j++) cols[j] = j;
@@ -165,8 +165,8 @@ public class ShortDataBox implements DataBox {
     }
 
     @Override
-    public DataBox viewSelection(final int[] rows, final int[] cols) {
-        final DataBox _dataBox = new ShortDataBox(rows.length, cols.length);
+    public DataBox viewSelection(int[] rows, int[] cols) {
+        DataBox _dataBox = new ShortDataBox(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {

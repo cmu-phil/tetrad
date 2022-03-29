@@ -57,27 +57,27 @@ final class DistanceFromSelected {
 
     //==============================CONSTRUCTORS===========================//
 
-    public DistanceFromSelected(final LayoutEditable layoutEditable) {
+    public DistanceFromSelected(LayoutEditable layoutEditable) {
         this.graph = layoutEditable.getGraph();
 
         List<Node> selected = new ArrayList<>();
 
-        for (final Node node : this.graph.getNodes()) {
-            final Map modelToDisplay = layoutEditable.getModelNodesToDisplay();
-            final DisplayNode displayNode = (DisplayNode) modelToDisplay.get(node);
+        for (Node node : this.graph.getNodes()) {
+            Map modelToDisplay = layoutEditable.getModelNodesToDisplay();
+            DisplayNode displayNode = (DisplayNode) modelToDisplay.get(node);
             if (displayNode != null && displayNode.isSelected()) {
                 selected.add(node);
             }
         }
 
         if (selected.isEmpty()) {
-            final String names = JOptionPane.showInputDialog("Selected nodes (space delimited):");
+            String names = JOptionPane.showInputDialog("Selected nodes (space delimited):");
 
-            final List<Node> nodes = new ArrayList<>();
-            final String[] _names = names.split(" ");
+            List<Node> nodes = new ArrayList<>();
+            String[] _names = names.split(" ");
 
-            for (final String name : _names) {
-                final Node node = this.graph.getNode(name);
+            for (String name : _names) {
+                Node node = this.graph.getNode(name);
 
                 if (node != null) {
                     nodes.add(node);
@@ -103,11 +103,11 @@ final class DistanceFromSelected {
             return;
         }
 
-        final List<List<Node>> tiers = placeInTiers(this.graph, this.selected);
+        List<List<Node>> tiers = placeInTiers(this.graph, this.selected);
 
         int y = 0;
 
-        for (final List<Node> tier : tiers) {
+        for (List<Node> tier : tiers) {
             y += 60;
 
             if (tier.isEmpty()) continue;
@@ -127,7 +127,7 @@ final class DistanceFromSelected {
                 node = tier.get(i);
                 displayNode = (DisplayNode) this.layoutEditable.getModelNodesToDisplay().get(node);
                 r = displayNode.getBounds();
-                final int thisHalf = r.width / 2;
+                int thisHalf = r.width / 2;
                 x += lastHalf + thisHalf + 5;
                 node.setCenterX(x);
                 node.setCenterY(y);
@@ -136,16 +136,16 @@ final class DistanceFromSelected {
         }
     }
 
-    private List<List<Node>> placeInTiers(final Graph graph, final List<Node> selected) {
+    private List<List<Node>> placeInTiers(Graph graph, List<Node> selected) {
 
         // We know selected is not empty.
-        final List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
-        final List<List<Node>> tiers = new ArrayList<>();
+        List<List<Node>> tiers = new ArrayList<>();
 
         tiers.add(selected);
 
-        final Set<Node> all = new HashSet<>();
+        Set<Node> all = new HashSet<>();
         all.addAll(selected);
 
 //        Set<Node> augmented = new HashSet<Node>();
@@ -187,11 +187,11 @@ final class DistanceFromSelected {
 //        }
 
         while (true) {
-            final List<Node> tier1 = tiers.get(tiers.size() - 1);
-            final List<Node> tier2 = new ArrayList<>();
+            List<Node> tier1 = tiers.get(tiers.size() - 1);
+            List<Node> tier2 = new ArrayList<>();
 
-            for (final Node node : tier1) {
-                final List<Node> adj = graph.getAdjacentNodes(node);
+            for (Node node : tier1) {
+                List<Node> adj = graph.getAdjacentNodes(node);
                 adj.removeAll(all);
                 tier2.addAll(adj);
                 all.addAll(adj);
@@ -202,7 +202,7 @@ final class DistanceFromSelected {
             tiers.add(tier2);
         }
 
-        final List<Node> remainder = new ArrayList<>(nodes);
+        List<Node> remainder = new ArrayList<>(nodes);
         remainder.removeAll(all);
 
         tiers.add(new ArrayList<>(remainder));
@@ -213,7 +213,7 @@ final class DistanceFromSelected {
     //============================PRIVATE METHODS=========================//
 
 
-    private int numCrossings(final List<Node> tier1, final List<Node> tier2, final Graph graph) {
+    private int numCrossings(List<Node> tier1, List<Node> tier2, Graph graph) {
         if (tier2.size() < 2) {
             return 0;
         }
@@ -222,16 +222,16 @@ final class DistanceFromSelected {
 
         for (int i = 0; i < tier1.size(); i++) {
             for (int j = i + 1; j < tier1.size(); j++) {
-                final Node n11 = tier1.get(i);
-                final Node n12 = tier1.get(j);
+                Node n11 = tier1.get(i);
+                Node n12 = tier1.get(j);
 
-                final List<Node> adj1 = graph.getAdjacentNodes(n11);
-                final List<Node> adj2 = graph.getAdjacentNodes(n12);
+                List<Node> adj1 = graph.getAdjacentNodes(n11);
+                List<Node> adj2 = graph.getAdjacentNodes(n12);
 
-                for (final Node n21 : adj1) {
-                    for (final Node n22 : adj2) {
-                        final int i1 = tier2.indexOf(n21);
-                        final int i2 = tier2.indexOf(n22);
+                for (Node n21 : adj1) {
+                    for (Node n22 : adj2) {
+                        int i1 = tier2.indexOf(n21);
+                        int i2 = tier2.indexOf(n22);
 
                         if (i1 != -1 && i2 != -1 && i2 > i1) {
                             numCrossings++;
@@ -255,39 +255,39 @@ final class DistanceFromSelected {
         return numCrossings;
     }
 
-    private void placeNodes(final Node node, final Map<Node, Integer> tiers, final Graph graph) {
+    private void placeNodes(Node node, Map<Node, Integer> tiers, Graph graph) {
         if (tiers.containsKey(node)) {
             return;
         }
 
-        final Set<Node> keySet = tiers.keySet();
-        final List<Node> parents = graph.getParents(node);
+        Set<Node> keySet = tiers.keySet();
+        List<Node> parents = graph.getParents(node);
         parents.retainAll(keySet);
 
-        final List<Node> children = graph.getChildren(node);
+        List<Node> children = graph.getChildren(node);
         children.retainAll(keySet);
 
         if (parents.isEmpty() && children.isEmpty()) {
             tiers.put(node, 0);
         } else if (parents.isEmpty()) {
-            final int cMin = getCMin(children, tiers);
+            int cMin = getCMin(children, tiers);
             tiers.put(node, cMin - 1);
             placeChildren(node, tiers, graph);
             return;
         } else {
-            final int pMax = getPMax(parents, tiers);
-            final int cMin = getCMin(children, tiers);
+            int pMax = getPMax(parents, tiers);
+            int cMin = getCMin(children, tiers);
             tiers.put(node, pMax + 1);
 
             if (!children.isEmpty() && cMin < pMax + 2) {
-                final int diff = (pMax + 2) - cMin;
-                final List<Node> descendants =
+                int diff = (pMax + 2) - cMin;
+                List<Node> descendants =
                         graph.getDescendants(Collections.singletonList(node));
                 descendants.retainAll(keySet);
                 descendants.remove(node);
 
-                for (final Node descendant : descendants) {
-                    final Integer index = tiers.get(descendant);
+                for (Node descendant : descendants) {
+                    Integer index = tiers.get(descendant);
                     tiers.put(descendant, index + diff);
                 }
             }
@@ -296,21 +296,21 @@ final class DistanceFromSelected {
         placeChildren(node, tiers, graph);
     }
 
-    private void placeChildren(final Node node, final Map<Node, Integer> tiers,
-                               final Graph graph) {
+    private void placeChildren(Node node, Map<Node, Integer> tiers,
+                               Graph graph) {
         // Recurse.
-        final List<Node> adj = graph.getAdjacentNodes(node);
+        List<Node> adj = graph.getAdjacentNodes(node);
 
-        for (final Node _node : adj) {
+        for (Node _node : adj) {
             placeNodes(_node, tiers, graph);
         }
     }
 
-    private int getPMax(final List<Node> parents, final Map<Node, Integer> tiers) {
+    private int getPMax(List<Node> parents, Map<Node, Integer> tiers) {
         int pMax = Integer.MIN_VALUE;
 
-        for (final Node parent : parents) {
-            final Integer index = tiers.get(parent);
+        for (Node parent : parents) {
+            Integer index = tiers.get(parent);
             if (index > pMax) {
                 pMax = index;
             }
@@ -318,11 +318,11 @@ final class DistanceFromSelected {
         return pMax;
     }
 
-    private int getCMin(final List<Node> children, final Map<Node, Integer> tiers) {
+    private int getCMin(List<Node> children, Map<Node, Integer> tiers) {
         int cMin = Integer.MAX_VALUE;
 
-        for (final Node child : children) {
-            final Integer index = tiers.get(child);
+        for (Node child : children) {
+            Integer index = tiers.get(child);
             if (index < cMin) {
                 cMin = index;
             }

@@ -41,19 +41,19 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
 
     static final long serialVersionUID = 23L;
 
-    public ConcatenateDatasetsWrapper(final DataWrapper[] data, final Parameters params) {
+    public ConcatenateDatasetsWrapper(DataWrapper[] data, Parameters params) {
         construct(data);
     }
 
-    private void construct(final DataWrapper... dataWrappers) {
-        for (final DataWrapper wrapper : dataWrappers) {
+    private void construct(DataWrapper... dataWrappers) {
+        for (DataWrapper wrapper : dataWrappers) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");
             }
         }
 
-        final List<DataModel> dataModels = new LinkedList<>();
-        for (final DataWrapper wrapper : dataWrappers) {
+        List<DataModel> dataModels = new LinkedList<>();
+        for (DataWrapper wrapper : dataWrappers) {
             wrapper.getDataModelList().forEach(dataModel -> {
                 if (dataModel instanceof DataSet) {
                     dataModels.add(dataModel);
@@ -63,7 +63,7 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
             });
         }
 
-        final DataModel dataModel = MultidataUtils.combineDataset(dataModels);
+        DataModel dataModel = MultidataUtils.combineDataset(dataModels);
         dataModel.setName("Concatenated");
         this.setDataModel(dataModel);
 

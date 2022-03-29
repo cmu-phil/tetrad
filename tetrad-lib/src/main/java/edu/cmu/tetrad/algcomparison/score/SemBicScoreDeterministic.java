@@ -26,9 +26,9 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
     private DataModel dataSet;
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final edu.cmu.tetrad.search.SemBicScoreDeterministic semBicScore
+        edu.cmu.tetrad.search.SemBicScoreDeterministic semBicScore
                 = new edu.cmu.tetrad.search.SemBicScoreDeterministic(DataUtils.getCovMatrix(dataSet));
         semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         semBicScore.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
@@ -47,14 +47,14 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         parameters.add("determinismThreshold");
         return parameters;
     }
 
     @Override
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         return this.dataSet.getVariable(name);
     }
 

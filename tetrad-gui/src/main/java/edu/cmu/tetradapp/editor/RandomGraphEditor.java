@@ -57,7 +57,7 @@ class RandomGraphEditor extends JPanel {
      * Constructs a dialog to edit the given workbench randomization
      * parameters.
      */
-    public RandomGraphEditor(final boolean cyclicAllowed, final Parameters parameters) {
+    public RandomGraphEditor(boolean cyclicAllowed, Parameters parameters) {
         this(new EdgeListGraph(), cyclicAllowed, parameters);
     }
 
@@ -68,7 +68,7 @@ class RandomGraphEditor extends JPanel {
      * //     * number of edges,a nd number of latent nodes. Useful if the interface suggests a number of nodes
      * //     * that overrides the number of nodes set in the preferences.
      */
-    public RandomGraphEditor(final Graph oldGraph, final boolean cyclicAllowed, final Parameters parameters) {
+    public RandomGraphEditor(Graph oldGraph, boolean cyclicAllowed, Parameters parameters) {
         if (parameters == null) {
             throw new NullPointerException();
         }
@@ -78,7 +78,7 @@ class RandomGraphEditor extends JPanel {
         int oldNumMeasured = 0;
         int oldNumLatents = 0;
 
-        for (final Node node : oldGraph.getNodes()) {
+        for (Node node : oldGraph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
                 oldNumMeasured++;
             }
@@ -88,7 +88,7 @@ class RandomGraphEditor extends JPanel {
             }
         }
 
-        final int oldNumNodes = oldNumMeasured + oldNumLatents;
+        int oldNumNodes = oldNumMeasured + oldNumLatents;
 
         if (oldNumNodes > 1 && oldNumMeasured == getNumMeasuredNodes() &&
                 oldNumLatents == getNumLatents()) {
@@ -103,15 +103,15 @@ class RandomGraphEditor extends JPanel {
         this.maxIndegreeField = new IntTextField(getMaxIndegree(), 4);
         this.maxOutdegreeField = new IntTextField(getMaxOutdegree(), 4);
         this.maxDegreeField = new IntTextField(getMaxDegree(), 4);
-        final JRadioButton randomForward = new JRadioButton("Add random forward edges");
+        JRadioButton randomForward = new JRadioButton("Add random forward edges");
         this.chooseUniform = new JRadioButton("Draw uniformly from all such DAGs");
         this.chooseFixed = new JRadioButton("Guarantee maximum number of edges");
         this.connectedBox = new JComboBox<>(new String[]{"No", "Yes"});
-        final JComboBox addCyclesBox = new JComboBox<>(new String[]{"No", "Yes"});
+        JComboBox addCyclesBox = new JComboBox<>(new String[]{"No", "Yes"});
         this.numTwoCyclesField = new IntTextField(getMinNumCycles(), 4);
         this.minCycleLengthField = new IntTextField(getMinCycleLength(), 4);
 
-        final ButtonGroup group = new ButtonGroup();
+        ButtonGroup group = new ButtonGroup();
         group.add(randomForward);
         group.add(this.chooseUniform);
         group.add(this.chooseFixed);
@@ -350,14 +350,14 @@ class RandomGraphEditor extends JPanel {
         });
 
         minCycleLengthField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+            public int filter(int value, int oldValue) {
                 if (value == RandomGraphEditor.this.minCycleLengthField.getValue()) {
                     return oldValue;
                 }
 
                 try {
                     setMinCycleLength(value);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     // Ignore.
                 }
 
@@ -368,22 +368,22 @@ class RandomGraphEditor extends JPanel {
         // construct the workbench.
         setLayout(new BorderLayout());
 
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Parameters for Random DAG:"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b10 = Box.createHorizontalBox();
+        Box b10 = Box.createHorizontalBox();
         b10.add(new JLabel("Number of measured nodes:"));
         b10.add(Box.createRigidArea(new Dimension(10, 0)));
         b10.add(Box.createHorizontalGlue());
         b10.add(this.numNodesField);
         b1.add(b10);
 
-        final Box b11 = Box.createHorizontalBox();
+        Box b11 = Box.createHorizontalBox();
         b11.add(new JLabel("Max # latent confounders:"));
         b11.add(Box.createHorizontalStrut(25));
         b11.add(Box.createHorizontalGlue());
@@ -391,69 +391,69 @@ class RandomGraphEditor extends JPanel {
         b1.add(b11);
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b12 = Box.createHorizontalBox();
+        Box b12 = Box.createHorizontalBox();
         b12.add(new JLabel("Maximum number of edges:"));
         b12.add(Box.createHorizontalGlue());
         b12.add(this.maxEdgesField);
         b1.add(b12);
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b14 = Box.createHorizontalBox();
+        Box b14 = Box.createHorizontalBox();
         b14.add(new JLabel("Maximum indegree:"));
         b14.add(Box.createHorizontalGlue());
         b14.add(this.maxIndegreeField);
         b1.add(b14);
 
-        final Box b15 = Box.createHorizontalBox();
+        Box b15 = Box.createHorizontalBox();
         b15.add(new JLabel("Maximum outdegree:"));
         b15.add(Box.createHorizontalGlue());
         b15.add(this.maxOutdegreeField);
         b1.add(b15);
 
-        final Box b13 = Box.createHorizontalBox();
+        Box b13 = Box.createHorizontalBox();
         b13.add(new JLabel("Maximum degree:"));
         b13.add(Box.createHorizontalGlue());
         b13.add(this.maxDegreeField);
         b1.add(b13);
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b16 = Box.createHorizontalBox();
+        Box b16 = Box.createHorizontalBox();
         b16.add(new JLabel("Connected:"));
         b16.add(Box.createHorizontalGlue());
         b16.add(this.connectedBox);
         b1.add(b16);
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b17a = Box.createHorizontalBox();
+        Box b17a = Box.createHorizontalBox();
         b17a.add(randomForward);
         b17a.add(Box.createHorizontalGlue());
         b1.add(b17a);
 
-        final Box b17 = Box.createHorizontalBox();
+        Box b17 = Box.createHorizontalBox();
         b17.add(this.chooseUniform);
         b17.add(Box.createHorizontalGlue());
         b1.add(b17);
 
-        final Box b18 = Box.createHorizontalBox();
+        Box b18 = Box.createHorizontalBox();
         b18.add(this.chooseFixed);
         b18.add(Box.createHorizontalGlue());
         b1.add(b18);
 
-        final Box d = Box.createVerticalBox();
+        Box d = Box.createVerticalBox();
         b1.setBorder(new TitledBorder(""));
         d.add(b1);
 
         if (cyclicAllowed) {
-            final Box c1 = Box.createVerticalBox();
+            Box c1 = Box.createVerticalBox();
 
-            final Box c2 = Box.createHorizontalBox();
+            Box c2 = Box.createHorizontalBox();
             c2.add(new JLabel("Create a cyclic graph?"));
             c2.add(Box.createHorizontalGlue());
             c2.add(addCyclesBox);
             c1.add(c2);
             c1.add(Box.createVerticalStrut(5));
 
-            final Box c3 = Box.createHorizontalBox();
+            Box c3 = Box.createHorizontalBox();
             c3.add(new JLabel("Number of two cycles to add:"));
             c3.add(Box.createHorizontalGlue());
             c3.add(this.numTwoCyclesField);
@@ -469,7 +469,7 @@ class RandomGraphEditor extends JPanel {
         add(d, BorderLayout.CENTER);
     }
 
-    public void setEnabled(final boolean enabled) {
+    public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
 
         if (isChooseFixed() && enabled) {
@@ -507,15 +507,15 @@ class RandomGraphEditor extends JPanel {
         return this.parameters.getBoolean("graphChooseFixed", true);
     }
 
-    private void setRandomForward(final boolean randomFoward) {
+    private void setRandomForward(boolean randomFoward) {
         this.parameters.set("graphRandomFoward", randomFoward);
     }
 
-    private void setUniformlySelected(final boolean uniformlySelected) {
+    private void setUniformlySelected(boolean uniformlySelected) {
         this.parameters.set("graphUniformlySelected", uniformlySelected);
     }
 
-    private void setChooseFixed(final boolean chooseFixed) {
+    private void setChooseFixed(boolean chooseFixed) {
         this.parameters.set("graphChooseFixed", chooseFixed);
     }
 
@@ -527,7 +527,7 @@ class RandomGraphEditor extends JPanel {
         return this.parameters.getInt("newGraphNumMeasuredNodes", 10);
     }
 
-    private void setNumMeasuredNodes(final int numMeasuredNodes) {
+    private void setNumMeasuredNodes(int numMeasuredNodes) {
         if (numMeasuredNodes + getNumLatents() < 2) {
             throw new IllegalArgumentException("Number of nodes Must be greater than or equal to 2.");
         }
@@ -543,7 +543,7 @@ class RandomGraphEditor extends JPanel {
         return this.parameters.getInt("newGraphNumLatents", 0);
     }
 
-    private void setNumLatents(final int numLatentNodes) {
+    private void setNumLatents(int numLatentNodes) {
         if (numLatentNodes < 0) {
             throw new IllegalArgumentException(
                     "Max # latent confounders must be" + " >= 0: " +
@@ -569,7 +569,7 @@ class RandomGraphEditor extends JPanel {
                     "Number of edges Must be greater than or equal to 0: " + numEdges);
         }
 
-        final int maxNumEdges = getNumNodes() * (getNumNodes() - 1) / 2;
+        int maxNumEdges = getNumNodes() * (getNumNodes() - 1) / 2;
 
         if (numEdges > maxNumEdges) {
             numEdges = maxNumEdges;
@@ -582,7 +582,7 @@ class RandomGraphEditor extends JPanel {
         return this.parameters.getInt("randomGraphMaxDegree", 6);
     }
 
-    private void setMaxDegree(final int maxDegree) {
+    private void setMaxDegree(int maxDegree) {
         if (!isConnected() && maxDegree < 1) {
             this.parameters.set("randomGraphMaxDegree", 1);
             return;
@@ -600,7 +600,7 @@ class RandomGraphEditor extends JPanel {
         return this.parameters.getInt("randomGraphMaxIndegree", 3);
     }
 
-    private void setMaxIndegree(final int maxIndegree) {
+    private void setMaxIndegree(int maxIndegree) {
         if (!isConnected() && maxIndegree < 1) {
             this.parameters.set("randomGraphMaxIndegree", 1);
             return;
@@ -618,7 +618,7 @@ class RandomGraphEditor extends JPanel {
         return this.parameters.getInt("randomGraphMaxOutdegree", 3);
     }
 
-    private void setMaxOutdegree(final int maxOutDegree) {
+    private void setMaxOutdegree(int maxOutDegree) {
         if (!isConnected() && maxOutDegree < 1) {
             this.parameters.set("randomGraphMaxOutdegree", 1);
             return;
@@ -632,7 +632,7 @@ class RandomGraphEditor extends JPanel {
         this.parameters.set("randomGraphMaxOutdegree", maxOutDegree);
     }
 
-    private void setConnected(final boolean connected) {
+    private void setConnected(boolean connected) {
         this.parameters.set("randomGraphConnected", connected);
 
         if (connected) {
@@ -658,7 +658,7 @@ class RandomGraphEditor extends JPanel {
         return this.parameters.getBoolean("randomGraphConnected", false);
     }
 
-    private void setAddCycles(final boolean addCycles) {
+    private void setAddCycles(boolean addCycles) {
         this.parameters.set("randomGraphAddCycles", addCycles);
     }
 
@@ -667,13 +667,13 @@ class RandomGraphEditor extends JPanel {
     }
 
     public int getMinNumCycles() {
-        final int minNumCycles = this.parameters.getInt("randomGraphMinNumCycles", 0);
+        int minNumCycles = this.parameters.getInt("randomGraphMinNumCycles", 0);
         System.out.println("get min num cycles = " + minNumCycles);
 
         return minNumCycles;
     }
 
-    private void setMinNumCycles(final int minNumCycles) {
+    private void setMinNumCycles(int minNumCycles) {
 
         System.out.println("set min num cycles = " + minNumCycles);
 
@@ -689,7 +689,7 @@ class RandomGraphEditor extends JPanel {
         return this.parameters.getInt("randomGraphMinCycleLength", 2);
     }
 
-    private void setMinCycleLength(final int minCycleLength) {
+    private void setMinCycleLength(int minCycleLength) {
         if (minCycleLength < 2) {
             this.parameters.set("randomGraphMinCycleLength", 2);
             return;

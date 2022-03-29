@@ -38,12 +38,12 @@ public class LinearSineSimulation implements Simulation {
     private double gammaLow = 0.5;
     private double gammaHigh = 1.5;
 
-    public LinearSineSimulation(final RandomGraph graph) {
+    public LinearSineSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
         setInterceptLow(parameters.getDouble("interceptLow"));
@@ -74,19 +74,19 @@ public class LinearSineSimulation implements Simulation {
 
             this.graphs.add(graph);
 
-            final DataSet dataSet = simulate(graph, parameters);
+            DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
             this.dataSets.add(dataSet);
         }
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
@@ -97,7 +97,7 @@ public class LinearSineSimulation implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = this.randomGraph.getParameters();
+        List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
@@ -124,15 +124,15 @@ public class LinearSineSimulation implements Simulation {
         return this.dataType;
     }
 
-    private DataSet simulate(Graph G, final Parameters parameters) {
-        final HashMap<String, Integer> nd = new HashMap<>();
+    private DataSet simulate(Graph G, Parameters parameters) {
+        HashMap<String, Integer> nd = new HashMap<>();
 
         List<Node> nodes = G.getNodes();
 
         Collections.shuffle(nodes);
 
         if (this.shuffledOrder == null) {
-            final List<Node> shuffledNodes = new ArrayList<>(nodes);
+            List<Node> shuffledNodes = new ArrayList<>(nodes);
             Collections.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
@@ -144,30 +144,30 @@ public class LinearSineSimulation implements Simulation {
         G = LinearSineSimulation.makeMixedGraph(G, nd);
         nodes = G.getNodes();
 
-        final DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
+        DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
 
-        final List<Node> tierOrdering = G.getCausalOrdering();
-        final int[] tiers = new int[tierOrdering.size()];
+        List<Node> tierOrdering = G.getCausalOrdering();
+        int[] tiers = new int[tierOrdering.size()];
         for (int t = 0; t < tierOrdering.size(); t++) {
             tiers[t] = nodes.indexOf(tierOrdering.get(t));
         }
 
-        for (final int mixedIndex : tiers) {
+        for (int mixedIndex : tiers) {
 
-            final ContinuousVariable child = (ContinuousVariable) nodes.get(mixedIndex);
-            final ArrayList<ContinuousVariable> continuousParents = new ArrayList<>();
-            for (final Node node : G.getParents(child)) {
+            ContinuousVariable child = (ContinuousVariable) nodes.get(mixedIndex);
+            ArrayList<ContinuousVariable> continuousParents = new ArrayList<>();
+            for (Node node : G.getParents(child)) {
                 continuousParents.add((ContinuousVariable) node);
             }
 
-            final HashMap<String, double[]> intercept = new HashMap<>();
-            final HashMap<String, double[]> linear = new HashMap<>();
-            final HashMap<String, double[]> beta = new HashMap<>();
-            final HashMap<String, double[]> gamma = new HashMap<>();
-            final HashMap<String, double[]> bounds = new HashMap<>();
+            HashMap<String, double[]> intercept = new HashMap<>();
+            HashMap<String, double[]> linear = new HashMap<>();
+            HashMap<String, double[]> beta = new HashMap<>();
+            HashMap<String, double[]> gamma = new HashMap<>();
+            HashMap<String, double[]> bounds = new HashMap<>();
 
             for (int j = 1; j <= continuousParents.size(); j++) {
-                final String key = continuousParents.get(j - 1).toString();
+                String key = continuousParents.get(j - 1).toString();
                 if (!bounds.containsKey(key)) {
                     double m0 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
                     double m1 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
@@ -175,7 +175,7 @@ public class LinearSineSimulation implements Simulation {
                         m0 = Math.min(m0, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
                         m1 = Math.max(m1, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
                     }
-                    final double[] temp = new double[3];
+                    double[] temp = new double[3];
                     temp[0] = m0;
                     temp[1] = (m1 - m0) / 2;
                     temp[2] = m1;
@@ -188,7 +188,7 @@ public class LinearSineSimulation implements Simulation {
 
             for (int i = 0; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
 
-                final double[] parents = new double[continuousParents.size()];
+                double[] parents = new double[continuousParents.size()];
                 double value = 0;
                 final String key = "";
 
@@ -196,29 +196,29 @@ public class LinearSineSimulation implements Simulation {
                     parents[j - 1] = mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1)));
 
                 if (!intercept.containsKey(key)) {
-                    final double[] interceptCoefficients = new double[1];
+                    double[] interceptCoefficients = new double[1];
                     interceptCoefficients[0] = randSign() * RandomUtil.getInstance().nextUniform(this.interceptLow, this.interceptHigh);
                     intercept.put(key, interceptCoefficients);
                 }
 
                 if (!linear.containsKey(key) && !continuousParents.isEmpty()) {
-                    final double[] linearCoefficients = new double[parents.length];
+                    double[] linearCoefficients = new double[parents.length];
                     for (int j = 0; j < parents.length; j++)
                         linearCoefficients[j] = randSign() * RandomUtil.getInstance().nextUniform(this.linearLow, this.linearHigh);
                     linear.put(key, linearCoefficients);
                 }
 
                 if (!beta.containsKey(key) && !continuousParents.isEmpty()) {
-                    final double[] betaCoefficients = new double[parents.length];
+                    double[] betaCoefficients = new double[parents.length];
                     for (int j = 0; j < parents.length; j++)
                         betaCoefficients[j] = randSign() * RandomUtil.getInstance().nextUniform(this.betaLow, this.betaHigh);
                     beta.put(key, betaCoefficients);
                 }
 
                 if (!gamma.containsKey(key) && !continuousParents.isEmpty()) {
-                    final double[] gammaCoefficients = new double[parents.length];
+                    double[] gammaCoefficients = new double[parents.length];
                     for (int j = 0; j < parents.length; j++) {
-                        final String key2 = continuousParents.get(j).toString();
+                        String key2 = continuousParents.get(j).toString();
                         gammaCoefficients[j] = (bounds.get(key2)[1] - bounds.get(key2)[0]) / (2 * Math.PI * RandomUtil.getInstance().nextUniform(this.gammaLow, this.gammaHigh));
                     }
                     gamma.put(key, gammaCoefficients);
@@ -227,7 +227,7 @@ public class LinearSineSimulation implements Simulation {
                 value += intercept.get(key)[0];
                 if (!continuousParents.isEmpty()) {
                     for (int x = 0; x < parents.length; x++) {
-                        final String key2 = continuousParents.get(x).toString();
+                        String key2 = continuousParents.get(x).toString();
                         value += linear.get(key)[x] * parents[x] + beta.get(key)[x] * Math.sin(parents[x] / (gamma.get(key)[x]));
                     }
                 }
@@ -246,7 +246,7 @@ public class LinearSineSimulation implements Simulation {
                 var = Math.sqrt(var);
             }
 
-            final double noiseVar = RandomUtil.getInstance().nextUniform(this.varLow, this.varHigh);
+            double noiseVar = RandomUtil.getInstance().nextUniform(this.varLow, this.varHigh);
             for (int i = 0; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
                 mixedData.setDouble(i, mixedIndex, mixedData.getDouble(i, mixedIndex) + var * RandomUtil.getInstance().nextNormal(0, noiseVar));
             }
@@ -255,43 +255,43 @@ public class LinearSineSimulation implements Simulation {
     }
 
 
-    public void setInterceptLow(final double interceptLow) {
+    public void setInterceptLow(double interceptLow) {
         this.interceptLow = interceptLow;
     }
 
-    public void setInterceptHigh(final double interceptHigh) {
+    public void setInterceptHigh(double interceptHigh) {
         this.interceptHigh = interceptHigh;
     }
 
-    public void setLinearLow(final double linearLow) {
+    public void setLinearLow(double linearLow) {
         this.linearLow = linearLow;
     }
 
-    public void setLinearHigh(final double linearHigh) {
+    public void setLinearHigh(double linearHigh) {
         this.linearHigh = linearHigh;
     }
 
-    public void setVarLow(final double varLow) {
+    public void setVarLow(double varLow) {
         this.varLow = varLow;
     }
 
-    public void setVarHigh(final double varHigh) {
+    public void setVarHigh(double varHigh) {
         this.varHigh = varHigh;
     }
 
-    public void setBetaLow(final double betaLow) {
+    public void setBetaLow(double betaLow) {
         this.betaLow = betaLow;
     }
 
-    public void setBetaHigh(final double betaHigh) {
+    public void setBetaHigh(double betaHigh) {
         this.betaHigh = betaHigh;
     }
 
-    public void setGammaLow(final double gammaLow) {
+    public void setGammaLow(double gammaLow) {
         this.gammaLow = gammaLow;
     }
 
-    public void setGammaHigh(final double gammaHigh) {
+    public void setGammaHigh(double gammaHigh) {
         this.gammaHigh = gammaHigh;
     }
 
@@ -299,26 +299,26 @@ public class LinearSineSimulation implements Simulation {
         return RandomUtil.getInstance().nextInt(2) * 2 - 1;
     }
 
-    private static Graph makeMixedGraph(final Graph g, final Map<String, Integer> m) {
-        final List<Node> nodes = g.getNodes();
+    private static Graph makeMixedGraph(Graph g, Map<String, Integer> m) {
+        List<Node> nodes = g.getNodes();
         for (int i = 0; i < nodes.size(); i++) {
-            final Node n = nodes.get(i);
-            final int nL = m.get(n.getName());
+            Node n = nodes.get(i);
+            int nL = m.get(n.getName());
             if (nL > 0) {
-                final Node nNew = new DiscreteVariable(n.getName(), nL);
+                Node nNew = new DiscreteVariable(n.getName(), nL);
                 nodes.set(i, nNew);
             } else {
-                final Node nNew = new ContinuousVariable(n.getName());
+                Node nNew = new ContinuousVariable(n.getName());
                 nodes.set(i, nNew);
             }
         }
 
-        final Graph outG = new EdgeListGraph(nodes);
+        Graph outG = new EdgeListGraph(nodes);
 
-        for (final Edge e : g.getEdges()) {
-            final Node n1 = e.getNode1();
-            final Node n2 = e.getNode2();
-            final Edge eNew = new Edge(outG.getNode(n1.getName()), outG.getNode(n2.getName()), e.getEndpoint1(), e.getEndpoint2());
+        for (Edge e : g.getEdges()) {
+            Node n1 = e.getNode1();
+            Node n2 = e.getNode2();
+            Edge eNew = new Edge(outG.getNode(n1.getName()), outG.getNode(n2.getName()), e.getEndpoint1(), e.getEndpoint2());
             outG.addEdge(eNew);
         }
 

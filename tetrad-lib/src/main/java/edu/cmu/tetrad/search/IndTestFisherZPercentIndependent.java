@@ -56,7 +56,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
     //==========================CONSTRUCTORS=============================//
 
-    public IndTestFisherZPercentIndependent(final List<DataSet> dataSets, final double alpha) {
+    public IndTestFisherZPercentIndependent(List<DataSet> dataSets, double alpha) {
         this.dataSets = dataSets;
         this.variables = dataSets.get(0).getVariables();
 
@@ -68,12 +68,12 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
         for (DataSet dataSet : dataSets) {
             dataSet = DataUtils.center(dataSet);
-            final Matrix _data = dataSet.getDoubleData();
+            Matrix _data = dataSet.getDoubleData();
             this.data.add(_data);
         }
 
         this.ncov = new ArrayList<>();
-        for (final Matrix d : this.data) this.ncov.add(d.transpose().times(d).scalarMult(1.0 / d.rows()));
+        for (Matrix d : this.data) this.ncov.add(d.transpose().times(d).scalarMult(1.0 / d.rows()));
 
         setAlpha(alpha);
         this.rows = new int[dataSets.get(0).getNumRows()];
@@ -85,35 +85,35 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         }
 
         this.recursivePartialCorrelation = new ArrayList<>();
-        for (final Matrix covMatrix : this.ncov) {
+        for (Matrix covMatrix : this.ncov) {
             this.recursivePartialCorrelation.add(new RecursivePartialCorrelation(getVariables(), covMatrix, dataSets.get(0).getNumRows()));
         }
     }
 
     //==========================PUBLIC METHODS=============================//
 
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
-        final int[] all = new int[z.size() + 2];
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
+        int[] all = new int[z.size() + 2];
         all[0] = this.variablesMap.get(x);
         all[1] = this.variablesMap.get(y);
         for (int i = 0; i < z.size(); i++) {
             all[i + 2] = this.variablesMap.get(z.get(i));
         }
 
-        final int sampleSize = this.data.get(0).rows();
-        final List<Double> pValues = new ArrayList<>();
+        int sampleSize = this.data.get(0).rows();
+        List<Double> pValues = new ArrayList<>();
 
         for (int m = 0; m < this.ncov.size(); m++) {
-            final Matrix _ncov = this.ncov.get(m).getSelection(all, all);
-            final Matrix inv = _ncov.inverse();
-            final double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
+            Matrix _ncov = this.ncov.get(m).getSelection(all, all);
+            Matrix inv = _ncov.inverse();
+            double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
 
-            final double fisherZ = sqrt(sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
-            final double pValue;
+            double fisherZ = sqrt(sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
+            double pValue;
 
             if (Double.isInfinite(fisherZ)) {
                 pValue = 0;
@@ -131,14 +131,14 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         }
 
         Collections.sort(pValues);
-        final int index = (int) round((1.0 - this.percent) * pValues.size());
+        int index = (int) round((1.0 - this.percent) * pValues.size());
         this.pValue = pValues.get(index);
 
 //        if (this.pValue == 0) {
 //            System.out.println("Zero pvalue "+ SearchLogUtils.independenceFactMsg(x, y, z, getScore()));
 //        }
 
-        final boolean independent = this.pValue > _cutoff;
+        boolean independent = this.pValue > _cutoff;
 
         if (this.verbose) {
             if (independent) {
@@ -154,17 +154,17 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         return independent;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isDependent(Node x, Node y, List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -179,7 +179,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -205,9 +205,9 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+            Node variable = getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -220,9 +220,9 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
-        for (final Node variable1 : variables) {
+        List<Node> variables = getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -231,7 +231,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     /**
      * @throws UnsupportedOperationException
      */
-    public boolean determines(final List z, final Node x) throws UnsupportedOperationException {
+    public boolean determines(List z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -243,9 +243,9 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     public ICovarianceMatrix getCov() {
-        final List<DataSet> _dataSets = new ArrayList<>();
+        List<DataSet> _dataSets = new ArrayList<>();
 
-        for (final DataSet d : this.dataSets) {
+        for (DataSet d : this.dataSets) {
             _dataSets.add(DataUtils.standardizeData(d));
         }
 
@@ -287,12 +287,12 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         return this.percent;
     }
 
-    public void setPercent(final double percent) {
+    public void setPercent(double percent) {
         if (percent < 0.0 || percent > 1.0) throw new IllegalArgumentException();
         this.percent = percent;
     }
 
-    public void setFdr(final boolean fdr) {
+    public void setFdr(boolean fdr) {
         this.fdr = fdr;
     }
 
@@ -300,7 +300,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

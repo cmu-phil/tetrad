@@ -59,13 +59,13 @@ final class SubsessionSelection implements Transferable {
     /**
      * Constructs a new selection with the given list of session nodes.
      */
-    public SubsessionSelection(final List sessionElements) {
+    public SubsessionSelection(List sessionElements) {
         if (sessionElements == null) {
             throw new NullPointerException(
                     "List of session elements must " + "not be null.");
         }
 
-        for (final Object sessionElement : sessionElements) {
+        for (Object sessionElement : sessionElements) {
             if (!(sessionElement instanceof GraphNode ||
                     sessionElement instanceof Edge)) {
                 throw new IllegalArgumentException("Model node list contains " +
@@ -77,7 +77,7 @@ final class SubsessionSelection implements Transferable {
         try {
             this.sessionElements =
                     (List) new MarshalledObject(sessionElements).get();
-        } catch (final Exception e1) {
+        } catch (Exception e1) {
             e1.printStackTrace();
             throw new IllegalStateException("Could not clone.");
         }
@@ -94,22 +94,22 @@ final class SubsessionSelection implements Transferable {
      *                                    supported.
      * @see DataFlavor#getRepresentationClass
      */
-    public Object getTransferData(final DataFlavor flavor)
+    public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
         if (!isDataFlavorSupported(flavor)) {
             throw new UnsupportedFlavorException(flavor);
         }
 
         try {
-            final List returnList =
+            List returnList =
                     (List) new MarshalledObject(this.sessionElements).get();
-            final Point point = EditorUtils.getTopLeftPoint(returnList);
+            Point point = EditorUtils.getTopLeftPoint(returnList);
             point.translate(50, 50);
 //            List returnList = this.sessionElements;
 //            this.sessionElements = null;
             this.numPastes++;
             return returnList;
-        } catch (final ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
@@ -119,7 +119,7 @@ final class SubsessionSelection implements Transferable {
      * @return whether or not the specified data flavor is supported for this
      * object.
      */
-    public boolean isDataFlavorSupported(final DataFlavor flavor) {
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
     }
 

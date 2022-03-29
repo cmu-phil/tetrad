@@ -34,18 +34,18 @@ public class LeeHastieSimulation implements Simulation {
     private DataType dataType;
     private List<Node> shuffledOrder;
 
-    public LeeHastieSimulation(final RandomGraph graph) {
+    public LeeHastieSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        final double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
+        double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
-        final boolean discrete = parameters.getString(Params.DATA_TYPE).equals("discrete");
-        final boolean continuous = parameters.getString(Params.DATA_TYPE).equals("continuous");
+        boolean discrete = parameters.getString(Params.DATA_TYPE).equals("discrete");
+        boolean continuous = parameters.getString(Params.DATA_TYPE).equals("continuous");
 
         if (discrete && percentDiscrete != 100.0) {
             throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 0.0.");
@@ -88,12 +88,12 @@ public class LeeHastieSimulation implements Simulation {
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
@@ -104,7 +104,7 @@ public class LeeHastieSimulation implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = this.randomGraph.getParameters();
+        List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.MIN_CATEGORIES);
         parameters.add(Params.MAX_CATEGORIES);
         parameters.add(Params.PERCENT_DISCRETE);
@@ -129,42 +129,42 @@ public class LeeHastieSimulation implements Simulation {
         return this.dataType;
     }
 
-    private DataSet simulate(final Graph dag, final Parameters parameters) {
-        final HashMap<String, Integer> nd = new HashMap<>();
+    private DataSet simulate(Graph dag, Parameters parameters) {
+        HashMap<String, Integer> nd = new HashMap<>();
 
-        final List<Node> nodes = dag.getNodes();
+        List<Node> nodes = dag.getNodes();
 
         Collections.shuffle(nodes);
 
         if (this.shuffledOrder == null) {
-            final List<Node> shuffledNodes = new ArrayList<>(nodes);
+            List<Node> shuffledNodes = new ArrayList<>(nodes);
             Collections.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
 
         for (int i = 0; i < nodes.size(); i++) {
             if (i < nodes.size() * parameters.getDouble(Params.PERCENT_DISCRETE) * 0.01) {
-                final int minNumCategories = parameters.getInt(Params.MIN_CATEGORIES);
-                final int maxNumCategories = parameters.getInt(Params.MAX_CATEGORIES);
-                final int value = pickNumCategories(minNumCategories, maxNumCategories);
+                int minNumCategories = parameters.getInt(Params.MIN_CATEGORIES);
+                int maxNumCategories = parameters.getInt(Params.MAX_CATEGORIES);
+                int value = pickNumCategories(minNumCategories, maxNumCategories);
                 nd.put(this.shuffledOrder.get(i).getName(), value);
             } else {
                 nd.put(this.shuffledOrder.get(i).getName(), 0);
             }
         }
 
-        final Graph graph = MixedUtils.makeMixedGraph(dag, nd);
+        Graph graph = MixedUtils.makeMixedGraph(dag, nd);
 
-        final GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.0,-.0,.0,1.0)");
-        final GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
+        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.0,-.0,.0,1.0)");
+        GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 
-        final boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
-        final DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
+        boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
+        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
 
         return MixedUtils.makeMixedData(ds, nd);
     }
 
-    private int pickNumCategories(final int min, final int max) {
+    private int pickNumCategories(int min, int max) {
         return RandomUtils.nextInt(min, max + 1);
     }
 }

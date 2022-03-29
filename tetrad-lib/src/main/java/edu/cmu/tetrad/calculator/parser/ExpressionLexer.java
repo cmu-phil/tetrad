@@ -82,7 +82,7 @@ public class ExpressionLexer {
     private static Map<Token, Pattern> PATTERNS;
 
 
-    public ExpressionLexer(final CharSequence seq) {
+    public ExpressionLexer(CharSequence seq) {
         if (seq == null) {
             throw new NullPointerException("CharSequence must not be null.");
         }
@@ -102,7 +102,7 @@ public class ExpressionLexer {
      */
     public final Token nextToken() {
         readToken(Token.WHITESPACE);
-        for (final Token token : this.tokens) {
+        for (Token token : this.tokens) {
             if (readToken(token)) {
                 return token;
             }
@@ -115,7 +115,7 @@ public class ExpressionLexer {
     }
 
     public final Token nextTokenIncludingWhitespace() {
-        for (final Token token : this.tokens) {
+        for (Token token : this.tokens) {
             if (readToken(token)) {
                 return token;
             }
@@ -136,7 +136,7 @@ public class ExpressionLexer {
         }
         try {
             return this.lastMatcher.group();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -158,9 +158,9 @@ public class ExpressionLexer {
     //=================================== Private Methods ====================================//
 
 
-    private boolean readToken(final Token token) {
-        final Matcher matcher = this.matchers.get(token);
-        final boolean found = matcher.find(this.nextOffset);
+    private boolean readToken(Token token) {
+        Matcher matcher = this.matchers.get(token);
+        boolean found = matcher.find(this.nextOffset);
         if (found) {
 
             // I hate to put a gratuitous string creation here, but I see no other way. \G doesn't force the
@@ -186,11 +186,11 @@ public class ExpressionLexer {
      * Creates a map from tokens to regex Matchers for the given CharSequence,
      * given a map from tokens to regex Patterns (and the CharSequence).
      */
-    private static Map<Token, Matcher> createMatchers(final Map<Token, Pattern> patterns, final CharSequence charSequence) {
-        final Map<Token, Matcher> matchers = new HashMap<>();
-        for (final Token token : patterns.keySet()) {
-            final Pattern pattern = patterns.get(token);
-            final Matcher matcher = pattern.matcher(charSequence);
+    private static Map<Token, Matcher> createMatchers(Map<Token, Pattern> patterns, CharSequence charSequence) {
+        Map<Token, Matcher> matchers = new HashMap<>();
+        for (Token token : patterns.keySet()) {
+            Pattern pattern = patterns.get(token);
+            Matcher matcher = pattern.matcher(charSequence);
             matchers.put(token, matcher);
         }
         return matchers;
@@ -198,8 +198,8 @@ public class ExpressionLexer {
 
 
     private static Map<Token, Pattern> createPatterns() {
-        final Map<Token, Pattern> map = new HashMap<>();
-        final Map<Token, String> regex = new HashMap<>();
+        Map<Token, Pattern> map = new HashMap<>();
+        Map<Token, String> regex = new HashMap<>();
 
         regex.put(Token.WHITESPACE, "\\s+");
         regex.put(Token.LPAREN, "\\(");
@@ -212,7 +212,7 @@ public class ExpressionLexer {
         regex.put(Token.STRING, "\\\".*\\\"");
 
 
-        for (final Token token : regex.keySet()) {
+        for (Token token : regex.keySet()) {
             map.put(token, Pattern.compile("\\G" + regex.get(token)));
         }
 
@@ -225,9 +225,9 @@ public class ExpressionLexer {
      */
     private static String getExpressionRegex() {
         String str = "(";
-        final List<ExpressionDescriptor> descriptors = ExpressionManager.getInstance().getDescriptors();
+        List<ExpressionDescriptor> descriptors = ExpressionManager.getInstance().getDescriptors();
         for (int i = 0; i < descriptors.size(); i++) {
-            final ExpressionDescriptor exp = descriptors.get(i);
+            ExpressionDescriptor exp = descriptors.get(i);
             str += "(" + exp.getToken() + ")";
             if (i < descriptors.size() - 1) {
                 str += "|";

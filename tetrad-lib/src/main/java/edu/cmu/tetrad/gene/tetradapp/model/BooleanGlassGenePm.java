@@ -42,11 +42,11 @@ public class BooleanGlassGenePm extends GenePm implements SessionModel {
 
     //============================CONSTRUCTORS===============================//
 
-    public BooleanGlassGenePm(final ManualActiveLagGraph lagGraph) {
+    public BooleanGlassGenePm(ManualActiveLagGraph lagGraph) {
         super(lagGraph);
     }
 
-    public BooleanGlassGenePm(final RandomActiveLagGraph lagGraph) {
+    public BooleanGlassGenePm(RandomActiveLagGraph lagGraph) {
         super(lagGraph);
     }
 
@@ -62,7 +62,7 @@ public class BooleanGlassGenePm extends GenePm implements SessionModel {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 }

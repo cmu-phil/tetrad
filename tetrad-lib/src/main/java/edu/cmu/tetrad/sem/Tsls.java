@@ -57,7 +57,7 @@ class Tsls {
      * We require a DataSet (with continuous dataSet) and a SemPm with matching
      * variables.
      */
-    public Tsls(final SemPm spm, final DataSet dataSet, final String nm) {
+    public Tsls(SemPm spm, DataSet dataSet, String nm) {
         initialization(spm, dataSet, nm);
     }
 
@@ -66,14 +66,14 @@ class Tsls {
      * nodes such that their loadings are fixed to 1.
      */
 
-    public Tsls(final SemPm spm, final DataSet dataSet, final String nm,
-                final List<String> fixedLoadings) {
+    public Tsls(SemPm spm, DataSet dataSet, String nm,
+                List<String> fixedLoadings) {
         initialization(spm, dataSet, nm);
         this.fixedLoadings = fixedLoadings;
     }
 
-    private void initialization(final SemPm spm, final DataSet dataSet,
-                                final String nm) {
+    private void initialization(SemPm spm, DataSet dataSet,
+                                String nm) {
         this.dataSet = dataSet;
         this.spm = spm;
         if (nm != null) {
@@ -92,19 +92,19 @@ class Tsls {
         return this.semIm;
     }
 
-    private void setFixedNodes(final SemGraph semGraph, final List<Node> mx1, final List<Node> my1) {
+    private void setFixedNodes(SemGraph semGraph, List<Node> mx1, List<Node> my1) {
         if (this.fixedLoadings == null) {
-            for (final Node nodeA : semGraph.getNodes()) {
+            for (Node nodeA : semGraph.getNodes()) {
                 if (nodeA.getNodeType() == NodeType.ERROR) {
                     continue;
                 }
                 if (nodeA.getNodeType() == NodeType.LATENT) {
                     // We will choose the measurement node with fixed edge by the
                     // lexicographical order.
-                    final Iterator<Node> children = semGraph.getChildren(nodeA).iterator();
+                    Iterator<Node> children = semGraph.getChildren(nodeA).iterator();
                     Node nodeB = null;
                     while (children.hasNext()) {
-                        final Node child = children.next();
+                        Node child = children.next();
                         if ((child.getNodeType() == NodeType.MEASURED) && (
                                 (nodeB == null) || (child.getName().compareTo(
                                         nodeB.getName()) < 0))) {
@@ -119,17 +119,17 @@ class Tsls {
                 }
             }
         } else {
-            final Iterator<Node> it = semGraph.getNodes().iterator();
+            Iterator<Node> it = semGraph.getNodes().iterator();
             latentIteration:
             while (it.hasNext()) {
-                final Node nodeA = it.next();
+                Node nodeA = it.next();
                 if (nodeA.getNodeType() == NodeType.ERROR) {
                     continue;
                 }
                 if (nodeA.getNodeType() == NodeType.LATENT) {
-                    for (final String fixedLoading : this.fixedLoadings) {
-                        final Node indicator = semGraph.getNode(fixedLoading);
-                        for (final Node parent : semGraph.getParents(indicator)) {
+                    for (String fixedLoading : this.fixedLoadings) {
+                        Node indicator = semGraph.getNode(fixedLoading);
+                        for (Node parent : semGraph.getParents(indicator)) {
                             if (parent == nodeA) {
                                 if (semGraph.getParents(parent).size() == 0) {
                                     System.out.println("Fixing mx1 = " +
@@ -149,21 +149,21 @@ class Tsls {
         }
     }
 
-    private SemIm estimateCoeffs(final SemIm semIm) {
+    private SemIm estimateCoeffs(SemIm semIm) {
 
         //System.out.print("\n****************\nCalling 2SLS... ");
-        final SemGraph semGraph = semIm.getSemPm().getGraph();
+        SemGraph semGraph = semIm.getSemPm().getGraph();
 
         // Get list of fixed measurements that will be kept fixed, and the
         // respective latent variables that are their parents.
         // "X" variables are exogenous, while "Y" variables are endogenous.
-        final List<Node> ly = new LinkedList<>();
-        final List<Node> lx = new LinkedList<>();
-        final List<Node> my1 = new LinkedList<>();
-        final List<Node> mx1 = new LinkedList<>();
-        final List<Node> observed = new LinkedList<>();
+        List<Node> ly = new LinkedList<>();
+        List<Node> lx = new LinkedList<>();
+        List<Node> my1 = new LinkedList<>();
+        List<Node> mx1 = new LinkedList<>();
+        List<Node> observed = new LinkedList<>();
 
-        for (final Node nodeA : semGraph.getNodes()) {
+        for (Node nodeA : semGraph.getNodes()) {
             if (nodeA.getNodeType() == NodeType.ERROR) {
                 continue;
             }
@@ -182,7 +182,7 @@ class Tsls {
         //------------------------------------------------------------------
 
         // Estimate freeParameters for the latent/latent edges
-        for (final Node current : ly) {
+        for (Node current : ly) {
             if (this.nodeName != null && !this.nodeName.equals(current.getName())) {
                 continue;
             }
@@ -190,41 +190,41 @@ class Tsls {
             // associated with the parents of the getModel (endogenous) latent node
             List<Node> endo_parents_m = new LinkedList<>();
             List<Node> exo_parents_m = new LinkedList<>();
-            final List<Node> endo_parents = new LinkedList<>();
-            final List<Node> exo_parents = new LinkedList<>();
+            List<Node> endo_parents = new LinkedList<>();
+            List<Node> exo_parents = new LinkedList<>();
             Iterator<Node> it_p = semGraph.getParents(current).iterator();
             this.lNames = new String[lx.size() + ly.size()];
             while (it_p.hasNext()) {
-                final Node node = it_p.next();
+                Node node = it_p.next();
                 if (node.getNodeType() == NodeType.ERROR) {
                     continue;
                 }
                 if (lx.contains(node)) {
-                    final int position = lx.indexOf(node);
+                    int position = lx.indexOf(node);
                     exo_parents_m.add(mx1.get(position));
                     exo_parents.add(node);
                 } else {
-                    final int position = ly.indexOf(node);
+                    int position = ly.indexOf(node);
                     endo_parents_m.add(my1.get(position));
                     endo_parents.add(node);
                 }
             }
             Object[] endp_a_m = endo_parents_m.toArray();
             Object[] exop_a_m = exo_parents_m.toArray();
-            final Object[] endp_a = endo_parents.toArray();
-            final Object[] exop_a = exo_parents.toArray();
+            Object[] endp_a = endo_parents.toArray();
+            Object[] exop_a = exo_parents.toArray();
             int n = this.dataSet.getNumRows(), c = endp_a_m.length + exop_a_m.length;
             if (c == 0) {
                 continue;
             }
-            final double[][] Z = new double[n][c];
+            double[][] Z = new double[n][c];
             int count = 0;
 
             for (int i = 0; i < endp_a_m.length; i++) {
-                final Node node = (Node) endp_a_m[i];
-                final String name = node.getName();
-                final Node variable = this.dataSet.getVariable(name);
-                final int colIndex = this.dataSet.getVariables().indexOf(variable);
+                Node node = (Node) endp_a_m[i];
+                String name = node.getName();
+                Node variable = this.dataSet.getVariable(name);
+                int colIndex = this.dataSet.getVariables().indexOf(variable);
 
 //                Column column = dataSet.getColumnObject(variable);
 //                double column_data[] = (double[]) column.getRawData();
@@ -237,10 +237,10 @@ class Tsls {
                 this.lNames[count++] = (endo_parents.get(i)).getName();
             }
             for (int i = 0; i < exop_a_m.length; i++) {
-                final Node node = (Node) exop_a_m[i];
-                final String name = node.getName();
-                final Node variable = this.dataSet.getVariable(name);
-                final int colIndex = this.dataSet.getVariables().indexOf(variable);
+                Node node = (Node) exop_a_m[i];
+                String name = node.getName();
+                Node variable = this.dataSet.getVariable(name);
+                int colIndex = this.dataSet.getVariables().indexOf(variable);
 
 //                Column column = dataSet.getColumnObject(variable);
 //                double column_data[] = (double[]) column.getRawData();
@@ -258,24 +258,24 @@ class Tsls {
             exo_parents_m = new LinkedList<>();
             it_p = semGraph.getParents(current).iterator();
             while (it_p.hasNext()) {
-                final Node node = it_p.next();
+                Node node = it_p.next();
                 if (node.getNodeType() == NodeType.ERROR) {
                     continue;
                 }
-                final List<Node> other_measures = new LinkedList<>();
+                List<Node> other_measures = new LinkedList<>();
 
-                for (final Node next : semGraph.getChildren(node)) {
+                for (Node next : semGraph.getChildren(node)) {
                     if (next.getNodeType() == NodeType.MEASURED) {
                         other_measures.add(next);
                     }
                 }
 
                 if (lx.contains(node)) {
-                    final int position = lx.indexOf(node);
+                    int position = lx.indexOf(node);
                     other_measures.remove(mx1.get(position));
                     exo_parents_m.addAll(other_measures);
                 } else {
-                    final int position = ly.indexOf(node);
+                    int position = ly.indexOf(node);
                     other_measures.remove(my1.get(position));
                     endo_parents_m.addAll(other_measures);
                 }
@@ -284,15 +284,15 @@ class Tsls {
             exop_a_m = exo_parents_m.toArray();
             n = this.dataSet.getNumRows();
             c = endp_a_m.length + exop_a_m.length;
-            final double[][] V = new double[n][c];
+            double[][] V = new double[n][c];
             if (c == 0) {
                 continue;
             }
             for (int i = 0; i < endp_a_m.length; i++) {
-                final Node node = ((Node) endp_a_m[i]);
-                final String name = node.getName();
-                final Node variable = this.dataSet.getVariable(name);
-                final int colIndex = this.dataSet.getVariables().indexOf(variable);
+                Node node = ((Node) endp_a_m[i]);
+                String name = node.getName();
+                Node variable = this.dataSet.getVariable(name);
+                int colIndex = this.dataSet.getVariables().indexOf(variable);
 
 //                Column column = dataSet.getColumnObject(variable);
 //                double column_data[] = (double[]) column.getRawData();
@@ -303,10 +303,10 @@ class Tsls {
                 }
             }
             for (int i = 0; i < exop_a_m.length; i++) {
-                final Node node = (Node) exop_a_m[i];
-                final String name = node.getName();
-                final Node variable = this.dataSet.getVariable(name);
-                final int colIndex = this.dataSet.getVariables().indexOf(variable);
+                Node node = (Node) exop_a_m[i];
+                String name = node.getName();
+                Node variable = this.dataSet.getVariable(name);
+                int colIndex = this.dataSet.getVariables().indexOf(variable);
 
 //                Column column = dataSet.getColumnObject(variable);
 //                double column_data[] = (double[]) column.getRawData();
@@ -316,13 +316,13 @@ class Tsls {
                     V[j][endp_a_m.length + i] = this.dataSet.getDouble(j, colIndex);
                 }
             }
-            final double[] yi = new double[n];
+            double[] yi = new double[n];
             if (lx.contains(current)) {
-                final int position = lx.indexOf(current);
-                final Node node = mx1.get(position);
-                final String name = node.getName();
-                final Node variable = this.dataSet.getVariable(name);
-                final int colIndex = this.dataSet.getVariables().indexOf(variable);
+                int position = lx.indexOf(current);
+                Node node = mx1.get(position);
+                String name = node.getName();
+                Node variable = this.dataSet.getVariable(name);
+                int colIndex = this.dataSet.getVariables().indexOf(variable);
 
 //                Column column = dataSet.getColumnObject(variable);
 //
@@ -332,11 +332,11 @@ class Tsls {
                     yi[i] = this.dataSet.getDouble(i, colIndex);
                 }
             } else {
-                final int position = ly.indexOf(current);
-                final Node node = my1.get(position);
-                final String name = node.getName();
-                final Node variable = this.dataSet.getVariable(name);
-                final int colIndex = this.dataSet.getVariables().indexOf(variable);
+                int position = ly.indexOf(current);
+                Node node = my1.get(position);
+                String name = node.getName();
+                Node variable = this.dataSet.getVariable(name);
+                int colIndex = this.dataSet.getVariables().indexOf(variable);
 
 //                System.arraycopy(dataSet.getColumnObject(variable).getRawData(), 0, yi, 0, n);
 
@@ -345,7 +345,7 @@ class Tsls {
                 }
             }
             // Build Z_hat
-            final double[][] Z_hat = MatrixUtils.product(V, MatrixUtils.product(
+            double[][] Z_hat = MatrixUtils.product(V, MatrixUtils.product(
                     MatrixUtils.inverse(
                             MatrixUtils.product(MatrixUtils.transpose(V), V)),
                     MatrixUtils.product(MatrixUtils.transpose(V), Z)));
@@ -353,7 +353,7 @@ class Tsls {
                             MatrixUtils.product(MatrixUtils.transpose(Z_hat), Z_hat)),
                     MatrixUtils.product(MatrixUtils.transpose(Z_hat), yi));
             //Set the edge for the fixed measurement
-            final int position = ly.indexOf(current);
+            int position = ly.indexOf(current);
             semIm.setParamValue(current, my1.get(position), 1.);
             // Set the edge for the latents
             for (int i = 0; i < endp_a.length; i++) {
@@ -375,12 +375,12 @@ class Tsls {
         // Estimate freeParameters of the measurement model
 
         // Set the edges of the fixed measurements of exogenous
-        for (final Node current : lx) {
-            final int position = lx.indexOf(current);
+        for (Node current : lx) {
+            int position = lx.indexOf(current);
             semIm.setParamValue(current, mx1.get(position), 1.);
         }
 
-        for (final Node current : observed) {
+        for (Node current : observed) {
             if (this.nodeName != null && !this.nodeName.equals(current.getName())) {
                 continue;
             }
@@ -391,29 +391,29 @@ class Tsls {
             // First, get the parent of this observed
             Node current_latent = null;
 
-            for (final Node node : semGraph.getParents(current)) {
+            for (Node node : semGraph.getParents(current)) {
                 if (node.getNodeType() == NodeType.ERROR) {
                     continue;
                 }
                 current_latent = node;
             }
-            final Iterator<Node> children =
+            Iterator<Node> children =
                     semGraph.getChildren(current_latent).iterator();
-            final List<Node> other_measures = new LinkedList<>();
-            final Node fixed_measurement;
+            List<Node> other_measures = new LinkedList<>();
+            Node fixed_measurement;
             while (children.hasNext()) {
-                final Node next = children.next();
+                Node next = children.next();
                 if ((next.getNodeType() == NodeType.MEASURED) &&
                         next != current) {
                     other_measures.add(next);
                 }
             }
             if (lx.contains(current_latent)) {
-                final int position = lx.indexOf(current_latent);
+                int position = lx.indexOf(current_latent);
                 other_measures.remove(mx1.get(position));
                 fixed_measurement = mx1.get(position);
             } else {
-                final int position = ly.indexOf(current_latent);
+                int position = ly.indexOf(current_latent);
                 other_measures.remove(my1.get(position));
                 fixed_measurement = my1.get(position);
             }
@@ -423,11 +423,11 @@ class Tsls {
             if (c == 0) {
                 continue;
             }
-            final double[][] Z = new double[n][c];
+            double[][] Z = new double[n][c];
             for (int i = 0; i < c; i++) {
-                final Node variable = this.dataSet.getVariable(
+                Node variable = this.dataSet.getVariable(
                         (other_measures.get(i)).getName());
-                final int varIndex = this.dataSet.getVariables().indexOf(variable);
+                int varIndex = this.dataSet.getVariables().indexOf(variable);
 
 //                Column column = dataSet.getColumnObject(variable);
 //                double column_data[] = (double[]) column.getRawData();
@@ -441,12 +441,12 @@ class Tsls {
             // Build C, the column matrix containing the data for the fixed
             // measurement associated with the only latent parent of the getModel
             // observed node (as assumed by the structure of our measurement model).
-            final Node variable = this.dataSet.getVariable(fixed_measurement.getName());
-            final int colIndex = this.dataSet.getVariables().indexOf(variable);
+            Node variable = this.dataSet.getVariable(fixed_measurement.getName());
+            int colIndex = this.dataSet.getVariables().indexOf(variable);
 //            Column column = dataSet.getColumnObject(variable);
 //            double C[] = (double[]) column.getRawData();
 
-            final double[] C = new double[this.dataSet.getNumRows()];
+            double[] C = new double[this.dataSet.getNumRows()];
 
             for (int i = 0; i < this.dataSet.getNumRows(); i++) {
                 C[i] = this.dataSet.getDouble(colIndex, i);
@@ -462,11 +462,11 @@ class Tsls {
             // taken with respect to only one latent.
             n = this.dataSet.getNumRows();
             c = other_measures.size();
-            final double[][] V = new double[n][c];
+            double[][] V = new double[n][c];
             for (int i = 0; i < c; i++) {
-                final Node variable2 = this.dataSet.getVariable(
+                Node variable2 = this.dataSet.getVariable(
                         (other_measures.get(i)).getName());
-                final int var2index = this.dataSet.getVariables().indexOf(variable2);
+                int var2index = this.dataSet.getVariables().indexOf(variable2);
 
 //                Column column = dataSet.getColumnObject(variable2);
 //                double column_data[] = (double[]) column.getRawData();
@@ -476,9 +476,9 @@ class Tsls {
                     V[j][i] = this.dataSet.getDouble(j, var2index);
                 }
             }
-            final double[] yi = new double[n];
-            final Node variable3 = this.dataSet.getVariable((current).getName());
-            final int var3Index = this.dataSet.getVariables().indexOf(variable3);
+            double[] yi = new double[n];
+            Node variable3 = this.dataSet.getVariable((current).getName());
+            int var3Index = this.dataSet.getVariables().indexOf(variable3);
 
             for (int i = 0; i < n; i++) {
                 yi[i] = this.dataSet.getDouble(i, var3Index);
@@ -486,11 +486,11 @@ class Tsls {
 
 //            Object rawData = dataSet.getColumnObject(variable3).getRawData();
 //            System.arraycopy(rawData, 0, yi, 0, n);
-            final double[] C_hat = MatrixUtils.product(V, MatrixUtils.product(
+            double[] C_hat = MatrixUtils.product(V, MatrixUtils.product(
                     MatrixUtils.inverse(
                             MatrixUtils.product(MatrixUtils.transpose(V), V)),
                     MatrixUtils.product(MatrixUtils.transpose(V), C)));
-            final double A_hat = MatrixUtils.innerProduct(MatrixUtils.scalarProduct(
+            double A_hat = MatrixUtils.innerProduct(MatrixUtils.scalarProduct(
                     1. / MatrixUtils.innerProduct(C_hat, C_hat), C_hat), yi);
             // Set the edge for the getModel measurement
             semIm.setParamValue(current_latent, current, A_hat);
@@ -499,14 +499,14 @@ class Tsls {
         return semIm;
     }
 
-    private void computeAsymptLatentCovar(final double[] y, final double[] A_hat,
-                                          final double[][] Z, final double[][] Z_hat, final double n) {
-        final double[] yza = MatrixUtils.subtract(y, MatrixUtils.product(Z, A_hat));
-        final double sigma_ui = MatrixUtils.innerProduct(yza, yza) / n;
+    private void computeAsymptLatentCovar(double[] y, double[] A_hat,
+                                          double[][] Z, double[][] Z_hat, double n) {
+        double[] yza = MatrixUtils.subtract(y, MatrixUtils.product(Z, A_hat));
+        double sigma_ui = MatrixUtils.innerProduct(yza, yza) / n;
         this.asymptLCovar = MatrixUtils.inverse(
                 MatrixUtils.product(MatrixUtils.transpose(Z_hat), Z_hat));
 
-        for (final double[] anAsymptLCovar : this.asymptLCovar) {
+        for (double[] anAsymptLCovar : this.asymptLCovar) {
             for (int j = 0; j < this.asymptLCovar.length; j++) {
                 anAsymptLCovar[j] *= sigma_ui;
             }
@@ -517,13 +517,13 @@ class Tsls {
      * Get variance for the edge from source to nodeName
      **/
 
-    public double getEdgePValue(final String source) {
+    public double getEdgePValue(String source) {
         if (this.asymptLCovar == null) {
             return 0.;
         }
         for (int i = 0; i < this.lNames.length; i++) {
             if (this.lNames[i].equals(source)) {
-                final double z = Math.abs(this.A_hat[i] / Math.sqrt(this.asymptLCovar[i][i]));
+                double z = Math.abs(this.A_hat[i] / Math.sqrt(this.asymptLCovar[i][i]));
                 System.out.println("Asymptotic Z = " + z);
                 return 2.0 * (1.0 - edu.cmu.tetrad.util.ProbUtils.normalCdf(z));
             }

@@ -45,7 +45,7 @@ public class GraphNodeRandomized extends DisplayNode {
      * Constructs a new node for representing latent variables in the
      * graph workbench.
      */
-    public GraphNodeRandomized(final Node modelNode) {
+    public GraphNodeRandomized(Node modelNode) {
         setModelNode(modelNode);
         if (modelNode.getNodeType() != NodeType.LATENT) {
             throw new IllegalArgumentException("GraphNodeLatent requires " +
@@ -55,10 +55,10 @@ public class GraphNodeRandomized extends DisplayNode {
         setDisplayComp(new LatentDisplayComp(modelNode.getName()));
     }
 
-    public void doDoubleClickAction(final Graph graph) {
-        final String newName;
-        final List<Node> nodes = graph.getNodes();
-        final JCheckBox latentCheckBox = new JCheckBox("Latent", true);
+    public void doDoubleClickAction(Graph graph) {
+        String newName;
+        List<Node> nodes = graph.getNodes();
+        JCheckBox latentCheckBox = new JCheckBox("Latent", true);
 
         newName = chooseNewVariableName(latentCheckBox, nodes);
 
@@ -82,13 +82,13 @@ public class GraphNodeRandomized extends DisplayNode {
         }
     }
 
-    private String chooseNewVariableName(final JCheckBox latentCheckBox,
-                                         final List<Node> nodes) {
+    private String chooseNewVariableName(JCheckBox latentCheckBox,
+                                         List<Node> nodes) {
         String newName;
 
         LOOP:
         while (true) {
-            final JTextField nameField = new JTextField(8);
+            JTextField nameField = new JTextField(8);
 
             // This makes sure the name field has focus when the dialog (below)
             // is made visible, but that after this it allows other gadgets
@@ -96,9 +96,9 @@ public class GraphNodeRandomized extends DisplayNode {
             nameField.addFocusListener(new FocusAdapter() {
                 boolean alreadyLostFocus;
 
-                public void focusLost(final FocusEvent e) {
+                public void focusLost(FocusEvent e) {
                     if (this.alreadyLostFocus) return;
-                    final JTextField field = (JTextField) e.getSource();
+                    JTextField field = (JTextField) e.getSource();
                     field.grabFocus();
                     this.alreadyLostFocus = true;
                 }
@@ -108,16 +108,16 @@ public class GraphNodeRandomized extends DisplayNode {
             nameField.setCaretPosition(0);
             nameField.moveCaretPosition(getName().length());
 
-            final JPanel message = new JPanel();
+            JPanel message = new JPanel();
 
             message.add(new JLabel("Name:"));
             message.add(nameField);
 
             message.add(latentCheckBox);
 
-            final JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
+            JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
-            final JDialog dialog = pane.createDialog(this, "Node Properties");
+            JDialog dialog = pane.createDialog(this, "Node Properties");
 
             dialog.pack();
             dialog.setVisible(true);
@@ -132,7 +132,7 @@ public class GraphNodeRandomized extends DisplayNode {
             }
             // Tests that newName is not in the nodes list.
             else if (nodes != null) {
-                for (final Node node : nodes) {
+                for (Node node : nodes) {
                     if (newName.equals(node.toString()) &&
                             !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(

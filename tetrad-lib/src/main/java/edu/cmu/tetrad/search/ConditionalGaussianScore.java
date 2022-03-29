@@ -56,7 +56,7 @@ public class ConditionalGaussianScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ConditionalGaussianScore(final DataSet dataSet, final double penaltyDiscount, final double structurePrior, final boolean discretize) {
+    public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, double structurePrior, boolean discretize) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -66,7 +66,7 @@ public class ConditionalGaussianScore implements Score {
         this.penaltyDiscount = penaltyDiscount;
         this.structurePrior = structurePrior;
 
-        final Map<Node, Integer> nodesHash = new HashMap<>();
+        Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int j = 0; j < this.variables.size(); j++) {
             nodesHash.put(this.variables.get(j), j);
@@ -84,21 +84,21 @@ public class ConditionalGaussianScore implements Score {
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(final int i, final int... parents) {
-        final List<Integer> rows = getRows(i, parents);
+    public double localScore(int i, int... parents) {
+        List<Integer> rows = getRows(i, parents);
         this.likelihood.setRows(rows);
 
-        final ConditionalGaussianLikelihood.Ret ret = this.likelihood.getLikelihood(i, parents);
+        ConditionalGaussianLikelihood.Ret ret = this.likelihood.getLikelihood(i, parents);
 
-        final int N = this.dataSet.getNumRows();
-        final double lik = ret.getLik();
-        final int k = ret.getDof();
+        int N = this.dataSet.getNumRows();
+        double lik = ret.getLik();
+        int k = ret.getDof();
 
         return 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(rows.size());
     }
 
-    private List<Integer> getRows(final int i, final int[] parents) {
-        final List<Integer> rows = new ArrayList<>();
+    private List<Integer> getRows(int i, int[] parents) {
+        List<Integer> rows = new ArrayList<>();
 
         K:
         for (int k = 0; k < this.dataSet.getNumRows(); k++) {
@@ -108,7 +108,7 @@ public class ConditionalGaussianScore implements Score {
                 if (Double.isNaN(this.dataSet.getInt(k, i))) continue;
             }
 
-            for (final int p : parents) {
+            for (int p : parents) {
                 if (this.variables.get(i) instanceof DiscreteVariable) {
                     if (this.dataSet.getInt(k, p) == -99) continue K;
                 } else if (this.variables.get(i) instanceof ContinuousVariable) {
@@ -122,28 +122,28 @@ public class ConditionalGaussianScore implements Score {
         return rows;
     }
 
-    private double getStructurePrior(final int[] parents) {
+    private double getStructurePrior(int[] parents) {
         if (this.structurePrior <= 0) {
             return 0;
         } else {
-            final int k = parents.length;
-            final double n = this.dataSet.getNumColumns() - 1;
-            final double p = this.structurePrior / n;
+            int k = parents.length;
+            double n = this.dataSet.getNumColumns() - 1;
+            double p = this.structurePrior / n;
             return k * Math.log(p) + (n - k) * Math.log(1.0 - p);
         }
     }
 
-    public double localScoreDiff(final int x, final int y, final int[] z) {
+    public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
+    public double localScoreDiff(int x, int y) {
         return localScore(y, x) - localScore(y);
     }
 
-    private int[] append(final int[] parents, final int extra) {
-        final int[] all = new int[parents.length + 1];
+    private int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
@@ -152,14 +152,14 @@ public class ConditionalGaussianScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(final int i, final int parent) {
+    public double localScore(int i, int parent) {
         return localScore(i, new int[]{parent});
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
+    public double localScore(int i) {
         return localScore(i, new int[0]);
     }
 
@@ -168,7 +168,7 @@ public class ConditionalGaussianScore implements Score {
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
+    public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
@@ -178,8 +178,8 @@ public class ConditionalGaussianScore implements Score {
     }
 
     @Override
-    public Node getVariable(final String targetName) {
-        for (final Node node : this.variables) {
+    public Node getVariable(String targetName) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -194,7 +194,7 @@ public class ConditionalGaussianScore implements Score {
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 
@@ -202,17 +202,17 @@ public class ConditionalGaussianScore implements Score {
         return this.penaltyDiscount;
     }
 
-    public void setPenaltyDiscount(final double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public void setNumCategoriesToDiscretize(final int numCategoriesToDiscretize) {
+    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 
     @Override
     public String toString() {
-        final NumberFormat nf = new DecimalFormat("0.00");
+        NumberFormat nf = new DecimalFormat("0.00");
         return "Conditional Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
     }
 }

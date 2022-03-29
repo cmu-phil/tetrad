@@ -100,20 +100,20 @@ public final class FciOrient {
      * Constructs a new FCI search for the given independence test and
      * background knowledge.
      */
-    public FciOrient(final SepsetProducer sepsets) {
+    public FciOrient(SepsetProducer sepsets) {
         this.sepsets = sepsets;
 
         if (sepsets instanceof SepsetsGreedy) {
-            final SepsetsGreedy _sepsets = (SepsetsGreedy) sepsets;
+            SepsetsGreedy _sepsets = (SepsetsGreedy) sepsets;
             this.dag = _sepsets.getDag();
         } else if (sepsets instanceof DagSepsets) {
-            final DagSepsets _sepsets = (DagSepsets) sepsets;
+            DagSepsets _sepsets = (DagSepsets) sepsets;
             this.dag = _sepsets.getDag();
         }
     }
 
     //========================PUBLIC METHODS==========================//
-    public Graph orient(final Graph graph) {
+    public Graph orient(Graph graph) {
 
         this.logger.log("info", "Starting FCI algorithm.");
 
@@ -145,7 +145,7 @@ public final class FciOrient {
         return this.knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -167,7 +167,7 @@ public final class FciOrient {
      *                            should be used, false if only R1-R4 (the rule set of the original FCI)
      *                            should be used. False by default.
      */
-    public void setCompleteRuleSetUsed(final boolean completeRuleSetUsed) {
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
@@ -176,24 +176,24 @@ public final class FciOrient {
      * <p>
      * Zhang's step F3, rule R0.
      */
-    public void ruleR0(final Graph graph) {
+    public void ruleR0(Graph graph) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, graph, graph.getNodes());
 
-        final List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
-        for (final Node b : nodes) {
+        for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            final List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
@@ -201,8 +201,8 @@ public final class FciOrient {
                     break;
                 }
 
-                final Node a = adjacentNodes.get(combination[0]);
-                final Node c = adjacentNodes.get(combination[1]);
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
 
                 // Skip triples that are shielded.
                 if (graph.isAdjacentTo(a, c)) {
@@ -236,7 +236,7 @@ public final class FciOrient {
         }
     }
 
-    private void printWrongColliderMessage(final Node a, final Node b, final Node c, final String location, final Graph graph) {
+    private void printWrongColliderMessage(Node a, Node b, Node c, String location, Graph graph) {
         if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
             this.out.println(location + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
         }
@@ -247,7 +247,7 @@ public final class FciOrient {
      * <p>
      * Zhang's step F4, rules R1-R10.
      */
-    public void doFinalOrientation(final Graph graph) {
+    public void doFinalOrientation(Graph graph) {
         if (this.completeRuleSetUsed) {
             zhangFinalOrientation(graph);
         } else {
@@ -255,7 +255,7 @@ public final class FciOrient {
         }
     }
 
-    private void spirtesFinalOrientation(final Graph graph) {
+    private void spirtesFinalOrientation(Graph graph) {
         this.changeFlag = true;
         boolean firstTime = true;
 
@@ -280,7 +280,7 @@ public final class FciOrient {
         }
     }
 
-    private void zhangFinalOrientation(final Graph graph) {
+    private void zhangFinalOrientation(Graph graph) {
         this.changeFlag = true;
         boolean firstTime = true;
 
@@ -327,26 +327,26 @@ public final class FciOrient {
 
     //Does all 3 of these rules at once instead of going through all
     // triples multiple times per iteration of doFinalOrientation.
-    public void rulesR1R2cycle(final Graph graph) {
-        final List<Node> nodes = graph.getNodes();
+    public void rulesR1R2cycle(Graph graph) {
+        List<Node> nodes = graph.getNodes();
 
-        for (final Node B : nodes) {
+        for (Node B : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            final List<Node> adj = graph.getAdjacentNodes(B);
+            List<Node> adj = graph.getAdjacentNodes(B);
 
             if (adj.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null && !Thread.currentThread().isInterrupted()) {
-                final Node A = adj.get(combination[0]);
-                final Node C = adj.get(combination[1]);
+                Node A = adj.get(combination[0]);
+                Node C = adj.get(combination[1]);
 
                 //choice gen doesnt do diff orders, so must switch A & C around.
                 ruleR1(A, B, C, graph);
@@ -359,7 +359,7 @@ public final class FciOrient {
 
     /// R1, away from collider
     // If a*->bo-*c and a, c not adjacent then a*->b->c
-    private void ruleR1(final Node a, final Node b, final Node c, final Graph graph) {
+    private void ruleR1(Node a, Node b, Node c, Graph graph) {
         if (graph.isAdjacentTo(a, c)) {
             return;
         }
@@ -382,7 +382,7 @@ public final class FciOrient {
 
     //if a*-oc and either a-->b*->c or a*->b-->c, then a*->c
     // This is Zhang's rule R2.
-    private void ruleR2(final Node a, final Node b, final Node c, final Graph graph) {
+    private void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c))
                 && (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
 
@@ -413,18 +413,18 @@ public final class FciOrient {
      * <p>
      * This is Zhang's rule R3.
      */
-    public void ruleR3(final Graph graph) {
-        final List<Node> nodes = graph.getNodes();
+    public void ruleR3(Graph graph) {
+        List<Node> nodes = graph.getNodes();
 
-        for (final Node B : nodes) {
+        for (Node B : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            final List<Node> intoBArrows = graph.getNodesInTo(B, Endpoint.ARROW);
-            final List<Node> intoBCircles = graph.getNodesInTo(B, Endpoint.CIRCLE);
+            List<Node> intoBArrows = graph.getNodesInTo(B, Endpoint.ARROW);
+            List<Node> intoBCircles = graph.getNodesInTo(B, Endpoint.CIRCLE);
 
-            for (final Node D : intoBCircles) {
+            for (Node D : intoBCircles) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
@@ -433,12 +433,12 @@ public final class FciOrient {
                     continue;
                 }
 
-                final ChoiceGenerator gen = new ChoiceGenerator(intoBArrows.size(), 2);
+                ChoiceGenerator gen = new ChoiceGenerator(intoBArrows.size(), 2);
                 int[] choice;
 
                 while ((choice = gen.next()) != null && !Thread.currentThread().isInterrupted()) {
-                    final Node A = intoBArrows.get(choice[0]);
-                    final Node C = intoBArrows.get(choice[1]);
+                    Node A = intoBArrows.get(choice[0]);
+                    Node C = intoBArrows.get(choice[1]);
 
                     if (graph.isAdjacentTo(A, C)) {
                         continue;
@@ -492,29 +492,29 @@ public final class FciOrient {
      * <p>
      * This is Zhang's rule R4, discriminating undirectedPaths.
      */
-    public void ruleR4B(final Graph graph) {
+    public void ruleR4B(Graph graph) {
         if (this.skipDiscriminatingPathRule) {
             return;
         }
 
-        final List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
-        for (final Node b : nodes) {
+        for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
             //potential A and C candidate pairs are only those
             // that look like this:   A<-*Bo-*C
-            final List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
-            final List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
+            List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
+            List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
 
-            for (final Node a : possA) {
+            for (Node a : possA) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                for (final Node c : possC) {
+                for (Node c : possC) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
@@ -539,16 +539,16 @@ public final class FciOrient {
      * utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p>
      * The body of a DDP consists of colliders that are parents of c.
      */
-    public void ddpOrient(final Node a, final Node b, final Node c, final Graph graph) {
-        final Queue<Node> Q = new ArrayDeque<>(20);
-        final Set<Node> V = new HashSet<>();
+    public void ddpOrient(Node a, Node b, Node c, Graph graph) {
+        Queue<Node> Q = new ArrayDeque<>(20);
+        Set<Node> V = new HashSet<>();
 
         Node e = null;
         int distance = 0;
 
-        final Map<Node, Node> previous = new HashMap<>();
+        Map<Node, Node> previous = new HashMap<>();
 
-        final List<Node> cParents = graph.getParents(c);
+        List<Node> cParents = graph.getParents(c);
 
         Q.offer(a);
         V.add(a);
@@ -560,7 +560,7 @@ public final class FciOrient {
                 break;
             }
 
-            final Node t = Q.poll();
+            Node t = Q.poll();
 
             if (e == null || e == t) {
                 e = t;
@@ -570,9 +570,9 @@ public final class FciOrient {
                 }
             }
 
-            final List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
+            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
 
-            for (final Node d : nodesInTo) {
+            for (Node d : nodesInTo) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
@@ -582,7 +582,7 @@ public final class FciOrient {
                 }
 
                 previous.put(d, t);
-                final Node p = previous.get(t);
+                Node p = previous.get(t);
 
                 if (!graph.isDefCollider(d, t, p)) {
                     continue;
@@ -608,7 +608,7 @@ public final class FciOrient {
      * Orients the edges inside the definte discriminating path triangle. Takes
      * the left endpoint, and a,b,c as arguments.
      */
-    private boolean doDdpOrientation(final Node d, final Node a, final Node b, final Node c, final Map<Node, Node> previous, final Graph graph) {
+    private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Map<Node, Node> previous, Graph graph) {
         if (this.dag != null) {
             if (this.dag.isAncestorOf(b, c)) {
                 graph.setEndpoint(c, b, Endpoint.TAIL);
@@ -634,18 +634,18 @@ public final class FciOrient {
             throw new IllegalArgumentException();
         }
 
-        final List<Node> path = getPath(d, previous);
+        List<Node> path = getPath(d, previous);
 
         boolean ind = getSepsets().isIndependent(d, c, path);
 
-        final List<Node> path2 = new ArrayList<>(path);
+        List<Node> path2 = new ArrayList<>(path);
 
         path2.remove(b);
 
-        final boolean ind2 = getSepsets().isIndependent(d, c, path2);
+        boolean ind2 = getSepsets().isIndependent(d, c, path2);
 
         if (!ind && !ind2) {
-            final List<Node> sepset = getSepsets().getSepset(d, c);
+            List<Node> sepset = getSepsets().getSepset(d, c);
 
             if (this.verbose) {
                 this.out.println("Sepset for d = " + d + " and c = " + c + " = " + sepset);
@@ -690,8 +690,8 @@ public final class FciOrient {
         return true;
     }
 
-    private List<Node> getPath(final Node c, final Map<Node, Node> previous) {
-        final List<Node> l = new ArrayList<>();
+    private List<Node> getPath(Node c, Map<Node, Node> previous) {
+        List<Node> l = new ArrayList<>();
 
         Node p = c;
 
@@ -712,17 +712,17 @@ public final class FciOrient {
      * <A,C,...,D,B> such that A,D nonadjacent and B,C nonadjacent, then A---B
      * and orient every edge on u undirected.
      */
-    public void ruleR5(final Graph graph) {
-        final List<Node> nodes = graph.getNodes();
+    public void ruleR5(Graph graph) {
+        List<Node> nodes = graph.getNodes();
 
-        for (final Node a : nodes) {
+        for (Node a : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            final List<Node> adjacents = graph.getNodesInTo(a, Endpoint.CIRCLE);
+            List<Node> adjacents = graph.getNodesInTo(a, Endpoint.CIRCLE);
 
-            for (final Node b : adjacents) {
+            for (Node b : adjacents) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
@@ -732,9 +732,9 @@ public final class FciOrient {
                 }
                 // We know Ao-oB.
 
-                final List<List<Node>> ucCirclePaths = getUcCirclePaths(a, b, graph);
+                List<List<Node>> ucCirclePaths = getUcCirclePaths(a, b, graph);
 
-                for (final List<Node> u : ucCirclePaths) {
+                for (List<Node> u : ucCirclePaths) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
@@ -743,8 +743,8 @@ public final class FciOrient {
                         continue;
                     }
 
-                    final Node c = u.get(1);
-                    final Node d = u.get(u.size() - 2);
+                    Node c = u.get(1);
+                    Node d = u.get(u.size() - 2);
 
                     if (graph.isAdjacentTo(a, d)) {
                         continue;
@@ -770,25 +770,25 @@ public final class FciOrient {
      * Orient single tails. R6: If A---Bo-*C then A---B--*C. R7: If A--oBo-*C
      * and A,C nonadjacent, then A--oB--*C
      */
-    public void ruleR6R7(final Graph graph) {
-        final List<Node> nodes = graph.getNodes();
+    public void ruleR6R7(Graph graph) {
+        List<Node> nodes = graph.getNodes();
 
-        for (final Node b : nodes) {
+        for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            final List<Node> adjacents = graph.getAdjacentNodes(b);
+            List<Node> adjacents = graph.getAdjacentNodes(b);
 
             if (adjacents.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adjacents.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacents.size(), 2);
 
             for (int[] choice = cg.next(); choice != null && !Thread.currentThread().isInterrupted(); choice = cg.next()) {
-                final Node a = adjacents.get(choice[0]);
-                final Node c = adjacents.get(choice[1]);
+                Node a = adjacents.get(choice[0]);
+                Node c = adjacents.get(choice[1]);
 
                 if (graph.isAdjacentTo(a, c)) {
                     continue;
@@ -831,17 +831,17 @@ public final class FciOrient {
      * Orient arrow tails. I.e., tries R8, R9, and R10 in that sequence on each
      * Ao->C in the graph.
      */
-    public void rulesR8R9R10(final Graph graph) {
-        final List<Node> nodes = graph.getNodes();
+    public void rulesR8R9R10(Graph graph) {
+        List<Node> nodes = graph.getNodes();
 
-        for (final Node c : nodes) {
+        for (Node c : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            final List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
+            List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
-            for (final Node a : intoCArrows) {
+            for (Node a : intoCArrows) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
@@ -853,7 +853,7 @@ public final class FciOrient {
 
                 // Try each of R8, R9, R10 in that order, stopping ASAP.
                 if (!ruleR8(a, c, graph)) {
-                    final boolean b = ruleR9(a, c, graph);
+                    boolean b = ruleR9(a, c, graph);
 
                     if (!b) {
                         ruleR10(a, c, graph);
@@ -872,10 +872,10 @@ public final class FciOrient {
      *
      * @param path The path to orient as all tails.
      */
-    private void orientTailPath(final List<Node> path, final Graph graph) {
+    private void orientTailPath(List<Node> path, Graph graph) {
         for (int i = 0; i < path.size() - 1; i++) {
-            final Node n1 = path.get(i);
-            final Node n2 = path.get(i + 1);
+            Node n1 = path.get(i);
+            Node n2 = path.get(i + 1);
 
             graph.setEndpoint(n1, n2, Endpoint.TAIL);
             graph.setEndpoint(n2, n1, Endpoint.TAIL);
@@ -896,14 +896,14 @@ public final class FciOrient {
      * @return A list of uncovered partially directed undirectedPaths from n1 to
      * n2.
      */
-    private List<List<Node>> getUcPdPaths(final Node n1, final Node n2, final Graph graph) {
-        final List<List<Node>> ucPdPaths = new LinkedList<>();
+    private List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
+        List<List<Node>> ucPdPaths = new LinkedList<>();
 
-        final LinkedList<Node> soFar = new LinkedList<>();
+        LinkedList<Node> soFar = new LinkedList<>();
         soFar.add(n1);
 
-        final List<Node> adjacencies = graph.getAdjacentNodes(n1);
-        for (final Node curr : adjacencies) {
+        List<Node> adjacencies = graph.getAdjacentNodes(n1);
+        for (Node curr : adjacencies) {
             getUcPdPsHelper(curr, soFar, n2, ucPdPaths, graph);
         }
 
@@ -923,19 +923,19 @@ public final class FciOrient {
      * @param end       The node to finish the undirectedPaths at.
      * @param ucPdPaths The getModel list of uncovered p.d. undirectedPaths.
      */
-    private void getUcPdPsHelper(final Node curr, final List<Node> soFar, final Node end,
-                                 final List<List<Node>> ucPdPaths, final Graph graph) {
+    private void getUcPdPsHelper(Node curr, List<Node> soFar, Node end,
+                                 List<List<Node>> ucPdPaths, Graph graph) {
 
         if (soFar.contains(curr)) {
             return;
         }
 
-        final Node prev = soFar.get(soFar.size() - 1);
+        Node prev = soFar.get(soFar.size() - 1);
         if (graph.getEndpoint(prev, curr) == Endpoint.TAIL
                 || graph.getEndpoint(curr, prev) == Endpoint.ARROW) {
             return; // Adding curr would make soFar not p.d.
         } else if (soFar.size() >= 2) {
-            final Node prev2 = soFar.get(soFar.size() - 2);
+            Node prev2 = soFar.get(soFar.size() - 2);
             if (graph.isAdjacentTo(prev2, curr)) {
                 return; // Adding curr would make soFar not uncovered.
             }
@@ -948,8 +948,8 @@ public final class FciOrient {
             ucPdPaths.add(new LinkedList<>(soFar));
         } else {
             // Otherwise, try each node adjacent to the getModel one.
-            final List<Node> adjacents = graph.getAdjacentNodes(curr);
-            for (final Node next : adjacents) {
+            List<Node> adjacents = graph.getAdjacentNodes(curr);
+            for (Node next : adjacents) {
                 getUcPdPsHelper(next, soFar, end, ucPdPaths, graph);
             }
         }
@@ -968,14 +968,14 @@ public final class FciOrient {
      * @param n2 The ending node of the undirectedPaths.
      * @return A list of uncovered circle undirectedPaths between n1 and n2.
      */
-    private List<List<Node>> getUcCirclePaths(final Node n1, final Node n2, final Graph graph) {
-        final List<List<Node>> ucCirclePaths = new LinkedList<>();
-        final List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2, graph);
+    private List<List<Node>> getUcCirclePaths(Node n1, Node n2, Graph graph) {
+        List<List<Node>> ucCirclePaths = new LinkedList<>();
+        List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2, graph);
 
-        for (final List<Node> path : ucPdPaths) {
+        for (List<Node> path : ucPdPaths) {
             for (int i = 0; i < path.size() - 1; i++) {
-                final Node j = path.get(i);
-                final Node sj = path.get(i + 1);
+                Node j = path.get(i);
+                Node sj = path.get(i + 1);
 
                 if (!(graph.getEndpoint(j, sj) == Endpoint.CIRCLE)) {
                     break;
@@ -1007,10 +1007,10 @@ public final class FciOrient {
      * @param c The node C.
      * @return Whether or not R8 was successfully applied.
      */
-    private boolean ruleR8(final Node a, final Node c, final Graph graph) {
-        final List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
+    private boolean ruleR8(Node a, Node c, Graph graph) {
+        List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
-        for (final Node b : intoCArrows) {
+        for (Node b : intoCArrows) {
             // We have B*->C.
             if (!graph.isAdjacentTo(a, b)) {
                 continue;
@@ -1056,11 +1056,11 @@ public final class FciOrient {
      * @param c The node C.
      * @return Whether or not R9 was succesfully applied.
      */
-    private boolean ruleR9(final Node a, final Node c, final Graph graph) {
-        final List<List<Node>> ucPdPsToC = getUcPdPaths(a, c, graph);
+    private boolean ruleR9(Node a, Node c, Graph graph) {
+        List<List<Node>> ucPdPsToC = getUcPdPaths(a, c, graph);
 
-        for (final List<Node> u : ucPdPsToC) {
-            final Node b = u.get(1);
+        for (List<Node> u : ucPdPsToC) {
+            Node b = u.get(1);
             if (graph.isAdjacentTo(b, c)) {
                 continue;
             }
@@ -1092,10 +1092,10 @@ public final class FciOrient {
      * @param a The node A.
      * @param c The node C.
      */
-    private void ruleR10(final Node a, final Node c, final Graph graph) {
-        final List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
+    private void ruleR10(Node a, Node c, Graph graph) {
+        List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
-        for (final Node b : intoCArrows) {
+        for (Node b : intoCArrows) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
@@ -1109,7 +1109,7 @@ public final class FciOrient {
             }
             // We know Ao->C and B-->C.
 
-            for (final Node d : intoCArrows) {
+            for (Node d : intoCArrows) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
@@ -1123,20 +1123,20 @@ public final class FciOrient {
                 }
                 // We know Ao->C and B-->C<--D.
 
-                final List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
-                final List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
-                for (final List<Node> u1 : ucPdPsToB) {
+                List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
+                List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
+                for (List<Node> u1 : ucPdPsToB) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
 
-                    final Node m = u1.get(1);
-                    for (final List<Node> u2 : ucPdPsToD) {
+                    Node m = u1.get(1);
+                    for (List<Node> u2 : ucPdPsToD) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
                         }
 
-                        final Node n = u2.get(1);
+                        Node n = u2.get(1);
 
                         if (m.equals(n)) {
                             continue;
@@ -1161,20 +1161,20 @@ public final class FciOrient {
     /**
      * Orients according to background knowledge
      */
-    public void fciOrientbk(final IKnowledge bk, final Graph graph, final List<Node> variables) {
+    public void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
         this.logger.log("info", "Starting BK Orientation.");
 
-        for (final Iterator<KnowledgeEdge> it
+        for (Iterator<KnowledgeEdge> it
              = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            final KnowledgeEdge edge = it.next();
+            KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -1191,17 +1191,17 @@ public final class FciOrient {
             this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        for (final Iterator<KnowledgeEdge> it
+        for (Iterator<KnowledgeEdge> it
              = bk.requiredEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            final KnowledgeEdge edge = it.next();
+            KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -1228,11 +1228,11 @@ public final class FciOrient {
      * @param y The possible point node.
      * @return Whether the arrowpoint is allowed.
      */
-    private boolean isArrowpointDisallowed(final Node x, final Node y, final Graph graph) {
+    private boolean isArrowpointDisallowed(Node x, Node y, Graph graph) {
         return !isArrowpointAllowed(x, y, graph);
     }
 
-    private boolean isArrowpointAllowed(final Node x, final Node y, final Graph graph) {
+    private boolean isArrowpointAllowed(Node x, Node y, Graph graph) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }
@@ -1260,7 +1260,7 @@ public final class FciOrient {
         return this.possibleDsepSearchDone;
     }
 
-    public void setPossibleDsepSearchDone(final boolean possibleDsepSearchDone) {
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
@@ -1276,7 +1276,7 @@ public final class FciOrient {
      * @param maxPathLength the maximum length of any discriminating path, or -1
      *                      if unlimited.
      */
-    public void setMaxPathLength(final int maxPathLength) {
+    public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
         }
@@ -1291,11 +1291,11 @@ public final class FciOrient {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setTruePag(final Graph truePag) {
+    public void setTruePag(Graph truePag) {
         this.truePag = truePag;
     }
 
@@ -1306,7 +1306,7 @@ public final class FciOrient {
         return this.truePag;
     }
 
-    public void setChangeFlag(final boolean changeFlag) {
+    public void setChangeFlag(boolean changeFlag) {
         this.changeFlag = changeFlag;
     }
 
@@ -1317,7 +1317,7 @@ public final class FciOrient {
         return this.changeFlag;
     }
 
-    public void skipDiscriminatingPathRule(final boolean skip) {
+    public void skipDiscriminatingPathRule(boolean skip) {
         this.skipDiscriminatingPathRule = skip;
     }
 
@@ -1325,7 +1325,7 @@ public final class FciOrient {
         return this.out;
     }
 
-    public void setOut(final PrintStream out) {
+    public void setOut(PrintStream out) {
         this.out = out;
     }
 

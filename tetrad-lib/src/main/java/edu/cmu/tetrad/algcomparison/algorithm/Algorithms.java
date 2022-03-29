@@ -19,7 +19,7 @@ public class Algorithms {
      *
      * @param algorithm The algorithmt to add.
      */
-    public void add(final Algorithm algorithm) {
+    public void add(Algorithm algorithm) {
         this.algorithms.add(algorithm);
     }
 

@@ -46,7 +46,7 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
     /**
      * Constructs a new number cell renderer.
      */
-    public NumberCellRenderer(final NumberFormat nf) {
+    public NumberCellRenderer(NumberFormat nf) {
         if (nf == null) {
             throw new NullPointerException();
         }
@@ -63,13 +63,13 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
      *
      * @param value the stored numerical value.
      */
-    public void setValue(final Object value) {
+    public void setValue(Object value) {
         if (value == null) {
             setText(getEmptyString());
         } else if (value instanceof Integer) {
             setText(value.toString());
         } else if (value instanceof Double) {
-            final double doubleValue = (Double) value;
+            double doubleValue = (Double) value;
             if (Double.isNaN(doubleValue)) {
                 setText(getEmptyString());
             } else {
@@ -84,7 +84,7 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
         return this.emptyString;
     }
 
-    public void setEmptyString(final String emptyString) {
+    public void setEmptyString(String emptyString) {
         if (emptyString == null) {
             throw new NullPointerException();
         }

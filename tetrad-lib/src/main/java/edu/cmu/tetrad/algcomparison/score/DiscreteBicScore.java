@@ -27,9 +27,9 @@ public class DiscreteBicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final edu.cmu.tetrad.search.BicScore score
+        edu.cmu.tetrad.search.BicScore score
                 = new edu.cmu.tetrad.search.BicScore(DataUtils.getDiscreteDataSet(dataSet));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
@@ -48,14 +48,14 @@ public class DiscreteBicScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> params = new ArrayList<>();
+        List<String> params = new ArrayList<>();
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.STRUCTURE_PRIOR);
         return params;
     }
 
     @Override
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         return this.dataSet.getVariable(name);
     }
 }

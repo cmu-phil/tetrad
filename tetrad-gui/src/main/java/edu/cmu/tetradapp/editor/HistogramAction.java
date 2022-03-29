@@ -49,26 +49,26 @@ class HistogramAction extends AbstractAction {
      * Constructs the <code>HistogramAction</code> given the <code>DataEditor</code>
      * that its attached to.
      */
-    public HistogramAction(final DataEditor editor) {
+    public HistogramAction(DataEditor editor) {
         super("Histograms...");
         this.dataEditor = editor;
     }
 
-    public void actionPerformed(final ActionEvent e) {
-        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot display a histogram for an empty data set.");
             return;
         }
 
-        final int[] selected = dataSet.getSelectedIndices();
+        int[] selected = dataSet.getSelectedIndices();
 
         // if more then one column is selected then open up more than one histogram
         if (selected != null && selected.length >= 1) {
 
             // warn user if they selected more than 10
             if (selected.length > 10) {
-                final int option = JOptionPane.showConfirmDialog(findOwner(), "You are about to open " + selected.length +
+                int option = JOptionPane.showConfirmDialog(findOwner(), "You are about to open " + selected.length +
                         " histograms, are you sure you want to proceed?", "Histogram Warning", JOptionPane.YES_NO_OPTION);
                 // if selected no, return
                 if (option == JOptionPane.NO_OPTION) {
@@ -76,9 +76,9 @@ class HistogramAction extends AbstractAction {
                 }
             }
 
-            for (final int index : selected) {
-                final JPanel component = createHistogramPanel(dataSet.getVariable(index));
-                final EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, this.dataEditor);
+            for (int index : selected) {
+                JPanel component = createHistogramPanel(dataSet.getVariable(index));
+                EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, this.dataEditor);
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
                 setLocation(editorWindow, index);
@@ -87,8 +87,8 @@ class HistogramAction extends AbstractAction {
         } else {
 
             // No selected variable--just show a histogram for the first variable.
-            final JPanel component = createHistogramPanel(null);
-            final EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, this.dataEditor);
+            JPanel component = createHistogramPanel(null);
+            EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, this.dataEditor);
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();
             editorWindow.setVisible(true);
@@ -100,10 +100,10 @@ class HistogramAction extends AbstractAction {
     /**
      * Sets the location on the given dialog for the given index.
      */
-    private void setLocation(final EditorWindow dialog, final int index) {
-        final Rectangle bounds = dialog.getBounds();
-        final JFrame frame = findOwner();
-        final Dimension dim;
+    private void setLocation(EditorWindow dialog, int index) {
+        Rectangle bounds = dialog.getBounds();
+        JFrame frame = findOwner();
+        Dimension dim;
         if (frame == null) {
             dim = Toolkit.getDefaultToolkit().getScreenSize();
         } else {
@@ -122,23 +122,23 @@ class HistogramAction extends AbstractAction {
      * Creates a dialog that is showing the histogram for the given node (if null
      * one is selected for you)
      */
-    private JPanel createHistogramPanel(final Node selected) {
-        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
-        final Histogram histogram = new Histogram(dataSet);
+    private JPanel createHistogramPanel(Node selected) {
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
+        Histogram histogram = new Histogram(dataSet);
         histogram.setTarget(selected == null ? null : selected.getName());
-        final HistogramView view = new HistogramView(histogram);
+        HistogramView view = new HistogramView(histogram);
 
-        final Box box = Box.createHorizontalBox();
+        Box box = Box.createHorizontalBox();
         box.add(view);
         box.add(Box.createHorizontalStrut(5));
         box.add(Box.createHorizontalGlue());
 
-        final Box vBox = Box.createVerticalBox();
+        Box vBox = Box.createVerticalBox();
         vBox.add(Box.createVerticalStrut(15));
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(vBox, BorderLayout.CENTER);
         return panel;

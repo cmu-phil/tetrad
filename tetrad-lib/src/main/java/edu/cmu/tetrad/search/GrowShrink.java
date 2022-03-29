@@ -49,7 +49,7 @@ public class GrowShrink implements MbSearch {
      *
      * @param test The source of conditional independence information for the search.
      */
-    public GrowShrink(final IndependenceTest test) {
+    public GrowShrink(IndependenceTest test) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -64,20 +64,20 @@ public class GrowShrink implements MbSearch {
      * @param targetName the name of the target
      * @return the list of node in the Markov blanket.
      */
-    public List<Node> findMb(final String targetName) {
-        final Node target = getVariableForName(targetName);
-        final List<Node> blanket = new LinkedList<>();
+    public List<Node> findMb(String targetName) {
+        Node target = getVariableForName(targetName);
+        List<Node> blanket = new LinkedList<>();
 
         boolean changed = true;
 
         while (changed) {
             changed = false;
 
-            final List<Node> remaining = new LinkedList<>(this.variables);
+            List<Node> remaining = new LinkedList<>(this.variables);
             remaining.removeAll(blanket);
             remaining.remove(target);
 
-            for (final Node node : remaining) {
+            for (Node node : remaining) {
                 if (!this.independenceTest.isIndependent(node, target, blanket)) {
                     blanket.add(node);
                     changed = true;
@@ -90,7 +90,7 @@ public class GrowShrink implements MbSearch {
         while (changed) {
             changed = false;
 
-            for (final Node node : new LinkedList<>(blanket)) {
+            for (Node node : new LinkedList<>(blanket)) {
                 blanket.remove(node);
 
                 if (this.independenceTest.isIndependent(node, target, blanket)) {
@@ -113,10 +113,10 @@ public class GrowShrink implements MbSearch {
         return 0;
     }
 
-    private Node getVariableForName(final String targetName) {
+    private Node getVariableForName(String targetName) {
         Node target = null;
 
-        for (final Node V : this.variables) {
+        for (Node V : this.variables) {
             if (V.getName().equals(targetName)) {
                 target = V;
                 break;
@@ -131,7 +131,7 @@ public class GrowShrink implements MbSearch {
         return target;
     }
 
-    public void setVariables(final List<Node> variables) {
+    public void setVariables(List<Node> variables) {
         this.variables = variables;
     }
 }

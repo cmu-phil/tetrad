@@ -70,7 +70,7 @@ public class ParameterTab extends JPanel {
 
     private final Simulation simulation;
 
-    public ParameterTab(final Simulation simulation) {
+    public ParameterTab(Simulation simulation) {
         this.simulation = simulation;
 
         // set default simulation
@@ -104,7 +104,7 @@ public class ParameterTab extends JPanel {
     }
 
     private void refreshParameters() {
-        final RandomGraph randomGraph = newRandomGraph();
+        RandomGraph randomGraph = newRandomGraph();
         newSimulation(randomGraph);
 
         showParameters();
@@ -119,7 +119,7 @@ public class ParameterTab extends JPanel {
                 : new SingleGraph(this.simulation.getSourceGraph());
 
         if (!this.simulation.isFixedGraph()) {
-            final String graphItem = this.graphsDropdown.getItemAt(this.graphsDropdown.getSelectedIndex());
+            String graphItem = this.graphsDropdown.getItemAt(this.graphsDropdown.getSelectedIndex());
             this.simulation.getParams().set("graphsDropdownPreference", graphItem);
 
             switch (graphItem) {
@@ -148,9 +148,9 @@ public class ParameterTab extends JPanel {
         return randomGraph;
     }
 
-    private void newSimulation(final RandomGraph randomGraph) {
+    private void newSimulation(RandomGraph randomGraph) {
         if (!this.simulation.isFixedSimulation()) {
-            final String simulationItem = this.simulationsDropdown.getItemAt(this.simulationsDropdown.getSelectedIndex());
+            String simulationItem = this.simulationsDropdown.getItemAt(this.simulationsDropdown.getSelectedIndex());
             this.simulation.getParams().set("simulationsDropdownPreference", simulationItem);
             this.simulation.setFixedGraph(randomGraph instanceof SingleGraph);
 
@@ -209,20 +209,20 @@ public class ParameterTab extends JPanel {
     }
 
     private void showParameters() {
-        final boolean fixedGraph = this.simulation.isFixedGraph();
+        boolean fixedGraph = this.simulation.isFixedGraph();
         this.graphsDropdown.setEnabled(!fixedGraph);
         this.simulationsDropdown.setEnabled(!this.simulation.isFixedSimulation());
 
         this.parameterBox.removeAll();
         if (this.simulation.getSimulation() != null) {
-            final Set<String> params = new LinkedHashSet<>(this.simulation.getSimulation().getParameters());
+            Set<String> params = new LinkedHashSet<>(this.simulation.getSimulation().getParameters());
             if (params.isEmpty()) {
                 this.parameterBox.add(ParameterTab.NO_PARAM_LBL, BorderLayout.NORTH);
             } else {
-                final Box parameters = Box.createVerticalBox();
-                final Box[] paramBoxes = ParameterComponents.toArray(
+                Box parameters = Box.createVerticalBox();
+                Box[] paramBoxes = ParameterComponents.toArray(
                         ParameterComponents.createParameterComponents(params, this.simulation.getParams()));
-                final int lastIndex = paramBoxes.length - 1;
+                int lastIndex = paramBoxes.length - 1;
                 for (int i = 0; i < lastIndex; i++) {
                     parameters.add(paramBoxes[i]);
                     parameters.add(Box.createVerticalStrut(10));
@@ -237,9 +237,9 @@ public class ParameterTab extends JPanel {
     }
 
     private Box createSimulationButtonBox() {
-        final Dimension buttonSize = new Dimension(268, 25);
+        Dimension buttonSize = new Dimension(268, 25);
 
-        final JButton button = new JButton("Simulate");
+        JButton button = new JButton("Simulate");
 
         button.setMinimumSize(buttonSize);
         button.setMaximumSize(buttonSize);
@@ -247,7 +247,7 @@ public class ParameterTab extends JPanel {
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.addActionListener(e -> simulate());
 
-        final Box box = Box.createVerticalBox();
+        Box box = Box.createVerticalBox();
         box.add(Box.createVerticalStrut(20));
         box.add(button);
 
@@ -255,7 +255,7 @@ public class ParameterTab extends JPanel {
     }
 
     private JPanel createParameterPanel() {
-        final JPanel paramPanel = new JPanel(new BorderLayout(0, 5));
+        JPanel paramPanel = new JPanel(new BorderLayout(0, 5));
         paramPanel.add(new JLabel("Parameters for your simulation are listed below. Please adjust the parameter values."), BorderLayout.NORTH);
         paramPanel.add(new JScrollPane(this.parameterBox), BorderLayout.CENTER);
 
@@ -263,7 +263,7 @@ public class ParameterTab extends JPanel {
     }
 
     private Box createSimulationOptionBox() {
-        final Box simOptBox = Box.createVerticalBox();
+        Box simOptBox = Box.createVerticalBox();
 
         // type of graph options
         if (!this.simulation.isFixedGraph()) {
@@ -276,7 +276,7 @@ public class ParameterTab extends JPanel {
             simOptBox.add(Box.createVerticalStrut(10));
         }
 
-        final String[] simulationItems = getSimulationItems(this.simulation);
+        String[] simulationItems = getSimulationItems(this.simulation);
         Arrays.stream(simulationItems).forEach(this.simulationsDropdown::addItem);
         this.simulationsDropdown.setMaximumSize(this.simulationsDropdown.getPreferredSize());
         this.simulationsDropdown.setSelectedItem(
@@ -290,7 +290,7 @@ public class ParameterTab extends JPanel {
     }
 
     private void simulate() {
-        final int ret = JOptionPane.showConfirmDialog(getPanel(), "Simulate new graph(s) and dataset(s)?",
+        int ret = JOptionPane.showConfirmDialog(getPanel(), "Simulate new graph(s) and dataset(s)?",
                 "Confirm", JOptionPane.OK_CANCEL_OPTION);
 
         if (ret == JOptionPane.CANCEL_OPTION) {
@@ -304,12 +304,12 @@ public class ParameterTab extends JPanel {
             @Override
             public void watch() {
                 try {
-                    final RandomGraph randomGraph = newRandomGraph();
+                    RandomGraph randomGraph = newRandomGraph();
                     newSimulation(randomGraph);
                     ParameterTab.this.simulation.getSimulation().createData(ParameterTab.this.simulation.getParams(), false);
 
                     firePropertyChange("modelChanged", null, null);
-                } catch (final Exception exception) {
+                } catch (Exception exception) {
                     exception.printStackTrace(System.err);
                     Throwable cause = exception;
                     if (exception.getCause() != null) {
@@ -328,8 +328,8 @@ public class ParameterTab extends JPanel {
         };
     }
 
-    private Box createLabeledComponent(final String text, final Component comp) {
-        final Box box = Box.createHorizontalBox();
+    private Box createLabeledComponent(String text, Component comp) {
+        Box box = Box.createHorizontalBox();
         box.add(new JLabel(text));
         box.add(Box.createGlue());
 
@@ -340,8 +340,8 @@ public class ParameterTab extends JPanel {
         return box;
     }
 
-    private String[] getSimulationItems(final Simulation simulation) {
-        final String[] items;
+    private String[] getSimulationItems(Simulation simulation) {
+        String[] items;
 
         if (simulation.isFixedSimulation()) {
             if (simulation.getSimulation() instanceof BayesNetSimulation) {

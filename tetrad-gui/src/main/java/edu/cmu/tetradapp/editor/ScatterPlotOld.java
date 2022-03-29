@@ -52,7 +52,7 @@ public class ScatterPlotOld {
     /**
      * Constructs the scatter plot given the dataset to wrap and the node that should be viewed.
      */
-    public ScatterPlotOld(final DataSet dataSet, final ContinuousVariable yVariable, final ContinuousVariable xVariable) {
+    public ScatterPlotOld(DataSet dataSet, ContinuousVariable yVariable, ContinuousVariable xVariable) {
 
         setDrawRegLine(false);
 
@@ -164,7 +164,7 @@ public class ScatterPlotOld {
         return this.yData;
     }
 
-    private void setyData(final double[] yData) {
+    private void setyData(double[] yData) {
         this.yData = yData;
     }
 
@@ -172,11 +172,11 @@ public class ScatterPlotOld {
         return this.xData;
     }
 
-    private void setxData(final double[] xData) {
+    private void setxData(double[] xData) {
         this.xData = xData;
     }
 
-    private void setDataSet(final DataSet dataSet) {
+    private void setDataSet(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -193,7 +193,7 @@ public class ScatterPlotOld {
         return this.indexSet;
     }
 
-    public void setIndexSet(final Vector indexSet) {
+    public void setIndexSet(Vector indexSet) {
         this.indexSet = indexSet;
     }
 
@@ -201,7 +201,7 @@ public class ScatterPlotOld {
         return this.complementIndexSet;
     }
 
-    public void setComplementIndexSet(final Vector complementIndexSet) {
+    public void setComplementIndexSet(Vector complementIndexSet) {
         this.complementIndexSet = complementIndexSet;
     }
 
@@ -209,7 +209,7 @@ public class ScatterPlotOld {
         return this.drawRegLine;
     }
 
-    public void setDrawRegLine(final boolean drawRegLine) {
+    public void setDrawRegLine(boolean drawRegLine) {
         this.drawRegLine = drawRegLine;
     }
 
@@ -217,7 +217,7 @@ public class ScatterPlotOld {
         return this.yVariable;
     }
 
-    private void setyVariable(final ContinuousVariable yVariable) {
+    private void setyVariable(ContinuousVariable yVariable) {
         this.yVariable = yVariable;
     }
 }

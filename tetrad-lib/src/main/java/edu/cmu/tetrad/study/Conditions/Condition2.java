@@ -40,7 +40,7 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class Condition2 {
     public void generateTetradResults() {
-        final Parameters parameters = new Parameters();
+        Parameters parameters = new Parameters();
 
         parameters.set("alpha", 0.01);
         parameters.set("numRuns", 10);
@@ -48,7 +48,7 @@ public class Condition2 {
         parameters.set("useMaxPOrientationHeuristic", false);
 //        parameters.set("maxPOrientationMaxPathLength", 3);
 
-        final Statistics statistics = new Statistics();
+        Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -67,7 +67,7 @@ public class Condition2 {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
 
-        final Algorithms algorithms = new Algorithms();
+        Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new Pc(new FisherZ()));
 //        algorithms.add(new PcStable(new FisherZ()));
@@ -75,7 +75,7 @@ public class Condition2 {
 //        algorithms.add(new Cpc(new FisherZ()));
 //        algorithms.add(new CpcStable(new FisherZ()));
 
-        final Comparison comparison = new Comparison();
+        Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
@@ -88,11 +88,11 @@ public class Condition2 {
     }
 
     public void compileTable() {
-        final Parameters parameters = new Parameters();
+        Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
 
-        final Statistics statistics = new Statistics();
+        Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -110,7 +110,7 @@ public class Condition2 {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
 
-        final Algorithms algorithms = new Algorithms();
+        Algorithms algorithms = new Algorithms();
 
         algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.01"));
         algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
@@ -204,7 +204,7 @@ public class Condition2 {
 //                new ExternalAlgorithmPcalgPc("CPC_majority_pcalg_defaults_alpha_=_0.001")
 //        ));
 
-        final Comparison comparison = new Comparison();
+        Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
@@ -217,7 +217,7 @@ public class Condition2 {
                 algorithms, statistics, parameters);
 
 
-        final Statistics statistics2 = new Statistics();
+        Statistics statistics2 = new Statistics();
 
         statistics2.add(new ParameterColumn("numMeasures"));
         statistics2.add(new ParameterColumn("avgDegree"));
@@ -238,7 +238,7 @@ public class Condition2 {
 
     }
 
-    public static void main(final String... args) {
+    public static void main(String... args) {
         new Condition2().compileTable();
     }
 }

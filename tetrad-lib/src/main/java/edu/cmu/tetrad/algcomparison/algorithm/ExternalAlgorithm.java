@@ -18,15 +18,15 @@ public abstract class ExternalAlgorithm implements Algorithm {
     protected int simIndex = -1;
     protected List<String> usedParameters = new ArrayList<>();
 
-    public void setSimulation(final Simulation simulation) {
+    public void setSimulation(Simulation simulation) {
         this.simulation = simulation;
     }
 
-    public void setPath(final String path) {
+    public void setPath(String path) {
         this.path = path;
     }
 
-    public void setSimIndex(final int simIndex) {
+    public void setSimIndex(int simIndex) {
         this.simIndex = simIndex;
     }
 
@@ -44,7 +44,7 @@ public abstract class ExternalAlgorithm implements Algorithm {
         return this.simulation.getNumDataModels();
     }
 
-    public int getIndex(final DataModel dataSet) {
+    public int getIndex(DataModel dataSet) {
         int index = -1;
 
         for (int i = 0; i < getNumDataModels(); i++) {

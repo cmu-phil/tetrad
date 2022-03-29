@@ -37,7 +37,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     private boolean hasHeader;
     private char quoteChar;
 
-    public MixedTabularDatasetFileReader(final Path dataFile, final Delimiter delimiter, final int numberOfDiscreteCategories) {
+    public MixedTabularDatasetFileReader(Path dataFile, Delimiter delimiter, int numberOfDiscreteCategories) {
         super(dataFile, delimiter);
         this.numberOfDiscreteCategories = numberOfDiscreteCategories;
         this.hasHeader = true;
@@ -50,17 +50,17 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     @Override
-    public Data readInData(final Set<String> namesOfColumnsToExclude) throws IOException {
-        final TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
+    public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException {
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
         columnReader.setCommentMarker(this.commentMarker);
         columnReader.setQuoteCharacter(this.quoteChar);
 
         final boolean isDiscrete = false;
-        final DataColumn[] dataColumns = this.hasHeader
+        DataColumn[] dataColumns = this.hasHeader
                 ? columnReader.readInDataColumns(namesOfColumnsToExclude, isDiscrete)
                 : columnReader.generateColumns(new int[0], isDiscrete);
 
-        final TabularDataReader dataReader = new TabularDataFileReader(this.dataFile, this.delimiter);
+        TabularDataReader dataReader = new TabularDataFileReader(this.dataFile, this.delimiter);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteChar);
         dataReader.setMissingDataMarker(this.missingDataMarker);
@@ -71,17 +71,17 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     @Override
-    public Data readInData(final int[] columnsToExclude) throws IOException {
-        final TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
+    public Data readInData(int[] columnsToExclude) throws IOException {
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
         columnReader.setCommentMarker(this.commentMarker);
         columnReader.setQuoteCharacter(this.quoteChar);
 
         final boolean isDiscrete = false;
-        final DataColumn[] dataColumns = this.hasHeader
+        DataColumn[] dataColumns = this.hasHeader
                 ? columnReader.readInDataColumns(columnsToExclude, isDiscrete)
                 : columnReader.generateColumns(columnsToExclude, isDiscrete);
 
-        final TabularDataReader dataReader = new TabularDataFileReader(this.dataFile, this.delimiter);
+        TabularDataReader dataReader = new TabularDataFileReader(this.dataFile, this.delimiter);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteChar);
         dataReader.setMissingDataMarker(this.missingDataMarker);
@@ -91,20 +91,20 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
         return toMixedData(dataReader.read(dataColumns, this.hasHeader));
     }
 
-    private Data toMixedData(final Data data) {
+    private Data toMixedData(Data data) {
         if (data instanceof ContinuousData) {
-            final ContinuousData continuousData = (ContinuousData) data;
-            final double[][] contData = continuousData.getData();
-            final int numOfRows = contData.length;
-            final int numOfCols = contData[0].length;
+            ContinuousData continuousData = (ContinuousData) data;
+            double[][] contData = continuousData.getData();
+            int numOfRows = contData.length;
+            int numOfCols = contData[0].length;
 
             // convert to mixed variables
-            final DiscreteDataColumn[] columns = Arrays.stream(continuousData.getDataColumns())
+            DiscreteDataColumn[] columns = Arrays.stream(continuousData.getDataColumns())
                     .map(MixedTabularDataColumn::new)
                     .toArray(DiscreteDataColumn[]::new);
 
             // transpose the data
-            final double[][] vertContData = new double[numOfCols][numOfRows];
+            double[][] vertContData = new double[numOfCols][numOfRows];
             for (int row = 0; row < numOfRows; row++) {
                 for (int col = 0; col < numOfCols; col++) {
                     vertContData[col][row] = contData[row][col];
@@ -113,14 +113,14 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
 
             return new MixedTabularData(numOfRows, columns, vertContData, new int[0][0]);
         } else if (data instanceof DiscreteData) {
-            final DiscreteData verticalDiscreteData = (DiscreteData) data;
-            final int[][] discreteData = verticalDiscreteData.getData();
-            final int numOfRows = discreteData[0].length;
+            DiscreteData verticalDiscreteData = (DiscreteData) data;
+            int[][] discreteData = verticalDiscreteData.getData();
+            int numOfRows = discreteData[0].length;
 
             // convert to mixed variables
-            final DiscreteDataColumn[] columns = Arrays.stream(verticalDiscreteData.getDataColumns())
+            DiscreteDataColumn[] columns = Arrays.stream(verticalDiscreteData.getDataColumns())
                     .map(e -> {
-                        final DiscreteDataColumn column = new MixedTabularDataColumn(e.getDataColumn());
+                        DiscreteDataColumn column = new MixedTabularDataColumn(e.getDataColumn());
                         e.getCategories().forEach(v -> column.setValue(v));
                         e.recategorize();
 
@@ -129,11 +129,11 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
 
             return new MixedTabularData(numOfRows, columns, new double[0][0], discreteData);
         } else if (data instanceof MixedTabularData) {
-            final MixedTabularData mixedTabularData = (MixedTabularData) data;
-            final DiscreteDataColumn[] columns = mixedTabularData.getDataColumns();
-            final double[][] continuousData = mixedTabularData.getContinuousData();
-            final int[][] discreteData = mixedTabularData.getDiscreteData();
-            final int numOfRows = mixedTabularData.getNumOfRows();
+            MixedTabularData mixedTabularData = (MixedTabularData) data;
+            DiscreteDataColumn[] columns = mixedTabularData.getDataColumns();
+            double[][] continuousData = mixedTabularData.getContinuousData();
+            int[][] discreteData = mixedTabularData.getDiscreteData();
+            int numOfRows = mixedTabularData.getNumOfRows();
 
             return new MixedTabularData(numOfRows, columns, continuousData, discreteData);
         } else {
@@ -142,12 +142,12 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     @Override
-    public void setHasHeader(final boolean hasHeader) {
+    public void setHasHeader(boolean hasHeader) {
         this.hasHeader = hasHeader;
     }
 
     @Override
-    public void setQuoteCharacter(final char quoteCharacter) {
+    public void setQuoteCharacter(char quoteCharacter) {
         this.quoteChar = quoteCharacter;
     }
 

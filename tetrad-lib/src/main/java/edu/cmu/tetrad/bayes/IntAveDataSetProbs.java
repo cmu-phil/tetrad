@@ -64,7 +64,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     /**
      * Creates a cell count table for the given data set.
      */
-    public IntAveDataSetProbs(final DataSet dataSet) {
+    public IntAveDataSetProbs(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -73,7 +73,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
         this.dims = new int[dataSet.getNumColumns()];
 
         for (int i = 0; i < this.dims.length; i++) {
-            final DiscreteVariable variable =
+            DiscreteVariable variable =
                     (DiscreteVariable) dataSet.getVariable(i);
             this.dims[i] = variable.getNumCategories();
         }
@@ -88,8 +88,8 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
      * @return the estimated probability for the given cell. The order of the
      * variable values is the order of the variables in getVariable().
      */
-    public double getCellProb(final int[] variableValues) {
-        final int[] point = new int[this.dims.length];
+    public double getCellProb(int[] variableValues) {
+        int[] point = new int[this.dims.length];
         int count = 0;
 
         point:
@@ -113,8 +113,8 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     /**
      * @return the estimated probability of the given proposition.
      */
-    public double getProb(final Proposition assertion) {
-        final int[] point = new int[this.dims.length];
+    public double getProb(Proposition assertion) {
+        int[] point = new int[this.dims.length];
         int count = 0;
 
         point:
@@ -139,16 +139,16 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
      * @return the estimated conditional probability for the given assertion
      * conditional on the given condition.
      */
-    public double getConditionalProb(final Proposition assertion,
-                                     final Proposition condition) {
+    public double getConditionalProb(Proposition assertion,
+                                     Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
                             "for the same Bayes IM.");
         }
 
-        final List<Node> assertionVars = assertion.getVariableSource().getVariables();
-        final List<Node> dataVars = this.dataSet.getVariables();
+        List<Node> assertionVars = assertion.getVariableSource().getVariables();
+        List<Node> dataVars = this.dataSet.getVariables();
 
         if (!assertionVars.equals(dataVars)) {
             throw new IllegalArgumentException(
@@ -158,7 +158,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
                             "\n\tData vars: " + dataVars);
         }
 
-        final int[] point = new int[this.dims.length];
+        int[] point = new int[this.dims.length];
         int count1 = 0;
         int count2 = 0;
 
@@ -195,7 +195,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
 
         for (int i = 0; i < this.dims.length; i++) {
             if (condition.isConditioned(i)) {
-                final Proposition condition2 = new Proposition(condition);
+                Proposition condition2 = new Proposition(condition);
                 condition.setVariable(i, true);
                 count1 = 0;
                 count2 = 0;

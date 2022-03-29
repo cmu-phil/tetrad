@@ -36,13 +36,13 @@ public class ValidationResult {
 
     private String message;
 
-    public ValidationResult(final ValidationCode code, final MessageType messageType) {
+    public ValidationResult(ValidationCode code, MessageType messageType) {
         this.code = code;
         this.messageType = messageType;
         this.attributes = new EnumMap<>(ValidationAttribute.class);
     }
 
-    public ValidationResult(final ValidationCode code, final MessageType messageType, final String message) {
+    public ValidationResult(ValidationCode code, MessageType messageType, String message) {
         this(code, messageType);
         this.message = message;
     }
@@ -64,7 +64,7 @@ public class ValidationResult {
         return this.attributes;
     }
 
-    public void setAttribute(final ValidationAttribute attribute, final Object value) {
+    public void setAttribute(ValidationAttribute attribute, Object value) {
         this.attributes.put(attribute, value);
     }
 
@@ -72,7 +72,7 @@ public class ValidationResult {
         return this.message;
     }
 
-    public void setMessage(final String message) {
+    public void setMessage(String message) {
         this.message = message;
     }
 

@@ -127,7 +127,7 @@ public final class ProbFci implements GraphSearch {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public ProbFci(final IndependenceTest independenceTest) {
+    public ProbFci(IndependenceTest independenceTest) {
         if (independenceTest == null || this.knowledge == null) {
             throw new NullPointerException();
         }
@@ -141,7 +141,7 @@ public final class ProbFci implements GraphSearch {
      * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
      * search over.
      */
-    public ProbFci(final IndependenceTest independenceTest, final List<Node> searchVars) {
+    public ProbFci(IndependenceTest independenceTest, List<Node> searchVars) {
         if (independenceTest == null || this.knowledge == null) {
             throw new NullPointerException();
         }
@@ -149,10 +149,10 @@ public final class ProbFci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
 
-        final Set<Node> remVars = new HashSet<>();
-        for (final Node node1 : this.variables) {
+        Set<Node> remVars = new HashSet<>();
+        for (Node node1 : this.variables) {
             boolean search = false;
-            for (final Node node2 : searchVars) {
+            for (Node node2 : searchVars) {
                 if (node1.getName().equals(node2.getName())) {
                     search = true;
                 }
@@ -170,7 +170,7 @@ public final class ProbFci implements GraphSearch {
         return this.depth;
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0: " + depth);
@@ -184,16 +184,16 @@ public final class ProbFci implements GraphSearch {
     }
 
     public Graph search() {
-        final long beginTime = System.currentTimeMillis();
+        long beginTime = System.currentTimeMillis();
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + this.independenceTest + ".");
 
         setMaxReachablePathLength(this.maxReachablePathLength);
 
         //List<Node> variables = independenceTest.getVariable();       - Robert Tillman 2008
-        final List<Node> nodes = new LinkedList<>();
+        List<Node> nodes = new LinkedList<>();
 
-        for (final Node variable : this.variables) {
+        for (Node variable : this.variables) {
             nodes.add(variable);
         }
 
@@ -217,7 +217,7 @@ public final class ProbFci implements GraphSearch {
 //        graph.fullyConnect(Endpoint.CIRCLE);
 
 //        // Step FCI B.  (Zhang's step F2.)
-        final Fas adj = new Fas(this.independenceTest);
+        Fas adj = new Fas(this.independenceTest);
 //        FasStableConcurrent adj = new FasStableConcurrent(graph, independenceTest);
         adj.setKnowledge(getKnowledge());
         adj.setDepth(this.depth);
@@ -231,21 +231,21 @@ public final class ProbFci implements GraphSearch {
         if (!this.RFCI_Used) {
             //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
             if (isPossibleDsepSearchDone()) {
-                final long time1 = System.currentTimeMillis();
+                long time1 = System.currentTimeMillis();
                 ruleR0();
 
-                final long time2 = System.currentTimeMillis();
+                long time2 = System.currentTimeMillis();
                 this.logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
 
                 // Step FCI D.
-                final long time3 = System.currentTimeMillis();
+                long time3 = System.currentTimeMillis();
 
-                final PossibleDsepFci possibleDSep = new PossibleDsepFci(this.graph, this.independenceTest, this.corr);
+                PossibleDsepFci possibleDSep = new PossibleDsepFci(this.graph, this.independenceTest, this.corr);
                 possibleDSep.setDepth(getDepth());
                 possibleDSep.setKnowledge(getKnowledge());
                 possibleDSep.setMaxPathLength(getMaxReachablePathLength());
                 this.sepsets.addAll(possibleDSep.search());
-                final long time4 = System.currentTimeMillis();
+                long time4 = System.currentTimeMillis();
                 this.logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
 
                 // Reorient all edges as o-o.
@@ -253,12 +253,12 @@ public final class ProbFci implements GraphSearch {
             }
 
             // Step CI C (Zhang's step F3.)
-            final long time5 = System.currentTimeMillis();
+            long time5 = System.currentTimeMillis();
             //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
             fciOrientbk(getKnowledge(), this.graph, this.variables);
             ruleR0();
 
-            final long time6 = System.currentTimeMillis();
+            long time6 = System.currentTimeMillis();
             this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
 
             // Step CI D. (Zhang's step F4.)
@@ -273,7 +273,7 @@ public final class ProbFci implements GraphSearch {
         }
 
 
-        final long endTime = System.currentTimeMillis();
+        long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - beginTime;
 
 //        graph.closeInducingPaths();   //to make sure it's a legal PAG
@@ -289,7 +289,7 @@ public final class ProbFci implements GraphSearch {
         return this.knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -309,7 +309,7 @@ public final class ProbFci implements GraphSearch {
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
-    public void setCompleteRuleSetUsed(final boolean completeRuleSetUsed) {
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
@@ -319,7 +319,7 @@ public final class ProbFci implements GraphSearch {
 //        return RFCI_Used;
 //    }
 
-    public void setRFCI_Used(final boolean RFCI_Used) {
+    public void setRFCI_Used(boolean RFCI_Used) {
         this.RFCI_Used = RFCI_Used;
     }
 
@@ -331,28 +331,28 @@ public final class ProbFci implements GraphSearch {
      * Zhang's step F3, rule R0.
      */
     private void ruleR0() {
-        final List<Node> nodes = this.graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
 
-        for (final Node b : nodes) {
-            final List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                final Node a = adjacentNodes.get(combination[0]);
-                final Node c = adjacentNodes.get(combination[1]);
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
 
                 // Skip triples that are shielded.
                 if (this.graph.isAdjacentTo(a, c)) {
                     continue;
                 }
 
-                final List<Node> sepset2 = this.sepsets.get(a, c);
+                List<Node> sepset2 = this.sepsets.get(a, c);
 
                 if (sepset2 == null) continue;
 
@@ -377,21 +377,21 @@ public final class ProbFci implements GraphSearch {
     // RFCI Algorithm 4.4 (Colombo et al, 2012)
     // Orient colliders
     ////////////////////////////////////////////
-    private void ruleR0_RFCI(final List<Node[]> rTuples) {
-        final List<Node[]> lTuples = new ArrayList<>();
+    private void ruleR0_RFCI(List<Node[]> rTuples) {
+        List<Node[]> lTuples = new ArrayList<>();
 
-        final List<Node> nodes = this.graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
 
         ///////////////////////////////
         // process tuples in rTuples
         while (!rTuples.isEmpty()) {
-            final Node[] thisTuple = rTuples.remove(0);
+            Node[] thisTuple = rTuples.remove(0);
 
-            final Node i = thisTuple[0];
-            final Node j = thisTuple[1];
-            final Node k = thisTuple[2];
+            Node i = thisTuple[0];
+            Node j = thisTuple[1];
+            Node k = thisTuple[2];
 
-            final List<Node> sepSet = new ArrayList<>();
+            List<Node> sepSet = new ArrayList<>();
             sepSet.remove(j);
 
             boolean independent1 = false;
@@ -399,7 +399,7 @@ public final class ProbFci implements GraphSearch {
             {
                 try {
                     independent1 = this.independenceTest.isIndependent(i, j, sepSet);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     independent1 = false;
                 }
             }
@@ -409,7 +409,7 @@ public final class ProbFci implements GraphSearch {
             {
                 try {
                     independent2 = this.independenceTest.isIndependent(j, k, sepSet);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     independent2 = false;
                 }
             }
@@ -428,19 +428,19 @@ public final class ProbFci implements GraphSearch {
                 }
 
                 // add new unshielded tuples to rTuples
-                for (final Node thisNode : nodes) {
-                    final List<Node> adjacentNodes = this.graph.getAdjacentNodes(thisNode);
+                for (Node thisNode : nodes) {
+                    List<Node> adjacentNodes = this.graph.getAdjacentNodes(thisNode);
                     if (independent1) // <i, ., j>
                     {
                         if (adjacentNodes.contains(i) && adjacentNodes.contains(j)) {
-                            final Node[] newTuple = {i, thisNode, j};
+                            Node[] newTuple = {i, thisNode, j};
                             rTuples.add(newTuple);
                         }
                     }
                     if (independent2) // <j, ., k>
                     {
                         if (adjacentNodes.contains(j) && adjacentNodes.contains(k)) {
-                            final Node[] newTuple = {j, thisNode, k};
+                            Node[] newTuple = {j, thisNode, k};
                             rTuples.add(newTuple);
                         }
                     }
@@ -450,7 +450,7 @@ public final class ProbFci implements GraphSearch {
                 // or (if independent2) <j, k> from rTuples
                 Iterator<Node[]> iter = rTuples.iterator();
                 while (iter.hasNext()) {
-                    final Node[] curTuple = iter.next();
+                    Node[] curTuple = iter.next();
                     if ((independent1 && (curTuple[1] == i) &&
                             ((curTuple[0] == j) || (curTuple[2] == j)))
                             ||
@@ -470,7 +470,7 @@ public final class ProbFci implements GraphSearch {
                 // or (if independent2) <j, k> from lTuples
                 iter = lTuples.iterator();
                 while (iter.hasNext()) {
-                    final Node[] curTuple = iter.next();
+                    Node[] curTuple = iter.next();
                     if ((independent1 && (curTuple[1] == i) &&
                             ((curTuple[0] == j) || (curTuple[2] == j)))
                             ||
@@ -490,12 +490,12 @@ public final class ProbFci implements GraphSearch {
 
         ///////////////////////////////////////////////////////
         // orient colliders (similar to original FCI ruleR0)
-        for (final Node[] thisTuple : lTuples) {
-            final Node i = thisTuple[0];
-            final Node j = thisTuple[1];
-            final Node k = thisTuple[2];
+        for (Node[] thisTuple : lTuples) {
+            Node i = thisTuple[0];
+            Node j = thisTuple[1];
+            Node k = thisTuple[2];
 
-            final List<Node> sepset = this.sepsets.get(i, k);
+            List<Node> sepset = this.sepsets.get(i, k);
 
             if (sepset == null) {
                 continue;
@@ -523,26 +523,26 @@ public final class ProbFci implements GraphSearch {
     // collect in rTupleList all unshielded tuples
     ////////////////////////////////////////////////
     private List<Node[]> getRTuples() {
-        final List<Node[]> rTuples = new ArrayList<>();
-        final List<Node> nodes = this.graph.getNodes();
+        List<Node[]> rTuples = new ArrayList<>();
+        List<Node> nodes = this.graph.getNodes();
 
-        for (final Node j : nodes) {
-            final List<Node> adjacentNodes = this.graph.getAdjacentNodes(j);
+        for (Node j : nodes) {
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(j);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                final Node i = adjacentNodes.get(combination[0]);
-                final Node k = adjacentNodes.get(combination[1]);
+                Node i = adjacentNodes.get(combination[0]);
+                Node k = adjacentNodes.get(combination[1]);
 
                 // Skip triples that are shielded.
                 if (!this.graph.isAdjacentTo(i, k)) {
-                    final Node[] newTuple = {i, j, k};
+                    Node[] newTuple = {i, j, k};
                     rTuples.add(newTuple);
                 }
 
@@ -556,7 +556,7 @@ public final class ProbFci implements GraphSearch {
     // set the sepSet of x and y to the minimal such subset of the given sepSet
     // and remove the edge <x, y> if background knowledge allows
     /////////////////////////////////////////////////////////////////////////////
-    private void setMinSepSet(final List<Node> sepSet, final Node x, final Node y) {
+    private void setMinSepSet(List<Node> sepSet, Node x, Node y) {
         // It is assumed that BK has been considered before calling this method
         // (for example, setting independent1 and independent2 in ruleR0_RFCI)
         /*
@@ -568,12 +568,12 @@ public final class ProbFci implements GraphSearch {
 		 */
 
 
-        final List<Node> empty = Collections.emptyList();
+        List<Node> empty = Collections.emptyList();
         boolean indep;
 
         try {
             indep = this.independenceTest.isIndependent(x, y, empty);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             indep = false;
         }
 
@@ -582,17 +582,17 @@ public final class ProbFci implements GraphSearch {
             return;
         }
 
-        final int sepSetSize = sepSet.size();
+        int sepSetSize = sepSet.size();
         for (int i = 1; i <= sepSetSize; i++) {
-            final ChoiceGenerator cg = new ChoiceGenerator(sepSetSize, i);
+            ChoiceGenerator cg = new ChoiceGenerator(sepSetSize, i);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                final List<Node> condSet = GraphUtils.asList(combination, sepSet);
+                List<Node> condSet = GraphUtils.asList(combination, sepSet);
 
                 try {
                     indep = this.independenceTest.isIndependent(x, y, condSet);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     indep = false;
                 }
 
@@ -694,21 +694,21 @@ public final class ProbFci implements GraphSearch {
     // triples multiple times per iteration of doFinalOrientation.
 
     private void rulesR1R2cycle() {
-        final List<Node> nodes = this.graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
 
-        for (final Node B : nodes) {
-            final List<Node> adj = this.graph.getAdjacentNodes(B);
+        for (Node B : nodes) {
+            List<Node> adj = this.graph.getAdjacentNodes(B);
 
             if (adj.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                final Node A = adj.get(combination[0]);
-                final Node C = adj.get(combination[1]);
+                Node A = adj.get(combination[0]);
+                Node C = adj.get(combination[1]);
 
                 //choice gen doesnt do diff orders, so must switch A & C around.
                 ruleR1(A, B, C);
@@ -753,7 +753,7 @@ public final class ProbFci implements GraphSearch {
 
     /// R1, away from collider
 
-    private void ruleR1(final Node a, final Node b, final Node c) {
+    private void ruleR1(Node a, Node b, Node c) {
         if (this.graph.isAdjacentTo(a, c)) {
             return;
         }
@@ -811,7 +811,7 @@ public final class ProbFci implements GraphSearch {
     //if Ao->c and a-->b-->c, then a-->c
     // Zhang's rule R2, awy from ancestor.
 
-    private void ruleR2(final Node a, final Node b, final Node c) {
+    private void ruleR2(Node a, Node b, Node c) {
         if (!this.graph.isAdjacentTo(a, c)) {
             return;
         }
@@ -845,24 +845,24 @@ public final class ProbFci implements GraphSearch {
      * This is Zhang's rule R3.
      */
     private void ruleR3() {
-        final List<Node> nodes = this.graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
 
-        for (final Node B : nodes) {
+        for (Node B : nodes) {
 
-            final List<Node> intoBArrows = this.graph.getNodesInTo(B, Endpoint.ARROW);
-            final List<Node> intoBCircles = this.graph.getNodesInTo(B, Endpoint.CIRCLE);
+            List<Node> intoBArrows = this.graph.getNodesInTo(B, Endpoint.ARROW);
+            List<Node> intoBCircles = this.graph.getNodesInTo(B, Endpoint.CIRCLE);
 
-            for (final Node D : intoBCircles) {
+            for (Node D : intoBCircles) {
                 if (intoBArrows.size() < 2) {
                     continue;
                 }
 
-                final ChoiceGenerator gen = new ChoiceGenerator(intoBArrows.size(), 2);
+                ChoiceGenerator gen = new ChoiceGenerator(intoBArrows.size(), 2);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    final Node A = intoBArrows.get(choice[0]);
-                    final Node C = intoBArrows.get(choice[1]);
+                    Node A = intoBArrows.get(choice[0]);
+                    Node C = intoBArrows.get(choice[1]);
 
                     if (this.graph.isAdjacentTo(A, C)) {
                         continue;
@@ -907,22 +907,22 @@ public final class ProbFci implements GraphSearch {
      * This is Zhang's rule R4, discriminating undirectedPaths.
      */
     private void ruleR4() {
-        final List<Node> nodes = this.graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
 
-        for (final Node b : nodes) {
+        for (Node b : nodes) {
 
             //potential A and C candidate pairs are only those
             // that look like this:   A<-*Bo-*C
-            final List<Node> possA = this.graph.getNodesOutTo(b, Endpoint.ARROW);
-            final List<Node> possC = this.graph.getNodesInTo(b, Endpoint.CIRCLE);
+            List<Node> possA = this.graph.getNodesOutTo(b, Endpoint.ARROW);
+            List<Node> possC = this.graph.getNodesInTo(b, Endpoint.CIRCLE);
 
-            for (final Node a : possA) {
-                for (final Node c : possC) {
+            for (Node a : possA) {
+                for (Node c : possC) {
                     if (!this.graph.isParentOf(a, c)) {
                         continue;
                     }
 
-                    final LinkedList<Node> reachable = new LinkedList<>();
+                    LinkedList<Node> reachable = new LinkedList<>();
                     reachable.add(a);
                     reachablePathFind(a, b, c, reachable);
 
@@ -942,18 +942,18 @@ public final class ProbFci implements GraphSearch {
      * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p> The body of
      * a DDP consists of colliders that are parents of c.
      */
-    private void reachablePathFind(final Node a, final Node b, final Node c,
-                                   final LinkedList<Node> reachable) {
+    private void reachablePathFind(Node a, Node b, Node c,
+                                   LinkedList<Node> reachable) {
 
-        final Map<Node, Node> next = new HashMap<>();   // RFCI: stores the next node in the disciminating path
+        Map<Node, Node> next = new HashMap<>();   // RFCI: stores the next node in the disciminating path
         // path containing the nodes in the traiangle
         next.put(a, b);
         next.put(b, c);
 
-        final Set<Node> cParents = new HashSet<>(this.graph.getParents(c));
+        Set<Node> cParents = new HashSet<>(this.graph.getParents(c));
 
         // Needed to avoid cycles in failure case.
-        final Set<Node> visited = new HashSet<>();
+        Set<Node> visited = new HashSet<>();
         visited.add(b);
         visited.add(c);
 
@@ -961,14 +961,14 @@ public final class ProbFci implements GraphSearch {
         // the "visited" set.  b and c are added explicitly here; a will be
         // added in the first while iteration.
         while (reachable.size() > 0) {
-            final Node x = reachable.removeFirst();
+            Node x = reachable.removeFirst();
             visited.add(x);
 
             // Possible DDP path endpoints.
-            final List<Node> pathExtensions = this.graph.getNodesInTo(x, Endpoint.ARROW);
+            List<Node> pathExtensions = this.graph.getNodesInTo(x, Endpoint.ARROW);
             pathExtensions.removeAll(visited);
 
-            for (final Node d : pathExtensions) {
+            for (Node d : pathExtensions) {
                 // If d is reachable and not adjacent to c, its a DDP
                 // endpoint, so do DDP orientation. Otherwise, if d <-> c,
                 // add d to the list of reachable nodes.
@@ -1002,8 +1002,8 @@ public final class ProbFci implements GraphSearch {
      * Orients the edges inside the definte discriminating path triangle. Takes the left endpoint, and a,b,c as
      * arguments.
      */
-    private void doDdpOrientation(final Node d, final Node a, final Node b, final Node c) {
-        final List<Node> sepset = this.sepsets.get(d, c);
+    private void doDdpOrientation(Node d, Node a, Node b, Node c) {
+        List<Node> sepset = this.sepsets.get(d, c);
 
         if (sepset == null) return;
 
@@ -1037,11 +1037,11 @@ public final class ProbFci implements GraphSearch {
     // Arguments: the left endpoint (i), the last three points (l, j, k),
     // and the hashMap (next) which contains the next nodes of the path
     /////////////////////////////////////////////////////////////////////////
-    private void doDdpOrientation_RFCI(final Node i, final Node l, final Node j, final Node k,
-                                       final Map<Node, Node> next) {
-        final List<Node> nodes = this.graph.getNodes();
+    private void doDdpOrientation_RFCI(Node i, Node l, Node j, Node k,
+                                       Map<Node, Node> next) {
+        List<Node> nodes = this.graph.getNodes();
 
-        final List<Node> sepset = this.sepsets.get(i, k);
+        List<Node> sepset = this.sepsets.get(i, k);
 
         if (sepset == null) return;
 
@@ -1053,29 +1053,29 @@ public final class ProbFci implements GraphSearch {
         Node r = i;  // first node on the path
 
         while (r != k) {
-            final Node q = next.get(r);  // next node on the path after r
+            Node q = next.get(r);  // next node on the path after r
 
             if (this.knowledge.noEdgeRequired(r.getName(), q.getName()))  // if BK allows
             {
-                final List<Node> sepset1 = this.sepsets.get(i, k);
+                List<Node> sepset1 = this.sepsets.get(i, k);
 
                 if (sepset1 == null) continue;
 
-                final List<Node> sepSet2 = new ArrayList<>(sepset1);
+                List<Node> sepSet2 = new ArrayList<>(sepset1);
                 sepSet2.remove(r);
                 sepSet2.remove(q);
 
                 for (int setSize = 0; setSize <= sepSet2.size(); setSize++) {
-                    final ChoiceGenerator cg = new ChoiceGenerator(sepSet2.size(), setSize);
+                    ChoiceGenerator cg = new ChoiceGenerator(sepSet2.size(), setSize);
                     int[] combination;
 
                     while ((combination = cg.next()) != null) {
-                        final List<Node> condSet = GraphUtils.asList(combination, sepSet2);
+                        List<Node> condSet = GraphUtils.asList(combination, sepSet2);
 
                         boolean indep;
                         try {
                             indep = this.independenceTest.isIndependent(r, q, condSet);
-                        } catch (final Exception e) {
+                        } catch (Exception e) {
                             indep = false;
                         }
 
@@ -1083,11 +1083,11 @@ public final class ProbFci implements GraphSearch {
                             getSepsets().set(r, q, condSet);
 
                             // add new unshielded tuples to rTuples
-                            final List<Node[]> rTuples = new ArrayList<>();
-                            for (final Node thisNode : nodes) {
-                                final List<Node> adjacentNodes = this.graph.getAdjacentNodes(thisNode);
+                            List<Node[]> rTuples = new ArrayList<>();
+                            for (Node thisNode : nodes) {
+                                List<Node> adjacentNodes = this.graph.getAdjacentNodes(thisNode);
                                 if (adjacentNodes.contains(r) && adjacentNodes.contains(q)) {
-                                    final Node[] newTuple = {r, thisNode, q};
+                                    Node[] newTuple = {r, thisNode, q};
                                     rTuples.add(newTuple);
                                 }
 
@@ -1144,22 +1144,22 @@ public final class ProbFci implements GraphSearch {
      * <A,C,...,D,B> such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
      */
     private void ruleR5() {
-        final List<Node> nodes = this.graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
 
-        for (final Node a : nodes) {
-            final List<Node> adjacents = this.graph.getNodesInTo(a, Endpoint.CIRCLE);
+        for (Node a : nodes) {
+            List<Node> adjacents = this.graph.getNodesInTo(a, Endpoint.CIRCLE);
 
-            for (final Node b : adjacents) {
+            for (Node b : adjacents) {
                 if (!(this.graph.getEndpoint(a, b) == Endpoint.CIRCLE)) continue;
                 // We know Ao-oB.
 
-                final List<List<Node>> ucCirclePaths = getUcCirclePaths(a, b);
+                List<List<Node>> ucCirclePaths = getUcCirclePaths(a, b);
 
-                for (final List<Node> u : ucCirclePaths) {
+                for (List<Node> u : ucCirclePaths) {
                     if (u.size() < 3) continue;
 
-                    final Node c = u.get(1);
-                    final Node d = u.get(u.size() - 2);
+                    Node c = u.get(1);
+                    Node d = u.get(u.size() - 2);
 
 //                    System.out.println("a = " + a + " c = " + c + " d = " + d + " b = " + b);
 
@@ -1183,18 +1183,18 @@ public final class ProbFci implements GraphSearch {
      * A---B--*C. R7: If A--oBo-*C and A,C nonadjacent, then A--oB--*C
      */
     private void ruleR6R7() {
-        final List<Node> nodes = this.graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
 
-        for (final Node b : nodes) {
-            final List<Node> adjacents = this.graph.getAdjacentNodes(b);
+        for (Node b : nodes) {
+            List<Node> adjacents = this.graph.getAdjacentNodes(b);
 
             if (adjacents.size() < 2) continue;
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adjacents.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacents.size(), 2);
 
             for (int[] choice = cg.next(); choice != null; choice = cg.next()) {
-                final Node a = adjacents.get(choice[0]);
-                final Node c = adjacents.get(choice[1]);
+                Node a = adjacents.get(choice[0]);
+                Node c = adjacents.get(choice[1]);
 
                 if (this.graph.isAdjacentTo(a, c)) continue;
 
@@ -1232,12 +1232,12 @@ public final class ProbFci implements GraphSearch {
      * and R10 in that sequence on each Ao->C in the graph.
      */
     private void rulesR8R9R10() {
-        final List<Node> nodes = this.graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
 
-        for (final Node c : nodes) {
-            final List<Node> intoCArrows = this.graph.getNodesInTo(c, Endpoint.ARROW);
+        for (Node c : nodes) {
+            List<Node> intoCArrows = this.graph.getNodesInTo(c, Endpoint.ARROW);
 
-            for (final Node a : intoCArrows) {
+            for (Node a : intoCArrows) {
                 if (!(this.graph.getEndpoint(c, a) == Endpoint.CIRCLE)) continue;
                 // We know Ao->C.
 
@@ -1260,10 +1260,10 @@ public final class ProbFci implements GraphSearch {
      *
      * @param path The path to orient as all tails.
      */
-    private void orientTailPath(final List<Node> path) {
+    private void orientTailPath(List<Node> path) {
         for (int i = 0; i < path.size() - 1; i++) {
-            final Node n1 = path.get(i);
-            final Node n2 = path.get(i + 1);
+            Node n1 = path.get(i);
+            Node n2 = path.get(i + 1);
 
 //            System.out.println("Tail path " + n1 + "---" + n2);
 
@@ -1284,14 +1284,14 @@ public final class ProbFci implements GraphSearch {
      * @param n2 The ending node of the undirectedPaths.
      * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
      */
-    private List<List<Node>> getUcPdPaths(final Node n1, final Node n2) {
-        final List<List<Node>> ucPdPaths = new LinkedList<>();
+    private List<List<Node>> getUcPdPaths(Node n1, Node n2) {
+        List<List<Node>> ucPdPaths = new LinkedList<>();
 
-        final LinkedList<Node> soFar = new LinkedList<>();
+        LinkedList<Node> soFar = new LinkedList<>();
         soFar.add(n1);
 
-        final List<Node> adjacencies = this.graph.getAdjacentNodes(n1);
-        for (final Node curr : adjacencies) {
+        List<Node> adjacencies = this.graph.getAdjacentNodes(n1);
+        for (Node curr : adjacencies) {
             getUcPdPsHelper(curr, soFar, n2, ucPdPaths);
         }
 
@@ -1310,17 +1310,17 @@ public final class ProbFci implements GraphSearch {
      * @param end       The node to finish the undirectedPaths at.
      * @param ucPdPaths The getModel list of uncovered p.d. undirectedPaths.
      */
-    private void getUcPdPsHelper(final Node curr, final List<Node> soFar, final Node end,
-                                 final List<List<Node>> ucPdPaths) {
+    private void getUcPdPsHelper(Node curr, List<Node> soFar, Node end,
+                                 List<List<Node>> ucPdPaths) {
 
         if (soFar.contains(curr)) return;
 
-        final Node prev = soFar.get(soFar.size() - 1);
+        Node prev = soFar.get(soFar.size() - 1);
         if (this.graph.getEndpoint(prev, curr) == Endpoint.TAIL ||
                 this.graph.getEndpoint(curr, prev) == Endpoint.ARROW) {
             return; // Adding curr would make soFar not p.d.
         } else if (soFar.size() >= 2) {
-            final Node prev2 = soFar.get(soFar.size() - 2);
+            Node prev2 = soFar.get(soFar.size() - 2);
             if (this.graph.isAdjacentTo(prev2, curr)) {
                 return; // Adding curr would make soFar not uncovered.
             }
@@ -1333,8 +1333,8 @@ public final class ProbFci implements GraphSearch {
             ucPdPaths.add(new LinkedList<>(soFar));
         } else {
             // Otherwise, try each node adjacent to the getModel one.
-            final List<Node> adjacents = this.graph.getAdjacentNodes(curr);
-            for (final Node next : adjacents) {
+            List<Node> adjacents = this.graph.getAdjacentNodes(curr);
+            for (Node next : adjacents) {
                 getUcPdPsHelper(next, soFar, end, ucPdPaths);
             }
         }
@@ -1352,14 +1352,14 @@ public final class ProbFci implements GraphSearch {
      * @param n2 The ending node of the undirectedPaths.
      * @return A list of uncovered circle undirectedPaths between n1 and n2.
      */
-    private List<List<Node>> getUcCirclePaths(final Node n1, final Node n2) {
-        final List<List<Node>> ucCirclePaths = new LinkedList<>();
-        final List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2);
+    private List<List<Node>> getUcCirclePaths(Node n1, Node n2) {
+        List<List<Node>> ucCirclePaths = new LinkedList<>();
+        List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2);
 
-        for (final List<Node> path : ucPdPaths) {
+        for (List<Node> path : ucPdPaths) {
             for (int i = 0; i < path.size() - 1; i++) {
-                final Node j = path.get(i);
-                final Node sj = path.get(i + 1);
+                Node j = path.get(i);
+                Node sj = path.get(i + 1);
 
                 if (!(this.graph.getEndpoint(j, sj) == Endpoint.CIRCLE)) break;
                 if (!(this.graph.getEndpoint(sj, j) == Endpoint.CIRCLE)) break;
@@ -1386,10 +1386,10 @@ public final class ProbFci implements GraphSearch {
      * @param c The node C.
      * @return Whether or not R8 was successfully applied.
      */
-    private boolean ruleR8(final Node a, final Node c) {
-        final List<Node> intoCArrows = this.graph.getNodesInTo(c, Endpoint.ARROW);
+    private boolean ruleR8(Node a, Node c) {
+        List<Node> intoCArrows = this.graph.getNodesInTo(c, Endpoint.ARROW);
 
-        for (final Node b : intoCArrows) {
+        for (Node b : intoCArrows) {
             // We have B*->C.
             if (!this.graph.isAdjacentTo(a, b)) continue;
             if (!this.graph.isAdjacentTo(b, c)) continue;
@@ -1423,11 +1423,11 @@ public final class ProbFci implements GraphSearch {
      * @param c The node C.
      * @return Whether or not R9 was succesfully applied.
      */
-    private boolean ruleR9(final Node a, final Node c) {
-        final List<List<Node>> ucPdPsToC = getUcPdPaths(a, c);
+    private boolean ruleR9(Node a, Node c) {
+        List<List<Node>> ucPdPsToC = getUcPdPaths(a, c);
 
-        for (final List<Node> u : ucPdPsToC) {
-            final Node b = u.get(1);
+        for (List<Node> u : ucPdPsToC) {
+            Node b = u.get(1);
             if (this.graph.isAdjacentTo(b, c)) continue;
             if (b == c) continue;
             // We know u is as required: R9 applies!
@@ -1454,27 +1454,27 @@ public final class ProbFci implements GraphSearch {
      * @param c The node C.
      * @return Whether or not R10 was successfully applied.
      */
-    private boolean ruleR10(final Node a, final Node c) {
-        final List<Node> intoCArrows = this.graph.getNodesInTo(c, Endpoint.ARROW);
+    private boolean ruleR10(Node a, Node c) {
+        List<Node> intoCArrows = this.graph.getNodesInTo(c, Endpoint.ARROW);
 
-        for (final Node b : intoCArrows) {
+        for (Node b : intoCArrows) {
             if (b == a) continue;
 
             if (!(this.graph.getEndpoint(c, b) == Endpoint.TAIL)) continue;
             // We know Ao->C and B-->C.
 
-            for (final Node d : intoCArrows) {
+            for (Node d : intoCArrows) {
                 if (d == a || d == b) continue;
 
                 if (!(this.graph.getEndpoint(d, c) == Endpoint.TAIL)) continue;
                 // We know Ao->C and B-->C<--D.
 
-                final List<List<Node>> ucPdPsToB = getUcPdPaths(a, b);
-                final List<List<Node>> ucPdPsToD = getUcPdPaths(a, d);
-                for (final List<Node> u1 : ucPdPsToB) {
-                    final Node m = u1.get(1);
-                    for (final List<Node> u2 : ucPdPsToD) {
-                        final Node n = u2.get(1);
+                List<List<Node>> ucPdPsToB = getUcPdPaths(a, b);
+                List<List<Node>> ucPdPsToD = getUcPdPaths(a, d);
+                for (List<Node> u1 : ucPdPsToB) {
+                    Node m = u1.get(1);
+                    for (List<Node> u2 : ucPdPsToD) {
+                        Node n = u2.get(1);
 
                         if (m.equals(n)) continue;
                         if (this.graph.isAdjacentTo(m, n)) continue;
@@ -1496,16 +1496,16 @@ public final class ProbFci implements GraphSearch {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(final IKnowledge bk, final Graph graph, final List<Node> variables) {
+    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
         this.logger.log("info", "Starting BK Orientation.");
 
-        for (final Iterator<KnowledgeEdge> it =
+        for (Iterator<KnowledgeEdge> it =
              bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            final KnowledgeEdge edge = it.next();
+            KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
 
             if (from == null || to == null) {
@@ -1523,13 +1523,13 @@ public final class ProbFci implements GraphSearch {
             this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        for (final Iterator<KnowledgeEdge> it =
+        for (Iterator<KnowledgeEdge> it =
              bk.requiredEdgesIterator(); it.hasNext(); ) {
-            final KnowledgeEdge edge = it.next();
+            KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -1561,7 +1561,7 @@ public final class ProbFci implements GraphSearch {
      * @param y The possible point node.
      * @return Whether the arrowpoint is allowed.
      */
-    private boolean isArrowpointAllowed(final Node x, final Node y) {
+    private boolean isArrowpointAllowed(Node x, Node y) {
         if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }
@@ -1586,7 +1586,7 @@ public final class ProbFci implements GraphSearch {
         return this.possibleDsepSearchDone;
     }
 
-    public void setPossibleDsepSearchDone(final boolean possibleDsepSearchDone) {
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
@@ -1600,7 +1600,7 @@ public final class ProbFci implements GraphSearch {
     /**
      * @param maxReachablePathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxReachablePathLength(final int maxReachablePathLength) {
+    public void setMaxReachablePathLength(int maxReachablePathLength) {
         if (maxReachablePathLength < -1) {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxReachablePathLength);
         }
@@ -1616,7 +1616,7 @@ public final class ProbFci implements GraphSearch {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

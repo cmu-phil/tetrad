@@ -58,11 +58,11 @@ public class GlassoSearchEditor extends AbstractSearchEditor
 
     //=========================CONSTRUCTORS============================//
 
-    public GlassoSearchEditor(final GlassoRunner runner) {
+    public GlassoSearchEditor(GlassoRunner runner) {
         super(runner, "Result Graph");
     }
 
-    public GlassoSearchEditor(final InverseCorrelationRunner runner) {
+    public GlassoSearchEditor(InverseCorrelationRunner runner) {
         super(runner, "Result Graph");
     }
 
@@ -81,14 +81,14 @@ public class GlassoSearchEditor extends AbstractSearchEditor
         return getWorkbench().getModelNodesToDisplay();
     }
 
-    public void layoutByGraph(final Graph graph) {
+    public void layoutByGraph(Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        final GraphWorkbench resultWorkbench = getWorkbench();
-        final Graph graph = resultWorkbench.getGraph();
-        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        GraphWorkbench resultWorkbench = getWorkbench();
+        Graph graph = resultWorkbench.getGraph();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -103,11 +103,11 @@ public class GlassoSearchEditor extends AbstractSearchEditor
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(final String resultLabel) {
+    protected void setup(String resultLabel) {
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
-        final JTextArea modelStatsText = new JTextArea();
-        final JTabbedPane tabbedPane = new JTabbedPane();
+        JTextArea modelStatsText = new JTextArea();
+        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
         add(tabbedPane, BorderLayout.CENTER);
         add(menuBar(), BorderLayout.NORTH);
@@ -117,27 +117,27 @@ public class GlassoSearchEditor extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        final JPanel toolbar = new JPanel();
+        JPanel toolbar = new JPanel();
 
         getExecuteButton().setText("Execute*");
         getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 execute();
             }
         });
 
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
         b1.add(getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
         b2.add(getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b4 = Box.createHorizontalBox();
-        final JLabel label = new JLabel("<html>" + "*Please note that some" +
+        Box b4 = Box.createHorizontalBox();
+        JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -153,7 +153,7 @@ public class GlassoSearchEditor extends AbstractSearchEditor
     }
 
     @Override
-    protected void addSpecialMenus(final JMenuBar menuBar) {
+    protected void addSpecialMenus(JMenuBar menuBar) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -178,11 +178,11 @@ public class GlassoSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        final Parameters params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
@@ -193,11 +193,11 @@ public class GlassoSearchEditor extends AbstractSearchEditor
     //================================PRIVATE METHODS====================//
 
     private JPanel getParamsPanel() {
-        final JPanel paramsPanel = new JPanel();
+        JPanel paramsPanel = new JPanel();
 
-        final Box b2 = Box.createVerticalBox();
+        Box b2 = Box.createVerticalBox();
 
-        final JComponent indTestParamBox = getIndTestParamBox();
+        JComponent indTestParamBox = getIndTestParamBox();
         if (indTestParamBox != null) {
             b2.add(indTestParamBox);
         }
@@ -208,107 +208,107 @@ public class GlassoSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        final Parameters params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
 
-        final IntTextField maxItField = new IntTextField((int) params.get("maxit", 10000), 6);
+        IntTextField maxItField = new IntTextField((int) params.get("maxit", 10000), 6);
         maxItField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+            public int filter(int value, int oldValue) {
                 try {
                     params.set("maxit", value);
                     return value;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
         });
 
-        final DoubleTextField thrField = new DoubleTextField(params.getDouble("thr", 1e-4), 8,
+        DoubleTextField thrField = new DoubleTextField(params.getDouble("thr", 1e-4), 8,
                 new DecimalFormat("0.0########"), new DecimalFormat("0.00E00"), 1e-4);
         thrField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
                     params.set("thr", value);
                     return value;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
         });
 
-        final JCheckBox iaCheckBox = new JCheckBox("Meinhausen-Buhlman");
+        JCheckBox iaCheckBox = new JCheckBox("Meinhausen-Buhlman");
         iaCheckBox.setSelected(params.getBoolean("ia", false));
 
         iaCheckBox.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
                 params.set("is", checkBox.isSelected());
             }
         });
 
-        final JCheckBox isCheckBox = new JCheckBox("Warm start");
+        JCheckBox isCheckBox = new JCheckBox("Warm start");
         isCheckBox.setSelected(params.getBoolean("ia", false));
 
         isCheckBox.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
                 params.set("is", checkBox.isSelected());
             }
         });
 
-        final JCheckBox itrCheckBox = new JCheckBox("Log trace");
+        JCheckBox itrCheckBox = new JCheckBox("Log trace");
         itrCheckBox.setSelected(params.getBoolean("ia", false));
 
         itrCheckBox.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
                 params.set("itr", checkBox.isSelected());
             }
         });
 
-        final JCheckBox ipenCheckBox = new JCheckBox("Penalize diagonal");
+        JCheckBox ipenCheckBox = new JCheckBox("Penalize diagonal");
         ipenCheckBox.setSelected(params.getBoolean("ipen", false));
 
         ipenCheckBox.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
                 params.set("ipen", checkBox.isSelected());
             }
         });
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Max iterations"));
         b1.add(Box.createHorizontalGlue());
         b1.add(maxItField);
         b.add(b1);
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Threshold"));
         b2.add(Box.createHorizontalGlue());
         b2.add(thrField);
         b.add(b2);
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(iaCheckBox);
         b3.add(Box.createHorizontalGlue());
         b.add(b3);
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(isCheckBox);
         b4.add(Box.createHorizontalGlue());
         b.add(b4);
 
-        final Box b5 = Box.createHorizontalBox();
+        Box b5 = Box.createHorizontalBox();
         b5.add(itrCheckBox);
         b5.add(Box.createHorizontalGlue());
         b.add(b5);
 
-        final Box b6 = Box.createHorizontalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(ipenCheckBox);
         b6.add(Box.createHorizontalGlue());
         b.add(b6);
@@ -316,7 +316,7 @@ public class GlassoSearchEditor extends AbstractSearchEditor
         return b;
     }
 
-    protected void doDefaultArrangement(final Graph resultGraph) {
+    protected void doDefaultArrangement(Graph resultGraph) {
         if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
                     getLatestWorkbenchGraph());
@@ -330,17 +330,17 @@ public class GlassoSearchEditor extends AbstractSearchEditor
         }
     }
 
-    private JScrollPane dagWorkbenchScroll(final String resultLabel, final Graph dag) {
+    private JScrollPane dagWorkbenchScroll(String resultLabel, Graph dag) {
 
-        final GraphWorkbench dagWorkbench = new GraphWorkbench(dag);
+        GraphWorkbench dagWorkbench = new GraphWorkbench(dag);
         dagWorkbench.setAllowDoubleClickActions(false);
         dagWorkbench.setAllowNodeEdgeSelection(true);
-        final JScrollPane dagWorkbenchScroll = new JScrollPane(dagWorkbench);
+        JScrollPane dagWorkbenchScroll = new JScrollPane(dagWorkbench);
         dagWorkbenchScroll.setPreferredSize(new Dimension(450, 450));
 //        dagWorkbenchScroll.setBorder(new TitledBorder(resultLabel));
 
         dagWorkbench.addMouseListener(new MouseAdapter() {
-            public void mouseExited(final MouseEvent e) {
+            public void mouseExited(MouseEvent e) {
                 storeLatestWorkbenchGraph();
             }
         });

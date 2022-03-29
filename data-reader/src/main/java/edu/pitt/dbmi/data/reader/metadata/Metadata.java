@@ -39,7 +39,7 @@ public class Metadata {
     public Metadata() {
     }
 
-    public Metadata(final List<ColumnMetadata> domainColumnns, final List<InterventionalColumn> interventionalColumns) {
+    public Metadata(List<ColumnMetadata> domainColumnns, List<InterventionalColumn> interventionalColumns) {
         if (domainColumnns != null) {
             this.domainColumnns.addAll(domainColumnns);
         }
@@ -57,7 +57,7 @@ public class Metadata {
         return this.domainColumnns;
     }
 
-    public void setDomainColumnns(final List<ColumnMetadata> domainColumnns) {
+    public void setDomainColumnns(List<ColumnMetadata> domainColumnns) {
         this.domainColumnns = domainColumnns;
     }
 
@@ -65,7 +65,7 @@ public class Metadata {
         return this.interventionalColumns;
     }
 
-    public void setInterventionalColumns(final List<InterventionalColumn> interventionalColumns) {
+    public void setInterventionalColumns(List<InterventionalColumn> interventionalColumns) {
         this.interventionalColumns = interventionalColumns;
     }
 

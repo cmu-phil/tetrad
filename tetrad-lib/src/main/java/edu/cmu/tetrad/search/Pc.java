@@ -122,7 +122,7 @@ public class Pc implements GraphSearch {
      * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
      *                         independence test, for fear of duplicating the data set!
      */
-    public Pc(final IndependenceTest independenceTest) {
+    public Pc(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -142,7 +142,7 @@ public class Pc implements GraphSearch {
     /**
      * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -163,7 +163,7 @@ public class Pc implements GraphSearch {
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -194,7 +194,7 @@ public class Pc implements GraphSearch {
      *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
      *              machines.
      */
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -227,7 +227,7 @@ public class Pc implements GraphSearch {
      * <p>
      * All of the given nodes must be in the domatein of the given conditional independence test.
      */
-    public Graph search(final List<Node> nodes) {
+    public Graph search(List<Node> nodes) {
         IFas fas = null;
 
         if (this.externalGraph == null) {
@@ -239,19 +239,19 @@ public class Pc implements GraphSearch {
         return search(fas, nodes);
     }
 
-    public Graph search(final IFas fas, final List<Node> nodes) {
+    public Graph search(IFas fas, List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        final long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        final List<Node> allNodes = getIndependenceTest().getVariables();
+        List<Node> allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
@@ -272,14 +272,14 @@ public class Pc implements GraphSearch {
         SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
         SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
 
-        for (final Edge edge : this.graph.getEdges()) {
+        for (Edge edge : this.graph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
                 this.graph.removeEdge(edge.getNode1(), edge.getNode2());
                 this.graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
             }
         }
 
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
         rules.setKnowledge(this.knowledge);
         rules.orientImplied(this.graph);
 
@@ -318,17 +318,17 @@ public class Pc implements GraphSearch {
     }
 
     public Set<Edge> getAdjacencies() {
-        final Set<Edge> adjacencies = new HashSet<>();
-        for (final Edge edge : this.graph.getEdges()) {
+        Set<Edge> adjacencies = new HashSet<>();
+        for (Edge edge : this.graph.getEdges()) {
             adjacencies.add(edge);
         }
         return adjacencies;
     }
 
     public Set<Edge> getNonadjacencies() {
-        final Graph complete = GraphUtils.completeGraph(this.graph);
-        final Set<Edge> nonAdjacencies = complete.getEdges();
-        final Graph undirected = GraphUtils.undirectedGraph(this.graph);
+        Graph complete = GraphUtils.completeGraph(this.graph);
+        Set<Edge> nonAdjacencies = complete.getEdges();
+        Graph undirected = GraphUtils.undirectedGraph(this.graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
     }
@@ -374,7 +374,7 @@ public class Pc implements GraphSearch {
         return this.numIndependenceTests;
     }
 
-    public void setTrueGraph(final Graph trueGraph) {
+    public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
     }
 
@@ -386,27 +386,27 @@ public class Pc implements GraphSearch {
         return this.graph.getNodes();
     }
 
-    public List<Triple> getColliders(final Node node) {
+    public List<Triple> getColliders(Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getNoncolliders(final Node node) {
+    public List<Triple> getNoncolliders(Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getAmbiguousTriples(final Node node) {
+    public List<Triple> getAmbiguousTriples(Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getUnderlineTriples(final Node node) {
+    public List<Triple> getUnderlineTriples(Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getDottedUnderlineTriples(final Node node) {
+    public List<Triple> getDottedUnderlineTriples(Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
@@ -414,7 +414,7 @@ public class Pc implements GraphSearch {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -425,11 +425,11 @@ public class Pc implements GraphSearch {
         return this.fdr;
     }
 
-    public void setFdr(final boolean fdr) {
+    public void setFdr(boolean fdr) {
         this.fdr = fdr;
     }
 
-    public void setEnforceCPDAG(final boolean enforceCPDAG) {
+    public void setEnforceCPDAG(boolean enforceCPDAG) {
     }
 }
 

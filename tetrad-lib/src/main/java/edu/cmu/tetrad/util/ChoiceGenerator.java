@@ -84,7 +84,7 @@ public final class ChoiceGenerator {
      * @param a the number of objects being selected from.
      * @param b the number of objects in the desired selection.
      */
-    public ChoiceGenerator(final int a, final int b) {
+    public ChoiceGenerator(int a, int b) {
         if ((a < 0) || (b < 0) || (a < b)) {
             throw new IllegalArgumentException(
                     "For 'a choose b', a and b must be " +
@@ -153,8 +153,8 @@ public final class ChoiceGenerator {
      * @param b the number of objects in the desired selection.
      */
     @SuppressWarnings("SameParameterValue")
-    public static void testPrint(final int a, final int b) {
-        final ChoiceGenerator cg = new ChoiceGenerator(a, b);
+    public static void testPrint(int a, int b) {
+        ChoiceGenerator cg = new ChoiceGenerator(a, b);
         int[] choice;
 
         System.out.println();
@@ -166,7 +166,7 @@ public final class ChoiceGenerator {
             if (choice.length == 0) {
                 System.out.println("zero-length array");
             } else {
-                for (final int aChoice : choice) {
+                for (int aChoice : choice) {
                     System.out.print(aChoice + "\t");
                 }
 
@@ -198,7 +198,7 @@ public final class ChoiceGenerator {
      *
      * @param index the index to begin this incrementing operation.
      */
-    private void fill(final int index) {
+    private void fill(int index) {
         this.choiceLocal[index]++;
 
         for (int i = index + 1; i < getB(); i++) {
@@ -206,11 +206,11 @@ public final class ChoiceGenerator {
         }
     }
 
-    public static int getNumCombinations(final int a, final int b) {
+    public static int getNumCombinations(int a, int b) {
         return (int) round(exp(ChoiceGenerator.logCombinations(a, b)));
     }
 
-    public static double logCombinations(final int a, final int b) {
+    public static double logCombinations(int a, int b) {
         return lngamma(a + 1) - lngamma(b + 1) - lngamma((a - b) + 1);
     }
 }

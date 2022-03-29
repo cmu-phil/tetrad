@@ -75,7 +75,7 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
      * Constructs a new Graph toolbar governing the modes of the given
      * GraphWorkbench.
      */
-    public SemGraphToolbar(final GraphWorkbench workbench) {
+    public SemGraphToolbar(GraphWorkbench workbench) {
         if (workbench == null) {
             throw new NullPointerException();
         }
@@ -98,9 +98,9 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
         // select a button and then move the mouse away from the
         // button without releasing the mouse it would deselect. J
         // Ramsey 11/02/01
-        final FocusListener focusListener = new FocusAdapter() {
-            public void focusGained(final FocusEvent e) {
-                final JToggleButton component = (JToggleButton) e.getComponent();
+        FocusListener focusListener = new FocusAdapter() {
+            public void focusGained(FocusEvent e) {
+                JToggleButton component = (JToggleButton) e.getComponent();
                 component.doClick();
             }
         };
@@ -113,34 +113,34 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
 
         // add listeners
         this.move.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 SemGraphToolbar.this.move.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
             }
         });
         this.addObserved.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 SemGraphToolbar.this.addObserved.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.ADD_NODE);
                 setNodeMode(GraphWorkbench.MEASURED_NODE);
             }
         });
         this.addLatent.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 SemGraphToolbar.this.addLatent.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.ADD_NODE);
                 setNodeMode(GraphWorkbench.LATENT_NODE);
             }
         });
         this.addDirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 SemGraphToolbar.this.addDirectedEdge.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
             }
         });
         this.addBidirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 SemGraphToolbar.this.addBidirectedEdge.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.BIDIRECTED_EDGE);
@@ -164,7 +164,7 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
      * Java will not allow access to the variable 'workbench' from inner
      * classes.
      */
-    private void setWorkbenchMode(final int mode) {
+    private void setWorkbenchMode(int mode) {
         this.workbench.setWorkbenchMode(mode);
 
         if (mode == AbstractWorkbench.ADD_NODE) {
@@ -181,7 +181,7 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
      * Java will not allow access to the variable 'workbench' from inner
      * classes.
      */
-    private void setEdgeMode(final int mode) {
+    private void setEdgeMode(int mode) {
         this.workbench.setEdgeMode(mode);
     }
 
@@ -190,7 +190,7 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
      * Java will not allow access to the variable 'workbench' from inner
      * classes.
      */
-    private void setNodeMode(final int mode) {
+    private void setNodeMode(int mode) {
         this.workbench.setNodeType(mode);
     }
 
@@ -198,7 +198,7 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
      * Adds the various buttons to the toolbar, setting their properties
      * appropriately.
      */
-    private void addButton(final JToggleButton button, final String name) {
+    private void addButton(JToggleButton button, String name) {
         button.setIcon(
                 new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
         button.setMaximumSize(new Dimension(80, 40));
@@ -211,7 +211,7 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
     /**
      * Responds to property change events.
      */
-    public void propertyChange(final PropertyChangeEvent e) {
+    public void propertyChange(PropertyChangeEvent e) {
         if ("graph".equals(e.getPropertyName())) {
             selectArrowTools();
         }

@@ -79,7 +79,7 @@ public final class SemGraphEditor extends JPanel
     private final EdgeTypeTable edgeTypeTable;
 
     //===========================CONSTRUCTOR========================//
-    public SemGraphEditor(final SemGraphWrapper semGraphWrapper) {
+    public SemGraphEditor(SemGraphWrapper semGraphWrapper) {
         if (semGraphWrapper == null) {
             throw new NullPointerException();
         }
@@ -98,8 +98,8 @@ public final class SemGraphEditor extends JPanel
      * Sets the name of this editor.
      */
     @Override
-    public final void setName(final String name) {
-        final String oldName = getName();
+    public final void setName(String name) {
+        String oldName = getName();
         super.setName(name);
         firePropertyChange("name", oldName, getName());
     }
@@ -113,8 +113,8 @@ public final class SemGraphEditor extends JPanel
      */
     @Override
     public List getSelectedModelComponents() {
-        final List<Component> selectedComponents = getWorkbench().getSelectedComponents();
-        final List<TetradSerializable> selectedModelComponents = new ArrayList<>();
+        List<Component> selectedComponents = getWorkbench().getSelectedComponents();
+        List<TetradSerializable> selectedModelComponents = new ArrayList<>();
 
         selectedComponents.forEach(comp -> {
             if (comp instanceof DisplayNode) {
@@ -131,16 +131,16 @@ public final class SemGraphEditor extends JPanel
      * Pastes list of session elements into the workbench.
      */
     @Override
-    public void pasteSubsession(final List sessionElements, final Point upperLeft) {
+    public void pasteSubsession(List sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
         for (int i = 0; i < sessionElements.size(); i++) {
 
-            final Object o = sessionElements.get(i);
+            Object o = sessionElements.get(i);
 
             if (o instanceof GraphNode) {
-                final Node modelNode = (Node) o;
+                Node modelNode = (Node) o;
                 getWorkbench().selectNode(modelNode);
             }
         }
@@ -174,11 +174,11 @@ public final class SemGraphEditor extends JPanel
     }
 
     @Override
-    public void setGraph(final Graph graph) {
+    public void setGraph(Graph graph) {
         try {
-            final SemGraph semGraph = new SemGraph(graph);
+            SemGraph semGraph = new SemGraph(graph);
             this.workbench.setGraph(semGraph);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Not a SEM graph.", e);
         }
     }
@@ -198,7 +198,7 @@ public final class SemGraphEditor extends JPanel
     }
 
     @Override
-    public void layoutByGraph(final Graph graph) {
+    public void layoutByGraph(Graph graph) {
         ((SemGraph) graph).setShowErrorTerms(false);
         getWorkbench().layoutByGraph(graph);
         ((SemGraph) graph).resetErrorPositions();
@@ -215,20 +215,20 @@ public final class SemGraphEditor extends JPanel
     }
 
     //===========================PRIVATE METHODS========================//
-    private void initUI(final SemGraphWrapper semGraphWrapper) {
-        final Graph graph = semGraphWrapper.getGraph();
+    private void initUI(SemGraphWrapper semGraphWrapper) {
+        Graph graph = semGraphWrapper.getGraph();
 
         this.workbench = new GraphWorkbench(graph);
 
         this.workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
-            final String propertyName = evt.getPropertyName();
+            String propertyName = evt.getPropertyName();
 
             // Update the bootstrap table if there's changes to the edges or node renaming
-            final String[] events = {"graph", "edgeAdded", "edgeRemoved"};
+            String[] events = {"graph", "edgeAdded", "edgeRemoved"};
 
             if (Arrays.asList(events).contains(propertyName)) {
                 if (getWorkbench() != null) {
-                    final Graph targetGraph = getWorkbench().getGraph();
+                    Graph targetGraph = getWorkbench().getGraph();
 
                     // Update the semGraphWrapper
                     semGraphWrapper.setGraph(targetGraph);
@@ -241,13 +241,13 @@ public final class SemGraphEditor extends JPanel
         });
 
         // Graph menu at the very top of the window
-        final JMenuBar menuBar = createGraphMenuBar();
+        JMenuBar menuBar = createGraphMenuBar();
 
         // Add the model selection to top if multiple models
         modelSelectin(semGraphWrapper);
 
         // topBox Left side toolbar
-        final SemGraphToolbar graphToolbar = new SemGraphToolbar(getWorkbench());
+        SemGraphToolbar graphToolbar = new SemGraphToolbar(getWorkbench());
         graphToolbar.setMaximumSize(new Dimension(140, 450));
 
         // topBox right side graph editor
@@ -255,41 +255,41 @@ public final class SemGraphEditor extends JPanel
         this.graphEditorScroll.setViewportView(this.workbench);
 
         // topBox contains the topGraphBox and the instructionBox underneath
-        final Box topBox = Box.createVerticalBox();
+        Box topBox = Box.createVerticalBox();
         topBox.setPreferredSize(new Dimension(820, 400));
 
         // topGraphBox contains the vertical graph toolbar and graph editor
-        final Box topGraphBox = Box.createHorizontalBox();
+        Box topGraphBox = Box.createHorizontalBox();
         topGraphBox.add(graphToolbar);
         topGraphBox.add(this.graphEditorScroll);
 
         // Instruction with info button
-        final Box instructionBox = Box.createHorizontalBox();
+        Box instructionBox = Box.createHorizontalBox();
         instructionBox.setMaximumSize(new Dimension(820, 40));
 
-        final JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types and colorings");
+        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types and colorings");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
-        final JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
         infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
 
         // Clock info button to show edge types instructions - Zhou
         infoBtn.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 // Initialize helpSet
                 final String helpHS = "/resources/javahelp/TetradHelp.hs";
 
                 try {
-                    final URL url = this.getClass().getResource(helpHS);
-                    final HelpSet helpSet = new HelpSet(null, url);
+                    URL url = this.getClass().getResource(helpHS);
+                    HelpSet helpSet = new HelpSet(null, url);
 
                     helpSet.setHomeID("graph_edge_types");
-                    final HelpBroker broker = helpSet.createHelpBroker();
-                    final ActionListener listener = new CSH.DisplayHelpFromSource(broker);
+                    HelpBroker broker = helpSet.createHelpBroker();
+                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                     listener.actionPerformed(e);
-                } catch (final Exception ee) {
+                } catch (Exception ee) {
                     System.out.println("HelpSet " + ee.getMessage());
                     System.out.println("HelpSet " + helpHS + " not found");
                     throw new IllegalArgumentException();
@@ -308,7 +308,7 @@ public final class SemGraphEditor extends JPanel
         this.edgeTypeTable.setPreferredSize(new Dimension(820, 150));
 
         // Use JSplitPane to allow resize the bottom box - Zhou
-        final JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(this.edgeTypeTable));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(this.edgeTypeTable));
         splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
 
         // Add to parent container
@@ -328,7 +328,7 @@ public final class SemGraphEditor extends JPanel
      *
      * @param graph
      */
-    private void updateGraphWorkbench(final Graph graph) {
+    private void updateGraphWorkbench(Graph graph) {
         this.workbench = new GraphWorkbench(graph);
         this.graphEditorScroll.setViewportView(this.workbench);
 
@@ -340,7 +340,7 @@ public final class SemGraphEditor extends JPanel
      *
      * @param graph
      */
-    private void updateBootstrapTable(final Graph graph) {
+    private void updateBootstrapTable(Graph graph) {
         this.edgeTypeTable.update(graph);
 
         validate();
@@ -351,16 +351,16 @@ public final class SemGraphEditor extends JPanel
      *
      * @param semGraphWrapper
      */
-    private void modelSelectin(final SemGraphWrapper semGraphWrapper) {
-        final int numModels = semGraphWrapper.getNumModels();
+    private void modelSelectin(SemGraphWrapper semGraphWrapper) {
+        int numModels = semGraphWrapper.getNumModels();
 
         if (numModels > 1) {
-            final List<Integer> models = new ArrayList<>();
+            List<Integer> models = new ArrayList<>();
             for (int i = 0; i < numModels; i++) {
                 models.add(i + 1);
             }
 
-            final JComboBox<Integer> comboBox = new JComboBox(models.toArray());
+            JComboBox<Integer> comboBox = new JComboBox(models.toArray());
 
             // Remember the selected model on reopen
             comboBox.setSelectedIndex(semGraphWrapper.getModelIndex());
@@ -376,7 +376,7 @@ public final class SemGraphEditor extends JPanel
             });
 
             // Put together
-            final Box modelSelectionBox = Box.createHorizontalBox();
+            Box modelSelectionBox = Box.createHorizontalBox();
             modelSelectionBox.add(new JLabel("Using model "));
             modelSelectionBox.add(comboBox);
             modelSelectionBox.add(new JLabel(" from "));
@@ -390,11 +390,11 @@ public final class SemGraphEditor extends JPanel
     }
 
     private JMenuBar createGraphMenuBar() {
-        final JMenuBar menuBar = new JMenuBar();
+        JMenuBar menuBar = new JMenuBar();
 
-        final JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
-        final JMenu editMenu = createEditMenu();
-        final JMenu graphMenu = createGraphMenu();
+        JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
+        JMenu editMenu = createEditMenu();
+        JMenu graphMenu = createGraphMenu();
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
@@ -411,10 +411,10 @@ public final class SemGraphEditor extends JPanel
      * @return this menu.
      */
     private JMenu createEditMenu() {
-        final JMenu edit = new JMenu("Edit");
+        JMenu edit = new JMenu("Edit");
 
-        final JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
-        final JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
+        JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
+        JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
 
         copy.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
@@ -428,9 +428,9 @@ public final class SemGraphEditor extends JPanel
     }
 
     private JMenu createGraphMenu() {
-        final JMenu graph = new JMenu("Graph");
+        JMenu graph = new JMenu("Graph");
 
-        final JMenuItem randomGraph = new JMenuItem("Random Graph");
+        JMenuItem randomGraph = new JMenuItem("Random Graph");
         graph.add(randomGraph);
         graph.addSeparator();
 
@@ -451,7 +451,7 @@ public final class SemGraphEditor extends JPanel
         }
 
         this.errorTerms.addActionListener(e -> {
-            final JMenuItem menuItem = (JMenuItem) e.getSource();
+            JMenuItem menuItem = (JMenuItem) e.getSource();
             if ("Hide Error Terms".equals(menuItem.getText())) {
                 menuItem.setText("Show Error Terms");
                 getSemGraph().setShowErrorTerms(false);
@@ -464,9 +464,9 @@ public final class SemGraphEditor extends JPanel
         graph.add(this.errorTerms);
         graph.addSeparator();
 
-        final JMenuItem correlateExogenous
+        JMenuItem correlateExogenous
                 = new JMenuItem("Correlate Exogenous Variables");
-        final JMenuItem uncorrelateExogenous
+        JMenuItem uncorrelateExogenous
                 = new JMenuItem("Uncorrelate Exogenous Variables");
         graph.add(correlateExogenous);
         graph.add(uncorrelateExogenous);
@@ -486,10 +486,10 @@ public final class SemGraphEditor extends JPanel
 
 
         randomGraph.addActionListener(e -> {
-            final GraphParamsEditor editor = new GraphParamsEditor();
+            GraphParamsEditor editor = new GraphParamsEditor();
             editor.setParams(this.parameters);
 
-            final EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
+            EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
                     "Done", false, this);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -498,8 +498,8 @@ public final class SemGraphEditor extends JPanel
 
             editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
                 @Override
-                public void internalFrameClosed(final InternalFrameEvent e1) {
-                    final EditorWindow window = (EditorWindow) e1.getSource();
+                public void internalFrameClosed(InternalFrameEvent e1) {
+                    EditorWindow window = (EditorWindow) e1.getSource();
 
                     if (window.isCanceled()) {
                         return;
@@ -508,11 +508,11 @@ public final class SemGraphEditor extends JPanel
                     RandomUtil.getInstance().setSeed(new Date().getTime());
                     Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), SemGraphEditor.this.parameters);
 
-                    final boolean addCycles = SemGraphEditor.this.parameters.getBoolean("randomAddCycles", false);
+                    boolean addCycles = SemGraphEditor.this.parameters.getBoolean("randomAddCycles", false);
 
                     if (addCycles) {
-                        final int newGraphNumMeasuredNodes = SemGraphEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
-                        final int newGraphNumEdges = SemGraphEditor.this.parameters.getInt("newGraphNumEdges", 10);
+                        int newGraphNumMeasuredNodes = SemGraphEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
+                        int newGraphNumEdges = SemGraphEditor.this.parameters.getInt("newGraphNumEdges", 10);
                         graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 6);
                     }
 
@@ -531,7 +531,7 @@ public final class SemGraphEditor extends JPanel
     }
 
     private void correlationExogenousVariables() {
-        final Graph graph = getWorkbench().getGraph();
+        Graph graph = getWorkbench().getGraph();
 
         if (graph instanceof Dag) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -539,12 +539,12 @@ public final class SemGraphEditor extends JPanel
             return;
         }
 
-        final List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
-        final List<Node> exoNodes = new LinkedList<>();
+        List<Node> exoNodes = new LinkedList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
-            final Node node = nodes.get(i);
+            Node node = nodes.get(i);
             if (graph.isExogenous(node)) {
                 exoNodes.add(node);
             }
@@ -554,12 +554,12 @@ public final class SemGraphEditor extends JPanel
 
             loop:
             for (int j = i + 1; j < exoNodes.size(); j++) {
-                final Node node1 = exoNodes.get(i);
-                final Node node2 = exoNodes.get(j);
-                final List<Edge> edges = graph.getEdges(node1, node2);
+                Node node1 = exoNodes.get(i);
+                Node node2 = exoNodes.get(j);
+                List<Edge> edges = graph.getEdges(node1, node2);
 
                 for (int k = 0; k < edges.size(); k++) {
-                    final Edge edge = edges.get(k);
+                    Edge edge = edges.get(k);
                     if (Edges.isBidirectedEdge(edge)) {
                         continue loop;
                     }
@@ -571,15 +571,15 @@ public final class SemGraphEditor extends JPanel
     }
 
     private void uncorrelateExogenousVariables() {
-        final Graph graph = getWorkbench().getGraph();
+        Graph graph = getWorkbench().getGraph();
 
-        final Set<Edge> edges = graph.getEdges();
+        Set<Edge> edges = graph.getEdges();
 
-        for (final Edge edge : edges) {
+        for (Edge edge : edges) {
             if (Edges.isBidirectedEdge(edge)) {
                 try {
                     graph.removeEdge(edge);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                 }
             }
         }

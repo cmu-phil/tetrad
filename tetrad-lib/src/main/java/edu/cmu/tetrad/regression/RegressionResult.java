@@ -148,10 +148,10 @@ public class RegressionResult implements TetradSerializable {
      * @param alpha                The alpha value for the regression,
      *                             determining which regressors are taken to be
      */
-    public RegressionResult(final boolean zeroInterceptAssumed, final String[] regressorNames,
-                            final int n, final double[] b, final double[] t,
-                            final double[] p, final double[] se, final double r2,
-                            final double rss, final double alpha, final Vector yHat, final Vector res) {
+    public RegressionResult(boolean zeroInterceptAssumed, String[] regressorNames,
+                            int n, double[] b, double[] t,
+                            double[] p, double[] se, double r2,
+                            double rss, double alpha, Vector yHat, Vector res) {
 //        if (regressorNames == null) {
 //            throw new NullPointerException();
 //        }
@@ -251,10 +251,10 @@ public class RegressionResult implements TetradSerializable {
         return this.regressorNames;
     }
 
-    public double getPredictedValue(final double[] x) {
+    public double getPredictedValue(double[] x) {
         double yHat = 0.0;
 
-        final int offset = this.zeroInterceptAssumed ? 0 : 1;
+        int offset = this.zeroInterceptAssumed ? 0 : 1;
 
         for (int i = 0; i < getNumRegressors(); i++) {
             yHat += this.b[i + offset] * x[i];
@@ -268,16 +268,16 @@ public class RegressionResult implements TetradSerializable {
     }
 
     public String toString() {
-        final StringBuilder summary = new StringBuilder(getPreamble());
-        final TextTable table = getResultsTable();
+        StringBuilder summary = new StringBuilder(getPreamble());
+        TextTable table = getResultsTable();
 
         summary.append("\n").append(table.toString());
         return summary.toString();
     }
 
     public TextTable getResultsTable() {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        final TextTable table = new TextTable(getNumRegressors() + 3, 6);
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        TextTable table = new TextTable(getNumRegressors() + 3, 6);
 
         table.setToken(0, 0, "VAR");
         table.setToken(0, 1, "COEF");
@@ -289,7 +289,7 @@ public class RegressionResult implements TetradSerializable {
         for (int i = 0; i < getNumRegressors() + 1; i++) {
 
             // Note: the first column contains the regression constants.
-            final String variableName = (i > 0) ? this.regressorNames[i - 1] : "const";
+            String variableName = (i > 0) ? this.regressorNames[i - 1] : "const";
 
             table.setToken(i + 2, 0, variableName);
             table.setToken(i + 2, 1, nf.format(this.b[i]));
@@ -323,11 +323,11 @@ public class RegressionResult implements TetradSerializable {
     }
 
     public String getPreamble() {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        final String rssString = nf.format(this.rss);
-        final String r2String = nf.format(this.r2);
-        final String preamble = "\n REGRESSION RESULT" +
+        String rssString = nf.format(this.rss);
+        String r2String = nf.format(this.r2);
+        String preamble = "\n REGRESSION RESULT" +
                 "\n n = " + this.n + ", k = " +
                 (getNumRegressors() + 1) + ", alpha = " + this.alpha +
                 "\n" + " SSE = " + rssString +

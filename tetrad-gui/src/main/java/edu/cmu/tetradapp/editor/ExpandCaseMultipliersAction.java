@@ -42,7 +42,7 @@ final class ExpandCaseMultipliersAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public ExpandCaseMultipliersAction(final DataEditor editor) {
+    public ExpandCaseMultipliersAction(DataEditor editor) {
         super("Expand Case Multipliers");
 
         if (editor == null) {
@@ -55,16 +55,16 @@ final class ExpandCaseMultipliersAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final DataModel dataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataModel dataModel = getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            final DataSet dataSet = (DataSet) dataModel;
+            DataSet dataSet = (DataSet) dataModel;
 
-            final DataFilter filter = new CaseExpander();
-            final DataSet newDataSet = filter.filter(dataSet);
+            DataFilter filter = new CaseExpander();
+            DataSet newDataSet = filter.filter(dataSet);
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(newDataSet);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();

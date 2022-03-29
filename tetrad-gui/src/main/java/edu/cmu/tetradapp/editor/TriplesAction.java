@@ -50,7 +50,7 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
      * Creates a new copy subsession action for the given LayoutEditable and
      * clipboard.
      */
-    public TriplesAction(final Graph graph, final TripleClassifier classifier) {
+    public TriplesAction(Graph graph, TripleClassifier classifier) {
         super("Underlinings");
         this.graph = graph;
         this.classifier = classifier;
@@ -60,27 +60,27 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final Box b = Box.createVerticalBox();
+    public void actionPerformed(ActionEvent e) {
+        Box b = Box.createVerticalBox();
 
-        final JTextArea textArea = new JTextArea();
-        final JScrollPane scroll = new JScrollPane(textArea);
+        JTextArea textArea = new JTextArea();
+        JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(600, 600));
 
         textArea.append("Underlinings:");
         boolean allEmpty = true;
-        final List<Node> nodes = this.graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
         Collections.sort(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
-            final Node node = nodes.get(i);
+            Node node = nodes.get(i);
 
-            final List<String> types = this.graph.getTriplesClassificationTypes();
-            final List<List<Triple>> triplesList = this.graph.getTriplesLists(node);
+            List<String> types = this.graph.getTriplesClassificationTypes();
+            List<List<Triple>> triplesList = this.graph.getTriplesLists(node);
 
             boolean existsClassification = false;
 
-            for (final List<Triple> list : triplesList) {
+            for (List<Triple> list : triplesList) {
                 if (!list.isEmpty()) {
                     existsClassification = true;
                 }
@@ -93,8 +93,8 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
             textArea.append("\n\nNode " + node);
 
             for (int j = 0; j < types.size(); j++) {
-                final String type = types.get(j);
-                final List<Triple> triples = triplesList.get(j);
+                String type = types.get(j);
+                List<Triple> triples = triplesList.get(j);
 
                 if (!triples.isEmpty()) {
                     textArea.append("\n\n    ");
@@ -109,16 +109,16 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
             textArea.append("\n\nAll triple classifications can be read from the graph.");
         }
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(scroll);
         textArea.setCaretPosition(0);
         b.add(b2);
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b);
 
-        final EditorWindow window = new EditorWindow(panel,
+        EditorWindow window = new EditorWindow(panel,
                 "Underlinings", "Close", false, JOptionUtils.centeringComp());
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
@@ -127,12 +127,12 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
 //                "Graph Properties", JOptionPane.PLAIN_MESSAGE);
     }
 
-    private String niceList(final List<Triple> triples) {
+    private String niceList(List<Triple> triples) {
         if (triples.isEmpty()) {
             return "--NONE--";
         }
 
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
         buf.append("\n\n        ");
 
         for (int i = 0; i < triples.size(); i++) {
@@ -146,14 +146,14 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
         return buf.toString();
     }
 
-    private String pathFor(final Triple triple, final Graph graph) {
-        final List<Node> path = asList(triple);
+    private String pathFor(Triple triple, Graph graph) {
+        List<Node> path = asList(triple);
         return GraphUtils.pathString(path, graph);
     }
 
 
-    private List<Node> asList(final Triple triple) {
-        final List<Node> list = new LinkedList<>();
+    private List<Node> asList(Triple triple) {
+        List<Node> list = new LinkedList<>();
         list.add(triple.getX());
         list.add(triple.getY());
         list.add(triple.getZ());
@@ -163,11 +163,11 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 
 
-    public void setGraph(final Graph graph, final GraphWorkbench workbench) {
+    public void setGraph(Graph graph, GraphWorkbench workbench) {
         this.graph = graph;
     }
 }

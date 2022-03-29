@@ -63,15 +63,15 @@ class DescriptiveStatsEditorPanel extends JPanel {
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
      */
-    public DescriptiveStatsEditorPanel(final Node selected, final DataSet dataSet) {
+    public DescriptiveStatsEditorPanel(Node selected, DataSet dataSet) {
         //   construct components
         this.setLayout(new BorderLayout());
         // first build histogram and components used in the editor.
         this.dataSet = dataSet;
         this.variableBox = new JComboBox();
-        final ListCellRenderer renderer = new VariableBoxRenderer();
+        ListCellRenderer renderer = new VariableBoxRenderer();
         this.variableBox.setRenderer(renderer);
-        for (final Node node : dataSet.getVariables()) {
+        for (Node node : dataSet.getVariables()) {
 //            if (node instanceof ContinuousVariable) {
             this.variableBox.addItem(node);
             if (node == selected) {
@@ -80,9 +80,9 @@ class DescriptiveStatsEditorPanel extends JPanel {
 //            }
         }
         this.variableBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(final ItemEvent e) {
+            public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    final Node node = (Node) e.getItem();
+                    Node node = (Node) e.getItem();
                     changeDescriptiveStats(DescriptiveStats.generateDescriptiveStats(DescriptiveStatsEditorPanel.this.dataSet, node));
                 }
             }
@@ -94,13 +94,13 @@ class DescriptiveStatsEditorPanel extends JPanel {
 
     //========================== Private Methods ================================//
 
-    private void changeDescriptiveStats(final String test) {
+    private void changeDescriptiveStats(String test) {
         // fire event
         this.firePropertyChange("histogramChange", null, test);
     }
 
 
-    private static void setPreferredAsMax(final JComponent component) {
+    private static void setPreferredAsMax(JComponent component) {
         component.setMaximumSize(component.getPreferredSize());
 
     }
@@ -109,8 +109,8 @@ class DescriptiveStatsEditorPanel extends JPanel {
     private Box buildEditArea() {
         DescriptiveStatsEditorPanel.setPreferredAsMax(this.variableBox);
 
-        final Box main = Box.createVerticalBox();
-        final Box hBox = Box.createHorizontalBox();
+        Box main = Box.createVerticalBox();
+        Box hBox = Box.createHorizontalBox();
         hBox.add(Box.createHorizontalStrut(10));
         hBox.add(new JLabel("Select Variable: "));
         hBox.add(Box.createHorizontalStrut(10));
@@ -118,7 +118,7 @@ class DescriptiveStatsEditorPanel extends JPanel {
         hBox.add(Box.createHorizontalGlue());
         main.add(hBox);
         main.add(Box.createVerticalStrut(5));
-        final Box hBox2 = Box.createHorizontalBox();
+        Box hBox2 = Box.createHorizontalBox();
         hBox2.add(Box.createHorizontalStrut(10));
         hBox2.add(Box.createHorizontalGlue());
         main.add(hBox2);
@@ -135,8 +135,8 @@ class DescriptiveStatsEditorPanel extends JPanel {
 
     private static class VariableBoxRenderer extends DefaultListCellRenderer {
 
-        public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
-            final Node node = (Node) value;
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Node node = (Node) value;
             if (node == null) {
                 this.setText("");
             } else {

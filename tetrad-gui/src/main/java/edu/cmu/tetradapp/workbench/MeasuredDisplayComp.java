@@ -33,22 +33,22 @@ import java.awt.geom.RoundRectangle2D;
 public class MeasuredDisplayComp extends JComponent implements DisplayComp {
     private boolean selected;
 
-    public MeasuredDisplayComp(final String name) {
+    public MeasuredDisplayComp(String name) {
         setBackground(DisplayNodeUtils.getNodeFillColor());
         setFont(DisplayNodeUtils.getFont());
         setName(name);
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         super.setName(name);
         setSize(getPreferredSize());
     }
 
-    public void setSelected(final boolean selected) {
+    public void setSelected(boolean selected) {
         this.selected = selected;
     }
 
-    public boolean contains(final int x, final int y) {
+    public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
 
@@ -65,13 +65,13 @@ public class MeasuredDisplayComp extends JComponent implements DisplayComp {
      *
      * @param g the graphics context.
      */
-    public void paint(final Graphics g) {
-        final Graphics2D g2 = (Graphics2D) g;
-        final FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        final int width = getPreferredSize().width;
-        final int stringWidth = fm.stringWidth(getName());
-        final int stringX = (width - stringWidth) / 2;
-        final int stringY = fm.getAscent() + DisplayNodeUtils.getPixelGap();
+    public void paint(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
+        int width = getPreferredSize().width;
+        int stringWidth = fm.stringWidth(getName());
+        int stringX = (width - stringWidth) / 2;
+        int stringY = fm.getAscent() + DisplayNodeUtils.getPixelGap();
 
         g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() :
                 DisplayNodeUtils.getNodeFillColor());
@@ -88,9 +88,9 @@ public class MeasuredDisplayComp extends JComponent implements DisplayComp {
      * Calculates the size of the component based on its name.
      */
     public Dimension getPreferredSize() {
-        final FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
+        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
         int width = fm.stringWidth(getName()) + fm.getMaxAdvance();
-        final int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent() + 3;
+        int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent() + 3;
         width = (width < 60) ? 60 : width;
         return new Dimension(width, height);
     }

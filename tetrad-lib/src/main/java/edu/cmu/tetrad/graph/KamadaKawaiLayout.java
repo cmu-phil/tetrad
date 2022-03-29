@@ -100,7 +100,7 @@ public final class KamadaKawaiLayout {
 
     //==============================CONSTRUCTORS===========================//
 
-    public KamadaKawaiLayout(final Graph graph) {
+    public KamadaKawaiLayout(Graph graph) {
         if (graph == null) {
             throw new NullPointerException();
         }
@@ -119,18 +119,18 @@ public final class KamadaKawaiLayout {
         getMonitor().setMillisToPopup(0);
         getMonitor().setProgress(0);
 
-        final List<List<Node>> components =
+        List<List<Node>> components =
                 GraphUtils.connectedComponents(this.graph);
 
         Collections.sort(components, new Comparator<List<Node>>() {
-            public int compare(final List<Node> o1, final List<Node> o2) {
-                final int i1 = o1.size();
-                final int i2 = o2.size();
+            public int compare(List<Node> o1, List<Node> o2) {
+                int i1 = o1.size();
+                int i2 = o2.size();
                 return i2 < i1 ? -1 : i2 == i1 ? 0 : 1;
             }
         });
 
-        for (final List<Node> component1 : components) {
+        for (List<Node> component1 : components) {
             initialize(component1, isRandomlyInitialized());
             layoutComponent(component1);
         }
@@ -143,7 +143,7 @@ public final class KamadaKawaiLayout {
         return this.randomlyInitialized;
     }
 
-    public void setRandomlyInitialized(final boolean randomlyInitialized) {
+    public void setRandomlyInitialized(boolean randomlyInitialized) {
         this.randomlyInitialized = randomlyInitialized;
     }
 
@@ -151,7 +151,7 @@ public final class KamadaKawaiLayout {
         return this.stopEnergy;
     }
 
-    public void setStopEnergy(final double stopEnergy) {
+    public void setStopEnergy(double stopEnergy) {
         if (stopEnergy <= 0.0) {
             throw new IllegalArgumentException(
                     "Stop energy must be greater than" + " zero.");
@@ -165,7 +165,7 @@ public final class KamadaKawaiLayout {
         return this.naturalEdgeLength;
     }
 
-    public void setNaturalEdgeLength(final double naturalEdgeLength) {
+    public void setNaturalEdgeLength(double naturalEdgeLength) {
         if (naturalEdgeLength < 0.0) {
             throw new IllegalArgumentException(
                     "Natural edge length should be " + "greater than zero.");
@@ -178,7 +178,7 @@ public final class KamadaKawaiLayout {
         return this.springConstant;
     }
 
-    public void setSpringConstant(final double springConstant) {
+    public void setSpringConstant(double springConstant) {
         if (springConstant < 0.0) {
             throw new IllegalArgumentException(
                     "Spring constant should be " + "greater than zero.");
@@ -198,11 +198,11 @@ public final class KamadaKawaiLayout {
      *                            spring layout should start from the getModel
      *                            positions of the nodes.
      */
-    private void initialize(final List<Node> nodes, final boolean randomlyInitialized) {
+    private void initialize(List<Node> nodes, boolean randomlyInitialized) {
         setComponentNodes(Collections.unmodifiableList(nodes));
 
         this.p = new double[nodes.size()][2];
-        final int[][] d;
+        int[][] d;
         this.l = new double[nodes.size()][nodes.size()];
         this.k = new double[nodes.size()][nodes.size()];
 
@@ -213,7 +213,7 @@ public final class KamadaKawaiLayout {
             }
         } else {
             for (int i = 0; i < nodes.size(); i++) {
-                final Node node = nodes.get(i);
+                Node node = nodes.get(i);
                 this.p[i][0] = node.getCenterX();
                 this.p[i][1] = node.getCenterY();
             }
@@ -241,13 +241,13 @@ public final class KamadaKawaiLayout {
         }
     }
 
-    private void layoutComponent(final List<Node> componentNodes) {
+    private void layoutComponent(List<Node> componentNodes) {
         setComponentNodes(componentNodes);
         optimize(getStopEnergy());
         shiftComponentToRight(componentNodes);
     }
 
-    private void shiftComponentToRight(final List<Node> componentNodes) {
+    private void shiftComponentToRight(List<Node> componentNodes) {
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
 
         for (int i = 0; i < componentNodes.size(); i++) {
@@ -273,20 +273,20 @@ public final class KamadaKawaiLayout {
         }
 
         for (int i = 0; i < componentNodes.size(); i++) {
-            final Node node = componentNodes.get(i);
+            Node node = componentNodes.get(i);
             node.setCenterX((int) this.p[i][0]);
             node.setCenterY((int) this.p[i][1]);
         }
     }
 
-    private void optimize(final double deltaCutoff) {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private void optimize(double deltaCutoff) {
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         double initialMaxDelta = -1.;
         double maxDelta;
         final int jump = 100;
-        final Matrix a = new Matrix(2, 2);
-        final Matrix b = new Matrix(2, 1);
+        Matrix a = new Matrix(2, 2);
+        Matrix b = new Matrix(2, 1);
         int oldM = -1;
 
         do {
@@ -294,7 +294,7 @@ public final class KamadaKawaiLayout {
                 return;
             }
 
-            final int[] m = new int[1];
+            int[] m = new int[1];
             maxDelta = maxDelta(m);
 
             if (initialMaxDelta == -1) {
@@ -345,11 +345,11 @@ public final class KamadaKawaiLayout {
 
                 final double h = 1.e-2;
 
-                final double partialXX = secondPartial(m[0], 0, 0, h);
-                final double partialXY = secondPartial(m[0], 0, 1, h);
-                final double partialX = firstPartial(m[0], 0, h);
-                final double partialYY = secondPartial(m[0], 1, 1, h);
-                final double partialY = firstPartial(m[0], 1, h);
+                double partialXX = secondPartial(m[0], 0, 0, h);
+                double partialXY = secondPartial(m[0], 0, 1, h);
+                double partialX = firstPartial(m[0], 0, h);
+                double partialYY = secondPartial(m[0], 1, 1, h);
+                double partialY = firstPartial(m[0], 1, h);
 
                 a.set(0, 0, partialXX);
                 a.set(0, 1, partialXY);
@@ -359,11 +359,11 @@ public final class KamadaKawaiLayout {
                 b.set(0, 0, -partialX);
                 b.set(1, 0, -partialY);
 
-                final Matrix c;
+                Matrix c;
 
                 try {
                     c = TetradAlgebra.solve(a, b);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
                             2 * jump) - jump;
                     this.p[m[0]][1] += RandomUtil.getInstance().nextInt(
@@ -371,8 +371,8 @@ public final class KamadaKawaiLayout {
                     continue;
                 }
 
-                final double dx = c.get(0, 0);
-                final double dy = c.get(1, 0);
+                double dx = c.get(0, 0);
+                double dy = c.get(1, 0);
 
                 this.p[m[0]][0] += dx;
                 this.p[m[0]][1] += dy;
@@ -383,7 +383,7 @@ public final class KamadaKawaiLayout {
     }
 
     private double energy() {
-        final int n = this.p.length;
+        int n = this.p.length;
         double sum = 0.0;
 
         for (int i = 0; i < n - 1; i++) {
@@ -395,12 +395,12 @@ public final class KamadaKawaiLayout {
         return sum;
     }
 
-    private double maxDelta(final int[] index) {
+    private double maxDelta(int[] index) {
         double maxDelta = Double.NEGATIVE_INFINITY;
         int m = -1;
 
         for (int i = 0; i < getComponentNodes().size(); i++) {
-            final double delta = delta(i);
+            double delta = delta(i);
 
             if (delta == Double.NEGATIVE_INFINITY) {
                 throw new IllegalStateException();
@@ -417,42 +417,42 @@ public final class KamadaKawaiLayout {
         return maxDelta;
     }
 
-    private double delta(final int i) {
-        final double partialX = firstPartial(i, 0, 1.e-4);
-        final double partialY = firstPartial(i, 1, 1.e-4);
+    private double delta(int i) {
+        double partialX = firstPartial(i, 0, 1.e-4);
+        double partialY = firstPartial(i, 1, 1.e-4);
         return Math.sqrt(partialX * partialX + partialY * partialY);
     }
 
-    private double firstPartial(final int i, final int var, final double h) {
-        final double storedCoord = this.p[i][var];
+    private double firstPartial(int i, int var, double h) {
+        double storedCoord = this.p[i][var];
 
         this.p[i][var] -= h;
-        final double energy1 = energy();
+        double energy1 = energy();
 
         this.p[i][var] += h;
-        final double energy2 = energy();
+        double energy2 = energy();
 
         this.p[i][var] = storedCoord;
         return (energy2 - energy1) / (2. * h);
     }
 
-    private double secondPartial(final int m, final int i, final int j, final double h) {
-        final double storedX = this.p[m][0];
-        final double storedY = this.p[m][1];
+    private double secondPartial(int m, int i, int j, double h) {
+        double storedX = this.p[m][0];
+        double storedY = this.p[m][1];
 
         this.p[m][i] += h;
         this.p[m][j] += h;
-        final double ff1 = energy();
+        double ff1 = energy();
 
         this.p[m][j] -= 2 * h;
-        final double ff2 = energy();
+        double ff2 = energy();
 
         this.p[m][i] -= 2 * h;
         this.p[m][j] += 2 * h;
-        final double ff3 = energy();
+        double ff3 = energy();
 
         this.p[m][j] -= 2 * h;
-        final double ff4 = energy();
+        double ff4 = energy();
 
         this.p[m][0] = storedX;
         this.p[m][1] = storedY;
@@ -460,11 +460,11 @@ public final class KamadaKawaiLayout {
         return (ff1 - ff2 - ff3 + ff4) / (4.0 * h * h);
     }
 
-    private double distance(final int i, final int j) {
-        final double x1 = this.p[i][0];
-        final double y1 = this.p[i][1];
-        final double x2 = this.p[j][0];
-        final double y2 = this.p[j][1];
+    private double distance(int i, int j) {
+        double x1 = this.p[i][0];
+        double y1 = this.p[i][1];
+        double x2 = this.p[j][0];
+        double y2 = this.p[j][1];
 
         return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
     }
@@ -479,12 +479,12 @@ public final class KamadaKawaiLayout {
                 .size()];
         int[][] I2 = new int[getComponentNodes().size()][getComponentNodes()
                 .size()];
-        final int infinity = getComponentNodes().size() * getComponentNodes().size();
+        int infinity = getComponentNodes().size() * getComponentNodes().size();
 
         for (int i = 0; i < getComponentNodes().size(); i++) {
             for (int j = 0; j < getComponentNodes().size(); j++) {
-                final Node node1 = getComponentNodes().get(i);
-                final Node node2 = getComponentNodes().get(j);
+                Node node1 = getComponentNodes().get(i);
+                Node node2 = getComponentNodes().get(j);
                 if (this.graph.getEdge(node1, node2) != null) {
                     I2[i][j] = 1;
                 } else {
@@ -494,7 +494,7 @@ public final class KamadaKawaiLayout {
         }
 
         for (int k = 0; k < getComponentNodes().size(); k++) {
-            final int[][] temp = I1;
+            int[][] temp = I1;
             I1 = I2;
             I2 = temp;
 
@@ -517,7 +517,7 @@ public final class KamadaKawaiLayout {
         return this.componentNodes;
     }
 
-    private void setComponentNodes(final List<Node> componentNodes) {
+    private void setComponentNodes(List<Node> componentNodes) {
         this.componentNodes = componentNodes;
     }
 }

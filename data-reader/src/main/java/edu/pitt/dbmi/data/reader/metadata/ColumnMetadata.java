@@ -38,12 +38,12 @@ public class ColumnMetadata {
         this.discrete = true;
     }
 
-    public ColumnMetadata(final String name, final boolean discrete) {
+    public ColumnMetadata(String name, boolean discrete) {
         this.name = name;
         this.discrete = discrete;
     }
 
-    public ColumnMetadata(final String name, final int columnNumber, final boolean discrete) {
+    public ColumnMetadata(String name, int columnNumber, boolean discrete) {
         this.name = name;
         this.columnNumber = columnNumber;
         this.discrete = discrete;
@@ -58,7 +58,7 @@ public class ColumnMetadata {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -66,7 +66,7 @@ public class ColumnMetadata {
         return this.discrete;
     }
 
-    public void setDiscrete(final boolean discrete) {
+    public void setDiscrete(boolean discrete) {
         this.discrete = discrete;
     }
 
@@ -74,7 +74,7 @@ public class ColumnMetadata {
         return this.columnNumber;
     }
 
-    public void setColumnNumber(final int columnNumber) {
+    public void setColumnNumber(int columnNumber) {
         this.columnNumber = columnNumber;
     }
 

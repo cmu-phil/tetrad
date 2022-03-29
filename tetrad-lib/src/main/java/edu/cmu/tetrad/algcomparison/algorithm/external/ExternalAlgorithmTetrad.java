@@ -49,12 +49,12 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
     private final String shortDescription;
 
 
-    public ExternalAlgorithmTetrad(final String extDir) {
+    public ExternalAlgorithmTetrad(String extDir) {
         this.extDir = extDir;
         this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
-    public ExternalAlgorithmTetrad(final String extDir, final String shortDecription) {
+    public ExternalAlgorithmTetrad(String extDir, String shortDecription) {
         this.extDir = extDir;
         this.shortDescription = shortDecription;
     }
@@ -62,11 +62,11 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
     /**
      * Reads in the relevant graph from the file and returns it.
      */
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
-        final int index = getIndex(dataSet);
-        final File file = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        int index = getIndex(dataSet);
+        File file = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
         System.out.println(file.getAbsolutePath());
-        final Graph graph = GraphUtils.loadGraphTxt(file);
+        Graph graph = GraphUtils.loadGraphTxt(file);
         GraphUtils.circleLayout(graph, 225, 200, 150);
         return graph;
     }
@@ -74,7 +74,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
     /**
      * Returns the CPDAG of the supplied DAG.
      */
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
@@ -90,18 +90,18 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
         return DataType.Continuous;
     }
 
-    public long getElapsedTime(final DataModel dataSet, final Parameters parameters) {
-        final int index = getIndex(dataSet);
+    public long getElapsedTime(DataModel dataSet, Parameters parameters) {
+        int index = getIndex(dataSet);
 
-        final File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
+        File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
 
         System.out.println(file.getAbsolutePath());
 
         try {
-            final BufferedReader r = new BufferedReader(new FileReader(file));
-            final String l = r.readLine(); // Skip the first line.
+            BufferedReader r = new BufferedReader(new FileReader(file));
+            String l = r.readLine(); // Skip the first line.
             return Long.parseLong(l);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new IllegalArgumentException();
         }
     }

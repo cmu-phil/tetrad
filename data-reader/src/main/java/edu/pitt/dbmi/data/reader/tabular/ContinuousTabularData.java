@@ -31,7 +31,7 @@ public class ContinuousTabularData implements ContinuousData {
     private final DataColumn[] dataColumns;
     private final double[][] data;
 
-    public ContinuousTabularData(final DataColumn[] dataColumns, final double[][] data) {
+    public ContinuousTabularData(DataColumn[] dataColumns, double[][] data) {
         this.dataColumns = dataColumns;
         this.data = data;
     }

@@ -51,26 +51,26 @@ public class DirectedGraphIterator {
     public DirectedGraphIterator(Graph graph) {
         graph = new EdgeListGraph(graph);
 //        graph = DataGraphUtils.undirectedGraph(graph);
-        final List<Edge> undirectedEdges = new ArrayList<>();
+        List<Edge> undirectedEdges = new ArrayList<>();
 
-        for (final Edge edge : graph.getEdges()) {
+        for (Edge edge : graph.getEdges()) {
             if (Edges.isUndirectedEdge(edge)) {
                 undirectedEdges.add(edge);
             }
         }
 
-        final int[] dims = new int[undirectedEdges.size()];
+        int[] dims = new int[undirectedEdges.size()];
 
         for (int i = 0; i < undirectedEdges.size(); i++) {
             dims[i] = 2;
         }
 
-        final CombinationGenerator generator = new CombinationGenerator(dims);
+        CombinationGenerator generator = new CombinationGenerator(dims);
         int[] combination;
 
         while ((combination = generator.next()) != null) {
             for (int k = 0; k < combination.length; k++) {
-                final Edge edge = undirectedEdges.get(k);
+                Edge edge = undirectedEdges.get(k);
                 graph.removeEdge(edge.getNode1(), edge.getNode2());
 
                 if (combination[k] == 0) {

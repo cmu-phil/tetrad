@@ -36,20 +36,20 @@ import edu.cmu.tetradapp.model.SessionWrapper;
  */
 final class SessionWrappers {
 
-    public static Node addNode(final SessionWrapper sessionWrapper, final String nodeType,
-                               final String nodeName, final int centerX, final int centerY) {
-        final SessionNodeWrapper node = SessionWrappers.getNewModelNode(nodeType, nodeName);
+    public static Node addNode(SessionWrapper sessionWrapper, String nodeType,
+                               String nodeName, int centerX, int centerY) {
+        SessionNodeWrapper node = SessionWrappers.getNewModelNode(nodeType, nodeName);
         node.setCenter(centerX, centerY);
         sessionWrapper.addNode(node);
         return node;
     }
 
-    public static void addEdge(final SessionWrapper sessionWrapper, final String nodeName1,
-                               final String nodeName2) {
+    public static void addEdge(SessionWrapper sessionWrapper, String nodeName1,
+                               String nodeName2) {
 
         // Retrieve the nodes from the session wrapper.
-        final Node node1 = sessionWrapper.getNode(nodeName1);
-        final Node node2 = sessionWrapper.getNode(nodeName2);
+        Node node1 = sessionWrapper.getNode(nodeName1);
+        Node node2 = sessionWrapper.getNode(nodeName2);
 
         // Make sure nodes existed in the session wrapper by these names.
         if (node1 == null) {
@@ -65,26 +65,26 @@ final class SessionWrappers {
         }
 
         // Construct an edge.
-        final SessionNodeWrapper nodeWrapper1 = (SessionNodeWrapper) node1;
-        final SessionNodeWrapper nodeWrapper2 = (SessionNodeWrapper) node2;
-        final Edge edge = new Edge(nodeWrapper1, nodeWrapper2, Endpoint.TAIL,
+        SessionNodeWrapper nodeWrapper1 = (SessionNodeWrapper) node1;
+        SessionNodeWrapper nodeWrapper2 = (SessionNodeWrapper) node2;
+        Edge edge = new Edge(nodeWrapper1, nodeWrapper2, Endpoint.TAIL,
                 Endpoint.ARROW);
 
         // Add the edge.
         sessionWrapper.addEdge(edge);
     }
 
-    private static SessionNodeWrapper getNewModelNode(final String nextButtonType,
-                                                      final String name) {
+    private static SessionNodeWrapper getNewModelNode(String nextButtonType,
+                                                      String name) {
         if (nextButtonType == null) {
             throw new NullPointerException(
                     "Next button type must be a " + "non-null string.");
         }
 
-        final Class[] modelClasses = SessionWrappers.getModelClasses(nextButtonType);
-        final SessionNode newNode =
+        Class[] modelClasses = SessionWrappers.getModelClasses(nextButtonType);
+        SessionNode newNode =
                 new SessionNode(nextButtonType, name, modelClasses);
-        final SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
+        SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
         nodeWrapper.setButtonType(nextButtonType);
         return nodeWrapper;
     }
@@ -94,9 +94,9 @@ final class SessionWrappers {
      * @throws NullPointerException if no classes are stored for the given
      *                              type.
      */
-    private static Class[] getModelClasses(final String nextButtonType) {
-        final TetradApplicationConfig config = TetradApplicationConfig.getInstance();
-        final SessionNodeConfig nodeConfig = config.getSessionNodeConfig(nextButtonType);
+    private static Class[] getModelClasses(String nextButtonType) {
+        TetradApplicationConfig config = TetradApplicationConfig.getInstance();
+        SessionNodeConfig nodeConfig = config.getSessionNodeConfig(nextButtonType);
         if (nodeConfig == null) {
             throw new NullPointerException("There is no configuration for: " + nextButtonType);
         }

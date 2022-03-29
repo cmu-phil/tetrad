@@ -20,7 +20,7 @@ public class Simulations {
      *
      * @param simulation The simulation to add.
      */
-    public void add(final Simulation simulation) {
+    public void add(Simulation simulation) {
         this.simulations.add(simulation);
     }
 

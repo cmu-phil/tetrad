@@ -77,14 +77,14 @@ public class RandomUtil {
      *
      * @param seed A long value.
      */
-    private RandomUtil(final long seed) {
+    private RandomUtil(long seed) {
         setSeed(seed);
     }
 
     private static long seedUniquifier() {
         // L'Ecuyer, "Tables of Linear Congruential Generators of
         // Different Sizes and Good Lattice Structure", 1999
-        final long current = RandomUtil.seedUniquifier;
+        long current = RandomUtil.seedUniquifier;
         RandomUtil.seedUniquifier = current * 1181783497276652981L;
         return RandomUtil.seedUniquifier;
     }
@@ -102,7 +102,7 @@ public class RandomUtil {
      * @param n Ibid.
      * @return Ibid.
      */
-    public int nextInt(final int n) {
+    public int nextInt(int n) {
         return this.randomGenerator.nextInt(n);
     }
 
@@ -115,7 +115,7 @@ public class RandomUtil {
      * @param high Ibid.
      * @return Ibid.
      */
-    public double nextUniform(final double low, final double high) {
+    public double nextUniform(double low, double high) {
         if (low == high) return low;
         else {
             return new UniformRealDistribution(this.randomGenerator, low, high).sample();
@@ -127,12 +127,12 @@ public class RandomUtil {
      * @param sd   The standard deviation of the Normal.
      * @return Ibid.
      */
-    public double nextNormal(final double mean, final double sd) {
+    public double nextNormal(double mean, double sd) {
         if (sd <= 0) {
             throw new IllegalArgumentException("Standard deviation must be non-negative: " + sd);
         }
 
-        final double sample = this.normal.sample();
+        double sample = this.normal.sample();
         return sample * sd + mean;
 
 //        return new NormalDistribution(randomGenerator, mean, sd).sample();
@@ -143,7 +143,7 @@ public class RandomUtil {
      * @param sd   The standard deviation of the Normal.
      * @return Ibid.
      */
-    public double nextTruncatedNormal(final double mean, final double sd, final double low, final double high) {
+    public double nextTruncatedNormal(double mean, double sd, double low, double high) {
         if (sd < 0) {
             throw new IllegalArgumentException("Standard deviation must be non-negative: " + sd);
         }
@@ -161,7 +161,7 @@ public class RandomUtil {
         return d;
     }
 
-    public void revertSeed(final long seed) {
+    public void revertSeed(long seed) {
 
         // Do not change this generator; you will screw up innuerable unit tests!
         this.randomGenerator = this.seedsToGenerators.get(seed);
@@ -175,7 +175,7 @@ public class RandomUtil {
      *               Wikipedia.
      * @return Ibid.
      */
-    public double nextPoisson(final double lambda) {
+    public double nextPoisson(double lambda) {
         return new PoissonDistribution(this.randomGenerator, lambda, 1.0E-12D, 100000).sample();
     }
 
@@ -185,7 +185,7 @@ public class RandomUtil {
      * @param value The domain value for the PDF.
      * @return Ibid.
      */
-    public double normalPdf(final double mean, final double sd, final double value) {
+    public double normalPdf(double mean, double sd, double value) {
         return new NormalDistribution(this.randomGenerator, mean, sd).density(value);
     }
 
@@ -195,7 +195,7 @@ public class RandomUtil {
      * @param value The domain value for the CDF.
      * @return Ibid.
      */
-    public double normalCdf(final double mean, final double sd, final double value) {
+    public double normalCdf(double mean, double sd, double value) {
         return this.normal.cumulativeProbability((value - mean) / sd);
     }
 
@@ -204,7 +204,7 @@ public class RandomUtil {
      * @param beta  See Wikipedia. This is the second parameter.
      * @return Ibid.
      */
-    public double nextBeta(final double alpha, final double beta) {
+    public double nextBeta(double alpha, double beta) {
         return ProbUtils.betaRand(alpha, beta);
     }
 
@@ -212,7 +212,7 @@ public class RandomUtil {
      * @param df The degrees of freedom. See any stats book.
      * @return Ibid.
      */
-    public double nextT(final double df) {
+    public double nextT(double df) {
         return new TDistribution(this.randomGenerator, df).sample();
     }
 
@@ -220,7 +220,7 @@ public class RandomUtil {
      * @param lambda The rate parameter. See Wikipedia.
      * @return Ibid.
      */
-    public double nextExponential(final double lambda) {
+    public double nextExponential(double lambda) {
         return new ExponentialDistribution(this.randomGenerator, lambda).sample();
     }
 
@@ -229,7 +229,7 @@ public class RandomUtil {
      * @param beta
      * @return Ibid.
      */
-    public double nextGumbel(final double mu, final double beta) {
+    public double nextGumbel(double mu, double beta) {
         return new GumbelDistribution(this.randomGenerator, mu, beta).sample();
     }
 
@@ -237,7 +237,7 @@ public class RandomUtil {
      * @param df The degrees of freedom.
      * @return Ibid.
      */
-    public double nextChiSquare(final double df) {
+    public double nextChiSquare(double df) {
         return new ChiSquaredDistribution(this.randomGenerator, df).sample();
     }
 
@@ -246,7 +246,7 @@ public class RandomUtil {
      * @param scale The scale parameter.
      * @return Ibid.
      */
-    public double nextGamma(final double shape, final double scale) {
+    public double nextGamma(double shape, double scale) {
         return new GammaDistribution(this.randomGenerator, shape, scale).sample();
     }
 
@@ -260,7 +260,7 @@ public class RandomUtil {
      * @param seed A long value. Once this seed is set, the behavior of the random number generator is deterministic, so
      *             setting the seed can be used to repeat previous behavior.
      */
-    public void setSeed(final long seed) {
+    public void setSeed(long seed) {
 
         // Do not change this generator; you will screw up innuerable unit tests!
         this.randomGenerator = new SynchronizedRandomGenerator(new Well44497b(seed));

@@ -58,31 +58,31 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
 
     //============================CONSTRUCTORS============================//
 
-    public FgesRunner(final DataWrapper[] dataWrappers, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public FgesRunner(DataWrapper[] dataWrappers, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
     }
 
-    public FgesRunner(final DataWrapper[] dataWrappers, final Parameters params) {
+    public FgesRunner(DataWrapper[] dataWrappers, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
-    public FgesRunner(final DataWrapper[] dataWrappers, final GraphSource graph, final Parameters params) {
+    public FgesRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
         if (graph == this) throw new IllegalArgumentException();
         this.externalGraph = graph.getGraph();
     }
 
-    public FgesRunner(final DataWrapper[] dataWrappers, final GraphSource graph, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public FgesRunner(DataWrapper[] dataWrappers, GraphSource graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, knowledgeBoxModel);
         if (graph == this) throw new IllegalArgumentException();
         this.externalGraph = graph.getGraph();
     }
 
-    public FgesRunner(final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public FgesRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public FgesRunner(final GraphWrapper graphWrapper, final Parameters params) {
+    public FgesRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
@@ -117,21 +117,21 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        final Parameters params = getParams();
+        Parameters params = getParams();
 
         if (model instanceof Graph) {
-            final GraphScore gesScore = new GraphScore((Graph) model);
+            GraphScore gesScore = new GraphScore((Graph) model);
             this.fges = new Fges(gesScore);
             this.fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             this.fges.setVerbose(true);
         } else {
-            final double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
+            double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
             if (model instanceof DataSet) {
-                final DataSet dataSet = (DataSet) model;
+                DataSet dataSet = (DataSet) model;
 
                 if (dataSet.isContinuous()) {
-                    final SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
+                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
 //                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrix((DataSet) model));
 //                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrix((DataSet) model));
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
@@ -139,26 +139,26 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
                     System.out.println("Score done");
                     this.fges = new Fges(gesScore);
                 } else if (dataSet.isDiscrete()) {
-                    final double samplePrior = getParams().getDouble("samplePrior", 1);
-                    final double structurePrior = getParams().getDouble("structurePrior", 1);
-                    final BDeuScore score = new BDeuScore(dataSet);
+                    double samplePrior = getParams().getDouble("samplePrior", 1);
+                    double structurePrior = getParams().getDouble("structurePrior", 1);
+                    BDeuScore score = new BDeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);
                     this.fges = new Fges(score);
                 } else {
-                    final ConditionalGaussianScore gesScore = new ConditionalGaussianScore(dataSet, 1, 1, false);
+                    ConditionalGaussianScore gesScore = new ConditionalGaussianScore(dataSet, 1, 1, false);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     this.fges = new Fges(gesScore);
                 }
             } else if (model instanceof ICovarianceMatrix) {
-                final SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
+                SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 this.fges = new Fges(gesScore);
             } else if (model instanceof DataModelList) {
-                final DataModelList list = (DataModelList) model;
+                DataModelList list = (DataModelList) model;
 
-                for (final DataModel dataModel : list) {
+                for (DataModel dataModel : list) {
                     if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
                         throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
                                 "covariance matrices, or else all discrete data sets, or else a single externalGraph.");
@@ -171,22 +171,22 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
                 }
 
                 if (allContinuous(list)) {
-                    final double penalty = getParams().getDouble("penaltyDiscount", 4);
+                    double penalty = getParams().getDouble("penaltyDiscount", 4);
 
                     if (params.getBoolean("firstNontriangular", false)) {
-                        final SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                        SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                         fgesScore.setPenaltyDiscount(penalty);
                         this.fges = new Fges(fgesScore);
                     } else {
-                        final SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                        SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                         fgesScore.setPenaltyDiscount(penalty);
                         this.fges = new Fges(fgesScore);
                     }
                 } else if (allDiscrete(list)) {
-                    final double structurePrior = getParams().getDouble("structurePrior", 1);
-                    final double samplePrior = getParams().getDouble("samplePrior", 1);
+                    double structurePrior = getParams().getDouble("structurePrior", 1);
+                    double samplePrior = getParams().getDouble("samplePrior", 1);
 
-                    final BdeuScoreImages fgesScore = new BdeuScoreImages(list);
+                    BdeuScoreImages fgesScore = new BdeuScoreImages(list);
                     fgesScore.setSamplePrior(samplePrior);
                     fgesScore.setStructurePrior(structurePrior);
 
@@ -207,7 +207,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         this.fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         this.fges.setVerbose(true);
         this.fges.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
-        final Graph graph = this.fges.search();
+        Graph graph = this.fges.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
@@ -247,12 +247,12 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        final Type type;
+        Type type;
 
         if (model instanceof Graph) {
             type = Type.GRAPH;
         } else if (model instanceof DataSet) {
-            final DataSet dataSet = (DataSet) model;
+            DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
                 type = Type.CONTINUOUS;
@@ -265,7 +265,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         } else if (model instanceof ICovarianceMatrix) {
             type = Type.CONTINUOUS;
         } else if (model instanceof DataModelList) {
-            final DataModelList list = (DataModelList) model;
+            DataModelList list = (DataModelList) model;
 
             if (allContinuous(list)) {
                 type = Type.CONTINUOUS;
@@ -282,8 +282,8 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return type;
     }
 
-    private boolean allContinuous(final List<DataModel> dataModels) {
-        for (final DataModel dataModel : dataModels) {
+    private boolean allContinuous(List<DataModel> dataModels) {
+        for (DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isContinuous() || dataModel instanceof ICovarianceMatrix) {
                     return false;
@@ -294,8 +294,8 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return true;
     }
 
-    private boolean allDiscrete(final List<DataModel> dataModels) {
-        for (final DataModel dataModel : dataModels) {
+    private boolean allDiscrete(List<DataModel> dataModels) {
+        for (DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isDiscrete()) {
                     return false;
@@ -306,7 +306,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return true;
     }
 
-    public void setIndex(final int index) {
+    public void setIndex(int index) {
         if (index < -1) {
             throw new IllegalArgumentException("Must be in >= -1: " + index);
         }
@@ -337,7 +337,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();
     }
 
@@ -346,7 +346,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     }
 
     public ImpliedOrientation getMeekRules() {
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
@@ -354,7 +354,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        final Parameters params = getParams();
+        Parameters params = getParams();
         this.paramSettings.put("Penalty Discount", new DecimalFormat("0.0").format(params.getDouble("penaltyDiscount", 4)));
         return this.paramSettings;
     }
@@ -364,12 +364,12 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return "FGES";
     }
 
-    public void propertyChange(final PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }
 
-    private void firePropertyChange(final PropertyChangeEvent evt) {
-        for (final PropertyChangeListener l : getListeners()) {
+    private void firePropertyChange(PropertyChangeEvent evt) {
+        for (PropertyChangeListener l : getListeners()) {
             l.propertyChange(evt);
         }
     }
@@ -381,7 +381,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return this.listeners;
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
+    public void addPropertyChangeListener(PropertyChangeListener l) {
         if (!getListeners().contains(l)) getListeners().add(l);
     }
 
@@ -389,7 +389,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         return this.topGraphs;
     }
 
-    public String getBayesFactorsReport(final Graph dag) {
+    public String getBayesFactorsReport(Graph dag) {
         if (this.fges == null) {
             return "Please re-run IMaGES.";
         } else {

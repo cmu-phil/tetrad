@@ -269,8 +269,8 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return this.type;
     }
 
-    private boolean allContinuous(final List<DataModel> dataModels) {
-        for (final DataModel dataModel : dataModels) {
+    private boolean allContinuous(List<DataModel> dataModels) {
+        for (DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isContinuous() || dataModel instanceof ICovarianceMatrix) {
                     return false;
@@ -281,8 +281,8 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return true;
     }
 
-    private boolean allDiscrete(final List<DataModel> dataModels) {
-        for (final DataModel dataModel : dataModels) {
+    private boolean allDiscrete(List<DataModel> dataModels) {
+        for (DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isDiscrete()) {
                     return false;
@@ -293,7 +293,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return true;
     }
 
-    public void setIndex(final int index) {
+    public void setIndex(int index) {
         if (index < -1) {
             throw new IllegalArgumentException("Must be in >= -1: " + index);
         }
@@ -320,7 +320,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();
     }
 
@@ -329,7 +329,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
@@ -339,12 +339,12 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return "IMaGES";
     }
 
-    public void propertyChange(final PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt);
     }
 
-    private void firePropertyChange(final PropertyChangeEvent evt) {
-        for (final PropertyChangeListener l : getListeners()) {
+    private void firePropertyChange(PropertyChangeEvent evt) {
+        for (PropertyChangeListener l : getListeners()) {
             l.propertyChange(evt);
         }
     }
@@ -356,7 +356,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return this.listeners;
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
+    public void addPropertyChangeListener(PropertyChangeListener l) {
         if (!getListeners().contains(l)) getListeners().add(l);
     }
 
@@ -364,7 +364,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return this.topGraphs;
     }
 
-    public String getBayesFactorsReport(final Graph dag) {
+    public String getBayesFactorsReport(Graph dag) {
         if (this.fges == null) {
             return "Please re-run IMaGES.";
         } else {

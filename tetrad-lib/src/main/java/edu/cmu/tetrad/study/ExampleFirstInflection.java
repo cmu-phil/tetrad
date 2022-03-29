@@ -39,8 +39,8 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class ExampleFirstInflection {
-    public static void main(final String... args) {
-        final Parameters parameters = new Parameters();
+    public static void main(String... args) {
+        Parameters parameters = new Parameters();
 
         parameters.set("numMeasures", 40, 100);
         parameters.set("avgDegree", 2);
@@ -87,7 +87,7 @@ public class ExampleFirstInflection {
 
 //        parameters.set("logScale", true);
 
-        final Statistics statistics = new Statistics();
+        Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -106,17 +106,17 @@ public class ExampleFirstInflection {
         statistics.setWeight("AHP", 0.25);
         statistics.setWeight("AHR", 0.25);
 
-        final Algorithms algorithms = new Algorithms();
+        Algorithms algorithms = new Algorithms();
 
-        final Algorithm fges = new Fges(new SemBicScore());
+        Algorithm fges = new Fges(new SemBicScore());
 //        algorithms.add(new FirstInflection(fges, "alpha", -7, -2, -.5));
         algorithms.add(new FirstInflection(fges, "penaltyDiscount", 0.7, 5, 1));
 
-        final Simulations simulations = new Simulations();
+        Simulations simulations = new Simulations();
 
         simulations.add(new LinearFisherModel(new RandomForward()));
 
-        final Comparison comparison = new Comparison();
+        Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);

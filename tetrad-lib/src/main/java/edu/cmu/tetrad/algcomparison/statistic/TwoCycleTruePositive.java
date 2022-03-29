@@ -26,15 +26,15 @@ public class TwoCycleTruePositive implements Statistic {
     }
 
     @Override
-    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
-        final ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        final int twoCycleTp = adjConfusion.getTwoCycleTp();
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
+        int twoCycleTp = adjConfusion.getTwoCycleTp();
         return twoCycleTp;
 
     }
 
     @Override
-    public double getNormValue(final double value) {
+    public double getNormValue(double value) {
         return value;
     }
 }

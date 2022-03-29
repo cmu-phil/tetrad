@@ -26,18 +26,18 @@ public class TwoCyclePrecision implements Statistic {
     }
 
     @Override
-    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
-        final ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        final double TwoCycleTp = adjConfusion.getTwoCycleTp();
-        final double TwoCycleFp = adjConfusion.getTwoCycleFp();
-        final double precision = TwoCycleTp / (TwoCycleTp + TwoCycleFp);
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
+        double TwoCycleTp = adjConfusion.getTwoCycleTp();
+        double TwoCycleFp = adjConfusion.getTwoCycleFp();
+        double precision = TwoCycleTp / (TwoCycleTp + TwoCycleFp);
 //        if (precision == 0) precision = Double.NaN;
         return precision;
 
     }
 
     @Override
-    public double getNormValue(final double value) {
+    public double getNormValue(double value) {
         return value;
     }
 }

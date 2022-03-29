@@ -68,7 +68,7 @@ class GeneralizedSemImListEditor extends JPanel {
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
      */
-    public GeneralizedSemImListEditor(final GeneralizedSemIm semIm, final Map<Object, EditorWindow> launchedEditors) {
+    public GeneralizedSemImListEditor(GeneralizedSemIm semIm, Map<Object, EditorWindow> launchedEditors) {
         System.out.println("List editor : " + semIm);
 
         this.semIm = semIm;
@@ -76,11 +76,11 @@ class GeneralizedSemImListEditor extends JPanel {
         /*
       The PM being edited.
      */
-        final GeneralizedSemPm semPm = semIm.getSemPm();
+        GeneralizedSemPm semPm = semIm.getSemPm();
         setLayout(new BorderLayout());
         this.formulasBox = Box.createVerticalBox();
         refreshLabels();
-        final JScrollPane scroll = new JScrollPane(this.formulasBox);
+        JScrollPane scroll = new JScrollPane(this.formulasBox);
         scroll.setPreferredSize(new Dimension(450, 450));
 
         add(scroll, BorderLayout.CENTER);
@@ -91,14 +91,14 @@ class GeneralizedSemImListEditor extends JPanel {
     private JComponent refreshLabels() {
         this.formulasBox.removeAll();
 
-        for (final Node node : semIm().getSemPm().getVariableNodes()) {
-            final Box c = Box.createHorizontalBox();
+        for (Node node : semIm().getSemPm().getVariableNodes()) {
+            Box c = Box.createHorizontalBox();
 
-            final JLabel label = new JLabel(node + " := " + this.semIm.getNodeSubstitutedString(node));
-            final Node _node = node;
+            JLabel label = new JLabel(node + " := " + this.semIm.getNodeSubstitutedString(node));
+            Node _node = node;
 
             label.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(final MouseEvent mouseEvent) {
+                public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() == 2) {
                         beginNodeEdit(_node, label, label);
                     }
@@ -112,14 +112,14 @@ class GeneralizedSemImListEditor extends JPanel {
             this.formulasBox.add(Box.createVerticalStrut(5));
         }
 
-        for (final Node node : semIm().getSemPm().getErrorNodes()) {
-            final Box c = Box.createHorizontalBox();
+        for (Node node : semIm().getSemPm().getErrorNodes()) {
+            Box c = Box.createHorizontalBox();
 
-            final JLabel label = new JLabel(node + " ~ " + this.semIm.getNodeSubstitutedString(node));
-            final Node _node = node;
+            JLabel label = new JLabel(node + " ~ " + this.semIm.getNodeSubstitutedString(node));
+            Node _node = node;
 
             label.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(final MouseEvent mouseEvent) {
+                public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() == 2) {
                         beginNodeEdit(_node, label, label);
                     }
@@ -144,20 +144,20 @@ class GeneralizedSemImListEditor extends JPanel {
         return this.formulasBox;
     }
 
-    private void beginNodeEdit(final Node node, final JLabel label, final JComponent centering) {
+    private void beginNodeEdit(Node node, JLabel label, JComponent centering) {
         if (this.launchedEditors.containsKey(node)) {
             this.launchedEditors.get(node).moveToFront();
             return;
         }
 
-        final GeneralizedExpressionParameterizer paramEditor = new GeneralizedExpressionParameterizer(this.semIm, node);
+        GeneralizedExpressionParameterizer paramEditor = new GeneralizedExpressionParameterizer(this.semIm, node);
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(paramEditor, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        final EditorWindow editorWindow =
+        EditorWindow editorWindow =
                 new EditorWindow(panel, "Parameter Properties", "OK", true, centering);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -167,7 +167,7 @@ class GeneralizedSemImListEditor extends JPanel {
         this.launchedEditors.put(node, editorWindow);
 
         editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-            public void internalFrameClosing(final InternalFrameEvent internalFrameEvent) {
+            public void internalFrameClosing(InternalFrameEvent internalFrameEvent) {
                 if (!editorWindow.isCanceled()) {
                     GeneralizedSemImListEditor.this.semIm.setSubstitutions(paramEditor.getParameterValues());
 

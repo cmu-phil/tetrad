@@ -102,15 +102,15 @@ public class MimbuildEditor extends JPanel {
     /**
      * Allows the user to pop up an editor for a MimBuildRunner.
      */
-    public MimbuildEditor(final MimBuildRunner runner) {
+    public MimbuildEditor(MimBuildRunner runner) {
         this(runner, "Result MAG");
     }
 
-    public MimbuildEditor(final MimBuildTrekRunner runner) {
+    public MimbuildEditor(MimBuildTrekRunner runner) {
         this(runner, "Result MAG");
     }
 
-    private MimbuildEditor(final MimRunner mimRunner, final String resultLabel) {
+    private MimbuildEditor(MimRunner mimRunner, String resultLabel) {
         if (mimRunner == null) {
             throw new NullPointerException();
         }
@@ -128,9 +128,9 @@ public class MimbuildEditor extends JPanel {
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
                 .addKeyEventDispatcher(new KeyEventDispatcher() {
-                    public boolean dispatchKeyEvent(final KeyEvent e) {
-                        final int keyCode = e.getKeyCode();
-                        final int id = e.getID();
+                    public boolean dispatchKeyEvent(KeyEvent e) {
+                        int keyCode = e.getKeyCode();
+                        int id = e.getID();
 
                         if (keyCode == KeyEvent.VK_R) {
                             if (id == KeyEvent.KEY_PRESSED) {
@@ -153,25 +153,25 @@ public class MimbuildEditor extends JPanel {
      * Construct the toolbar panel.
      */
     private JPanel getToolbar() {
-        final JPanel toolbar = new JPanel();
+        JPanel toolbar = new JPanel();
         getExecuteButton().setText("Execute*");
         getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 execute();
             }
         });
 
-        final JCheckBox showMaxP = new JCheckBox("Show Max P Value Result");
+        JCheckBox showMaxP = new JCheckBox("Show Max P Value Result");
 
         showMaxP.setSelected(getMimRunner().getParams().getBoolean("showMaxP", false));
 
         showMaxP.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox box = (JCheckBox) e.getSource();
-                final boolean selected = box.isSelected();
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox box = (JCheckBox) e.getSource();
+                boolean selected = box.isSelected();
 
-                final Parameters params = getMimRunner().getParams();
+                Parameters params = getMimRunner().getParams();
                 params.set("showMaxP", selected);
 
                 if (selected) {
@@ -187,23 +187,23 @@ public class MimbuildEditor extends JPanel {
             }
         });
 
-        final JCheckBox include3Clusters = new JCheckBox("Include 3-clusters");
+        JCheckBox include3Clusters = new JCheckBox("Include 3-clusters");
 
         include3Clusters.setSelected(getMimRunner().getParams().getBoolean("includeThreeClusters", true));
 
         include3Clusters.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox box = (JCheckBox) e.getSource();
-                final boolean selected = box.isSelected();
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox box = (JCheckBox) e.getSource();
+                boolean selected = box.isSelected();
                 getMimRunner().getParams().set("includeThreeClusters", selected);
             }
         });
 
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
         b1.add(getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
         b2.add(getExecuteButton());
         b1.add(b2);
@@ -223,12 +223,12 @@ public class MimbuildEditor extends JPanel {
 
         b1.add(Box.createVerticalStrut(20));
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(showMaxP);
         b4.add(Box.createHorizontalGlue());
         b1.add(b4);
 
-        final Box b5 = Box.createHorizontalBox();
+        Box b5 = Box.createHorizontalBox();
         b5.add(Box.createHorizontalStrut(25));
         b5.add(new JLabel("(Click to set/reset)"));
         b5.add(Box.createHorizontalGlue());
@@ -236,14 +236,14 @@ public class MimbuildEditor extends JPanel {
 
 
         b1.add(Box.createVerticalStrut(10));
-        final Box b6 = Box.createHorizontalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(include3Clusters);
         b6.add(Box.createHorizontalGlue());
         b1.add(b6);
 
 
         addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("algorithmFinished".equals(evt.getPropertyName())) {
                     specialToolbarSetup();
                 }
@@ -258,7 +258,7 @@ public class MimbuildEditor extends JPanel {
      * Executes the algorithm.
      */
     private void execute() {
-        final Runnable runnable = new Runnable() {
+        Runnable runnable = new Runnable() {
             public void run() {
                 getExecuteButton().setEnabled(false);
                 setErrorMessage(null);
@@ -266,11 +266,11 @@ public class MimbuildEditor extends JPanel {
                 try {
 //                    mimRunner.getParameters().setClusters(clusterEditor.getClusters());
                     getMimRunner().execute();
-                } catch (final Exception e) {
-                    final CharArrayWriter writer1 = new CharArrayWriter();
-                    final PrintWriter writer2 = new PrintWriter(writer1);
+                } catch (Exception e) {
+                    CharArrayWriter writer1 = new CharArrayWriter();
+                    PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
-                    final String message = writer1.toString();
+                    String message = writer1.toString();
                     writer2.close();
 
                     e.printStackTrace(System.out);
@@ -293,7 +293,7 @@ public class MimbuildEditor extends JPanel {
 
                 getWorkbenchScroll().setBorder(
                         new TitledBorder(getResultLabel()));
-                final Graph resultGraph = resultGraph();
+                Graph resultGraph = resultGraph();
 
                 doDefaultArrangement(resultGraph);
 
@@ -311,16 +311,16 @@ public class MimbuildEditor extends JPanel {
             }
         };
 
-        final Thread thread = new Thread(runnable);
+        Thread thread = new Thread(runnable);
         thread.setPriority(Thread.NORM_PRIORITY + 1);
         this.thread = thread;
         thread.start();
 
-        final Thread watcher = new Thread() {
+        Thread watcher = new Thread() {
             public void run() {
                 try {
                     Thread.sleep(MimbuildEditor.this.delay);
-                } catch (final InterruptedException e) {
+                } catch (InterruptedException e) {
                     return;
                 }
 
@@ -330,13 +330,13 @@ public class MimbuildEditor extends JPanel {
                     return;
                 }
 
-                final JProgressBar progressBar = new JProgressBar(0, 100);
+                JProgressBar progressBar = new JProgressBar(0, 100);
                 progressBar.setIndeterminate(true);
 
-                final JButton stopButton = new JButton("Stop");
+                JButton stopButton = new JButton("Stop");
 
                 stopButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(final ActionEvent e) {
+                    public void actionPerformed(ActionEvent e) {
                         if (thread() != null) {
                             thread().stop();
                             TaskManager.getInstance().setCanceled(true);
@@ -351,13 +351,13 @@ public class MimbuildEditor extends JPanel {
                     }
                 });
 
-                final Box b = Box.createHorizontalBox();
+                Box b = Box.createHorizontalBox();
                 b.add(progressBar);
                 b.add(stopButton);
 
-                final Frame ancestor =
+                Frame ancestor =
                         (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
-                final JDialog dialog = new JDialog(ancestor, "Searching...", false);
+                JDialog dialog = new JDialog(ancestor, "Searching...", false);
 
                 dialog.getContentPane().add(b);
                 dialog.pack();
@@ -367,7 +367,7 @@ public class MimbuildEditor extends JPanel {
                 while (thread().isAlive()) {
                     try {
                         Thread.sleep(200);
-                    } catch (final InterruptedException e) {
+                    } catch (InterruptedException e) {
                         return;
                     }
                 }
@@ -387,7 +387,7 @@ public class MimbuildEditor extends JPanel {
         watcher.start();
     }
 
-    private void doDefaultArrangement(final Graph graph) {
+    private void doDefaultArrangement(Graph graph) {
         GraphUtils.circleLayout(graph, 200, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(graph);
     }
@@ -410,7 +410,7 @@ public class MimbuildEditor extends JPanel {
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    private void setup(final String resultLabel) {
+    private void setup(String resultLabel) {
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
         add(workbenchScroll(resultLabel), BorderLayout.CENTER);
@@ -428,14 +428,14 @@ public class MimbuildEditor extends JPanel {
     private void updateDisplayPanel() {
         this.displayPanel.removeAll();
 
-        final JTabbedPane tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane();
 
         if (getMimRunner().getStructureGraph() != null) {
             if (getMimRunner().getStructureGraph() != null) {
 //                DataGraphUtils.circleLayout(structureGraph, 200, 200, 150);
-                final Graph structureGraph = getMimRunner().getStructureGraph();
+                Graph structureGraph = getMimRunner().getStructureGraph();
                 doDefaultArrangement(structureGraph);
-                final GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
+                GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
                 structureWorkbench.setAllowDoubleClickActions(false);
 
                 tabbedPane.add("Structure Model",
@@ -447,17 +447,17 @@ public class MimbuildEditor extends JPanel {
         }
 
         if (getMimRunner().getClusters() != null) {
-            final ClusterEditor editor = new ClusterEditor(getMimRunner().getClusters(),
+            ClusterEditor editor = new ClusterEditor(getMimRunner().getClusters(),
                     getMimRunner().getData().getVariableNames());
             tabbedPane.add("Measurement Model", editor);
         }
 
         if (getMimRunner().getFullGraph() != null) {
-            final Graph fullGraph = getMimRunner().getFullGraph();
+            Graph fullGraph = getMimRunner().getFullGraph();
             doDefaultArrangement(fullGraph);
             GraphUtils.fruchtermanReingoldLayout(fullGraph);
 
-            final GraphWorkbench fullGraphBench = new GraphWorkbench(fullGraph);
+            GraphWorkbench fullGraphBench = new GraphWorkbench(fullGraph);
             tabbedPane.add("Full Graph", new JScrollPane(fullGraphBench));
         } else {
             tabbedPane.add("Full Graph", new JScrollPane(new GraphWorkbench()));
@@ -478,14 +478,14 @@ public class MimbuildEditor extends JPanel {
         return resultGraph;
     }
 
-    private JScrollPane workbenchScroll(final String resultLabel) {
-        final Graph resultGraph = resultGraph();
+    private JScrollPane workbenchScroll(String resultLabel) {
+        Graph resultGraph = resultGraph();
 
-        final Graph sourceGraph = getMimRunner().getSourceGraph();
-        final Graph latestWorkbenchGraph =
+        Graph sourceGraph = getMimRunner().getSourceGraph();
+        Graph latestWorkbenchGraph =
                 (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
-        final boolean arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph,
+        boolean arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph,
                 latestWorkbenchGraph);
 
         if (!arrangedAll) {
@@ -499,7 +499,7 @@ public class MimbuildEditor extends JPanel {
         getWorkbenchScroll().setBorder(new TitledBorder(resultLabel));
 
         this.workbench.addMouseListener(new MouseAdapter() {
-            public void mouseExited(final MouseEvent e) {
+            public void mouseExited(MouseEvent e) {
                 storeLatestWorkbenchGraph();
             }
         });
@@ -508,8 +508,8 @@ public class MimbuildEditor extends JPanel {
     }
 
     private JMenuBar menuBar() {
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
         menuBar.add(file);
         return menuBar;
     }
@@ -522,7 +522,7 @@ public class MimbuildEditor extends JPanel {
         return this.errorMessage;
     }
 
-    private void setErrorMessage(final String errorMessage) {
+    private void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }
 
@@ -535,7 +535,7 @@ public class MimbuildEditor extends JPanel {
     }
 
     public Graph getLatestWorkbenchGraph() {
-        final Graph graph = (Graph) getMimRunner().getParams().get("sourceGraph", null);
+        Graph graph = (Graph) getMimRunner().getParams().get("sourceGraph", null);
 
         if (graph == null) {
             return getMimRunner().getSourceGraph();
@@ -545,25 +545,25 @@ public class MimbuildEditor extends JPanel {
     }
 
     private void storeLatestWorkbenchGraph() {
-        final Graph latestWorkbenchGraph = getWorkbench().getGraph();
+        Graph latestWorkbenchGraph = getWorkbench().getGraph();
 
         if (latestWorkbenchGraph.getNumNodes() == 0) {
             return;
         }
 
         try {
-            final Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
+            Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
             getMimRunner().getParams().set("sourceGraph", graph);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             getMimRunner().getParams().set("sourceGraph", (Graph) null);
-        } catch (final ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             getMimRunner().getParams().set("sourceGraph", (Graph) null);
             e.printStackTrace();
         }
     }
 
     private Box getParamsPanel() {
-        final Box b2 = Box.createVerticalBox();
+        Box b2 = Box.createVerticalBox();
         b2.add(getIndTestParamBox());
         b2.setBorder(new TitledBorder("Parameters"));
         return b2;
@@ -573,7 +573,7 @@ public class MimbuildEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        final Parameters params = getMimRunner().getParams();
+        Parameters params = getMimRunner().getParams();
         return getIndTestParamBox(params);
     }
 
@@ -581,19 +581,19 @@ public class MimbuildEditor extends JPanel {
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(final Parameters params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
         if (params instanceof Parameters) {
-            final MimRunner runner = getMimRunner();
+            MimRunner runner = getMimRunner();
             params.set("varNames", runner.getParams().get("varNames", null));
-            final DataModel dataModel = runner.getData();
+            DataModel dataModel = runner.getData();
 
             if (dataModel instanceof DataSet) {
-                final DataSet data = (DataSet) runner.getData();
-                final boolean discrete = data.isDiscrete();
+                DataSet data = (DataSet) runner.getData();
+                boolean discrete = data.isDiscrete();
                 return new BuildPureClustersIndTestParamsEditor2(params,
                         discrete);
             } else if (dataModel instanceof ICovarianceMatrix) {
@@ -602,7 +602,7 @@ public class MimbuildEditor extends JPanel {
         }
 
         if (params instanceof Parameters) {
-            final MimRunner runner = getMimRunner();
+            MimRunner runner = getMimRunner();
             params.set("varNames", runner.getParams().get("varNames", null));
 
             boolean discreteData = false;
@@ -615,7 +615,7 @@ public class MimbuildEditor extends JPanel {
         }
 
         if (params instanceof Parameters) {
-            final MimRunner runner = getMimRunner();
+            MimRunner runner = getMimRunner();
             params.set("varNames", runner.getParams().get("varNames", null));
             return new MimBuildIndTestParamsEditor(params);
         }

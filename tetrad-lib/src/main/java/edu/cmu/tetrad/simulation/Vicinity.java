@@ -38,8 +38,8 @@ public class Vicinity {
     private final Map<List<Integer>, Set<Edge>> Coords1 = new HashMap<>();
     private final Map<List<Integer>, Set<Edge>> Coords2 = new HashMap<>();
 
-    public Vicinity(final List<Edge> edges, final DataSet locationMap, final int xLow, final int xHigh, final int yLow, final int yHigh, final int zLow, final int zHigh,
-                    final double xDist, final double yDist, final double zDist) {
+    public Vicinity(List<Edge> edges, DataSet locationMap, int xLow, int xHigh, int yLow, int yHigh, int zLow, int zHigh,
+                    double xDist, double yDist, double zDist) {
         //EK: the xLow etc. ints are the bounds on the coordinates in the location space, I think
         this.xLow = xLow;
         this.xHigh = xHigh;
@@ -244,13 +244,13 @@ public class Vicinity {
         Set<Edge> edges = new HashSet<>();
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
         //create separate range values for x y and z, scaled by xdist ydist zdist
-        final int xrange = (int) Math.ceil(range / this.xDist);
-        final int yrange = (int) Math.ceil(range / this.yDist);
-        final int zrange = (int) Math.ceil(range / this.zDist);
+        int xrange = (int) Math.ceil(range / this.xDist);
+        int yrange = (int) Math.ceil(range / this.yDist);
+        int zrange = (int) Math.ceil(range / this.zDist);
 
         //initialize the edge sets
-        final Set<Edge> node1edges1 = new HashSet<>();
-        final Set<Edge> node1edges2 = new HashSet<>();
+        Set<Edge> node1edges1 = new HashSet<>();
+        Set<Edge> node1edges2 = new HashSet<>();
         //list edges with either endpoint near node1
         for (int x = getX(edge.getNode1(), this.locationMap) - xrange; x <= getX(edge.getNode1(), this.locationMap) + xrange; x++) {
             for (int y = getY(edge.getNode1(), this.locationMap) - yrange; y <= getY(edge.getNode1(), this.locationMap) + yrange; y++) {
@@ -265,25 +265,25 @@ public class Vicinity {
                 }
             }
         }
-        final int x2 = getX(edge.getNode2(), this.locationMap);
-        final int y2 = getY(edge.getNode2(), this.locationMap);
-        final int z2 = getZ(edge.getNode2(), this.locationMap);
+        int x2 = getX(edge.getNode2(), this.locationMap);
+        int y2 = getY(edge.getNode2(), this.locationMap);
+        int z2 = getZ(edge.getNode2(), this.locationMap);
         //if one or both of the above lists is nonempty, find edges where the other endpoint is near node2!
         if (!node1edges1.isEmpty()) {
-            for (final Edge edge11 : node1edges1) {
-                final int x = getX(edge11.getNode2(), this.locationMap);
-                final int y = getY(edge11.getNode2(), this.locationMap);
-                final int z = getZ(edge11.getNode2(), this.locationMap);
+            for (Edge edge11 : node1edges1) {
+                int x = getX(edge11.getNode2(), this.locationMap);
+                int y = getY(edge11.getNode2(), this.locationMap);
+                int z = getZ(edge11.getNode2(), this.locationMap);
                 if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange) {
                     edges.add(edge11);
                 }
             }
         }
         if (!node1edges2.isEmpty()) {
-            for (final Edge edge12 : node1edges2) {
-                final int x = getX(edge12.getNode1(), this.locationMap);
-                final int y = getY(edge12.getNode1(), this.locationMap);
-                final int z = getZ(edge12.getNode1(), this.locationMap);
+            for (Edge edge12 : node1edges2) {
+                int x = getX(edge12.getNode1(), this.locationMap);
+                int y = getY(edge12.getNode1(), this.locationMap);
+                int z = getZ(edge12.getNode1(), this.locationMap);
                 if (x >= x2 - xrange && x <= x2 + xrange && y >= y2 - yrange && y <= y2 + yrange && z >= z2 - zrange && z <= z2 + zrange) {
                     edges.add(edge12);
                 }
@@ -294,7 +294,7 @@ public class Vicinity {
     }
 
     //this is just the private method for adding entries to a map
-    private void add(final Map<List<Integer>, Set<Edge>> Coords, final Edge edge, final List<Integer> x) {
+    private void add(Map<List<Integer>, Set<Edge>> Coords, Edge edge, List<Integer> x) {
         Set<Edge> edges = Coords.get(x);
         if (edges == null) {
             edges = new HashSet<>();
@@ -305,17 +305,17 @@ public class Vicinity {
 
     // want to use regular point and edge classes, so replace the below with private methods
     //this is where the loaded locationMap should be doing the work
-    private int getX(final Node node, final DataSet locationMap) {
+    private int getX(Node node, DataSet locationMap) {
         //double output = locationMap.getDouble(0,locationMap.getColumn(node));
         return (int) locationMap.getDouble(0, locationMap.getColumn(node));
     }
 
-    private int getY(final Node node, final DataSet locationMap) {
+    private int getY(Node node, DataSet locationMap) {
         //double output = locationMap.getDouble(0,locationMap.getColumn(node));
         return (int) locationMap.getDouble(1, locationMap.getColumn(node));
     }
 
-    private int getZ(final Node node, final DataSet locationMap) {
+    private int getZ(Node node, DataSet locationMap) {
         //double output = locationMap.getDouble(0,locationMap.getColumn(node));
         return (int) locationMap.getDouble(2, locationMap.getColumn(node));
     }

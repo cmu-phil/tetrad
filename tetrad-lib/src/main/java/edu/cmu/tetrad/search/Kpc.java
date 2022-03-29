@@ -135,7 +135,7 @@ public class Kpc implements GraphSearch {
      * @param dataset The oracle for conditional independence facts. This does not make a copy of the independence test,
      *                for fear of duplicating the data set!
      */
-    public Kpc(final DataSet dataset, final double alpha) {
+    public Kpc(DataSet dataset, double alpha) {
         if (dataset == null) {
             throw new NullPointerException();
         }
@@ -156,7 +156,7 @@ public class Kpc implements GraphSearch {
     /**
      * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -177,7 +177,7 @@ public class Kpc implements GraphSearch {
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -208,7 +208,7 @@ public class Kpc implements GraphSearch {
      *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
      *              machines.
      */
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0.");
         }
@@ -240,19 +240,19 @@ public class Kpc implements GraphSearch {
      * <p>
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
-    public Graph search(final List<Node> nodes) {
+    public Graph search(List<Node> nodes) {
         this.logger.log("info", "Starting kPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        final long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        final List allNodes = getIndependenceTest().getVariables();
+        List allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
@@ -261,7 +261,7 @@ public class Kpc implements GraphSearch {
         this.graph = new EdgeListGraph(nodes);
         this.graph.fullyConnect(Endpoint.TAIL);
 
-        final Fas fas = new Fas(getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setTrueGraph(this.trueGraph);
@@ -274,7 +274,7 @@ public class Kpc implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
         SearchGraphUtils.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         rules.setKnowledge(this.knowledge);
         rules.orientImplied(this.graph);
@@ -318,7 +318,7 @@ public class Kpc implements GraphSearch {
     /**
      * Sets the significance level at which independence judgments should be made.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -331,7 +331,7 @@ public class Kpc implements GraphSearch {
      * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value <= 0
      * indicates that the Incomplete Cholesky method should not be used and instead use the exact matrices.
      */
-    public void setIncompleteCholesky(final double precision) {
+    public void setIncompleteCholesky(double precision) {
         this.useIncompleteCholesky = precision;
         this.independenceTest.setIncompleteCholesky(precision);
     }
@@ -339,7 +339,7 @@ public class Kpc implements GraphSearch {
     /**
      * Set the number of bootstrap samples to use
      */
-    public void setPerms(final int perms) {
+    public void setPerms(int perms) {
         this.perms = perms;
         this.independenceTest.setPerms(perms);
     }
@@ -347,7 +347,7 @@ public class Kpc implements GraphSearch {
     /**
      * Sets the regularizer
      */
-    public void setRegularizer(final double regularizer) {
+    public void setRegularizer(double regularizer) {
         this.regularizer = regularizer;
         this.independenceTest.setRegularizer(regularizer);
     }
@@ -386,21 +386,21 @@ public class Kpc implements GraphSearch {
         this.unshieldedColliders = new HashSet<>();
         this.unshieldedNoncolliders = new HashSet<>();
 
-        for (final Node y : this.graph.getNodes()) {
-            final List<Node> adj = this.graph.getAdjacentNodes(y);
+        for (Node y : this.graph.getNodes()) {
+            List<Node> adj = this.graph.getAdjacentNodes(y);
 
             if (adj.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
+            ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                final Node x = adj.get(choice[0]);
-                final Node z = adj.get(choice[1]);
+                Node x = adj.get(choice[0]);
+                Node z = adj.get(choice[1]);
 
-                final List<Node> nodes = this.sepset.get(x, z);
+                List<Node> nodes = this.sepset.get(x, z);
 
                 // Note that checking adj(x, z) does not suffice when knowledge
                 // has been specified.
@@ -421,7 +421,7 @@ public class Kpc implements GraphSearch {
         return this.numIndependenceTests;
     }
 
-    public void setTrueGraph(final Graph trueGraph) {
+    public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
     }
 
@@ -429,7 +429,7 @@ public class Kpc implements GraphSearch {
         return this.numDependenceJudgements;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

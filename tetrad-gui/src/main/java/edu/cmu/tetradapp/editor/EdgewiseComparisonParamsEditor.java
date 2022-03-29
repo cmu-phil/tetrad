@@ -58,7 +58,7 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
      */
     private Object[] parentModels;
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         this.parentModels = parentModels;
     }
 
@@ -67,9 +67,9 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
     }
 
     public void setup() {
-        final List<GraphSource> graphSources = new LinkedList<>();
+        List<GraphSource> graphSources = new LinkedList<>();
 
-        for (final Object parentModel : this.parentModels) {
+        for (Object parentModel : this.parentModels) {
             if (parentModel instanceof GraphSource) {
                 graphSources.add((GraphSource) parentModel);
             }
@@ -79,9 +79,9 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
             throw new IllegalArgumentException("Expecting two graph sources as input.");
         }
 
-        final String name1 = graphSources.get(0).getName();
-        final String name2 = graphSources.get(1).getName();
-        final String storedName = Preferences.userRoot().get("__referenceSessionModel", "");
+        String name1 = graphSources.get(0).getName();
+        String name2 = graphSources.get(1).getName();
+        String storedName = Preferences.userRoot().get("__referenceSessionModel", "");
 
         System.out.println("In body, name1 = " + name1 + " name2 = " + name2 + ", storedName = " + storedName);
 
@@ -111,9 +111,9 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         setLayout(new BorderLayout());
 
         // Reset?
-        final JRadioButton resetOnExecute = new JRadioButton("Reset");
-        final JRadioButton dontResetOnExecute = new JRadioButton("Appended to");
-        final ButtonGroup group1 = new ButtonGroup();
+        JRadioButton resetOnExecute = new JRadioButton("Reset");
+        JRadioButton dontResetOnExecute = new JRadioButton("Appended to");
+        ButtonGroup group1 = new ButtonGroup();
         group1.add(resetOnExecute);
         group1.add(dontResetOnExecute);
 
@@ -127,9 +127,9 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         }
 
         // Latents?
-        final JRadioButton latents = new JRadioButton("Yes");
-        final JRadioButton noLatents = new JRadioButton("No");
-        final ButtonGroup group2 = new ButtonGroup();
+        JRadioButton latents = new JRadioButton("Yes");
+        JRadioButton noLatents = new JRadioButton("No");
+        ButtonGroup group2 = new ButtonGroup();
         group2.add(latents);
         group2.add(noLatents);
 
@@ -142,8 +142,8 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         }
 
         // True graph?
-        final JRadioButton graph1 = new JRadioButton(this.model1.getName());
-        final JRadioButton graph2 = new JRadioButton(this.model2.getName());
+        JRadioButton graph1 = new JRadioButton(this.model1.getName());
+        JRadioButton graph2 = new JRadioButton(this.model2.getName());
 
         graph1.addActionListener(e -> {
             System.out.println("Graph1 button reference = " + this.model1.getName() + ", target = " + this.model2.getName());
@@ -160,24 +160,24 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
             this.params.getString("targetGraphName", this.model1.getName());
         });
 
-        final ButtonGroup group = new ButtonGroup();
+        ButtonGroup group = new ButtonGroup();
         group.add(graph1);
         group.add(graph2);
         graph1.setSelected(true);
 
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b8 = Box.createHorizontalBox();
+        Box b8 = Box.createHorizontalBox();
         b8.add(new JLabel("Which of the two input graphs is the true graph?"));
         b8.add(Box.createHorizontalGlue());
         b1.add(b8);
 
-        final Box b9 = Box.createHorizontalBox();
+        Box b9 = Box.createHorizontalBox();
         b9.add(graph1);
         b9.add(Box.createHorizontalGlue());
         b1.add(b9);
 
-        final Box b10 = Box.createHorizontalBox();
+        Box b10 = Box.createHorizontalBox();
         b10.add(graph2);
         b10.add(Box.createHorizontalGlue());
         b1.add(b10);
@@ -194,7 +194,7 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         return this.params;
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }

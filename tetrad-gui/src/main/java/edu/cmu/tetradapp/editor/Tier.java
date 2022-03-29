@@ -48,7 +48,7 @@ class Tier extends JPanel {
     /**
      * A panel with a tier name, and all vars in that tier.
      */
-    public Tier(final TierList kn, final int thisTier, final String[] tierNames) {
+    public Tier(TierList kn, int thisTier, String[] tierNames) {
 
         this.jsp = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -63,7 +63,7 @@ class Tier extends JPanel {
         this.jsp.setViewportView(this.view);
     }
 
-    public static void setKnowledge(final IKnowledge k) {
+    public static void setKnowledge(IKnowledge k) {
         Tier.know = k;
     }
 
@@ -79,32 +79,32 @@ class Tier extends JPanel {
         add(new JLabel("Tier " + this.num));
         add(this.jsp);
 
-        final List t = Tier.know.getTier(this.num);
+        List t = Tier.know.getTier(this.num);
 
         this.view.setLayout(new BoxLayout(this.view, BoxLayout.X_AXIS));
 
-        final Iterator it = t.iterator();
+        Iterator it = t.iterator();
 
         String temp;
 
         while (it.hasNext()) {
             temp = (String) it.next();
 
-            final String[] names = new String[this.tierNames.length + 1];
+            String[] names = new String[this.tierNames.length + 1];
 
             names[0] = temp;
 
             System.arraycopy(this.tierNames, 0, names, 1, this.tierNames.length);
 
-            final JComboBox cBox = new JComboBox(names);
+            JComboBox cBox = new JComboBox(names);
             cBox.setMaximumSize(new Dimension(80, 50));
             this.view.add(cBox);
 
             cBox.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
-                    final JComboBox cb = (JComboBox) e.getSource();
-                    final int newTier = cb.getSelectedIndex() - 2;
-                    final String s = (String) cb.getItemAt(0);
+                public void actionPerformed(ActionEvent e) {
+                    JComboBox cb = (JComboBox) e.getSource();
+                    int newTier = cb.getSelectedIndex() - 2;
+                    String s = (String) cb.getItemAt(0);
 
                     if (newTier == -2) {
                         return;
@@ -124,14 +124,14 @@ class Tier extends JPanel {
         }
     }
 
-    public void setUnspecified(final List<String> varNames) {
+    public void setUnspecified(List<String> varNames) {
         removeAll();
         this.view.removeAll();
 
         add(new JLabel("Unspecified"));
         add(this.jsp);
 
-        final List<String> vNames = new LinkedList<>(varNames);
+        List<String> vNames = new LinkedList<>(varNames);
 
         System.out.println("edit unspecified list");
         System.out.println("vNames Contains: " + vNames);
@@ -139,11 +139,11 @@ class Tier extends JPanel {
         for (int i = 0; i < Tier.know.getNumTiers(); i++) {
             System.out.println("Tier " + i);
 
-            final List t = Tier.know.getTier(i);
+            List t = Tier.know.getTier(i);
 
             System.out.println("Tier contains: " + t);
 
-            final Iterator it = t.iterator();
+            Iterator it = t.iterator();
 
             String temp;
 
@@ -160,28 +160,28 @@ class Tier extends JPanel {
 
         this.view.setLayout(new BoxLayout(this.view, BoxLayout.X_AXIS));
 
-        final Iterator it = vNames.iterator();
+        Iterator it = vNames.iterator();
 
         String temp;
 
         while (it.hasNext()) {
             temp = (String) it.next();
 
-            final String[] names = new String[this.tierNames.length + 1];
+            String[] names = new String[this.tierNames.length + 1];
 
             names[0] = temp;
 
             System.arraycopy(this.tierNames, 0, names, 1, this.tierNames.length);
 
-            final JComboBox cBox = new JComboBox(names);
+            JComboBox cBox = new JComboBox(names);
             cBox.setMaximumSize(new Dimension(80, 50));
             this.view.add(cBox);
 
             cBox.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
-                    final JComboBox cb = (JComboBox) e.getSource();
-                    final int newTier = cb.getSelectedIndex() - 2;
-                    final String s = (String) cb.getItemAt(0);
+                public void actionPerformed(ActionEvent e) {
+                    JComboBox cb = (JComboBox) e.getSource();
+                    int newTier = cb.getSelectedIndex() - 2;
+                    String s = (String) cb.getItemAt(0);
 
                     if (newTier == -2) {
                         return;

@@ -67,7 +67,7 @@ public class Beta implements Distribution {
     /**
      * The order of parameters is alpha = 0, beta = 1.
      */
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
             this.alpha = value;
         } else if (index == 1 && value >= 0) {
@@ -80,7 +80,7 @@ public class Beta implements Distribution {
     /**
      * The order of parameters is alpha = 0, beta = 1.
      */
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
             return this.alpha;
         } else if (index == 1) {
@@ -93,7 +93,7 @@ public class Beta implements Distribution {
     /**
      * The order of parameters is alpha = 0, beta = 1.
      */
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Alpha";
         } else if (index == 1) {

@@ -45,18 +45,18 @@ class NormalityTests {
      * Constructs a readable table of normality test results
      */
 
-    public static String runNormalityTests(final DataSet dataSet, final ContinuousVariable variable) {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    public static String runNormalityTests(DataSet dataSet, ContinuousVariable variable) {
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         String result = "Normality Tests for: " + variable.getName() + " (sample size:" + dataSet.getNumRows() + ")";
-        final int lengthOfTitle = result.length();
+        int lengthOfTitle = result.length();
         result += "\n";
         for (int i = 0; i < lengthOfTitle; i++) {
             result += "-";
         }
         result += "\n\nKolmogorov Smirnov:\n--------------------------------\n";
-        final double[] ksResults = NormalityTests.kolmogorovSmirnov(dataSet, variable);
-        final double ksStat = Math.round((ksResults[0] * 10000000.0)) / 10000000.0;
+        double[] ksResults = NormalityTests.kolmogorovSmirnov(dataSet, variable);
+        double ksStat = Math.round((ksResults[0] * 10000000.0)) / 10000000.0;
         result += "K-S Statistic: " + ksStat + "\n\n";
         result += "Significance Levels:\t.20\t.15\t.10\t.05\t.01\nK-S Critical Values:";
 
@@ -95,9 +95,9 @@ class NormalityTests {
         result += "Anderson Darling Test:\n";
         result += "---------------------\n";
 
-        final int column = dataSet.getVariables().indexOf(variable);
-        final double[] data = dataSet.getDoubleData().getColumn(column).toArray();
-        final AndersonDarlingTest andersonDarlingTest = new AndersonDarlingTest(data);
+        int column = dataSet.getVariables().indexOf(variable);
+        double[] data = dataSet.getDoubleData().getColumn(column).toArray();
+        AndersonDarlingTest andersonDarlingTest = new AndersonDarlingTest(data);
         result += "A^2 = " + nf.format(andersonDarlingTest.getASquared()) + "\n";
         result += "A^2* = " + nf.format(andersonDarlingTest.getASquaredStar()) + "\n";
         result += "p = " + nf.format(andersonDarlingTest.getP()) + "\n";
@@ -116,21 +116,21 @@ class NormalityTests {
      * @return Kolmogorov-Smirnov statistics: index 0 is the D_n value, 1-5 are the critical values at alpha = .2, .15. .10, .05, and .01 respectively.
      */
 
-    public static double[] kolmogorovSmirnov(final DataSet dataSet, final ContinuousVariable variable) {
-        final int n = dataSet.getNumRows();
-        final int columnIndex = dataSet.getColumn(variable);
-        final Normal idealDistribution = NormalityTests.getNormal(dataSet, variable);
+    public static double[] kolmogorovSmirnov(DataSet dataSet, ContinuousVariable variable) {
+        int n = dataSet.getNumRows();
+        int columnIndex = dataSet.getColumn(variable);
+        Normal idealDistribution = NormalityTests.getNormal(dataSet, variable);
 
-        final double[] ks = new double[6];
+        double[] ks = new double[6];
 
         //get all critical values
         for (int i = 1; i < 6; i++) {
             ks[i] = NormalityTests.estimateKSCriticalValue(i, n);
         }
 
-        final double[] _data = dataSet.getDoubleData().getColumn(columnIndex).toArray();
+        double[] _data = dataSet.getDoubleData().getColumn(columnIndex).toArray();
 
-        final List<Double> _leaveOutMissing = new ArrayList<>();
+        List<Double> _leaveOutMissing = new ArrayList<>();
 
         for (int i = 0; i < _data.length; i++) {
             if (!Double.isNaN(_data[i])) {
@@ -138,7 +138,7 @@ class NormalityTests {
             }
         }
 
-        final double[] data = new double[_leaveOutMissing.size()];
+        double[] data = new double[_leaveOutMissing.size()];
 
         for (int i = 0; i < _leaveOutMissing.size(); i++) data[i] = _leaveOutMissing.get(i);
 
@@ -149,13 +149,13 @@ class NormalityTests {
         double d = 0.0;
         for (int i = 1; i <= n; i++) {
 //            double x = dataSet.getDouble(i - 1, columnIndex);
-            final double x = data[i - 1];
+            double x = data[i - 1];
             //System.out.println("****" + x);
             //double valueAtQuantile = QQPlot.findQuantile((i + 1) / (dataSet.getNumRows() + 1.0), dataSet.getDouble(0, columnIndex), dataSet.getDouble(n - 1, columnIndex), idealDistribution, .0001, 0, 50);
-            final double idealValue = idealDistribution.cdf(x);
+            double idealValue = idealDistribution.cdf(x);
             //System.out.println(idealValue);
             //System.out.println((double)i / n);
-            final double difference = Math.abs(idealValue - ((double) i / n));
+            double difference = Math.abs(idealValue - ((double) i / n));
             if (difference > d) {
                 //System.out.println("$$$$$" + difference);
                 d = difference;
@@ -176,9 +176,9 @@ class NormalityTests {
         return ks;
     }
 
-    public static double empiricalDistributionFunction(final DataSet dataSet, final Variable var, final double x, final int n) {
+    public static double empiricalDistributionFunction(DataSet dataSet, Variable var, double x, int n) {
         double value = 0.0;
-        final int columnIndex = dataSet.getColumn(var);
+        int columnIndex = dataSet.getColumn(var);
         for (int i = 0; i < n; i++) {
             if (dataSet.getDouble(i, columnIndex) <= x) {
                 value += 1;
@@ -189,12 +189,12 @@ class NormalityTests {
         return value;
     }
 
-    public static void sortVariable(final DataSet dataSet, final Variable variable) {
-        final int columnIndex = dataSet.getColumn(variable);
+    public static void sortVariable(DataSet dataSet, Variable variable) {
+        int columnIndex = dataSet.getColumn(variable);
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int k = i; k < dataSet.getNumRows(); k++) {
                 if (dataSet.getDouble(i, columnIndex) > dataSet.getDouble(k, columnIndex)) {
-                    final double temp = dataSet.getDouble(i, columnIndex);
+                    double temp = dataSet.getDouble(i, columnIndex);
                     dataSet.setDouble(i, columnIndex, dataSet.getDouble(k, columnIndex));
                     dataSet.setDouble(k, columnIndex, temp);
                 }
@@ -206,13 +206,13 @@ class NormalityTests {
      * Estimates values of the Kolmogorov-Smirnov cdf to 100 iterations
      */
 
-    public static double kolmogorovSmirnovCDF(final double x) {
+    public static double kolmogorovSmirnovCDF(double x) {
         double sum = 0.0;
         for (int i = 0; i < 100; i++) {
             sum += Math.pow(Math.E, (-1 * Math.pow((2 * i) - 1, 2) * Math.pow(Math.PI, 2)) / Math.pow(8 * x, 2));
         }
 
-        final double estimatedValue = sum * (Math.sqrt(2 * Math.PI) / x);
+        double estimatedValue = sum * (Math.sqrt(2 * Math.PI) / x);
 
         return estimatedValue;
     }
@@ -225,14 +225,14 @@ class NormalityTests {
      * @return criticalValue the critical value for the given level
      */
 
-    private static double estimateKSCriticalValue(final int level, int n) {
+    private static double estimateKSCriticalValue(int level, int n) {
         double criticalValue = 0.0;
         //if n <= 35, lookup from table . . .
         if (n <= 35) {
             if (n >= 20 && n < 25) n = 20;
             if (n >= 25 && n < 30) n = 25;
             if (n >= 30 && n < 35) n = 30;
-            final double[] table = new double[36];
+            double[] table = new double[36];
             switch (level) {
                 case (1):
                     table[1] = .900;
@@ -392,10 +392,10 @@ class NormalityTests {
      * @param variable continuous variable whose normality is in question
      * @return Cramer-von-Mises statistic
      */
-    public static double cramerVonMises(final DataSet dataSet, final ContinuousVariable variable) {
-        final int n = dataSet.getNumRows();
-        final int columnIndex = dataSet.getColumn(variable);
-        final Normal idealDistribution = NormalityTests.getNormal(dataSet, variable);
+    public static double cramerVonMises(DataSet dataSet, ContinuousVariable variable) {
+        int n = dataSet.getNumRows();
+        int columnIndex = dataSet.getColumn(variable);
+        Normal idealDistribution = NormalityTests.getNormal(dataSet, variable);
 
         double cvmStatistic = 0.0;
 
@@ -417,10 +417,10 @@ class NormalityTests {
      * @return Ideal Normal distribution for a variable.
      */
 
-    private static Normal getNormal(final DataSet dataSet, final Variable variable) {
-        final double[] paramsForNormal = NormalityTests.normalParams(dataSet, variable);
-        final double mean = paramsForNormal[0];
-        final double sd = paramsForNormal[1];
+    private static Normal getNormal(DataSet dataSet, Variable variable) {
+        double[] paramsForNormal = NormalityTests.normalParams(dataSet, variable);
+        double mean = paramsForNormal[0];
+        double sd = paramsForNormal[1];
 
         return new Normal(mean, sd, new MersenneTwister());
     }
@@ -431,8 +431,8 @@ class NormalityTests {
      * @return [0] -&gt; mean, [1] -&gt; standard deviation
      */
 
-    private static double[] normalParams(final DataSet dataSet, final Variable variable) {
-        final int columnIndex = dataSet.getColumn(variable);
+    private static double[] normalParams(DataSet dataSet, Variable variable) {
+        int columnIndex = dataSet.getColumn(variable);
         double mean = 0.0;
         double sd = 0.0;
 
@@ -451,7 +451,7 @@ class NormalityTests {
         sd /= dataSet.getNumRows() - 1.0;
         sd = Math.sqrt(sd);
 
-        final double[] result = new double[2];
+        double[] result = new double[2];
         result[0] = mean;
         result[1] = sd;
 

@@ -34,7 +34,7 @@ public final class LicenseUtils {
     public static String copyright() {
         String copyright =
                 FileLoadingUtils.fromResources("/resources/copyright");
-        final String currentVersion = Version.currentViewableVersion().toString();
+        String currentVersion = Version.currentViewableVersion().toString();
         copyright = copyright.replaceAll("VERSION", currentVersion);
         return copyright;
     }

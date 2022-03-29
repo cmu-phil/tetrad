@@ -43,17 +43,17 @@ public class BasicDataPreviewerTest {
      */
     @Test
     public void testGetPreviews() throws IOException {
-        final Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile());
+        Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile());
 
-        final DataPreviewer dataPreviewer = new BasicDataPreviewer(dataFile);
+        DataPreviewer dataPreviewer = new BasicDataPreviewer(dataFile);
 
         final int fromLine = 3;
         final int toLine = 5;
         final int numOfCharacters = 25;
 
-        final List<String> linePreviews = dataPreviewer.getPreviews(fromLine, toLine, numOfCharacters);
+        List<String> linePreviews = dataPreviewer.getPreviews(fromLine, toLine, numOfCharacters);
         final long expected = 3;
-        final long actual = linePreviews.size();
+        long actual = linePreviews.size();
         Assert.assertEquals(expected, actual);
     }
 

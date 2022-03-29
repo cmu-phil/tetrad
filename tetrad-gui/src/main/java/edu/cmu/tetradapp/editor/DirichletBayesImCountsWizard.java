@@ -54,8 +54,8 @@ final class DirichletBayesImCountsWizard extends JPanel {
     private final JPanel tablePanel;
     private boolean showProbs = true;
 
-    public DirichletBayesImCountsWizard(final DirichletBayesIm bayesIm,
-                                        final GraphWorkbench workbench) {
+    public DirichletBayesImCountsWizard(DirichletBayesIm bayesIm,
+                                        GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -73,10 +73,10 @@ final class DirichletBayesImCountsWizard extends JPanel {
         this.varNamesComboBox = createVarNamesComboBox(bayesIm);
         workbench.scrollWorkbenchToNode((Node) this.varNamesComboBox.getSelectedItem());
 
-        final JButton nextButton = new JButton("Next");
+        JButton nextButton = new JButton("Next");
         nextButton.setMnemonic('N');
 
-        final Node node = (Node) (this.varNamesComboBox.getSelectedItem());
+        Node node = (Node) (this.varNamesComboBox.getSelectedItem());
         this.editingTable = new DirichletBayesImNodeCountsTable(node, bayesIm);
         this.editingTable.addPropertyChangeListener((evt) -> {
             if ("editorValueChanged".equals(evt.getPropertyName())) {
@@ -84,7 +84,7 @@ final class DirichletBayesImCountsWizard extends JPanel {
             }
         });
 
-        final JScrollPane scroll = new JScrollPane(this.editingTable);
+        JScrollPane scroll = new JScrollPane(this.editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
         this.tablePanel = new JPanel();
         this.tablePanel.setLayout(new BorderLayout());
@@ -92,7 +92,7 @@ final class DirichletBayesImCountsWizard extends JPanel {
         this.editingTable.grabFocus();
 
         // Do Layout.
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
 
         b1.add(new JLabel("Table of Dirichlet parameters (pseudocounts) for "));
         b1.add(this.varNamesComboBox);
@@ -101,34 +101,34 @@ final class DirichletBayesImCountsWizard extends JPanel {
         add(b1);
         add(Box.createVerticalStrut(1));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel(
                 "on combinations of its parent values (with total pseudocount"));
         b2.add(Box.createHorizontalGlue());
         add(b2);
         add(Box.createVerticalStrut(5));
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("in row shown):"));
         b3.add(Box.createHorizontalGlue());
         add(b3);
         add(Box.createVerticalStrut(10));
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(this.tablePanel, BorderLayout.CENTER);
 
         add(b4);
 
         // Add listeners.
         this.varNamesComboBox.addActionListener((e) -> {
-            final Node n = (Node) this.varNamesComboBox.getSelectedItem();
+            Node n = (Node) this.varNamesComboBox.getSelectedItem();
             getWorkbench().scrollWorkbenchToNode(n);
             setCurrentNode(n);
         });
 
         nextButton.addActionListener((e) -> {
             int current = this.varNamesComboBox.getSelectedIndex();
-            final int max = this.varNamesComboBox.getItemCount();
+            int max = this.varNamesComboBox.getItemCount();
 
             ++current;
 
@@ -138,14 +138,14 @@ final class DirichletBayesImCountsWizard extends JPanel {
                         "There are no more variables.");
             }
 
-            final int set = (current < max) ? current : 0;
+            int set = (current < max) ? current : 0;
 
             this.varNamesComboBox.setSelectedIndex(set);
         });
 
         workbench.addPropertyChangeListener((evt) -> {
             if (evt.getPropertyName().equals("selectedNodes")) {
-                final List selection = (List) (evt.getNewValue());
+                List selection = (List) (evt.getNewValue());
 
                 if (selection.size() == 1) {
                     this.varNamesComboBox.setSelectedItem(selection.get(0));
@@ -157,13 +157,13 @@ final class DirichletBayesImCountsWizard extends JPanel {
         this.workbench = workbench;
     }
 
-    private JComboBox<Node> createVarNamesComboBox(final DirichletBayesIm bayesIm) {
-        final JComboBox<Node> varNameComboBox = new JComboBox<>();
+    private JComboBox<Node> createVarNamesComboBox(DirichletBayesIm bayesIm) {
+        JComboBox<Node> varNameComboBox = new JComboBox<>();
         varNameComboBox.setBackground(Color.white);
 
-        final Graph graph = bayesIm.getBayesPm().getDag();
+        Graph graph = bayesIm.getBayesPm().getDag();
 
-        final List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
+        List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
         Collections.sort(nodes);
         nodes.forEach(varNameComboBox::addItem);
 
@@ -178,8 +178,8 @@ final class DirichletBayesImCountsWizard extends JPanel {
      * Sets the getModel display to reflect the stored values of the getModel
      * node.
      */
-    private void setCurrentNode(final Node node) {
-        final TableCellEditor cellEditor = this.editingTable.getCellEditor();
+    private void setCurrentNode(Node node) {
+        TableCellEditor cellEditor = this.editingTable.getCellEditor();
 
         if (cellEditor != null) {
             cellEditor.cancelCellEditing();
@@ -192,7 +192,7 @@ final class DirichletBayesImCountsWizard extends JPanel {
             }
         });
 
-        final JScrollPane scroll = new JScrollPane(this.editingTable);
+        JScrollPane scroll = new JScrollPane(this.editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
 
         this.tablePanel.removeAll();
@@ -215,7 +215,7 @@ final class DirichletBayesImCountsWizard extends JPanel {
         return this.showProbs;
     }
 
-    public void setShowProbs(final boolean showProbs) {
+    public void setShowProbs(boolean showProbs) {
         this.showProbs = showProbs;
     }
 }

@@ -43,8 +43,8 @@ public final class IndependenceTestModels {
     private final Map<DataType, IndependenceTestModel> defaultModelMap = new EnumMap<>(DataType.class);
 
     private IndependenceTestModels() {
-        final TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
-        final List<AnnotatedClass<TestOfIndependence>> list = Tetrad.enableExperimental
+        TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
+        List<AnnotatedClass<TestOfIndependence>> list = Tetrad.enableExperimental
                 ? indTestAnno.getAnnotatedClasses()
                 : indTestAnno.filterOutExperimental(indTestAnno.getAnnotatedClasses());
         this.models = Collections.unmodifiableList(
@@ -59,15 +59,15 @@ public final class IndependenceTestModels {
 
     private void initModelMap() {
         // initialize enum map
-        final DataType[] dataTypes = DataType.values();
-        for (final DataType dataType : dataTypes) {
+        DataType[] dataTypes = DataType.values();
+        for (DataType dataType : dataTypes) {
             this.modelMap.put(dataType, new LinkedList<>());
         }
 
         // group by datatype
         this.models.stream().forEach(e -> {
-            final DataType[] types = e.getIndependenceTest().getAnnotation().dataType();
-            for (final DataType dataType : types) {
+            DataType[] types = e.getIndependenceTest().getAnnotation().dataType();
+            for (DataType dataType : types) {
                 this.modelMap.get(dataType).add(e);
             }
         });
@@ -89,19 +89,19 @@ public final class IndependenceTestModels {
     }
 
     private void initDefaultModelMap() {
-        final DataType[] dataTypes = DataType.values();
-        for (final DataType dataType : dataTypes) {
-            final List<IndependenceTestModel> list = getModels(dataType);
+        DataType[] dataTypes = DataType.values();
+        for (DataType dataType : dataTypes) {
+            List<IndependenceTestModel> list = getModels(dataType);
             if (!list.isEmpty()) {
-                final String property = getProperty(dataType);
+                String property = getProperty(dataType);
                 if (property == null) {
                     this.defaultModelMap.put(dataType, list.get(0));
                 } else {
-                    final String value = TetradProperties.getInstance().getValue(property);
+                    String value = TetradProperties.getInstance().getValue(property);
                     if (value == null) {
                         this.defaultModelMap.put(dataType, list.get(0));
                     } else {
-                        final Optional<IndependenceTestModel> result = list.stream()
+                        Optional<IndependenceTestModel> result = list.stream()
                                 .filter(e -> e.getIndependenceTest().getClazz().getName().equals(value))
                                 .findFirst();
                         this.defaultModelMap.put(dataType, result.isPresent() ? result.get() : list.get(0));
@@ -111,7 +111,7 @@ public final class IndependenceTestModels {
         }
     }
 
-    private String getProperty(final DataType dataType) {
+    private String getProperty(DataType dataType) {
         switch (dataType) {
             case Continuous:
                 return "datatype.continuous.test.default";
@@ -132,13 +132,13 @@ public final class IndependenceTestModels {
         return this.models;
     }
 
-    public List<IndependenceTestModel> getModels(final DataType dataType) {
+    public List<IndependenceTestModel> getModels(DataType dataType) {
         return this.modelMap.containsKey(dataType)
                 ? this.modelMap.get(dataType)
                 : Collections.EMPTY_LIST;
     }
 
-    public IndependenceTestModel getDefaultModel(final DataType dataType) {
+    public IndependenceTestModel getDefaultModel(DataType dataType) {
         return this.defaultModelMap.get(dataType);
     }
 

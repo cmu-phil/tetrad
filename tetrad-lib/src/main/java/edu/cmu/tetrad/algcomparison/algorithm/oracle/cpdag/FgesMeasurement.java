@@ -31,45 +31,45 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
     private final ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FgesMeasurement(final ScoreWrapper score) {
+    public FgesMeasurement(ScoreWrapper score) {
         this.score = score;
     }
 
     @Override
-    public Graph search(final DataModel dataModel, final Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
             dataSet = dataSet.copy();
 
             dataSet = DataUtils.standardizeData(dataSet);
-            final double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
+            double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
 
             if (variance > 0) {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                        final double d = dataSet.getDouble(i, j);
-                        final double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        double d = dataSet.getDouble(i, j);
+                        double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
                         dataSet.setDouble(i, j, d + norm);
                     }
                 }
             }
 
-            final Fges search = new Fges(this.score.getScore(dataSet, parameters));
+            Fges search = new Fges(this.score.getScore(dataSet, parameters));
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-            final Object obj = parameters.get(Params.PRINT_STREAM);
+            Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
             }
 
             return search.search();
         } else {
-            final FgesMeasurement fgesMeasurement = new FgesMeasurement(this.score);
+            FgesMeasurement fgesMeasurement = new FgesMeasurement(this.score);
 
-            final DataSet data = (DataSet) dataModel;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataModel;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
@@ -96,7 +96,7 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
@@ -112,7 +112,7 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MEASUREMENT_VARIANCE);
 
@@ -127,7 +127,7 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 

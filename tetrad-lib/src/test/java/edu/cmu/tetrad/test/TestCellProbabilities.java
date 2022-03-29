@@ -45,40 +45,40 @@ public final class TestCellProbabilities {
     public void testCreateRandom() {
         RandomUtil.getInstance().setSeed(4828385834L);
 
-        final DiscreteVariable x = new DiscreteVariable("X", 3);
-        final DiscreteVariable y = new DiscreteVariable("Y", 3);
-        final DiscreteVariable z = new DiscreteVariable("Z", 3);
-        final DiscreteVariable w = new DiscreteVariable("W", 2);
+        DiscreteVariable x = new DiscreteVariable("X", 3);
+        DiscreteVariable y = new DiscreteVariable("Y", 3);
+        DiscreteVariable z = new DiscreteVariable("Z", 3);
+        DiscreteVariable w = new DiscreteVariable("W", 2);
 
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
         variables.add(x);
         variables.add(y);
         variables.add(z);
         variables.add(w);
 
-        final StoredCellProbs cellProbabilities =
+        StoredCellProbs cellProbabilities =
                 StoredCellProbs.createRandomCellTable(variables);
 
-        final double prob = cellProbabilities.getCellProb(new int[]{0, 0, 0, 0});
+        double prob = cellProbabilities.getCellProb(new int[]{0, 0, 0, 0});
 
         assertEquals(0.002, prob, 0.0001);
     }
 
-    private void assertEquals(final double v, final double prob, final double v1) {
+    private void assertEquals(double v, double prob, double v1) {
     }
 
     @Test
     public void testCreateUsingBayesIm() {
         RandomUtil.getInstance().setSeed(4828385834L);
 
-        final Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
-        final Dag dag = new Dag(graph);
-        final BayesPm bayesPm = new BayesPm(dag);
-        final BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Dag dag = new Dag(graph);
+        BayesPm bayesPm = new BayesPm(dag);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
-        final StoredCellProbs cellProbs = StoredCellProbs.createCellTable(bayesIm);
+        StoredCellProbs cellProbs = StoredCellProbs.createCellTable(bayesIm);
 
-        final double prob = cellProbs.getCellProb(new int[]{0, 0, 0, 0});
+        double prob = cellProbs.getCellProb(new int[]{0, 0, 0, 0});
 
         assertEquals(0.0058, prob, 0.0001);
     }

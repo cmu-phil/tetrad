@@ -36,7 +36,7 @@ public class GwpResult {
         public Integer errorsOfOmission;
         public Integer errorsOfCommission;
 
-        public AdjacencyEvaluationResult(final Integer errorsOfOmission, final Integer errorsOfCommission) {
+        public AdjacencyEvaluationResult(Integer errorsOfOmission, Integer errorsOfCommission) {
             this.errorsOfOmission = errorsOfOmission;
             this.errorsOfCommission = errorsOfCommission;
         }
@@ -57,8 +57,8 @@ public class GwpResult {
         public Integer directedWhenShouldBeUndirected;
 
 
-        public OrientationEvaluationResult(final Integer correct, final Integer directedWrongWay,
-                                           final Integer undirectedWhenShouldBeDirected, final Integer directedWhenShouldBeUndirected) {
+        public OrientationEvaluationResult(Integer correct, Integer directedWrongWay,
+                                           Integer undirectedWhenShouldBeDirected, Integer directedWhenShouldBeUndirected) {
             this.nCorrect = correct;
             this.directedWrongWay = directedWrongWay;
             this.undirectedWhenShouldBeDirected = undirectedWhenShouldBeDirected;
@@ -79,7 +79,7 @@ public class GwpResult {
         public Double totalCoeffErrorSq;
         public Integer nEdgesEvaluated;
 
-        public CoefficientEvaluationResult(final Double totalCoeffErrorSq, final Integer edgesEvaluated) {
+        public CoefficientEvaluationResult(Double totalCoeffErrorSq, Integer edgesEvaluated) {
             this.totalCoeffErrorSq = totalCoeffErrorSq;
             this.nEdgesEvaluated = edgesEvaluated;
         }
@@ -114,20 +114,20 @@ public class GwpResult {
         public AdjacencyEvaluationResult adj;
         public OrientationEvaluationResult ori;
 
-        public CPDAGEvaluationResult(final AdjacencyEvaluationResult adj, final OrientationEvaluationResult ori) {
+        public CPDAGEvaluationResult(AdjacencyEvaluationResult adj, OrientationEvaluationResult ori) {
             this.adj = adj;
             this.ori = ori;
         }
 
         public double loss() {
-            final double oriLoss = this.ori.directedWrongWay + 0.5 * this.ori.undirectedWhenShouldBeDirected +
+            double oriLoss = this.ori.directedWrongWay + 0.5 * this.ori.undirectedWhenShouldBeDirected +
                     0.5 * this.ori.directedWhenShouldBeUndirected;
 
-            final double adjLoss = 1.5 * this.adj.errorsOfOmission + 1.0 * this.adj.errorsOfCommission;
+            double adjLoss = 1.5 * this.adj.errorsOfOmission + 1.0 * this.adj.errorsOfCommission;
 
             //			System.out.println("adjLoss = " + adjLoss);
 //			System.out.println("oriLoss = " + oriLoss);
-            final double loss = adjLoss + oriLoss;
+            double loss = adjLoss + oriLoss;
 //			System.out.println("returning loss = " + loss);
             return loss;
         }
@@ -138,8 +138,8 @@ public class GwpResult {
     /**
      * constructor for evaluations where the method evaluated purports to give us the entire structure.
      */
-    public GwpResult(final String methodName, final AdjacencyEvaluationResult adj, final OrientationEvaluationResult ori,
-                     final CoefficientEvaluationResult coeffAll, final CoefficientEvaluationResult coeffSome) {
+    public GwpResult(String methodName, AdjacencyEvaluationResult adj, OrientationEvaluationResult ori,
+                     CoefficientEvaluationResult coeffAll, CoefficientEvaluationResult coeffSome) {
         this.name = methodName;
         this.adj = adj;
         this.ori = ori;
@@ -154,7 +154,7 @@ public class GwpResult {
      * <p>
      * * @param methodName
      */
-    public GwpResult(final String methodName, final CPDAGEvaluationResult pat) {
+    public GwpResult(String methodName, CPDAGEvaluationResult pat) {
         this.name = methodName;
         this.pat = pat;
     }

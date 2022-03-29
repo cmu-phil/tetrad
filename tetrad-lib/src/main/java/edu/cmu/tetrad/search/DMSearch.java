@@ -47,7 +47,7 @@ public class DMSearch {
     private DataSet data;
     private boolean verbose;
 
-    public void setMinDiscount(final int minDiscount) {
+    public void setMinDiscount(int minDiscount) {
         this.minDiscount = minDiscount;
     }
 
@@ -55,7 +55,7 @@ public class DMSearch {
         return (this.minDiscount);
     }
 
-    public void setGesDepth(final int gesDepth) {
+    public void setGesDepth(int gesDepth) {
         this.gesDepth = gesDepth;
     }
 
@@ -63,19 +63,19 @@ public class DMSearch {
         return (this.gesDepth);
     }
 
-    public void setTrueInputs(final int[] trueInputs) {
+    public void setTrueInputs(int[] trueInputs) {
         this.trueInputs = trueInputs;
     }
 
-    public void setInputs(final int[] inputs) {
+    public void setInputs(int[] inputs) {
         this.inputs = inputs;
     }
 
-    public void setOutputs(final int[] outputs) {
+    public void setOutputs(int[] outputs) {
         this.outputs = outputs;
     }
 
-    public void setData(final DataSet data) {
+    public void setData(DataSet data) {
         this.data = data;
     }
 
@@ -102,60 +102,60 @@ public class DMSearch {
         return (this.dmStructure);
     }
 
-    public void setDmStructure(final LatentStructure structure) {
+    public void setDmStructure(LatentStructure structure) {
         this.dmStructure = structure;
     }
 
-    public void setAlphaSober(final double alpha) {
+    public void setAlphaSober(double alpha) {
         this.alphaSober = alpha;
     }
 
-    public void setAlphaPC(final double alpha) {
+    public void setAlphaPC(double alpha) {
         this.alphaPC = alpha;
     }
 
-    public void setDiscount(final double discount) {
+    public void setDiscount(double discount) {
         this.gesDiscount = discount;
     }
 
-    public void setUseFges(final boolean set) {
+    public void setUseFges(boolean set) {
         this.useFges = set;
     }
 
 
     public Graph search() {
 
-        final int[] trueInputs = getTrueInputs();
+        int[] trueInputs = getTrueInputs();
 
-        final DataSet data = getData();
+        DataSet data = getData();
 
         //2DO: Break stuff below here into seperate fuct/classes.
         this.cov = new CovarianceMatrix(data);
 
 
-        final Knowledge2 knowledge = new Knowledge2(data.getVariableNames());
+        Knowledge2 knowledge = new Knowledge2(data.getVariableNames());
 
         //Forbids edges from outputs to inputs.
-        for (final int i : getInputs()) {
+        for (int i : getInputs()) {
             knowledge.addToTier(0, data.getVariable(i).getName());
         }
 
-        for (final int i : getOutputs()) {
+        for (int i : getOutputs()) {
             knowledge.addToTier(1, data.getVariable(i).getName());
         }
 
         knowledge.setTierForbiddenWithin(0, true);
         knowledge.setTierForbiddenWithin(1, true);
 
-        final Set<String> inputString = new HashSet<>();
+        Set<String> inputString = new HashSet<>();
 
-        final HashSet actualInputs = new HashSet<>();
+        HashSet actualInputs = new HashSet<>();
         for (int i = 0; i < trueInputs.length; i++) {
             actualInputs.add(trueInputs[i]);
         }
 
 
-        for (final int i : this.inputs) {
+        for (int i : this.inputs) {
             if (actualInputs.contains(i)) {
 
                 inputString.add(data.getVariable(i).getName());
@@ -165,8 +165,8 @@ public class DMSearch {
         Graph CPDAG = new EdgeListGraph();
 
         if (this.useFges) {
-            final Score score = new SemBicScore(this.cov);
-            final Fges fges = new Fges(score);
+            Score score = new SemBicScore(this.cov);
+            Fges fges = new Fges(score);
 
             CPDAG = recursiveFges(CPDAG, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
         } else {
@@ -186,7 +186,7 @@ public class DMSearch {
 //           2DO: Alternative to using built in PC. Needs a fix so that all nodes added to CPDAG are looked at in applyDmSearch
 //            ExecutorService executorService = Executors.newFixedThreadPool(4); // number of threads
 
-            final IndTestFisherZ ind = new IndTestFisherZ(this.cov, this.alphaPC);
+            IndTestFisherZ ind = new IndTestFisherZ(this.cov, this.alphaPC);
             for (int i = 0; i < getInputs().length; i++) {
                 if (!CPDAG.containsNode(data.getVariable(i))) {
                     CPDAG.addNode(data.getVariable(i));
@@ -217,14 +217,14 @@ public class DMSearch {
 
     }
 
-    public LatentStructure applyDmSearch(final Graph CPDAG, final Set<String> inputString, final double penalty) {
+    public LatentStructure applyDmSearch(Graph CPDAG, Set<String> inputString, double penalty) {
 
-        final List<Set<Node>> outputParentsList = new ArrayList<>();
-        final List<Node> CPDAGNodes = CPDAG.getNodes();
+        List<Set<Node>> outputParentsList = new ArrayList<>();
+        List<Node> CPDAGNodes = CPDAG.getNodes();
 
 //        2DO: add testcase to see how sort compares 10, 11, 1, etc.
         java.util.Collections.sort(CPDAGNodes, new Comparator<Node>() {
-            public int compare(final Node node1, final Node node2) {
+            public int compare(Node node1, Node node2) {
 //2DO: string length error here. Fix.
 
                 if (node1.getName().length() > node2.getName().length()) {
@@ -232,8 +232,8 @@ public class DMSearch {
                 } else if (node1.getName().length() < node2.getName().length()) {
                     return (-1);
                 } else {
-                    final int n1 = Integer.parseInt(node1.getName().substring(1));
-                    final int n2 = Integer.parseInt(node2.getName().substring(1));
+                    int n1 = Integer.parseInt(node1.getName().substring(1));
+                    int n2 = Integer.parseInt(node2.getName().substring(1));
                     return (n1 - n2);
                 }
             }
@@ -243,8 +243,8 @@ public class DMSearch {
             System.out.println("Sorted CPDAGNodes");
         }
         //constructing treeSet of output nodes.
-        final SortedSet<Node> outputNodes = new TreeSet<>();
-        for (final int i : getOutputs()) {
+        SortedSet<Node> outputNodes = new TreeSet<>();
+        for (int i : getOutputs()) {
 
 //            System.out.println("CPDAGNodes");
 //            System.out.println(CPDAGNodes);
@@ -261,7 +261,7 @@ public class DMSearch {
 //        System.out.println(outputNodes);
 
         //Constructing list of output node parents.
-        for (final Node node : outputNodes) {
+        for (Node node : outputNodes) {
             outputParentsList.add(new TreeSet<>(getInputParents(node, inputString, CPDAG)));
         }
 
@@ -271,35 +271,35 @@ public class DMSearch {
         int sublistStart = 1;
         int nLatents = 0;
 
-        final LatentStructure structure = new LatentStructure();
+        LatentStructure structure = new LatentStructure();
 
         //Creating set of nodes with same input sets.
         // And adding both inputs and outputs to their respective latents.
-        for (final Set<Node> set1 : outputParentsList) {
+        for (Set<Node> set1 : outputParentsList) {
 
-            final TreeSet<Node> sameSetParents = new TreeSet<>(new Comparator<Node>() {
-                public int compare(final Node node1, final Node node2) {
+            TreeSet<Node> sameSetParents = new TreeSet<>(new Comparator<Node>() {
+                public int compare(Node node1, Node node2) {
 
                     if (node1.getName().length() > node2.getName().length()) {
                         return (1);
                     } else if (node1.getName().length() < node2.getName().length()) {
                         return (-1);
                     } else {
-                        final int n1 = Integer.parseInt(node1.getName().substring(1));
-                        final int n2 = Integer.parseInt(node2.getName().substring(1));
+                        int n1 = Integer.parseInt(node1.getName().substring(1));
+                        int n2 = Integer.parseInt(node2.getName().substring(1));
                         return (n1 - n2);
                     }
                 }
             });
 
-            final List<Set<Node>> nextSet = outputParentsList.subList(sublistStart, outputParentsList.size());
+            List<Set<Node>> nextSet = outputParentsList.subList(sublistStart, outputParentsList.size());
             //If no next set, then just add var.
             if (nextSet.isEmpty()) {
 //                for (int head = 0; head < (set1.size()); head++) {
                 sameSetParents.addAll(set1);
 //                }
             }
-            for (final Set<Node> set2 : nextSet) {
+            for (Set<Node> set2 : nextSet) {
                 if (!(set1.size() == 0 || set2.size() == 0) && set1.equals(set2)) {
 //                    for (int head = 0; head < (set1.size()); head++) {
                     sameSetParents.addAll(set1);
@@ -313,7 +313,7 @@ public class DMSearch {
 
             if (sameSetParents.size() > 0) {
                 //Creates a new latent with a size 1 less than actually present.
-                final ContinuousVariable tempLatent = new ContinuousVariable("L" + nLatents);
+                ContinuousVariable tempLatent = new ContinuousVariable("L" + nLatents);
 
                 if (!setContained(structure, structure.inputs.keySet(), sameSetParents) || structure.inputs.isEmpty()) {
                     structure.latents.add(tempLatent);
@@ -324,13 +324,13 @@ public class DMSearch {
                 }
 
                 //Adding Outputs to their Map.
-                for (final Node node : outputNodes) {
+                for (Node node : outputNodes) {
 
                     if (new TreeSet<>(getInputParents(node, inputString, CPDAG)).equals(sameSetParents)) {
 
                         //If haven't created latent, then do so.
                         if (structure.outputs.get(tempLatent) == null) {
-                            final TreeSet<Node> outputNode = new TreeSet<>();
+                            TreeSet<Node> outputNode = new TreeSet<>();
                             outputNode.add(node);
                             structure.outputs.put(tempLatent, outputNode);
                         }
@@ -365,36 +365,36 @@ public class DMSearch {
 
 
         TreeSet<Node> inputs1 = new TreeSet<>(new Comparator<Node>() {
-            public int compare(final Node node1, final Node node2) {
+            public int compare(Node node1, Node node2) {
 
                 if (node1.getName().length() > node2.getName().length()) {
                     return (1);
                 } else if (node1.getName().length() < node2.getName().length()) {
                     return (-1);
                 } else {
-                    final int n1 = Integer.parseInt(node1.getName().substring(1));
-                    final int n2 = Integer.parseInt(node2.getName().substring(1));
+                    int n1 = Integer.parseInt(node1.getName().substring(1));
+                    int n2 = Integer.parseInt(node2.getName().substring(1));
                     return (n1 - n2);
                 }
             }
         });
 
         TreeSet<Node> inputs2 = new TreeSet<>(new Comparator<Node>() {
-            public int compare(final Node node1, final Node node2) {
+            public int compare(Node node1, Node node2) {
 
                 if (node1.getName().length() > node2.getName().length()) {
                     return (1);
                 } else if (node1.getName().length() < node2.getName().length()) {
                     return (-1);
                 } else {
-                    final int n1 = Integer.parseInt(node1.getName().substring(1));
-                    final int n2 = Integer.parseInt(node2.getName().substring(1));
+                    int n1 = Integer.parseInt(node1.getName().substring(1));
+                    int n2 = Integer.parseInt(node2.getName().substring(1));
                     return (n1 - n2);
                 }
             }
         });
 
-        final HashSet alreadyLookedAt = new HashSet();
+        HashSet alreadyLookedAt = new HashSet();
 
         //Finding initial latent-latent Effects.
         for (int i = 0; i <= latentsSortedByInputSetSize.keySet().size(); i++) {
@@ -402,9 +402,9 @@ public class DMSearch {
 //          2DO: Need to only perform this test if haven't already looked at latent. (for latent 1).
 
 
-            final TreeSet<TreeSet<Node>> sortedInputs = new TreeSet<>(new Comparator<TreeSet<Node>>() {
-                public int compare(final TreeSet<Node> o1, final TreeSet<Node> o2) {
-                    final int size = o1.size() - o2.size();
+            TreeSet<TreeSet<Node>> sortedInputs = new TreeSet<>(new Comparator<TreeSet<Node>>() {
+                public int compare(TreeSet<Node> o1, TreeSet<Node> o2) {
+                    int size = o1.size() - o2.size();
                     if (size == 0) {
                         if (o1.equals(o2)) {
                             return (0);
@@ -421,9 +421,9 @@ public class DMSearch {
 
             inputs1 = findFirstUnseenElement(sortedInputs, alreadyLookedAt, latentsSortedByInputSetSize);
 
-            final HashSet alreadyLookedAtInnerLoop = new HashSet();
+            HashSet alreadyLookedAtInnerLoop = new HashSet();
 
-            final Node latent1 = latentsSortedByInputSetSize.get(inputs1);
+            Node latent1 = latentsSortedByInputSetSize.get(inputs1);
 
             if (inputs1.first().getName().equals("alreadySeenEverything")) {
                 continue;
@@ -432,9 +432,9 @@ public class DMSearch {
             for (int j = 0; j <= latentsSortedByInputSetSize.keySet().size(); j++) {
 
 
-                final TreeSet temp2 = new TreeSet<>(new Comparator<TreeSet<Node>>() {
-                    public int compare(final TreeSet<Node> o1, final TreeSet<Node> o2) {
-                        final int size = o1.size() - o2.size();
+                TreeSet temp2 = new TreeSet<>(new Comparator<TreeSet<Node>>() {
+                    public int compare(TreeSet<Node> o1, TreeSet<Node> o2) {
+                        int size = o1.size() - o2.size();
                         if (size == 0) {
                             if (o1.equals(o2)) {
                                 return (0);
@@ -450,7 +450,7 @@ public class DMSearch {
                 inputs2 = findFirstUnseenElement(sortedInputs, alreadyLookedAtInnerLoop, latentsSortedByInputSetSize);
 
 
-                final Node latent2 = latentsSortedByInputSetSize.get(inputs2);
+                Node latent2 = latentsSortedByInputSetSize.get(inputs2);
 
                 if (inputs2.first().getName().equals("alreadySeenEverything")) {
                     continue;
@@ -467,16 +467,16 @@ public class DMSearch {
                 //if latent1 is a subset of latent2...
                 if (structure.getInputs(latent2).containsAll(structure.getInputs(latent1))) {
                     if (structure.latentEffects.get(latent1) == null) {
-                        final TreeSet<Node> latentEffects = new TreeSet<>(new Comparator<Node>() {
-                            public int compare(final Node node1, final Node node2) {
+                        TreeSet<Node> latentEffects = new TreeSet<>(new Comparator<Node>() {
+                            public int compare(Node node1, Node node2) {
 
                                 if (node1.getName().length() > node2.getName().length()) {
                                     return (1);
                                 } else if (node1.getName().length() < node2.getName().length()) {
                                     return (-1);
                                 } else {
-                                    final int n1 = Integer.parseInt(node1.getName().substring(1));
-                                    final int n2 = Integer.parseInt(node2.getName().substring(1));
+                                    int n1 = Integer.parseInt(node1.getName().substring(1));
+                                    int n2 = Integer.parseInt(node2.getName().substring(1));
                                     return (n1 - n2);
                                 }
                             }
@@ -500,22 +500,22 @@ public class DMSearch {
 
 
 //        Ensuring no nulls in latenteffects map.
-        final SortedSet<Node> emptyTreeSet = new TreeSet<>(new Comparator<Node>() {
-            public int compare(final Node node1, final Node node2) {
+        SortedSet<Node> emptyTreeSet = new TreeSet<>(new Comparator<Node>() {
+            public int compare(Node node1, Node node2) {
 
                 if (node1.getName().length() > node2.getName().length()) {
                     return (1);
                 } else if (node1.getName().length() < node2.getName().length()) {
                     return (-1);
                 } else {
-                    final int n1 = Integer.parseInt(node1.getName().substring(1));
-                    final int n2 = Integer.parseInt(node2.getName().substring(1));
+                    int n1 = Integer.parseInt(node1.getName().substring(1));
+                    int n2 = Integer.parseInt(node2.getName().substring(1));
                     return (n1 - n2);
                 }
             }
         });
 
-        for (final Node latent : structure.getLatents()) {
+        for (Node latent : structure.getLatents()) {
             if (structure.latentEffects.get(latent) == null) {
                 structure.latentEffects.put(latent, emptyTreeSet);
             }
@@ -531,9 +531,9 @@ public class DMSearch {
         }
 
         //Sober's step.
-        for (final Node latent : structure.getLatents()) {
+        for (Node latent : structure.getLatents()) {
             if (structure.latentEffects.containsKey(latent)) {
-                for (final Node latentEffect : structure.getLatentEffects(latent)) {
+                for (Node latentEffect : structure.getLatentEffects(latent)) {
                     applySobersStep(structure.getInputs(latent), structure.getInputs(latentEffect),
                             structure.getOutputs(latent), structure.getOutputs(latentEffect),
                             CPDAG, structure, latent, latentEffect);
@@ -545,12 +545,12 @@ public class DMSearch {
 
 
         //Saves DM output in case is needed.
-        final File file = new File("src/edu/cmu/tetradproj/amurrayw/DM_output_" + "GES_penalty" + penalty + "_.txt");
+        File file = new File("src/edu/cmu/tetradproj/amurrayw/DM_output_" + "GES_penalty" + penalty + "_.txt");
         try {
-            final FileOutputStream out = new FileOutputStream(file);
-            final PrintStream outStream = new PrintStream(out);
+            FileOutputStream out = new FileOutputStream(file);
+            PrintStream outStream = new PrintStream(out);
             outStream.println(structure.latentStructToEdgeListGraph(structure));
-        } catch (final java.io.FileNotFoundException e) {
+        } catch (java.io.FileNotFoundException e) {
             if (this.verbose) {
                 System.out.println("Can't write to file.");
             }
@@ -562,15 +562,15 @@ public class DMSearch {
 
     }
 
-    private TreeSet<Node> findFirstUnseenElement(final TreeSet<TreeSet<Node>> set, final HashSet alreadySeen, final TreeMap map) {
-        for (final TreeSet<Node> currentSet : set) {
+    private TreeSet<Node> findFirstUnseenElement(TreeSet<TreeSet<Node>> set, HashSet alreadySeen, TreeMap map) {
+        for (TreeSet<Node> currentSet : set) {
             if (!(alreadySeen.contains(map.get(currentSet))) && map.get(currentSet) != null) {
                 return (currentSet);
             }
         }
-        final ContinuousVariable end = new ContinuousVariable("alreadySeenEverything");
+        ContinuousVariable end = new ContinuousVariable("alreadySeenEverything");
 
-        final TreeSet seenEverything = new TreeSet();
+        TreeSet seenEverything = new TreeSet();
         seenEverything.add(end);
 
 
@@ -579,7 +579,7 @@ public class DMSearch {
     }
 
 
-    private TreeSet nthElementOn(TreeSet set, final int startingElementPos) {
+    private TreeSet nthElementOn(TreeSet set, int startingElementPos) {
 
         for (int i = 0; i < set.size() - startingElementPos; i++) {
             set = rest(set);
@@ -589,13 +589,13 @@ public class DMSearch {
     }
 
     //    Pulls head off of set and returns rest. (think cdr in lisp)
-    private TreeSet<TreeSet<Node>> rest(final TreeSet set) {
+    private TreeSet<TreeSet<Node>> rest(TreeSet set) {
         set.remove(set.first());
         return (set);
     }
 
     //returns second set of nodes.(think cadr in lisp).
-    private TreeSet<TreeSet<Node>> second(final TreeSet<TreeSet<Node>> set) {
+    private TreeSet<TreeSet<Node>> second(TreeSet<TreeSet<Node>> set) {
 
         TreeSet<TreeSet<Node>> secondNodeSet = new TreeSet<>();
 
@@ -607,9 +607,9 @@ public class DMSearch {
 
     }
 
-    private boolean allEqual(final SortedSet<Node> set1, final SortedSet<Node> set2) {
-        for (final Node i : set1) {
-            for (final Node j : set2) {
+    private boolean allEqual(SortedSet<Node> set1, SortedSet<Node> set2) {
+        for (Node i : set1) {
+            for (Node j : set2) {
                 if (i.equals(j)) {
                     continue;
                 } else {
@@ -617,8 +617,8 @@ public class DMSearch {
                 }
             }
         }
-        for (final Node i : set2) {
-            for (final Node j : set1) {
+        for (Node i : set2) {
+            for (Node j : set1) {
                 if (i.equals(j)) {
                     continue;
                 } else {
@@ -630,30 +630,30 @@ public class DMSearch {
     }
 
     // Uses previous runs of GES as new knowledge for a additional runs of GES with lower penalty discounts.
-    private Graph recursiveFges(final Graph previousGES, final Knowledge2 knowledge, final double penalty, final double minPenalty, final DataSet data, final Set<String> inputString) {
+    private Graph recursiveFges(Graph previousGES, Knowledge2 knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString) {
 
-        for (final Edge edge : previousGES.getEdges()) {
+        for (Edge edge : previousGES.getEdges()) {
             knowledge.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
         }
 
         this.cov = new CovarianceMatrix(data);
 
-        final SemBicScore score = new SemBicScore(this.cov);
+        SemBicScore score = new SemBicScore(this.cov);
         score.setPenaltyDiscount(penalty);
-        final Fges fges = new Fges(score);
+        Fges fges = new Fges(score);
         fges.setKnowledge(knowledge);
 //        fges.setMaxIndegree(this.gesDepth);
 //        fges.setIgnoreLinearDependent(true);
 
-        final Graph CPDAG = fges.search();
+        Graph CPDAG = fges.search();
 
         //Saves GES output in case is needed.
-        final File file = new File("src/edu/cmu/tetradproj/amurrayw/ges_output_" + penalty + "_.txt");
+        File file = new File("src/edu/cmu/tetradproj/amurrayw/ges_output_" + penalty + "_.txt");
         try {
-            final FileOutputStream out = new FileOutputStream(file);
-            final PrintStream outStream = new PrintStream(out);
+            FileOutputStream out = new FileOutputStream(file);
+            PrintStream outStream = new PrintStream(out);
             outStream.println(CPDAG);
-        } catch (final java.io.FileNotFoundException e) {
+        } catch (java.io.FileNotFoundException e) {
             if (this.verbose) {
                 System.out.println("Can't write to file.");
             }
@@ -673,21 +673,21 @@ public class DMSearch {
 
     //Finds any input set that dseps outputs for a pair of directly related latents, then adds input set to approp. set
     //Finally removes latent effect from list of latent effects.
-    private void applySobersStep(final SortedSet<Node> inputsLatent, final SortedSet<Node> inputsLatentEffect,
-                                 final SortedSet<Node> outputsLatent, final SortedSet<Node> outputsLatentEffect,
-                                 final Graph CPDAG, final LatentStructure structure, final Node latent, final Node latentEffect) {
+    private void applySobersStep(SortedSet<Node> inputsLatent, SortedSet<Node> inputsLatentEffect,
+                                 SortedSet<Node> outputsLatent, SortedSet<Node> outputsLatentEffect,
+                                 Graph CPDAG, LatentStructure structure, Node latent, Node latentEffect) {
 
-        final List<Node> latentList = new ArrayList<>();
+        List<Node> latentList = new ArrayList<>();
 
         latentList.addAll(inputsLatent);
 
-        final IndependenceTest test = new IndTestFisherZ(this.cov, this.alphaSober);
+        IndependenceTest test = new IndTestFisherZ(this.cov, this.alphaSober);
 
         boolean testResult = false;
 
         try {
             testResult = test.isIndependent(outputsLatent.first(), outputsLatentEffect.first(), latentList);
-        } catch (final SingularMatrixException error) {
+        } catch (SingularMatrixException error) {
             if (this.verbose) {
                 System.out.println(error);
                 System.out.println("SingularMatrixException Error!!!!!! Evaluated as:");
@@ -707,8 +707,8 @@ public class DMSearch {
     // Removes subset of inputs from any latent's input set.
     //Inputs are latent structure, the set of inputs which are to be removed, the number of
     // inputs in the superset, and the identity of the latent they are a subset of,
-    private TreeMap removeSetInputs(final LatentStructure structure, final SortedSet<Node> set, final int sizeOfSuperset, final Node latentForSuperset, final TreeMap<TreeSet<Node>, Node> map) {
-        for (final Node latent : structure.latents) {
+    private TreeMap removeSetInputs(LatentStructure structure, SortedSet<Node> set, int sizeOfSuperset, Node latentForSuperset, TreeMap<TreeSet<Node>, Node> map) {
+        for (Node latent : structure.latents) {
             if (structure.inputs.get(latent).equals(set)) {
                 continue;
             } else {
@@ -729,8 +729,8 @@ public class DMSearch {
     }
 
     //Returns true if a latent already contains the given input set.
-    private boolean setContained(final LatentStructure structure, final Set<Node> latentSet, final Set<Node> inputSet) {
-        for (final Node latent : latentSet) {
+    private boolean setContained(LatentStructure structure, Set<Node> latentSet, Set<Node> inputSet) {
+        for (Node latent : latentSet) {
             if (structure.getInputs(latent).equals(inputSet)) {
                 return (true);
             }
@@ -739,14 +739,14 @@ public class DMSearch {
     }
 
     @Override
-    public boolean equals(final Object obj) {
+    public boolean equals(Object obj) {
         return super.equals(obj);
     }
 
-    private SortedSet copy(final SortedSet orig) {
-        final SortedSet newset = new TreeSet();
+    private SortedSet copy(SortedSet orig) {
+        SortedSet newset = new TreeSet();
 
-        for (final Object o : orig) {
+        for (Object o : orig) {
             newset.add(o);
 
         }
@@ -754,11 +754,11 @@ public class DMSearch {
     }
 
 
-    private TreeMap<TreeSet<Node>, Node> sortMapByValue(final Map<Node, SortedSet<Node>> inputMap, final List<Node> latents, final LatentStructure structure) {
+    private TreeMap<TreeSet<Node>, Node> sortMapByValue(Map<Node, SortedSet<Node>> inputMap, List<Node> latents, LatentStructure structure) {
 
-        final TreeMap<TreeSet<Node>, Node> sortedInputSets = new TreeMap<>(new Comparator<SortedSet<Node>>() {
-            public int compare(final SortedSet o1, final SortedSet o2) {
-                final int size = o1.size() - o2.size();
+        TreeMap<TreeSet<Node>, Node> sortedInputSets = new TreeMap<>(new Comparator<SortedSet<Node>>() {
+            public int compare(SortedSet o1, SortedSet o2) {
+                int size = o1.size() - o2.size();
                 if (size == 0) {
                     if (o1.equals(o2)) {
                         return (0);
@@ -771,17 +771,17 @@ public class DMSearch {
             }
         });
 
-        for (final Node latent : latents) {
-            final TreeSet<Node> tempSet = new TreeSet<>(new Comparator<Node>() {
-                public int compare(final Node node1, final Node node2) {
+        for (Node latent : latents) {
+            TreeSet<Node> tempSet = new TreeSet<>(new Comparator<Node>() {
+                public int compare(Node node1, Node node2) {
 
                     if (node1.getName().length() > node2.getName().length()) {
                         return (1);
                     } else if (node1.getName().length() < node2.getName().length()) {
                         return (-1);
                     } else {
-                        final int n1 = Integer.parseInt(node1.getName().substring(1));
-                        final int n2 = Integer.parseInt(node2.getName().substring(1));
+                        int n1 = Integer.parseInt(node1.getName().substring(1));
+                        int n2 = Integer.parseInt(node2.getName().substring(1));
                         return (n1 - n2);
                     }
                 }
@@ -796,9 +796,9 @@ public class DMSearch {
 
 
     //Making sure found nodes are actually inputs before adding as knowledge is now disabled.
-    private Set<Node> getInputParents(final Node node, final Set inputString, final Graph CPDAG) {
-        final Set<Node> actualInputs = new HashSet<>();
-        for (final Node posInput : CPDAG.getAdjacentNodes(node)) {
+    private Set<Node> getInputParents(Node node, Set inputString, Graph CPDAG) {
+        Set<Node> actualInputs = new HashSet<>();
+        for (Node posInput : CPDAG.getAdjacentNodes(node)) {
             if (inputString.contains(posInput.getName())) {
                 actualInputs.add(posInput);
             }
@@ -810,7 +810,7 @@ public class DMSearch {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -824,7 +824,7 @@ public class DMSearch {
         public LatentStructure() {
         }
 
-        public void addRecord(final Node latent, final SortedSet<Node> inputs, final SortedSet<Node> outputs, final SortedSet<Node> latentEffects) {
+        public void addRecord(Node latent, SortedSet<Node> inputs, SortedSet<Node> outputs, SortedSet<Node> latentEffects) {
             if (this.latents.contains(latent)) throw new IllegalArgumentException();
 
             this.latents.add(latent);
@@ -833,7 +833,7 @@ public class DMSearch {
             this.latentEffects.put(latent, latentEffects);
         }
 
-        public void removeLatent(final Node latent) {
+        public void removeLatent(Node latent) {
             this.latents.remove(latent);
             this.inputs.remove(latent);
             this.outputs.remove(latent);
@@ -844,26 +844,26 @@ public class DMSearch {
             return new ArrayList<>(this.latents);
         }
 
-        public boolean containsLatent(final Node latent) {
+        public boolean containsLatent(Node latent) {
             return this.latents.contains(latent);
         }
 
-        public SortedSet<Node> getInputs(final Node latent) {
+        public SortedSet<Node> getInputs(Node latent) {
             return new TreeSet<>(this.inputs.get(latent));
         }
 
-        public SortedSet<Node> getOutputs(final Node latent) {
+        public SortedSet<Node> getOutputs(Node latent) {
             return new TreeSet<>(this.outputs.get(latent));
         }
 
-        public SortedSet<Node> getLatentEffects(final Node latent) {
+        public SortedSet<Node> getLatentEffects(Node latent) {
             return new TreeSet<>(this.latentEffects.get(latent));
         }
 
         public String toString() {
-            final StringBuilder b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
 
-            for (final Node node : this.latents) {
+            for (Node node : this.latents) {
                 b.append("Latent:" + node + "\n "
                         + "Inputs:" + this.inputs.get(node) + "\n "
                         + "Outputs:" + this.outputs.get(node) + "\n "
@@ -874,29 +874,29 @@ public class DMSearch {
             return b.toString();
         }
 
-        public Graph latentStructToEdgeListGraph(final LatentStructure structure) {
+        public Graph latentStructToEdgeListGraph(LatentStructure structure) {
 
-            final Graph structureGraph = new EdgeListGraph();
+            Graph structureGraph = new EdgeListGraph();
 
 
-            for (final Node latent : this.latents) {
+            for (Node latent : this.latents) {
                 //Adding every node to graph.
                 structureGraph.addNode(latent);
 
-                for (final Node input : this.inputs.get(latent)) {
+                for (Node input : this.inputs.get(latent)) {
                     structureGraph.addNode(input);
                 }
-                for (final Node output : this.outputs.get(latent)) {
+                for (Node output : this.outputs.get(latent)) {
                     structureGraph.addNode(output);
                 }
 
                 //adding edges from inputs to latent.
-                for (final Node input : this.inputs.get(latent)) {
+                for (Node input : this.inputs.get(latent)) {
                     structureGraph.addDirectedEdge(input, latent);
                 }
 
                 //adding edges from latent to outputs.
-                for (final Node output : this.outputs.get(latent)) {
+                for (Node output : this.outputs.get(latent)) {
                     structureGraph.addDirectedEdge(latent, output);
                 }
 
@@ -904,7 +904,7 @@ public class DMSearch {
                 if (this.latentEffects.get(latent) == null) {
                     continue;
                 } else {
-                    for (final Node latentEff : this.latentEffects.get(latent)) {
+                    for (Node latentEff : this.latentEffects.get(latent)) {
 
                         if (!structureGraph.containsNode(latentEff)) {
                             structureGraph.addNode(latentEff);

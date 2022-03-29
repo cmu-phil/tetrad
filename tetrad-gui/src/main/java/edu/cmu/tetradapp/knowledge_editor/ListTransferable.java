@@ -52,7 +52,7 @@ class ListTransferable implements Transferable {
     /**
      * Constructs a new selection with the given list of graph nodes.
      */
-    public ListTransferable(final List list) {
+    public ListTransferable(List list) {
         if (list == null) {
             throw new NullPointerException(
                     "List of list must " + "not be null.");
@@ -72,7 +72,7 @@ class ListTransferable implements Transferable {
      *                                                          not supported.
      * @see DataFlavor#getRepresentationClass
      */
-    public Object getTransferData(final DataFlavor flavor)
+    public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
         if (!isDataFlavorSupported(flavor)) {
             throw new UnsupportedFlavorException(flavor);
@@ -86,7 +86,7 @@ class ListTransferable implements Transferable {
      * @return whether or not the specified data flavor is supported for
      * this object.
      */
-    public boolean isDataFlavorSupported(final DataFlavor flavor) {
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(ListTransferable.dataFlavors[0]);
     }
 

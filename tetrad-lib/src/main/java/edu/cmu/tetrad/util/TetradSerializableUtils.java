@@ -97,8 +97,8 @@ public class TetradSerializableUtils {
      * Blank constructor. Please set the directory undirectedPaths that you will need
      * using the relevant set methods before calling test methods.
      */
-    public TetradSerializableUtils(final String serializableScope,
-                                   final String currentDirectory, final String archiveDirectory) {
+    public TetradSerializableUtils(String serializableScope,
+                                   String currentDirectory, String archiveDirectory) {
         if (serializableScope == null) {
             throw new NullPointerException();
         }
@@ -134,22 +134,22 @@ public class TetradSerializableUtils {
      * @see #safelySerializableTypes
      */
     public void checkNestingOfFields() {
-        final List classes = getAssignableClasses(new File(getSerializableScope()),
+        List classes = getAssignableClasses(new File(getSerializableScope()),
                 TetradSerializable.class);
 
         boolean foundUnsafeField = false;
 
-        for (final Object aClass : classes) {
-            final Class clazz = (Class) aClass;
+        for (Object aClass : classes) {
+            Class clazz = (Class) aClass;
 
             if (TetradSerializableExcluded.class.isAssignableFrom(clazz)) {
                 continue;
             }
 
-            final Field[] fields = clazz.getDeclaredFields();
+            Field[] fields = clazz.getDeclaredFields();
 
             FIELDS:
-            for (final Field field : fields) {
+            for (Field field : fields) {
 //                System.out.println(field);
 
                 if (Modifier.isTransient(field.getModifiers())) {
@@ -189,7 +189,7 @@ public class TetradSerializableUtils {
                     continue;
                 }
 
-                for (final Class safelySerializableClass : TetradSerializableUtils.safelySerializableTypes) {
+                for (Class safelySerializableClass : TetradSerializableUtils.safelySerializableTypes) {
                     if (safelySerializableClass.isAssignableFrom(type)) {
                         continue FIELDS;
                     }
@@ -235,11 +235,11 @@ public class TetradSerializableUtils {
      */
     public void serializeCurrentDirectory() throws RuntimeException {
         clearCurrentDirectory();
-        @SuppressWarnings("Convert2Diamond") final Map<String, List<String>> classFields =
+        @SuppressWarnings("Convert2Diamond") Map<String, List<String>> classFields =
                 new TreeMap<>();
 
         // Get the classes that implement SerializationCanonicalizer.
-        final List classes = getAssignableClasses(new File(getSerializableScope()),
+        List classes = getAssignableClasses(new File(getSerializableScope()),
                 TetradSerializable.class);
 
         System.out.println(
@@ -250,8 +250,8 @@ public class TetradSerializableUtils {
 
         int index = -1;
 
-        for (final Object aClass : classes) {
-            final Class clazz = (Class) aClass;
+        for (Object aClass : classes) {
+            Class clazz = (Class) aClass;
 
             if (TetradSerializableExcluded.class.isAssignableFrom(clazz)) {
                 continue;
@@ -265,7 +265,7 @@ public class TetradSerializableUtils {
                 continue;
             }
 
-            final int numFields = getNumNonSerialVersionUIDFields(clazz);
+            int numFields = getNumNonSerialVersionUIDFields(clazz);
 
 //            if (numFields > 0 && serializableInstanceMethod(clazz) == null) {
 //                throw new RuntimeException("Class " + clazz + " does not " +
@@ -282,22 +282,22 @@ public class TetradSerializableUtils {
         }
 
         try {
-            final File file = new File(getCurrentDirectory(), "class_fields.ser");
-            final FileOutputStream out = new FileOutputStream(file);
-            final ObjectOutputStream objOut = new ObjectOutputStream(out);
+            File file = new File(getCurrentDirectory(), "class_fields.ser");
+            FileOutputStream out = new FileOutputStream(file);
+            ObjectOutputStream objOut = new ObjectOutputStream(out);
             objOut.writeObject(classFields);
             out.close();
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
         System.out.println("\nFinished serializing exemplars.");
     }
 
-    private int getNumNonSerialVersionUIDFields(final Class clazz) {
-        final Field[] declaredFields = clazz.getDeclaredFields();
+    private int getNumNonSerialVersionUIDFields(Class clazz) {
+        Field[] declaredFields = clazz.getDeclaredFields();
         int numFields = declaredFields.length;
-        final Field[] fieldList = declaredFields;
+        Field[] fieldList = declaredFields;
 
 //        System.out.println(clazz);
 //
@@ -305,7 +305,7 @@ public class TetradSerializableUtils {
 //            System.out.println(field.getNode());
 //        }
 
-        for (final Field field : fieldList) {
+        for (Field field : fieldList) {
             if (field.getName().equals("serialVersionUID")) {
                 numFields--;
             }
@@ -325,14 +325,14 @@ public class TetradSerializableUtils {
      * Clears the archive directory.
      */
     private void clearCurrentDirectory() {
-        final File directory = new File(getCurrentDirectory());
+        File directory = new File(getCurrentDirectory());
 
         if (directory.exists() && directory.isDirectory()) {
-            final String[] listing = directory.list();
+            String[] listing = directory.list();
 
-            for (final String aListing : listing) {
-                final File file = new File(getCurrentDirectory(), aListing);
-                final boolean deleted = file.delete();
+            for (String aListing : listing) {
+                File file = new File(getCurrentDirectory(), aListing);
+                boolean deleted = file.delete();
             }
         }
 
@@ -345,13 +345,13 @@ public class TetradSerializableUtils {
      * Clears the archive directory.
      */
     public void clearArchiveDirectory() {
-        final File directory = new File(getArchiveDirectory());
+        File directory = new File(getArchiveDirectory());
 
         if (directory.exists() && directory.isDirectory()) {
-            final String[] listing = directory.list();
+            String[] listing = directory.list();
 
-            for (final String aListing : listing) {
-                final File file = new File(getArchiveDirectory(), aListing);
+            for (String aListing : listing) {
+                File file = new File(getArchiveDirectory(), aListing);
                 file.delete();
             }
         }
@@ -373,9 +373,9 @@ public class TetradSerializableUtils {
      *                          originally thrown exception as root cause.
      * @see #getCurrentDirectory()
      */
-    private void serializeClass(final Class clazz,
-                                final Map<String, List<String>> classFields) throws RuntimeException {
-        final File current = new File(getCurrentDirectory());
+    private void serializeClass(Class clazz,
+                                Map<String, List<String>> classFields) throws RuntimeException {
+        File current = new File(getCurrentDirectory());
 
         if (!current.exists() || !current.isDirectory()) {
             throw new IllegalStateException("There is no " +
@@ -385,11 +385,11 @@ public class TetradSerializableUtils {
         }
 
         try {
-            final Field field = clazz.getDeclaredField("serialVersionUID");
+            Field field = clazz.getDeclaredField("serialVersionUID");
 
-            final int modifiers = field.getModifiers();
-            final boolean _static = Modifier.isStatic(modifiers);
-            final boolean _final = Modifier.isFinal(modifiers);
+            int modifiers = field.getModifiers();
+            boolean _static = Modifier.isStatic(modifiers);
+            boolean _final = Modifier.isFinal(modifiers);
             field.setAccessible(true);
 
             if (!_static || !_final || !(23L == field.getLong(null))) {
@@ -398,50 +398,50 @@ public class TetradSerializableUtils {
                                 "long serialVersionUID = 23L");
             }
 
-            final int numFields = getNumNonSerialVersionUIDFields(clazz);
+            int numFields = getNumNonSerialVersionUIDFields(clazz);
 
             if (numFields > 0) {
-                final Method method =
+                Method method =
                         clazz.getMethod("serializableInstance");
-                final Object object = method.invoke(null);
+                Object object = method.invoke(null);
 
-                final File file = new File(current, clazz.getName() + ".ser");
-                final boolean created = file.createNewFile();
+                File file = new File(current, clazz.getName() + ".ser");
+                boolean created = file.createNewFile();
 
-                final FileOutputStream out = new FileOutputStream(file);
-                final ObjectOutputStream objOut = new ObjectOutputStream(out);
+                FileOutputStream out = new FileOutputStream(file);
+                ObjectOutputStream objOut = new ObjectOutputStream(out);
                 objOut.writeObject(object);
                 out.close();
             }
 
             // Make entry in list of class fields.
-            final ObjectStreamClass objectStreamClass =
+            ObjectStreamClass objectStreamClass =
                     ObjectStreamClass.lookup(clazz);
-            final String className = objectStreamClass.getName();
-            final ObjectStreamField[] fields = objectStreamClass.getFields();
-            @SuppressWarnings("Convert2Diamond") final List<String> fieldList = new ArrayList<>();
+            String className = objectStreamClass.getName();
+            ObjectStreamField[] fields = objectStreamClass.getFields();
+            @SuppressWarnings("Convert2Diamond") List<String> fieldList = new ArrayList<>();
 
-            for (final ObjectStreamField objectStreamField : fields) {
-                final String fieldName = objectStreamField.getName();
+            for (ObjectStreamField objectStreamField : fields) {
+                String fieldName = objectStreamField.getName();
                 fieldList.add(fieldName);
             }
 
             classFields.put(className, fieldList);
-        } catch (final NoSuchFieldException e) {
+        } catch (NoSuchFieldException e) {
             throw new RuntimeException(("There is no static final long field " +
                     "'serialVersionUID' in " + clazz +
                     ". Please make one and set it " + "to 23L."));
-        } catch (final NoSuchMethodException e) {
+        } catch (NoSuchMethodException e) {
 //            throw new RuntimeException("Class " + clazz + "does not " +
 //                    "have a public static serializableInstance constructor.",
 //                    e);
-        } catch (final IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             throw new RuntimeException("The method serializableInstance() of " +
                     "class " + clazz + " is not public.", e);
-        } catch (final InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
             throw new RuntimeException("Unable to statically call the " +
                     "serializableInstance() method of class " + clazz + ".", e);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(
                     "Could not create a new, writeable file " + "in " +
                             getCurrentDirectory() +
@@ -460,21 +460,21 @@ public class TetradSerializableUtils {
     public void deserializeCurrentDirectory() throws RuntimeException {
         System.out.println("Deserializing files in " + getCurrentDirectory());
 
-        final File directory = new File(getCurrentDirectory());
+        File directory = new File(getCurrentDirectory());
 
         if (!directory.exists() || !directory.isDirectory()) {
             throw new IllegalArgumentException(
                     "There is no " + directory + " directory.");
         }
 
-        final String[] listing = directory.list();
+        String[] listing = directory.list();
 
-        for (final String aListing : listing) {
+        for (String aListing : listing) {
             if (!aListing.endsWith(".ser")) {
                 continue;
             }
 
-            final File file = new File(getCurrentDirectory(), aListing);
+            File file = new File(getCurrentDirectory(), aListing);
             deserializeClass(file);
         }
 
@@ -490,18 +490,18 @@ public class TetradSerializableUtils {
      *                          has an informative message and wraps the
      *                          originally thrown exception as root cause.
      */
-    private void deserializeClass(final File file) throws RuntimeException {
+    private void deserializeClass(File file) throws RuntimeException {
         try {
-            final FileInputStream in = new FileInputStream(file);
-            final ObjectInputStream objIn = new ObjectInputStream(in);
-            final Object o = objIn.readObject();
+            FileInputStream in = new FileInputStream(file);
+            ObjectInputStream objIn = new ObjectInputStream(in);
+            Object o = objIn.readObject();
             in.close();
-        } catch (final ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException("There is no class in the model API " +
                     "to deserialize the object in " + file + ". Perhaps the " +
                     "class was renamed, moved to another package, or removed. " +
                     "In any case, please put it back where it was.", e);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(
                     "There was an I/O error associated with " +
                             "the process of deserializing the file " + file +
@@ -524,7 +524,7 @@ public class TetradSerializableUtils {
                 getCurrentDirectory() + ", putting it in " +
                 getArchiveDirectory() + ".");
 
-        final File current = new File(getCurrentDirectory());
+        File current = new File(getCurrentDirectory());
 
         if (!current.exists() || !current.isDirectory()) {
             throw new IllegalArgumentException("There is no " +
@@ -533,38 +533,38 @@ public class TetradSerializableUtils {
                     "Please run serializeCurrentDirectory() first.");
         }
 
-        final File archive = new File(getArchiveDirectory());
+        File archive = new File(getArchiveDirectory());
         if (archive.exists() && !archive.isDirectory()) {
             throw new IllegalArgumentException("Output directory " +
                     archive.getAbsolutePath() + " is not a directory.");
         }
 
         if (!archive.exists()) {
-            final boolean success = archive.mkdirs();
+            boolean success = archive.mkdirs();
         }
 
-        final String[] filenames = current.list();
+        String[] filenames = current.list();
 
         // Create a buffer for reading the files
-        final byte[] buf = new byte[1024];
+        byte[] buf = new byte[1024];
 
         try {
-            final String version = Version.currentRepositoryVersion().toString();
+            String version = Version.currentRepositoryVersion().toString();
 
             // Create the ZIP file
-            final String outFilename = "serializedclasses-" + version + ".zip";
-            final File _file = new File(getArchiveDirectory(), outFilename);
-            final FileOutputStream fileOut = new FileOutputStream(_file);
-            final ZipOutputStream out = new ZipOutputStream(fileOut);
+            String outFilename = "serializedclasses-" + version + ".zip";
+            File _file = new File(getArchiveDirectory(), outFilename);
+            FileOutputStream fileOut = new FileOutputStream(_file);
+            ZipOutputStream out = new ZipOutputStream(fileOut);
 
             // Compress the files
-            for (final String filename : filenames) {
-                final File file = new File(current, filename);
+            for (String filename : filenames) {
+                File file = new File(current, filename);
 
-                final FileInputStream in = new FileInputStream(file);
+                FileInputStream in = new FileInputStream(file);
 
                 // Add ZIP entry to output stream.
-                final ZipEntry entry = new ZipEntry(filename);
+                ZipEntry entry = new ZipEntry(filename);
                 entry.setSize(file.length());
                 entry.setTime(file.lastModified());
 
@@ -586,7 +586,7 @@ public class TetradSerializableUtils {
 
             System.out.println(
                     "Finished writing zip file " + outFilename + ".");
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(
                     "There was an I/O error associated with " +
                             "the process of zipping up files in " +
@@ -606,45 +606,45 @@ public class TetradSerializableUtils {
         System.out.println("Deserializing archived instances in " +
                 getArchiveDirectory() + ".");
 
-        final File archive = new File(getArchiveDirectory());
+        File archive = new File(getArchiveDirectory());
 
         if (!archive.exists() || !archive.isDirectory()) {
             return;
         }
 
-        final String[] listing = archive.list();
+        String[] listing = archive.list();
 
-        for (final String archiveName : listing) {
+        for (String archiveName : listing) {
             if (!(archiveName.endsWith(".zip"))) {
                 continue;
             }
 
             try {
-                final File file = new File(getArchiveDirectory(), archiveName);
-                final ZipFile zipFile = new ZipFile(file);
-                final ZipEntry entry = zipFile.getEntry("class_fields.ser");
-                final InputStream inputStream = zipFile.getInputStream(entry);
-                final ObjectInputStream objectIn = new ObjectInputStream(inputStream);
-                final Map<String, List<String>> classFields =
+                File file = new File(getArchiveDirectory(), archiveName);
+                ZipFile zipFile = new ZipFile(file);
+                ZipEntry entry = zipFile.getEntry("class_fields.ser");
+                InputStream inputStream = zipFile.getInputStream(entry);
+                ObjectInputStream objectIn = new ObjectInputStream(inputStream);
+                Map<String, List<String>> classFields =
                         (Map<String, List<String>>) objectIn.readObject();
                 zipFile.close();
 
-                for (final String className : classFields.keySet()) {
+                for (String className : classFields.keySet()) {
 
 //                    if (classFields.equals("HypotheticalGraph")) continue;
 
-                    final List<String> fieldNames = classFields.get(className);
-                    final Class<?> clazz = Class.forName(className);
-                    final ObjectStreamClass streamClass =
+                    List<String> fieldNames = classFields.get(className);
+                    Class<?> clazz = Class.forName(className);
+                    ObjectStreamClass streamClass =
                             ObjectStreamClass.lookup(clazz);
 
                     if (streamClass == null) {
                         System.out.println();
                     }
 
-                    for (final String fieldName : fieldNames) {
+                    for (String fieldName : fieldNames) {
                         assert streamClass != null;
-                        final ObjectStreamField field =
+                        ObjectStreamField field =
                                 streamClass.getField(fieldName);
 
                         if (field == null) {
@@ -657,10 +657,10 @@ public class TetradSerializableUtils {
                         }
                     }
                 }
-            } catch (final ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) {
                 throw new RuntimeException(
                         "Could not read class_fields.ser in archive + " + archiveName + " .", e);
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException("Problem reading archive" +
                         archiveName + "; see cause.", e);
             }
@@ -670,23 +670,23 @@ public class TetradSerializableUtils {
             ZipEntry zipEntry = null;
 
             try {
-                final File file = new File(getArchiveDirectory(), archiveName);
-                final FileInputStream in = new FileInputStream(file);
-                final ZipInputStream zipinputstream = new ZipInputStream(in);
+                File file = new File(getArchiveDirectory(), archiveName);
+                FileInputStream in = new FileInputStream(file);
+                ZipInputStream zipinputstream = new ZipInputStream(in);
 
                 while ((zipEntry = zipinputstream.getNextEntry()) != null) {
                     if (!zipEntry.getName().endsWith(".ser")) {
                         continue;
                     }
 
-                    final ObjectInputStream objectIn =
+                    ObjectInputStream objectIn =
                             new ObjectInputStream(zipinputstream);
                     objectIn.readObject();
                     zipinputstream.closeEntry();
                 }
 
                 zipinputstream.close();
-            } catch (final ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) {
                 throw new RuntimeException(
                         "Could not read object zipped file " +
                                 zipEntry.getName() + " in archive " +
@@ -694,7 +694,7 @@ public class TetradSerializableUtils {
                                 "Perhaps the class was renamed, moved to another package, or " +
                                 "removed. In any case, please put it back where it was.",
                         e);
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException("Problem reading archive" +
                         archiveName + "; see cause.", e);
             }
@@ -708,12 +708,12 @@ public class TetradSerializableUtils {
      * @return a reference to the public static serializableInstance() method of
      * clazz, if there is one; otherwise, returns null.
      */
-    private Method serializableInstanceMethod(final Class clazz) {
-        final Method[] methods = clazz.getMethods();
+    private Method serializableInstanceMethod(Class clazz) {
+        Method[] methods = clazz.getMethods();
 
-        for (final Method method : methods) {
+        for (Method method : methods) {
             if ("serializableInstance".equals(method.getName())) {
-                final Class[] parameterTypes = method.getParameterTypes();
+                Class[] parameterTypes = method.getParameterTypes();
 
                 if (!(parameterTypes.length == 0)) {
                     continue;
@@ -738,20 +738,20 @@ public class TetradSerializableUtils {
      * @return all of the classes x in the given directory (recursively) such
      * that clazz.isAssignableFrom(x).
      */
-    private List<Class> getAssignableClasses(final File path,
-                                             final Class<TetradSerializable> clazz) {
+    private List<Class> getAssignableClasses(File path,
+                                             Class<TetradSerializable> clazz) {
         if (!path.isDirectory()) {
             throw new IllegalArgumentException("Not a directory: " + path);
         }
 
-        @SuppressWarnings("Convert2Diamond") final List<Class> classes = new LinkedList<>();
-        final File[] files = path.listFiles();
+        @SuppressWarnings("Convert2Diamond") List<Class> classes = new LinkedList<>();
+        File[] files = path.listFiles();
 
         if (files == null) {
             throw new NullPointerException();
         }
 
-        for (final File file : files) {
+        for (File file : files) {
             if (file.isDirectory()) {
                 classes.addAll(getAssignableClasses(file, clazz));
             } else {
@@ -760,7 +760,7 @@ public class TetradSerializableUtils {
                 packagePath = packagePath.replace('/', '.');
                 packagePath = packagePath.substring(
                         packagePath.indexOf("edu.cmu"));
-                final int index = packagePath.indexOf(".class");
+                int index = packagePath.indexOf(".class");
 
                 if (index == -1) {
                     continue;
@@ -769,13 +769,13 @@ public class TetradSerializableUtils {
                 packagePath = packagePath.substring(0, index);
 
                 try {
-                    final Class _clazz =
+                    Class _clazz =
                             getClass().getClassLoader().loadClass(packagePath);
 
                     if (clazz.isAssignableFrom(_clazz) && !_clazz.isInterface()) {
                         classes.add(_clazz);
                     }
-                } catch (final ClassNotFoundException e) {
+                } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }

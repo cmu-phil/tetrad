@@ -54,12 +54,12 @@ public final class BffGes implements Bff {
     private final Scorer scorer;
     private Graph newDag;
 
-    public BffGes(Graph graph, final DataSet data) {
+    public BffGes(Graph graph, DataSet data) {
         if (graph == null) throw new NullPointerException("Graph not specified.");
 
         final boolean allowArbitraryOrientations = true;
         final boolean allowNewColliders = true;
-        final DagInCPDAGIterator iterator = new DagInCPDAGIterator(graph, getKnowledge(), allowArbitraryOrientations,
+        DagInCPDAGIterator iterator = new DagInCPDAGIterator(graph, getKnowledge(), allowArbitraryOrientations,
                 allowNewColliders);
         graph = iterator.next();
         graph = SearchGraphUtils.cpdagForDag(graph);
@@ -72,15 +72,15 @@ public final class BffGes implements Bff {
         this.scorer = new DagScorer(data);
     }
 
-    private void saveModelIfSignificant(final Graph graph) {
-        final double pValue = scoreGraph(graph).getPValue();
+    private void saveModelIfSignificant(Graph graph) {
+        double pValue = scoreGraph(graph).getPValue();
 
         if (pValue > this.alpha) {
             getSignificantModels().add(new GraphWithPValue(graph, pValue));
         }
     }
 
-    public void setNewDag(final Graph newDag) {
+    public void setNewDag(Graph newDag) {
         this.newDag = newDag;
     }
 
@@ -92,7 +92,7 @@ public final class BffGes implements Bff {
         private final Graph graph;
         private final double pValue;
 
-        public GraphWithPValue(final Graph graph, final double pValue) {
+        public GraphWithPValue(Graph graph, double pValue) {
             this.graph = graph;
             this.pValue = pValue;
         }
@@ -109,16 +109,16 @@ public final class BffGes implements Bff {
             return 17 * this.graph.hashCode();
         }
 
-        public boolean equals(final Object o) {
+        public boolean equals(Object o) {
             if (o == null) return false;
             if (!(o instanceof GraphWithPValue)) return false;
-            final GraphWithPValue p = (GraphWithPValue) o;
+            GraphWithPValue p = (GraphWithPValue) o;
             return (p.graph.equals(this.graph));
         }
     }
 
-    public Score scoreGraph(final Graph graph) {
-        final Graph dag = SearchGraphUtils.dagFromCPDAG(graph, getKnowledge());
+    public Score scoreGraph(Graph graph) {
+        Graph dag = SearchGraphUtils.dagFromCPDAG(graph, getKnowledge());
 
         if (dag == null) {
             return Score.negativeInfinity();
@@ -140,11 +140,11 @@ public final class BffGes implements Bff {
         return this.newSemIm;
     }
 
-    public void setHighPValueAlpha(final double highPValueAlpha) {
+    public void setHighPValueAlpha(double highPValueAlpha) {
         this.highPValueAlpha = highPValueAlpha;
     }
 
-    public Score scoreDag(final Graph dag) {
+    public Score scoreDag(Graph dag) {
 //        SemPm semPm = new SemPm(dag);
 //        SemEstimator semEstimator = new SemEstimator(dataSet, semPm, new SemOptimizerEm());
 //        semEstimator.estimate();
@@ -181,7 +181,7 @@ public final class BffGes implements Bff {
 //    }
 
     public Graph search() {
-        final Score score1 = scoreGraph(getGraph());
+        Score score1 = scoreGraph(getGraph());
         double score = score1.getScore();
         System.out.println(getGraph());
         System.out.println(score);
@@ -202,13 +202,13 @@ public final class BffGes implements Bff {
 
         setNewDag(SearchGraphUtils.dagFromCPDAG(getGraph()));
 
-        final Score _score = scoreGraph(getGraph());
+        Score _score = scoreGraph(getGraph());
         this.newSemIm = _score.getEstimatedSem();
 
         return new EdgeListGraph(getGraph());
     }
 
-    private double fes(final Graph graph, double score) {
+    private double fes(Graph graph, double score) {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
         double bestScore = score;
         TetradLogger.getInstance().log("info", "Initial Score = " + this.nf.format(bestScore));
@@ -218,13 +218,13 @@ public final class BffGes implements Bff {
 
         do {
             x = y = null;
-            final List<Node> nodes = graph.getNodes();
+            List<Node> nodes = graph.getNodes();
             Collections.shuffle(nodes);
 
             for (int i = 0; i < nodes.size(); i++) {
-                final Node _x = nodes.get(i);
+                Node _x = nodes.get(i);
 
-                for (final Node _y : nodes) {
+                for (Node _y : nodes) {
                     if (_x == _y) {
                         continue;
                     }
@@ -238,16 +238,16 @@ public final class BffGes implements Bff {
                         continue;
                     }
 
-                    final List<Node> tNeighbors = BffGes.getTNeighbors(_x, _y, graph);
-                    final List<Set<Node>> tSubsets = BffGes.powerSet(tNeighbors);
+                    List<Node> tNeighbors = BffGes.getTNeighbors(_x, _y, graph);
+                    List<Set<Node>> tSubsets = BffGes.powerSet(tNeighbors);
 
-                    for (final Set<Node> tSubset : tSubsets) {
+                    for (Set<Node> tSubset : tSubsets) {
 
                         if (!validSetByKnowledge(_x, _y, tSubset, true)) {
                             continue;
                         }
 
-                        final Graph graph2 = new EdgeListGraph(graph);
+                        Graph graph2 = new EdgeListGraph(graph);
 
                         tryInsert(_x, _y, tSubset, graph2, true);
 
@@ -255,7 +255,7 @@ public final class BffGes implements Bff {
                             continue;
                         }
 
-                        final double evalScore = scoreGraph(graph2).getScore();
+                        double evalScore = scoreGraph(graph2).getScore();
 
                         TetradLogger.getInstance().log("edgeEvaluations", "Trying to add " + _x + "-->" + _y + " evalScore = " +
                                 evalScore);
@@ -291,7 +291,7 @@ public final class BffGes implements Bff {
         return score;
     }
 
-    private double bes(final Graph graph, final double initialScore) {
+    private double bes(Graph graph, double initialScore) {
         TetradLogger.getInstance().log("info", "** BACKWARD ELIMINATION SEARCH");
         TetradLogger.getInstance().log("info", "Initial Score = " + this.nf.format(initialScore));
         double score = initialScore;
@@ -300,12 +300,12 @@ public final class BffGes implements Bff {
         Set<Node> t = new HashSet<>();
         do {
             x = y = null;
-            final List<Edge> graphEdges = new ArrayList<>(graph.getEdges());
+            List<Edge> graphEdges = new ArrayList<>(graph.getEdges());
             Collections.shuffle(graphEdges);
 
-            for (final Edge edge : graphEdges) {
-                final Node _x;
-                final Node _y;
+            for (Edge edge : graphEdges) {
+                Node _x;
+                Node _y;
 
                 if (Edges.isUndirectedEdge(edge)) {
                     _x = edge.getNode1();
@@ -319,19 +319,19 @@ public final class BffGes implements Bff {
                     continue;
                 }
 
-                final List<Node> hNeighbors = BffGes.getHNeighbors(_x, _y, graph);
-                final List<Set<Node>> hSubsets = BffGes.powerSet(hNeighbors);
+                List<Node> hNeighbors = BffGes.getHNeighbors(_x, _y, graph);
+                List<Set<Node>> hSubsets = BffGes.powerSet(hNeighbors);
 
-                for (final Set<Node> hSubset : hSubsets) {
+                for (Set<Node> hSubset : hSubsets) {
                     if (!validSetByKnowledge(_x, _y, hSubset, false)) {
                         continue;
                     }
 
-                    final Graph graph2 = new EdgeListGraph(graph);
+                    Graph graph2 = new EdgeListGraph(graph);
 
                     tryDelete(_x, _y, hSubset, graph2, true);
 
-                    final double evalScore = scoreGraph(graph2).getScore();
+                    double evalScore = scoreGraph(graph2).getScore();
 
                     if (!(evalScore > bestScore)) {
                         continue;
@@ -375,11 +375,11 @@ public final class BffGes implements Bff {
      * (Definition 12 from Chickering, 2002).
      **/
 
-    private void tryInsert(final Node x, final Node y, final Set<Node> subset, final Graph graph, final boolean log) {
+    private void tryInsert(Node x, Node y, Set<Node> subset, Graph graph, boolean log) {
         graph.addDirectedEdge(x, y);
 
-        for (final Node t : subset) {
-            final Edge oldEdge = graph.getEdge(t, y);
+        for (Node t : subset) {
+            Edge oldEdge = graph.getEdge(t, y);
 
             if (!Edges.isUndirectedEdge(oldEdge)) {
                 throw new IllegalArgumentException("Should be undirected: " + oldEdge);
@@ -398,16 +398,16 @@ public final class BffGes implements Bff {
     /**
      * Do an actual deletion (Definition 13 from Chickering, 2002).
      */
-    private void tryDelete(final Node x, final Node y, final Set<Node> subset, final Graph graph, final boolean log) {
+    private void tryDelete(Node x, Node y, Set<Node> subset, Graph graph, boolean log) {
         graph.removeEdge(x, y);
 
-        for (final Node h : subset) {
+        for (Node h : subset) {
             if (Edges.isUndirectedEdge(graph.getEdge(x, h))) {
                 graph.removeEdge(x, h);
                 graph.addDirectedEdge(x, h);
 
                 if (log) {
-                    final Edge oldEdge = graph.getEdge(x, h);
+                    Edge oldEdge = graph.getEdge(x, h);
                     TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
                             graph.getEdge(x, h));
                 }
@@ -418,7 +418,7 @@ public final class BffGes implements Bff {
                 graph.addDirectedEdge(y, h);
 
                 if (log) {
-                    final Edge oldEdge = graph.getEdge(y, h);
+                    Edge oldEdge = graph.getEdge(y, h);
                     TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
                             graph.getEdge(y, h));
                 }
@@ -426,15 +426,15 @@ public final class BffGes implements Bff {
         }
     }
 
-    private void insert(final Node x, final Node y, final Set<Node> subset, final Graph graph, final boolean log) {
+    private void insert(Node x, Node y, Set<Node> subset, Graph graph, boolean log) {
         if (graph.isAdjacentTo(x, y)) {
             return;
         }
 
         graph.addDirectedEdge(x, y);
 
-        for (final Node t : subset) {
-            final Edge oldEdge = graph.getEdge(t, y);
+        for (Node t : subset) {
+            Edge oldEdge = graph.getEdge(t, y);
 
             if (!Edges.isUndirectedEdge(oldEdge)) {
                 throw new IllegalArgumentException("Should be undirected: " + oldEdge);
@@ -453,10 +453,10 @@ public final class BffGes implements Bff {
     /**
      * Do an actual deletion (Definition 13 from Chickering, 2002).
      */
-    private void delete(final Node x, final Node y, final Set<Node> subset, final Graph graph, final boolean log) {
+    private void delete(Node x, Node y, Set<Node> subset, Graph graph, boolean log) {
 
         if (log) {
-            final Edge oldEdge = graph.getEdge(x, y);
+            Edge oldEdge = graph.getEdge(x, y);
             System.out.println(graph.getNumEdges() + ". DELETE " + oldEdge +
                     " " + subset +
                     " (" + this.nf.format(scoreGraph(graph).getPValue()) + ")");
@@ -464,13 +464,13 @@ public final class BffGes implements Bff {
 
         graph.removeEdge(x, y);
 
-        for (final Node h : subset) {
+        for (Node h : subset) {
             if (Edges.isUndirectedEdge(graph.getEdge(x, h))) {
                 graph.removeEdge(x, h);
                 graph.addDirectedEdge(x, h);
 
                 if (log) {
-                    final Edge oldEdge = graph.getEdge(x, h);
+                    Edge oldEdge = graph.getEdge(x, h);
                     TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
                             graph.getEdge(x, h));
                 }
@@ -481,7 +481,7 @@ public final class BffGes implements Bff {
                 graph.addDirectedEdge(y, h);
 
                 if (log) {
-                    final Edge oldEdge = graph.getEdge(y, h);
+                    Edge oldEdge = graph.getEdge(y, h);
                     TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
                             graph.getEdge(y, h));
                 }
@@ -494,8 +494,8 @@ public final class BffGes implements Bff {
      * (Theorem 15 from Chickering, 2002).
      **/
 
-    private boolean validInsert(final Node x, final Node y, final Set<Node> subset, final Graph graph) {
-        final List<Node> naYXT = new LinkedList<>(subset);
+    private boolean validInsert(Node x, Node y, Set<Node> subset, Graph graph) {
+        List<Node> naYXT = new LinkedList<>(subset);
         naYXT.addAll(BffGes.findNaYX(x, y, graph));
 
         return GraphUtils.isClique(naYXT, graph) && isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<Node>());
@@ -505,9 +505,9 @@ public final class BffGes implements Bff {
     /**
      * Test if the candidate deletion is a valid operation (Theorem 17 from Chickering, 2002).
      */
-    private static boolean validDelete(final Node x, final Node y, final Set<Node> h,
-                                       final Graph graph) {
-        final List<Node> naYXH = BffGes.findNaYX(x, y, graph);
+    private static boolean validDelete(Node x, Node y, Set<Node> h,
+                                       Graph graph) {
+        List<Node> naYXH = BffGes.findNaYX(x, y, graph);
         naYXH.removeAll(h);
         return GraphUtils.isClique(naYXH, graph);
     }
@@ -515,13 +515,13 @@ public final class BffGes implements Bff {
     /**
      * Get all nodes that are connected to Y by an undirected edge and not adjacent to X.
      */
-    private static List<Node> getTNeighbors(final Node x, final Node y, final Graph graph) {
-        final List<Node> tNeighbors = new LinkedList<>(graph.getAdjacentNodes(y));
+    private static List<Node> getTNeighbors(Node x, Node y, Graph graph) {
+        List<Node> tNeighbors = new LinkedList<>(graph.getAdjacentNodes(y));
         tNeighbors.removeAll(graph.getAdjacentNodes(x));
 
         for (int i = tNeighbors.size() - 1; i >= 0; i--) {
-            final Node z = tNeighbors.get(i);
-            final Edge edge = graph.getEdge(y, z);
+            Node z = tNeighbors.get(i);
+            Edge edge = graph.getEdge(y, z);
 
             if (!Edges.isUndirectedEdge(edge)) {
                 tNeighbors.remove(z);
@@ -534,13 +534,13 @@ public final class BffGes implements Bff {
     /**
      * Get all nodes that are connected to Y by an undirected edge and adjacent to X
      */
-    private static List<Node> getHNeighbors(final Node x, final Node y, final Graph graph) {
-        final List<Node> hNeighbors = new LinkedList<>(graph.getAdjacentNodes(y));
+    private static List<Node> getHNeighbors(Node x, Node y, Graph graph) {
+        List<Node> hNeighbors = new LinkedList<>(graph.getAdjacentNodes(y));
         hNeighbors.retainAll(graph.getAdjacentNodes(x));
 
         for (int i = hNeighbors.size() - 1; i >= 0; i--) {
-            final Node z = hNeighbors.get(i);
-            final Edge edge = graph.getEdge(y, z);
+            Node z = hNeighbors.get(i);
+            Edge edge = graph.getEdge(y, z);
 
             if (!Edges.isUndirectedEdge(edge)) {
                 hNeighbors.remove(z);
@@ -555,13 +555,13 @@ public final class BffGes implements Bff {
      * directed edge) NOTE: very inefficient implementation, since the getModel library does not allow access to the
      * adjacency list/matrix of the graph.
      */
-    private static List<Node> findNaYX(final Node x, final Node y, final Graph graph) {
-        final List<Node> naYX = new LinkedList<>(graph.getAdjacentNodes(y));
+    private static List<Node> findNaYX(Node x, Node y, Graph graph) {
+        List<Node> naYX = new LinkedList<>(graph.getAdjacentNodes(y));
         naYX.retainAll(graph.getAdjacentNodes(x));
 
         for (int i = 0; i < naYX.size(); i++) {
-            final Node z = naYX.get(i);
-            final Edge edge = graph.getEdge(y, z);
+            Node z = naYX.get(i);
+            Edge edge = graph.getEdge(y, z);
 
             if (!Edges.isUndirectedEdge(edge)) {
                 naYX.remove(z);
@@ -571,17 +571,17 @@ public final class BffGes implements Bff {
         return naYX;
     }
 
-    private boolean validSetByKnowledge(final Node x, final Node y, final Set<Node> subset,
-                                        final boolean insertMode) {
+    private boolean validSetByKnowledge(Node x, Node y, Set<Node> subset,
+                                        boolean insertMode) {
         if (insertMode) {
-            for (final Node aSubset : subset) {
+            for (Node aSubset : subset) {
                 if (getKnowledge().isForbidden(aSubset.getName(),
                         y.getName())) {
                     return false;
                 }
             }
         } else {
-            for (final Node nextElement : subset) {
+            for (Node nextElement : subset) {
                 if (getKnowledge().isForbidden(x.getName(),
                         nextElement.getName())) {
                     return false;
@@ -648,8 +648,8 @@ public final class BffGes implements Bff {
     /**
      * Verifies if every semidirected path from y to x contains a node in naYXT.
      */
-    private boolean isSemiDirectedBlocked(final Node x, final Node y, final List<Node> naYXT,
-                                          final Graph graph, final Set<Node> marked) {
+    private boolean isSemiDirectedBlocked(Node x, Node y, List<Node> naYXT,
+                                          Graph graph, Set<Node> marked) {
         if (naYXT.contains(y)) {
             return true;
         }
@@ -658,7 +658,7 @@ public final class BffGes implements Bff {
             return false;
         }
 
-        for (final Node node1 : graph.getNodes()) {
+        for (Node node1 : graph.getNodes()) {
             if (node1 == y || marked.contains(node1)) {
                 continue;
             }
@@ -677,12 +677,12 @@ public final class BffGes implements Bff {
         return true;
     }
 
-    private static List<Set<Node>> powerSet(final List<Node> nodes) {
-        final List<Set<Node>> subsets = new ArrayList<>();
-        final int total = (int) Math.pow(2, nodes.size());
+    private static List<Set<Node>> powerSet(List<Node> nodes) {
+        List<Set<Node>> subsets = new ArrayList<>();
+        int total = (int) Math.pow(2, nodes.size());
         for (int i = 0; i < total; i++) {
-            final Set<Node> newSet = new HashSet<>();
-            final String selection = Integer.toBinaryString(i);
+            Set<Node> newSet = new HashSet<>();
+            String selection = Integer.toBinaryString(i);
             for (int j = selection.length() - 1; j >= 0; j--) {
                 if (selection.charAt(j) == '1') {
                     newSet.add(nodes.get(selection.length() - j - 1));
@@ -698,7 +698,7 @@ public final class BffGes implements Bff {
      * Completes a CPDAG that was modified by an insertion/deletion operator Based on the algorithm described on
      * Appendix C of (Chickering, 2002).
      */
-    private void rebuildCPDAG(final Graph graph) {
+    private void rebuildCPDAG(Graph graph) {
         SearchGraphUtils.basicCPDAG(graph);
         addRequiredEdges(graph);
         pdagWithBk(graph, getKnowledge());
@@ -712,16 +712,16 @@ public final class BffGes implements Bff {
      * UAI paper. Notice it is the same implemented in PcSearch. </p> *IMPORTANT!* *It assumes all colliders are
      * oriented, as well as arrows dictated by time order.*
      */
-    private void pdagWithBk(final Graph graph, final IKnowledge knowledge) {
-        final MeekRules rules = new MeekRules();
+    private void pdagWithBk(Graph graph, IKnowledge knowledge) {
+        MeekRules rules = new MeekRules();
 //        rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         rules.setKnowledge(knowledge);
         rules.orientImplied(graph);
     }
 
-    private void addRequiredEdges(final Graph graph) {
+    private void addRequiredEdges(Graph graph) {
         // Add required edges.
-        final List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = 0; j < nodes.size(); j++) {
@@ -736,7 +736,7 @@ public final class BffGes implements Bff {
         }
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -744,11 +744,11 @@ public final class BffGes implements Bff {
         return this.alpha;
     }
 
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
-    public void setBeamWidth(final int beamWidth) {
+    public void setBeamWidth(int beamWidth) {
 //        if (beamWidth < 1) throw new IllegalArgumentException();
         // Do nothing. We don't care about beam width.
     }
@@ -770,7 +770,7 @@ public final class BffGes implements Bff {
         //        private double aic;
         private int dof;
 
-        public Score(final Scorer scorer) {
+        public Score(Scorer scorer) {
             this.scorer = scorer;
             this.pValue = scorer.getPValue();
             this.fml = scorer.getFml();

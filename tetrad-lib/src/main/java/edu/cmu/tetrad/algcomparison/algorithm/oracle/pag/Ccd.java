@@ -26,24 +26,24 @@ public class Ccd implements Algorithm {
     static final long serialVersionUID = 23L;
     private final IndependenceWrapper test;
 
-    public Ccd(final IndependenceWrapper test) {
+    public Ccd(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
+            edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
                     this.test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
 
             return search.search();
         } else {
-            final Ccd algorithm = new Ccd(this.test);
+            Ccd algorithm = new Ccd(this.test);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -69,7 +69,7 @@ public class Ccd implements Algorithm {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
@@ -85,7 +85,7 @@ public class Ccd implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = this.test.getParameters();
+        List<String> parameters = this.test.getParameters();
         parameters.add(Params.DEPTH);
         parameters.add(Params.APPLY_R1);
 

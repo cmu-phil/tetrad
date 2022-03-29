@@ -50,15 +50,15 @@ public class CSVtoMatrix {
      * @param sizeofOutputs
      * @return [X, Y]
      */
-    public static Matrix[] load(final String filename, final int sizeofInputs, final int sizeofOutputs) {
+    public static Matrix[] load(String filename, int sizeofInputs, int sizeofOutputs) {
 
-        final ArrayList<double[]> inputsList = new ArrayList<>();
-        final ArrayList<double[]> outputsList = new ArrayList<>();
+        ArrayList<double[]> inputsList = new ArrayList<>();
+        ArrayList<double[]> outputsList = new ArrayList<>();
         BufferedReader br = null;
 
         try {
             br = new BufferedReader(new FileReader(filename));
-        } catch (final FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.out.println("error: file " + filename + " not found.");
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -73,7 +73,7 @@ public class CSVtoMatrix {
 
             try {
                 readLine = br.readLine();
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 System.out.println("error: reading from " + filename + ".");
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -82,9 +82,9 @@ public class CSVtoMatrix {
                 eof = false;
 
                 try {
-                    final double[] in = new double[sizeofInputs];
-                    final double[] out = new double[sizeofOutputs];
-                    final StringTokenizer st = new StringTokenizer(readLine, ", ");
+                    double[] in = new double[sizeofInputs];
+                    double[] out = new double[sizeofOutputs];
+                    StringTokenizer st = new StringTokenizer(readLine, ", ");
 
                     // parse inputs
                     int index = 0;
@@ -105,7 +105,7 @@ public class CSVtoMatrix {
 
                     inputsList.add(in);
                     outputsList.add(out);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     System.out.println(e + "\nerror: this line in the logfile does not agree with the configuration provided... it will be skipped");
                     datasize--;
                 }
@@ -113,8 +113,8 @@ public class CSVtoMatrix {
             datasize++;
         } while (!eof);
 
-        final double[][] inmat = new double[inputsList.size()][sizeofInputs];
-        final double[][] outmat = new double[inputsList.size()][sizeofOutputs];
+        double[][] inmat = new double[inputsList.size()][sizeofInputs];
+        double[][] outmat = new double[inputsList.size()][sizeofOutputs];
         inputsList.toArray(inmat);
         outputsList.toArray(outmat);
 
@@ -126,10 +126,10 @@ public class CSVtoMatrix {
      *
      * @param args
      */
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
 
 
-        final Matrix[] data = CSVtoMatrix.load("../machinelearning/src/machinelearning/gaussianprocess/armdata.csv", 6, 1);
+        Matrix[] data = CSVtoMatrix.load("../machinelearning/src/machinelearning/gaussianprocess/armdata.csv", 6, 1);
 
 
     }

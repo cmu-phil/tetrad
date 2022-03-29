@@ -37,25 +37,25 @@ public class DagSepsets implements SepsetProducer {
     private final EdgeListGraph dag;
     private boolean verbose;
 
-    public DagSepsets(final Graph dag) {
+    public DagSepsets(Graph dag) {
         this.dag = new EdgeListGraph(dag);
     }
 
     @Override
-    public List<Node> getSepset(final Node a, final Node b) {
+    public List<Node> getSepset(Node a, Node b) {
         return this.dag.getSepset(a, b);
     }
 
     @Override
-    public boolean isCollider(final Node i, final Node j, final Node k) {
-        final List<Node> sepset = this.dag.getSepset(i, k);
+    public boolean isCollider(Node i, Node j, Node k) {
+        List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
 
     @Override
-    public boolean isNoncollider(final Node i, final Node j, final Node k) {
+    public boolean isNoncollider(Node i, Node j, Node k) {
 //        return true;
-        final List<Node> sepset = this.dag.getSepset(i, k);
+        List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && sepset.contains(j);
     }
 
@@ -70,7 +70,7 @@ public class DagSepsets implements SepsetProducer {
     }
 
     @Override
-    public boolean isIndependent(final Node a, final Node b, final List<Node> c) {
+    public boolean isIndependent(Node a, Node b, List<Node> c) {
         return this.dag.isDSeparatedFrom(a, b, c);
     }
 
@@ -84,7 +84,7 @@ public class DagSepsets implements SepsetProducer {
     }
 
     @Override
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 

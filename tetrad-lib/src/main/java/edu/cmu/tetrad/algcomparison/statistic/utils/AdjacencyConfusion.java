@@ -20,23 +20,23 @@ public class AdjacencyConfusion {
     private int adjFn;
     private final int adjTn;
 
-    public AdjacencyConfusion(final Graph truth, final Graph est) {
+    public AdjacencyConfusion(Graph truth, Graph est) {
         this.truth = truth;
         this.est = est;
         this.adjTp = 0;
         this.adjFp = 0;
         this.adjFn = 0;
 
-        final Set<Edge> allUnoriented = new HashSet<>();
-        for (final Edge edge : this.truth.getEdges()) {
+        Set<Edge> allUnoriented = new HashSet<>();
+        for (Edge edge : this.truth.getEdges()) {
             allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
         }
 
-        for (final Edge edge : this.est.getEdges()) {
+        for (Edge edge : this.est.getEdges()) {
             allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
         }
 
-        for (final Edge edge : allUnoriented) {
+        for (Edge edge : allUnoriented) {
             if (this.est.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
                     !this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.adjFp++;
@@ -53,7 +53,7 @@ public class AdjacencyConfusion {
             }
         }
 
-        final int allEdges = this.truth.getNumNodes() * (this.truth.getNumNodes() - 1) / 2;
+        int allEdges = this.truth.getNumNodes() * (this.truth.getNumNodes() - 1) / 2;
 
         this.adjTn = allEdges - this.adjFn;
     }

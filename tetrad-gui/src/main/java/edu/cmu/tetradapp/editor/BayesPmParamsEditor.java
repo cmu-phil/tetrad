@@ -56,7 +56,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     public BayesPmParamsEditor() {
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -64,7 +64,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         // Do nothing.
     }
 
@@ -74,7 +74,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
             try {
                 getParams().set("lowerBoundNumVals", value);
                 return value;
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 return oldValue;
             }
         });
@@ -84,7 +84,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
             try {
                 getParams().set("upperBoundNumVals", value);
                 return value;
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 return oldValue;
             }
         });
@@ -92,30 +92,30 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         // construct the workbench.
         setLayout(new BorderLayout());
 
-        final JRadioButton trinary =
+        JRadioButton trinary =
                 new JRadioButton("<html>" + "3-valued:</html>");
 
-        final JRadioButton range =
+        JRadioButton range =
                 new JRadioButton("<html>" + "Range:</html>");
-        final ButtonGroup group = new ButtonGroup();
+        ButtonGroup group = new ButtonGroup();
         group.add(trinary);
         group.add(range);
 
         // continue workbench construction.
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Categories for variables should be:"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(trinary);
         b3.add(Box.createHorizontalGlue());
         b1.add(b3);
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(Box.createHorizontalStrut(25));
         b4.add(new JLabel("<html>" +
                 "All variables will initially have 3 categories, '0', '1' and '2', " +
@@ -125,12 +125,12 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(b4);
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b5 = Box.createHorizontalBox();
+        Box b5 = Box.createHorizontalBox();
         b5.add(range);
         b5.add(Box.createHorizontalGlue());
         b1.add(b5);
 
-        final Box b6 = Box.createHorizontalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(Box.createHorizontalStrut(25));
         b6.add(new JLabel("<html>" +
                 "Each variable will be automatically be assigned a number of categories" +
@@ -139,14 +139,14 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(b6);
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalStrut(25));
         b7.add(new JLabel("Least number of categories for each variable:  "));
         b7.add(Box.createHorizontalGlue());
         b7.add(this.lowerBoundField);
         b1.add(b7);
 
-        final Box b8 = Box.createHorizontalBox();
+        Box b8 = Box.createHorizontalBox();
         b8.add(Box.createHorizontalStrut(25));
         b8.add(new JLabel(
                 "Greatest number of categories for each variable:  "));

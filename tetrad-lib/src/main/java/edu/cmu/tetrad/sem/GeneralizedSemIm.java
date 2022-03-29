@@ -81,44 +81,44 @@ public class GeneralizedSemIm implements IM, Simulator {
      *
      * @param pm the GeneralizedSemPm. Includes all of the equations and distributions of the model.
      */
-    public GeneralizedSemIm(final GeneralizedSemPm pm) {
+    public GeneralizedSemIm(GeneralizedSemPm pm) {
         this.pm = new GeneralizedSemPm(pm);
 
         this.parameterValues = new HashMap<>();
 
-        final Set<String> parameters = pm.getParameters();
+        Set<String> parameters = pm.getParameters();
 
-        for (final String parameter : parameters) {
-            final Expression expression = pm.getParameterExpression(parameter);
+        for (String parameter : parameters) {
+            Expression expression = pm.getParameterExpression(parameter);
 
-            final Context context = new Context() {
-                public Double getValue(final String var) {
+            Context context = new Context() {
+                public Double getValue(String var) {
                     return GeneralizedSemIm.this.parameterValues.get(var);
                 }
             };
 
-            final double initialValue = expression.evaluate(context);
+            double initialValue = expression.evaluate(context);
             this.parameterValues.put(parameter, initialValue);
         }
     }
 
-    public GeneralizedSemIm(final GeneralizedSemPm pm, final SemIm semIm) {
+    public GeneralizedSemIm(GeneralizedSemPm pm, SemIm semIm) {
         this(pm);
-        final SemPm semPm = semIm.getSemPm();
+        SemPm semPm = semIm.getSemPm();
 
-        final Set<String> parameters = pm.getParameters();
+        Set<String> parameters = pm.getParameters();
 
         // If there are any missing freeParameters, just ignore the sem IM.
-        for (final String parameter : parameters) {
-            final Parameter paramObject = semPm.getParameter(parameter);
+        for (String parameter : parameters) {
+            Parameter paramObject = semPm.getParameter(parameter);
 
             if (paramObject == null) {
                 return;
             }
         }
 
-        for (final String parameter : parameters) {
-            final Parameter paramObject = semPm.getParameter(parameter);
+        for (String parameter : parameters) {
+            Parameter paramObject = semPm.getParameter(parameter);
 
             if (paramObject == null) {
                 throw new IllegalArgumentException("Parameter missing from Gaussian SEM IM: " + parameter);
@@ -152,7 +152,7 @@ public class GeneralizedSemIm implements IM, Simulator {
      * @param parameter The parameter whose values is to be set.
      * @param value     The double value that <code>param</code> is to be set to.
      */
-    public void setParameterValue(final String parameter, final double value) {
+    public void setParameterValue(String parameter, double value) {
         if (parameter == null) {
             throw new NullPointerException("Parameter not specified.");
         }
@@ -168,7 +168,7 @@ public class GeneralizedSemIm implements IM, Simulator {
      * @param parameter The parameter whose value is to be retrieved.
      * @return The retrieved value.
      */
-    public double getParameterValue(final String parameter) {
+    public double getParameterValue(String parameter) {
         if (parameter == null) {
             throw new NullPointerException("Parameter not specified.");
         }
@@ -183,21 +183,21 @@ public class GeneralizedSemIm implements IM, Simulator {
     /**
      * @return the user's String formula with numbers substituted for freeParameters, where substitutions exist.
      */
-    public String getNodeSubstitutedString(final Node node) {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        final String expressionString = this.pm.getNodeExpressionString(node);
+    public String getNodeSubstitutedString(Node node) {
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        String expressionString = this.pm.getNodeExpressionString(node);
 
         if (expressionString == null) return null;
 
-        final ExpressionLexer lexer = new ExpressionLexer(expressionString);
-        final StringBuilder buf = new StringBuilder();
+        ExpressionLexer lexer = new ExpressionLexer(expressionString);
+        StringBuilder buf = new StringBuilder();
         Token token;
 
         while ((token = lexer.nextTokenIncludingWhitespace()) != Token.EOF) {
-            final String tokenString = lexer.getTokenString();
+            String tokenString = lexer.getTokenString();
 
             if (token == Token.PARAMETER) {
-                final Double value = this.parameterValues.get(tokenString);
+                Double value = this.parameterValues.get(tokenString);
 
                 if (value != null) {
                     buf.append(nf.format(value));
@@ -217,7 +217,7 @@ public class GeneralizedSemIm implements IM, Simulator {
      *                          substituted for the stored values where applicable.
      * @return the expression string with values substituted for freeParameters.
      */
-    public String getNodeSubstitutedString(final Node node, final Map<String, Double> substitutedValues) {
+    public String getNodeSubstitutedString(Node node, Map<String, Double> substitutedValues) {
         if (node == null) {
             throw new NullPointerException();
         }
@@ -226,15 +226,15 @@ public class GeneralizedSemIm implements IM, Simulator {
             throw new NullPointerException();
         }
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        final String expressionString = this.pm.getNodeExpressionString(node);
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        String expressionString = this.pm.getNodeExpressionString(node);
 
-        final ExpressionLexer lexer = new ExpressionLexer(expressionString);
-        final StringBuilder buf = new StringBuilder();
+        ExpressionLexer lexer = new ExpressionLexer(expressionString);
+        StringBuilder buf = new StringBuilder();
         Token token;
 
         while ((token = lexer.nextTokenIncludingWhitespace()) != Token.EOF) {
-            final String tokenString = lexer.getTokenString();
+            String tokenString = lexer.getTokenString();
 
             if (token == Token.PARAMETER) {
                 Double value = substitutedValues.get(tokenString);
@@ -259,37 +259,37 @@ public class GeneralizedSemIm implements IM, Simulator {
      * @return a String representation of the IM, in this case a lsit of freeParameters and their values.
      */
     public String toString() {
-        final List<String> parameters = new ArrayList<>(this.pm.getParameters());
+        List<String> parameters = new ArrayList<>(this.pm.getParameters());
         Collections.sort(parameters);
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        final StringBuilder buf = new StringBuilder();
-        final GeneralizedSemPm pm = getGeneralizedSemPm();
+        StringBuilder buf = new StringBuilder();
+        GeneralizedSemPm pm = getGeneralizedSemPm();
         buf.append("\nVariable nodes:\n");
 
-        for (final Node node : pm.getVariableNodes()) {
-            final String string = getNodeSubstitutedString(node);
+        for (Node node : pm.getVariableNodes()) {
+            String string = getNodeSubstitutedString(node);
             buf.append("\n").append(node).append(" = ").append(string);
         }
 
         buf.append("\n\nErrors:\n");
 
-        for (final Node node : pm.getErrorNodes()) {
-            final String string = getNodeSubstitutedString(node);
+        for (Node node : pm.getErrorNodes()) {
+            String string = getNodeSubstitutedString(node);
             buf.append("\n").append(node).append(" ~ ").append(string);
         }
 
         buf.append("\n\nParameter values:\n");
-        for (final String parameter : parameters) {
-            final double value = getParameterValue(parameter);
+        for (String parameter : parameters) {
+            double value = getParameterValue(parameter);
             buf.append("\n").append(parameter).append(" = ").append(nf.format(value));
         }
 
         return buf.toString();
     }
 
-    public synchronized DataSet simulateData(final int sampleSize, final boolean latentDataSaved) {
-        final long seed = RandomUtil.getInstance().getSeed();
+    public synchronized DataSet simulateData(int sampleSize, boolean latentDataSaved) {
+        long seed = RandomUtil.getInstance().getSeed();
         TetradLogger.getInstance().log("info", "Seed = " + seed);
 
         if (this.pm.getGraph().isTimeLagModel()) {
@@ -304,57 +304,57 @@ public class GeneralizedSemIm implements IM, Simulator {
     }
 
     @Override
-    public DataSet simulateData(final int sampleSize, final long seed, final boolean latentDataSaved) {
-        final RandomUtil random = RandomUtil.getInstance();
-        final long _seed = random.getSeed();
+    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+        RandomUtil random = RandomUtil.getInstance();
+        long _seed = random.getSeed();
         random.setSeed(seed);
-        final DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
         random.revertSeed(_seed);
         return dataSet;
     }
 
-    private DataSet simulateTimeSeries(final int sampleSize) {
-        final SemGraph semGraph = new SemGraph(getSemPm().getGraph());
+    private DataSet simulateTimeSeries(int sampleSize) {
+        SemGraph semGraph = new SemGraph(getSemPm().getGraph());
         semGraph.setShowErrorTerms(true);
-        final TimeLagGraph timeLagGraph = getSemPm().getGraph().getTimeLagGraph();
+        TimeLagGraph timeLagGraph = getSemPm().getGraph().getTimeLagGraph();
 
-        final List<Node> variables = new ArrayList<>();
+        List<Node> variables = new ArrayList<>();
 
-        for (final Node node : timeLagGraph.getLag0Nodes()) {
+        for (Node node : timeLagGraph.getLag0Nodes()) {
             if (node.getNodeType() == NodeType.ERROR) continue;
             variables.add(new ContinuousVariable(timeLagGraph.getNodeId(node).getName()));
         }
 
-        final List<Node> lag0Nodes = timeLagGraph.getLag0Nodes();
+        List<Node> lag0Nodes = timeLagGraph.getLag0Nodes();
 
-        for (final Node node : new ArrayList<>(lag0Nodes)) {
+        for (Node node : new ArrayList<>(lag0Nodes)) {
             if (node.getNodeType() == NodeType.ERROR) {
                 lag0Nodes.remove(node);
             }
         }
 
-        final DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
+        DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
 
-        final Map<Node, Integer> nodeIndices = new HashMap<>();
+        Map<Node, Integer> nodeIndices = new HashMap<>();
 
         for (int i = 0; i < lag0Nodes.size(); i++) {
             nodeIndices.put(lag0Nodes.get(i), i);
         }
 
-        final Graph contemporaneousDag = timeLagGraph.subgraph(timeLagGraph.getLag0Nodes());
+        Graph contemporaneousDag = timeLagGraph.subgraph(timeLagGraph.getLag0Nodes());
 
-        final List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
+        List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
 
-        for (final Node node : new ArrayList<>(tierOrdering)) {
+        for (Node node : new ArrayList<>(tierOrdering)) {
             if (node.getNodeType() == NodeType.ERROR) {
                 tierOrdering.remove(node);
             }
         }
 
-        final Map<String, Double> variableValues = new HashMap<>();
+        Map<String, Double> variableValues = new HashMap<>();
 
-        final Context context = new Context() {
-            public Double getValue(final String term) {
+        Context context = new Context() {
+            public Double getValue(String term) {
                 Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
@@ -373,33 +373,33 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         ROW:
         for (int currentStep = 0; currentStep < sampleSize; currentStep++) {
-            for (final Node node : tierOrdering) {
-                final Expression expression = this.pm.getNodeExpression(node);
-                final double value = expression.evaluate(context);
+            for (Node node : tierOrdering) {
+                Expression expression = this.pm.getNodeExpression(node);
+                double value = expression.evaluate(context);
 
                 if (isSimulatePositiveDataOnly() && value < 0) {
                     currentStep--;
                     continue ROW;
                 }
 
-                final int col = nodeIndices.get(node);
+                int col = nodeIndices.get(node);
                 fullData.setDouble(currentStep, col, value);
                 variableValues.put(node.getName(), value);
             }
 
-            for (final Node node : lag0Nodes) {
-                final TimeLagGraph.NodeId _id = timeLagGraph.getNodeId(node);
+            for (Node node : lag0Nodes) {
+                TimeLagGraph.NodeId _id = timeLagGraph.getNodeId(node);
 
                 for (int lag = 1; lag <= timeLagGraph.getMaxLag(); lag++) {
-                    final Node _node = timeLagGraph.getNode(_id.getName(), lag);
-                    final int col = lag0Nodes.indexOf(node);
+                    Node _node = timeLagGraph.getNode(_id.getName(), lag);
+                    int col = lag0Nodes.indexOf(node);
 
                     if (_node == null) {
                         continue;
                     }
 
                     if (currentStep - lag + 1 >= 0) {
-                        final double _value = fullData.getDouble((currentStep - lag + 1), col);
+                        double _value = fullData.getDouble((currentStep - lag + 1), col);
                         variableValues.put(_node.getName(), _value);
                     }
                 }
@@ -417,14 +417,14 @@ public class GeneralizedSemIm implements IM, Simulator {
      * @param sampleSize > 0.
      * @return the simulated data set.
      */
-    public DataSet simulateDataRecursive(final int sampleSize, final boolean latentDataSaved) {
-        final List<Node> variables = this.pm.getNodes();
-        final Map<String, Double> std = new HashMap<>();
+    public DataSet simulateDataRecursive(int sampleSize, boolean latentDataSaved) {
+        List<Node> variables = this.pm.getNodes();
+        Map<String, Double> std = new HashMap<>();
 
-        final Map<String, Double> variableValues = new HashMap<>();
+        Map<String, Double> variableValues = new HashMap<>();
 
-        final Context context = new Context() {
-            public Double getValue(final String term) {
+        Context context = new Context() {
+            public Double getValue(String term) {
                 Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
@@ -441,12 +441,12 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
         };
 
-        final List<Node> continuousVariables = new LinkedList<>();
-        final List<Node> nonErrorVariables = this.pm.getVariableNodes();
+        List<Node> continuousVariables = new LinkedList<>();
+        List<Node> nonErrorVariables = this.pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
-        for (final Node node : nonErrorVariables) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : nonErrorVariables) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
 
             if (var.getNodeType() != NodeType.ERROR) {
@@ -454,28 +454,28 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
         }
 
-        final DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
         // Create some index arrays to hopefully speed up the simulation.
-        final SemGraph graph = this.pm.getGraph();
-        final List<Node> tierOrdering = graph.getFullTierOrdering();
+        SemGraph graph = this.pm.getGraph();
+        List<Node> tierOrdering = graph.getFullTierOrdering();
 
-        final int[] tierIndices = new int[variables.size()];
+        int[] tierIndices = new int[variables.size()];
 
         for (int i = 0; i < tierIndices.length; i++) {
             tierIndices[i] = nonErrorVariables.indexOf(tierOrdering.get(i));
         }
 
-        final int[][] _parents = new int[variables.size()][];
+        int[][] _parents = new int[variables.size()][];
 
         for (int i = 0; i < variables.size(); i++) {
-            final Node node = variables.get(i);
-            final List<Node> parents = graph.getParents(node);
+            Node node = variables.get(i);
+            List<Node> parents = graph.getParents(node);
 
             _parents[i] = new int[parents.size()];
 
             for (int j = 0; j < parents.size(); j++) {
-                final Node _parent = parents.get(j);
+                Node _parent = parents.get(j);
                 _parents[i][j] = variables.indexOf(_parent);
             }
         }
@@ -483,9 +483,9 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         // Do the simulation.
         for (int tier = 0; tier < variables.size(); tier++) {
-            final double[] v = new double[sampleSize];
+            double[] v = new double[sampleSize];
 
-            final int col = tierIndices[tier];
+            int col = tierIndices[tier];
 
             if (col == -1) {
                 continue;
@@ -494,9 +494,9 @@ public class GeneralizedSemIm implements IM, Simulator {
             for (int row = 0; row < sampleSize; row++) {
                 variableValues.clear();
 
-                final Node node = tierOrdering.get(tier);
-                final Expression expression = this.pm.getNodeExpression(node);
-                final double value = expression.evaluate(context);
+                Node node = tierOrdering.get(tier);
+                Expression expression = this.pm.getNodeExpression(node);
+                double value = expression.evaluate(context);
                 v[row] = value;
                 variableValues.put(node.getName(), value);
 
@@ -530,15 +530,15 @@ public class GeneralizedSemIm implements IM, Simulator {
     }
 
 
-    public DataSet simulateDataMinimizeSurface(final int sampleSize, final boolean latentDataSaved) {
-        final Map<String, Double> variableValues = new HashMap<>();
+    public DataSet simulateDataMinimizeSurface(int sampleSize, boolean latentDataSaved) {
+        Map<String, Double> variableValues = new HashMap<>();
 
-        final List<Node> continuousVariables = new LinkedList<>();
-        final List<Node> variableNodes = this.pm.getVariableNodes();
+        List<Node> continuousVariables = new LinkedList<>();
+        List<Node> variableNodes = this.pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
-        for (final Node node : variableNodes) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : variableNodes) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
 
             if (var.getNodeType() != NodeType.ERROR) {
@@ -546,10 +546,10 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
         }
 
-        final DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
-        final Context context = new Context() {
-            public Double getValue(final String term) {
+        Context context = new Context() {
+            public Double getValue(String term) {
                 Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
@@ -566,21 +566,21 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
         };
 
-        final double[] _metric = new double[1];
+        double[] _metric = new double[1];
 
-        final MultivariateFunction function = new MultivariateFunction() {
+        MultivariateFunction function = new MultivariateFunction() {
             double metric;
 
-            public double value(final double[] doubles) {
+            public double value(double[] doubles) {
                 for (int i = 0; i < variableNodes.size(); i++) {
                     variableValues.put(variableNodes.get(i).getName(), doubles[i]);
                 }
 
-                final double[] image = new double[doubles.length];
+                double[] image = new double[doubles.length];
 
                 for (int i = 0; i < variableNodes.size(); i++) {
-                    final Node node = variableNodes.get(i);
-                    final Expression expression = GeneralizedSemIm.this.pm.getNodeExpression(node);
+                    Node node = variableNodes.get(i);
+                    Expression expression = GeneralizedSemIm.this.pm.getNodeExpression(node);
                     image[i] = expression.evaluate(context);
 
                     if (Double.isNaN(image[i])) {
@@ -591,7 +591,7 @@ public class GeneralizedSemIm implements IM, Simulator {
                 this.metric = 0.0;
 
                 for (int i = 0; i < variableNodes.size(); i++) {
-                    final double diff = doubles[i] - image[i];
+                    double diff = doubles[i] - image[i];
                     this.metric += diff * diff;
                 }
 
@@ -605,22 +605,22 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
         };
 
-        final MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+        MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
 
         // Do the simulation.
         ROW:
         for (int row = 0; row < sampleSize; row++) {
 
             // Take random draws from error distributions.
-            for (final Node variable : variableNodes) {
-                final Node error = this.pm.getErrorNode(variable);
+            for (Node variable : variableNodes) {
+                Node error = this.pm.getErrorNode(variable);
 
                 if (error == null) {
                     throw new NullPointerException();
                 }
 
-                final Expression expression = this.pm.getNodeExpression(error);
-                final double value = expression.evaluate(context);
+                Expression expression = this.pm.getNodeExpression(error);
+                double value = expression.evaluate(context);
 
                 if (Double.isNaN(value)) {
                     throw new IllegalArgumentException("Undefined value for expression: " + expression);
@@ -629,7 +629,7 @@ public class GeneralizedSemIm implements IM, Simulator {
                 variableValues.put(error.getName(), value);
             }
 
-            for (final Node variable : variableNodes) {
+            for (Node variable : variableNodes) {
                 variableValues.put(variable.getName(), 0.0);// RandomUtil.getInstance().nextUniform(-5, 5));
             }
 
@@ -641,7 +641,7 @@ public class GeneralizedSemIm implements IM, Simulator {
                     values[i] = variableValues.get(variableNodes.get(i).getName());
                 }
 
-                final PointValuePair pair = search.optimize(
+                PointValuePair pair = search.optimize(
                         new InitialGuess(values),
                         new ObjectiveFunction(function),
                         GoalType.MINIMIZE,
@@ -676,15 +676,15 @@ public class GeneralizedSemIm implements IM, Simulator {
         }
     }
 
-    public DataSet simulateDataAvoidInfinity(final int sampleSize, final boolean latentDataSaved) {
-        final Map<String, Double> variableValues = new HashMap<>();
+    public DataSet simulateDataAvoidInfinity(int sampleSize, boolean latentDataSaved) {
+        Map<String, Double> variableValues = new HashMap<>();
 
-        final List<Node> continuousVariables = new LinkedList<>();
-        final List<Node> variableNodes = this.pm.getVariableNodes();
+        List<Node> continuousVariables = new LinkedList<>();
+        List<Node> variableNodes = this.pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
-        for (final Node node : variableNodes) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : variableNodes) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
 
             if (var.getNodeType() != NodeType.ERROR) {
@@ -692,10 +692,10 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
         }
 
-        final DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
-        final Context context = new Context() {
-            public Double getValue(final String term) {
+        Context context = new Context() {
+            public Double getValue(String term) {
                 Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
@@ -719,15 +719,15 @@ public class GeneralizedSemIm implements IM, Simulator {
         for (int row = 0; row < sampleSize; row++) {
 
             // Take random draws from error distributions.
-            for (final Node variable : variableNodes) {
-                final Node error = this.pm.getErrorNode(variable);
+            for (Node variable : variableNodes) {
+                Node error = this.pm.getErrorNode(variable);
 
                 if (error == null) {
                     throw new NullPointerException();
                 }
 
-                final Expression expression = this.pm.getNodeExpression(error);
-                final double value;
+                Expression expression = this.pm.getNodeExpression(error);
+                double value;
 
                 value = expression.evaluate(context);
 
@@ -739,11 +739,11 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
 
             // Set the variable nodes to zero.
-            for (final Node variable : variableNodes) {
-                final Node error = this.pm.getErrorNode(variable);
+            for (Node variable : variableNodes) {
+                Node error = this.pm.getErrorNode(variable);
 
-                final Expression expression = this.pm.getNodeExpression(error);
-                final double value = expression.evaluate(context);
+                Expression expression = this.pm.getNodeExpression(error);
+                double value = expression.evaluate(context);
 
                 if (Double.isNaN(value)) {
                     throw new IllegalArgumentException("Undefined value for expression: " + expression);
@@ -759,19 +759,19 @@ public class GeneralizedSemIm implements IM, Simulator {
             int count = -1;
 
             while (++count < 5000) {
-                final double[] values = new double[variableNodes.size()];
+                double[] values = new double[variableNodes.size()];
 
                 for (int i = 0; i < values.length; i++) {
-                    final Node node = variableNodes.get(i);
-                    final Expression expression = this.pm.getNodeExpression(node);
-                    final double value = expression.evaluate(context);
+                    Node node = variableNodes.get(i);
+                    Expression expression = this.pm.getNodeExpression(node);
+                    double value = expression.evaluate(context);
                     values[i] = value;
                 }
 
                 allInRange = true;
 
                 for (int i = 0; i < values.length; i++) {
-                    final Node node = variableNodes.get(i);
+                    Node node = variableNodes.get(i);
 
                     // If any of the variables hasn't converged or if any of the variable values has gone
                     // outside of the bound (-1e6, 1e6), judge nonconvergence and pick another random starting point.
@@ -850,7 +850,7 @@ public class GeneralizedSemIm implements IM, Simulator {
      * @param sampleSize The number of samples to be drawn. Must be a positive
      *                   integer.
      */
-    public synchronized DataSet simulateDataFisher(final int sampleSize) {
+    public synchronized DataSet simulateDataFisher(int sampleSize) {
         return simulateDataFisher(sampleSize, 50, 1e-10);
     }
 
@@ -867,8 +867,8 @@ public class GeneralizedSemIm implements IM, Simulator {
      *                              Must be positive integer.
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
      */
-    public synchronized DataSet simulateDataFisher(final int sampleSize, final int intervalBetweenShocks,
-                                                   final double epsilon) {
+    public synchronized DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
+                                                   double epsilon) {
         boolean printedUndefined = false;
         boolean printedInfinite = false;
 
@@ -877,10 +877,10 @@ public class GeneralizedSemIm implements IM, Simulator {
         if (epsilon <= 0.0) throw new IllegalArgumentException(
                 "Epsilon must be > 0: " + epsilon);
 
-        final Map<String, Double> variableValues = new HashMap<>();
+        Map<String, Double> variableValues = new HashMap<>();
 
-        final Context context = new Context() {
-            public Double getValue(final String term) {
+        Context context = new Context() {
+            public Double getValue(String term) {
                 Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
@@ -897,25 +897,25 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
         };
 
-        final List<Node> variableNodes = this.pm.getVariableNodes();
+        List<Node> variableNodes = this.pm.getVariableNodes();
 
         double[] t1 = new double[variableNodes.size()];
         double[] t2 = new double[variableNodes.size()];
-        final double[] shocks = new double[variableNodes.size()];
-        final double[][] all = new double[variableNodes.size()][sampleSize];
+        double[] shocks = new double[variableNodes.size()];
+        double[][] all = new double[variableNodes.size()][sampleSize];
 
         // Do the simulation.
 
         for (int row = 0; row < sampleSize; row++) {
             for (int j = 0; j < t1.length; j++) {
-                final Node error = this.pm.getErrorNode(variableNodes.get(j));
+                Node error = this.pm.getErrorNode(variableNodes.get(j));
 
                 if (error == null) {
                     throw new NullPointerException();
                 }
 
-                final Expression expression = this.pm.getNodeExpression(error);
-                final double value = expression.evaluate(context);
+                Expression expression = this.pm.getNodeExpression(error);
+                double value = expression.evaluate(context);
 
                 if (Double.isNaN(value)) {
                     throw new IllegalArgumentException("Undefined value for expression: " + expression);
@@ -928,8 +928,8 @@ public class GeneralizedSemIm implements IM, Simulator {
 
             for (int i = 0; i < intervalBetweenShocks; i++) {
                 for (int j = 0; j < t1.length; j++) {
-                    final Node node = variableNodes.get(j);
-                    final Expression expression = this.pm.getNodeExpression(node);
+                    Node node = variableNodes.get(j);
+                    Expression expression = this.pm.getNodeExpression(node);
                     t2[j] = expression.evaluate(context);
 
                     if (Double.isNaN(t2[j])) {
@@ -958,7 +958,7 @@ public class GeneralizedSemIm implements IM, Simulator {
                     }
                 }
 
-                final double[] t3 = t1;
+                double[] t3 = t1;
                 t1 = t2;
                 t2 = t3;
 
@@ -972,26 +972,26 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
         }
 
-        final List<Node> continuousVars = new ArrayList<>();
+        List<Node> continuousVars = new ArrayList<>();
 
-        for (final Node node : variableNodes) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : variableNodes) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
             continuousVars.add(var);
         }
 
-        final BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
         return DataUtils.restrictToMeasured(boxDataSet);
     }
 
 
-    public Vector simulateOneRecord(final Vector e) {
-        final Map<String, Double> variableValues = new HashMap<>();
+    public Vector simulateOneRecord(Vector e) {
+        Map<String, Double> variableValues = new HashMap<>();
 
-        final List<Node> variableNodes = this.pm.getVariableNodes();
+        List<Node> variableNodes = this.pm.getVariableNodes();
 
-        final Context context = new Context() {
-            public Double getValue(final String term) {
+        Context context = new Context() {
+            public Double getValue(String term) {
                 Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
@@ -1010,7 +1010,7 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         // Take random draws from error distributions.
         for (int i = 0; i < variableNodes.size(); i++) {
-            final Node error = this.pm.getErrorNode(variableNodes.get(i));
+            Node error = this.pm.getErrorNode(variableNodes.get(i));
 
             if (error == null) {
                 throw new NullPointerException();
@@ -1020,7 +1020,7 @@ public class GeneralizedSemIm implements IM, Simulator {
         }
 
         // Set the variable nodes to zero.
-        for (final Node variable : variableNodes) {
+        for (Node variable : variableNodes) {
             variableValues.put(variable.getName(), 0.0);// RandomUtil.getInstance().nextUniform(-5, 5));
         }
 
@@ -1031,19 +1031,19 @@ public class GeneralizedSemIm implements IM, Simulator {
         int count = -1;
 
         while (++count < 10000) {
-            final double[] values = new double[variableNodes.size()];
+            double[] values = new double[variableNodes.size()];
 
             for (int i = 0; i < values.length; i++) {
-                final Node node = variableNodes.get(i);
-                final Expression expression = this.pm.getNodeExpression(node);
-                final double value = expression.evaluate(context);
+                Node node = variableNodes.get(i);
+                Expression expression = this.pm.getNodeExpression(node);
+                double value = expression.evaluate(context);
                 values[i] = value;
             }
 
             boolean allInRange = true;
 
             for (int i = 0; i < values.length; i++) {
-                final Node node = variableNodes.get(i);
+                Node node = variableNodes.get(i);
 
                 if (!(Math.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
                     allInRange = false;
@@ -1061,25 +1061,25 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
         }
 
-        final Vector _case = new Vector(e.size());
+        Vector _case = new Vector(e.size());
 
         for (int i = 0; i < variableNodes.size(); i++) {
-            final double value = variableValues.get(variableNodes.get(i).getName());
+            double value = variableValues.get(variableNodes.get(i).getName());
             _case.set(i, value);
         }
 
         return _case;
     }
 
-    public DataSet simulateDataNSteps(final int sampleSize, final boolean latentDataSaved) {
-        final Map<String, Double> variableValues = new HashMap<>();
+    public DataSet simulateDataNSteps(int sampleSize, boolean latentDataSaved) {
+        Map<String, Double> variableValues = new HashMap<>();
 
-        final List<Node> continuousVariables = new LinkedList<>();
-        final List<Node> variableNodes = this.pm.getVariableNodes();
+        List<Node> continuousVariables = new LinkedList<>();
+        List<Node> variableNodes = this.pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
-        for (final Node node : variableNodes) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : variableNodes) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
 
             if (var.getNodeType() != NodeType.ERROR) {
@@ -1087,10 +1087,10 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
         }
 
-        final DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
-        final Context context = new Context() {
-            public Double getValue(final String term) {
+        Context context = new Context() {
+            public Double getValue(String term) {
                 Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
@@ -1112,15 +1112,15 @@ public class GeneralizedSemIm implements IM, Simulator {
         for (int row = 0; row < sampleSize; row++) {
 
             // Take random draws from error distributions.
-            for (final Node variable : variableNodes) {
-                final Node error = this.pm.getErrorNode(variable);
+            for (Node variable : variableNodes) {
+                Node error = this.pm.getErrorNode(variable);
 
                 if (error == null) {
                     throw new NullPointerException();
                 }
 
-                final Expression expression = this.pm.getNodeExpression(error);
-                final double value = expression.evaluate(context);
+                Expression expression = this.pm.getNodeExpression(error);
+                double value = expression.evaluate(context);
 
                 if (Double.isNaN(value)) {
                     throw new IllegalArgumentException("Undefined value for expression: " + expression);
@@ -1130,7 +1130,7 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
 
             // Set the variable nodes to zero.
-            for (final Node variable : variableNodes) {
+            for (Node variable : variableNodes) {
                 variableValues.put(variable.getName(), 0.0);// RandomUtil.getInstance().nextUniform(-5, 5));
             }
 
@@ -1138,12 +1138,12 @@ public class GeneralizedSemIm implements IM, Simulator {
             // convergence within delta.
 
             for (int m = 0; m < 1; m++) {
-                final double[] values = new double[variableNodes.size()];
+                double[] values = new double[variableNodes.size()];
 
                 for (int i = 0; i < values.length; i++) {
-                    final Node node = variableNodes.get(i);
-                    final Expression expression = this.pm.getNodeExpression(node);
-                    final double value = expression.evaluate(context);
+                    Node node = variableNodes.get(i);
+                    Expression expression = this.pm.getNodeExpression(node);
+                    double value = expression.evaluate(context);
 
                     if (Double.isNaN(value)) {
                         throw new IllegalArgumentException("Undefined value for expression: " + expression);
@@ -1152,7 +1152,7 @@ public class GeneralizedSemIm implements IM, Simulator {
                     values[i] = value;
                 }
 
-                for (final double value : values) {
+                for (double value : values) {
                     if (value == Double.POSITIVE_INFINITY || value == Double.NEGATIVE_INFINITY) {
                         row--;
                         continue ROW;
@@ -1166,7 +1166,7 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
 
             for (int i = 0; i < variableNodes.size(); i++) {
-                final double value = variableValues.get(variableNodes.get(i).getName());
+                double value = variableValues.get(variableNodes.get(i).getName());
                 fullDataSet.setDouble(row, i, value);
             }
         }
@@ -1184,8 +1184,8 @@ public class GeneralizedSemIm implements IM, Simulator {
         return new GeneralizedSemPm(this.pm);
     }
 
-    public void setSubstitutions(final Map<String, Double> parameterValues) {
-        for (final String parameter : parameterValues.keySet()) {
+    public void setSubstitutions(Map<String, Double> parameterValues) {
+        for (String parameter : parameterValues.keySet()) {
             if (this.parameterValues.containsKey(parameter)) {
                 this.parameterValues.put(parameter, parameterValues.get(parameter));
             }
@@ -1196,7 +1196,7 @@ public class GeneralizedSemIm implements IM, Simulator {
         return this.simulatePositiveDataOnly;
     }
 
-    public void setSimulatePositiveDataOnly(final boolean simulatedPositiveDataOnly) {
+    public void setSimulatePositiveDataOnly(boolean simulatedPositiveDataOnly) {
         this.simulatePositiveDataOnly = simulatedPositiveDataOnly;
     }
 }

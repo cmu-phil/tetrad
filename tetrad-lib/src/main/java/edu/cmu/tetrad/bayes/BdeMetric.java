@@ -44,7 +44,7 @@ final class BdeMetric {
 
     private int[][][] observedCounts;
 
-    public BdeMetric(final DataSet dataSet, final BayesPm bayesPm) {
+    public BdeMetric(DataSet dataSet, BayesPm bayesPm) {
 
         this.dataSet = dataSet;
         this.bayesPm = bayesPm;
@@ -57,24 +57,24 @@ final class BdeMetric {
     public double score() {
 
 
-        final double[][][] priorProbs;
-        final double[][] priorProbsRowSum;
+        double[][][] priorProbs;
+        double[][] priorProbsRowSum;
 
-        final Graph graph = this.bayesPm.getDag();
+        Graph graph = this.bayesPm.getDag();
 
-        final int n = graph.getNumNodes();
+        int n = graph.getNumNodes();
 
         this.observedCounts = new int[n][][];
         priorProbs = new double[n][][];
 
-        final int[][] observedCountsRowSum = new int[n][];
+        int[][] observedCountsRowSum = new int[n][];
         priorProbsRowSum = new double[n][];
 
         this.bayesIm = new MlBayesIm(this.bayesPm);
 
         for (int i = 0; i < n; i++) {
             //int numRows = bayesImMixed.getNumRows(i);
-            final int numRows = this.bayesIm.getNumRows(i);
+            int numRows = this.bayesIm.getNumRows(i);
             this.observedCounts[i] = new int[numRows][];
             priorProbs[i] = new double[numRows][];
 
@@ -88,7 +88,7 @@ final class BdeMetric {
                 priorProbsRowSum[i][j] = 0;
 
                 //int numCols = bayesImMixed.getNumColumns(i);
-                final int numCols = this.bayesIm.getNumColumns(i);
+                int numCols = this.bayesIm.getNumColumns(i);
                 this.observedCounts[i][j] = new int[numCols];
                 priorProbs[i][j] = new double[numCols];
             }
@@ -120,28 +120,28 @@ final class BdeMetric {
 
         for (int i = 0; i < n; i++) {
 
-            final int qi = this.bayesIm.getNumRows(i);
+            int qi = this.bayesIm.getNumRows(i);
             double prodj = 1.0;
             for (int j = 0; j < qi; j++) {
 
                 try {
-                    final double numerator = Gamma.gamma(priorProbsRowSum[i][j]);
-                    final double denom = Gamma.gamma(priorProbsRowSum[i][j] +
+                    double numerator = Gamma.gamma(priorProbsRowSum[i][j]);
+                    double denom = Gamma.gamma(priorProbsRowSum[i][j] +
                             observedCountsRowSum[i][j]);
                     //System.out.println("num = " + numerator + " denom = " + denom);
                     prodj *= (numerator / denom);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
-                final int ri = this.bayesIm.getNumColumns(i);
+                int ri = this.bayesIm.getNumColumns(i);
                 double prodk = 1.0;
                 for (int k = 0; k < ri; k++) {
                     try {
                         prodk *= Gamma.gamma(
                                 priorProbs[i][j][k] + this.observedCounts[i][j][k]) /
                                 Gamma.gamma(priorProbs[i][j][k]);
-                    } catch (final Exception e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -156,13 +156,13 @@ final class BdeMetric {
 
     private void computeObservedCounts() {
         for (int j = 0; j < this.dataSet.getNumColumns(); j++) {
-            final DiscreteVariable var = (DiscreteVariable) this.dataSet.getVariables()
+            DiscreteVariable var = (DiscreteVariable) this.dataSet.getVariables()
                     .get(j);
-            final String varName = var.getName();
-            final Node varNode = this.bayesPm.getDag().getNode(varName);
-            final int varIndex = this.bayesIm.getNodeIndex(varNode);
+            String varName = var.getName();
+            Node varNode = this.bayesPm.getDag().getNode(varName);
+            int varIndex = this.bayesIm.getNodeIndex(varNode);
 
-            final int[] parentVarIndices = this.bayesIm.getParents(varIndex);
+            int[] parentVarIndices = this.bayesIm.getParents(varIndex);
             //System.out.println("graph = " + graph);
 
             //for(int col = 0; col < ar.getNumSplits(); col++)
@@ -181,10 +181,10 @@ final class BdeMetric {
                     this.observedCounts[j][0][this.dataSet.getInt(i, j)] += 1.0;
                 }
             } else {    //For variables with parents:
-                final int numRows = this.bayesIm.getNumRows(varIndex);
+                int numRows = this.bayesIm.getNumRows(varIndex);
 
                 for (int row = 0; row < numRows; row++) {
-                    final int[] parValues = this.bayesIm.getParentValues(varIndex, row);
+                    int[] parValues = this.bayesIm.getParentValues(varIndex, row);
 
                     for (int col = 0; col < var.getNumCategories(); col++) {
                         this.observedCounts[varIndex][row][col] = 0;

@@ -86,17 +86,17 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     /**
      * Constructs the eidtor.
      */
-    public MarkovBlanketSearchEditor(final MarkovBlanketSearchRunner algorithmRunner) {
+    public MarkovBlanketSearchEditor(MarkovBlanketSearchRunner algorithmRunner) {
         if (algorithmRunner == null) {
             throw new NullPointerException();
         }
         this.algorithmRunner = algorithmRunner;
-        final Parameters params = algorithmRunner.getParams();
-        final List<String> vars = algorithmRunner.getSource().getVariableNames();
+        Parameters params = algorithmRunner.getParams();
+        List<String> vars = algorithmRunner.getSource().getVariableNames();
         if (params.getString("targetName", null) == null && !vars.isEmpty()) {
             params.set("targetName", vars.get(0));
         }
-        final DataSet data;
+        DataSet data;
         if (algorithmRunner.getDataModelForMarkovBlanket() == null) {
             data = algorithmRunner.getSource();
         } else {
@@ -133,15 +133,15 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
      * cannot count on a result graph having been found when the method
      */
     private void execute() {
-        final Window owner = (Window) getTopLevelAncestor();
+        Window owner = (Window) getTopLevelAncestor();
 
-        final WatchedProcess process = new WatchedProcess(owner) {
+        WatchedProcess process = new WatchedProcess(owner) {
             public void watch() {
                 getExecuteButton().setEnabled(false);
                 setErrorMessage(null);
 
                 if (!MarkovBlanketSearchEditor.this.knowledgeMessageShown) {
-                    final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+                    IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(),
@@ -153,11 +153,11 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
                 try {
                     getAlgorithmRunner().execute();
-                } catch (final Exception e) {
-                    final CharArrayWriter writer1 = new CharArrayWriter();
-                    final PrintWriter writer2 = new PrintWriter(writer1);
+                } catch (Exception e) {
+                    CharArrayWriter writer1 = new CharArrayWriter();
+                    PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
-                    final String message = writer1.toString();
+                    String message = writer1.toString();
                     writer2.close();
 
                     e.printStackTrace(System.out);
@@ -181,7 +181,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
 
                 setLabel();
-                final DataSet modelForMarkovBlanket = MarkovBlanketSearchEditor.this.algorithmRunner.getDataModelForMarkovBlanket();
+                DataSet modelForMarkovBlanket = MarkovBlanketSearchEditor.this.algorithmRunner.getDataModelForMarkovBlanket();
                 if (modelForMarkovBlanket != null) {
                     MarkovBlanketSearchEditor.this.table.setDataSet(modelForMarkovBlanket);
                 }
@@ -202,7 +202,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 //                     getWorkbench().repaint();
 
 
-        final Thread watcher = new Thread() {
+        Thread watcher = new Thread() {
             public void run() {
                 while (true) {
                     try {
@@ -212,7 +212,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
                             getExecuteButton().setEnabled(true);
                             return;
                         }
-                    } catch (final InterruptedException e) {
+                    } catch (InterruptedException e) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
@@ -252,25 +252,25 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
      * Creates param editor and tool bar.
      */
     private JPanel createToolbar() {
-        final JPanel toolbar = new JPanel();
+        JPanel toolbar = new JPanel();
         getExecuteButton().setText("Execute*");
         getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 execute();
             }
         });
 
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
         b1.add(getParamEditor());
         b1.add(Box.createVerticalStrut(10));
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
         b2.add(getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b3 = Box.createHorizontalBox();
-        final JLabel label = new JLabel("<html>" + "*Please note that some" +
+        Box b3 = Box.createHorizontalBox();
+        JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -287,26 +287,26 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
      * Creates the param editor.
      */
     private JComponent getParamEditor() {
-        final Box box = Box.createVerticalBox();
-        final JComboBox comboBox = new JComboBox(this.algorithmRunner.getSource().getVariableNames().toArray());
+        Box box = Box.createVerticalBox();
+        JComboBox comboBox = new JComboBox(this.algorithmRunner.getSource().getVariableNames().toArray());
         comboBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(final ItemEvent e) {
-                final String s = (String) e.getItem();
+            public void itemStateChanged(ItemEvent e) {
+                String s = (String) e.getItem();
                 if (s != null) {
                     MarkovBlanketSearchEditor.this.algorithmRunner.getParams().set("targetName", s);
                 }
             }
         });
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 4,
+        DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 4,
                 NumberFormatUtil.getInstance().getNumberFormat());
         alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
                     getParams().set("alpha", 0.001);
                     Preferences.userRoot().putDouble("alpha",
                             getParams().getDouble("alpha", 0.001));
                     return value;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -322,8 +322,8 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     }
 
 
-    private Box createLabeledComponent(final String label, final JComponent comp) {
-        final Box box = Box.createHorizontalBox();
+    private Box createLabeledComponent(String label, JComponent comp) {
+        Box box = Box.createHorizontalBox();
         box.add(new JLabel(label));
         box.add(Box.createHorizontalStrut(5));
         box.add(comp);
@@ -354,19 +354,19 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
      * Creates the menubar for the search editor.
      */
     private JMenuBar menuBar() {
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
         file.add(new JMenuItem(new SaveDataAction(this)));
         file.add(new GraphFileMenu(this, getWorkbench()));
 //        file.add(new SaveGraph(this, "Save Graph..."));
 
-        final JMenu edit = new JMenu("Edit");
-        final JMenuItem copyCells = new JMenuItem("Copy Cells");
+        JMenu edit = new JMenu("Edit");
+        JMenuItem copyCells = new JMenuItem("Copy Cells");
         copyCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
         copyCells.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Action copyAction = TransferHandler.getCopyAction();
-                final ActionEvent actionEvent = new ActionEvent(MarkovBlanketSearchEditor.this.table,
+            public void actionPerformed(ActionEvent e) {
+                Action copyAction = TransferHandler.getCopyAction();
+                ActionEvent actionEvent = new ActionEvent(MarkovBlanketSearchEditor.this.table,
                         ActionEvent.ACTION_PERFORMED, "copy");
                 copyAction.actionPerformed(actionEvent);
             }
@@ -377,7 +377,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         menuBar.add(file);
         menuBar.add(edit);
 
-        final JMenu independence = new JMenu("Independence");
+        JMenu independence = new JMenu("Independence");
         if (this.algorithmRunner.getSource().isContinuous()) {
             IndTestMenuItems.addContinuousTestMenuItems(independence, this);
             menuBar.add(independence);
@@ -396,7 +396,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     /**
      * Builds the ind test menu items for condinuous data and adds them to the given menu.
      */
-    private void addContinuousTestMenuItems(final JMenu test) {
+    private void addContinuousTestMenuItems(JMenu test) {
         IndTestType testType = (IndTestType) getParams().get("indTestType", IndTestType.FISHER_Z);
         if (testType != IndTestType.FISHER_Z &&
                 testType != IndTestType.FISHER_ZD &&
@@ -406,26 +406,26 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
             getParams().set("indTestType", IndTestType.FISHER_Z);
         }
 
-        final ButtonGroup group = new ButtonGroup();
-        final JCheckBoxMenuItem fishersZ = new JCheckBoxMenuItem("Fisher's Z");
+        ButtonGroup group = new ButtonGroup();
+        JCheckBoxMenuItem fishersZ = new JCheckBoxMenuItem("Fisher's Z");
         group.add(fishersZ);
         test.add(fishersZ);
 
-        final JCheckBoxMenuItem fishersZD =
+        JCheckBoxMenuItem fishersZD =
                 new JCheckBoxMenuItem("Fisher's Z - Generalized Inverse");
         group.add(fishersZD);
         test.add(fishersZD);
 
-        final JCheckBoxMenuItem fishersZBootstrap =
+        JCheckBoxMenuItem fishersZBootstrap =
                 new JCheckBoxMenuItem("Fisher's Z - Bootstrap");
         group.add(fishersZBootstrap);
         test.add(fishersZBootstrap);
 
-        final JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
+        JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
         group.add(tTest);
         test.add(tTest);
 
-        final JCheckBoxMenuItem linRegrTest =
+        JCheckBoxMenuItem linRegrTest =
                 new JCheckBoxMenuItem("Linear Regression Test");
         group.add(linRegrTest);
         test.add(linRegrTest);
@@ -444,7 +444,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         }
 
         fishersZ.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 getParams().set("indTestType", IndTestType.FISHER_Z);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Fisher's Z.");
@@ -452,7 +452,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         });
 
         fishersZD.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 getParams().set("indTestType", IndTestType.FISHER_ZD);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Fisher's Z - Generalized Inverse.");
@@ -460,7 +460,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         });
 
         fishersZBootstrap.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 getParams().set("indTestType", IndTestType.FISHER_Z_BOOTSTRAP);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Fisher's Z - Bootstrap.");
@@ -476,7 +476,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 //        });
 
         linRegrTest.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 getParams().set("indTestType", IndTestType.LINEAR_REGRESSION);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using linear regression test.");
@@ -488,19 +488,19 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     /**
      * Builds the ind test menu items for discrete data and adds them to the given menu.
      */
-    private void addDiscreteTestMenuItems(final JMenu test) {
-        final IndTestType testType = (IndTestType) getParams().get("indTestType", IndTestType.FISHER_Z);
+    private void addDiscreteTestMenuItems(JMenu test) {
+        IndTestType testType = (IndTestType) getParams().get("indTestType", IndTestType.FISHER_Z);
         if (testType != IndTestType.CHI_SQUARE &&
                 testType != IndTestType.G_SQUARE) {
             getParams().set("indTestType", testType);
         }
 
-        final ButtonGroup group = new ButtonGroup();
-        final JCheckBoxMenuItem chiSquare = new JCheckBoxMenuItem("Chi Square");
+        ButtonGroup group = new ButtonGroup();
+        JCheckBoxMenuItem chiSquare = new JCheckBoxMenuItem("Chi Square");
         group.add(chiSquare);
         test.add(chiSquare);
 
-        final JCheckBoxMenuItem gSquare = new JCheckBoxMenuItem("G Square");
+        JCheckBoxMenuItem gSquare = new JCheckBoxMenuItem("G Square");
         group.add(gSquare);
         test.add(gSquare);
 
@@ -511,7 +511,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         }
 
         chiSquare.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 getParams().set("indTestType", IndTestType.CHI_SQUARE);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Chi Square.");
@@ -519,7 +519,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         });
 
         gSquare.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 getParams().set("indTestType", IndTestType.G_SQUARE);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using G square.");
@@ -536,7 +536,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         throw new UnsupportedOperationException("Cannot return selected components.");
     }
 
-    public void pasteSubsession(final List sessionElements, final Point upperLeft) {
+    public void pasteSubsession(List sessionElements, Point upperLeft) {
         throw new UnsupportedOperationException("Cannot paste subsessions on a search editor.");
     }
 
@@ -547,7 +547,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     /**
      * Not supported.
      */
-    public void setGraph(final Graph g) {
+    public void setGraph(Graph g) {
         throw new UnsupportedOperationException("Cannot set the graph on a search editor.");
     }
 
@@ -562,7 +562,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         return new EdgeListGraph();
     }
 
-    public void setTestType(final IndTestType testType) {
+    public void setTestType(IndTestType testType) {
         getParams().set("indTestType", testType);
     }
 

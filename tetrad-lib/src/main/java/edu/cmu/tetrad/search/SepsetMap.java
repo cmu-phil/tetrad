@@ -59,7 +59,7 @@ public final class SepsetMap implements TetradSerializable {
     public SepsetMap() {
     }
 
-    public SepsetMap(final SepsetMap map) {
+    public SepsetMap(SepsetMap map) {
         this.sepsets = new HashMap<>(map.sepsets);
         this.pValues = new HashMap<>(map.pValues);
     }
@@ -76,8 +76,8 @@ public final class SepsetMap implements TetradSerializable {
     /**
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
      */
-    public void set(final Node x, final Node y, final List<Node> z) {
-        final Set<Node> pair = new HashSet<>(2);
+    public void set(Node x, Node y, List<Node> z) {
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
         if (z == null) {
@@ -97,8 +97,8 @@ public final class SepsetMap implements TetradSerializable {
     /**
      * Retrieves the sepset previously set for {a, b}, or null if no such set was previously set.
      */
-    public List<Node> get(final Node a, final Node b) {
-        final Set<Node> pair = new HashSet<>(2);
+    public List<Node> get(Node a, Node b) {
+        Set<Node> pair = new HashSet<>(2);
         pair.add(a);
         pair.add(b);
 
@@ -113,15 +113,15 @@ public final class SepsetMap implements TetradSerializable {
         return this.sepsets.get(pair);
     }
 
-    public double getPValue(final Node x, final Node y) {
-        final Set<Node> pair = new HashSet<>(2);
+    public double getPValue(Node x, Node y) {
+        Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
 
         return this.pValues.get(pair);
     }
 
-    public void set(final Node x, final LinkedHashSet<Node> z) {
+    public void set(Node x, LinkedHashSet<Node> z) {
         if (this.parents.get(x) != null) {
             this.parents.get(x).addAll(z);
         } else {
@@ -129,11 +129,11 @@ public final class SepsetMap implements TetradSerializable {
         }
     }
 
-    public HashSet<Node> get(final Node x) {
+    public HashSet<Node> get(Node x) {
         return this.parents.get(x) == null ? new HashSet<Node>() : this.parents.get(x);
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
@@ -142,7 +142,7 @@ public final class SepsetMap implements TetradSerializable {
             return false;
         }
 
-        final SepsetMap _sepset = (SepsetMap) o;
+        SepsetMap _sepset = (SepsetMap) o;
         return this.sepsets.equals(_sepset.sepsets);
     }
 
@@ -154,7 +154,7 @@ public final class SepsetMap implements TetradSerializable {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -187,7 +187,7 @@ public final class SepsetMap implements TetradSerializable {
 //    public void setReturnEmptyIfNotSet(boolean returnEmptyIfNotSet) {
 //        this.returnEmptyIfNotSet = returnEmptyIfNotSet;
 //    }
-    public void addAll(final SepsetMap newSepsets) {
+    public void addAll(SepsetMap newSepsets) {
         this.sepsets.putAll(newSepsets.sepsets);
     }
 }

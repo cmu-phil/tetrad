@@ -148,7 +148,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      *                 which lagged factors are causal factors of it in the
      *                 updating.
      */
-    public BooleanGlassFunction(final LagGraph lagGraph) {
+    public BooleanGlassFunction(LagGraph lagGraph) {
         this(lagGraph, Double.NEGATIVE_INFINITY, 0.0);
     }
 
@@ -165,8 +165,8 @@ public class BooleanGlassFunction implements UpdateFunction {
      *                        "true" or "false" for purposes of looking up
      *                        output values in the Boolean function table.
      */
-    public BooleanGlassFunction(final LagGraph lagGraph, final double lowerBound,
-                                final double basalExpression) {
+    public BooleanGlassFunction(LagGraph lagGraph, double lowerBound,
+                                double basalExpression) {
 
         if (lagGraph == null) {
             throw new NullPointerException("Graph must not be null.");
@@ -205,13 +205,13 @@ public class BooleanGlassFunction implements UpdateFunction {
                 // The parents of the boolean function have to be
                 // IndexedParent's and cannot include the factor
                 // itself one time step back.
-                final List parentList = new ArrayList();
+                List parentList = new ArrayList();
                 for (int j = 0; j < this.connectivity.getNumParents(i); j++) {
-                    final IndexedParent parent = this.connectivity.getParent(i, j);
+                    IndexedParent parent = this.connectivity.getParent(i, j);
                     parentList.add(parent);
                 }
 
-                final IndexedParent[] parents = (IndexedParent[]) parentList.toArray(
+                IndexedParent[] parents = (IndexedParent[]) parentList.toArray(
                         new IndexedParent[0]);
                 this.booleanFunctions[i] = new BooleanFunction(parents);
 
@@ -257,25 +257,25 @@ public class BooleanGlassFunction implements UpdateFunction {
     /**
      * Sets the basalExpression.
      */
-    public void setBasalExpression(final double basalExpression) {
+    public void setBasalExpression(double basalExpression) {
         this.basalExpression = basalExpression;
     }
 
     /**
      * Returns the value of the function.
      */
-    public double getValue(final int factor, final double[][] history) {
+    public double getValue(int factor, double[][] history) {
         // 2/15/02: Cutuff expression levels at the low
         // end. Note that the old simulation can be recovered
         // by initializing using a Normal(0, 1) and setting
         // the lower bound to Double.NEGATIVE_INFINITY. J
         // Ramsey 2/22/02
-        final double v0 = history[1][factor];
-        final double v1 = -this.decayRate * (v0 - this.basalExpression);
-        final double v2 = this.booleanInfluenceRate * getFValue(factor, history);
-        final double v3 = this.errorDistributions[factor].nextRandom();
-        final double v4 = v0 + v1 + v2 + v3;
-        final double v5 = Math.max(this.lowerBound, v4);
+        double v0 = history[1][factor];
+        double v1 = -this.decayRate * (v0 - this.basalExpression);
+        double v2 = this.booleanInfluenceRate * getFValue(factor, history);
+        double v3 = this.errorDistributions[factor].nextRandom();
+        double v4 = v0 + v1 + v2 + v3;
+        double v5 = Math.max(this.lowerBound, v4);
 
         return v5;
     }
@@ -295,7 +295,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      * @return 1.0 or -1.0 depending on whether the boolean value
      * looked up in the table is <pre>true</pre> or <pre>false</pre>.
      */
-    public double getFValue(final int factor, final double[][] history) {
+    public double getFValue(int factor, double[][] history) {
         if (this.booleanFunctions[factor] == null) {
             return 0.0;
         } else {
@@ -303,17 +303,17 @@ public class BooleanGlassFunction implements UpdateFunction {
             // Lookup the boolean function value for that combination
             // of boolean parent values in the boolean function for
             // that factor.
-            final BooleanFunction booleanFunction = this.booleanFunctions[factor];
-            final Object[] parents = booleanFunction.getParents();
-            final boolean[] parentValues = new boolean[parents.length];
+            BooleanFunction booleanFunction = this.booleanFunctions[factor];
+            Object[] parents = booleanFunction.getParents();
+            boolean[] parentValues = new boolean[parents.length];
             for (int i = 0; i < parentValues.length; i++) {
-                final IndexedParent parent = (IndexedParent) parents[i];
-                final double histVal = history[parent.getLag()][parent.getIndex()];
+                IndexedParent parent = (IndexedParent) parents[i];
+                double histVal = history[parent.getLag()][parent.getIndex()];
                 parentValues[i] = histVal > this.basalExpression;
             }
 
-            final int row = booleanFunction.getRow(parentValues);
-            final boolean functionValue = booleanFunction.getValue(row);
+            int row = booleanFunction.getRow(parentValues);
+            boolean functionValue = booleanFunction.getValue(row);
 
             // We return 1.0 and -1.0 because we use a basalExpression of
             // 0.0. (If the basalExpression were 1/2, we would use 1 and 0.)
@@ -324,7 +324,7 @@ public class BooleanGlassFunction implements UpdateFunction {
     /**
      * Returns the boolean function for the given factor.
      */
-    public BooleanFunction getSubFunction(final int factor) {
+    public BooleanFunction getSubFunction(int factor) {
         return this.booleanFunctions[factor];
     }
 
@@ -348,7 +348,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      * Sets the rate at which expression levels tend to return to equilibrium.
      * Must be > 0.0 and <= 1.0.
      */
-    public void setDecayRate(final double decayRate) {
+    public void setDecayRate(double decayRate) {
 
         if ((decayRate <= 0.0) || (decayRate > 1.0)) {
             throw new IllegalArgumentException(
@@ -363,7 +363,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      * Sets the rate at which the output of the Glass function influences the
      * change in expression level of a gene. Must be > 0.0.
      */
-    public void setBooleanInfluenceRate(final double booleanInfluenceRate) {
+    public void setBooleanInfluenceRate(double booleanInfluenceRate) {
 
         if (booleanInfluenceRate <= 0.0) {
             throw new IllegalArgumentException(
@@ -377,7 +377,7 @@ public class BooleanGlassFunction implements UpdateFunction {
     /**
      * Sets the lower bound for expression levels.
      */
-    public void setLowerBound(final double lowerBound) {
+    public void setLowerBound(double lowerBound) {
         this.lowerBound = lowerBound;
     }
 
@@ -387,7 +387,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      * @param factor
      * @param distribution
      */
-    public void setErrorDistribution(final int factor, final Distribution distribution) {
+    public void setErrorDistribution(int factor, Distribution distribution) {
 
         if (distribution != null) {
             this.errorDistributions[factor] = distribution;
@@ -402,7 +402,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      * @param factor the factor in question.
      * @return the error distribution for <code>factor</code>.
      */
-    public Distribution getErrorDistribution(final int factor) {
+    public Distribution getErrorDistribution(int factor) {
         return this.errorDistributions[factor];
     }
 
@@ -422,7 +422,7 @@ public class BooleanGlassFunction implements UpdateFunction {
         int maxLag = 0;
         for (int i = 0; i < this.connectivity.getNumFactors(); i++) {
             for (int j = 0; j < this.connectivity.getNumParents(i); j++) {
-                final IndexedParent parent = this.connectivity.getParent(i, j);
+                IndexedParent parent = this.connectivity.getParent(i, j);
                 if (parent.getLag() > maxLag) {
                     maxLag = parent.getLag();
                 }
@@ -444,7 +444,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

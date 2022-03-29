@@ -28,8 +28,8 @@ package edu.cmu.tetrad.data;
  * @author Joseph Ramsey
  */
 public final class MeanInterpolator implements DataFilter {
-    public DataSet filter(final DataSet dataSet) {
-        final DataSet newDataSet = dataSet.copy();
+    public DataSet filter(DataSet dataSet) {
+        DataSet newDataSet = dataSet.copy();
 
         for (int j = 0; j < newDataSet.getNumColumns(); j++) {
             if (newDataSet.getVariable(j) instanceof ContinuousVariable) {
@@ -43,7 +43,7 @@ public final class MeanInterpolator implements DataFilter {
                     }
                 }
 
-                final double mean = sum / count;
+                double mean = sum / count;
 
                 for (int i = 0; i < newDataSet.getNumRows(); i++) {
                     if (Double.isNaN(newDataSet.getDouble(i, j))) {

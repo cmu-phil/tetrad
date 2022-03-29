@@ -38,14 +38,14 @@ public class SplashScreen {
     private static SplashWindow WINDOW;
     private static JFrame frame;
 
-    public static void show(final Frame parent, final String title, final int max) {
+    public static void show(Frame parent, String title, int max) {
         SplashScreen.hide();
         SplashScreen.COUNTER = 0;
         SplashScreen.MAX = max;
         SplashScreen.WINDOW = new SplashWindow(parent, null, title);
     }
 
-    public static void show(final String title, final int max) {
+    public static void show(String title, int max) {
         SplashScreen.hide();
         SplashScreen.COUNTER = 0;
         SplashScreen.MAX = max;
@@ -75,7 +75,7 @@ public class SplashScreen {
         SplashScreen.increment(1);
     }
 
-    private static void increment(final int by) {
+    private static void increment(int by) {
         SplashScreen.COUNTER += by;
         if (SplashScreen.COUNTER > SplashScreen.MAX) {
             SplashScreen.COUNTER = SplashScreen.MAX;
@@ -92,34 +92,34 @@ public class SplashScreen {
         final Image splashIm;
         final JProgressBar bar;
 
-        SplashWindow(final Frame parent, final Image image, final String title) {
+        SplashWindow(Frame parent, Image image, String title) {
             super(parent);
             this.splashIm = image;
             //setSize(200, 100);
 
-            final JPanel panel = new JPanel();
+            JPanel panel = new JPanel();
             panel.setBackground(Color.white);
             panel.setBorder(BorderFactory.createLineBorder(Color.black));
             panel.setLayout(new BorderLayout());
             add(panel, BorderLayout.CENTER);
 
-            final Box b = Box.createVerticalBox();
+            Box b = Box.createVerticalBox();
             panel.add(b, BorderLayout.CENTER);
 
-            final Box b1 = Box.createHorizontalBox();
-            final JLabel label = new JLabel(title, SwingConstants.CENTER);
+            Box b1 = Box.createHorizontalBox();
+            JLabel label = new JLabel(title, SwingConstants.CENTER);
             label.setFont(label.getFont().deriveFont((float) 16));
             b1.add(Box.createHorizontalGlue());
             b1.add(label);
             b1.add(Box.createHorizontalGlue());
             b.add(b1);
 
-            final String text = LicenseUtils.copyright();
+            String text = LicenseUtils.copyright();
 
             // optionally check if we are running latest version
-            final String version = this.getClass().getPackage().getImplementationVersion();
+            String version = this.getClass().getPackage().getImplementationVersion();
 
-            final JTextArea textArea = new JTextArea(text);
+            JTextArea textArea = new JTextArea(text);
             textArea.setBorder(new EmptyBorder(5, 5, 5, 5));
             b.add(textArea);
 
@@ -131,8 +131,8 @@ public class SplashScreen {
             /* Center the WINDOW */
             pack();
 
-            final Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
-            final Rectangle bounds = getBounds();
+            Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
+            Rectangle bounds = getBounds();
             setLocation((screenDim.width - bounds.width) / 2,
                     (screenDim.height - bounds.height) / 2);
 
@@ -142,7 +142,7 @@ public class SplashScreen {
 
         // must move to panel
         @Override
-        public void paint(final Graphics g) {
+        public void paint(Graphics g) {
             super.paint(g);
             if (this.splashIm != null) {
                 g.drawImage(this.splashIm, 0, 0, this);

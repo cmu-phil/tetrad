@@ -41,13 +41,13 @@ public final class PagUtils {
      *
      * @return true if every vertex in gamma is in O.
      */
-    public static boolean graphInPagStep0(final Graph pag, final Graph dag) {
+    public static boolean graphInPagStep0(Graph pag, Graph dag) {
 
         //(1) Every vertex in gamma is in O (measured nodes in dag)
-        final List<Node> pagNodes = pag.getNodes();
+        List<Node> pagNodes = pag.getNodes();
 
         //If there is a node in pag that's not a measured node in dag return false.
-        for (final Node pagNode : pagNodes) {
+        for (Node pagNode : pagNodes) {
             if (dag.getNode(pagNode.getName()) == null) {
                 return false;
             }
@@ -60,27 +60,27 @@ public final class PagUtils {
         return true;
     }
 
-    public static boolean graphInPagStep1(final Graph pag, final Graph dag) {
+    public static boolean graphInPagStep1(Graph pag, Graph dag) {
         //If A and B are in O, there is an edge between A and B in gamma
         //iff for every W subset of O minus {A, B}, A and B are d-connected
         //given W in [every graph] in delta (dag).
-        final IndTestDSep test = new IndTestDSep(pag);
+        IndTestDSep test = new IndTestDSep(pag);
 
-        final List<Node> V = new ArrayList<>(dag.getNodes());
+        List<Node> V = new ArrayList<>(dag.getNodes());
 
-        for (final Edge edge : pag.getEdges()) {
-            final Node A = edge.getNode1();
-            final Node B = edge.getNode2();
+        for (Edge edge : pag.getEdges()) {
+            Node A = edge.getNode1();
+            Node B = edge.getNode2();
 
-            final List<Node> W = new ArrayList<>(V);
+            List<Node> W = new ArrayList<>(V);
             W.remove(A);
             W.remove(B);
 
-            final ChoiceGenerator gen = new ChoiceGenerator(W.size(), W.size());
+            ChoiceGenerator gen = new ChoiceGenerator(W.size(), W.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                final List<Node> S = GraphUtils.asList(choice, W);
+                List<Node> S = GraphUtils.asList(choice, W);
 
                 if (test.isDSeparated(A, B, S)) {
                     return false;
@@ -92,20 +92,20 @@ public final class PagUtils {
         return true;
     }
 
-    public static boolean graphInPagStep2(final Graph pag, final Graph dag) {
-        final Set<Edge> pagEdges = pag.getEdges();
+    public static boolean graphInPagStep2(Graph pag, Graph dag) {
+        Set<Edge> pagEdges = pag.getEdges();
 
-        for (final Edge edge : pagEdges) {
+        for (Edge edge : pagEdges) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
-                final Node A = edge.getNode1();
-                final Node B = edge.getNode2();
+                Node A = edge.getNode1();
+                Node B = edge.getNode2();
 
-                final Node Ad = dag.getNode(A.getName());
-                final Node Bd = dag.getNode(B.getName());
+                Node Ad = dag.getNode(A.getName());
+                Node Bd = dag.getNode(B.getName());
 
-                final List<Node> singletonB = new ArrayList<>();
+                List<Node> singletonB = new ArrayList<>();
                 singletonB.add(Bd);
-                final List<Node> ancestorsOfB = dag.getAncestors(singletonB);
+                List<Node> ancestorsOfB = dag.getAncestors(singletonB);
                 if (!ancestorsOfB.contains(Ad)) {
                     return false;
                 }
@@ -115,16 +115,16 @@ public final class PagUtils {
         return true;
     }
 
-    public static boolean graphInPagStep3(final Graph pag, final Graph dag) {
-        final Set<Edge> pagEdges = pag.getEdges();
+    public static boolean graphInPagStep3(Graph pag, Graph dag) {
+        Set<Edge> pagEdges = pag.getEdges();
 
-        for (final Edge edge : pagEdges) {
+        for (Edge edge : pagEdges) {
             if (edge.getEndpoint2() == Endpoint.ARROW) {
-                final Node A = edge.getNode1();
-                final Node B = edge.getNode2();
+                Node A = edge.getNode1();
+                Node B = edge.getNode2();
 
-                final Node Ad = dag.getNode(A.getName());
-                final Node Bd = dag.getNode(B.getName());
+                Node Ad = dag.getNode(A.getName());
+                Node Bd = dag.getNode(B.getName());
 
                 if (dag.isAncestorOf(Bd, Ad)) {
                     return false;
@@ -135,17 +135,17 @@ public final class PagUtils {
         return true;
     }
 
-    public static boolean graphInPagStep4(final Graph pag, final Graph dag) {
-        final Set<Triple> pagUnderLines = pag.getUnderLines();
+    public static boolean graphInPagStep4(Graph pag, Graph dag) {
+        Set<Triple> pagUnderLines = pag.getUnderLines();
 
-        for (final Triple underline : pagUnderLines) {
-            final Node A = underline.getX();
-            final Node B = underline.getY();
-            final Node C = underline.getZ();
+        for (Triple underline : pagUnderLines) {
+            Node A = underline.getX();
+            Node B = underline.getY();
+            Node C = underline.getZ();
 
-            final Node Ad = dag.getNode(A.getName());
-            final Node Bd = dag.getNode(B.getName());
-            final Node Cd = dag.getNode(C.getName());
+            Node Ad = dag.getNode(A.getName());
+            Node Bd = dag.getNode(B.getName());
+            Node Cd = dag.getNode(C.getName());
 
             if (!dag.isAncestorOf(Bd, Ad) && !dag.isAncestorOf(Bd, Cd)) {
                 return false;
@@ -155,21 +155,21 @@ public final class PagUtils {
         return true;
     }
 
-    public static boolean graphInPagStep5(final Graph pag, final Graph dag) {
-        for (final Triple triple : pag.getDottedUnderlines()) {
-            final Node A = triple.getX();
-            final Node B = triple.getY();
-            final Node C = triple.getZ();
+    public static boolean graphInPagStep5(Graph pag, Graph dag) {
+        for (Triple triple : pag.getDottedUnderlines()) {
+            Node A = triple.getX();
+            Node B = triple.getY();
+            Node C = triple.getZ();
 
-            final Node Ad = dag.getNode(A.getName());
-            final Node Bd = dag.getNode(B.getName());
-            final Node Cd = dag.getNode(C.getName());
+            Node Ad = dag.getNode(A.getName());
+            Node Bd = dag.getNode(B.getName());
+            Node Cd = dag.getNode(C.getName());
 
             if (pag.isParentOf(A, B) && pag.isParentOf(C, B)) {
-                final List<Node> commonChildrenAC = new ArrayList<>(dag.getChildren(Ad));
+                List<Node> commonChildrenAC = new ArrayList<>(dag.getChildren(Ad));
                 commonChildrenAC.retainAll(dag.getChildren(Cd));
 
-                for (final Node Dd : commonChildrenAC) {
+                for (Node Dd : commonChildrenAC) {
                     if (dag.isDescendentOf(Bd, Dd)) {
                         return false;
                     }

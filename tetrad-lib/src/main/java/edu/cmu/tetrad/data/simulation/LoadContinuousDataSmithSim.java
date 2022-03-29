@@ -32,43 +32,43 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
 
-    public LoadContinuousDataSmithSim(final String path) {
+    public LoadContinuousDataSmithSim(String path) {
         this.path = path;
-        final String structure = new File(path).getName();
+        String structure = new File(path).getName();
         this.parametersValues.set("structure", structure);
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
         if (!this.dataSets.isEmpty()) return;
 
         this.dataSets = new ArrayList<>();
 
-        final File dir = new File(this.path + "/data");
+        File dir = new File(this.path + "/data");
 
         if (dir.exists()) {
-            final File[] files = dir.listFiles();
+            File[] files = dir.listFiles();
 
-            for (final File file : files) {
+            for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
-                    final DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"',
+                    DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"',
                             "*", true, Delimiter.TAB);
                     this.dataSets.add(dataSet);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());
                 }
             }
         }
 
-        final File dir2 = new File(this.path + "/graph");
+        File dir2 = new File(this.path + "/graph");
 
         if (dir2.exists()) {
-            final File[] files = dir2.listFiles();
+            File[] files = dir2.listFiles();
 
-            for (final File file : files) {
+            for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
 
                 System.out.println("Loading graph from " + file.getAbsolutePath());
@@ -95,21 +95,21 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graph;
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
     public String getDescription() {
         try {
-            final StringBuilder b = new StringBuilder();
+            StringBuilder b = new StringBuilder();
             b.append("Load data sets and graphs from a directory.").append("\n\n");
             return b.toString();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -135,12 +135,12 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     }
 
 
-    public Graph readGraph(final File file) {
+    public Graph readGraph(File file) {
         try {
-            final DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
+            DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
-            final List<Node> variables = data.getVariables();
-            final Graph graph = new EdgeListGraph(variables);
+            List<Node> variables = data.getVariables();
+            Graph graph = new EdgeListGraph(variables);
 
             for (int i = 0; i < variables.size(); i++) {
                 for (int j = 0; j < variables.size(); j++) {
@@ -153,7 +153,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
             }
 
             return graph;
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

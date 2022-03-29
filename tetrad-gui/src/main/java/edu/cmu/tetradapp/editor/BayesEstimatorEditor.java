@@ -63,14 +63,14 @@ public class BayesEstimatorEditor extends JPanel {
     /**
      * Constructs a new instantiated model editor from a Bayes IM.
      */
-    public BayesEstimatorEditor(final BayesIm bayesIm, final DataSet dataSet) {
+    public BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet) {
         this(new BayesEstimatorWrapper(new DataWrapper(dataSet), new BayesImWrapper(bayesIm)));
     }
 
     /**
      * Constructs a new Bayes IM Editor from a Bayes estimator wrapper.
      */
-    public BayesEstimatorEditor(final BayesEstimatorWrapper bayesEstWrapper) {
+    public BayesEstimatorEditor(BayesEstimatorWrapper bayesEstWrapper) {
         this.wrapper = bayesEstWrapper;
 
         setLayout(new BorderLayout());
@@ -84,7 +84,7 @@ public class BayesEstimatorEditor extends JPanel {
         validate();
 
         if (this.wrapper.getNumModels() > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
+            JComboBox<Integer> comp = new JComboBox<>();
 
             for (int i = 0; i < this.wrapper.getNumModels(); i++) {
                 comp.addItem(i + 1);
@@ -92,7 +92,7 @@ public class BayesEstimatorEditor extends JPanel {
 
             comp.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     BayesEstimatorEditor.this.wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
                     resetBayesImEditor();
                     validate();
@@ -101,7 +101,7 @@ public class BayesEstimatorEditor extends JPanel {
 
             comp.setMaximumSize(comp.getPreferredSize());
 
-            final Box b = Box.createHorizontalBox();
+            Box b = Box.createHorizontalBox();
             b.add(new JLabel("Using model"));
             b.add(comp);
             b.add(new JLabel("from "));
@@ -115,8 +115,8 @@ public class BayesEstimatorEditor extends JPanel {
     /**
      * Sets the name of this editor.
      */
-    public void setName(final String name) {
-        final String oldName = getName();
+    public void setName(String name) {
+        String oldName = getName();
         super.setName(name);
         this.firePropertyChange("name", oldName, getName());
     }
@@ -129,54 +129,54 @@ public class BayesEstimatorEditor extends JPanel {
     }
 
     private void resetBayesImEditor() {
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
         // Rest of setup
-        final BayesIm bayesIm = this.wrapper.getEstimatedBayesIm();
-        final BayesPm bayesPm = bayesIm.getBayesPm();
-        final Graph graph = bayesPm.getDag();
+        BayesIm bayesIm = this.wrapper.getEstimatedBayesIm();
+        BayesPm bayesPm = bayesIm.getBayesPm();
+        Graph graph = bayesPm.getDag();
 
-        final GraphWorkbench workbench = new GraphWorkbench(graph);
+        GraphWorkbench workbench = new GraphWorkbench(graph);
         this.wizard = new BayesEstimatorEditorWizard(bayesIm, workbench);
         this.wizard.enableEditing(false);
 
         this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
         });
 
-        final JScrollPane workbenchScroll = new JScrollPane(workbench);
+        JScrollPane workbenchScroll = new JScrollPane(workbench);
         workbenchScroll.setPreferredSize(new Dimension(400, 400));
 
-        final JScrollPane wizardScroll = new JScrollPane(getWizard());
+        JScrollPane wizardScroll = new JScrollPane(getWizard());
 
-        final BayesProperties properties = new BayesProperties(this.wrapper.getDataSet());
+        BayesProperties properties = new BayesProperties(this.wrapper.getDataSet());
 
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
         buf.append("\nP-value = ").append(properties.getLikelihoodRatioP(graph));
 //        buf.append("\nP-value = ").append(properties.getVuongP());
         buf.append("\nDf = ").append(properties.getDof());
         /*
       Formats numbers.
          */
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         buf.append("\nChi square = ")
                 .append(nf.format(properties.getChisq()));
         buf.append("\nBIC score = ").append(nf.format(properties.getBic()));
         buf.append("\n\nH0: Complete graph.");
 
-        final JTextArea modelParametersText = new JTextArea();
+        JTextArea modelParametersText = new JTextArea();
         modelParametersText.setText(buf.toString());
 
-        final JTabbedPane tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Model", wizardScroll);
         tabbedPane.add("Model Statistics", modelParametersText);
 
-        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, tabbedPane);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
@@ -186,7 +186,7 @@ public class BayesEstimatorEditor extends JPanel {
 
         setName("Bayes IM Editor");
         getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorClosing".equals(evt.getPropertyName())) {
                     firePropertyChange("editorClosing", null, getName());
                 }
@@ -198,8 +198,8 @@ public class BayesEstimatorEditor extends JPanel {
             }
         });
 
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));

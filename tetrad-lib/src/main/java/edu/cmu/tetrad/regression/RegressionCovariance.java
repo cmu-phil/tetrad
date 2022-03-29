@@ -79,7 +79,7 @@ public class RegressionCovariance implements Regression {
      *
      * @param covariances The covariance matrix.
      */
-    public RegressionCovariance(final ICovarianceMatrix covariances) {
+    public RegressionCovariance(ICovarianceMatrix covariances) {
         this(covariances, RegressionCovariance.zeroMeans(covariances.getDimension()));
     }
 
@@ -91,7 +91,7 @@ public class RegressionCovariance implements Regression {
      * @param means       A vector of means, for variables <V1,...,Vn>. May be
      *                    null.
      */
-    private RegressionCovariance(final ICovarianceMatrix covariances, final Vector means) {
+    private RegressionCovariance(ICovarianceMatrix covariances, Vector means) {
         this(new CorrelationMatrix(covariances), RegressionCovariance.standardDeviations(covariances),
                 means);
     }
@@ -106,9 +106,9 @@ public class RegressionCovariance implements Regression {
      *                           Must not be null.
      * @param means              3 for variables <V1,...,Vn>. May be null.
      */
-    private RegressionCovariance(final CorrelationMatrix correlations,
-                                 final Vector standardDeviations,
-                                 final Vector means) {
+    private RegressionCovariance(CorrelationMatrix correlations,
+                                 Vector standardDeviations,
+                                 Vector means) {
         if (correlations == null) {
             throw new NullPointerException();
         }
@@ -134,7 +134,7 @@ public class RegressionCovariance implements Regression {
      *
      * @param alpha The significance level.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
@@ -155,14 +155,14 @@ public class RegressionCovariance implements Regression {
      * @param regressors The list of regressors.
      * @return the regression plane.
      */
-    public RegressionResult regress(final Node target, final List<Node> regressors) {
-        final Matrix allCorrelations = this.correlations.getMatrix();
+    public RegressionResult regress(Node target, List<Node> regressors) {
+        Matrix allCorrelations = this.correlations.getMatrix();
 
-        final List<Node> variables = this.correlations.getVariables();
+        List<Node> variables = this.correlations.getVariables();
 
-        final int yIndex = variables.indexOf(target);
+        int yIndex = variables.indexOf(target);
 
-        final int[] xIndices = new int[regressors.size()];
+        int[] xIndices = new int[regressors.size()];
 
         for (int i = 0; i < regressors.size(); i++) {
             xIndices[i] = variables.indexOf(regressors.get(i));
@@ -172,16 +172,16 @@ public class RegressionCovariance implements Regression {
             }
         }
 
-        final Matrix rX = allCorrelations.getSelection(xIndices, xIndices);
-        final Matrix rY = allCorrelations.getSelection(xIndices, new int[]{yIndex});
+        Matrix rX = allCorrelations.getSelection(xIndices, xIndices);
+        Matrix rY = allCorrelations.getSelection(xIndices, new int[]{yIndex});
 
-        final Matrix bStar = rX.inverse().times(rY);
+        Matrix bStar = rX.inverse().times(rY);
 
-        final Vector b = new Vector(bStar.rows() + 1);
+        Vector b = new Vector(bStar.rows() + 1);
 
         for (int k = 1; k < b.size(); k++) {
-            final double sdY = this.sd.get(yIndex);
-            final double sdK = this.sd.get(xIndices[k - 1]);
+            double sdY = this.sd.get(yIndex);
+            double sdK = this.sd.get(xIndices[k - 1]);
             b.set(k, bStar.get(k - 1, 0) * (sdY / sdK));
         }
 
@@ -197,42 +197,42 @@ public class RegressionCovariance implements Regression {
             b.set(0, b0);
         }
 
-        final int[] allIndices = new int[1 + regressors.size()];
+        int[] allIndices = new int[1 + regressors.size()];
         allIndices[0] = yIndex;
 
         for (int i = 1; i < allIndices.length; i++) {
             allIndices[i] = variables.indexOf(regressors.get(i - 1));
         }
 
-        final Matrix r = allCorrelations.getSelection(allIndices, allIndices);
-        final Matrix rInv = r.inverse();
+        Matrix r = allCorrelations.getSelection(allIndices, allIndices);
+        Matrix rInv = r.inverse();
 
-        final int n = this.correlations.getSampleSize();
-        final int k = regressors.size() + 1;
+        int n = this.correlations.getSampleSize();
+        int k = regressors.size() + 1;
 
-        final double vY = rInv.get(0, 0);
-        final double r2 = 1.0 - (1.0 / vY);
-        final double tss = n * this.sd.get(yIndex) * this.sd.get(yIndex); // Book says n - 1.
-        final double rss = tss * (1.0 - r2);
-        final double seY = Math.sqrt(rss / (double) (n - k));
+        double vY = rInv.get(0, 0);
+        double r2 = 1.0 - (1.0 / vY);
+        double tss = n * this.sd.get(yIndex) * this.sd.get(yIndex); // Book says n - 1.
+        double rss = tss * (1.0 - r2);
+        double seY = Math.sqrt(rss / (double) (n - k));
 
-        final Vector sqErr = new Vector(allIndices.length);
-        final Vector t = new Vector(allIndices.length);
-        final Vector p = new Vector(allIndices.length);
+        Vector sqErr = new Vector(allIndices.length);
+        Vector t = new Vector(allIndices.length);
+        Vector p = new Vector(allIndices.length);
 
         sqErr.set(0, Double.NaN);
         t.set(0, Double.NaN);
         p.set(0, Double.NaN);
 
-        final Matrix rxInv = rX.inverse();
+        Matrix rxInv = rX.inverse();
 
         for (int i = 0; i < regressors.size(); i++) {
-            final double _r2 = 1.0 - (1.0 / rxInv.get(i, i));
-            final double _tss = n * this.sd.get(xIndices[i]) * this.sd.get(xIndices[i]);
-            final double _se = seY / Math.sqrt(_tss * (1.0 - _r2));
+            double _r2 = 1.0 - (1.0 / rxInv.get(i, i));
+            double _tss = n * this.sd.get(xIndices[i]) * this.sd.get(xIndices[i]);
+            double _se = seY / Math.sqrt(_tss * (1.0 - _r2));
 
-            final double _t = b.get(i + 1) / _se;
-            final double _p = (1.0 - ProbUtils.tCdf(Math.abs(_t), n - k));
+            double _t = b.get(i + 1) / _se;
+            double _p = (1.0 - ProbUtils.tCdf(Math.abs(_t), n - k));
 
             sqErr.set(i + 1, _se);
             t.set(i + 1, _t);
@@ -242,25 +242,25 @@ public class RegressionCovariance implements Regression {
         // Graph
         this.graph = createGraph(target, allIndices, regressors, p);
 
-        final String[] vNames = createVarNamesArray(regressors);
-        final double[] bArray = b.toArray();
-        final double[] tArray = t.toArray();
-        final double[] pArray = p.toArray();
-        final double[] seArray = sqErr.toArray();
+        String[] vNames = createVarNamesArray(regressors);
+        double[] bArray = b.toArray();
+        double[] tArray = t.toArray();
+        double[] pArray = p.toArray();
+        double[] seArray = sqErr.toArray();
 
         return new RegressionResult(false, vNames, n,
                 bArray, tArray, pArray, seArray, r2, rss, this.alpha, null, null);
     }
 
-    public RegressionResult regress(final Node target, final Node... regressors) {
-        final List<Node> _regressors = Arrays.asList(regressors);
+    public RegressionResult regress(Node target, Node... regressors) {
+        List<Node> _regressors = Arrays.asList(regressors);
         return regress(target, _regressors);
     }
 
     //===========================PRIVATE METHODS==========================//
 
-    private String[] createVarNamesArray(final List<Node> regressors) {
-        final String[] vNames = getVarNamesArray(regressors);
+    private String[] createVarNamesArray(List<Node> regressors) {
+        String[] vNames = getVarNamesArray(regressors);
 
         for (int i = 0; i < regressors.size(); i++) {
             vNames[i] = regressors.get(i).getName();
@@ -268,22 +268,22 @@ public class RegressionCovariance implements Regression {
         return vNames;
     }
 
-    private String[] getVarNamesArray(final List<Node> regressors) {
+    private String[] getVarNamesArray(List<Node> regressors) {
         return new String[regressors.size()];
     }
 
-    private Graph createGraph(final Node target, final int[] allIndices, final List<Node> regressors, final Vector p) {
-        final Graph graph = new EdgeListGraph();
+    private Graph createGraph(Node target, int[] allIndices, List<Node> regressors, Vector p) {
+        Graph graph = new EdgeListGraph();
         graph.addNode(target);
 
         for (int i = 0; i < allIndices.length; i++) {
-            final String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
+            String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
 
             //Add a node and edge to the output graph for significant predictors:
             if (p.get(i) < this.alpha) {
-                final Node predictorNode = new GraphNode(variableName);
+                Node predictorNode = new GraphNode(variableName);
                 graph.addNode(predictorNode);
-                final Edge newEdge = new Edge(predictorNode, target,
+                Edge newEdge = new Edge(predictorNode, target,
                         Endpoint.TAIL, Endpoint.ARROW);
                 graph.addEdge(newEdge);
             }
@@ -314,12 +314,12 @@ public class RegressionCovariance implements Regression {
 //        return summary;
 //    }
 
-    private static Vector zeroMeans(final int numVars) {
+    private static Vector zeroMeans(int numVars) {
         return new Vector(numVars);
     }
 
-    private static Vector standardDeviations(final ICovarianceMatrix covariances) {
-        final Vector standardDeviations = new Vector(covariances.getDimension());
+    private static Vector standardDeviations(ICovarianceMatrix covariances) {
+        Vector standardDeviations = new Vector(covariances.getDimension());
 
         for (int i = 0; i < covariances.getDimension(); i++) {
             standardDeviations.set(i, Math.sqrt(covariances.getValue(i, i)));

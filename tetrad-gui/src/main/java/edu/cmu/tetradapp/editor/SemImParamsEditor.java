@@ -51,7 +51,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
     public SemImParamsEditor() {
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -59,7 +59,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         // Do nothing.
     }
 
@@ -73,9 +73,9 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
 
 //        final JCheckBox randomEveryTime = new JCheckBox();
 //        randomEveryTime.setSelected(!params.getBoolean("retainPreviousValues", false));
-        final DecimalFormat decimalFormat = new DecimalFormat("0.0######");
+        DecimalFormat decimalFormat = new DecimalFormat("0.0######");
 
-        final DoubleTextField coefLowField = new DoubleTextField(this.params.getDouble("coefLow"),
+        DoubleTextField coefLowField = new DoubleTextField(this.params.getDouble("coefLow"),
                 6, decimalFormat);
 
         coefLowField.setFilter(new DoubleTextField.Filter() {
@@ -155,34 +155,34 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
                 6, decimalFormat);
 
         varHighField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
                     SemImParamsEditor.this.params.set("varLow", SemImParamsEditor.this.params.getDouble("varLow"));
                     SemImParamsEditor.this.params.set("varHigh", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        final JCheckBox coefSymmetric = new JCheckBox("Symmetric about zero.");
-        final JCheckBox covSymmetric = new JCheckBox("Symmetric about zero.");
+        JCheckBox coefSymmetric = new JCheckBox("Symmetric about zero.");
+        JCheckBox covSymmetric = new JCheckBox("Symmetric about zero.");
 
         coefSymmetric.setSelected(this.params.getBoolean("coefSymmetric", true));
         covSymmetric.setSelected(this.params.getBoolean("covSymmetric", true));
 
         coefSymmetric.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox checkBox = (JCheckBox) e.getSource();
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox checkBox = (JCheckBox) e.getSource();
                 SemImParamsEditor.this.params.set("coefSymmetric", checkBox.isSelected());
             }
 
         });
 
         covSymmetric.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox checkBox = (JCheckBox) e.getSource();
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox checkBox = (JCheckBox) e.getSource();
                 SemImParamsEditor.this.params.set("covSymmetric", checkBox.isSelected());
             }
         });
@@ -199,16 +199,16 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
 //        });
 
         // continue workbench construction.
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel(
                 "Unfixed parameter values for this SEM IM are drawn as follows:"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b4a = Box.createHorizontalBox();
+        Box b4a = Box.createHorizontalBox();
 //        b4a.add(Box.createHorizontalStrut(10));
         b4a.add(new JLabel("Coefficient values are drawn from "));
         b4a.add(new BigLabel("("));
@@ -220,7 +220,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         b4a.add(Box.createHorizontalGlue());
         b1.add(b4a);
 
-        final Box b4b = Box.createHorizontalBox();
+        Box b4b = Box.createHorizontalBox();
 //        b4b.add(Box.createHorizontalStrut(10));
         b4b.add(new JLabel("Error covariance values are drawn from "));
         b4b.add(new BigLabel("("));
@@ -232,7 +232,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         b4b.add(Box.createHorizontalGlue());
         b1.add(b4b);
 
-        final Box b4c = Box.createHorizontalBox();
+        Box b4c = Box.createHorizontalBox();
 //        b4c.add(Box.createHorizontalStrut(10));
         b4c.add(new JLabel("Error standard deviation values are drawn from "));
         b4c.add(new BigLabel("("));
@@ -270,7 +270,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
     static final class BigLabel extends JLabel {
         private static final Font FONT = new Font("Dialog", Font.BOLD, 20);
 
-        public BigLabel(final String text) {
+        public BigLabel(String text) {
             super(text);
             setFont(BigLabel.FONT);
         }

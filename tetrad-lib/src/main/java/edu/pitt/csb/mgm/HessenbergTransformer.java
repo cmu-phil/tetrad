@@ -52,13 +52,13 @@ class HessenbergTransformer {
      * @param matrix matrix to transform
      * @throws NonSquareMatrixException if the matrix is not square
      */
-    HessenbergTransformer(final RealMatrix matrix) {
+    HessenbergTransformer(RealMatrix matrix) {
         if (!matrix.isSquare()) {
             throw new NonSquareMatrixException(matrix.getRowDimension(),
                     matrix.getColumnDimension());
         }
 
-        final int m = matrix.getRowDimension();
+        int m = matrix.getRowDimension();
         this.householderVectors = matrix.getData();
         this.ort = new double[m];
         this.cachedP = null;
@@ -77,9 +77,9 @@ class HessenbergTransformer {
      */
     public RealMatrix getP() {
         if (this.cachedP == null) {
-            final int n = this.householderVectors.length;
-            final int high = n - 1;
-            final double[][] pa = new double[n][n];
+            int n = this.householderVectors.length;
+            int high = n - 1;
+            double[][] pa = new double[n][n];
 
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n; j++) {
@@ -137,8 +137,8 @@ class HessenbergTransformer {
      */
     public RealMatrix getH() {
         if (this.cachedH == null) {
-            final int m = this.householderVectors.length;
-            final double[][] h = new double[m][m];
+            int m = this.householderVectors.length;
+            double[][] h = new double[m][m];
             for (int i = 0; i < m; ++i) {
                 if (i > 0) {
                     // copy the entry of the lower sub-diagonal
@@ -173,8 +173,8 @@ class HessenbergTransformer {
      * <p>Transformation is done using Householder transforms.</p>
      */
     private void transform() {
-        final int n = this.householderVectors.length;
-        final int high = n - 1;
+        int n = this.householderVectors.length;
+        int high = n - 1;
 
         for (int m = 1; m <= high - 1; m++) {
             // Scale column.
@@ -190,7 +190,7 @@ class HessenbergTransformer {
                     this.ort[i] = this.householderVectors[i][m - 1] / scale;
                     h += this.ort[i] * this.ort[i];
                 }
-                final double g = (this.ort[m] > 0) ? -FastMath.sqrt(h) : FastMath.sqrt(h);
+                double g = (this.ort[m] > 0) ? -FastMath.sqrt(h) : FastMath.sqrt(h);
 
                 h -= this.ort[m] * g;
                 this.ort[m] -= g;

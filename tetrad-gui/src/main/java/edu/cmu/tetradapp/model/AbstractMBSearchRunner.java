@@ -84,7 +84,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @param source - The source data the search is acting on.
      * @param params - The params for the search.
      */
-    AbstractMBSearchRunner(final DataModel source, final Parameters params) {
+    AbstractMBSearchRunner(DataModel source, Parameters params) {
         super(AbstractMBSearchRunner.castData(source));
         if (source == null) {
             throw new NullPointerException("The source data was null.");
@@ -130,7 +130,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
 
-    public void setSearchName(final String n) {
+    public void setSearchName(String n) {
         this.searchName = n;
     }
 
@@ -160,7 +160,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     /**
      * Sets the results of the search.
      */
-    void setSearchResults(final List<Node> nodes) {
+    void setSearchResults(List<Node> nodes) {
         if (nodes == null) {
             throw new NullPointerException("nodes were null.");
         }
@@ -179,7 +179,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * in the params.
      */
     IndependenceTest getIndependenceTest() {
-        final IndTestType type = (IndTestType) this.params.get("indTestType", IndTestType.FISHER_Z);
+        IndTestType type = (IndTestType) this.params.get("indTestType", IndTestType.FISHER_Z);
         if (this.source.isContinuous() || this.source.getNumColumns() == 0) {
 //            if (IndTestType.CORRELATION_T == type) {
 //                return new IndTestCramerT(this.source, params.getAlternativePenalty());
@@ -218,7 +218,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     //==================== Private Methods ===========================//
 
 
-    private static DataSet castData(final DataModel model) {
+    private static DataSet castData(DataModel model) {
         if (model instanceof DataSet) {
             return (DataSet) model;
         }
@@ -240,7 +240,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @throws ClassNotFoundException
      */
     @SuppressWarnings("UnusedDeclaration")
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

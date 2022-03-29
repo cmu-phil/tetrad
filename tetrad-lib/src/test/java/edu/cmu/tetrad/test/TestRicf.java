@@ -103,20 +103,20 @@ public class TestRicf {
      */
     @Test
     public void testRicf1() {
-        final String[] varNames = {"y", "x", "z", "u"};
-        final int numVars = varNames.length;
+        String[] varNames = {"y", "x", "z", "u"};
+        int numVars = varNames.length;
 
-        final double[] values = {2.93, -1.7, 0.76, -0.06, -1.7, 1.64, -0.78, 0.1,
+        double[] values = {2.93, -1.7, 0.76, -0.06, -1.7, 1.64, -0.78, 0.1,
                 0.76, -0.78, 1.66, -0.78, -0.06, 0.1, -0.78, 0.81};
-        final Matrix m = matrix(values, numVars, numVars);
+        Matrix m = matrix(values, numVars, numVars);
 
-        final ICovarianceMatrix s = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), m, 30);
+        ICovarianceMatrix s = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), m, 30);
 
-        final Graph mag = new EdgeListGraph();
-        final Node x = new ContinuousVariable("x");
-        final Node y = new ContinuousVariable("y");
-        final Node z = new ContinuousVariable("z");
-        final Node u = new ContinuousVariable("u");
+        Graph mag = new EdgeListGraph();
+        Node x = new ContinuousVariable("x");
+        Node y = new ContinuousVariable("y");
+        Node z = new ContinuousVariable("z");
+        Node u = new ContinuousVariable("u");
         mag.addNode(x);
         mag.addNode(y);
         mag.addNode(z);
@@ -130,7 +130,7 @@ public class TestRicf {
 //        int n = 100;
         final double tol = 1e-06;
 
-        final Ricf ricf = new Ricf();
+        Ricf ricf = new Ricf();
         Ricf.RicfResult ricfResult = ricf.ricf(new SemGraph(mag), s, tol);
 
         // Test shat at least.
@@ -272,7 +272,7 @@ public class TestRicf {
         DataSet data = im.simulateData(1000, false);
         CovarianceMatrix cov = new CovarianceMatrix(data);
 
-        final Ricf.RicfResult result = new Ricf().ricf(new SemGraph(graph), cov, 0.001);
+        Ricf.RicfResult result = new Ricf().ricf(new SemGraph(graph), cov, 0.001);
 
         result.getBhat();
 
@@ -281,44 +281,44 @@ public class TestRicf {
     @Ignore // File not found.
     public void test3() {
         try {
-            final File datapath = new File("/Users/josephramsey/Downloads/data6.txt");
-            final DataSet dataSet = DataUtils.loadContinuousData(datapath, "//", '\"',
+            File datapath = new File("/Users/josephramsey/Downloads/data6.txt");
+            DataSet dataSet = DataUtils.loadContinuousData(datapath, "//", '\"',
                     "*", true, Delimiter.TAB);
-            final Graph mag = GraphUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
+            Graph mag = GraphUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
 
-            final ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
+            ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
 
             new Ricf().ricf(new SemGraph(mag), cov, 0.001);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @Test
     public void test4() {
-        final List<Node> nodes1 = new ArrayList<>();
+        List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 5; i1++) {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        final Graph g1 = GraphUtils.randomGraph(nodes1, 0, 5,
+        Graph g1 = GraphUtils.randomGraph(nodes1, 0, 5,
                 0, 0, 0, false);
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Graph g2 = GraphUtils.randomGraph(nodes, 0, 5,
+        Graph g2 = GraphUtils.randomGraph(nodes, 0, 5,
                 0, 0, 0, false);
 
-        final SemPm pm = new SemPm(g1);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(g1);
+        SemIm im = new SemIm(pm);
 
-        final DataSet dataset = im.simulateData(1000, false);
+        DataSet dataset = im.simulateData(1000, false);
 
-        final ICovarianceMatrix cov = new CovarianceMatrix(dataset);
+        ICovarianceMatrix cov = new CovarianceMatrix(dataset);
 
         new Ricf().ricf(new SemGraph(g1), cov, 0.001);
         new Ricf().ricf(new SemGraph(g2), cov, 0.001);

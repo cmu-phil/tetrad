@@ -69,14 +69,14 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
      *
      * @param params
      */
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 
     /**
      * Does nothing
      */
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         this.parentModels = parentModels;
     }
 
@@ -86,9 +86,9 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
     public void setup() {
         DataModelList dataModelList = null;
 
-        for (final Object parentModel : this.parentModels) {
+        for (Object parentModel : this.parentModels) {
             if (parentModel instanceof DataWrapper) {
-                final DataWrapper dataWrapper = (DataWrapper) parentModel;
+                DataWrapper dataWrapper = (DataWrapper) parentModel;
                 dataModelList = dataWrapper.getDataModelList();
             }
         }
@@ -97,7 +97,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
             throw new NullPointerException("Null data model list.");
         }
 
-        for (final DataModel model : dataModelList) {
+        for (DataModel model : dataModelList) {
             if (!(model instanceof DataSet)) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "For the shift search, all of the data in the data box must be in the form of data sets.");
@@ -105,50 +105,50 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
             }
         }
 
-        final List<DataModel> dataSets = new ArrayList<>();
+        List<DataModel> dataSets = new ArrayList<>();
 
-        for (final Object aDataModelList : dataModelList) {
+        for (Object aDataModelList : dataModelList) {
             dataSets.add((DataSet) aDataModelList);
         }
 
-        final SpinnerModel maxVarsModel = new SpinnerNumberModel(
+        SpinnerModel maxVarsModel = new SpinnerNumberModel(
                 Preferences.userRoot().getInt("shiftSearchMaxNumShifts", 3), 1, 50, 1);
-        final JSpinner maxVarsSpinner = new JSpinner(maxVarsModel);
+        JSpinner maxVarsSpinner = new JSpinner(maxVarsModel);
         maxVarsSpinner.setMaximumSize(maxVarsSpinner.getPreferredSize());
 
         maxVarsSpinner.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent e) {
-                final JSpinner spinner = (JSpinner) e.getSource();
-                final SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
-                final int value = (Integer) model.getValue();
+            public void stateChanged(ChangeEvent e) {
+                JSpinner spinner = (JSpinner) e.getSource();
+                SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+                int value = (Integer) model.getValue();
                 Preferences.userRoot().putInt("shiftSearchMaxNumShifts", value);
             }
         });
 
-        final SpinnerModel maxShiftModel = new SpinnerNumberModel(
+        SpinnerModel maxShiftModel = new SpinnerNumberModel(
                 Preferences.userRoot().getInt("shiftSearchMaxShift", 2), 1, 50, 1);
-        final JSpinner maxShiftSpinner = new JSpinner(maxShiftModel);
+        JSpinner maxShiftSpinner = new JSpinner(maxShiftModel);
         maxShiftSpinner.setMaximumSize(maxShiftSpinner.getPreferredSize());
 
         maxShiftSpinner.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent e) {
-                final JSpinner spinner = (JSpinner) e.getSource();
-                final SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
-                final int value = (Integer) model.getValue();
+            public void stateChanged(ChangeEvent e) {
+                JSpinner spinner = (JSpinner) e.getSource();
+                SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+                int value = (Integer) model.getValue();
                 Preferences.userRoot().putInt("shiftSearchMaxShift", value);
             }
         });
 
-        final JButton searchButton = new JButton("Search");
-        final JButton stopButton = new JButton("Stop");
+        JButton searchButton = new JButton("Search");
+        JButton stopButton = new JButton("Stop");
 
-        final JTextArea textArea = new JTextArea();
-        final JScrollPane textScroll = new JScrollPane(textArea);
+        JTextArea textArea = new JTextArea();
+        JScrollPane textScroll = new JScrollPane(textArea);
         textScroll.setPreferredSize(new Dimension(500, 200));
 
         searchButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final Thread thread = new Thread() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                Thread thread = new Thread() {
                     public void run() {
                         textArea.setText("");
                         doShiftSearch(dataSets, textArea);
@@ -160,7 +160,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         });
 
         stopButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
+            public void actionPerformed(ActionEvent actionEvent) {
                 if (ShiftDataParamsEditor.this.search != null) {
                     ShiftDataParamsEditor.this.search.stop();
                     TaskManager.getInstance().setCanceled(true);
@@ -169,27 +169,27 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         });
 
 
-        final JComboBox directionBox = new JComboBox(new String[]{"forward", "backward"});
+        JComboBox directionBox = new JComboBox(new String[]{"forward", "backward"});
         directionBox.setSelectedItem(this.params.getBoolean("forwardSearch", true) ? "forward" : "backward");
         directionBox.setMaximumSize(directionBox.getPreferredSize());
 
         directionBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JComboBox source = (JComboBox) actionEvent.getSource();
-                final String selected = (String) source.getSelectedItem();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JComboBox source = (JComboBox) actionEvent.getSource();
+                String selected = (String) source.getSelectedItem();
                 ShiftDataParamsEditor.this.params.set("forwardSearch", "forward".equals(selected));
             }
         });
 
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Maximum number of variables in shift set is: "));
         b2.add(maxVarsSpinner);
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Maximum "));
         b3.add(directionBox);
         b3.add(new JLabel(" shift: "));
@@ -197,23 +197,23 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         b3.add(Box.createHorizontalGlue());
         b1.add(b3);
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Output:"));
         b4.add(Box.createHorizontalGlue());
         b1.add(b4);
 
-        final Box b5 = Box.createHorizontalBox();
+        Box b5 = Box.createHorizontalBox();
         b5.add(textScroll);
         b1.add(b5);
 
-        final Box b6 = Box.createHorizontalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(searchButton);
         b6.add(stopButton);
         b1.add(b6);
 
-        final Box a1 = Box.createVerticalBox();
+        Box a1 = Box.createVerticalBox();
 
-        final Box a2 = Box.createHorizontalBox();
+        Box a2 = Box.createHorizontalBox();
         a2.add(new JLabel("Specify the shift (positive or negative) for each variable:"));
         a2.add(Box.createHorizontalGlue());
         a1.add(a2);
@@ -222,14 +222,14 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
 
         setUpA1(dataSets, a1);
 
-        final JTabbedPane tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Shift", new JScrollPane(a1));
         tabbedPane.addTab("Search", new JScrollPane(b1));
 
         add(tabbedPane, BorderLayout.CENTER);
 
         tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent changeEvent) {
+            public void stateChanged(ChangeEvent changeEvent) {
                 System.out.println("a1 shown");
                 a1.removeAll();
                 setUpA1(dataSets, a1);
@@ -237,7 +237,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         });
     }
 
-    private void setUpA1(final List<DataModel> dataSets, final Box a1) {
+    private void setUpA1(List<DataModel> dataSets, Box a1) {
         int[] shifts = (int[]) this.params.get("shifts", null);
 
         if (dataSets.isEmpty()) {
@@ -249,22 +249,22 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
             this.params.set("shifts", shifts);
         }
 
-        final int[] _shifts = shifts;
+        int[] _shifts = shifts;
 
         for (int i = 0; i < ((DataSet) dataSets.get(0)).getNumColumns(); i++) {
-            final Node node = ((DataSet) dataSets.get(0)).getVariable(i);
-            final Box a5 = Box.createHorizontalBox();
+            Node node = ((DataSet) dataSets.get(0)).getVariable(i);
+            Box a5 = Box.createHorizontalBox();
 
-            final SpinnerModel shiftModel = new SpinnerNumberModel(_shifts[i], -50, 50, 1);
-            final JSpinner shiftSpinner = new JSpinner(shiftModel);
+            SpinnerModel shiftModel = new SpinnerNumberModel(_shifts[i], -50, 50, 1);
+            JSpinner shiftSpinner = new JSpinner(shiftModel);
             shiftSpinner.setMaximumSize(shiftSpinner.getPreferredSize());
-            final int nodeIndex = i;
+            int nodeIndex = i;
 
             shiftSpinner.addChangeListener(new ChangeListener() {
-                public void stateChanged(final ChangeEvent e) {
-                    final JSpinner spinner = (JSpinner) e.getSource();
-                    final SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
-                    final int value = (Integer) model.getValue();
+                public void stateChanged(ChangeEvent e) {
+                    JSpinner spinner = (JSpinner) e.getSource();
+                    SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+                    int value = (Integer) model.getValue();
                     _shifts[nodeIndex] = value;
                     ShiftDataParamsEditor.this.params.set("shifts", _shifts);
                 }
@@ -279,8 +279,8 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         }
     }
 
-    private void doShiftSearch(final List<DataModel> dataSets, final JTextArea textArea) {
-        final TextAreaOutputStream out = new TextAreaOutputStream(textArea);
+    private void doShiftSearch(List<DataModel> dataSets, JTextArea textArea) {
+        TextAreaOutputStream out = new TextAreaOutputStream(textArea);
 
         this.search = new ShiftSearch(dataSets);
         this.search.setMaxNumShifts(Preferences.userRoot().getInt("shiftSearchMaxNumShifts", 2));
@@ -288,7 +288,7 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         this.search.setC(1);
         this.search.setOut(out);
         this.search.setForwardSearch(this.params.getBoolean("forwardSearch", true));
-        final int[] backshifts = this.search.search();
+        int[] backshifts = this.search.search();
 
 //        List<DataSet> backshiftedDataSets = shiftDataSets(dataSets, backshifts);
 //

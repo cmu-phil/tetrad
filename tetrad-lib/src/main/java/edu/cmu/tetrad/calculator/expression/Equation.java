@@ -47,7 +47,7 @@ public class Equation {
     private final String unparsedExpression;
 
 
-    public Equation(final String variable, final Expression expression, final String unparsed) {
+    public Equation(String variable, Expression expression, String unparsed) {
         if (variable == null) {
             throw new NullPointerException("variable was null.");
         }

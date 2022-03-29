@@ -31,12 +31,12 @@ public class LinearFisherModel implements Simulation, TakesData {
     private List<Node> shuffledOrder;
     private final List<DataModel> shocks;
 
-    public LinearFisherModel(final RandomGraph graph) {
+    public LinearFisherModel(RandomGraph graph) {
         this.randomGraph = graph;
         this.shocks = null;
     }
 
-    public LinearFisherModel(final RandomGraph graph, final List<DataModel> shocks) {
+    public LinearFisherModel(RandomGraph graph, List<DataModel> shocks) {
         this.randomGraph = graph;
         this.shocks = shocks;
 
@@ -45,11 +45,11 @@ public class LinearFisherModel implements Simulation, TakesData {
                     "The initial dataset you've provided will be used as initial shocks"
                             + "\nfor a Fisher model.");
 
-            for (final DataModel _shocks : shocks) {
+            for (DataModel _shocks : shocks) {
                 if (_shocks == null) {
                     throw new NullPointerException("Dataset containing shocks must not be null.");
                 }
-                final DataSet dataSet = (DataSet) _shocks;
+                DataSet dataSet = (DataSet) _shocks;
                 if (!dataSet.isContinuous()) {
                     throw new IllegalArgumentException("Dataset containing shocks must be continuous tabular.");
                 }
@@ -58,10 +58,10 @@ public class LinearFisherModel implements Simulation, TakesData {
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        final boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
+        boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
         this.dataSets = new ArrayList<>();
         this.graphs = new ArrayList<>();
@@ -86,12 +86,12 @@ public class LinearFisherModel implements Simulation, TakesData {
 
             this.graphs.add(graph);
 
-            final int[] tiers = new int[graph.getNodes().size()];
+            int[] tiers = new int[graph.getNodes().size()];
             for (int j = 0; j < tiers.length; j++) {
                 tiers[j] = j;
             }
 
-            final LargeScaleSimulation simulator = new LargeScaleSimulation(
+            LargeScaleSimulation simulator = new LargeScaleSimulation(
                     graph, graph.getNodes(), tiers);
             simulator.setCoefRange(
                     parameters.getDouble(Params.COEF_LOW),
@@ -119,7 +119,7 @@ public class LinearFisherModel implements Simulation, TakesData {
                         saveLatentVars
                 );
             } else {
-                final DataSet _shocks = (DataSet) this.shocks.get(i);
+                DataSet _shocks = (DataSet) this.shocks.get(i);
 
                 dataSet = simulator.simulateDataFisher(
                         _shocks.getDoubleData().toArray(),
@@ -128,13 +128,13 @@ public class LinearFisherModel implements Simulation, TakesData {
                 );
             }
 
-            final double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
+            double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
 
             if (variance > 0) {
                 for (int k = 0; k < dataSet.getNumRows(); k++) {
                     for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                        final double d = dataSet.getDouble(k, j);
-                        final double delta = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        double d = dataSet.getDouble(k, j);
+                        double delta = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
                         dataSet.setDouble(k, j, d + delta);
                     }
                 }
@@ -174,12 +174,12 @@ public class LinearFisherModel implements Simulation, TakesData {
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
@@ -190,7 +190,7 @@ public class LinearFisherModel implements Simulation, TakesData {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.addAll(this.randomGraph.getParameters());
 
         if (this.shocks != null) {

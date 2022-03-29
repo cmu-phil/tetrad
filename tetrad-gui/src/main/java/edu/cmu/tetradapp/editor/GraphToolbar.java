@@ -79,7 +79,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * Constructs a new Graph toolbar governing the modes of the given
      * GraphWorkbench.
      */
-    public GraphToolbar(final GraphWorkbench workbench) {
+    public GraphToolbar(GraphWorkbench workbench) {
         if (workbench == null) {
             throw new NullPointerException();
         }
@@ -125,14 +125,14 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
 
         // add listeners
         this.move.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 GraphToolbar.this.move.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
             }
         });
 
         this.addObserved.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 GraphToolbar.this.addObserved.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.ADD_NODE);
                 setNodeMode(GraphWorkbench.MEASURED_NODE);
@@ -140,7 +140,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         });
 
         this.addLatent.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 GraphToolbar.this.addLatent.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.ADD_NODE);
                 setNodeMode(GraphWorkbench.LATENT_NODE);
@@ -148,7 +148,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         });
 
         this.addDirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 GraphToolbar.this.addDirectedEdge.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
@@ -156,7 +156,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         });
 
         this.addNondirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 GraphToolbar.this.addNondirectedEdge.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.NONDIRECTED_EDGE);
@@ -164,7 +164,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         });
 
         this.addUndirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 GraphToolbar.this.addUndirectedEdge.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.UNDIRECTED_EDGE);
@@ -172,7 +172,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         });
 
         this.addPartiallyOrientedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 GraphToolbar.this.addPartiallyOrientedEdge.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.PARTIALLY_ORIENTED_EDGE);
@@ -180,7 +180,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         });
 
         this.addBidirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 GraphToolbar.this.addBidirectedEdge.getModel().setSelected(true);
                 setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 setEdgeMode(GraphWorkbench.BIDIRECTED_EDGE);
@@ -210,7 +210,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * Java will not allow access to the variable 'workbench' from inner
      * classes.
      */
-    private void setWorkbenchMode(final int mode) {
+    private void setWorkbenchMode(int mode) {
         this.workbench.setWorkbenchMode(mode);
 //        Toolkit toolkit = Toolkit.getDefaultToolkit();
 //        Image image = ImageUtils.getImage(this, "cursorImage.png");
@@ -225,7 +225,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * Java will not allow access to the variable 'workbench' from inner
      * classes.
      */
-    private void setEdgeMode(final int mode) {
+    private void setEdgeMode(int mode) {
         this.workbench.setEdgeMode(mode);
     }
 
@@ -234,7 +234,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * Java will not allow access to the variable 'workbench' from inner
      * classes.
      */
-    private void setNodeMode(final int mode) {
+    private void setNodeMode(int mode) {
         this.workbench.setNodeType(mode);
     }
 
@@ -242,7 +242,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * Adds the various buttons to the toolbar, setting their properties
      * appropriately.
      */
-    private void addButton(final JToggleButton button, final String name) {
+    private void addButton(JToggleButton button, String name) {
         button.setIcon(new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
         button.setMaximumSize(new Dimension(80, 40));
         button.setPreferredSize(new Dimension(80, 40));
@@ -254,7 +254,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
     /**
      * Responds to property change events.
      */
-    public void propertyChange(final PropertyChangeEvent e) {
+    public void propertyChange(PropertyChangeEvent e) {
         if ("graph".equals(e.getPropertyName())) {
             selectArrowTools();
         }

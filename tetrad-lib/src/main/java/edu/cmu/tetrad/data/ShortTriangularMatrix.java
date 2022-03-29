@@ -41,34 +41,34 @@ public class ShortTriangularMatrix implements TriangularMatrix {
     private ShortTriangularMatrix() {
     }
 
-    public ShortTriangularMatrix(final int size) {
+    public ShortTriangularMatrix(int size) {
         create(size);
     }
 
     //testing sandbox
-    public static void main(final String[] args) {
-        final ShortTriangularMatrix test = new ShortTriangularMatrix();
-        final File file = new File("C:/data1.txt");
+    public static void main(String[] args) {
+        ShortTriangularMatrix test = new ShortTriangularMatrix();
+        File file = new File("C:/data1.txt");
         try {
-            final DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
+            DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
             test.becomeCorrelationMatrix(data);
             System.out.println(test);
-            final CorrelationMatrix m = new CorrelationMatrix(data);
+            CorrelationMatrix m = new CorrelationMatrix(data);
             System.out.println(m);
             System.out.println(test.getDouble(1, 3));
             System.out.println(test.getDouble(3, 1));
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void becomeCorrelationMatrix(final DataSet dataSet) {
+    public void becomeCorrelationMatrix(DataSet dataSet) {
         for (int i = 0; i < dataSet.getNumColumns(); i++)
             this.matrix[i][i] = 10000;
 
-        final Matrix doubleData = dataSet.getDoubleData();
-        final Vector[] views = new Vector[dataSet.getNumColumns()];
+        Matrix doubleData = dataSet.getDoubleData();
+        Vector[] views = new Vector[dataSet.getNumColumns()];
         for (int i = 0; i < views.length; i++)
             views[i] = doubleData.getColumn(i);
 
@@ -77,7 +77,7 @@ public class ShortTriangularMatrix implements TriangularMatrix {
                 this.matrix[j][i] = StatUtils.compressedCorrelation(views[i], views[j]);
     }
 
-    public void create(final int size) {
+    public void create(int size) {
         this.matrix = new short[size][];
         for (int i = 0; i < size; i++) {
             this.matrix[i] = new short[i + 1];
@@ -89,7 +89,7 @@ public class ShortTriangularMatrix implements TriangularMatrix {
 
     public short getShort(int row, int col) {
         if (col > row) {
-            final int temp = col;
+            int temp = col;
             col = row;
             row = temp;
         }
@@ -98,7 +98,7 @@ public class ShortTriangularMatrix implements TriangularMatrix {
 
     public double getDouble(int row, int col) {
         if (col > row) {
-            final int temp = col;
+            int temp = col;
             col = row;
             row = temp;
         }
@@ -106,17 +106,17 @@ public class ShortTriangularMatrix implements TriangularMatrix {
         return ((double) this.matrix[row][col]) / 10000;
     }
 
-    public boolean set(final int row, final int col, final long value) {
+    public boolean set(int row, int col, long value) {
         return set(row, col, (short) value);
     }
 
-    public boolean set(final int row, final int col, final int value) {
+    public boolean set(int row, int col, int value) {
         return set(row, col, (short) value);
     }
 
-    public boolean set(int row, int col, final short value) {
+    public boolean set(int row, int col, short value) {
         if (col > row) {
-            final int temp = col;
+            int temp = col;
             col = row;
             row = temp;
         }
@@ -125,9 +125,9 @@ public class ShortTriangularMatrix implements TriangularMatrix {
         return true;
     }
 
-    public boolean set(int row, int col, final double value) {
+    public boolean set(int row, int col, double value) {
         if (col > row) {
-            final int temp = col;
+            int temp = col;
             col = row;
             row = temp;
         }
@@ -137,7 +137,7 @@ public class ShortTriangularMatrix implements TriangularMatrix {
     }
 
     public String toString() {
-        final StringBuilder out = new StringBuilder();
+        StringBuilder out = new StringBuilder();
         for (int i = 0; i < this.matrix.length; i++) {
             for (int j = 0; j < this.matrix[i].length; j++) {
                 out.append(getDouble(i, j)).append("\t\t");

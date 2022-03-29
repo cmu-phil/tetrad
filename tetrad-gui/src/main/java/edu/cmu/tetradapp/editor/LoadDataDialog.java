@@ -133,7 +133,7 @@ public final class LoadDataDialog extends JPanel {
     private JButton loadButton;
 
     //================================CONSTRUCTOR=======================//
-    public LoadDataDialog(final File... files) {
+    public LoadDataDialog(File... files) {
         // Add all files into the loadedFiles list - Zhou
         // Arrays.asList: Returns a fixed-size list backed by the specified array.
         // You can't add to it; you can't remove from it. You can't structurally modify the List.
@@ -208,7 +208,7 @@ public final class LoadDataDialog extends JPanel {
         this.previewContainer.setPreferredSize(new Dimension(900, 250));
 
         // Show all chosen files in a list
-        for (final File file : this.loadedFiles) {
+        for (File file : this.loadedFiles) {
             // Add each file name to the list model
             this.fileListModel.addElement(file.getName());
         }
@@ -223,7 +223,7 @@ public final class LoadDataDialog extends JPanel {
         // use an anonymous inner class to implement the event listener interface
         this.fileList.addListSelectionListener((e) -> {
             if (!e.getValueIsAdjusting()) {
-                final int fileIndex = this.fileList.getMinSelectionIndex();
+                int fileIndex = this.fileList.getMinSelectionIndex();
                 if (fileIndex < 0) {
                     this.filePreviewBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(this.defaulyPreviewBoxBorderTitle), new EmptyBorder(5, 5, 5, 5)));
                     this.filePreviewTextArea.setText("");
@@ -239,17 +239,17 @@ public final class LoadDataDialog extends JPanel {
         // Right click mouse on file name to show the close option
         this.fileList.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(final MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    final int index = LoadDataDialog.this.fileList.getSelectedIndex();
+                    int index = LoadDataDialog.this.fileList.getSelectedIndex();
 
-                    final JPopupMenu menu = new JPopupMenu();
-                    final JMenuItem close = new JMenuItem("Remove this selected file from the loading list");
+                    JPopupMenu menu = new JPopupMenu();
+                    JMenuItem close = new JMenuItem("Remove this selected file from the loading list");
                     menu.add(close);
 
-                    final Point point = e.getPoint();
+                    Point point = e.getPoint();
                     menu.show(LoadDataDialog.this.fileList, point.x, point.y);
 
                     close.addActionListener((evt) -> {
@@ -259,7 +259,7 @@ public final class LoadDataDialog extends JPanel {
                                     "You can't remove when there's only one file.");
                         } else {
                             // Close tab to show confirmation dialog
-                            final int selectedAction = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                            int selectedAction = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                                     "Are you sure you want to remove this data file from the data loading list?",
                                     "Confirm", JOptionPane.OK_CANCEL_OPTION,
                                     JOptionPane.WARNING_MESSAGE);
@@ -284,7 +284,7 @@ public final class LoadDataDialog extends JPanel {
         });
 
         // Put the list in a scrollable area
-        final JScrollPane fileListScrollPane = new JScrollPane(this.fileList);
+        JScrollPane fileListScrollPane = new JScrollPane(this.fileList);
         fileListScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         this.fileListBox = Box.createVerticalBox();
@@ -301,8 +301,8 @@ public final class LoadDataDialog extends JPanel {
         // Add file button listener
         this.addFileButton.addActionListener((e) -> {
             // Show file chooser
-            final JFileChooser fileChooser = new JFileChooser();
-            final String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
+            JFileChooser fileChooser = new JFileChooser();
+            String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
             fileChooser.setCurrentDirectory(new File(sessionSaveLocation));
             fileChooser.resetChoosableFileFilters();
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -311,17 +311,17 @@ public final class LoadDataDialog extends JPanel {
             // Customize dialog title bar text
             fileChooser.setDialogTitle("Add more files");
             // The second argument sets both the title for the dialog window and the label for the approve button
-            final int _ret = fileChooser.showDialog(this.container, "Choose");
+            int _ret = fileChooser.showDialog(this.container, "Choose");
 
             if (_ret == JFileChooser.CANCEL_OPTION) {
                 return;
             }
 
             // File array that contains only one file
-            final File[] newFiles = fileChooser.getSelectedFiles();
+            File[] newFiles = fileChooser.getSelectedFiles();
 
             // Add newly added files to the loading list
-            for (final File newFile : newFiles) {
+            for (File newFile : newFiles) {
                 // Do not add the same file twice
                 if (!this.loadedFiles.contains(newFile)) {
                     this.loadedFiles.add(newFile);
@@ -354,13 +354,13 @@ public final class LoadDataDialog extends JPanel {
         setPreview(this.loadedFiles.get(0), this.filePreviewTextArea);
 
         // Add the scrollable text area in a scroller
-        final JScrollPane filePreviewScrollPane = new JScrollPane(this.filePreviewTextArea);
+        JScrollPane filePreviewScrollPane = new JScrollPane(this.filePreviewTextArea);
         this.filePreviewBox.add(filePreviewScrollPane);
 
         // Add gap between preview text area and the help instruction
         this.filePreviewBox.add(Box.createVerticalStrut(10));
 
-        final JLabel previewInstructionText = new JLabel(String.format("Showing from line %d to line %d, up to %d characters per line", this.previewFromLine, this.previewToLine, this.previewNumOfCharactersPerLine));
+        JLabel previewInstructionText = new JLabel(String.format("Showing from line %d to line %d, up to %d characters per line", this.previewFromLine, this.previewToLine, this.previewNumOfCharactersPerLine));
 
         // Add the instruction
         this.filePreviewBox.add(previewInstructionText);
@@ -382,7 +382,7 @@ public final class LoadDataDialog extends JPanel {
 
         this.validationSummaryBox = Box.createHorizontalBox();
 
-        final JLabel validationSummaryText = new JLabel("Please review. You can change the settings or add/remove files by clicking the Settings button.");
+        JLabel validationSummaryText = new JLabel("Please review. You can change the settings or add/remove files by clicking the Settings button.");
 
         this.validationSummaryBox.add(validationSummaryText);
 
@@ -401,7 +401,7 @@ public final class LoadDataDialog extends JPanel {
         // List listener
         this.validationFileList.addListSelectionListener((e) -> {
             if (!e.getValueIsAdjusting()) {
-                final int fileIndex = this.validationFileList.getSelectedIndex();
+                int fileIndex = this.validationFileList.getSelectedIndex();
                 // -1 means no selection
                 if (fileIndex != -1) {
                     setValidationResult(this.validationResults.get(fileIndex), this.validationResultTextPane);
@@ -428,7 +428,7 @@ public final class LoadDataDialog extends JPanel {
         this.validationResultTextPane.setContentType("text/html");
         this.validationResultTextPane.setEditable(false);
 
-        final JScrollPane summaryScrollPane = new JScrollPane(this.validationResultTextPane);
+        JScrollPane summaryScrollPane = new JScrollPane(this.validationResultTextPane);
         this.validationMessageBox.add(summaryScrollPane);
 
         this.validationResultsBox.add(this.validationMessageBox);
@@ -495,7 +495,7 @@ public final class LoadDataDialog extends JPanel {
         this.validateButton.addActionListener((e) -> {
             // First we want to do some basic form validation/checks
             // to eliminate user errors
-            final List<String> inputErrors = new ArrayList();
+            List<String> inputErrors = new ArrayList();
 
             if (!this.loadDataSettings.isColumnLabelSpecified()) {
                 inputErrors.add("- Please specify the column labels to ignore.");
@@ -508,7 +508,7 @@ public final class LoadDataDialog extends JPanel {
             // Show all errors in one popup
             if (!inputErrors.isEmpty()) {
                 String inputErrorMessages = "";
-                for (final String error : inputErrors) {
+                for (String error : inputErrors) {
                     inputErrorMessages = inputErrorMessages + error + "\n";
                 }
                 JOptionPane.showMessageDialog(this.container, inputErrorMessages, "Input Error",
@@ -584,7 +584,7 @@ public final class LoadDataDialog extends JPanel {
                 try {
                     // Load all data files via data reader
                     loadAllFiles();
-                } catch (final IOException ex) {
+                } catch (IOException ex) {
                     Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
@@ -597,7 +597,7 @@ public final class LoadDataDialog extends JPanel {
                     hideLoadingIndicator();
 
                     // Close the data loader dialog
-                    final Window w = SwingUtilities.getWindowAncestor(this.loadButton);
+                    Window w = SwingUtilities.getWindowAncestor(this.loadButton);
                     if (w != null) {
                         w.setVisible(false);
                     }
@@ -631,7 +631,7 @@ public final class LoadDataDialog extends JPanel {
 
         // Add to overall container
 //        container.add(buttonsContainer);
-        final JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(this.container, BorderLayout.CENTER);
         mainPanel.add(this.buttonsContainer, BorderLayout.SOUTH);
 
@@ -650,19 +650,19 @@ public final class LoadDataDialog extends JPanel {
     /**
      * Create the loading indicator dialog and show
      */
-    private void showLoadingIndicator(final String message, final ActionEvent evt) {
-        final JProgressBar progressBar = new JProgressBar(0, 100);
+    private void showLoadingIndicator(String message, ActionEvent evt) {
+        JProgressBar progressBar = new JProgressBar(0, 100);
         // An indeterminate progress bar continuously displays animation
         progressBar.setIndeterminate(true);
 
-        final Box dataLoadingIndicatorBox = Box.createVerticalBox();
+        Box dataLoadingIndicatorBox = Box.createVerticalBox();
         dataLoadingIndicatorBox.setPreferredSize(new Dimension(200, 60));
 
-        final JLabel label = new JLabel(message);
+        JLabel label = new JLabel(message);
         // JLabel label = new JLabel(message, SwingConstants.CENTER); doesn't
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        final Box progressBarBox = Box.createHorizontalBox();
+        Box progressBarBox = Box.createHorizontalBox();
         progressBarBox.add(Box.createRigidArea(new Dimension(10, 1)));
         progressBarBox.add(progressBar);
         progressBarBox.add(Box.createRigidArea(new Dimension(10, 1)));
@@ -673,7 +673,7 @@ public final class LoadDataDialog extends JPanel {
         dataLoadingIndicatorBox.add(Box.createVerticalStrut(10));
         dataLoadingIndicatorBox.add(progressBarBox);
 
-        final Frame ancestor = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, (Component) evt.getSource());
+        Frame ancestor = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, (Component) evt.getSource());
 
         // Set modal true to block user input to other top-level windows when shown
         this.loadingIndicatorDialog = new JDialog(ancestor, true);
@@ -703,17 +703,17 @@ public final class LoadDataDialog extends JPanel {
     private void validateAllFiles() {
         for (int i = 0; i < this.loadedFiles.size(); i++) {
             try {
-                final StringBuilder strBuilder = new StringBuilder();
+                StringBuilder strBuilder = new StringBuilder();
                 strBuilder.append("<p>Validation result of ");
                 strBuilder.append(this.loadedFiles.get(i).getName());
                 strBuilder.append(":</p>");
 
-                final List<ValidationResult> results = this.loadDataSettings.validateDataWithSettings(this.loadedFiles.get(i));
+                List<ValidationResult> results = this.loadDataSettings.validateDataWithSettings(this.loadedFiles.get(i));
 
-                final List<ValidationResult> infos = new LinkedList<>();
-                final List<ValidationResult> warnings = new LinkedList<>();
-                final List<ValidationResult> errors = new LinkedList<>();
-                for (final ValidationResult result : results) {
+                List<ValidationResult> infos = new LinkedList<>();
+                List<ValidationResult> warnings = new LinkedList<>();
+                List<ValidationResult> errors = new LinkedList<>();
+                for (ValidationResult result : results) {
                     switch (result.getCode()) {
                         case INFO:
                             infos.add(result);
@@ -738,7 +738,7 @@ public final class LoadDataDialog extends JPanel {
 
                 // Show warning messages
                 if (!warnings.isEmpty()) {
-                    final int warnCount = warnings.size();
+                    int warnCount = warnings.size();
 
                     strBuilder.append("<p style=\"color: orange;\"><b>Warning (total ");
                     strBuilder.append(warnCount);
@@ -766,9 +766,9 @@ public final class LoadDataDialog extends JPanel {
 
                 // Show errors if found
                 if (!errors.isEmpty()) {
-                    final int errorCount = errors.size();
+                    int errorCount = errors.size();
 
-                    final String errorCountString = (errorCount > 1) ? " errors" : " error";
+                    String errorCountString = (errorCount > 1) ? " errors" : " error";
 
                     strBuilder.append("<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following ");
 
@@ -812,7 +812,7 @@ public final class LoadDataDialog extends JPanel {
                 }
 
                 this.validationResults.add(strBuilder.toString());
-            } catch (final IOException ex) {
+            } catch (IOException ex) {
                 Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -849,7 +849,7 @@ public final class LoadDataDialog extends JPanel {
     private void loadAllFiles() throws IOException {
         // Try to load each file and store the file name for failed loading
         for (int i = 0; i < this.loadedFiles.size(); i++) {
-            final DataModel dataModel = this.loadDataSettings.loadDataWithSettings(this.loadedFiles.get(i));
+            DataModel dataModel = this.loadDataSettings.loadDataWithSettings(this.loadedFiles.get(i));
 
             // Add to dataModelList for further use
             if (dataModel != null) {
@@ -876,7 +876,7 @@ public final class LoadDataDialog extends JPanel {
      * @param output
      * @param textPane
      */
-    private void setValidationResult(final String output, final JTextPane textPane) {
+    private void setValidationResult(String output, JTextPane textPane) {
         // Wrap the output in html
         textPane.setText("<html><body style=\"font-family: Monospaced; font-size: 10px; white-space:nowrap; \"" + output + "</body></html>");
         // Scroll back to top left
@@ -889,16 +889,16 @@ public final class LoadDataDialog extends JPanel {
      * @param file
      * @param textArea
      */
-    private void setPreview(final File file, final JTextArea textArea) {
+    private void setPreview(File file, JTextArea textArea) {
         try {
             textArea.setText("");
-            final DataPreviewer dataPreviewer = new BasicDataPreviewer(file.toPath());
-            final List<String> linePreviews = dataPreviewer.getPreviews(this.previewFromLine, this.previewToLine, this.previewNumOfCharactersPerLine);
-            for (final String line : linePreviews) {
+            DataPreviewer dataPreviewer = new BasicDataPreviewer(file.toPath());
+            List<String> linePreviews = dataPreviewer.getPreviews(this.previewFromLine, this.previewToLine, this.previewNumOfCharactersPerLine);
+            for (String line : linePreviews) {
                 textArea.append(line + "\n");
             }
             textArea.setCaretPosition(0);
-        } catch (final IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

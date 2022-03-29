@@ -115,7 +115,7 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
     }
 
     @Override
-    public void setIndependenceWrapper(final IndependenceWrapper independenceWrapper) {
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
 

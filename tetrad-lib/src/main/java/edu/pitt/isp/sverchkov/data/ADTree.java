@@ -46,15 +46,15 @@ public class ADTree<A, V> extends ADTreeHelper {
     private final List<VHelper> values;
     private final CountNode root;
 
-    public ADTree(final DataTable<A, V> data) {
+    public ADTree(DataTable<A, V> data) {
         super(data.columnCount());
 
         {
-            final Map<A, Integer> attrLookup = new HashMap<>();
-            final List<A> attrs = new ArrayList<>(data.variables());
+            Map<A, Integer> attrLookup = new HashMap<>();
+            List<A> attrs = new ArrayList<>(data.variables());
 
             int i = 0;
-            for (final A attribute : attrs)
+            for (A attribute : attrs)
                 attrLookup.put(attribute, i++);
 
             // Set immutable
@@ -62,20 +62,20 @@ public class ADTree<A, V> extends ADTreeHelper {
             this.attributes = Collections.unmodifiableList(attrs);
         }
 
-        final int[][] array = new int[data.rowCount()][this.m];
+        int[][] array = new int[data.rowCount()][this.m];
 
         {
-            final List<VHelper> v = new ArrayList<>(this.m);
+            List<VHelper> v = new ArrayList<>(this.m);
 
             for (int i = 0; i < this.m; i++)
                 v.add(new VHelper());
 
             int r = 0;
-            for (final List<V> row : data) {
+            for (List<V> row : data) {
                 for (int i = 0; i < this.m; i++) {
-                    final V value = row.get(i);
-                    final List<V> vlist = v.get(i).list;
-                    final Map<V, Integer> vmap = v.get(i).map;
+                    V value = row.get(i);
+                    List<V> vlist = v.get(i).list;
+                    Map<V, Integer> vmap = v.get(i).map;
                     if (!vlist.contains(value)) {
                         vmap.put(value, vlist.size());
                         vlist.add(value);
@@ -87,8 +87,8 @@ public class ADTree<A, V> extends ADTreeHelper {
             }
 
             // Set immutable
-            for (final ListIterator<VHelper> iter = v.listIterator(); iter.hasNext(); ) {
-                final VHelper h = iter.next();
+            for (ListIterator<VHelper> iter = v.listIterator(); iter.hasNext(); ) {
+                VHelper h = iter.next();
                 iter.set(new VHelper(
                         Collections.unmodifiableList(h.list),
                         Collections.unmodifiableMap(h.map)));
@@ -101,16 +101,16 @@ public class ADTree<A, V> extends ADTreeHelper {
         this.root = new CountNode(this.m, array);
     }
 
-    public List<V> values(final A attribute) {
-        final int index = Objects.requireNonNull(this.attributeLookup.get(attribute),
+    public List<V> values(A attribute) {
+        int index = Objects.requireNonNull(this.attributeLookup.get(attribute),
                 "Attribute " + attribute.toString() + " not found.");
         return this.values.get(index).list;
     }
 
-    public int count(final Map<A, V> assignment) {
-        final int[] a = new int[this.m];
+    public int count(Map<A, V> assignment) {
+        int[] a = new int[this.m];
         for (int i = 0; i < this.m; i++) {
-            final V value = assignment.get(this.attributes.get(i));
+            V value = assignment.get(this.attributes.get(i));
             if (null != value)
                 a[i] = this.values.get(i).map.get(value);
             else a[i] = -1;
@@ -118,12 +118,12 @@ public class ADTree<A, V> extends ADTreeHelper {
         return count(a, this.root);
     }
 
-    public Map<V, Integer> counts(final A attribute, final Map<A, V> assignment) {
+    public Map<V, Integer> counts(A attribute, Map<A, V> assignment) {
 
-        final List<V> vlist = this.values.get(this.attributeLookup.get(attribute)).list;
-        final Map<V, Integer> result = new HashMap<>(vlist.size());
-        for (final V value : vlist) {
-            final Map<A, V> a = new HashMap<>(assignment);
+        List<V> vlist = this.values.get(this.attributeLookup.get(attribute)).list;
+        Map<V, Integer> result = new HashMap<>(vlist.size());
+        for (V value : vlist) {
+            Map<A, V> a = new HashMap<>(assignment);
             a.put(attribute, value);
             result.put(value, count(a));
         }
@@ -135,14 +135,14 @@ public class ADTree<A, V> extends ADTreeHelper {
         return toXML(DocumentBuilderFactory.newInstance().newDocumentBuilder());
     }
 
-    public Document toXML(final DocumentBuilder builder) {
-        final Document doc = builder.newDocument();
+    public Document toXML(DocumentBuilder builder) {
+        Document doc = builder.newDocument();
 
-        final Element docRoot = doc.createElement("adtree");
+        Element docRoot = doc.createElement("adtree");
         doc.appendChild(docRoot);
 
         if (null != this.root) {
-            final Element cNode = doc.createElement("count");
+            Element cNode = doc.createElement("count");
             recursiveXML(doc, cNode, this.root);
             docRoot.appendChild(cNode);
         }
@@ -150,14 +150,14 @@ public class ADTree<A, V> extends ADTreeHelper {
         return doc;
     }
 
-    private void recursiveXML(final Document doc, final Element cNode, final CountNode node) {
+    private void recursiveXML(Document doc, Element cNode, CountNode node) {
         cNode.setAttribute("count", Integer.toString(node.count));
         for (int i = 0; i < node.vary.length; i++) {
-            final Element vNode = doc.createElement("vary");
+            Element vNode = doc.createElement("vary");
             vNode.setAttribute("attribute", this.attributes.get(i).toString());
             cNode.appendChild(vNode);
             for (int j = 0; j < node.vary[i].values.length; j++) {
-                final Element e;
+                Element e;
                 if (j == node.vary[i].mcv)
                     e = doc.createElement("mcv");
                 else if (null == node.vary[i].values[j])
@@ -181,7 +181,7 @@ public class ADTree<A, V> extends ADTreeHelper {
             this.map = new HashMap<>();
         }
 
-        private VHelper(final List<V> list, final Map<V, Integer> map) {
+        private VHelper(List<V> list, Map<V, Integer> map) {
             this.list = list;
             this.map = map;
         }

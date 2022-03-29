@@ -32,13 +32,13 @@ import java.util.List;
  * avoid package cycles.
  */
 public class DataGraphUtils {
-    public static Graph randomSingleFactorModel(final int numStructuralNodes,
-                                                final int numStructuralEdges, final int numMeasurementsPerLatent,
-                                                final int numLatentMeasuredImpureParents,
-                                                final int numMeasuredMeasuredImpureParents,
-                                                final int numMeasuredMeasuredImpureAssociations) {
+    public static Graph randomSingleFactorModel(int numStructuralNodes,
+                                                int numStructuralEdges, int numMeasurementsPerLatent,
+                                                int numLatentMeasuredImpureParents,
+                                                int numMeasuredMeasuredImpureParents,
+                                                int numMeasuredMeasuredImpureAssociations) {
 
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numStructuralNodes; i++) {
             vars.add(new ContinuousVariable("X" + (i + 1)));
@@ -52,7 +52,7 @@ public class DataGraphUtils {
                     30, 15, 15, false, true);
         } while (dag.getNumEdges() != numStructuralEdges);
 
-        final Graph graph = new EdgeListGraph(dag);
+        Graph graph = new EdgeListGraph(dag);
 
         return DataGraphUtils.randomMim(graph, numMeasurementsPerLatent,
                 numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents, numMeasuredMeasuredImpureAssociations,
@@ -60,34 +60,34 @@ public class DataGraphUtils {
 
     }
 
-    public static Graph randomMim(final Graph graph, final int numMeasurementsPerLatent,
-                                  final int numLatentMeasuredImpureParents,
-                                  final int numMeasuredMeasuredImpureParents,
-                                  final int numMeasuredMeasuredImpureAssociations, final boolean arrangeGraph) {
-        final Graph graph1 = new EdgeListGraph(graph);
+    public static Graph randomMim(Graph graph, int numMeasurementsPerLatent,
+                                  int numLatentMeasuredImpureParents,
+                                  int numMeasuredMeasuredImpureParents,
+                                  int numMeasuredMeasuredImpureAssociations, boolean arrangeGraph) {
+        Graph graph1 = new EdgeListGraph(graph);
 //        Graph graph1 = graph;
 
-        final List<Node> latents = graph1.getNodes();
+        List<Node> latents = graph1.getNodes();
 
-        for (final Node latent : latents) {
+        for (Node latent : latents) {
             latent.setNodeType(NodeType.LATENT);
 
             if (!(latent.getNodeType() == NodeType.LATENT)) {
                 throw new IllegalArgumentException("Expected latent.");
             }
 
-            final String newName = "L." + latent.getName();
+            String newName = "L." + latent.getName();
             ((EdgeListGraph) graph1).changeName(latent.getName(), newName);
 //            latent.setName(newName);
         }
 
         int measureIndex = 0;
 
-        for (final Object latent1 : latents) {
-            final Node latent = (Node) latent1;
+        for (Object latent1 : latents) {
+            Node latent = (Node) latent1;
 
             for (int j = 0; j < numMeasurementsPerLatent; j++) {
-                final Node measurement = new GraphNode("X" + (++measureIndex));
+                Node measurement = new GraphNode("X" + (++measureIndex));
                 graph1.addNode(measurement);
                 graph1.addDirectedEdge(latent, measurement);
             }
@@ -101,10 +101,10 @@ public class DataGraphUtils {
                 break;
             }
 
-            final int j = RandomUtil.getInstance().nextInt(latents.size());
-            final Node latent = latents.get(j);
-            final List<Node> nodes = graph1.getNodes();
-            final List<Node> measures = graph1.getNodesOutTo(latent, Endpoint.ARROW);
+            int j = RandomUtil.getInstance().nextInt(latents.size());
+            Node latent = latents.get(j);
+            List<Node> nodes = graph1.getNodes();
+            List<Node> measures = graph1.getNodesOutTo(latent, Endpoint.ARROW);
             measures.removeAll(latents);
             nodes.removeAll(latents);
             nodes.removeAll(measures);
@@ -115,8 +115,8 @@ public class DataGraphUtils {
                 continue;
             }
 
-            final int k = RandomUtil.getInstance().nextInt(nodes.size());
-            final Node measure = nodes.get(k);
+            int k = RandomUtil.getInstance().nextInt(nodes.size());
+            Node measure = nodes.get(k);
 
             if (graph1.getEdge(latent, measure) != null ||
                     graph1.isAncestorOf(measure, latent)) {
@@ -139,10 +139,10 @@ public class DataGraphUtils {
                 break;
             }
 
-            final int j = RandomUtil.getInstance().nextInt(latents.size());
-            final Node latent = latents.get(j);
-            final List<Node> nodes = graph1.getNodes();
-            final List<Node> measures = graph1.getNodesOutTo(latent, Endpoint.ARROW);
+            int j = RandomUtil.getInstance().nextInt(latents.size());
+            Node latent = latents.get(j);
+            List<Node> nodes = graph1.getNodes();
+            List<Node> measures = graph1.getNodesOutTo(latent, Endpoint.ARROW);
             measures.removeAll(latents);
 
             if (measures.isEmpty()) {
@@ -151,8 +151,8 @@ public class DataGraphUtils {
                 continue;
             }
 
-            final int m = RandomUtil.getInstance().nextInt(measures.size());
-            final Node measure1 = measures.get(m);
+            int m = RandomUtil.getInstance().nextInt(measures.size());
+            Node measure1 = measures.get(m);
 
             nodes.removeAll(latents);
             nodes.removeAll(measures);
@@ -163,8 +163,8 @@ public class DataGraphUtils {
                 continue;
             }
 
-            final int k = RandomUtil.getInstance().nextInt(nodes.size());
-            final Node measure2 = nodes.get(k);
+            int k = RandomUtil.getInstance().nextInt(nodes.size());
+            Node measure2 = nodes.get(k);
 
             if (graph1.getEdge(measure1, measure2) != null ||
                     graph1.isAncestorOf(measure2, measure1)) {
@@ -185,10 +185,10 @@ public class DataGraphUtils {
                 break;
             }
 
-            final int j = RandomUtil.getInstance().nextInt(latents.size());
-            final Node latent = latents.get(j);
-            final List<Node> nodes = graph1.getNodes();
-            final List<Node> measures = graph1.getNodesOutTo(latent, Endpoint.ARROW);
+            int j = RandomUtil.getInstance().nextInt(latents.size());
+            Node latent = latents.get(j);
+            List<Node> nodes = graph1.getNodes();
+            List<Node> measures = graph1.getNodesOutTo(latent, Endpoint.ARROW);
             measures.removeAll(latents);
 
             if (measures.isEmpty()) {
@@ -197,8 +197,8 @@ public class DataGraphUtils {
                 continue;
             }
 
-            final int m = RandomUtil.getInstance().nextInt(measures.size());
-            final Node measure1 = measures.get(m);
+            int m = RandomUtil.getInstance().nextInt(measures.size());
+            Node measure1 = measures.get(m);
 
             nodes.removeAll(latents);
             nodes.removeAll(measures);
@@ -209,8 +209,8 @@ public class DataGraphUtils {
                 continue;
             }
 
-            final int k = RandomUtil.getInstance().nextInt(nodes.size());
-            final Node measure2 = nodes.get(k);
+            int k = RandomUtil.getInstance().nextInt(nodes.size());
+            Node measure2 = nodes.get(k);
 
             if (graph1.getEdge(measure1, measure2) != null) {
                 i--;
@@ -235,22 +235,22 @@ public class DataGraphUtils {
      * edges, and impurity structure. Then this is converted to a bifactor model by adding new latents and
      * edges.
      */
-    public static Graph randomBifactorModel(final int numStructuralNodes,
-                                            final int numStructuralEdges, final int numMeasurementsPerLatent,
-                                            final int numLatentMeasuredImpureParents,
-                                            final int numMeasuredMeasuredImpureParents,
-                                            final int numMeasuredMeasuredImpureAssociations) {
-        final Graph mim = DataGraphUtils.randomSingleFactorModel(numStructuralNodes, numStructuralEdges,
+    public static Graph randomBifactorModel(int numStructuralNodes,
+                                            int numStructuralEdges, int numMeasurementsPerLatent,
+                                            int numLatentMeasuredImpureParents,
+                                            int numMeasuredMeasuredImpureParents,
+                                            int numMeasuredMeasuredImpureAssociations) {
+        Graph mim = DataGraphUtils.randomSingleFactorModel(numStructuralNodes, numStructuralEdges,
                 numMeasurementsPerLatent, numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations);
 
-        final List<Node> latents = new ArrayList<>();
-        final List<Node> latents2 = new ArrayList<>();
+        List<Node> latents = new ArrayList<>();
+        List<Node> latents2 = new ArrayList<>();
 
-        for (final Node node : mim.getNodes()) {
+        for (Node node : mim.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
                 latents.add(node);
-                final GraphNode node2 = new GraphNode(node.getName() + "B");
+                GraphNode node2 = new GraphNode(node.getName() + "B");
                 node2.setNodeType(NodeType.LATENT);
                 latents2.add(node2);
                 mim.addNode(node2);
@@ -258,13 +258,13 @@ public class DataGraphUtils {
         }
 
         for (int i = 0; i < latents.size(); i++) {
-            final Node latent = latents.get(i);
+            Node latent = latents.get(i);
 
-            for (final Node child : mim.getChildren(latent)) {
+            for (Node child : mim.getChildren(latent)) {
                 if (child.getNodeType() == NodeType.MEASURED) {
                     mim.addDirectedEdge(latents2.get(i), child);
                 } else {
-                    final int j = latents.indexOf(child);
+                    int j = latents.indexOf(child);
                     mim.addDirectedEdge(latents2.get(i), latents2.get(j));
                 }
             }

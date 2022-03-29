@@ -36,7 +36,7 @@ public abstract class BasicLTMatrix extends BasicMatrix {
     /**
      * Creates a lower triangular matrix with <code>nrows</code> rows.
      */
-    public BasicLTMatrix(final String mname, final int nrows) {
+    public BasicLTMatrix(String mname, int nrows) {
         super(mname, nrows);
     }
 
@@ -56,12 +56,12 @@ public abstract class BasicLTMatrix extends BasicMatrix {
      * may have less elements than the total needed to fill the matrix.  If it
      * has more elements an illegal argument exception will be generated.
      */
-    public BasicLTMatrix(final String fname)
+    public BasicLTMatrix(String fname)
             throws IOException {
         // Create and prepare stream tokenizer
-        final File f = new File(fname);
-        final BufferedReader in = new BufferedReader(new FileReader(f));
-        final StreamTokenizer strmTok = new StreamTokenizer(in);
+        File f = new File(fname);
+        BufferedReader in = new BufferedReader(new FileReader(f));
+        StreamTokenizer strmTok = new StreamTokenizer(in);
         strmTok.slashStarComments(true);
         strmTok.slashSlashComments(true);
         strmTok.parseNumbers();
@@ -95,7 +95,7 @@ public abstract class BasicLTMatrix extends BasicMatrix {
         while (true) {
             try {
                 nt = strmTok.nextToken();
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 break;
             }
             if (nt == StreamTokenizer.TT_EOF) {

@@ -91,12 +91,12 @@ class RegressionPlane {
      * @param coefP         the array of coefP-values for the regression
      *                      coefficients.
      */
-    public RegressionPlane(final boolean zeroIntercept, final String[] varNames,
-                           final int numRegressors, final int sampleSize, final double[] coefs, final double[] coefT,
-                           final double[] coefP, final double rsquare, final double[] coefSE, final String summary) {
+    public RegressionPlane(boolean zeroIntercept, String[] varNames,
+                           int numRegressors, int sampleSize, double[] coefs, double[] coefT,
+                           double[] coefP, double rsquare, double[] coefSE, String summary) {
         this.zeroIntercept = zeroIntercept;
 
-        final int error = zeroIntercept ? 0 : 1;
+        int error = zeroIntercept ? 0 : 1;
 
         if (varNames.length != numRegressors + error) {
             throw new IllegalArgumentException();
@@ -173,10 +173,10 @@ class RegressionPlane {
         return this.varNames;
     }
 
-    public double getPredictedValue(final double[] x) {
+    public double getPredictedValue(double[] x) {
         double yHat = 0.0;
 
-        final int offset = this.zeroIntercept ? 0 : 1;
+        int offset = this.zeroIntercept ? 0 : 1;
 
         for (int i = offset; i < this.numRegressors; i++) {
             yHat += this.coefs[i + offset] * x[i];

@@ -69,8 +69,8 @@ public class BasalInitializer implements Initializer {
      * Constructs a new history that will initialize genes using the given basal
      * expression and initial standard deviation.
      */
-    public BasalInitializer(final UpdateFunction updateFunction,
-                            final double basalExpression, final double initStDev) {
+    public BasalInitializer(UpdateFunction updateFunction,
+                            double basalExpression, double initStDev) {
         if (updateFunction == null) {
             throw new NullPointerException(
                     "Update function must not be " + "null");
@@ -105,9 +105,9 @@ public class BasalInitializer implements Initializer {
      *
      * @param history the 2D double array to randomize.
      */
-    public void initialize(final double[][] history) {
+    public void initialize(double[][] history) {
 
-        final Distribution initDistribution =
+        Distribution initDistribution =
                 new Normal(this.basalExpression, this.initStDev);
 
         // TODO: Make sure normal dist gets nextGaussian, multiplies
@@ -121,7 +121,7 @@ public class BasalInitializer implements Initializer {
         // settle (an unknown number of time steps). jdramsey
         for (int j = 0; j < history[0].length; j++) {
 
-            final IndexedLagGraph connectivity =
+            IndexedLagGraph connectivity =
                     this.updateFunction.getIndexedLagGraph();
 
             if (connectivity.getNumParents(j) == 0) {
@@ -149,7 +149,7 @@ public class BasalInitializer implements Initializer {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

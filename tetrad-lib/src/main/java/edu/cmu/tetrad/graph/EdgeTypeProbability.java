@@ -28,13 +28,13 @@ public class EdgeTypeProbability implements TetradSerializable {
 
     }
 
-    public EdgeTypeProbability(EdgeType edgeType, final List<Edge.Property> properties, final double probability) {
+    public EdgeTypeProbability(EdgeType edgeType, List<Edge.Property> properties, double probability) {
         this.edgeType = edgeType;
         this.properties = properties;
         this.probability = probability;
     }
 
-    public EdgeTypeProbability(final EdgeType edgeType, final double probability) {
+    public EdgeTypeProbability(EdgeType edgeType, double probability) {
         this.edgeType = edgeType;
         this.probability = probability;
     }
@@ -43,11 +43,11 @@ public class EdgeTypeProbability implements TetradSerializable {
         return this.edgeType;
     }
 
-    public void setEdgeType(final EdgeType edgeType) {
+    public void setEdgeType(EdgeType edgeType) {
         this.edgeType = edgeType;
     }
 
-    public void addProperty(final Edge.Property property) {
+    public void addProperty(Edge.Property property) {
         if (!properties.contains(property)) {
             properties.add(property);
         }
@@ -65,7 +65,7 @@ public class EdgeTypeProbability implements TetradSerializable {
         return this.probability;
     }
 
-    public void setProbability(final double probability) {
+    public void setProbability(double probability) {
         this.probability = probability;
     }
 

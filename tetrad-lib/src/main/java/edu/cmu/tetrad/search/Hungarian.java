@@ -37,20 +37,20 @@ public class Hungarian {
     //METHODS FOR CONSOLE INPUT-OUTPUT//
     //********************************//
 
-    public static int readInput(final String prompt)        //Reads input,returns double.
+    public static int readInput(String prompt)        //Reads input,returns double.
     {
-        final Scanner in = new Scanner(System.in);
+        Scanner in = new Scanner(System.in);
         System.out.print(prompt);
         return in.nextInt();
     }
 
-    public static void printTime(final double time)        //Formats time output.
+    public static void printTime(double time)        //Formats time output.
     {
         String timeElapsed = "";
-        final int days = (int) floor(time) / (24 * 3600);
-        final int hours = (int) floor(time % (24 * 3600)) / (3600);
-        final int minutes = (int) floor((time % 3600) / 60);
-        final int seconds = (int) round(time % 60);
+        int days = (int) floor(time) / (24 * 3600);
+        int hours = (int) floor(time % (24 * 3600)) / (3600);
+        int minutes = (int) floor((time % 3600) / 60);
+        int seconds = (int) round(time % 60);
 
         if (days > 0)
             timeElapsed = days + "d:";
@@ -68,7 +68,7 @@ public class Hungarian {
     //*******************************************//
 
     public static void generateRandomArray        //Generates random 2-D array.
-    (final double[][] array, final String randomMethod) {
+    (double[][] array, String randomMethod) {
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[i].length; j++) {
                 if (randomMethod.equals("random")) {
@@ -89,7 +89,7 @@ public class Hungarian {
     }
 
     public static double findLargest                //Finds the largest element in a positive array.
-    (final double[][] array)
+    (double[][] array)
     //works for arrays where all values are >= 0.
     {
         double largest = 0;
@@ -105,8 +105,8 @@ public class Hungarian {
     }
 
     public static double[][] transpose                //Transposes a double[][] array.
-    (final double[][] array) {
-        final double[][] transposedArray = new double[array[0].length][array.length];
+    (double[][] array) {
+        double[][] transposedArray = new double[array[0].length][array.length];
         for (int i = 0; i < transposedArray.length; i++) {
             for (int j = 0; j < transposedArray[i].length; j++) {
                 transposedArray[i][j] = array[j][i];
@@ -116,8 +116,8 @@ public class Hungarian {
     }
 
     public static double[][] copyOf                        //Copies all elements of an array to a new array.
-    (final double[][] original) {
-        final double[][] copy = new double[original.length][original[0].length];
+    (double[][] original) {
+        double[][] copy = new double[original.length][original[0].length];
         for (int i = 0; i < original.length; i++) {
             //Need to do it this way, otherwise it copies only memory location
             System.arraycopy(original[i], 0, copy[i], 0, original[i].length);
@@ -130,12 +130,12 @@ public class Hungarian {
     //METHODS OF THE HUNGARIAN ALGORITHM//
     //**********************************//
 
-    public static int[][] hgAlgorithm(final double[][] array, final String sumType) {
-        final double[][] cost = Hungarian.copyOf(array);        //Create the cost matrix
+    public static int[][] hgAlgorithm(double[][] array, String sumType) {
+        double[][] cost = Hungarian.copyOf(array);        //Create the cost matrix
 
         if (sumType.equalsIgnoreCase("max"))        //Then array is weight array. Must change to cost.
         {
-            final double maxWeight = Hungarian.findLargest(cost);
+            double maxWeight = Hungarian.findLargest(cost);
             for (int i = 0; i < cost.length; i++)                //Generate cost by subtracting.
             {
                 for (int j = 0; j < cost[i].length; j++) {
@@ -143,12 +143,12 @@ public class Hungarian {
                 }
             }
         }
-        final double maxCost = Hungarian.findLargest(cost);                //Find largest cost matrix element (needed for step 6).
+        double maxCost = Hungarian.findLargest(cost);                //Find largest cost matrix element (needed for step 6).
 
-        final int[][] mask = new int[cost.length][cost[0].length];        //The mask array.
-        final int[] rowCover = new int[cost.length];                                        //The row covering vector.
-        final int[] colCover = new int[cost[0].length];                                //The column covering vector.
-        final int[] zero_RC = new int[2];                                                                //Position of last zero from Step 4.
+        int[][] mask = new int[cost.length][cost[0].length];        //The mask array.
+        int[] rowCover = new int[cost.length];                                        //The row covering vector.
+        int[] colCover = new int[cost[0].length];                                //The column covering vector.
+        int[] zero_RC = new int[2];                                                                //Position of last zero from Step 4.
         int step = 1;
         boolean done = false;
         while (done == false)        //main execution loop
@@ -178,7 +178,7 @@ public class Hungarian {
             }
         }//end while
 
-        final int[][] assignment = new int[array.length][2];        //Create the returned array.
+        int[][] assignment = new int[array.length][2];        //Create the returned array.
         for (int i = 0; i < mask.length; i++) {
             for (int j = 0; j < mask[i].length; j++) {
                 if (mask[i][j] == 1) {
@@ -204,7 +204,7 @@ public class Hungarian {
         return assignment;
     }
 
-    public static int hg_step1(int step, final double[][] cost) {
+    public static int hg_step1(int step, double[][] cost) {
         //What STEP 1 does:
         //For each row of the cost matrix, find the smallest element
         //and subtract it from from every other element in its row.
@@ -229,7 +229,7 @@ public class Hungarian {
         return step;
     }
 
-    public static int hg_step2(int step, final double[][] cost, final int[][] mask, final int[] rowCover, final int[] colCover) {
+    public static int hg_step2(int step, double[][] cost, int[][] mask, int[] rowCover, int[] colCover) {
         //What STEP 2 does:
         //Marks uncovered zeros as starred and covers their row and column.
 
@@ -249,7 +249,7 @@ public class Hungarian {
         return step;
     }
 
-    public static int hg_step3(int step, final int[][] mask, final int[] colCover) {
+    public static int hg_step3(int step, int[][] mask, int[] colCover) {
         //What STEP 3 does:
         //Cover columns of starred zeros. Check if all columns are covered.
 
@@ -278,7 +278,7 @@ public class Hungarian {
         return step;
     }
 
-    public static int hg_step4(int step, final double[][] cost, final int[][] mask, final int[] rowCover, final int[] colCover, final int[] zero_RC) {
+    public static int hg_step4(int step, double[][] cost, int[][] mask, int[] rowCover, int[] colCover, int[] zero_RC) {
         //What STEP 4 does:
         //Find an uncovered zero in cost and prime it (if none go to step 6). Check for star in same row:
         //if yes, cover the row and uncover the star's column. Repeat until no uncovered zeros are left
@@ -319,7 +319,7 @@ public class Hungarian {
     }
 
     public static int[] findUncoveredZero        //Aux 1 for hg_step4.
-    (final int[] row_col, final double[][] cost, final int[] rowCover, final int[] colCover) {
+    (int[] row_col, double[][] cost, int[] rowCover, int[] colCover) {
         row_col[0] = -1;        //Just a check value. Not a real index.
         row_col[1] = 0;
 
@@ -344,7 +344,7 @@ public class Hungarian {
         return row_col;
     }
 
-    public static int hg_step5(int step, final int[][] mask, final int[] rowCover, final int[] colCover, final int[] zero_RC) {
+    public static int hg_step5(int step, int[][] mask, int[] rowCover, int[] colCover, int[] zero_RC) {
         //What STEP 5 does:
         //Construct series of alternating primes and stars. Start with prime from step 4.
         //Take star in the same column. Next take prime in the same row as the star. Finish
@@ -352,13 +352,13 @@ public class Hungarian {
         //series. Erasy any other primes. Reset covers. Go to step 3.
 
         int count = 0;                                                                                                //Counts rows of the path matrix.
-        final int[][] path = new int[(mask[0].length * mask.length)][2];        //Path matrix (stores row and col).
+        int[][] path = new int[(mask[0].length * mask.length)][2];        //Path matrix (stores row and col).
         path[count][0] = zero_RC[0];                                                                //Row of last prime.
         path[count][1] = zero_RC[1];                                                                //Column of last prime.
 
         boolean done = false;
         while (done == false) {
-            final int r = Hungarian.findStarInCol(mask, path[count][1]);
+            int r = Hungarian.findStarInCol(mask, path[count][1]);
             if (r >= 0) {
                 count = count + 1;
                 path[count][0] = r;                                        //Row of starred zero.
@@ -368,7 +368,7 @@ public class Hungarian {
             }
 
             if (done == false) {
-                final int c = Hungarian.findPrimeInRow(mask, path[count][0]);
+                int c = Hungarian.findPrimeInRow(mask, path[count][0]);
                 count = count + 1;
                 path[count][0] = path[count - 1][0];        //Row of primed zero.
                 path[count][1] = c;                                        //Col of primed zero.
@@ -385,7 +385,7 @@ public class Hungarian {
     }
 
     public static int findStarInCol                        //Aux 1 for hg_step5.
-    (final int[][] mask, final int col) {
+    (int[][] mask, int col) {
         int r = -1;        //Again this is a check value.
         for (int i = 0; i < mask.length; i++) {
             if (mask[i][col] == 1) {
@@ -397,7 +397,7 @@ public class Hungarian {
     }
 
     public static int findPrimeInRow                //Aux 2 for hg_step5.
-    (final int[][] mask, final int row) {
+    (int[][] mask, int row) {
         int c = -1;
         for (int j = 0; j < mask[row].length; j++) {
             if (mask[row][j] == 2) {
@@ -409,7 +409,7 @@ public class Hungarian {
     }
 
     public static void convertPath                        //Aux 3 for hg_step5.
-    (final int[][] mask, final int[][] path, final int count) {
+    (int[][] mask, int[][] path, int count) {
         for (int i = 0; i <= count; i++) {
             if (mask[(path[i][0])][(path[i][1])] == 1) {
                 mask[(path[i][0])][(path[i][1])] = 0;
@@ -420,7 +420,7 @@ public class Hungarian {
     }
 
     public static void erasePrimes                        //Aux 4 for hg_step5.
-    (final int[][] mask) {
+    (int[][] mask) {
         for (int i = 0; i < mask.length; i++) {
             for (int j = 0; j < mask[i].length; j++) {
                 if (mask[i][j] == 2) {
@@ -431,7 +431,7 @@ public class Hungarian {
     }
 
     public static void clearCovers                        //Aux 5 for hg_step5 (and not only).
-    (final int[] rowCover, final int[] colCover) {
+    (int[] rowCover, int[] colCover) {
         for (int i = 0; i < rowCover.length; i++) {
             rowCover[i] = 0;
         }
@@ -440,12 +440,12 @@ public class Hungarian {
         }
     }
 
-    public static int hg_step6(int step, final double[][] cost, final int[] rowCover, final int[] colCover, final double maxCost) {
+    public static int hg_step6(int step, double[][] cost, int[] rowCover, int[] colCover, double maxCost) {
         //What STEP 6 does:
         //Find smallest uncovered value in cost: a. Add it to every element of covered rows
         //b. Subtract it from every element of uncovered columns. Go to step 4.
 
-        final double minval = Hungarian.findSmallest(cost, rowCover, colCover, maxCost);
+        double minval = Hungarian.findSmallest(cost, rowCover, colCover, maxCost);
 
         for (int i = 0; i < rowCover.length; i++) {
             for (int j = 0; j < colCover.length; j++) {
@@ -463,7 +463,7 @@ public class Hungarian {
     }
 
     public static double findSmallest                //Aux 1 for hg_step6.
-    (final double[][] cost, final int[] rowCover, final int[] colCover, final double maxCost) {
+    (double[][] cost, int[] rowCover, int[] colCover, double maxCost) {
         double minval = maxCost;                                //There cannot be a larger cost than this.
         for (int i = 0; i < cost.length; i++)                //Now find the smallest uncovered value.
         {
@@ -481,7 +481,7 @@ public class Hungarian {
     //MAIN METHOD//
     //***********//
 
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         //Below enter "max" or "min" to find maximum sum or minimum sum assignment.
         final String sumType = "max";
 
@@ -494,8 +494,8 @@ public class Hungarian {
         //};
 
         //<UNCOMMENT> BELOW AND COMMENT BLOCK ABOVE TO USE A RANDOMLY GENERATED MATRIX
-        final int numOfRows = Hungarian.readInput("How many rows for the matrix? ");
-        final int numOfCols = Hungarian.readInput("How many columns for the matrix? ");
+        int numOfRows = Hungarian.readInput("How many rows for the matrix? ");
+        int numOfCols = Hungarian.readInput("How many columns for the matrix? ");
         double[][] array = new double[numOfRows][numOfCols];
         Hungarian.generateRandomArray(array, "random");        //All elements within [0,1].
         //</UNCOMMENT>
@@ -517,10 +517,10 @@ public class Hungarian {
         System.out.println();
         //</COMMENT>*/
 
-        final double startTime = System.nanoTime();
+        double startTime = System.nanoTime();
         int[][] assignment = new int[array.length][2];
         assignment = Hungarian.hgAlgorithm(array, sumType);        //Call Hungarian algorithm.
-        final double endTime = System.nanoTime();
+        double endTime = System.nanoTime();
 
         System.out.println("The winning assignment (" + sumType + " sum) is:\n");
         double sum = 0;

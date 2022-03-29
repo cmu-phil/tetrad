@@ -65,9 +65,9 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * Paints the component.
      */
-    public void paint(final Graphics g) {
-        final int width = getSize().width;
-        final int height = getSize().height;
+    public void paint(Graphics g) {
+        int width = getSize().width;
+        int height = getSize().height;
         g.setColor(NoteDisplayComp.BACKGROUND_COLOR);
         g.fillRect(0, 0, width, height);
 
@@ -89,7 +89,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * Sets the acronym of the component.
      */
-    public void setAcronym(final String acronym) {
+    public void setAcronym(String acronym) {
 
     }
 
@@ -105,19 +105,19 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * Sets the comp as selected.
      */
-    public void setSelected(final boolean selected) {
+    public void setSelected(boolean selected) {
         this.selected = selected;
     }
 
     /**
      * Does nothing.
      */
-    public void setHasModel(final boolean b) {
+    public void setHasModel(boolean b) {
         // Ignore.
     }
 
 
-    public void setName(final String name) {
+    public void setName(String name) {
         super.setName(name);
         this.name.setText(name);
         //buildComponents();
@@ -132,10 +132,10 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
         setBackground(NoteDisplayComp.BACKGROUND_COLOR);
         setFont(DisplayNodeUtils.getFont());
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
         b.add(Box.createVerticalStrut(2));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalStrut(5));
         b2.add(this.name);
         b2.add(Box.createHorizontalStrut(5));

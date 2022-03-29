@@ -34,7 +34,7 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
     private final Map<String, Integer> values;
     private List<String> categories;
 
-    public DiscreteTabularDataColumn(final DataColumn dataColumn) {
+    public DiscreteTabularDataColumn(DataColumn dataColumn) {
         this.dataColumn = dataColumn;
         this.values = new TreeMap<>();
     }
@@ -45,23 +45,23 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
     }
 
     @Override
-    public Integer getEncodeValue(final String value) {
+    public Integer getEncodeValue(String value) {
         return this.values.get(value);
     }
 
     @Override
     public void recategorize() {
-        final Set<String> keyset = this.values.keySet();
+        Set<String> keyset = this.values.keySet();
         this.categories = new ArrayList<>(keyset.size());
         int count = 0;
-        for (final String key : keyset) {
+        for (String key : keyset) {
             this.values.put(key, count++);
             this.categories.add(key);
         }
     }
 
     @Override
-    public void setValue(final String value) {
+    public void setValue(String value) {
         this.values.put(value, null);
     }
 
@@ -81,7 +81,7 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
                 : this.categories;
     }
 
-    public void setCategories(final List<String> categories) {
+    public void setCategories(List<String> categories) {
         this.categories = categories;
     }
 

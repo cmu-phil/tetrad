@@ -30,8 +30,8 @@ public class BDeuTest implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
-        final BDeuScore score = new BDeuScore(DataUtils.getDiscreteDataSet(dataSet));
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        BDeuScore score = new BDeuScore(DataUtils.getDiscreteDataSet(dataSet));
         score.setSamplePrior(parameters.getDouble(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         return new IndTestScore(score);
@@ -49,7 +49,7 @@ public class BDeuTest implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE);
         parameters.add(Params.STRUCTURE_PRIOR);
         return parameters;

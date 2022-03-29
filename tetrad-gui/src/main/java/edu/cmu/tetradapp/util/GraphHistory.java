@@ -51,7 +51,7 @@ public class GraphHistory {
         this.index = -1;
     }
 
-    public void add(final Graph graph) {
+    public void add(Graph graph) {
         if (graph == null) {
             throw new NullPointerException();
         }

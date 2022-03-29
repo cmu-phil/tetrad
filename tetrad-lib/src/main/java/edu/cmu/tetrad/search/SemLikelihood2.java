@@ -66,7 +66,7 @@ public class SemLikelihood2 {
         private final double lik;
         private final int dof;
 
-        private Ret(final double lik, final int dof) {
+        private Ret(double lik, int dof) {
             this.lik = lik;
             this.dof = dof;
         }
@@ -87,16 +87,16 @@ public class SemLikelihood2 {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemLikelihood2(final ICovarianceMatrix covMatrix) {
+    public SemLikelihood2(ICovarianceMatrix covMatrix) {
         if (covMatrix == null) {
             throw new NullPointerException();
         }
 
         this.nodesHash = new HashMap<>();
-        final List<Node> nodes = covMatrix.getVariables();
+        List<Node> nodes = covMatrix.getVariables();
 
         for (int j = 0; j < nodes.size(); j++) {
-            final Node v = nodes.get(j);
+            Node v = nodes.get(j);
             this.nodesHash.put(v, j);
         }
 
@@ -112,20 +112,20 @@ public class SemLikelihood2 {
      * @param parents The indices of the conditioning variables.
      * @return The likelihood.
      */
-    public Ret getLikelihood(final int i, final int[] parents) {
-        final Node target = this.variables.get(i);
+    public Ret getLikelihood(int i, int[] parents) {
+        Node target = this.variables.get(i);
 
-        final List<ContinuousVariable> X = new ArrayList<>();
+        List<ContinuousVariable> X = new ArrayList<>();
 
-        for (final int p : parents) {
+        for (int p : parents) {
             X.add((ContinuousVariable) this.variables.get(p));
         }
 
-        final List<ContinuousVariable> XPlus = new ArrayList<>(X);
+        List<ContinuousVariable> XPlus = new ArrayList<>(X);
         XPlus.add((ContinuousVariable) target);
 
-        final Ret ret1 = likelihoodJoint(XPlus);
-        final Ret ret2 = likelihoodJoint(X);
+        Ret ret1 = likelihoodJoint(XPlus);
+        Ret ret2 = likelihoodJoint(X);
 
         return new Ret(ret1.getLik() - ret2.getLik(), ret1.getDof() - ret2.getDof());
     }
@@ -135,29 +135,29 @@ public class SemLikelihood2 {
     private Ret likelihoodJoint(List<ContinuousVariable> X) {
         X = new ArrayList<>(X);
 
-        final int k = X.size();
+        int k = X.size();
 
-        final int[] cols = new int[k];
+        int[] cols = new int[k];
         for (int j = 0; j < k; j++) cols[j] = this.nodesHash.get(X.get(j));
-        final int N = this.covMatrix.getSampleSize();
+        int N = this.covMatrix.getSampleSize();
 
-        final Matrix cov = this.covMatrix.getSelection(cols, cols);
-        final double lnL = N * gaussianLikelihood(k, cov);
+        Matrix cov = this.covMatrix.getSelection(cols, cols);
+        double lnL = N * gaussianLikelihood(k, cov);
 
-        final int dof = h(X);
+        int dof = h(X);
         return new Ret(lnL, dof);
     }
 
     // One record.
-    private double gaussianLikelihood(final int k, final Matrix sigma) {
+    private double gaussianLikelihood(int k, Matrix sigma) {
         return -0.5 * logdet(sigma) - 0.5 * k * (1.0 + SemLikelihood2.LOG2PI);
     }
 
-    private double logdet(final Matrix m) {
+    private double logdet(Matrix m) {
         if (m.rows() == 0) return 0;
-        final RealMatrix M = new BlockRealMatrix(m.toArray());
+        RealMatrix M = new BlockRealMatrix(m.toArray());
         final double tol = 1e-9;
-        final RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
+        RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
 
         double sum = 0.0;
 
@@ -170,10 +170,10 @@ public class SemLikelihood2 {
 
     // Degrees of freedom for a discrete distribution is the product of the number of categories for each
     // variable.
-    private int f(final List<DiscreteVariable> A) {
+    private int f(List<DiscreteVariable> A) {
         int f = 1;
 
-        for (final DiscreteVariable V : A) {
+        for (DiscreteVariable V : A) {
             f *= V.getNumCategories();
         }
 
@@ -182,8 +182,8 @@ public class SemLikelihood2 {
 
     // Degrees of freedom for a multivariate Gaussian distribution is p * (p + 1) / 2, where p is the number
     // of variables. This is the number of unique entries in the covariance matrix over X.
-    private int h(final List<ContinuousVariable> X) {
-        final int p = X.size();
+    private int h(List<ContinuousVariable> X) {
+        int p = X.size();
         return p * (p + 1) / 2;
     }
 }

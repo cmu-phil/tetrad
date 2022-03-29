@@ -33,7 +33,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     private List<DataSet> dataSets = new ArrayList<>();
     private IKnowledge knowledge;
 
-    public TimeSeriesSemSimulation(final RandomGraph randomGraph) {
+    public TimeSeriesSemSimulation(RandomGraph randomGraph) {
         if (randomGraph == null) {
             throw new NullPointerException();
         }
@@ -41,7 +41,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
         this.dataSets = new ArrayList<>();
         this.graphs = new ArrayList<>();
@@ -60,15 +60,15 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
             this.graphs.add(graph);
 
-            final SemPm pm = new SemPm(graph);
-            final SemIm im = new SemIm(pm, parameters);
+            SemPm pm = new SemPm(graph);
+            SemIm im = new SemIm(pm, parameters);
 
-            final int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
+            int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
-            final boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
+            boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
             DataSet dataSet = im.simulateData(sampleSize, saveLatentVars);
 
-            final int numLags = ((TimeLagGraph) graph).getMaxLag();
+            int numLags = ((TimeLagGraph) graph).getMaxLag();
 
             dataSet = TimeSeriesUtils.createLagData(dataSet, numLags);
 
@@ -118,12 +118,12 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
+    public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
+    public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
@@ -134,7 +134,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.NUM_LAGS);
 
@@ -171,34 +171,34 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
-    public static void topToBottomLayout(final TimeLagGraph graph) {
+    public static void topToBottomLayout(TimeLagGraph graph) {
 
         final int xStart = 65;
         final int yStart = 50;
         final int xSpace = 100;
         final int ySpace = 100;
-        final List<Node> lag0Nodes = graph.getLag0Nodes();
+        List<Node> lag0Nodes = graph.getLag0Nodes();
 
         Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(final Node o1, final Node o2) {
+            public int compare(Node o1, Node o2) {
                 return o1.getCenterX() - o2.getCenterX();
             }
         });
 
         int x = xStart - xSpace;
 
-        for (final Node node : lag0Nodes) {
+        for (Node node : lag0Nodes) {
             x += xSpace;
             int y = yStart - ySpace;
-            final TimeLagGraph.NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
                 y += ySpace;
-                final Node _node = graph.getNode(id.getName(), lag);
+                Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
                     System.out.println("Couldn't find " + _node);

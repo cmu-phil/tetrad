@@ -58,7 +58,7 @@ public class ParamComparison {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private ParamComparison(final String name) {
+    private ParamComparison(String name) {
         this.name = name;
     }
 

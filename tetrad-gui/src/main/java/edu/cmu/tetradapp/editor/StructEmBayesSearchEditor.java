@@ -57,64 +57,64 @@ class StructEmBayesSearchEditor extends JPanel {
     /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
-    private StructEmBayesSearchEditor(final BayesIm bayesIm,
-                                      final DataSet dataSet) {
+    private StructEmBayesSearchEditor(BayesIm bayesIm,
+                                      DataSet dataSet) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
 
         // Add a menu item to allow the BayesIm to be saved out in
         // causality lab format.
-        final JMenuBar menuBar = new JMenuBar();
+        JMenuBar menuBar = new JMenuBar();
         setLayout(new BorderLayout());
         add(menuBar, BorderLayout.NORTH);
 
-        final JMenu file = new JMenu("File");
+        JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         setLayout(new BorderLayout());
         add(menuBar, BorderLayout.NORTH);
 
         // Rest of setup.
-        final Graph graph = bayesIm.getBayesPm().getDag();
+        Graph graph = bayesIm.getBayesPm().getDag();
 
-        final GraphWorkbench workbench = new GraphWorkbench(graph);
+        GraphWorkbench workbench = new GraphWorkbench(graph);
         this.wizard = new StructEMBayesSearchEditorWizard(bayesIm, workbench);
 
         this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("modelChanged", null, null);
                 }
             }
         });
 
-        final JScrollPane workbenchScroll = new JScrollPane(workbench);
+        JScrollPane workbenchScroll = new JScrollPane(workbench);
         workbenchScroll.setPreferredSize(new Dimension(400, 400));
 
-        final JScrollPane wizardScroll = new JScrollPane(getWizard());
+        JScrollPane wizardScroll = new JScrollPane(getWizard());
 
-        final BayesProperties scorer = new BayesProperties(dataSet);
+        BayesProperties scorer = new BayesProperties(dataSet);
 
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
         buf.append("\nP-value = ").append(scorer.getLikelihoodRatioP(graph));
         buf.append("\nDf = ").append(scorer.getDof());
         /*
       Formats numbers.
      */
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         buf.append("\nChi square = ").append(
                 nf.format(scorer.getChisq()));
         buf.append("\nBIC score = ").append(nf.format(scorer.getBic()));
 
-        final JTextArea modelParametersText = new JTextArea();
+        JTextArea modelParametersText = new JTextArea();
         modelParametersText.setText(buf.toString());
 
-        final JTabbedPane tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Model", wizardScroll);
         tabbedPane.add("Model Statistics", modelParametersText);
 
-        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, tabbedPane);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
@@ -122,7 +122,7 @@ class StructEmBayesSearchEditor extends JPanel {
 
         setName("Bayes IM Editor");
         getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorClosing".equals(evt.getPropertyName())) {
                     firePropertyChange("editorClosing", null, getName());
                 }
@@ -139,7 +139,7 @@ class StructEmBayesSearchEditor extends JPanel {
      * Constructs a new Bayes IM Editor from a Bayes estimator wrapper.
      */
     public StructEmBayesSearchEditor(
-            final StructEmBayesSearchRunner semBayesEstWrapper) {
+            StructEmBayesSearchRunner semBayesEstWrapper) {
         //this(seMbayesEstWrapper.getEstimateBayesIm(),
         //eMbayesEstWrapper.getSelectedDataModel());
         this(semBayesEstWrapper.getEstimatedBayesIm(),
@@ -149,8 +149,8 @@ class StructEmBayesSearchEditor extends JPanel {
     /**
      * Sets the name of this editor.
      */
-    public void setName(final String name) {
-        final String oldName = getName();
+    public void setName(String name) {
+        String oldName = getName();
         super.setName(name);
         this.firePropertyChange("name", oldName, getName());
     }

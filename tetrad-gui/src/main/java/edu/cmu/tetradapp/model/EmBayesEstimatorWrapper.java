@@ -89,8 +89,8 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 //        LogUtils.getInstance().finer("" + estimateBayesIm);
 //    }
 
-    public EmBayesEstimatorWrapper(final DataWrapper dataWrapper,
-                                   final BayesPmWrapper bayesPmWrapper, final Parameters params) {
+    public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
+                                   BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -103,17 +103,17 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
             throw new NullPointerException();
         }
 
-        final DataSet dataSet =
+        DataSet dataSet =
                 (DataSet) dataWrapper.getSelectedDataModel();
-        final BayesPm bayesPm = bayesPmWrapper.getBayesPm();
+        BayesPm bayesPm = bayesPmWrapper.getBayesPm();
 
-        final EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
+        EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
         this.dataSet = estimator.getMixedDataSet();
 
         try {
             estimator.maximization(params.getDouble("tolerance", 0.0001));
             this.estimateBayesIm = estimator.getEstimatedIm();
-        } catch (final IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
             throw new RuntimeException(
                     "Please specify the search tolerance first.");
@@ -176,12 +176,12 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         return this.estimateBayesIm;
     }
 
-    private void estimate(final DataSet dataSet, final BayesPm bayesPm, final double thresh) {
+    private void estimate(DataSet dataSet, BayesPm bayesPm, double thresh) {
         try {
-            final EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
+            EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
             this.estimateBayesIm = estimator.maximization(thresh);
             this.dataSet = estimator.getMixedDataSet();
-        } catch (final ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
                     "and discrete data set do not match.");
@@ -192,7 +192,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         return this.dataSet;
     }
 
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -209,7 +209,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 

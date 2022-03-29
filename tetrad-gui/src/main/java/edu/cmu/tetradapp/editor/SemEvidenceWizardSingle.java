@@ -52,8 +52,8 @@ class SemEvidenceWizardSingle extends JPanel {
      * form P(Node=c1|Parent1=c2, Parent2=c2,...); values for these parameters
      * are probabilities ranging from 0.0 to 1.0.
      */
-    public SemEvidenceWizardSingle(final SemUpdater semUpdater,
-                                   final GraphWorkbench workbench) {
+    public SemEvidenceWizardSingle(SemUpdater semUpdater,
+                                   GraphWorkbench workbench) {
         if (semUpdater == null) {
             throw new NullPointerException();
         }
@@ -62,7 +62,7 @@ class SemEvidenceWizardSingle extends JPanel {
             throw new NullPointerException();
         }
 
-        final Node node = workbench.getGraph().getNodes().get(0);
+        Node node = workbench.getGraph().getNodes().get(0);
         workbench.deselectAll();
         workbench.selectNode(node);
 
@@ -74,10 +74,10 @@ class SemEvidenceWizardSingle extends JPanel {
         setBorder(new MatteBorder(10, 10, 10, 10, getBackground()));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        final JButton updateButton = new JButton("Do Update Now");
+        JButton updateButton = new JButton("Do Update Now");
 
         // Do Layout.
-        final Box b0 = Box.createHorizontalBox();
+        Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel("<html>" +
                 "In the list below, specify values for variables you have evidence " +
                 "<br>for. Click the 'Do Update Now' button to view updated means. " +
@@ -90,7 +90,7 @@ class SemEvidenceWizardSingle extends JPanel {
         add(this.evidenceEditor);
         add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalGlue());
         b2.add(updateButton);
         add(b2);
@@ -98,8 +98,8 @@ class SemEvidenceWizardSingle extends JPanel {
 
         // Add listeners.
         updateButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final DisplayNode graphNode = getWorkbench().getSelectedNode();
+            public void actionPerformed(ActionEvent e) {
+                DisplayNode graphNode = getWorkbench().getSelectedNode();
 
                 if (graphNode == null) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -107,13 +107,13 @@ class SemEvidenceWizardSingle extends JPanel {
                     return;
                 }
 
-                final Node tetradNode = graphNode.getModelNode();
-                final String selectedNodeName = tetradNode.getName();
+                Node tetradNode = graphNode.getModelNode();
+                String selectedNodeName = tetradNode.getName();
 
                 getSemUpdater().setEvidence(SemEvidenceWizardSingle.this.evidenceEditor.getEvidence());
 
-                final Graph updatedGraph = getSemUpdater().getManipulatedGraph();
-                final Node selectedNode = updatedGraph.getNode(selectedNodeName);
+                Graph updatedGraph = getSemUpdater().getManipulatedGraph();
+                Node selectedNode = updatedGraph.getNode(selectedNodeName);
 
                 getWorkbench().setGraph(updatedGraph);
                 getWorkbench().deselectAll();

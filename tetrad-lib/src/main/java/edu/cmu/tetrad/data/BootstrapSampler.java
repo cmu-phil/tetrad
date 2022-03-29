@@ -59,7 +59,7 @@ public final class BootstrapSampler {
      * containing that number of samples by drawing with replacement from the
      * original dataset.
      */
-    public DataSet sample(final DataSet dataSet, final int newSampleSize) {
+    public DataSet sample(DataSet dataSet, int newSampleSize) {
         if (newSampleSize < 1) {
             throw new IllegalArgumentException("Sample size must be > 0.");
         }
@@ -69,10 +69,10 @@ public final class BootstrapSampler {
         }
         //   this.logger.log("sampleSize", String.valueOf(newSampleSize));
         //Number of samples in input dataset
-        final int oldSampleSize = dataSet.getNumRows();
-        final int ncols = dataSet.getNumColumns();
+        int oldSampleSize = dataSet.getNumRows();
+        int ncols = dataSet.getNumColumns();
 
-        final DataSet newDataSet = new BoxDataSet(new VerticalDoubleDataBox(newSampleSize, dataSet.getVariables().size()), dataSet.getVariables());
+        DataSet newDataSet = new BoxDataSet(new VerticalDoubleDataBox(newSampleSize, dataSet.getVariables().size()), dataSet.getVariables());
 //        List<Integer> indices = new ArrayList<Integer>();
 
         // Without replacement.
@@ -89,11 +89,11 @@ public final class BootstrapSampler {
 //                newDataSet.setObject(row, col, dataSet.getObject(indices.get(row), col));
 //            }
 //        }
-        final Set<Integer> oldCases = new HashSet<>();
+        Set<Integer> oldCases = new HashSet<>();
 
         // (not keeping order)
         for (int row = 0; row < newSampleSize; row++) {
-            final int oldCase = RandomUtil.getInstance().nextInt(oldSampleSize);
+            int oldCase = RandomUtil.getInstance().nextInt(oldSampleSize);
 
             if (isWithoutReplacements()) {
                 if (oldCases.contains(oldCase)) {
@@ -118,7 +118,7 @@ public final class BootstrapSampler {
         return this.withoutReplacements;
     }
 
-    public void setWithoutReplacements(final boolean withoutReplacements) {
+    public void setWithoutReplacements(boolean withoutReplacements) {
         this.withoutReplacements = withoutReplacements;
     }
 }

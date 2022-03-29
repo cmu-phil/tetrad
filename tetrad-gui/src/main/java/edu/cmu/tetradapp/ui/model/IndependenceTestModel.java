@@ -37,14 +37,14 @@ public class IndependenceTestModel implements Serializable, Comparable<Independe
     private final String name;
     private final String description;
 
-    public IndependenceTestModel(final AnnotatedClass<TestOfIndependence> independenceTest) {
+    public IndependenceTestModel(AnnotatedClass<TestOfIndependence> independenceTest) {
         this.independenceTest = independenceTest;
         this.name = independenceTest.getAnnotation().name();
         this.description = IndependenceTestDescriptions.getInstance().get(independenceTest.getAnnotation().command());
     }
 
     @Override
-    public int compareTo(final IndependenceTestModel other) {
+    public int compareTo(IndependenceTestModel other) {
         return this.independenceTest.getAnnotation().name().compareTo(other.independenceTest.getAnnotation().name());
     }
 

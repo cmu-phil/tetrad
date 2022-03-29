@@ -35,28 +35,28 @@ public class Type4 implements SessionModel, TetradSerializableExcluded {
      * It should be possible to construct a Type4-model with a Type1-node as
      * parent.
      */
-    public Type4(final Type1 model1, final Parameters parameters) {
+    public Type4(Type1 model1, Parameters parameters) {
     }
 
     /**
      * It should be possible to construct a Type4-model with both Type2 and
      * Type2-nodes as parents.
      */
-    public Type4(final Type2 model1, final Type3 model2) {
+    public Type4(Type2 model1, Type3 model2) {
     }
 
     public static Type4 serializableInstance() {
         return new Type4(Type1.serializableInstance(), new Parameters());
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         return (o instanceof Type4);
     }
 
     /**
      * Sets the name of the session model.
      */
-    public void setName(final String name) {
+    public void setName(String name) {
 
     }
 

@@ -57,82 +57,82 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
     private List<String> variableNames = new ArrayList<>();
     private Graph resultGraph = new EdgeListGraph();
 
-    public RequiredGraphModel(final BayesPmWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(BayesPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final GraphWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(GraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final StandardizedSemImWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(StandardizedSemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final SemImWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(SemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final SemPmWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(SemPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final DataWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(DataWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final TimeLagGraphWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(TimeLagGraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final GeneralizedSemImWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(GeneralizedSemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final BayesImWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(BayesImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final SemGraphWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(SemGraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final GeneralizedSemPmWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(GeneralizedSemPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final DagWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(DagWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final DirichletBayesImWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(DirichletBayesImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final BuildPureClustersRunner wrapper, final Parameters params) {
+    public RequiredGraphModel(BuildPureClustersRunner wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final PurifyRunner wrapper, final Parameters params) {
+    public RequiredGraphModel(PurifyRunner wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final LofsRunner wrapper, final Parameters params) {
+    public RequiredGraphModel(LofsRunner wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final MeasurementModelWrapper wrapper, final Parameters params) {
+    public RequiredGraphModel(MeasurementModelWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(final KnowledgeBoxInput input, final Parameters params) {
+    public RequiredGraphModel(KnowledgeBoxInput input, Parameters params) {
         this(params, input);
     }
 
     /**
      * Constructor from dataWrapper edge
      */
-    public RequiredGraphModel(final Parameters params, final KnowledgeBoxInput input) {
+    public RequiredGraphModel(Parameters params, KnowledgeBoxInput input) {
         super(new KnowledgeBoxInput[]{input}, params);
 
         if (params == null) {
@@ -143,8 +143,8 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
             throw new NullPointerException();
         }
 
-        final SortedSet<Node> variableNodes = new TreeSet<>();
-        final SortedSet<String> variableNames = new TreeSet<>();
+        SortedSet<Node> variableNodes = new TreeSet<>();
+        SortedSet<String> variableNames = new TreeSet<>();
 
         variableNodes.addAll(input.getVariables());
         variableNames.addAll(input.getVariableNames());
@@ -167,8 +167,8 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         }
     }
 
-    private void createKnowledge(final Parameters params) {
-        final IKnowledge knwl = getKnowledge();
+    private void createKnowledge(Parameters params) {
+        IKnowledge knwl = getKnowledge();
         if (knwl == null) {
             return;
         }
@@ -179,19 +179,19 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
             throw new NullPointerException("I couldn't find a parent graph.");
         }
 
-        final List<Node> nodes = this.resultGraph.getNodes();
+        List<Node> nodes = this.resultGraph.getNodes();
 
-        final int numOfNodes = nodes.size();
+        int numOfNodes = nodes.size();
         for (int i = 0; i < numOfNodes; i++) {
             for (int j = i + 1; j < numOfNodes; j++) {
-                final Node n1 = nodes.get(i);
-                final Node n2 = nodes.get(j);
+                Node n1 = nodes.get(i);
+                Node n2 = nodes.get(j);
 
                 if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
                     continue;
                 }
 
-                final Edge edge = this.resultGraph.getEdge(n1, n2);
+                Edge edge = this.resultGraph.getEdge(n1, n2);
                 if (edge == null) {
                     continue;
                 } else if (edge.isDirected()) {

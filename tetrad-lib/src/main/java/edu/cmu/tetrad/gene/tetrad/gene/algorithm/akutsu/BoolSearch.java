@@ -40,7 +40,7 @@ public class BoolSearch {
     private final int ntimes;
     String[] names;
 
-    public BoolSearch(final int[][] cases, final String[] names) {
+    public BoolSearch(int[][] cases, String[] names) {
         this.cases = cases;
         this.names = names;
         this.ntimes = cases.length;
@@ -53,11 +53,11 @@ public class BoolSearch {
      * Networks". </p> The int k is the number of number of regulators of a
      * given gene and corresponds to K in the paper.
      */
-    public RevealOutputGraph bool2(final int k) {
+    public RevealOutputGraph bool2(int k) {
 
-        final int[][] parents = new int[this.ngenes][];
-        final int[][] lags = new int[this.ngenes][];
-        final int[] f = new int[this.ngenes];
+        int[][] parents = new int[this.ngenes][];
+        int[][] lags = new int[this.ngenes][];
+        int[] f = new int[this.ngenes];
 
         int numberTotalInputs = 1;
         for (int i = 0; i < this.ngenes; i++) {
@@ -69,7 +69,7 @@ public class BoolSearch {
             numberInputCombinations *= 2;
         }
 
-        final double theta0 =
+        double theta0 =
                 1.0 / (2.0 * numberInputCombinations * numberInputCombinations);
         //theta = 0.1;
         double theta = theta0;
@@ -91,7 +91,7 @@ public class BoolSearch {
                 theta = theta0 * m;
                 System.out.println("Theta = " + theta);
                 int count = 0;
-                final int[] pars = new int[k];
+                int[] pars = new int[k];
                 pars[0] = -1;
                 pars[1] = -1;
                 pars[2] = -1;
@@ -99,7 +99,7 @@ public class BoolSearch {
                 //For all combinations of k nodes do...
                 //The array inputs has a 1 in position i if inputs[i] is a parent
                 for (int input = 0; input < numberTotalInputs; input++) {
-                    final byte[] inputs = booleanRepresentation(input, this.ngenes);
+                    byte[] inputs = booleanRepresentation(input, this.ngenes);
                     if (sumBits(inputs) == k) {
                         int j = 0;
                         for (int i = 0; i < this.ngenes; i++) {
@@ -120,7 +120,7 @@ public class BoolSearch {
                     //For every boolean function with k inputs do...
                     for (int function = 0;
                          function < numberBooleanFunctions; function++) {
-                        final byte[] fi = booleanRepresentation(function,
+                        byte[] fi = booleanRepresentation(function,
                                 numberInputCombinations);
                         int mismatch = 0;
                         //for j = 1 to m do ...
@@ -134,7 +134,7 @@ public class BoolSearch {
                                 //argument += power*cases[j][pars[i]];
                                 power *= 2;
                             }
-                            final int finput = fi[argument];
+                            int finput = fi[argument];
                             //if Oj(vi) != f(Ij(vi1),...,Ij(vik)) then...
                             if (finput != this.cases[j + 1][gchild]) {
                                 mismatch++;
@@ -192,15 +192,15 @@ public class BoolSearch {
      * Computes a byte vector which corresponds to the argument ind.  rep[0] is
      * the high order bit. E.g.  if n=3 and ind=6 the vector will be (1, 1, 0).
      */
-    public byte[] booleanRepresentation(int ind, final int n) {
-        final byte[] rep = new byte[n];
+    public byte[] booleanRepresentation(int ind, int n) {
+        byte[] rep = new byte[n];
 
         for (int i = 0; i < n; i++) {
             rep[i] = (byte) 0;
         }
 
         for (int i = 0; i < n; i++) {
-            final int rem = ind % 2;
+            int rem = ind % 2;
             if (rem == 1) {
                 rep[n - i - 1] = (byte) 1;
                 ind -= 1;
@@ -211,10 +211,10 @@ public class BoolSearch {
         return rep;
     }
 
-    public int sumBits(final byte[] b) {
+    public int sumBits(byte[] b) {
         int sum = 0;
 
-        for (final byte aB : b) {
+        for (byte aB : b) {
             sum += aB;
         }
 

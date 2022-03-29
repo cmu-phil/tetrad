@@ -44,7 +44,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
     /**
      * Constructs a new measured workbench node.
      */
-    public KnowledgeDisplayNode(final Node modelNode) {
+    public KnowledgeDisplayNode(Node modelNode) {
         setModelNode(modelNode);
         setBackground(DisplayNodeUtils.getNodeFillColor());
         setFont(DisplayNodeUtils.getFont());
@@ -53,7 +53,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
     /**
      * Determines whether the given coordinate lie inside the component.
      */
-    public boolean contains(final int x, final int y) {
+    public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
 
@@ -61,9 +61,9 @@ public class KnowledgeDisplayNode extends DisplayNode {
      * Calculates the size of the component based on its name.
      */
     public Dimension getPreferredSize() {
-        final FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        final int width = fm.stringWidth(getName()) + 11;
-        final int height = fm.getMaxAscent() + 6;
+        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
+        int width = fm.stringWidth(getName()) + 11;
+        int height = fm.getMaxAscent() + 6;
         return new Dimension(width, height);
     }
 
@@ -81,30 +81,30 @@ public class KnowledgeDisplayNode extends DisplayNode {
      *
      * @param graph Strings which are invalid names for this node.
      */
-    public void doDoubleClickAction(final Graph graph) {
+    public void doDoubleClickAction(Graph graph) {
         String newName;
-        final List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
-        final JCheckBox latentCheckBox = new JCheckBox("Latent", false);
+        JCheckBox latentCheckBox = new JCheckBox("Latent", false);
 
         loop:
         while (true) {
-            final JTextField nameField = new JTextField(8);
+            JTextField nameField = new JTextField(8);
 
             nameField.setText(getName());
             nameField.setCaretPosition(0);
             nameField.moveCaretPosition(getName().length());
 
-            final JPanel message = new JPanel();
+            JPanel message = new JPanel();
 
             message.add(new JLabel("Name:"));
             message.add(nameField);
 
             message.add(latentCheckBox);
 
-            final JOptionPane pane = new JOptionPane(message,
+            JOptionPane pane = new JOptionPane(message,
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-            final JDialog dialog = pane.createDialog(this, "Node Properties");
+            JDialog dialog = pane.createDialog(this, "Node Properties");
 
             dialog.pack();
             dialog.setVisible(true);
@@ -119,7 +119,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
             }
             // Tests that newName is not in the nodes list.
             else if (nodes != null) {
-                for (final Node node : nodes) {
+                for (Node node : nodes) {
                     if (newName.equals(node.toString()) &&
                             !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
@@ -165,11 +165,11 @@ public class KnowledgeDisplayNode extends DisplayNode {
      *
      * @param g the graphics context.
      */
-    public void paint(final Graphics g) {
-        final Graphics2D g2 = (Graphics2D) g;
-        final FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
+    public void paint(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
         final int stringX = 6;
-        final int stringY = fm.getMaxAscent() + 1;
+        int stringY = fm.getMaxAscent() + 1;
 
         g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : DisplayNodeUtils.getNodeFillColor());
         g2.fill(getShape());

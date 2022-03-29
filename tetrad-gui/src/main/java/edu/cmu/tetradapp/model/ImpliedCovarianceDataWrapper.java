@@ -45,18 +45,18 @@ public class ImpliedCovarianceDataWrapper extends DataWrapper {
 
     //==============================CONSTRUCTORS=============================//
 
-    public ImpliedCovarianceDataWrapper(final SemEstimatorWrapper wrapper, final Parameters params) {
+    public ImpliedCovarianceDataWrapper(SemEstimatorWrapper wrapper, Parameters params) {
 //        int sampleSize = params.getSampleSize();
 //        boolean latentDataSaved = params.isIncludeLatents();
-        final SemEstimator semEstimator = wrapper.getSemEstimator();
-        final SemIm semIm1 = semEstimator.getEstimatedSem();
+        SemEstimator semEstimator = wrapper.getSemEstimator();
+        SemIm semIm1 = semEstimator.getEstimatedSem();
 
         if (semIm1 != null) {
 
-            final Matrix matrix2D = semIm1.getImplCovarMeas();
-            final int sampleSize = semIm1.getSampleSize();
-            final List<Node> variables = wrapper.getSemEstimator().getEstimatedSem().getSemPm().getMeasuredNodes();
-            final CovarianceMatrix cov = new CovarianceMatrix(variables, matrix2D, sampleSize);
+            Matrix matrix2D = semIm1.getImplCovarMeas();
+            int sampleSize = semIm1.getSampleSize();
+            List<Node> variables = wrapper.getSemEstimator().getEstimatedSem().getSemPm().getMeasuredNodes();
+            CovarianceMatrix cov = new CovarianceMatrix(variables, matrix2D, sampleSize);
             setDataModel(cov);
             setSourceGraph(wrapper.getSemEstimator().getEstimatedSem().getSemPm().getGraph());
             this.semIm = wrapper.getEstimatedSemIm();

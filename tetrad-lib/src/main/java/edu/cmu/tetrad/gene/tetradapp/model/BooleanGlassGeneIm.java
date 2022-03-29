@@ -84,7 +84,7 @@ public class BooleanGlassGeneIm implements SessionModel {
      * @param genePm the BooleanGlassGenePm from which the BooleanGlassFunction
      *               is extracted.
      */
-    public BooleanGlassGeneIm(final BooleanGlassGenePm genePm, final Parameters parameters) {
+    public BooleanGlassGeneIm(BooleanGlassGenePm genePm, Parameters parameters) {
         try {
             this.genePm = genePm;
 
@@ -93,7 +93,7 @@ public class BooleanGlassGeneIm implements SessionModel {
             this.initializer = new BasalInitializer(this.glassFunction, 0, 1);
             this.history = new GeneHistory(this.initializer, this.glassFunction);
             this.simulator = new MeasurementSimulatorParams(parameters);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -112,8 +112,8 @@ public class BooleanGlassGeneIm implements SessionModel {
      * Returns the list of factors in the history.
      */
     public List<String> getFactors() {
-        final List<String> factors = new ArrayList<>();
-        final IndexedLagGraph connectivity = this.glassFunction.getIndexedLagGraph();
+        List<String> factors = new ArrayList<>();
+        IndexedLagGraph connectivity = this.glassFunction.getIndexedLagGraph();
 
         for (int i = 0; i < connectivity.getNumFactors(); i++) {
             factors.add(connectivity.getFactor(i));
@@ -130,16 +130,16 @@ public class BooleanGlassGeneIm implements SessionModel {
      * @param factor the factor, e.g. "V3", for which parents are requested.
      * @return the list of lagged factors which are parents of 'factor'.
      */
-    public List<String> getParents(final int factor) {
-        final IndexedLagGraph connectivity = getBooleanGlassFunction()
+    public List<String> getParents(int factor) {
+        IndexedLagGraph connectivity = getBooleanGlassFunction()
                 .getIndexedLagGraph();
-        final List<String> displayParents = new ArrayList<>();
+        List<String> displayParents = new ArrayList<>();
 
         for (int i = 0; i < connectivity.getNumParents(factor); i++) {
-            final IndexedParent parent = connectivity.getParent(factor, i);
-            final String name = connectivity.getFactor(parent.getIndex());
-            final LaggedFactor laggedFactor = new LaggedFactor(name, parent.getLag());
-            final String displayString =
+            IndexedParent parent = connectivity.getParent(factor, i);
+            String name = connectivity.getFactor(parent.getIndex());
+            LaggedFactor laggedFactor = new LaggedFactor(name, parent.getLag());
+            String displayString =
                     DisplayNameHandler.getDisplayString(laggedFactor);
 
             displayParents.add(displayString);
@@ -161,8 +161,8 @@ public class BooleanGlassGeneIm implements SessionModel {
      *
      * @param factor the given factor, e.g. "V3", formatted as a String name.
      */
-    public int getNumParents(final int factor) {
-        final IndexedLagGraph connectivity = getBooleanGlassFunction()
+    public int getNumParents(int factor) {
+        IndexedLagGraph connectivity = getBooleanGlassFunction()
                 .getIndexedLagGraph();
 
         return connectivity.getNumParents(factor);
@@ -174,7 +174,7 @@ public class BooleanGlassGeneIm implements SessionModel {
      *
      * @return true or false.
      */
-    public boolean getRowValueAt(final int factor, final int row) {
+    public boolean getRowValueAt(int factor, int row) {
         return getBooleanGlassFunction().getSubFunction(factor).getValue(row);
     }
 
@@ -182,11 +182,11 @@ public class BooleanGlassGeneIm implements SessionModel {
      * Sets the value in the given row of the boolean table for the given
      * factor to the given value (true/false).
      */
-    public void setRowValueAt(final int factor, final int row, final boolean value) {
+    public void setRowValueAt(int factor, int row, boolean value) {
         getBooleanGlassFunction().getSubFunction(factor).setValue(row, value);
     }
 
-    public void setSimulator(final MeasurementSimulatorParams simulator) {
+    public void setSimulator(MeasurementSimulatorParams simulator) {
         simulator.setHistory(getHistory());
         this.simulator = simulator;
     }
@@ -207,34 +207,34 @@ public class BooleanGlassGeneIm implements SessionModel {
 
         // This is the object that will be returned; it can store
         // multiple data sets.
-        final DataModelList dataModelList = new DataModelList();
+        DataModelList dataModelList = new DataModelList();
 
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
 
         if (this.simulator.isIncludeDishAndChipVariables()) {
-            final DiscreteVariable dishVar = new DiscreteVariable("Dish");
-            final DiscreteVariable chipVar = new DiscreteVariable("Chip");
+            DiscreteVariable dishVar = new DiscreteVariable("Dish");
+            DiscreteVariable chipVar = new DiscreteVariable("Chip");
 
             variables.add(dishVar);
             variables.add(chipVar);
         }
 
         // Fetch the measured data and convert it.
-        final double[][][] measuredData = this.simulator.getMeasuredData();
-        final int[] timeSteps = this.simulator.getTimeSteps();
-        final List<String> factors =
+        double[][][] measuredData = this.simulator.getMeasuredData();
+        int[] timeSteps = this.simulator.getTimeSteps();
+        List<String> factors =
                 new ArrayList<>(this.genePm.getLagGraph().getFactors());
 
         // Order: G1:t1, G2:t1, G3:t1, G1:t1, G2:t2, G3:t2,...
         for (int i = 0; i < measuredData[0].length; i++) {
             for (int j = 0; j < measuredData.length; j++) {
-                final String name = factors.get(j) + ":t" + timeSteps[i];
-                final ContinuousVariable var = new ContinuousVariable(name);
+                String name = factors.get(j) + ":t" + timeSteps[i];
+                ContinuousVariable var = new ContinuousVariable(name);
                 variables.add(var);
             }
         }
 
-        final DataSet measuredDataSet =
+        DataSet measuredDataSet =
                 new BoxDataSet(new DoubleDataBox(measuredData[0][0].length, variables.size()), variables);
 
 //        System.out.println(measuredDataSet);
@@ -242,11 +242,11 @@ public class BooleanGlassGeneIm implements SessionModel {
         // Order: G1:t1, G2:t1, G3:t1, G1:t1, G2:t2, G3:t2,...
         for (int i = 0; i < measuredData[0].length; i++) {
             for (int j = 0; j < measuredData.length; j++) {
-                final double[] _data = measuredData[j][i];
-                final String name = factors.get(j) + ":t" + timeSteps[i];
-                final ContinuousVariable var =
+                double[] _data = measuredData[j][i];
+                String name = factors.get(j) + ":t" + timeSteps[i];
+                ContinuousVariable var =
                         (ContinuousVariable) measuredDataSet.getVariable(name);
-                final int col = measuredDataSet.getVariables().indexOf(var);
+                int col = measuredDataSet.getVariables().indexOf(var);
 
                 for (int i1 = 0; i1 < _data.length; i1++) {
                     measuredDataSet.setDouble(i1, col, _data[i1]);
@@ -260,7 +260,7 @@ public class BooleanGlassGeneIm implements SessionModel {
 
         if (this.simulator.isIncludeDishAndChipVariables()) {
             for (int i = 0; i < measuredData[0][0].length; i++) {
-                final int samplesPerDish = this.simulator.getNumSamplesPerDish();
+                int samplesPerDish = this.simulator.getNumSamplesPerDish();
                 measuredDataSet.setInt(i, 0, i / samplesPerDish + 1);
                 measuredDataSet.setInt(i, 1, i + 1);
             }
@@ -268,26 +268,26 @@ public class BooleanGlassGeneIm implements SessionModel {
 
         // Fetch the measured data and convert it.
         if (this.simulator.isRawDataSaved()) {
-            final double[][][] rawData = this.simulator.getRawData();
-            final List<Node> _variables = new LinkedList<>();
+            double[][][] rawData = this.simulator.getRawData();
+            List<Node> _variables = new LinkedList<>();
 
             // Order: G0:t1, G1:t1, G2:t1, G0:t1, G1:t2, G2:t2,...
             for (int i = 0; i < rawData[0].length; i++) {
                 for (int j = 0; j < rawData.length; j++) {
-                    final String name = "G" + (j + 1) + ":t" + timeSteps[i];
+                    String name = "G" + (j + 1) + ":t" + timeSteps[i];
                     _variables.add(new ContinuousVariable(name));
                 }
             }
 
-            final DataSet rawDataSet =
+            DataSet rawDataSet =
                     new BoxDataSet(new DoubleDataBox(rawData[0][0].length, _variables.size()), variables);
 
             for (int i = 0; i < rawData[0].length; i++) {
                 for (int j = 0; j < rawData.length; j++) {
-                    final double[] _data = rawData[j][i];
-                    final String name = "G" + (j + 1) + ":t" + timeSteps[i];
-                    final Node var = rawDataSet.getVariable(name);
-                    final int col = rawDataSet.getVariables().indexOf(var);
+                    double[] _data = rawData[j][i];
+                    String name = "G" + (j + 1) + ":t" + timeSteps[i];
+                    Node var = rawDataSet.getVariable(name);
+                    int col = rawDataSet.getVariables().indexOf(var);
 
                     for (int i1 = 0; i1 < _data.length; i1++) {
                         rawDataSet.setDouble(i1, col, _data[i1]);
@@ -295,11 +295,11 @@ public class BooleanGlassGeneIm implements SessionModel {
                 }
             }
 
-            final int n = rawData[0][0].length;
-            final int cellsPerDish = this.simulator.getNumCellsPerDish();
+            int n = rawData[0][0].length;
+            int cellsPerDish = this.simulator.getNumCellsPerDish();
 
             if (this.simulator.isIncludeDishAndChipVariables()) {
-                final DiscreteVariable dishVar2 =
+                DiscreteVariable dishVar2 =
                         new DiscreteVariable("Dish", n / cellsPerDish + 1);
 
                 rawDataSet.addVariable(0, dishVar2);
@@ -322,11 +322,11 @@ public class BooleanGlassGeneIm implements SessionModel {
         return dataModelList;
     }
 
-    private TimeSeriesData asTimeSeriesData(final double[][][] cube, final int cell,
-                                            final List<String> factors) {
-        final int numTimeSteps = cube[0].length;
-        final int numFactors = cube.length;
-        final double[][] square = new double[numTimeSteps][numFactors];
+    private TimeSeriesData asTimeSeriesData(double[][][] cube, int cell,
+                                            List<String> factors) {
+        int numTimeSteps = cube[0].length;
+        int numFactors = cube.length;
+        double[][] square = new double[numTimeSteps][numFactors];
 
         for (int timeStep = 0; timeStep < numTimeSteps; timeStep++) {
             for (int factor = 0; factor < numFactors; factor++) {
@@ -334,7 +334,7 @@ public class BooleanGlassGeneIm implements SessionModel {
             }
         }
 
-        final List<String> varNames = new ArrayList<>();
+        List<String> varNames = new ArrayList<>();
         for (int i = 0; i < numFactors; i++) {
             varNames.add(factors.get(i));
         }
@@ -361,7 +361,7 @@ public class BooleanGlassGeneIm implements SessionModel {
      * distribution. Values for the transcription error for this factor will be
      * drawn from this distribution.
      */
-    public void setErrorDistribution(final int factor, final Distribution distribution) {
+    public void setErrorDistribution(int factor, Distribution distribution) {
         getBooleanGlassFunction().setErrorDistribution(factor, distribution);
     }
 
@@ -370,7 +370,7 @@ public class BooleanGlassGeneIm implements SessionModel {
      *
      * @see #setErrorDistribution
      */
-    public Distribution getErrorDistribution(final int factor) {
+    public Distribution getErrorDistribution(int factor) {
         return getBooleanGlassFunction().getErrorDistribution(factor);
     }
 
@@ -387,7 +387,7 @@ public class BooleanGlassGeneIm implements SessionModel {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -416,7 +416,7 @@ public class BooleanGlassGeneIm implements SessionModel {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 }

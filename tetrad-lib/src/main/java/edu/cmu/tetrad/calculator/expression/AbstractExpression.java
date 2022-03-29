@@ -74,7 +74,7 @@ abstract class AbstractExpression implements Expression {
     }
 
     @Override
-    public RealDistribution getRealDistribution(final Context context) {
+    public RealDistribution getRealDistribution(Context context) {
         if (this.expressions.size() == 1) {
             return this.expressions.get(0).getRealDistribution(context);
         }
@@ -83,7 +83,7 @@ abstract class AbstractExpression implements Expression {
 
     }
 
-    public IntegerDistribution getIntegerDistribution(final Context context) {
+    public IntegerDistribution getIntegerDistribution(Context context) {
         if (this.expressions.size() == 1) {
             return this.expressions.get(0).getIntegerDistribution(context);
         }

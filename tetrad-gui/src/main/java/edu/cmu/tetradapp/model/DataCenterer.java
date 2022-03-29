@@ -38,20 +38,20 @@ public class DataCenterer extends DataWrapper {
     static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
-    private DataCenterer(final DataWrapper wrapper, final Parameters params) {
-        final DataModelList inList = wrapper.getDataModelList();
-        final DataModelList outList = new DataModelList();
+    private DataCenterer(DataWrapper wrapper, Parameters params) {
+        DataModelList inList = wrapper.getDataModelList();
+        DataModelList outList = new DataModelList();
 
-        for (final DataModel model : inList) {
+        for (DataModel model : inList) {
             if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            final DataSet dataSet = (DataSet) model;
+            DataSet dataSet = (DataSet) model;
 
-            final Matrix data2 = DataUtils.centerData(dataSet.getDoubleData());
-            final List<Node> list = dataSet.getVariables();
-            final DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
+            Matrix data2 = DataUtils.centerData(dataSet.getDoubleData());
+            List<Node> list = dataSet.getVariables();
+            DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
             dataSet2.setName(model.getName());
             outList.add(dataSet2);
         }

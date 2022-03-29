@@ -45,12 +45,12 @@ public class TestSemProposition {
 
     @Test
     public void testEvidence() {
-        final Graph graph = constructGraph1();
-        final SemPm semPm = new SemPm(graph);
-        final SemIm semIm = new SemIm(semPm);
-        final List nodes = semIm.getVariableNodes();
+        Graph graph = constructGraph1();
+        SemPm semPm = new SemPm(graph);
+        SemIm semIm = new SemIm(semPm);
+        List nodes = semIm.getVariableNodes();
 
-        final SemProposition proposition = SemProposition.tautology(semIm);
+        SemProposition proposition = SemProposition.tautology(semIm);
 
         for (int i = 0; i < semIm.getVariableNodes().size(); i++) {
             assertTrue(Double.isNaN(proposition.getValue(i)));
@@ -59,19 +59,19 @@ public class TestSemProposition {
         proposition.setValue(1, 0.5);
         assertEquals(0.5, proposition.getValue(1), 0.0);
 
-        final Node node4 = (Node) nodes.get(3);
+        Node node4 = (Node) nodes.get(3);
         proposition.setValue(node4, 0.7);
         assertEquals(0.7, proposition.getValue(node4), 0.0);
     }
 
     private Graph constructGraph1() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node x1 = new GraphNode("X1");
-        final Node x2 = new GraphNode("X2");
-        final Node x3 = new GraphNode("X3");
-        final Node x4 = new GraphNode("X4");
-        final Node x5 = new GraphNode("X5");
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node x5 = new GraphNode("X5");
 
         graph.addNode(x1);
         graph.addNode(x2);

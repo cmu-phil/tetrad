@@ -47,7 +47,7 @@ public class DualListPanel extends JPanel {
     }
 
     private void initComponents() {
-        final GridBagConstraints gridBagConstraints;
+        GridBagConstraints gridBagConstraints;
 
         this.sourceList = new JList<>();
         this.selectedList = new JList<>();
@@ -85,7 +85,7 @@ public class DualListPanel extends JPanel {
         this.moveToSource.setMinimumSize(new Dimension(64, 25));
         this.moveToSource.setPreferredSize(new Dimension(64, 25));
 
-        final GroupLayout buttonPanelLayout = new GroupLayout(this.buttonPanel);
+        GroupLayout buttonPanelLayout = new GroupLayout(this.buttonPanel);
         this.buttonPanel.setLayout(buttonPanelLayout);
         buttonPanelLayout.setHorizontalGroup(
                 buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)

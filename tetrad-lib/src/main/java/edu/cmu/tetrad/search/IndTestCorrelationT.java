@@ -94,14 +94,14 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestCorrelationT(final DataSet dataSet, final double alpha) {
+    public IndTestCorrelationT(DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
         this.covMatrix = new CovarianceMatrix(dataSet);
         this._covMatrix = this.covMatrix.getMatrix();
-        final List<Node> nodes = this.covMatrix.getVariables();
+        List<Node> nodes = this.covMatrix.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
         this.indexMap = indexMap(this.variables);
@@ -120,7 +120,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
-    public IndTestCorrelationT(final Matrix data, final List<Node> variables, final double alpha) {
+    public IndTestCorrelationT(Matrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new DoubleDataBox(data.toArray()), variables);
         this.dataSet = DataUtils.center(this.dataSet);
         this.covMatrix = new CovarianceMatrix(this.dataSet);
@@ -135,7 +135,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
      */
-    public IndTestCorrelationT(final ICovarianceMatrix corrMatrix, final double alpha) {
+    public IndTestCorrelationT(ICovarianceMatrix corrMatrix, double alpha) {
         this.covMatrix = corrMatrix;
         this._covMatrix = corrMatrix.getMatrix();
         this.variables = Collections.unmodifiableList(corrMatrix.getVariables());
@@ -149,27 +149,27 @@ public final class IndTestCorrelationT implements IndependenceTest {
     /**
      * Creates a new independence test instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        for (final Node var : vars) {
+        for (Node var : vars) {
             if (!this.variables.contains(var)) {
                 throw new IllegalArgumentException(
                         "All vars must be original vars");
             }
         }
 
-        final int[] indices = new int[vars.size()];
+        int[] indices = new int[vars.size()];
 
         for (int i = 0; i < indices.length; i++) {
             indices[i] = this.indexMap.get(vars.get(i));
         }
 
-        final ICovarianceMatrix newCovMatrix = this.covMatrix.getSubmatrix(indices);
+        ICovarianceMatrix newCovMatrix = this.covMatrix.getSubmatrix(indices);
 
-        final double alphaNew = getAlpha();
+        double alphaNew = getAlpha();
         return new IndTestCorrelationT(newCovMatrix, alphaNew);
     }
 
@@ -182,17 +182,17 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
-        final double r;
-        final int n = sampleSize();
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
+        double r;
+        int n = sampleSize();
 
-        final Matrix submatrix = DataUtils.subMatrix(this._covMatrix, this.indexMap, x, y, z);
+        Matrix submatrix = DataUtils.subMatrix(this._covMatrix, this.indexMap, x, y, z);
         r = StatUtils.partialCorrelation(submatrix);
 
-        final double t = Math.sqrt(n - 2) * (r / Math.sqrt(1. - r * r));
+        double t = Math.sqrt(n - 2) * (r / Math.sqrt(1. - r * r));
         this.pValue = 2.0 * (1.0 - gettDistribution().cumulativeProbability(abs(t)));
 
-        final boolean independent = this.pValue > this.alpha;
+        boolean independent = this.pValue > this.alpha;
 
         if (this.verbose) {
             if (independent) {
@@ -211,16 +211,16 @@ public final class IndTestCorrelationT implements IndependenceTest {
         return independent;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+    public boolean isIndependent(Node x, Node y, Node... z) {
         return isIndependent(x, y, Arrays.asList(z));
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isDependent(Node x, Node y, List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -235,7 +235,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -261,7 +261,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         return this.nameMap.get(name);
     }
 
@@ -269,9 +269,9 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
-        for (final Node variable1 : variables) {
+        List<Node> variables = getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -281,34 +281,34 @@ public final class IndTestCorrelationT implements IndependenceTest {
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
-    public boolean determines(final List<Node> z, final Node x) throws UnsupportedOperationException {
-        final int[] parents = new int[z.size()];
+    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
+        int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
             parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
         }
 
-        final int i = this.covMatrix.getVariables().indexOf(x);
+        int i = this.covMatrix.getVariables().indexOf(x);
 
-        final Matrix matrix2D = this.covMatrix.getMatrix();
+        Matrix matrix2D = this.covMatrix.getMatrix();
         double variance = matrix2D.get(i, i);
 
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            final Matrix Czz = matrix2D.getSelection(parents, parents);
-            final Matrix inverse;
+            Matrix Czz = matrix2D.getSelection(parents, parents);
+            Matrix inverse;
 
             try {
                 inverse = Czz.inverse();
-            } catch (final SingularMatrixException e) {
+            } catch (SingularMatrixException e) {
                 System.out.println(SearchLogUtils.determinismDetected(z, x));
                 return true;
             }
 
             Vector Cyz = matrix2D.getColumn(i);
             Cyz = Cyz.viewSelection(parents);
-            final Vector b = inverse.times(Cyz);
+            Vector b = inverse.times(Cyz);
 
             variance -= Cyz.dotProduct(b);
         }
@@ -324,7 +324,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
     }
 
     public void shuffleVariables() {
-        final ArrayList<Node> nodes = new ArrayList<>(this.variables);
+        ArrayList<Node> nodes = new ArrayList<>(this.variables);
         Collections.shuffle(nodes);
         this.variables = Collections.unmodifiableList(nodes);
     }
@@ -336,7 +336,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
         return "Fisher's Z, alpha = " + IndTestCorrelationT.nf.format(getAlpha());
     }
 
-    public void setPValueLogger(final PrintStream pValueLogger) {
+    public void setPValueLogger(PrintStream pValueLogger) {
         this.pValueLogger = pValueLogger;
     }
 
@@ -350,18 +350,18 @@ public final class IndTestCorrelationT implements IndependenceTest {
         return this.covMatrix;
     }
 
-    private Map<String, Node> mapNames(final List<Node> variables) {
-        final Map<String, Node> nameMap = new ConcurrentHashMap<>();
+    private Map<String, Node> mapNames(List<Node> variables) {
+        Map<String, Node> nameMap = new ConcurrentHashMap<>();
 
-        for (final Node node : variables) {
+        for (Node node : variables) {
             nameMap.put(node.getName(), node);
         }
 
         return nameMap;
     }
 
-    private Map<Node, Integer> indexMap(final List<Node> variables) {
-        final Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
+    private Map<Node, Integer> indexMap(List<Node> variables) {
+        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             indexMap.put(variables.get(i), i);
@@ -370,7 +370,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
         return indexMap;
     }
 
-    public void setVariables(final List<Node> variables) {
+    public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
         this.covMatrix.setVariables(variables);
@@ -383,7 +383,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
     @Override
     public List<DataSet> getDataSets() {
 
-        final List<DataSet> dataSets = new ArrayList<>();
+        List<DataSet> dataSets = new ArrayList<>();
 
         dataSets.add(this.dataSet);
 
@@ -413,7 +413,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

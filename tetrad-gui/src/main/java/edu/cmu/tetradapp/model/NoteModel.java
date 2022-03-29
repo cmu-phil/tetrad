@@ -43,7 +43,7 @@ public class NoteModel implements SessionModel {
     private StyledDocument note = new DefaultStyledDocument();
     private String name;
 
-    public NoteModel(final Parameters parameters) {
+    public NoteModel(Parameters parameters) {
 
     }
 
@@ -60,11 +60,11 @@ public class NoteModel implements SessionModel {
         return this.note;
     }
 
-    public void setNote(final StyledDocument note) {
+    public void setNote(StyledDocument note) {
         this.note = note;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 

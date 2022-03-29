@@ -50,7 +50,7 @@ public class SessionEvent extends EventObject {
      * Constructs an event where one session node is involved--session node
      * added or removed, model created or destroyed.
      */
-    public SessionEvent(final Object source, final int type) {
+    public SessionEvent(Object source, int type) {
         super(source);
 
         switch (type) {
@@ -74,7 +74,7 @@ public class SessionEvent extends EventObject {
      * Constructs an event where one session node is involved--session node
      * added or removed, model created or destroyed.
      */
-    public SessionEvent(final Object source, final SessionNode node, final int type) {
+    public SessionEvent(Object source, SessionNode node, int type) {
         super(source);
 
         if (node != null) {
@@ -114,8 +114,8 @@ public class SessionEvent extends EventObject {
      * Constructs an event where two session nodes are involved--parent added or
      * removed.
      */
-    public SessionEvent(final Object source, final SessionNode parent, final SessionNode child,
-                        final int type) {
+    public SessionEvent(Object source, SessionNode parent, SessionNode child,
+                        int type) {
 
         super(source);
 
@@ -142,7 +142,7 @@ public class SessionEvent extends EventObject {
      * Creates a new SessionEvent with the same information as the given event
      * but with a new source.
      */
-    public SessionEvent(final Object source, final SessionEvent event) {
+    public SessionEvent(Object source, SessionEvent event) {
 
         super(source);
 

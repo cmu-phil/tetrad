@@ -24,12 +24,12 @@ public class ElapsedTime implements Statistic {
     }
 
     @Override
-    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         return Double.NaN; // This has to be handled separately.
     }
 
     @Override
-    public double getNormValue(final double value) {
+    public double getNormValue(double value) {
         return 1 - Math.tanh(0.001 * value);
     }
 }

@@ -52,24 +52,24 @@ public class TestDataWrapper {
 
     @Test
     public void testDataModelList() {
-        final DataModelList modelList = new DataModelList();
+        DataModelList modelList = new DataModelList();
 
-        final List<Node> variables1 = new ArrayList<>();
+        List<Node> variables1 = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             variables1.add(new ContinuousVariable("X" + i));
         }
 
-        final List<Node> variables2 = new ArrayList<>();
+        List<Node> variables2 = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             variables2.add(new ContinuousVariable("X" + i));
         }
 
-        final DataSet first = new BoxDataSet(new VerticalDoubleDataBox(10, variables1.size()), variables1);
+        DataSet first = new BoxDataSet(new VerticalDoubleDataBox(10, variables1.size()), variables1);
         first.setName("first");
 
-        final DataSet second = new BoxDataSet(new VerticalDoubleDataBox(10, variables2.size()), variables2);
+        DataSet second = new BoxDataSet(new VerticalDoubleDataBox(10, variables2.size()), variables2);
         second.setName("second");
 
         modelList.add(first);
@@ -81,9 +81,9 @@ public class TestDataWrapper {
         modelList.setSelectedModel(second);
 
         try {
-            final DataModelList modelList2 = new MarshalledObject<>(modelList).get();
+            DataModelList modelList2 = new MarshalledObject<>(modelList).get();
             assertEquals("second", modelList2.getSelectedModel().getName());
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

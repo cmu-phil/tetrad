@@ -61,7 +61,7 @@ public class LogisticRegression2 implements TetradSerializable {
      * A mixed data set. The targets of regresson must be binary. Regressors must be continuous or binary.
      * Other variables don't matter.
      */
-    public LogisticRegression2(final DataSet dataSet) {
+    public LogisticRegression2(DataSet dataSet) {
         setRows(new int[dataSet.getNumRows()]);
         for (int i = 0; i < getRows().length; i++) getRows()[i] = i;
     }
@@ -77,17 +77,17 @@ public class LogisticRegression2 implements TetradSerializable {
     }
 
     // I am going to try to maximize the liklehood function directly using the Powell Estimator.
-    public void regress(final int[] target, final int numValues, final double[][] regressors) {
+    public void regress(int[] target, int numValues, double[][] regressors) {
         try {
-            final int numParams = regressors.length + 1;
+            int numParams = regressors.length + 1;
 
-            final double[] coefficients = new double[(numValues - 1) * numParams];
+            double[] coefficients = new double[(numValues - 1) * numParams];
 
             // Apparently this needs to be fairly loose.
             final int tolerance = 250;
-            final MultivariateOptimizer search = new PowellOptimizer(tolerance, tolerance);
+            MultivariateOptimizer search = new PowellOptimizer(tolerance, tolerance);
 
-            final PointValuePair pair = search.optimize(
+            PointValuePair pair = search.optimize(
                     new InitialGuess(coefficients),
                     new ObjectiveFunction(new FittingFunction(target, regressors)),
                     GoalType.MAXIMIZE,
@@ -95,7 +95,7 @@ public class LogisticRegression2 implements TetradSerializable {
             );
 
             this.likelihood = pair.getValue();
-        } catch (final TooManyEvaluationsException e) {
+        } catch (TooManyEvaluationsException e) {
             e.printStackTrace();
             this.likelihood = Double.NaN;
         }
@@ -115,12 +115,12 @@ public class LogisticRegression2 implements TetradSerializable {
         /**
          * Constructs a new CoefFittingFunction for the given Sem.
          */
-        public FittingFunction(final int[] target, final double[][] regressors) {
+        public FittingFunction(int[] target, double[][] regressors) {
             this.target = target;
             this.regressors = regressors;
         }
 
-        public double value(final double[] parameters) {
+        public double value(double[] parameters) {
             double likelihood = 0.0;
 
             for (int i = 0; i < this.target.length; i++) {
@@ -128,9 +128,9 @@ public class LogisticRegression2 implements TetradSerializable {
                     throw new IllegalArgumentException("# params should be a multiple of # regressors + 1");
                 }
 
-                final int v = parameters.length / (this.regressors.length + 1);
+                int v = parameters.length / (this.regressors.length + 1);
 
-                final double[] e = new double[v];
+                double[] e = new double[v];
                 double sum = 0;
 
                 for (int k = 0; k < v; k++) {
@@ -153,8 +153,8 @@ public class LogisticRegression2 implements TetradSerializable {
             return likelihood;
         }
 
-        private double getE(final int i, final int g, final double[] parameters, final double[][] X) {
-            final int offset = g * (X.length + 1);
+        private double getE(int i, int g, double[] parameters, double[][] X) {
+            int offset = g * (X.length + 1);
 
             double e = 0.0;
 
@@ -179,7 +179,7 @@ public class LogisticRegression2 implements TetradSerializable {
         return this.rows;
     }
 
-    public void setRows(final int[] rows) {
+    public void setRows(int[] rows) {
         this.rows = rows;
     }
 
@@ -198,7 +198,7 @@ public class LogisticRegression2 implements TetradSerializable {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -207,7 +207,7 @@ public class LogisticRegression2 implements TetradSerializable {
         return this.targetName;
     }
 
-    public void setTargetName(final String targetName) {
+    public void setTargetName(String targetName) {
         this.targetName = targetName;
     }
 
@@ -215,7 +215,7 @@ public class LogisticRegression2 implements TetradSerializable {
         return this.regressorNames;
     }
 
-    public void setRegressorNames(final List<String> regressorNames) {
+    public void setRegressorNames(List<String> regressorNames) {
         this.regressorNames = regressorNames;
     }
 }

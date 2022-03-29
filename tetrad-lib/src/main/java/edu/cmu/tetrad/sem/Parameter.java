@@ -118,7 +118,7 @@ public final class Parameter implements TetradSerializable {
      *              same as the "from" node. For covariance freeParameters, it must
      *              be different from the "from" node.)
      */
-    public Parameter(final String name, final ParamType type, final Node nodeA, final Node nodeB) {
+    public Parameter(String name, ParamType type, Node nodeA, Node nodeB) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -173,7 +173,7 @@ public final class Parameter implements TetradSerializable {
      * @throws IllegalArgumentException if the name does not begin with a
      *                                  letter.
      */
-    public void setName(final String name) {
+    public void setName(String name) {
         if (name == null) {
             throw new NullPointerException();
         }
@@ -231,7 +231,7 @@ public final class Parameter implements TetradSerializable {
      *
      * @see edu.cmu.tetrad.util.dist.SingleValue
      */
-    public void setDistribution(final Distribution distribution) {
+    public void setDistribution(Distribution distribution) {
         if (distribution == null) {
             throw new NullPointerException("Distribution must not be null.");
         }
@@ -250,7 +250,7 @@ public final class Parameter implements TetradSerializable {
      *
      * @param fixed True if the parameter will be held fixed, false if not.
      */
-    public void setFixed(final boolean fixed) {
+    public void setFixed(boolean fixed) {
         this.fixed = fixed;
     }
 
@@ -264,7 +264,7 @@ public final class Parameter implements TetradSerializable {
     /**
      * Sets the starting value in case this is a fixed parameter.
      */
-    public void setStartingValue(final double startingValue) {
+    public void setStartingValue(double startingValue) {
         this.startingValue = startingValue;
     }
 
@@ -280,7 +280,7 @@ public final class Parameter implements TetradSerializable {
      * Set to true iff this parameter should be initialized randomly by drawing
      * an initial value from its preset random distribution.
      */
-    public void setInitializedRandomly(final boolean initializedRandomly) {
+    public void setInitializedRandomly(boolean initializedRandomly) {
         this.initializedRandomly = initializedRandomly;
     }
 
@@ -297,7 +297,7 @@ public final class Parameter implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

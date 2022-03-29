@@ -45,7 +45,7 @@ public final class Triple implements TetradSerializable {
     /**
      * Constructs a triple of nodes.
      */
-    public Triple(final Node x, final Node y, final Node z) {
+    public Triple(Node x, Node y, Node z) {
         if (x == null || y == null || z == null) {
             throw new NullPointerException();
         }
@@ -81,12 +81,12 @@ public final class Triple implements TetradSerializable {
         return hash;
     }
 
-    public final boolean equals(final Object obj) {
+    public final boolean equals(Object obj) {
         if (!(obj instanceof Triple)) {
             return false;
         }
 
-        final Triple triple = (Triple) obj;
+        Triple triple = (Triple) obj;
         return (this.x == triple.x && this.y == triple.y &&
                 this.z == triple.z)
                 || (this.x == triple.z && this.y == triple.y &&
@@ -101,12 +101,12 @@ public final class Triple implements TetradSerializable {
         return "<" + this.x + ", " + this.y + ", " + this.z + ">";
     }
 
-    public boolean alongPathIn(final Graph graph) {
+    public boolean alongPathIn(Graph graph) {
         return graph.isAdjacentTo(this.x, this.y) && graph.isAdjacentTo(this.y, this.z) && this.x != this.z;
     }
 
-    public static String pathString(final Graph graph, final Node x, final Node y, final Node z) {
-        final List<Node> path = new ArrayList<>();
+    public static String pathString(Graph graph, Node x, Node y, Node z) {
+        List<Node> path = new ArrayList<>();
         path.add(x);
         path.add(y);
         path.add(z);

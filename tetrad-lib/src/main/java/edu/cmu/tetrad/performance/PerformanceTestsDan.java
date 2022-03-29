@@ -65,23 +65,23 @@ public class PerformanceTestsDan {
 
 //        writeToFile = false;
 
-            final PrintStream out1;
-            final PrintStream out2;
-            final PrintStream out3;
-            final PrintStream out4;
-            final PrintStream out5;
-            final PrintStream out6;
-            final PrintStream out7;
-            final PrintStream out8;
-            final PrintStream out9;
-            final PrintStream out10;
-            final PrintStream out11;
-            final PrintStream out12;
+            PrintStream out1;
+            PrintStream out2;
+            PrintStream out3;
+            PrintStream out4;
+            PrintStream out5;
+            PrintStream out6;
+            PrintStream out7;
+            PrintStream out8;
+            PrintStream out9;
+            PrintStream out10;
+            PrintStream out11;
+            PrintStream out12;
 
-            final File dir0 = new File("gfci.output");
+            File dir0 = new File("gfci.output");
             dir0.mkdirs();
 
-            final File dir = new File(dir0, "" + (run + 1));
+            File dir = new File(dir0, "" + (run + 1));
             dir.mkdir();
 
             try {
@@ -97,7 +97,7 @@ public class PerformanceTestsDan {
                 out10 = new PrintStream(new File(dir, "data.txt"));
                 out11 = new PrintStream(new File(dir, "true.pag.long.txt"));
                 out12 = new PrintStream(new File(dir, "true.pag.matrix.txt"));
-            } catch (final FileNotFoundException e) {
+            } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
@@ -111,11 +111,11 @@ public class PerformanceTestsDan {
             out1.println("Depth = " + depth);
             out1.println("Maximum reachable path length for dsep search and discriminating undirectedPaths = " + maxPathLength);
 
-            final List<Node> vars = new ArrayList<>();
+            List<Node> vars = new ArrayList<>();
             for (int i = 0; i < numVars; i++) vars.add(new GraphNode("X" + (i + 1)));
 
 //        Graph dag = DataGraphUtils.randomDagQuick2(varsWithLatents, 0, (int) (varsWithLatents.size() * edgesPerNode));
-            final Graph dag = GraphUtils.randomGraph(vars, 0, (int) (vars.size() * edgesPerNode), 5, 5, 5, false);
+            Graph dag = GraphUtils.randomGraph(vars, 0, (int) (vars.size() * edgesPerNode), 5, 5, 5, false);
 
             GraphUtils.fixLatents1(numLatents, dag);
 //        List<Node> varsWithLatents = new ArrayList<Node>();
@@ -127,14 +127,14 @@ public class PerformanceTestsDan {
 
             printDanMatrix(vars, dag, out4);
 
-            final SemPm pm = new SemPm(dag);
-            final SemIm im = new SemIm(pm);
-            final NumberFormat nf = new DecimalFormat("0.0000");
+            SemPm pm = new SemPm(dag);
+            SemIm im = new SemIm(pm);
+            NumberFormat nf = new DecimalFormat("0.0000");
 
             for (int i = 0; i < vars.size(); i++) {
-                for (final Node var : vars) {
+                for (Node var : vars) {
                     if (im.existsEdgeCoef(var, vars.get(i))) {
-                        final double coef = im.getEdgeCoef(var, vars.get(i));
+                        double coef = im.getEdgeCoef(var, vars.get(i));
                         out5.print(nf.format(coef) + "\t");
                     } else {
                         out5.print(nf.format(0) + "\t");
@@ -152,9 +152,9 @@ public class PerformanceTestsDan {
             vars_temp = vars_temp.replace("X", "");
             out2.println(vars_temp);
 
-            final List<Node> _vars = new ArrayList<>();
+            List<Node> _vars = new ArrayList<>();
 
-            for (final Node node : vars) {
+            for (Node node : vars) {
                 if (node.getNodeType() == NodeType.MEASURED) {
                     _vars.add(node);
                 }
@@ -166,38 +166,38 @@ public class PerformanceTestsDan {
             _vars_temp = _vars_temp.replace("X", "");
             out2.println(_vars_temp);
 
-            final DataSet fullData = im.simulateData(numCases, false);
+            DataSet fullData = im.simulateData(numCases, false);
 
-            final DataSet data = DataUtils.restrictToMeasured(fullData);
+            DataSet data = DataUtils.restrictToMeasured(fullData);
 
-            final ICovarianceMatrix cov = new CovarianceMatrix(data);
+            ICovarianceMatrix cov = new CovarianceMatrix(data);
 
-            final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
-            final edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
+            IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
+            edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
 
             out6.println("GFCI.PAG_of_the_true_DAG");
 
-            final GFci gFci = new GFci(independenceTestGFci, scoreGfci);
+            GFci gFci = new GFci(independenceTestGFci, scoreGfci);
             gFci.setVerbose(false);
             gFci.setMaxDegree(depth);
             gFci.setMaxPathLength(maxPathLength);
 //            gFci.setPossibleDsepSearchDone(true);
             gFci.setCompleteRuleSetUsed(true);
 
-            final Graph pag = gFci.search();
+            Graph pag = gFci.search();
 
             out6.println(pag);
             printDanMatrix(_vars, pag, out7);
 
             out8.println("CPDAG_of_the_true_DAG OVER MEASURED VARIABLES");
 
-            final IndTestFisherZ independencePc = new IndTestFisherZ(cov, alphaPc);
+            IndTestFisherZ independencePc = new IndTestFisherZ(cov, alphaPc);
 
-            final Pc pc = new Pc(independencePc);
+            Pc pc = new Pc(independencePc);
             pc.setVerbose(false);
             pc.setDepth(depth);
 
-            final Graph CPDAG = pc.search();
+            Graph CPDAG = pc.search();
 
             out8.println(CPDAG);
 
@@ -206,7 +206,7 @@ public class PerformanceTestsDan {
             out10.println(data);
 
             out11.println("True PAG_of_the_true_DAG");
-            final Graph truePag = new DagToPag2(dag).convert();
+            Graph truePag = new DagToPag2(dag).convert();
             out11.println(truePag);
             printDanMatrix(_vars, truePag, out12);
 
@@ -225,16 +225,16 @@ public class PerformanceTestsDan {
         }
     }
 
-    private void printDanMatrix(final List<Node> vars, Graph CPDAG, final PrintStream out) {
+    private void printDanMatrix(List<Node> vars, Graph CPDAG, PrintStream out) {
         CPDAG = GraphUtils.replaceNodes(CPDAG, vars);
         for (int i = 0; i < vars.size(); i++) {
-            for (final Node var : vars) {
-                final Edge edge = CPDAG.getEdge(vars.get(i), var);
+            for (Node var : vars) {
+                Edge edge = CPDAG.getEdge(vars.get(i), var);
 
                 if (edge == null) {
                     out.print(0 + "\t");
                 } else {
-                    final Endpoint ej = edge.getProximalEndpoint(var);
+                    Endpoint ej = edge.getProximalEndpoint(var);
                     if (ej == Endpoint.TAIL) {
                         out.print(3 + "\t");
                     } else if (ej == Endpoint.ARROW) {
@@ -251,7 +251,7 @@ public class PerformanceTestsDan {
         out.println();
     }
 
-    public static void main(final String... args) {
+    public static void main(String... args) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
         System.out.println("Start ");
 

@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.Parameters;
 public class TestGenerateMixedData {
 
     public void test1() {
-        final Parameters parameters = new Parameters();
+        Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 100);
         parameters.set("numMeasures", 100);
@@ -57,8 +57,8 @@ public class TestGenerateMixedData {
         parameters.set("meanLow", -1);
         parameters.set("meanHigh", 1);
 
-        final LeeHastieSimulation simulation = new LeeHastieSimulation(new RandomForward());
-        final Comparison comparison = new Comparison();
+        LeeHastieSimulation simulation = new LeeHastieSimulation(new RandomForward());
+        Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(false);
@@ -71,7 +71,7 @@ public class TestGenerateMixedData {
         comparison.saveToFiles("mixed.lee.hastie.avg.degree.4", simulation, parameters);
     }
 
-    public static void main(final String... args) {
+    public static void main(String... args) {
         new TestGenerateMixedData().test1();
     }
 }

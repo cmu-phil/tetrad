@@ -49,7 +49,7 @@ class DataCellEditor extends DefaultCellEditor {
         this.textField.setBorder(new LineBorder(Color.BLACK));
 
         this.delegate = new EditorDelegate() {
-            public void setValue(final Object value) {
+            public void setValue(Object value) {
                 if (value == null) {
                     DataCellEditor.this.textField.setText("");
                 } else if (value instanceof String) {
@@ -57,7 +57,7 @@ class DataCellEditor extends DefaultCellEditor {
                 } else if (value instanceof Integer) {
                     DataCellEditor.this.textField.setText(value.toString());
                 } else if (value instanceof Double) {
-                    final double doubleValue = (Double) value;
+                    double doubleValue = (Double) value;
 
                     if (Double.isNaN(doubleValue)) {
                         DataCellEditor.this.textField.setText("");
@@ -89,7 +89,7 @@ class DataCellEditor extends DefaultCellEditor {
      *
      * @see javax.swing.DefaultCellEditor.EditorDelegate#shouldSelectCell(java.util.EventObject)
      */
-    public boolean shouldSelectCell(final EventObject anEvent) {
+    public boolean shouldSelectCell(EventObject anEvent) {
         return true;
     }
 }

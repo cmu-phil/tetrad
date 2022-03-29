@@ -94,7 +94,7 @@ public final class IndTestLaggedRegression implements IndependenceTest {
      * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
      * given data set (must be continuous). The given significance level is used.
      */
-    public IndTestLaggedRegression(final DataSet timeSeries, final double alpha, final int numLags) {
+    public IndTestLaggedRegression(DataSet timeSeries, double alpha, int numLags) {
         if (!(alpha >= 0 && alpha <= 1)) {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
@@ -117,7 +117,7 @@ public final class IndTestLaggedRegression implements IndependenceTest {
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(final List vars) {
+    public IndependenceTest indTestSubset(List vars) {
 //        if (vars.isEmpty()) {
 //            throw new IllegalArgumentException("Subset may not be empty.");
 //        }
@@ -160,18 +160,18 @@ public final class IndTestLaggedRegression implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node xVar, final Node yVar, final List<Node> zList) {
+    public boolean isIndependent(Node xVar, Node yVar, List<Node> zList) {
         if (zList == null) {
             throw new NullPointerException();
         }
 
-        for (final Node node : zList) {
+        for (Node node : zList) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
-        final List<Node> regressors = new ArrayList<>();
+        List<Node> regressors = new ArrayList<>();
 //        regressors.add(dataSet.getVariable(yVar.getNode()));
 //
 //        for (Node zVar : zList) {
@@ -184,23 +184,23 @@ public final class IndTestLaggedRegression implements IndependenceTest {
 
         regressors.add(this.timeLags.getVariable(yVar.getName()));
 
-        final int yIndex = this.timeLags.getColumn(this.timeLags.getVariable(yVar.getName()));
+        int yIndex = this.timeLags.getColumn(this.timeLags.getVariable(yVar.getName()));
 
         for (int i2 = yIndex + this.variables.size(); i2 < this.timeLags.getNumColumns(); i2 += this.variables.size()) {
             regressors.add(this.timeLags.getVariable(i2));
         }
 
-        final int xIndex = this.timeLags.getColumn(this.timeLags.getVariable(xVar.getName()));
+        int xIndex = this.timeLags.getColumn(this.timeLags.getVariable(xVar.getName()));
 
         for (int i2 = xIndex + this.variables.size(); i2 < this.timeLags.getNumColumns(); i2 += this.variables.size()) {
             regressors.add(this.timeLags.getVariable(i2));
         }
 
-        for (final Node z : zList) {
-            final int zIndex = this.timeLags.getColumn(this.timeLags.getVariable(z.getName()));
+        for (Node z : zList) {
+            int zIndex = this.timeLags.getColumn(this.timeLags.getVariable(z.getName()));
 
             for (int i2 = zIndex; i2 < this.timeLags.getNumColumns(); i2 += this.variables.size()) {
-                final List<Node> variables = this.timeLags.getVariables();
+                List<Node> variables = this.timeLags.getVariables();
                 regressors.add(variables.get(i2));
             }
         }
@@ -212,16 +212,16 @@ public final class IndTestLaggedRegression implements IndependenceTest {
 
         try {
             result = this.regression.regress(xVar, regressors);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
 
-        final double p = result.getP()[1];
+        double p = result.getP()[1];
 
         System.out.println("p = " + p);
 
-        final boolean independent = p > this.alpha;
+        boolean independent = p > this.alpha;
 
         if (this.verbose) {
             if (independent) {
@@ -232,17 +232,17 @@ public final class IndTestLaggedRegression implements IndependenceTest {
         return independent;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isDependent(Node x, Node y, List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -257,7 +257,7 @@ public final class IndTestLaggedRegression implements IndependenceTest {
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -283,9 +283,9 @@ public final class IndTestLaggedRegression implements IndependenceTest {
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+            Node variable = getVariables().get(i);
 
             if (variable.getName().equals(name)) {
                 return variable;
@@ -299,10 +299,10 @@ public final class IndTestLaggedRegression implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
+        List<Node> variables = getVariables();
+        List<String> variableNames = new ArrayList<>();
 
-        for (final Node variable : variables) {
+        for (Node variable : variables) {
             variableNames.add(variable.getName());
         }
 
@@ -347,7 +347,7 @@ public final class IndTestLaggedRegression implements IndependenceTest {
 //        return data.rows();
 //    }
 
-    public boolean determines(final List<Node> zList, final Node xVar) {
+    public boolean determines(List<Node> zList, Node xVar) {
         throw new UnsupportedOperationException();
 
 //        if (zList == null) {
@@ -449,7 +449,7 @@ public final class IndTestLaggedRegression implements IndependenceTest {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

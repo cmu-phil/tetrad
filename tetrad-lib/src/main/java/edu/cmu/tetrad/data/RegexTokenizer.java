@@ -79,8 +79,8 @@ public final class RegexTokenizer {
      * Constructs a tokenizer for the given input line, using the given Pattern
      * as delimiter.
      */
-    public RegexTokenizer(final CharSequence line, final Pattern delimiterPattern,
-                          final char quoteChar) {
+    public RegexTokenizer(CharSequence line, Pattern delimiterPattern,
+                          char quoteChar) {
         this.chars = line;
         this.quoteChar = quoteChar;
         this.delimiterMatcher = delimiterPattern.matcher(line);
@@ -108,7 +108,7 @@ public final class RegexTokenizer {
         if (this.position != this.chars.length() && this.quoteSensitive && this.chars.charAt(this.position) == this.quoteChar) {
             boolean match = this.quoteCharMatcher.find(this.position + 1);
             int end = match ? this.quoteCharMatcher.end() : this.chars.length();
-            final CharSequence token = this.chars.subSequence(this.position + 1, end - 1);
+            CharSequence token = this.chars.subSequence(this.position + 1, end - 1);
 
             match = this.delimiterMatcher.find(end);
             end = match ? this.delimiterMatcher.end() : this.chars.length();
@@ -121,10 +121,10 @@ public final class RegexTokenizer {
             this.previousTokenQuoted = true;
             return token.toString();
         } else {
-            final boolean match = this.delimiterMatcher.find(this.position);
-            final int start = match ? this.delimiterMatcher.start() : this.chars.length();
-            final int end = match ? this.delimiterMatcher.end() : this.chars.length();
-            final CharSequence token = this.chars.subSequence(this.position, start);
+            boolean match = this.delimiterMatcher.find(this.position);
+            int start = match ? this.delimiterMatcher.start() : this.chars.length();
+            int end = match ? this.delimiterMatcher.end() : this.chars.length();
+            CharSequence token = this.chars.subSequence(this.position, start);
             this.position = end;
 
             if (!match) {
@@ -140,7 +140,7 @@ public final class RegexTokenizer {
      * True iff the parser should be aware of quotation marks and remove them
      * from returned strings.
      */
-    public void setQuoteSensitive(final boolean quoteSensitive) {
+    public void setQuoteSensitive(boolean quoteSensitive) {
         this.quoteSensitive = quoteSensitive;
     }
 

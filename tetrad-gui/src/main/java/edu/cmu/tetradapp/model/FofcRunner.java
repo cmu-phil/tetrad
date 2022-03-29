@@ -58,21 +58,21 @@ public class FofcRunner extends AbstractMimRunner
 
     //============================CONSTRUCTORS============================//
 
-    public FofcRunner(final DataWrapper dataWrapper,
-                      final Parameters pureClustersParams) {
+    public FofcRunner(DataWrapper dataWrapper,
+                      Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
 
     }
 
-    public FofcRunner(final DataWrapper dataWrapper, final SemImWrapper semImWrapper,
-                      final Parameters pureClustersParams) {
+    public FofcRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
+                      Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.semIm = semImWrapper.getSemIm();
         this.trueGraph = this.semIm.getSemPm().getGraph();
     }
 
-    public FofcRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper,
-                      final Parameters pureClustersParams) {
+    public FofcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
+                      Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
         this.trueGraph = graphWrapper.getGraph();
     }
@@ -91,10 +91,10 @@ public class FofcRunner extends AbstractMimRunner
      * implemented in the extending class.
      */
     public void execute() {
-        final Graph searchGraph;
+        Graph searchGraph;
 
-        final FindOneFactorClusters fofc;
-        final Object source = getData();
+        FindOneFactorClusters fofc;
+        Object source = getData();
         TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
         if (tetradTestType == null || (!(tetradTestType == TestType.TETRAD_DELTA ||
                 tetradTestType == TestType.TETRAD_WISHART))) {
@@ -118,14 +118,14 @@ public class FofcRunner extends AbstractMimRunner
         }
 
         if (this.semIm != null) {
-            final List<List<Node>> partition = MimUtils.convertToClusters2(searchGraph);
+            List<List<Node>> partition = MimUtils.convertToClusters2(searchGraph);
 
-            final List<String> variableNames = ReidentifyVariables.reidentifyVariables2(partition, this.trueGraph, (DataSet) getData());
+            List<String> variableNames = ReidentifyVariables.reidentifyVariables2(partition, this.trueGraph, (DataSet) getData());
             rename(searchGraph, partition, variableNames);
 //            searchGraph = reidentifyVariables2(searchGraph, semIm);
         } else if (this.trueGraph != null) {
-            final List<List<Node>> partition = MimUtils.convertToClusters2(searchGraph);
-            final List<String> variableNames = ReidentifyVariables.reidentifyVariables1(partition, this.trueGraph);
+            List<List<Node>> partition = MimUtils.convertToClusters2(searchGraph);
+            List<String> variableNames = ReidentifyVariables.reidentifyVariables1(partition, this.trueGraph);
             rename(searchGraph, partition, variableNames);
 //            searchGraph = reidentifyVariables(searchGraph, trueGraph);
         }
@@ -134,25 +134,25 @@ public class FofcRunner extends AbstractMimRunner
 
 
         try {
-            final Graph graph = new MarshalledObject<>(searchGraph).get();
+            Graph graph = new MarshalledObject<>(searchGraph).get();
             GraphUtils.circleLayout(graph, 200, 200, 150);
             GraphUtils.fruchtermanReingoldLayout(graph);
             setResultGraph(graph);
             setClusters(MimUtils.convertToClusters(graph, getData().getVariables()));
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
 
     }
 
-    private void rename(final Graph searchGraph, final List<List<Node>> partition, final List<String> variableNames) {
-        for (final Node node : searchGraph.getNodes()) {
+    private void rename(Graph searchGraph, List<List<Node>> partition, List<String> variableNames) {
+        for (Node node : searchGraph.getNodes()) {
             if (!(node.getNodeType() == NodeType.LATENT)) {
                 continue;
             }
 
-            final List<Node> children = searchGraph.getChildren(node);
+            List<Node> children = searchGraph.getChildren(node);
             children.removeAll(ReidentifyVariables.getLatents(searchGraph));
 
             for (int i = 0; i < partition.size(); i++) {
@@ -168,10 +168,10 @@ public class FofcRunner extends AbstractMimRunner
     }
 
     public List<Node> getVariables() {
-        final List<Node> latents = new ArrayList<>();
+        List<Node> latents = new ArrayList<>();
 
-        for (final String name : getVariableNames()) {
-            final Node node = new ContinuousVariable(name);
+        for (String name : getVariableNames()) {
+            Node node = new ContinuousVariable(name);
             node.setNodeType(NodeType.LATENT);
             latents.add(node);
         }
@@ -180,7 +180,7 @@ public class FofcRunner extends AbstractMimRunner
     }
 
     public List<String> getVariableNames() {
-        final List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
+        List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
                 getData().getVariables());
         return ClusterUtils.generateLatentNames(partition.size());
     }

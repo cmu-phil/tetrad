@@ -53,8 +53,8 @@ public class DirichletEstimatorWrapper implements SessionModel {
     private final DirichletBayesIm dirichletBayesIm;
 
     //============================CONSTRUCTORS============================//
-    public DirichletEstimatorWrapper(final DataWrapper dataWrapper,
-                                     final DirichletBayesImWrapper dirichletPriorWrapper) {
+    public DirichletEstimatorWrapper(DataWrapper dataWrapper,
+                                     DirichletBayesImWrapper dirichletPriorWrapper) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -63,20 +63,20 @@ public class DirichletEstimatorWrapper implements SessionModel {
             throw new NullPointerException();
         }
 
-        final DataSet dataSet
+        DataSet dataSet
                 = (DataSet) dataWrapper.getSelectedDataModel();
 
         if (DataUtils.containsMissingValue(dataSet)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
-        final DirichletBayesIm dirichletBayesIm
+        DirichletBayesIm dirichletBayesIm
                 = dirichletPriorWrapper.getDirichletBayesIm();
 
         try {
             this.dirichletBayesIm
                     = DirichletEstimator.estimate(dirichletBayesIm, dataSet);
-        } catch (final IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException(
                     "Please fully specify the Dirichlet prior first.");
         }
@@ -113,8 +113,8 @@ public class DirichletEstimatorWrapper implements SessionModel {
 //        }
 //        log(dirichletBayesIm);
 //    }
-    public DirichletEstimatorWrapper(final DataWrapper dataWrapper,
-                                     final BayesPmWrapper bayesPmWrapper, final Parameters params) {
+    public DirichletEstimatorWrapper(DataWrapper dataWrapper,
+                                     BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -127,14 +127,14 @@ public class DirichletEstimatorWrapper implements SessionModel {
             throw new NullPointerException();
         }
 
-        final DataSet dataSet
+        DataSet dataSet
                 = (DataSet) dataWrapper.getSelectedDataModel();
 
         if (DataUtils.containsMissingValue(dataSet)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
-        final DirichletBayesIm dirichletBayesIm
+        DirichletBayesIm dirichletBayesIm
                 = DirichletBayesIm.symmetricDirichletIm(
                 bayesPmWrapper.getBayesPm(),
                 params.getDouble("symmetricAlpha", 1.0));
@@ -146,7 +146,7 @@ public class DirichletEstimatorWrapper implements SessionModel {
         try {
             this.dirichletBayesIm
                     = DirichletEstimator.estimate(dirichletBayesIm, dataSet);
-        } catch (final IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException(
                     "Please fully specify the Dirichlet prior first.");
         }
@@ -182,7 +182,7 @@ public class DirichletEstimatorWrapper implements SessionModel {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -199,11 +199,11 @@ public class DirichletEstimatorWrapper implements SessionModel {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
-    private void log(final DirichletBayesIm im) {
+    private void log(DirichletBayesIm im) {
         TetradLogger.getInstance().log("info", "Estimated Dirichlet Bayes IM");
         TetradLogger.getInstance().log("im", "" + im);
         TetradLogger.getInstance().reset();

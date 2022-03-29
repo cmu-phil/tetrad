@@ -42,7 +42,7 @@ public class TeyssierScorer {
     private boolean useBackwardScoring;
     private boolean cachingScores = true;
 
-    public TeyssierScorer(final IndependenceTest test, final Score score) {
+    public TeyssierScorer(IndependenceTest test, Score score) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
         this.score = score;
@@ -72,7 +72,7 @@ public class TeyssierScorer {
     /**
      * @param useScore True if the score should be used; false if the test should be used.
      */
-    public void setUseScore(final boolean useScore) {
+    public void setUseScore(boolean useScore) {
         if (!(this.score instanceof GraphScore)) {
             this.useScore = useScore;
         }
@@ -82,26 +82,26 @@ public class TeyssierScorer {
      * @param cachingScores True if scores should be cached (potentially expensive for memory);
      *                      false if not (potentially expensive for time).
      */
-    public void setCachingScores(final boolean cachingScores) {
+    public void setCachingScores(boolean cachingScores) {
         this.cachingScores = cachingScores;
     }
 
     /**
      * @param knowledge Knowledge of forbidden edges.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     /**
      * @param useVermaPearl True if Pearl's method for building a DAG should be used.
      */
-    public void setUseVermaPearl(final boolean useVermaPearl) {
+    public void setUseVermaPearl(boolean useVermaPearl) {
         this.useVermaPearl = useVermaPearl;
         this.useScore = false;
     }
 
-    public void setUseBackwardScoring(final boolean useBackwardScoring) {
+    public void setUseBackwardScoring(boolean useBackwardScoring) {
         this.useBackwardScoring = useBackwardScoring;
     }
 
@@ -112,7 +112,7 @@ public class TeyssierScorer {
      * @param order The permutation to score.
      * @return The score of it.
      */
-    public float score(final List<Node> order) {
+    public float score(List<Node> order) {
         this.pi = new LinkedList<>(order);
         this.scores = new LinkedList<>();
 
@@ -137,7 +137,7 @@ public class TeyssierScorer {
         float score = 0;
 
         for (int i = 0; i < this.pi.size(); i++) {
-            final float score1 = this.scores.get(i).getScore();
+            float score1 = this.scores.get(i).getScore();
             score += score1;
         }
 
@@ -150,7 +150,7 @@ public class TeyssierScorer {
      * @param x The first variable.
      * @param y The second variable.
      */
-    public void tuck(final Node x, final Node y) {
+    public void tuck(Node x, Node y) {
         if (index(x) < index(y)) {
             moveTo(y, index(x));
         } else if (index(x) > index(y)) {
@@ -164,10 +164,10 @@ public class TeyssierScorer {
      * @param v       The variable to move.
      * @param toIndex The index to move v to.
      */
-    public void moveTo(final Node v, final int toIndex) {
+    public void moveTo(Node v, int toIndex) {
         if (!this.pi.contains(v)) return;
 
-        final int vIndex = index(v);
+        int vIndex = index(v);
 
         if (vIndex == toIndex) return;
 
@@ -190,9 +190,9 @@ public class TeyssierScorer {
      * @param n The second variable.
      * @return True iff the swap was done.
      */
-    public boolean swap(final Node m, final Node n) {
-        final int i = this.orderHash.get(m);
-        final int j = this.orderHash.get(n);
+    public boolean swap(Node m, Node n) {
+        int i = this.orderHash.get(m);
+        int j = this.orderHash.get(n);
 
         this.pi.set(i, n);
         this.pi.set(j, m);
@@ -220,10 +220,10 @@ public class TeyssierScorer {
      * @param y The second variable.
      * @return True iff x->y or y->x is a covered edge.
      */
-    public boolean coveredEdge(final Node x, final Node y) {
+    public boolean coveredEdge(Node x, Node y) {
         if (!adjacent(x, y)) return false;
-        final Set<Node> px = getParents(x);
-        final Set<Node> py = getParents(y);
+        Set<Node> px = getParents(x);
+        Set<Node> py = getParents(y);
         px.remove(y);
         py.remove(x);
         return px.equals(py);
@@ -251,12 +251,12 @@ public class TeyssierScorer {
      * @param v The variable.
      * @return Its index.
      */
-    public int index(final Node v) {
+    public int index(Node v) {
         if (!this.orderHash.containsKey(v)) {
             System.out.println();
         }
 
-        final Integer integer = this.orderHash.get(v);
+        Integer integer = this.orderHash.get(v);
 
         if (integer == null)
             throw new IllegalArgumentException("First 'evaluate' a permutation containing variable "
@@ -271,7 +271,7 @@ public class TeyssierScorer {
      * @param p The index of the node.
      * @return Its parents.
      */
-    public Set<Node> getParents(final int p) {
+    public Set<Node> getParents(int p) {
         return new HashSet<>(this.scores.get(p).getParents());
     }
 
@@ -281,7 +281,7 @@ public class TeyssierScorer {
      * @param v The variable.
      * @return Its parents.
      */
-    public Set<Node> getParents(final Node v) {
+    public Set<Node> getParents(Node v) {
         return getParents(index(v));
     }
 
@@ -291,10 +291,10 @@ public class TeyssierScorer {
      * @param v The variable.
      * @return Its adjacent nodes.
      */
-    public Set<Node> getAdjacentNodes(final Node v) {
-        final Set<Node> adj = new HashSet<>();
+    public Set<Node> getAdjacentNodes(Node v) {
+        Set<Node> adj = new HashSet<>();
 
-        for (final Node w : this.pi) {
+        for (Node w : this.pi) {
             if (getParents(v).contains(w) || getParents(w).contains(v)) {
                 adj.add(w);
             }
@@ -309,12 +309,12 @@ public class TeyssierScorer {
      * @param cpDag True iff the CPDAG should be returned, False if the DAG.
      * @return This graph.
      */
-    public Graph getGraph(final boolean cpDag) {
-        final List<Node> order = getPi();
-        final Graph G1 = new EdgeListGraph(this.variables);
+    public Graph getGraph(boolean cpDag) {
+        List<Node> order = getPi();
+        Graph G1 = new EdgeListGraph(this.variables);
 
         for (int p = 0; p < order.size(); p++) {
-            for (final Node z : getParents(p)) {
+            for (Node z : getParents(p)) {
                 G1.addDirectedEdge(z, order.get(p));
             }
         }
@@ -334,13 +334,13 @@ public class TeyssierScorer {
      * @return This list.
      */
     public List<NodePair> getAdjacencies() {
-        final List<Node> order = getPi();
-        final Set<NodePair> pairs = new HashSet<>();
+        List<Node> order = getPi();
+        Set<NodePair> pairs = new HashSet<>();
 
         for (int i = 0; i < order.size(); i++) {
             for (int j = 0; j < i; j++) {
-                final Node x = order.get(i);
-                final Node y = order.get(j);
+                Node x = order.get(i);
+                Node y = order.get(j);
 
                 if (adjacent(x, y)) {
                     pairs.add(new NodePair(x, y));
@@ -352,12 +352,12 @@ public class TeyssierScorer {
     }
 
     public Map<Node, Set<Node>> getAdjMap() {
-        final Map<Node, Set<Node>> adjMap = new HashMap<>();
-        for (final Node node1 : getPi()) {
+        Map<Node, Set<Node>> adjMap = new HashMap<>();
+        for (Node node1 : getPi()) {
             if (!adjMap.containsKey(node1)) {
                 adjMap.put(node1, new HashSet<>());
             }
-            for (final Node node2 : getParents(node1)) {
+            for (Node node2 : getParents(node1)) {
                 if (!adjMap.containsKey(node2)) {
                     adjMap.put(node2, new HashSet<>());
                 }
@@ -370,9 +370,9 @@ public class TeyssierScorer {
 
 
     public Map<Node, Set<Node>> getChildMap() {
-        final Map<Node, Set<Node>> childMap = new HashMap<>();
-        for (final Node node1 : getPi()) {
-            for (final Node node2 : getParents(node1)) {
+        Map<Node, Set<Node>> childMap = new HashMap<>();
+        for (Node node1 : getPi()) {
+            for (Node node2 : getParents(node1)) {
                 if (!childMap.containsKey(node2)) {
                     childMap.put(node2, new HashSet<>());
                 }
@@ -382,23 +382,23 @@ public class TeyssierScorer {
         return childMap;
     }
 
-    public Set<Node> getAncestors(final Node node) {
-        final Set<Node> ancestors = new HashSet<>();
+    public Set<Node> getAncestors(Node node) {
+        Set<Node> ancestors = new HashSet<>();
         collectAncestorsVisit(node, ancestors);
 
         return ancestors;
     }
 
-    private void collectAncestorsVisit(final Node node, final Set<Node> ancestors) {
+    private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
         if (ancestors.contains(node)) {
             return;
         }
 
         ancestors.add(node);
-        final Set<Node> parents = getParents(node);
+        Set<Node> parents = getParents(node);
 
         if (!parents.isEmpty()) {
-            for (final Node parent : parents) {
+            for (Node parent : parents) {
                 collectAncestorsVisit(parent, ancestors);
             }
         }
@@ -410,11 +410,11 @@ public class TeyssierScorer {
      * @return This list.
      */
     public List<OrderedPair<Node>> getEdges() {
-        final List<Node> order = getPi();
-        final List<OrderedPair<Node>> edges = new ArrayList<>();
+        List<Node> order = getPi();
+        List<OrderedPair<Node>> edges = new ArrayList<>();
 
-        for (final Node y : order) {
-            for (final Node x : getParents(y)) {
+        for (Node y : order) {
+            for (Node x : getParents(y)) {
                 edges.add(new OrderedPair<>(x, y));
             }
         }
@@ -441,7 +441,7 @@ public class TeyssierScorer {
      * @param j The index.
      * @return The node at that index.
      */
-    public Node get(final int j) {
+    public Node get(int j) {
         return this.pi.get(j);
     }
 
@@ -451,7 +451,7 @@ public class TeyssierScorer {
      * @param key This bookmark may be retrieved using the index 'key', an integer.
      *            This bookmark will be stored until it is retrieved and then removed.
      */
-    public void bookmark(final int key) {
+    public void bookmark(int key) {
         this.bookmarkedOrders.put(key, new LinkedList<>(this.pi));
         this.bookmarkedScores.put(key, new LinkedList<>(this.scores));
         this.bookmarkedOrderHashes.put(key, new HashMap<>(this.orderHash));
@@ -469,7 +469,7 @@ public class TeyssierScorer {
      *
      * @param key The integer key for this bookmark.
      */
-    public void goToBookmark(final int key) {
+    public void goToBookmark(int key) {
         if (!this.bookmarkedOrders.containsKey(key)) {
             throw new IllegalArgumentException("That key was not bookmarked recently.");
         }
@@ -512,7 +512,7 @@ public class TeyssierScorer {
     }
 
     public List<Node> getShuffledVariables() {
-        final List<Node> variables = getPi();
+        List<Node> variables = getPi();
         shuffle(variables);
         return variables;
     }
@@ -524,7 +524,7 @@ public class TeyssierScorer {
      * @param b The second node.
      * @return True iff adj(a, b).
      */
-    public boolean adjacent(final Node a, final Node b) {
+    public boolean adjacent(Node a, Node b) {
         if (a == b) return false;
         return getParents(a).contains(b) || getParents(b).contains(a);
     }
@@ -537,7 +537,7 @@ public class TeyssierScorer {
      * @param c The third node.
      * @return True iff a->b<-c in the current DAG.
      */
-    public boolean collider(final Node a, final Node b, final Node c) {
+    public boolean collider(Node a, Node b, Node c) {
         return getParents(b).contains(a) && getParents(b).contains(c);
     }
 
@@ -549,7 +549,7 @@ public class TeyssierScorer {
      * @param c The third node.
      * @return True iff adj(a, b) & adj(b, c) & adj(a, c).
      */
-    public boolean triangle(final Node a, final Node b, final Node c) {
+    public boolean triangle(Node a, Node b, Node c) {
         return adjacent(a, b) && adjacent(b, c) && adjacent(a, c);
     }
 
@@ -559,7 +559,7 @@ public class TeyssierScorer {
      * @param W The nodes.
      * @return True iff these nodes form a clique.
      */
-    public boolean clique(final List<Node> W) {
+    public boolean clique(List<Node> W) {
         for (int i = 0; i < W.size(); i++) {
             for (int j = i + 1; j < W.size(); j++) {
                 if (!adjacent(W.get(i), W.get(j))) {
@@ -578,7 +578,7 @@ public class TeyssierScorer {
      * @param maxSize The maximum size of the score cache; it the if the score cache is
      *                larger than this it will be cleared.
      */
-    public void resetCacheIfTooBig(final int maxSize) {
+    public void resetCacheIfTooBig(int maxSize) {
         if (this.cache.size() > maxSize) {
             this.cache = new HashMap<>();
             System.out.println("Clearing cacche...");
@@ -586,7 +586,7 @@ public class TeyssierScorer {
         }
     }
 
-    private boolean validKnowledgeOrder(final List<Node> order) {
+    private boolean validKnowledgeOrder(List<Node> order) {
         for (int i = 0; i < order.size(); i++) {
             for (int j = i + 1; j < order.size(); j++) {
                 if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName())) {
@@ -609,32 +609,32 @@ public class TeyssierScorer {
         updateScores(0, this.pi.size() - 1);
     }
 
-    public void updateScores(final int i1, final int i2) {
+    public void updateScores(int i1, int i2) {
         for (int i = i1; i <= i2; i++) {
             recalculate(i);
             this.orderHash.put(this.pi.get(i), i);
         }
     }
 
-    private float score(final Node n, final Set<Node> pi) {
+    private float score(Node n, Set<Node> pi) {
         if (this.cachingScores) {
             this.cache.computeIfAbsent(n, w -> new HashMap<>());
-            final Float score = this.cache.get(n).get(pi);
+            Float score = this.cache.get(n).get(pi);
 
             if (score != null) {
                 return score;
             }
         }
 
-        final int[] parentIndices = new int[pi.size()];
+        int[] parentIndices = new int[pi.size()];
 
         int k = 0;
 
-        for (final Node p : pi) {
+        for (Node p : pi) {
             parentIndices[k++] = this.variablesHash.get(p);
         }
 
-        final float v = (float) this.score.localScore(this.variablesHash.get(n), parentIndices);
+        float v = (float) this.score.localScore(this.variablesHash.get(n), parentIndices);
 
         if (this.cachingScores) {
             this.cache.computeIfAbsent(n, w -> new HashMap<>());
@@ -644,8 +644,8 @@ public class TeyssierScorer {
         return v;
     }
 
-    private Set<Node> getPrefix(final int i) {
-        final Set<Node> prefix = new HashSet<>();
+    private Set<Node> getPrefix(int i) {
+        Set<Node> prefix = new HashSet<>();
 
         for (int j = 0; j < i; j++) {
             prefix.add(this.pi.get(j));
@@ -654,21 +654,21 @@ public class TeyssierScorer {
         return prefix;
     }
 
-    private void recalculate(final int p) {
+    private void recalculate(int p) {
         if (this.prefixes.get(p) == null || !this.prefixes.get(p).containsAll(getPrefix(p))) {
-            final Pair p1 = this.scores.get(p);
-            final Pair p2 = getParentsInternal(p);
+            Pair p1 = this.scores.get(p);
+            Pair p2 = getParentsInternal(p);
             this.scores.set(p, p2);
         }
     }
 
-    private void nodesHash(final Map<Node, Integer> nodesHash, final List<Node> variables) {
+    private void nodesHash(Map<Node, Integer> nodesHash, List<Node> variables) {
         for (int i = 0; i < variables.size(); i++) {
             nodesHash.put(variables.get(i), i);
         }
     }
 
-    private boolean lastMoveSame(final int i1, final int i2) {
+    private boolean lastMoveSame(int i1, int i2) {
         if (i1 <= i2) {
             for (int i = i1; i <= i2; i++) {
                 if (!getPrefix(i).equals(this.prefixes.get(i))) return false;
@@ -683,14 +683,14 @@ public class TeyssierScorer {
     }
 
     @NotNull
-    private Pair getGrowShrinkScore(final int p) {
-        final Node n = this.pi.get(p);
+    private Pair getGrowShrinkScore(int p) {
+        Node n = this.pi.get(p);
 
-        final Set<Node> parents = new HashSet<>();
+        Set<Node> parents = new HashSet<>();
         boolean changed = true;
 
         float sMax = score(n, new HashSet<>());
-        final List<Node> prefix = new ArrayList<>(getPrefix(p));
+        List<Node> prefix = new ArrayList<>(getPrefix(p));
 
         // Backward scoring only from the prefix variables
         if (this.useBackwardScoring) {
@@ -706,13 +706,13 @@ public class TeyssierScorer {
             // Let z be the node that maximizes the score...
             Node z = null;
 
-            for (final Node z0 : prefix) {
+            for (Node z0 : prefix) {
                 if (parents.contains(z0)) continue;
 
                 if (this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
                 parents.add(z0);
 
-                final float s2 = score(n, parents);
+                float s2 = score(n, parents);
 
                 if (s2 >= sMax) {
                     sMax = s2;
@@ -736,10 +736,10 @@ public class TeyssierScorer {
 
             Node w = null;
 
-            for (final Node z0 : new HashSet<>(parents)) {
+            for (Node z0 : new HashSet<>(parents)) {
                 parents.remove(z0);
 
-                final float s2 = score(n, parents);
+                float s2 = score(n, parents);
 
                 if (s2 >= sMax) {
                     sMax = s2;
@@ -762,19 +762,19 @@ public class TeyssierScorer {
         }
     }
 
-    private Pair getGrowShrinkIndependent(final int p) {
-        final Node n = this.pi.get(p);
+    private Pair getGrowShrinkIndependent(int p) {
+        Node n = this.pi.get(p);
 
-        final Set<Node> parents = new HashSet<>();
+        Set<Node> parents = new HashSet<>();
 
-        final Set<Node> prefix = getPrefix(p);
+        Set<Node> prefix = getPrefix(p);
 
         boolean changed1 = true;
 
         while (changed1) {
             changed1 = false;
 
-            for (final Node z0 : prefix) {
+            for (Node z0 : prefix) {
                 if (parents.contains(z0)) continue;
                 if (this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
 
@@ -790,8 +790,8 @@ public class TeyssierScorer {
         while (changed2) {
             changed2 = false;
 
-            for (final Node z1 : new HashSet<>(parents)) {
-                final Set<Node> _p = new HashSet<>(parents);
+            for (Node z1 : new HashSet<>(parents)) {
+                Set<Node> _p = new HashSet<>(parents);
                 _p.remove(z1);
 
                 if (this.test.isIndependent(n, z1, new ArrayList<>(_p))) {
@@ -804,7 +804,7 @@ public class TeyssierScorer {
         return new Pair(parents, -parents.size());
     }
 
-    private Pair getParentsInternal(final int p) {
+    private Pair getParentsInternal(int p) {
         if (this.useVermaPearl) {
             return getVermaPearlParents(p);
         } else {
@@ -822,15 +822,15 @@ public class TeyssierScorer {
      * @param p The index.
      * @return The parents, as a Pair object (parents + score).
      */
-    private Pair getVermaPearlParents(final int p) {
-        final Node x = this.pi.get(p);
-        final Set<Node> parents = new HashSet<>();
-        final Set<Node> prefix = getPrefix(p);
+    private Pair getVermaPearlParents(int p) {
+        Node x = this.pi.get(p);
+        Set<Node> parents = new HashSet<>();
+        Set<Node> prefix = getPrefix(p);
 
-        for (final Node y : prefix) {
-            final Set<Node> minus = new HashSet<>(prefix);
+        for (Node y : prefix) {
+            Set<Node> minus = new HashSet<>(prefix);
             minus.remove(y);
-            final ArrayList<Node> z = new ArrayList<>(minus);
+            ArrayList<Node> z = new ArrayList<>(minus);
             sort(z);
 
             if (this.test.isDependent(x, y, z)) {
@@ -842,12 +842,12 @@ public class TeyssierScorer {
     }
 
     public Set<Set<Node>> getSkeleton() {
-        final List<Node> order = getPi();
-        final Set<Set<Node>> skeleton = new HashSet<>();
+        List<Node> order = getPi();
+        Set<Set<Node>> skeleton = new HashSet<>();
 
-        for (final Node y : order) {
-            for (final Node x : getParents(y)) {
-                final Set<Node> adj = new HashSet<>();
+        for (Node y : order) {
+            for (Node x : getParents(y)) {
+                Set<Node> adj = new HashSet<>();
                 adj.add(x);
                 adj.add(y);
                 skeleton.add(adj);
@@ -858,12 +858,12 @@ public class TeyssierScorer {
     }
 
 
-    public void moveToNoUpdate(final Node v, final int toIndex) {
+    public void moveToNoUpdate(Node v, int toIndex) {
         bookmark(-55);
 
         if (!this.pi.contains(v)) return;
 
-        final int vIndex = index(v);
+        int vIndex = index(v);
 
         if (vIndex == toIndex) return;
 
@@ -882,7 +882,7 @@ public class TeyssierScorer {
         private final Set<Node> parents;
         private final float score;
 
-        private Pair(final Set<Node> parents, final float score) {
+        private Pair(Set<Node> parents, float score) {
             this.parents = parents;
             this.score = score;
         }
@@ -899,10 +899,10 @@ public class TeyssierScorer {
             return this.parents.hashCode() + (int) floor(10000D * this.score);
         }
 
-        public boolean equals(final Object o) {
+        public boolean equals(Object o) {
             if (o == null) return false;
             if (!(o instanceof Pair)) return false;
-            final Pair thatPair = (Pair) o;
+            Pair thatPair = (Pair) o;
             return this.parents.equals(thatPair.parents) && this.score == thatPair.score;
         }
     }

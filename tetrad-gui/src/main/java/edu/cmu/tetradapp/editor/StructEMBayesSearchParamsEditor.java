@@ -41,11 +41,11 @@ public class StructEMBayesSearchParamsEditor extends JPanel implements Parameter
      */
     private Parameters params;
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         // ignore.
     }
 
@@ -61,29 +61,29 @@ public class StructEMBayesSearchParamsEditor extends JPanel implements Parameter
     public void setup() {
         setLayout(new BorderLayout());
 
-        final DoubleTextField toleranceField =
+        DoubleTextField toleranceField =
                 new DoubleTextField(this.params.getDouble("tolerance", 0.0001), 8, NumberFormatUtil.getInstance().getNumberFormat());
         toleranceField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
                     StructEMBayesSearchParamsEditor.this.params.set("tolerance", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "The dataset will be used to iteratively estmate models (Bayes nets) " +
                 "<br>using the BDe metric until the model does not change from one " +
                 "<br>iteration to the next.  " + "</html>"));
 
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" + "<i>The default value is 0.0001</i>" +
                 "</html>"));

@@ -82,8 +82,8 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
     /**
      * Opens up an editor to let the user view the given RegressionRunner.
      */
-    public RegressionParamsPanel(final Parameters params,
-                                 final Object[] parentModels) {
+    public RegressionParamsPanel(Parameters params,
+                                 Object[] parentModels) {
 
         if (params == null) {
             throw new NullPointerException(
@@ -115,20 +115,20 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
 
         //predictorVarsList = new Vector();
 
-        final JLabel instructions =
+        JLabel instructions =
                 new JLabel("Select response and predictor variables:");
-        final JLabel varsLabel = new JLabel("Variables");
-        final JLabel responseLabel = new JLabel("Response");
-        final JLabel predictorLabel = new JLabel("Predictor(s)");
-        final JScrollPane varListbox = (JScrollPane) createVarListbox();
-        final JScrollPane predictorVarListbox =
+        JLabel varsLabel = new JLabel("Variables");
+        JLabel responseLabel = new JLabel("Response");
+        JLabel predictorLabel = new JLabel("Predictor(s)");
+        JScrollPane varListbox = (JScrollPane) createVarListbox();
+        JScrollPane predictorVarListbox =
                 (JScrollPane) createPredictorVarListbox();
 
 
         this.responseButton = new ArrowButton(this, RegressionParamsPanel.INCLUDE_RESPONSE);
-        final ArrowButton predictorInButton =
+        ArrowButton predictorInButton =
                 new ArrowButton(this, RegressionParamsPanel.INCLUDE_PREDICTOR);
-        final ArrowButton predictorOutButton =
+        ArrowButton predictorOutButton =
                 new ArrowButton(this, RegressionParamsPanel.EXCLUDE_PREDICTOR, false);
 
         this.responseVar = new StringTextField("", 10);
@@ -145,29 +145,29 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         }
         //this.predictorVarListbox.setListData(params.getRegressorNames());
 
-        final DefaultListModel predsModel =
+        DefaultListModel predsModel =
                 (DefaultListModel) this.predictorVarListbox.getModel();
-        final String[] paramNames = (String[]) params.get("regressorNames", null);
-        for (final String paramName : paramNames) {
+        String[] paramNames = (String[]) params.get("regressorNames", null);
+        for (String paramName : paramNames) {
             predsModel.addElement(paramName);
         }
 
         //Construct availableVarsList of variable names not response nor in predictors.
         //List varListNames = params.getRegressorNames();
-        final List<Object> varListNames = new ArrayList<Object>(this.varNames);
-        final String targetName = params.getString("targetName", null);
+        List<Object> varListNames = new ArrayList<Object>(this.varNames);
+        String targetName = params.getString("targetName", null);
         varListNames.remove(targetName);
 
-        final List<String> regNames = (List<String>) params.get("regressorNames", null);
+        List<String> regNames = (List<String>) params.get("regressorNames", null);
 
-        for (final String regName : regNames) {
+        for (String regName : regNames) {
             varListNames.remove(regName);
         }
 
-        final DefaultListModel varsModel =
+        DefaultListModel varsModel =
                 (DefaultListModel) this.availableVarsList.getModel();
         varsModel.clear();
-        for (final Object varListName : varListNames) {
+        for (Object varListName : varListNames) {
             varsModel.addElement(varListName);
         }
 
@@ -177,35 +177,35 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         //setPreferredSize(new Dimension(300, 600));
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
-        final Box b0 = Box.createHorizontalBox();
+        Box b0 = Box.createHorizontalBox();
         b0.add(instructions);
         //add(instructions);
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
 
-        final Box b2 = Box.createVerticalBox();
-        final Box b3 = Box.createVerticalBox();
-        final Box b4 = Box.createVerticalBox();
-        final Box b5 = Box.createVerticalBox();
+        Box b2 = Box.createVerticalBox();
+        Box b3 = Box.createVerticalBox();
+        Box b4 = Box.createVerticalBox();
+        Box b5 = Box.createVerticalBox();
 
-        final DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 4,
+        DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 4,
                 NumberFormatUtil.getInstance().getNumberFormat());
         alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
                     params().set("alpha", 0.001);
                     Preferences.userRoot().putDouble("alpha",
                             params().getDouble("alpha", 0.001));
                     return value;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
         });
 
-        final JLabel alphaLabel = new JLabel("Alpha:");
+        JLabel alphaLabel = new JLabel("Alpha:");
 
         b2.add(varsLabel);
         b2.add(varListbox);
@@ -213,7 +213,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         b2.add(alphaField);
 
         b3.add(this.responseButton);
-        final Component strut3 = Box.createVerticalStrut(90);
+        Component strut3 = Box.createVerticalStrut(90);
         b3.add(strut3);
         b3.add(predictorInButton);
         b3.add(predictorOutButton);
@@ -222,12 +222,12 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         //b4.add(strut41);
         responseLabel.setPreferredSize(new Dimension(80, 30));
         b4.add(responseLabel);
-        final Component strut42 = Box.createVerticalStrut(120);
+        Component strut42 = Box.createVerticalStrut(120);
         b4.add(strut42);
         b4.add(predictorLabel);
 
         b5.add(this.responseVar);
-        final Component strut5 = Box.createVerticalStrut(10);
+        Component strut5 = Box.createVerticalStrut(10);
         b5.add(strut5);
         b5.add(predictorVarListbox);
 
@@ -248,10 +248,10 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         //varsList = new Vector(varNames);
         //availableVarsList = new JList(varsList);    ORIG
         this.availableVarsList = new JList(new DefaultListModel());
-        final DefaultListModel varsModel =
+        DefaultListModel varsModel =
                 (DefaultListModel) this.availableVarsList.getModel();
 
-        for (final Object varName : this.varNames) {
+        for (Object varName : this.varNames) {
             varsModel.addElement(varName);
         }
 
@@ -284,12 +284,12 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
     }
 
 
-    private List<String> getVarsFromData(final Object[] parentModels) {
+    private List<String> getVarsFromData(Object[] parentModels) {
         DataModel dataModel = null;
 
-        for (final Object parentModel : parentModels) {
+        for (Object parentModel : parentModels) {
             if (parentModel instanceof DataWrapper) {
-                final DataWrapper dataWrapper = (DataWrapper) parentModel;
+                DataWrapper dataWrapper = (DataWrapper) parentModel;
                 dataModel = dataWrapper.getSelectedDataModel();
             }
         }
@@ -301,10 +301,10 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         }
     }
 
-    private List<String> getVarsFromGraph(final Object[] parentModels) {
+    private List<String> getVarsFromGraph(Object[] parentModels) {
         Object graphWrapper = null;
 
-        for (final Object parentModel : parentModels) {
+        for (Object parentModel : parentModels) {
             if (parentModel instanceof GraphWrapper) {
                 graphWrapper = parentModel;
             } else if (parentModel instanceof DagWrapper) {
@@ -323,10 +323,10 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
                 graph = ((DagWrapper) graphWrapper).getDag();
             }
 
-            final List<Node> nodes = graph.getNodes();
-            final List<String> nodeNames = new LinkedList<>();
+            List<Node> nodes = graph.getNodes();
+            List<String> nodeNames = new LinkedList<>();
 
-            for (final Node node : nodes) {
+            for (Node node : nodes) {
                 nodeNames.add(node.getName());
             }
 
@@ -337,7 +337,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
     private void setRegressorValues() {
     }
 
-    private void setRegressorNames(final List<String> names) {
+    private void setRegressorNames(List<String> names) {
         this.regressorNames = names;
     }
 
@@ -349,22 +349,22 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         return this.targetName;
     }
 
-    private void setTargetName(final String targetName) {
+    private void setTargetName(String targetName) {
         this.targetName = targetName;
     }
 
 
-    public void actionPerformed(final ActionEvent e) {
-        final String varName;
-        final String predictorName;
+    public void actionPerformed(ActionEvent e) {
+        String varName;
+        String predictorName;
         int varSelectionIndex, predictorVarSelectionIndex;
 
         //DefaultListModel varsModel = (DefaultListModel) availableVarsList.getModel();   //HERE
 
         //The list models were used because of apparent undocumented behavior of the lists.
-        final DefaultListModel varsModel =
+        DefaultListModel varsModel =
                 (DefaultListModel) this.availableVarsList.getModel();
-        final DefaultListModel predsModel =
+        DefaultListModel predsModel =
                 (DefaultListModel) this.predictorVarListbox.getModel();
 
         //if (varsList.size()!=0)
@@ -400,7 +400,7 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
             this.responseButton.toggleInclude();
 
             //Object targetValue = box.getSelectedItem();
-            final String newTargetName = this.responseVar.getText();
+            String newTargetName = this.responseVar.getText();
             setTargetName(newTargetName);
             params().set("targetName", targetName());
         }
@@ -448,10 +448,10 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
 
         //setRegressorNames((String[]) predictorVarsList.toArray());
 
-        final int numPredictors = predsModel.size();
-        final Object[] predictors = new Object[numPredictors];
+        int numPredictors = predsModel.size();
+        Object[] predictors = new Object[numPredictors];
 
-        final List<String> regNames = new ArrayList<>();
+        List<String> regNames = new ArrayList<>();
         for (int i = 0; i < numPredictors; i++) {
             predictors[i] = predsModel.getElementAt(i);
             regNames.add((String) predsModel.getElementAt(i));
@@ -479,12 +479,12 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
     public class ArrowButton extends JButton {
         private boolean isInclude;
 
-        public ArrowButton(final RegressionParamsPanel listener, final String command) {
+        public ArrowButton(RegressionParamsPanel listener, String command) {
             this(listener, command, true);
         }
 
-        public ArrowButton(final RegressionParamsPanel listener, final String command,
-                           final boolean isInclude) {
+        public ArrowButton(RegressionParamsPanel listener, String command,
+                           boolean isInclude) {
             this.isInclude = isInclude;
             addActionListener(listener);
             setActionCommand(command);

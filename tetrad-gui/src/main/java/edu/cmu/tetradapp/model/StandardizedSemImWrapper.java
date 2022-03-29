@@ -58,7 +58,7 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
     private boolean showErrors;
 
     //============================CONSTRUCTORS==========================//
-    public StandardizedSemImWrapper(final SemImWrapper semImWrapper, final Parameters parameters) {
+    public StandardizedSemImWrapper(SemImWrapper semImWrapper, Parameters parameters) {
         if (semImWrapper == null) {
             throw new NullPointerException();
         }
@@ -67,12 +67,12 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
         log(this.standardizedSemIm);
     }
 
-    public StandardizedSemImWrapper(final SemPmWrapper semPmWrapper, final Parameters parameters) {
+    public StandardizedSemImWrapper(SemPmWrapper semPmWrapper, Parameters parameters) {
         if (semPmWrapper == null) {
             throw new NullPointerException();
         }
 
-        final SemIm semIm = new SemIm(semPmWrapper.getSemPm());
+        SemIm semIm = new SemIm(semPmWrapper.getSemPm());
         this.standardizedSemIm = new StandardizedSemIm(semIm, parameters);
         log(this.standardizedSemIm);
     }
@@ -100,7 +100,7 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -108,7 +108,7 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
         return this.showErrors;
     }
 
-    public void setShowErrors(final boolean showErrors) {
+    public void setShowErrors(boolean showErrors) {
         this.showErrors = showErrors;
     }
 
@@ -127,7 +127,7 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -152,7 +152,7 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
         return getGraph().getNodes();
     }
 
-    private void log(final StandardizedSemIm pm) {
+    private void log(StandardizedSemIm pm) {
         TetradLogger.getInstance().log("info", "Standardized SEM IM");
         TetradLogger.getInstance().log("im", pm.toString());
     }

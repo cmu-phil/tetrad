@@ -67,7 +67,7 @@ final class LoadKnowledgeAction extends AbstractAction {
      *
      * @param knowledgeEditable The component to center the wizard on.
      */
-    public LoadKnowledgeAction(final KnowledgeEditable knowledgeEditable) {
+    public LoadKnowledgeAction(KnowledgeEditable knowledgeEditable) {
         super("Load Knowledge...");
 
         if (knowledgeEditable == null) {
@@ -78,8 +78,8 @@ final class LoadKnowledgeAction extends AbstractAction {
     }
 
     private static JFileChooser getJFileChooser() {
-        final JFileChooser chooser = new JFileChooser();
-        final String sessionSaveLocation = Preferences.userRoot().get(
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation = Preferences.userRoot().get(
                 "fileSaveLocation", Preferences.userRoot().absolutePath());
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.resetChoosableFileFilters();
@@ -90,25 +90,25 @@ final class LoadKnowledgeAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         int ret = 1;
 
         while (ret == 1) {
-            final JFileChooser chooser = LoadKnowledgeAction.getJFileChooser();
+            JFileChooser chooser = LoadKnowledgeAction.getJFileChooser();
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-            final Component comp =
+            Component comp =
                     (this.knowledgeEditable instanceof Component) ? (Component) this.knowledgeEditable : null;
 
             chooser.showOpenDialog(comp);
 
-            final File file = chooser.getSelectedFile();
+            File file = chooser.getSelectedFile();
 
             if (file != null) {
                 Preferences.userRoot().put("fileSaveLocation", file.getParent());
             }
 
-            final KnowledgeLoaderWizard wizard =
+            KnowledgeLoaderWizard wizard =
                     new KnowledgeLoaderWizard(file, this.knowledgeEditable);
             wizard.setCommentIndicator(this.commentIndicator);
 
@@ -123,10 +123,10 @@ final class LoadKnowledgeAction extends AbstractAction {
             // Import...
             if (ret == JOptionPane.OK_OPTION) {
                 try {
-                    final IKnowledge knowledge = DataUtils.loadKnowledge(file, DelimiterType.WHITESPACE,
+                    IKnowledge knowledge = DataUtils.loadKnowledge(file, DelimiterType.WHITESPACE,
                             "//");
                     this.knowledgeEditable.setKnowledge(knowledge);
-                } catch (final Exception e1) {
+                } catch (Exception e1) {
                     String message = e1.getMessage() ==
                             null ? e1.getClass().getName() : e1.getMessage();
 
@@ -151,8 +151,8 @@ final class KnowledgeLoaderWizard extends JPanel {
     private String delimiters = " \t";
     private String commentIndicator = "//";
 
-    public KnowledgeLoaderWizard(final File file,
-                                 final KnowledgeEditable knowledgeEditable) {
+    public KnowledgeLoaderWizard(File file,
+                                 KnowledgeEditable knowledgeEditable) {
         if (file == null) {
             throw new NullPointerException();
         }
@@ -164,11 +164,11 @@ final class KnowledgeLoaderWizard extends JPanel {
         setBorder(new MatteBorder(10, 10, 10, 10, getBackground()));
         setLayout(new BorderLayout());
 
-        final JTextArea sampleTextArea = new JTextArea("???");
+        JTextArea sampleTextArea = new JTextArea("???");
         sampleTextArea.setEditable(false);
         sampleTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         sampleTextArea.setTabSize(6);
-        final JScrollPane sampleScroll = new JScrollPane(sampleTextArea);
+        JScrollPane sampleScroll = new JScrollPane(sampleTextArea);
         sampleScroll.setPreferredSize(new Dimension(200, 300));
         sampleScroll.setBorder(new TitledBorder("Prototype"));
 
@@ -176,20 +176,20 @@ final class KnowledgeLoaderWizard extends JPanel {
         this.fileTextArea.setEditable(false);
         this.fileTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         KnowledgeLoaderWizard.setText(file, this.fileTextArea);
-        final JScrollPane fileScroll = new JScrollPane(this.fileTextArea);
+        JScrollPane fileScroll = new JScrollPane(this.fileTextArea);
         fileScroll.setPreferredSize(new Dimension(400, 300));
         fileScroll.setBorder(new TitledBorder("File You Selected"));
 
         sampleTextArea.setText(KnowledgeLoaderWizard.knowledgeSampleText());
         sampleTextArea.setCaretPosition(0);
 
-        final JComboBox delimiterBox =
+        JComboBox delimiterBox =
                 new JComboBox(new String[]{"Whitespace", "Tab", "Comma"});
         delimiterBox.setMaximumSize(delimiterBox.getPreferredSize());
         delimiterBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JComboBox box = (JComboBox) e.getSource();
-                final String choice = (String) box.getSelectedItem();
+            public void actionPerformed(ActionEvent e) {
+                JComboBox box = (JComboBox) e.getSource();
+                String choice = (String) box.getSelectedItem();
 
                 if ("Whitespace".equals(choice)) {
                     KnowledgeLoaderWizard.this.delimiters = " \t";
@@ -201,9 +201,9 @@ final class KnowledgeLoaderWizard extends JPanel {
             }
         });
 
-        final StringTextField commentIndicatorField = new StringTextField(getCommentIndicator(), 4);
+        StringTextField commentIndicatorField = new StringTextField(getCommentIndicator(), 4);
         commentIndicatorField.setFilter(new StringTextField.Filter() {
-            public String filter(final String value, final String oldValue) {
+            public String filter(String value, String oldValue) {
                 setCommentIndicator(value);
                 return value;
             }
@@ -211,7 +211,7 @@ final class KnowledgeLoaderWizard extends JPanel {
 
         commentIndicatorField.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("Delimiter: "));
         b1.add(delimiterBox);
@@ -219,14 +219,14 @@ final class KnowledgeLoaderWizard extends JPanel {
         b1.add(new JLabel("Comment Indicator: "));
         b1.add(commentIndicatorField);
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
 
-        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 sampleScroll, fileScroll);
 
         b2.add(splitPane);
 
-        final Box b3 = Box.createVerticalBox();
+        Box b3 = Box.createVerticalBox();
         b3.add(b1);
         b3.add(Box.createVerticalStrut(10));
         b3.add(b2);
@@ -237,12 +237,12 @@ final class KnowledgeLoaderWizard extends JPanel {
         return "/knowledge" + "\n0 x1 x2" + "\n1 x3 x4" + "\n4 x5";
     }
 
-    private static void setText(final File file, final JTextArea textArea) {
+    private static void setText(File file, JTextArea textArea) {
         final int numLines = 40;
         final int numCols = 100;
 
         try {
-            final BufferedReader in = new BufferedReader(new FileReader(file));
+            BufferedReader in = new BufferedReader(new FileReader(file));
             String line;
             int lineNumber = 0;
 
@@ -258,7 +258,7 @@ final class KnowledgeLoaderWizard extends JPanel {
             textArea.setCaretPosition(0);
 
             in.close();
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -271,7 +271,7 @@ final class KnowledgeLoaderWizard extends JPanel {
         return this.commentIndicator;
     }
 
-    public void setCommentIndicator(final String commentIndicator) {
+    public void setCommentIndicator(String commentIndicator) {
         if (commentIndicator == null) {
             throw new NullPointerException();
         }

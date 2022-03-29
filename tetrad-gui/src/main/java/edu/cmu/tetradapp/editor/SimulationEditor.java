@@ -69,7 +69,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
      *
      * @param simulation
      */
-    public SimulationEditor(final Simulation simulation) {
+    public SimulationEditor(Simulation simulation) {
         this.simulation = simulation;
         this.dataEditor = createDataEditor(simulation);
         this.simulationGraphEditor = createSimulationGraphEditor(simulation);
@@ -111,10 +111,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
     }
 
-    private SimulationGraphEditor createSimulationGraphEditor(final Simulation simulation) {
-        final SimulationGraphEditor graphEditor = new SimulationGraphEditor(Collections.emptyList());
+    private SimulationGraphEditor createSimulationGraphEditor(Simulation simulation) {
+        SimulationGraphEditor graphEditor = new SimulationGraphEditor(Collections.emptyList());
         if (simulation.getSimulation() != null) {
-            final List<Graph> trueGraphs = new ArrayList<>();
+            List<Graph> trueGraphs = new ArrayList<>();
             for (int i = 0; i < simulation.getSimulation().getNumDataModels(); i++) {
                 trueGraphs.add(simulation.getSimulation().getTrueGraph(i));
             }
@@ -125,17 +125,17 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         return graphEditor;
     }
 
-    private DataEditor createDataEditor(final Simulation simulation) {
-        final edu.cmu.tetrad.algcomparison.simulation.Simulation sim = simulation.getSimulation();
+    private DataEditor createDataEditor(Simulation simulation) {
+        edu.cmu.tetrad.algcomparison.simulation.Simulation sim = simulation.getSimulation();
         if (sim == null) {
             return new DataEditor(SwingConstants.LEFT);
         } else {
-            final DataModelList dataModelList = new DataModelList();
+            DataModelList dataModelList = new DataModelList();
             for (int i = 0; i < sim.getNumDataModels(); i++) {
                 dataModelList.add(sim.getDataModel(i));
             }
 
-            final DataWrapper wrapper = new DataWrapper(new Parameters());
+            DataWrapper wrapper = new DataWrapper(new Parameters());
             wrapper.setDataModelList(dataModelList);
 
             return new DataEditor(wrapper, false, SwingConstants.LEFT);
@@ -143,13 +143,13 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     }
 
     private JMenuBar createMenuBar() {
-        final JMenuItem saveSimulation = new JMenuItem("Save Simulation");
+        JMenuItem saveSimulation = new JMenuItem("Save Simulation");
         saveSimulation.addActionListener(createSaveSimulationActionListener());
 
-        final JMenu file = new JMenu("File");
+        JMenu file = new JMenu("File");
         file.add(saveSimulation);
 
-        final JMenuBar menuBar = new JMenuBar();
+        JMenuBar menuBar = new JMenuBar();
         menuBar.add(file);
 
         return menuBar;
@@ -157,16 +157,16 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
     private ActionListener createSaveSimulationActionListener() {
         return e -> {
-            final JFileChooser chooser = new JFileChooser();
-            final String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
+            JFileChooser chooser = new JFileChooser();
+            String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
             chooser.setCurrentDirectory(new File(sessionSaveLocation));
             chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            final int ret = chooser.showSaveDialog(JOptionUtils.centeringComp());
+            int ret = chooser.showSaveDialog(JOptionUtils.centeringComp());
             if (!(ret == JFileChooser.APPROVE_OPTION)) {
                 return;
             }
 
-            final File selectedFile = chooser.getSelectedFile();
+            File selectedFile = chooser.getSelectedFile();
             if (selectedFile == null) {
                 return;
             }
@@ -177,16 +177,16 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     }
 
     @Override
-    public void propertyChange(final PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt) {
         switch (evt.getPropertyName()) {
             case "modelChanged":
-                final List<Graph> trueGraphs = new ArrayList<>();
+                List<Graph> trueGraphs = new ArrayList<>();
                 for (int i = 0; i < this.simulation.getSimulation().getNumDataModels(); i++) {
                     trueGraphs.add(this.simulation.getSimulation().getTrueGraph(i));
                 }
                 this.simulationGraphEditor.replace(trueGraphs);
 
-                final DataWrapper wrapper = new DataWrapper(new Parameters());
+                DataWrapper wrapper = new DataWrapper(new Parameters());
                 wrapper.setDataModelList(this.simulation.getDataModelList());
                 this.tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, SwingConstants.LEFT));
 
@@ -205,7 +205,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
 
     }
 

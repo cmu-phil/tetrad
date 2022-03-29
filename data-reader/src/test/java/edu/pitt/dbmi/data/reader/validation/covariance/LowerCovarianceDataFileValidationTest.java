@@ -49,15 +49,15 @@ public class LowerCovarianceDataFileValidationTest {
      */
     @Test
     public void testValidate() {
-        final CovarianceValidation validation = new LowerCovarianceDataFileValidation(this.dataFile, this.delimiter);
+        CovarianceValidation validation = new LowerCovarianceDataFileValidation(this.dataFile, this.delimiter);
         validation.setCommentMarker(this.commentMarker);
         validation.setQuoteCharacter(this.quoteCharacter);
 
-        final List<ValidationResult> results = validation.validate();
-        final List<ValidationResult> infos = new LinkedList<>();
-        final List<ValidationResult> warnings = new LinkedList<>();
-        final List<ValidationResult> errors = new LinkedList<>();
-        for (final ValidationResult result : results) {
+        List<ValidationResult> results = validation.validate();
+        List<ValidationResult> infos = new LinkedList<>();
+        List<ValidationResult> warnings = new LinkedList<>();
+        List<ValidationResult> errors = new LinkedList<>();
+        for (ValidationResult result : results) {
             switch (result.getCode()) {
                 case INFO:
                     infos.add(result);

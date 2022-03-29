@@ -72,23 +72,23 @@ public class FgesSearchEditor extends AbstractSearchEditor
     /**
      * Opens up an editor to let the user view the given FgesRunner.
      */
-    public FgesSearchEditor(final FgesRunner runner) {
+    public FgesSearchEditor(FgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(final WFgesRunner runner) {
+    public FgesSearchEditor(WFgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(final FgesMbRunner runner) {
+    public FgesSearchEditor(FgesMbRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(final ImagesRunner runner) {
+    public FgesSearchEditor(ImagesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(final TsFgesRunner runner) {
+    public FgesSearchEditor(TsFgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
@@ -107,14 +107,14 @@ public class FgesSearchEditor extends AbstractSearchEditor
         return getWorkbench().getModelNodesToDisplay();
     }
 
-    public void layoutByGraph(final Graph graph) {
+    public void layoutByGraph(Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        final GraphWorkbench resultWorkbench = getWorkbench();
-        final Graph graph = resultWorkbench.getGraph();
-        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        GraphWorkbench resultWorkbench = getWorkbench();
+        Graph graph = resultWorkbench.getGraph();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -124,7 +124,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
 
-    public void setIndex(final int index) {
+    public void setIndex(int index) {
         ((Indexable) getAlgorithmRunner()).setIndex(index);
         removeStatsTabs();
         firePropertyChange("modelChanged", null, null);
@@ -135,15 +135,15 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     public void execute() {
-        final Window owner = (Window) getTopLevelAncestor();
+        Window owner = (Window) getTopLevelAncestor();
 
-        final WatchedProcess process = new WatchedProcess(owner) {
+        WatchedProcess process = new WatchedProcess(owner) {
             public void watch() {
                 getExecuteButton().setEnabled(false);
                 setErrorMessage(null);
 
                 if (!FgesSearchEditor.this.knowledgeMessageShown) {
-                    final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+                    IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
                                 getWorkbench(),
@@ -156,14 +156,14 @@ public class FgesSearchEditor extends AbstractSearchEditor
                 try {
                     storeLatestWorkbenchGraph();
                     getAlgorithmRunner().execute();
-                    final IFgesRunner runner = (IFgesRunner) getAlgorithmRunner();
+                    IFgesRunner runner = (IFgesRunner) getAlgorithmRunner();
                     arrangeGraphs();
                     FgesSearchEditor.this.gesDisplay.resetGraphs(runner.getTopGraphs());
-                } catch (final Exception e) {
-                    final CharArrayWriter writer1 = new CharArrayWriter();
-                    final PrintWriter writer2 = new PrintWriter(writer1);
+                } catch (Exception e) {
+                    CharArrayWriter writer1 = new CharArrayWriter();
+                    PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
-                    final String message = writer1.toString();
+                    String message = writer1.toString();
                     writer2.close();
 
                     e.printStackTrace(System.out);
@@ -189,7 +189,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
                 getWorkbenchScroll().setBorder(
                         new TitledBorder(getResultLabel()));
-                final Graph resultGraph = resultGraph();
+                Graph resultGraph = resultGraph();
 
                 doDefaultArrangement(resultGraph);
                 getWorkbench().setBackground(Color.WHITE);
@@ -208,7 +208,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
             }
         };
 
-        final Thread watcher = new Thread() {
+        Thread watcher = new Thread() {
             public void run() {
                 while (true) {
                     try {
@@ -218,7 +218,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
                             getExecuteButton().setEnabled(true);
                             return;
                         }
-                    } catch (final InterruptedException e) {
+                    } catch (InterruptedException e) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
@@ -230,11 +230,11 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        final Parameters params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
@@ -245,7 +245,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
     //==========================PROTECTED METHODS============================//
 
 
-    protected void doDefaultArrangement(final Graph resultGraph) {
+    protected void doDefaultArrangement(Graph resultGraph) {
         if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
                     getLatestWorkbenchGraph());
@@ -262,7 +262,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(final String resultLabel) {
+    protected void setup(String resultLabel) {
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
 
@@ -277,20 +277,20 @@ public class FgesSearchEditor extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        final JPanel toolbar = new JPanel();
+        JPanel toolbar = new JPanel();
 
         getExecuteButton().setText("Execute*");
         getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 removeStatsTabs();
                 execute();
             }
         });
 
-        final JButton statsButton = new JButton("Calc Stats");
+        JButton statsButton = new JButton("Calc Stats");
         statsButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Window owner = (Window) getTopLevelAncestor();
+            public void actionPerformed(ActionEvent e) {
+                Window owner = (Window) getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
@@ -301,18 +301,18 @@ public class FgesSearchEditor extends AbstractSearchEditor
         });
 
 
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
         b1.add(getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
         b2.add(getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
         if (!(getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix)) {
-            final Box b3 = Box.createHorizontalBox();
+            Box b3 = Box.createHorizontalBox();
             b3.add(Box.createGlue());
             b3.add(statsButton);
             b1.add(b3);
@@ -340,8 +340,8 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //            b1.add(Box.createVerticalStrut(5));
 //        }
 
-        final Box b4 = Box.createHorizontalBox();
-        final JLabel label = new JLabel("<html>" + "*Please note that some" +
+        Box b4 = Box.createHorizontalBox();
+        JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -356,9 +356,9 @@ public class FgesSearchEditor extends AbstractSearchEditor
         return toolbar;
     }
 
-    protected void addSpecialMenus(final JMenuBar menuBar) {
+    protected void addSpecialMenus(JMenuBar menuBar) {
         if (!(getAlgorithmRunner() instanceof FgesRunner)) {
-            final JMenu test = new JMenu("Independence");
+            JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
             IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -375,13 +375,13 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //            }
         }
 
-        final JMenu graph = new JMenu("Graph");
-        final JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
+        JMenu graph = new JMenu("Graph");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        final JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
-        final JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
-        final JMenuItem nextGraph = new JMenuItem("Next Graph");
-        final JMenuItem previousGraph = new JMenuItem("Previous Graph");
+        JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
+        JMenuItem nextGraph = new JMenuItem("Next Graph");
+        JMenuItem previousGraph = new JMenuItem("Previous Graph");
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
@@ -410,8 +410,8 @@ public class FgesSearchEditor extends AbstractSearchEditor
         menuBar.add(graph);
 
         showDags.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Window owner = (Window) getTopLevelAncestor();
+            public void actionPerformed(ActionEvent e) {
+                Window owner = (Window) getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
@@ -419,8 +419,8 @@ public class FgesSearchEditor extends AbstractSearchEditor
                         // Needs to be a CPDAG search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
-                        final AlgorithmRunner runner = getAlgorithmRunner();
-                        final Graph graph = runner.getGraph();
+                        AlgorithmRunner runner = getAlgorithmRunner();
+                        Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -431,22 +431,22 @@ public class FgesSearchEditor extends AbstractSearchEditor
                         }
 
                         if (runner instanceof FgesRunner) {
-                            final GraphScorer scorer = ((FgesRunner) runner).getGraphScorer();
-                            final Graph _graph = ((FgesRunner) runner).getTopGraphs().get(getIndex()).getGraph();
+                            GraphScorer scorer = ((FgesRunner) runner).getGraphScorer();
+                            Graph _graph = ((FgesRunner) runner).getTopGraphs().get(getIndex()).getGraph();
 
-                            final ScoredGraphsDisplay display = new ScoredGraphsDisplay(_graph, scorer);
-                            final GraphWorkbench workbench = getWorkbench();
+                            ScoredGraphsDisplay display = new ScoredGraphsDisplay(_graph, scorer);
+                            GraphWorkbench workbench = getWorkbench();
 
-                            final EditorWindow editorWindow =
+                            EditorWindow editorWindow =
                                     new EditorWindow(display, "Independence Facts",
                                             "Close", false, workbench);
                             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                             editorWindow.setVisible(true);
                         } else {
-                            final CPDAGDisplay display = new CPDAGDisplay(graph);
-                            final GraphWorkbench workbench = getWorkbench();
+                            CPDAGDisplay display = new CPDAGDisplay(graph);
+                            GraphWorkbench workbench = getWorkbench();
 
-                            final EditorWindow editorWindow =
+                            EditorWindow editorWindow =
                                     new EditorWindow(display, "Independence Facts",
                                             "Close", false, workbench);
                             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -469,17 +469,17 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //        });
 
         dagInCPDAG.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph graph = new EdgeListGraph(getGraph());
+            public void actionPerformed(ActionEvent e) {
+                Graph graph = new EdgeListGraph(getGraph());
 
                 // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
-                for (final Edge edge : graph.getEdges()) {
+                for (Edge edge : graph.getEdges()) {
                     if (Edges.isBidirectedEdge(edge)) {
                         graph.removeEdge(edge);
                     }
                 }
 
-                final Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
                 getGraphHistory().add(dag);
                 getWorkbench().setGraph(dag);
@@ -490,10 +490,10 @@ public class FgesSearchEditor extends AbstractSearchEditor
         });
 
         gesOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final DataModel dataModel = getAlgorithmRunner().getDataModel();
+            public void actionPerformed(ActionEvent e) {
+                DataModel dataModel = getAlgorithmRunner().getDataModel();
 
-                final Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
+                Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
 
                 getGraphHistory().add(graph);
                 getWorkbench().setGraph(graph);
@@ -503,8 +503,8 @@ public class FgesSearchEditor extends AbstractSearchEditor
         });
 
         nextGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph next = getGraphHistory().next();
+            public void actionPerformed(ActionEvent e) {
+                Graph next = getGraphHistory().next();
                 getWorkbench().setGraph(next);
                 ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(next);
                 firePropertyChange("modelChanged", null, null);
@@ -512,8 +512,8 @@ public class FgesSearchEditor extends AbstractSearchEditor
         });
 
         previousGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph previous = getGraphHistory().previous();
+            public void actionPerformed(ActionEvent e) {
+                Graph previous = getGraphHistory().previous();
                 getWorkbench().setGraph(previous);
                 ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(previous);
                 firePropertyChange("modelChanged", null, null);
@@ -526,9 +526,9 @@ public class FgesSearchEditor extends AbstractSearchEditor
     //==============================PRIVATE METHODS=============================//
 
     private FgesDisplay gesDisplay() {
-        final Graph resultGraph = resultGraph();
-        final List<ScoredGraph> topGraphs = arrangeGraphs();
-        final FgesDisplay display = new FgesDisplay(resultGraph, topGraphs, this);
+        Graph resultGraph = resultGraph();
+        List<ScoredGraph> topGraphs = arrangeGraphs();
+        FgesDisplay display = new FgesDisplay(resultGraph, topGraphs, this);
         this.gesDisplay = display;
 
         // Superfluous?
@@ -544,7 +544,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
         getWorkbenchScroll().setBorder(new TitledBorder(""));
 
         getWorkbench().addMouseListener(new MouseAdapter() {
-            public void mouseExited(final MouseEvent e) {
+            public void mouseExited(MouseEvent e) {
                 storeLatestWorkbenchGraph();
             }
         });
@@ -553,14 +553,14 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     private List<ScoredGraph> arrangeGraphs() {
-        final IFgesRunner runner = (IFgesRunner) getAlgorithmRunner();
+        IFgesRunner runner = (IFgesRunner) getAlgorithmRunner();
 
         List<ScoredGraph> topGraphs = runner.getTopGraphs();
 
         if (topGraphs == null) topGraphs = new ArrayList<>();
 
 //        Graph latestWorkbenchGraph = (Graph) runner.getParameters().get("sourceGraph", null);
-        final Graph sourceGraph = runner.getSourceGraph();
+        Graph sourceGraph = runner.getSourceGraph();
 
         boolean arrangedAll = false;
 
@@ -570,13 +570,13 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //        }
 
         if (!arrangedAll) {
-            for (final ScoredGraph topGraph : topGraphs) {
+            for (ScoredGraph topGraph : topGraphs) {
                 arrangedAll = GraphUtils.arrangeBySourceGraph(topGraph.getGraph(), sourceGraph);
             }
         }
 
         if (!arrangedAll) {
-            for (final ScoredGraph topGraph : topGraphs) {
+            for (ScoredGraph topGraph : topGraphs) {
                 GraphUtils.circleLayout(topGraph.getGraph(), 200, 200, 150);
             }
         }
@@ -596,14 +596,14 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
 
     private void calcStats() {
-        final FgesRunner runner = (FgesRunner) getAlgorithmRunner();
+        FgesRunner runner = (FgesRunner) getAlgorithmRunner();
 
         if (runner.getTopGraphs().isEmpty()) {
             throw new IllegalArgumentException("No CPDAGs were recorded. Please adjust the number of " +
                     "CPDAGs to store.");
         }
 
-        final Graph resultGraph = runner.getTopGraphs().get(runner.getIndex()).getGraph();
+        Graph resultGraph = runner.getTopGraphs().get(runner.getIndex()).getGraph();
 
         if (!(getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix)) {
 
@@ -611,9 +611,9 @@ public class FgesSearchEditor extends AbstractSearchEditor
             //Such graphs sometimes contain doubly directed edges.
             //We converte such edges to directed edges here.
             //For the time being an orientation is arbitrarily selected.
-            final Set<Edge> allEdges = resultGraph.getEdges();
+            Set<Edge> allEdges = resultGraph.getEdges();
 
-            for (final Edge edge : allEdges) {
+            for (Edge edge : allEdges) {
                 if (edge.getEndpoint1() == Endpoint.ARROW &&
                         edge.getEndpoint2() == Endpoint.ARROW) {
                     //Option 1 orient it from node1 to node2
@@ -625,7 +625,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            final Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
+            Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
 
 //            DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
 //            String report;
@@ -638,13 +638,13 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //                throw new IllegalArgumentException("");
 //            }
 
-            final String bayesFactorsReport = ((FgesRunner) getAlgorithmRunner()).getBayesFactorsReport(dag);
+            String bayesFactorsReport = ((FgesRunner) getAlgorithmRunner()).getBayesFactorsReport(dag);
 //            String bootstrapEdgeCountsReport = ((ImagesRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(25);
 
-            final JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
+            JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
 
 //            modelStatsText = new JTextArea();
-            final JTextArea logBayesFactorsScroll = new JTextArea();
+            JTextArea logBayesFactorsScroll = new JTextArea();
 //            bootstrapEdgeCountsScroll = new JTextArea();
 
 //            modelStatsText.setLineWrap(true);
@@ -663,7 +663,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //            bootstrapPanel.setLayout(new BorderLayout());
 //            bootstrapPanel.add(bootstrapEdgeCountsScroll, BorderLayout.CENTER);
 
-            final JTextArea modelStatisticsScroll = new JTextArea();
+            JTextArea modelStatisticsScroll = new JTextArea();
 //            bootstrapEdgeCountsScroll = new JTextArea();
 
 //            modelStatsText.setLineWrap(true);
@@ -674,13 +674,13 @@ public class FgesSearchEditor extends AbstractSearchEditor
             modelStatisticsScroll.setWrapStyleWord(true);
             modelStatisticsScroll.setText(reportIfDiscrete(dag, (DataSet) getDataModel()));
 
-            final Box b = Box.createHorizontalBox();
+            Box b = Box.createHorizontalBox();
             b.add(new JLabel("# Bootstraps = "));
 
-            final IntTextField numBootstraps = new IntTextField(25, 8);
+            IntTextField numBootstraps = new IntTextField(25, 8);
 
             numBootstraps.setFilter(new IntTextField.Filter() {
-                public int filter(final int value, final int oldValue) {
+                public int filter(int value, int oldValue) {
                     if (value < 0) return oldValue;
                     else return value;
                 }
@@ -688,15 +688,15 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
             b.add(numBootstraps);
 
-            final JButton goButton = new JButton("Go!");
+            JButton goButton = new JButton("Go!");
 
             goButton.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent actionEvent) {
-                    final Window owner = (Window) getTopLevelAncestor();
+                public void actionPerformed(ActionEvent actionEvent) {
+                    Window owner = (Window) getTopLevelAncestor();
 
                     new WatchedProcess(owner) {
                         public void watch() {
-                            final int n = numBootstraps.getValue();
+                            int n = numBootstraps.getValue();
 //                            String bootstrapEdgeCountsReport = ((ImagesRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(n);
 //                            bootstrapEdgeCountsScroll.setText(bootstrapEdgeCountsReport);
                         }
@@ -718,27 +718,27 @@ public class FgesSearchEditor extends AbstractSearchEditor
         }
     }
 
-    private String reportIfDiscrete(final Graph dag, final DataSet dataSet) {
-        final List vars = dataSet.getVariables();
-        final Map<String, DiscreteVariable> nodesToVars =
+    private String reportIfDiscrete(Graph dag, DataSet dataSet) {
+        List vars = dataSet.getVariables();
+        Map<String, DiscreteVariable> nodesToVars =
                 new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            final DiscreteVariable var = (DiscreteVariable) vars.get(i);
-            final String name = var.getName();
-            final Node node = new GraphNode(name);
+            DiscreteVariable var = (DiscreteVariable) vars.get(i);
+            String name = var.getName();
+            Node node = new GraphNode(name);
             nodesToVars.put(node.getName(), var);
         }
 
-        final BayesPm bayesPm = new BayesPm(new Dag(dag));
-        final List<Node> nodes = bayesPm.getDag().getNodes();
+        BayesPm bayesPm = new BayesPm(new Dag(dag));
+        List<Node> nodes = bayesPm.getDag().getNodes();
 
-        for (final Node node : nodes) {
-            final Node var = nodesToVars.get(node.getName());
+        for (Node node : nodes) {
+            Node var = nodesToVars.get(node.getName());
 
             if (var instanceof DiscreteVariable) {
-                final DiscreteVariable var2 = nodesToVars.get(node.getName());
-                final int numCategories = var2.getNumCategories();
-                final List<String> categories = new ArrayList<>();
+                DiscreteVariable var2 = nodesToVars.get(node.getName());
+                int numCategories = var2.getNumCategories();
+                List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }
@@ -747,17 +747,17 @@ public class FgesSearchEditor extends AbstractSearchEditor
         }
 
 
-        final NumberFormat nf = NumberFormat.getInstance();
+        NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(4);
 
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
 
-        final BayesProperties properties = new BayesProperties(dataSet);
+        BayesProperties properties = new BayesProperties(dataSet);
 
-        final double p = properties.getLikelihoodRatioP(dag);
-        final double chisq = properties.getChisq();
-        final double bic = properties.getBic();
-        final double dof = properties.getDof();
+        double p = properties.getLikelihoodRatioP(dag);
+        double chisq = properties.getChisq();
+        double bic = properties.getBic();
+        double dof = properties.getDof();
 
         buf.append("\nP  = ").append(p);
         buf.append("\nDOF = ").append(dof);
@@ -771,7 +771,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
     private void removeStatsTabs() {
         for (int i = this.tabbedPane.getTabCount() - 1; i >= 0; i--) {
-            final String name = this.tabbedPane.getTitleAt(i);
+            String name = this.tabbedPane.getTitleAt(i);
 
             if (name.equals("DAG Model Statistics")) {
                 this.tabbedPane.removeTabAt(i);
@@ -794,7 +794,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
         return sourceGraph;
     }
 
-    private void addCovMatrixTestMenuItems(final JMenu test) {
+    private void addCovMatrixTestMenuItems(JMenu test) {
         IndTestType testType = getTestType();
         if (testType != IndTestType.FISHER_Z
 //                &&
@@ -803,12 +803,12 @@ public class FgesSearchEditor extends AbstractSearchEditor
             setTestType(IndTestType.FISHER_Z);
         }
 
-        final ButtonGroup group = new ButtonGroup();
-        final JCheckBoxMenuItem fishersZ = new JCheckBoxMenuItem("Fisher's Z");
+        ButtonGroup group = new ButtonGroup();
+        JCheckBoxMenuItem fishersZ = new JCheckBoxMenuItem("Fisher's Z");
         group.add(fishersZ);
         test.add(fishersZ);
 
-        final JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
+        JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
         group.add(tTest);
         test.add(tTest);
 
@@ -822,7 +822,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //        }
 
         fishersZ.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 setTestType(IndTestType.FISHER_Z);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Fisher's Z.");
@@ -838,7 +838,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //        });
     }
 
-    public void setTestType(final IndTestType testType) {
+    public void setTestType(IndTestType testType) {
         super.setTestType(testType);
     }
 
@@ -847,11 +847,11 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     private JPanel getParamsPanel() {
-        final JPanel paramsPanel = new JPanel();
+        JPanel paramsPanel = new JPanel();
 
-        final Box b2 = Box.createVerticalBox();
+        Box b2 = Box.createVerticalBox();
 
-        final JComponent indTestParamBox = getIndTestParamBox();
+        JComponent indTestParamBox = getIndTestParamBox();
         if (indTestParamBox != null) {
             b2.add(indTestParamBox);
         }
@@ -862,7 +862,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        final Parameters params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return getIndTestParamBox(params);
     }
 
@@ -870,36 +870,36 @@ public class FgesSearchEditor extends AbstractSearchEditor
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(final Parameters params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        final AlgorithmRunner algorithmRunner = getAlgorithmRunner();
+        AlgorithmRunner algorithmRunner = getAlgorithmRunner();
 
         if (algorithmRunner instanceof IFgesRunner) {
-            final IFgesRunner fgesRunner = ((IFgesRunner) algorithmRunner);
+            IFgesRunner fgesRunner = ((IFgesRunner) algorithmRunner);
             return new FgesIndTestParamsEditor(params, fgesRunner.getType());
         }
 
         if (algorithmRunner instanceof FgesMbRunner) {
-            final FgesMbRunner fgesRunner = ((FgesMbRunner) algorithmRunner);
+            FgesMbRunner fgesRunner = ((FgesMbRunner) algorithmRunner);
             return new FgesIndTestParamsEditor(params, fgesRunner.getType());
         }
 
         throw new IllegalArgumentException();
     }
 
-    private JScrollPane dagWorkbenchScroll(final Graph dag) {
+    private JScrollPane dagWorkbenchScroll(Graph dag) {
 
-        final GraphWorkbench dagWorkbench = new GraphWorkbench(dag);
+        GraphWorkbench dagWorkbench = new GraphWorkbench(dag);
         dagWorkbench.setAllowDoubleClickActions(false);
         dagWorkbench.setAllowNodeEdgeSelection(true);
-        final JScrollPane dagWorkbenchScroll = new JScrollPane(dagWorkbench);
+        JScrollPane dagWorkbenchScroll = new JScrollPane(dagWorkbench);
         dagWorkbenchScroll.setPreferredSize(new Dimension(450, 450));
 
         dagWorkbench.addMouseListener(new MouseAdapter() {
-            public void mouseExited(final MouseEvent e) {
+            public void mouseExited(MouseEvent e) {
                 storeLatestWorkbenchGraph();
             }
         });

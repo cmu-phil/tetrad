@@ -43,7 +43,7 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
     /**
      * Constructs a triple of nodes.
      */
-    public IndependenceFact(final Node x, final Node y, final List<Node> z) {
+    public IndependenceFact(Node x, Node y, List<Node> z) {
         if (x == null || y == null || z == null) {
             throw new NullPointerException();
         }
@@ -53,7 +53,7 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
         this._z = new HashSet<>(z);
     }
 
-    public IndependenceFact(final Node x, final Node y, final Node... z) {
+    public IndependenceFact(Node x, Node y, Node... z) {
         if (x == null || y == null || z == null) {
             throw new NullPointerException();
         }
@@ -61,7 +61,7 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
         this.x = x;
         this.y = y;
 
-        final Set<Node> cond = new HashSet<>();
+        Set<Node> cond = new HashSet<>();
 
         Collections.addAll(cond, z);
 
@@ -92,30 +92,30 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
         return 1;
     }
 
-    public final boolean equals(final Object obj) {
+    public final boolean equals(Object obj) {
         if (!(obj instanceof IndependenceFact)) {
             return false;
         }
 
-        final IndependenceFact fact = (IndependenceFact) obj;
+        IndependenceFact fact = (IndependenceFact) obj;
 
-        final Set<String> zString1 = new HashSet<>();
+        Set<String> zString1 = new HashSet<>();
 
-        for (final Node n : this._z) {
+        for (Node n : this._z) {
             zString1.add(n.getName());
         }
 
-        final Set<String> zString2 = new HashSet<>();
+        Set<String> zString2 = new HashSet<>();
 
-        for (final Node n : fact._z) {
+        for (Node n : fact._z) {
             zString2.add(n.getName());
         }
 
-        final String xN1 = this.x.getName();
-        final String xN2 = fact.x.getName();
+        String xN1 = this.x.getName();
+        String xN2 = fact.x.getName();
 
-        final String yN1 = this.y.getName();
-        final String yN2 = fact.y.getName();
+        String yN1 = this.y.getName();
+        String yN2 = fact.y.getName();
 
         return zString1.equals(zString2) && ((xN1.equals(xN2) && yN1.equals(yN2)) || xN1.equals(yN2) && yN1.equals(xN2));
 
@@ -123,14 +123,14 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
     }
 
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
 
         builder.append(this.x).append(" _||_ ").append(this.y);
 
         if (!this._z.isEmpty()) {
             builder.append(" | ");
 
-            final List<Node> z = new ArrayList<>(this._z);
+            List<Node> z = new ArrayList<>(this._z);
             Collections.sort(z);
 
             for (int i = 0; i < z.size(); i++) {
@@ -150,8 +150,8 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
      * reflect independence fact equality. So sorted sets should not be used to check for
      * independence fact existence, for instance. -jdramsey.
      */
-    public int compareTo(final Object o) {
-        final IndependenceFact fact = (IndependenceFact) o;
+    public int compareTo(Object o) {
+        IndependenceFact fact = (IndependenceFact) o;
 
         int c = getX().getName().compareTo(fact.getX().getName());
 
@@ -161,10 +161,10 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
 
         if (c != 0) return c;
 
-        final List<Node> z = getZ();
-        final List<Node> factZ = fact.getZ();
+        List<Node> z = getZ();
+        List<Node> factZ = fact.getZ();
 
-        final int max = Math.max(z.size(), factZ.size());
+        int max = Math.max(z.size(), factZ.size());
 
         for (int i = 0; i < max; i++) {
             if (z.size() <= i && factZ.size() > i) {
@@ -173,8 +173,8 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
             if (factZ.size() <= i && z.size() > i) {
                 return +1;
             } else {
-                final String s = z.get(i).getName();
-                final String s2 = factZ.get(i).getName();
+                String s = z.get(i).getName();
+                String s2 = factZ.get(i).getName();
                 c = s.compareTo(s2);
 
                 if (c != 0) return c;
@@ -197,7 +197,7 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

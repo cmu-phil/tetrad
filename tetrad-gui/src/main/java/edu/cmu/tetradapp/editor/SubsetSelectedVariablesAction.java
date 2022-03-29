@@ -42,7 +42,7 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public SubsetSelectedVariablesAction(final DataEditor editor) {
+    public SubsetSelectedVariablesAction(DataEditor editor) {
         super("Copy Selected Columns");
 
         if (editor == null) {
@@ -55,12 +55,12 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final DataModel dataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataModel dataModel = getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            final DataSet dataSet = (DataSet) dataModel;
-            final int[] selectedIndices = dataSet.getSelectedIndices();
+            DataSet dataSet = (DataSet) dataModel;
+            int[] selectedIndices = dataSet.getSelectedIndices();
 
             if (selectedIndices.length == 0) {
                 JOptionPane.showMessageDialog(getDataEditor(),
@@ -68,16 +68,16 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
                 return;
             }
 
-            final DataSet selection =
+            DataSet selection =
                     dataSet.subsetColumns(selectedIndices);
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(selection);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
         } else if (dataModel instanceof CorrelationMatrix) {
-            final CorrelationMatrix corrMatrix = (CorrelationMatrix) dataModel;
-            final List<String> selectedNames = corrMatrix.getSelectedVariableNames();
+            CorrelationMatrix corrMatrix = (CorrelationMatrix) dataModel;
+            List<String> selectedNames = corrMatrix.getSelectedVariableNames();
 
             if (selectedNames.isEmpty()) {
                 JOptionPane.showMessageDialog(getDataEditor(),
@@ -85,16 +85,16 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
                 return;
             }
 
-            final CorrelationMatrix submatrix = corrMatrix.getSubCorrMatrix(
+            CorrelationMatrix submatrix = corrMatrix.getSubCorrMatrix(
                     selectedNames.toArray(new String[0]));
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(submatrix);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();
         } else if (dataModel instanceof ICovarianceMatrix) {
-            final ICovarianceMatrix corrMatrix = (ICovarianceMatrix) dataModel;
-            final List<String> selectedNames = corrMatrix.getSelectedVariableNames();
+            ICovarianceMatrix corrMatrix = (ICovarianceMatrix) dataModel;
+            List<String> selectedNames = corrMatrix.getSelectedVariableNames();
 
             if (selectedNames.isEmpty()) {
                 JOptionPane.showMessageDialog(getDataEditor(),
@@ -102,10 +102,10 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
                 return;
             }
 
-            final ICovarianceMatrix submatrix = corrMatrix.getSubmatrix(
+            ICovarianceMatrix submatrix = corrMatrix.getSubmatrix(
                     selectedNames.toArray(new String[0]));
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(submatrix);
             getDataEditor().reset(list);
             getDataEditor().selectFirstTab();

@@ -42,40 +42,40 @@ class RunSimulationAction extends AbstractAction {
     /**
      * Constructs a new action to open sessions.
      */
-    public RunSimulationAction(final SessionEditorNode sessionEditorNode) {
+    public RunSimulationAction(SessionEditorNode sessionEditorNode) {
         super("Run Simulation...");
         this.sessionEditorNode = sessionEditorNode;
     }
 
 
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         executeNode();
     }
 
 
     private void executeNode() {
-        final Set<SessionNode> children = this.sessionEditorNode.getChildren();
+        Set<SessionNode> children = this.sessionEditorNode.getChildren();
         boolean noEmptyChildren = true;
 
-        for (final SessionNode child : children) {
+        for (SessionNode child : children) {
             if (child.getModel() == null) {
                 noEmptyChildren = false;
                 break;
             }
         }
 
-        final Component centeringComp = this.sessionEditorNode;
+        Component centeringComp = this.sessionEditorNode;
 
 //        if (!noEmptyChildren) {
 //            JOptionPane.showMessageDialog(centeringComp, "Nothing to run.");
 //            return;
 //        }
 
-        final Object[] options = {"Simulate", "Cancel"};
+        Object[] options = {"Simulate", "Cancel"};
 
 //        int selection = 0;
 
-        final int selection = JOptionPane.showOptionDialog(
+        int selection = JOptionPane.showOptionDialog(
                 centeringComp,
                 "Executing this node will erase any model for this node, " +
                         "\nerase any models for any descendant nodes, and create " +
@@ -87,7 +87,7 @@ class RunSimulationAction extends AbstractAction {
                 JOptionPane.WARNING_MESSAGE, null, options, options[1]);
 
         if (selection == 0) {
-            final int ret = JOptionPane.showConfirmDialog(centeringComp,
+            int ret = JOptionPane.showConfirmDialog(centeringComp,
                     "Please confirm once more.",
                     "Confirm",
                     JOptionPane.OK_CANCEL_OPTION,
@@ -106,17 +106,17 @@ class RunSimulationAction extends AbstractAction {
 
     private SessionEditorWorkbench getWorkbench() {
         final Class c = SessionEditorWorkbench.class;
-        final Container container = SwingUtilities.getAncestorOfClass(c, this.sessionEditorNode);
+        Container container = SwingUtilities.getAncestorOfClass(c, this.sessionEditorNode);
         return (SessionEditorWorkbench) container;
     }
 
 
-    private void executeSessionNode(final SessionNode sessionNode, final boolean overwrite) {
-        final Window owner = (Window) this.sessionEditorNode.getTopLevelAncestor();
+    private void executeSessionNode(SessionNode sessionNode, boolean overwrite) {
+        Window owner = (Window) this.sessionEditorNode.getTopLevelAncestor();
 
         new WatchedProcess(owner) {
             public void watch() {
-                final SessionEditorWorkbench workbench = getWorkbench();
+                SessionEditorWorkbench workbench = getWorkbench();
 
 //                {
 ////                    int ret = JOptionPane.showConfirmDialog(sessionEditorNode, "Start a new log?");

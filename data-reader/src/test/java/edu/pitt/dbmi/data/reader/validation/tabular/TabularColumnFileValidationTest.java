@@ -48,15 +48,15 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidate() {
-        final TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
         validation.setCommentMarker(this.commentMarker);
         validation.setQuoteCharacter(this.quoteCharacter);
 
-        final List<ValidationResult> results = validation.validate();
-        final List<ValidationResult> infos = new LinkedList<>();
-        final List<ValidationResult> warnings = new LinkedList<>();
-        final List<ValidationResult> errors = new LinkedList<>();
-        for (final ValidationResult result : results) {
+        List<ValidationResult> results = validation.validate();
+        List<ValidationResult> infos = new LinkedList<>();
+        List<ValidationResult> warnings = new LinkedList<>();
+        List<ValidationResult> errors = new LinkedList<>();
+        for (ValidationResult result : results) {
             switch (result.getCode()) {
                 case INFO:
                     infos.add(result);
@@ -87,17 +87,17 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidateWithExcludedColumnSet() {
-        final TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
         validation.setCommentMarker(this.commentMarker);
         validation.setQuoteCharacter(this.quoteCharacter);
 
-        final Set<String> columnNames = new HashSet<>(Arrays.asList("\"X3\"", "X5", "X1", " ", "X7", "X9", "", "X10", "X11"));
+        Set<String> columnNames = new HashSet<>(Arrays.asList("\"X3\"", "X5", "X1", " ", "X7", "X9", "", "X10", "X11"));
 
-        final List<ValidationResult> results = validation.validate(columnNames);
-        final List<ValidationResult> infos = new LinkedList<>();
-        final List<ValidationResult> warnings = new LinkedList<>();
-        final List<ValidationResult> errors = new LinkedList<>();
-        for (final ValidationResult result : results) {
+        List<ValidationResult> results = validation.validate(columnNames);
+        List<ValidationResult> infos = new LinkedList<>();
+        List<ValidationResult> warnings = new LinkedList<>();
+        List<ValidationResult> errors = new LinkedList<>();
+        for (ValidationResult result : results) {
             switch (result.getCode()) {
                 case INFO:
                     infos.add(result);
@@ -128,17 +128,17 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidateWithExcludedColumnArray() {
-        final TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
         validation.setCommentMarker(this.commentMarker);
         validation.setQuoteCharacter(this.quoteCharacter);
 
-        final int[] excludedColumns = {7, 5};
+        int[] excludedColumns = {7, 5};
 
-        final List<ValidationResult> results = validation.validate(excludedColumns);
-        final List<ValidationResult> infos = new LinkedList<>();
-        final List<ValidationResult> warnings = new LinkedList<>();
-        final List<ValidationResult> errors = new LinkedList<>();
-        for (final ValidationResult result : results) {
+        List<ValidationResult> results = validation.validate(excludedColumns);
+        List<ValidationResult> infos = new LinkedList<>();
+        List<ValidationResult> warnings = new LinkedList<>();
+        List<ValidationResult> errors = new LinkedList<>();
+        for (ValidationResult result : results) {
             switch (result.getCode()) {
                 case INFO:
                     infos.add(result);

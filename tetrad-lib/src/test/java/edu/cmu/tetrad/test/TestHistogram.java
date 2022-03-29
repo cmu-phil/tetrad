@@ -54,21 +54,21 @@ public final class TestHistogram {
     public void testHistogram() {
         RandomUtil.getInstance().setSeed(4829384L);
 
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 5, 30, 15, 15, false));
+        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 5, 30, 15, 15, false));
         final int sampleSize = 1000;
 
         // Continuous
-        final SemPm semPm = new SemPm(trueGraph);
-        final SemIm semIm = new SemIm(semPm);
-        final DataSet data = semIm.simulateData(sampleSize, false);
+        SemPm semPm = new SemPm(trueGraph);
+        SemIm semIm = new SemIm(semPm);
+        DataSet data = semIm.simulateData(sampleSize, false);
 
-        final Histogram histogram = new Histogram(data);
+        Histogram histogram = new Histogram(data);
         histogram.setTarget("X1");
         histogram.setNumBins(20);
 
@@ -87,28 +87,28 @@ public final class TestHistogram {
         assertEquals(-4.97, histogram.getMin(), 0.01);
 //        assertEquals( 142, histogram.getN());
 
-        final double[] arr = histogram.getContinuousData("X2");
+        double[] arr = histogram.getContinuousData("X2");
         histogram.addConditioningVariable("X2", StatUtils.min(arr), StatUtils.mean(arr));
 
         // Discrete
-        final BayesPm bayesPm = new BayesPm(trueGraph);
-        final BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
-        final DataSet data2 = bayesIm.simulateData(sampleSize, false);
+        BayesPm bayesPm = new BayesPm(trueGraph);
+        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        DataSet data2 = bayesIm.simulateData(sampleSize, false);
 
         // For some reason these are giving different
         // values when all of the unit tests are run are
         // once. TODO They produce stable values when
         // this particular test is run repeatedly.
-        final Histogram histogram2 = new Histogram(data2);
+        Histogram histogram2 = new Histogram(data2);
         histogram2.setTarget("X1");
-        final int[] frequencies1 = histogram2.getFrequencies();
+        int[] frequencies1 = histogram2.getFrequencies();
 //        assertEquals(928, frequencies1[0]);
 //        assertEquals(72, frequencies1[1]);
 
         histogram2.setTarget("X1");
         histogram2.addConditioningVariable("X2", 0);
         histogram2.addConditioningVariable("X3", 1);
-        final int[] frequencies = histogram2.getFrequencies();
+        int[] frequencies = histogram2.getFrequencies();
 //        assertEquals(377, frequencies[0]);
 //        assertEquals(28, frequencies[1]);
     }

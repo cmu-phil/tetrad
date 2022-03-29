@@ -49,12 +49,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     private final BayesIm bayesIm;
     private final Map<Node, TreeNode> treeNodes;
 
-    public JunctionTreeAlgorithm(final Graph graph, final DataModel dataModel) {
+    public JunctionTreeAlgorithm(Graph graph, DataModel dataModel) {
         this.bayesPm = createBayesPm(dataModel, graph);
         this.bayesIm = createBayesIm(dataModel, this.bayesPm);
         this.treeNodes = new HashMap<>();
 
-        final int numOfNodes = graph.getNumNodes();
+        int numOfNodes = graph.getNumNodes();
         this.graphNodes = this.bayesIm.getDag().getNodes().toArray(new Node[numOfNodes]);
         this.margins = new double[numOfNodes][];
         this.maxCardOrdering = new Node[numOfNodes];
@@ -63,12 +63,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         initialize();
     }
 
-    public JunctionTreeAlgorithm(final BayesIm bayesIm) {
+    public JunctionTreeAlgorithm(BayesIm bayesIm) {
         this.bayesPm = bayesIm.getBayesPm();
         this.bayesIm = bayesIm;
         this.treeNodes = new HashMap<>();
 
-        final int numOfNodes = this.bayesPm.getDag().getNumNodes();
+        int numOfNodes = this.bayesPm.getDag().getNumNodes();
         this.graphNodes = bayesIm.getDag().getNodes().toArray(new Node[numOfNodes]);
         this.margins = new double[numOfNodes][];
         this.maxCardOrdering = new Node[numOfNodes];
@@ -79,13 +79,13 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
     private void initialize() {
         for (int i = this.maxCardOrdering.length - 1; i >= 0; i--) {
-            final TreeNode treeNode = this.treeNodes.get(this.maxCardOrdering[i]);
+            TreeNode treeNode = this.treeNodes.get(this.maxCardOrdering[i]);
             if (treeNode != null) {
                 treeNode.initializeUp();
             }
         }
-        for (final Node node : this.maxCardOrdering) {
-            final TreeNode treeNode = this.treeNodes.get(node);
+        for (Node node : this.maxCardOrdering) {
+            TreeNode treeNode = this.treeNodes.get(node);
             if (treeNode != null) {
                 treeNode.initializeDown(false);
             }
@@ -99,7 +99,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      */
     private TreeNode buildJunctionTree() {
         // moralize dag
-        final Graph undirectedGraph = GraphTools.moralize(this.bayesIm.getDag());
+        Graph undirectedGraph = GraphTools.moralize(this.bayesIm.getDag());
 
         // triangulate
         computeMaximumCardinalityOrdering(undirectedGraph, this.maxCardOrdering);
@@ -107,27 +107,27 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
         // get set of cliques
         computeMaximumCardinalityOrdering(undirectedGraph, this.maxCardOrdering);
-        final Map<Node, Set<Node>> cliques = GraphTools.getCliques(this.maxCardOrdering, undirectedGraph);
+        Map<Node, Set<Node>> cliques = GraphTools.getCliques(this.maxCardOrdering, undirectedGraph);
 
         // get separator sets
-        final Map<Node, Set<Node>> separators = GraphTools.getSeparators(this.maxCardOrdering, cliques);
+        Map<Node, Set<Node>> separators = GraphTools.getSeparators(this.maxCardOrdering, cliques);
 
         // get clique tree
-        final Map<Node, Node> parentCliques = GraphTools.getCliqueTree(this.maxCardOrdering, cliques, separators);
+        Map<Node, Node> parentCliques = GraphTools.getCliqueTree(this.maxCardOrdering, cliques, separators);
 
         // create tree nodes
-        final Set<Node> finishedCalculated = new HashSet<>();
-        for (final Node node : this.maxCardOrdering) {
+        Set<Node> finishedCalculated = new HashSet<>();
+        for (Node node : this.maxCardOrdering) {
             if (cliques.containsKey(node)) {
                 this.treeNodes.put(node, new TreeNode(cliques.get(node), finishedCalculated));
             }
         }
 
         // create tree separators
-        for (final Node node : this.maxCardOrdering) {
+        for (Node node : this.maxCardOrdering) {
             if (cliques.containsKey(node) && parentCliques.containsKey(node)) {
-                final TreeNode parent = this.treeNodes.get(parentCliques.get(node));
-                final TreeNode treeNode = this.treeNodes.get(node);
+                TreeNode parent = this.treeNodes.get(parentCliques.get(node));
+                TreeNode treeNode = this.treeNodes.get(node);
 
                 treeNode.setParentSeparator(new TreeSeparator(separators.get(node), treeNode, parent));
                 parent.addChildClique(treeNode);
@@ -135,7 +135,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
 
         TreeNode rootNode = null;
-        for (final Node node : this.treeNodes.keySet()) {
+        for (Node node : this.treeNodes.keySet()) {
             if (!parentCliques.containsKey(node)) {
                 rootNode = this.treeNodes.get(node);
             }
@@ -144,16 +144,16 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return rootNode;
     }
 
-    private void computeMaximumCardinalityOrdering(final Graph graph, final Node[] nodes) {
-        final Set<Node> numbered = new HashSet<>();
+    private void computeMaximumCardinalityOrdering(Graph graph, Node[] nodes) {
+        Set<Node> numbered = new HashSet<>();
         for (int i = 0; i < nodes.length; i++) {
             // find an unnumbered node that is adjacent to the most number of numbered nodes
             Node maxCardinalityNode = null;
             int maxCardinality = -1;
-            for (final Node v : graph.getNodes()) {
+            for (Node v : graph.getNodes()) {
                 if (!numbered.contains(v)) {
                     // count the number of times node v is adjacent to numbered node w
-                    final int cardinality = (int) graph.getAdjacentNodes(v).stream()
+                    int cardinality = (int) graph.getAdjacentNodes(v).stream()
                             .filter(numbered::contains)
                             .count();
 
@@ -171,13 +171,13 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
-    private BayesPm createBayesPm(final DataModel dataModel, final Graph graph) {
-        final Dag dag = new Dag(dataModel.getVariables());
+    private BayesPm createBayesPm(DataModel dataModel, Graph graph) {
+        Dag dag = new Dag(dataModel.getVariables());
         (new Dag(graph)).getEdges().forEach(edge -> {
-            final Node node1 = dag.getNode(edge.getNode1().getName());
-            final Node node2 = dag.getNode(edge.getNode2().getName());
-            final Endpoint endpoint1 = edge.getEndpoint1();
-            final Endpoint endpoint2 = edge.getEndpoint2();
+            Node node1 = dag.getNode(edge.getNode1().getName());
+            Node node2 = dag.getNode(edge.getNode2().getName());
+            Endpoint endpoint1 = edge.getEndpoint1();
+            Endpoint endpoint2 = edge.getEndpoint2();
 
             dag.addEdge(new Edge(node1, node2, endpoint1, endpoint2));
         });
@@ -185,7 +185,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return new BayesPm(dag);
     }
 
-    private BayesIm createBayesIm(final DataModel dataModel, final BayesPm bayesPm) {
+    private BayesIm createBayesIm(DataModel dataModel, BayesPm bayesPm) {
         return (new EmBayesEstimator(bayesPm, (DataSet) dataModel)).getEstimatedIm();
     }
 
@@ -196,12 +196,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * @param nodes set of nodes
      * @return nodes in the order they appear in the graph
      */
-    private Node[] toArray(final Set<Node> nodes) {
-        final int size = nodes.size();
-        final Node[] order = new Node[size];
+    private Node[] toArray(Set<Node> nodes) {
+        int size = nodes.size();
+        Node[] order = new Node[size];
 
         int index = 0;
-        for (final Node node : this.graphNodes) {
+        for (Node node : this.graphNodes) {
             if (nodes.contains(node)) {
                 order[index++] = node;
 
@@ -214,10 +214,10 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return order;
     }
 
-    private void normalize(final double[] values) {
+    private void normalize(double[] values) {
         // sum up all the values
         double sum = 0;
-        for (final double value : values) {
+        for (double value : values) {
             sum += value;
         }
 
@@ -227,7 +227,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
-    private int getCardinality(final Set<Node> nodes) {
+    private int getCardinality(Set<Node> nodes) {
         int count = 1;
         count = nodes.stream()
                 .map(this.bayesPm::getNumCategories)
@@ -236,7 +236,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return count;
     }
 
-    private void updateValues(final int size, final int[] values, final Node[] nodes) {
+    private void updateValues(int size, int[] values, Node[] nodes) {
         int j = size - 1;
         values[j]++;
         while (j >= 0 && values[j] == this.bayesPm.getNumCategories(nodes[j])) {
@@ -248,7 +248,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
-    private int getIndexOfCPT(final Node[] nodes, final int[] values, final Node[] order) {
+    private int getIndexOfCPT(Node[] nodes, int[] values, Node[] order) {
         int index = 0;
 
         int j = 0;
@@ -263,7 +263,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return index;
     }
 
-    private int getIndexOfCPT(final Node[] nodes, final int[] values) {
+    private int getIndexOfCPT(Node[] nodes, int[] values) {
         int index = 0;
 
         for (int i = 0; i < nodes.length; i++) {
@@ -274,12 +274,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return index;
     }
 
-    private void clear(final double[] array) {
+    private void clear(double[] array) {
         Arrays.fill(array, 0);
     }
 
-    private TreeNode getCliqueContainsNode(final Node node) {
-        for (final Node k : this.graphNodes) {
+    private TreeNode getCliqueContainsNode(Node node) {
+        for (Node k : this.graphNodes) {
             if (this.treeNodes.containsKey(k) && this.treeNodes.get(k).contains(node)) {
                 return this.treeNodes.get(k);
             }
@@ -288,10 +288,10 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return null;
     }
 
-    private void validate(final int iNode) {
-        final int maxIndex = this.margins.length - 1;
+    private void validate(int iNode) {
+        int maxIndex = this.margins.length - 1;
         if (iNode < 0 || iNode > maxIndex) {
-            final String msg = String.format(
+            String msg = String.format(
                     "Invalid node index %d. Node index must be between 0 and %d.",
                     iNode,
                     maxIndex);
@@ -299,12 +299,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
-    private void validate(final int iNode, final int value) {
+    private void validate(int iNode, int value) {
         validate(iNode);
 
-        final int maxValue = this.margins[iNode].length - 1;
+        int maxValue = this.margins[iNode].length - 1;
         if (value < 0 || value > maxValue) {
-            final String msg = String.format(
+            String msg = String.format(
                     "Invalid value %d for node index %d. Value must be between 0 and %d.",
                     value,
                     iNode,
@@ -313,7 +313,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
-    private void validate(final int[] nodes) {
+    private void validate(int[] nodes) {
         if (nodes == null) {
             throw new IllegalArgumentException("Node indices cannot be null.");
         }
@@ -322,14 +322,14 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             throw new IllegalArgumentException("Node indices are required.");
         }
         if (nodes.length > this.graphNodes.length) {
-            final String msg = String.format(
+            String msg = String.format(
                     "Number of nodes cannot exceed %d.",
                     this.graphNodes.length);
             throw new IllegalArgumentException(msg);
         }
     }
 
-    private void validate(final int[] nodes, final int[] values) {
+    private void validate(int[] nodes, int[] values) {
         validate(nodes);
 
         if (values == null) {
@@ -347,7 +347,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
-    private void validateAll(final int[] values) {
+    private void validateAll(int[] values) {
         if (values == null) {
             throw new IllegalArgumentException("Node values cannot be null.");
         }
@@ -359,9 +359,9 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
 
         for (int i = 0; i < values.length; i++) {
-            final int maxValue = this.margins[i].length - 1;
+            int maxValue = this.margins[i].length - 1;
             if (values[i] < 0 && values[i] > maxValue) {
-                final String msg = String.format(
+                String msg = String.format(
                         "Invalid value %d for node index %d. Value must be between 0 and %d.",
                         values[i],
                         i,
@@ -371,26 +371,26 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
-    public void setEvidence(final int iNode, final int value) {
+    public void setEvidence(int iNode, int value) {
         validate(iNode, value);
 
-        final Node node = this.graphNodes[iNode];
-        final TreeNode treeNode = getCliqueContainsNode(node);
+        Node node = this.graphNodes[iNode];
+        TreeNode treeNode = getCliqueContainsNode(node);
         if (treeNode == null) {
-            final String msg = String.format("Node %s is not in junction tree.", node.getName());
+            String msg = String.format("Node %s is not in junction tree.", node.getName());
             throw new IllegalArgumentException(msg);
         }
 
         treeNode.setEvidence(node, value);
     }
 
-    private double[] getConditionalProbabilities(final int iNode, final int parent, final int parentValue) {
+    private double[] getConditionalProbabilities(int iNode, int parent, int parentValue) {
         validate(iNode);
         validate(parent, parentValue);
 
         setEvidence(parent, parentValue);
 
-        final double[] condProbs = new double[this.margins[iNode].length];
+        double[] condProbs = new double[this.margins[iNode].length];
         System.arraycopy(this.margins[iNode], 0, condProbs, 0, condProbs.length);
         normalize(condProbs);
 
@@ -400,10 +400,10 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return condProbs;
     }
 
-    private boolean isAllNodes(final int[] nodes) {
+    private boolean isAllNodes(int[] nodes) {
         if (nodes.length == this.graphNodes.length) {
-            final long sum = Arrays.stream(nodes).sum();
-            final long total = ((this.graphNodes.length - 1) * this.graphNodes.length) / 2;
+            long sum = Arrays.stream(nodes).sum();
+            long total = ((this.graphNodes.length - 1) * this.graphNodes.length) / 2;
 
             return sum == total;
         }
@@ -416,7 +416,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * given x <-- z --> y, we can find P(x,y|z). Another example: given x
      * <-- z --> y <-- w, we can find P(x,y|z,w)
      */
-    public double getConditionalProbabilities(final int[] nodes, final int[] values, final int[] parents, final int[] parentValues) {
+    public double getConditionalProbabilities(int[] nodes, int[] values, int[] parents, int[] parentValues) {
         validate(nodes, values);
         validate(parents, parentValues);
 
@@ -426,9 +426,9 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
         double prob = 1;
         for (int i = 0; i < nodes.length; i++) {
-            final double[] marg = this.margins[nodes[i]];
+            double[] marg = this.margins[nodes[i]];
 
-            final double[] condProbs = new double[marg.length];
+            double[] condProbs = new double[marg.length];
             System.arraycopy(marg, 0, condProbs, 0, marg.length);
             normalize(condProbs);
 
@@ -444,7 +444,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     /**
      * Get the conditional probability of a node for all of its values.
      */
-    public double[] getConditionalProbabilities(final int iNode, final int[] parents, final int[] parentValues) {
+    public double[] getConditionalProbabilities(int iNode, int[] parents, int[] parentValues) {
         validate(iNode);
         validate(parents, parentValues);
 
@@ -455,7 +455,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                 setEvidence(parents[i], parentValues[i]);
             }
 
-            final double[] condProbs = new double[this.margins[iNode].length];
+            double[] condProbs = new double[this.margins[iNode].length];
             System.arraycopy(this.margins[iNode], 0, condProbs, 0, condProbs.length);
             normalize(condProbs);
 
@@ -466,7 +466,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
-    public double getConditionalProbability(final int iNode, final int value, final int[] parents, final int[] parentValues) {
+    public double getConditionalProbability(int iNode, int value, int[] parents, int[] parentValues) {
         validate(iNode, value);
 
         return getConditionalProbabilities(iNode, parents, parentValues)[value];
@@ -479,16 +479,16 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      *
      * @param nodeValues an array of values for each node
      */
-    public double getJointProbabilityAll(final int[] nodeValues) {
+    public double getJointProbabilityAll(int[] nodeValues) {
         validateAll(nodeValues);
 
-        final double logJointClusterPotentials = this.root.getLogJointClusterPotentials(nodeValues);
-        final double logJointSeparatorPotentials = this.root.getLogJointSeparatorPotentials(nodeValues);
+        double logJointClusterPotentials = this.root.getLogJointClusterPotentials(nodeValues);
+        double logJointSeparatorPotentials = this.root.getLogJointSeparatorPotentials(nodeValues);
 
         return Math.exp(logJointClusterPotentials - logJointSeparatorPotentials);
     }
 
-    public double getJointProbability(final int[] nodes, final int[] values) {
+    public double getJointProbability(int[] nodes, int[] values) {
         validate(nodes, values);
         if (isAllNodes(nodes)) {
             return getJointProbabilityAll(values);
@@ -516,17 +516,17 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
     }
 
-    public double[] getMarginalProbability(final int iNode) {
+    public double[] getMarginalProbability(int iNode) {
         validate(iNode);
 
-        final double[] marginals = new double[this.margins[iNode].length];
+        double[] marginals = new double[this.margins[iNode].length];
         System.arraycopy(this.margins[iNode], 0, marginals, 0, marginals.length);
         normalize(marginals);
 
         return marginals;
     }
 
-    public double getMarginalProbability(final int iNode, final int value) {
+    public double getMarginalProbability(int iNode, int value) {
         validate(iNode, value);
 
         return this.margins[iNode][value];
@@ -557,12 +557,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         private final TreeNode childNode;
         private final TreeNode parentNode;
 
-        public TreeSeparator(final Set<Node> separator, final TreeNode childNode, final TreeNode parentNode) {
+        public TreeSeparator(Set<Node> separator, TreeNode childNode, TreeNode parentNode) {
             this.childNode = childNode;
             this.parentNode = parentNode;
 
             this.nodes = toArray(separator);
-            final int cardinality = getCardinality(separator);
+            int cardinality = getCardinality(separator);
 
             this.parentPotentials = new double[cardinality];
             this.childPotentials = new double[cardinality];
@@ -574,15 +574,15 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
          * @param node one of the neighboring junction tree nodes of this
          *             separator
          */
-        public void update(final TreeNode node, final double[] potentials) {
+        public void update(TreeNode node, double[] potentials) {
             clear(potentials);
 
             if (node.prob != null) {
-                final int size = node.nodes.length;
-                final int[] values = new int[size];
+                int size = node.nodes.length;
+                int[] values = new int[size];
                 for (int i = 0; i < node.cardinality; i++) {
-                    final int indexNodeCPT = getIndexOfCPT(node.nodes, values);
-                    final int indexSepCPT = getIndexOfCPT(this.nodes, values, node.nodes);
+                    int indexNodeCPT = getIndexOfCPT(node.nodes, values);
+                    int indexSepCPT = getIndexOfCPT(this.nodes, values, node.nodes);
                     potentials[indexSepCPT] += node.prob[indexNodeCPT];
 
                     updateValues(size, values, node.nodes);
@@ -622,7 +622,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         private final Set<Node> clique;
         private final Node[] nodes;
 
-        public TreeNode(final Set<Node> clique, final Set<Node> finishedCalculated) {
+        public TreeNode(Set<Node> clique, Set<Node> finishedCalculated) {
             this.clique = clique;
             this.nodes = toArray(clique);
 
@@ -640,11 +640,11 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             calculatePotentials(clique, finishedCalculated);
         }
 
-        private void calculatePotentials(final Set<Node> cliques, final Set<Node> finishedCalculated) {
-            final Graph dag = JunctionTreeAlgorithm.this.bayesIm.getDag();
+        private void calculatePotentials(Set<Node> cliques, Set<Node> finishedCalculated) {
+            Graph dag = JunctionTreeAlgorithm.this.bayesIm.getDag();
 
-            final Set<Node> nodesWithParentsInCluster = new HashSet<>();
-            for (final Node node : this.nodes) {
+            Set<Node> nodesWithParentsInCluster = new HashSet<>();
+            for (Node node : this.nodes) {
                 if (!finishedCalculated.contains(node) && cliques.containsAll(dag.getParents(node))) {
                     nodesWithParentsInCluster.add(node);
                     finishedCalculated.add(node);
@@ -652,16 +652,16 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             }
 
             // fill in values
-            final int size = this.nodes.length;
-            final int[] values = new int[size];
+            int size = this.nodes.length;
+            int[] values = new int[size];
             for (int i = 0; i < this.cardinality; i++) {
-                final int indexCPT = getIndexOfCPT(this.nodes, values);
+                int indexCPT = getIndexOfCPT(this.nodes, values);
                 this.potentials[indexCPT] = 1.0;
                 for (int iNode = 0; iNode < this.nodes.length; iNode++) {
-                    final Node node = this.nodes[iNode];
+                    Node node = this.nodes[iNode];
                     if (nodesWithParentsInCluster.contains(node)) {
-                        final int nodeIndex = JunctionTreeAlgorithm.this.bayesIm.getNodeIndex(node);
-                        final int rowIndex = getRowIndex(nodeIndex, values, this.nodes);
+                        int nodeIndex = JunctionTreeAlgorithm.this.bayesIm.getNodeIndex(node);
+                        int rowIndex = getRowIndex(nodeIndex, values, this.nodes);
                         this.potentials[indexCPT] *= JunctionTreeAlgorithm.this.bayesIm.getProbability(nodeIndex, rowIndex, values[iNode]);
                     }
                 }
@@ -673,13 +673,13 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         public void initializeUp() {
             System.arraycopy(this.potentials, 0, this.prob, 0, this.cardinality);
 
-            final int size = this.nodes.length;
-            final int[] values = new int[size];
+            int size = this.nodes.length;
+            int[] values = new int[size];
             this.children.forEach(childNode -> {
-                final TreeSeparator separator = childNode.parentSeparator;
+                TreeSeparator separator = childNode.parentSeparator;
                 for (int i = 0; i < this.cardinality; i++) {
-                    final int indexSepCPT = getIndexOfCPT(separator.nodes, values, this.nodes);
-                    final int indexNodeCPT = getIndexOfCPT(this.nodes, values);
+                    int indexSepCPT = getIndexOfCPT(separator.nodes, values, this.nodes);
+                    int indexNodeCPT = getIndexOfCPT(this.nodes, values);
                     this.prob[indexNodeCPT] *= separator.childPotentials[indexSepCPT];
 
                     updateValues(size, values, this.nodes);
@@ -691,15 +691,15 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             }
         }
 
-        public void initializeDown(final boolean recursively) {
+        public void initializeDown(boolean recursively) {
             if (this.parentSeparator != null) {
                 this.parentSeparator.updateFromParent();
 
-                final int size = this.nodes.length;
-                final int[] values = new int[size];
+                int size = this.nodes.length;
+                int[] values = new int[size];
                 for (int i = 0; i < this.cardinality; i++) {
-                    final int indexSepCPT = getIndexOfCPT(this.parentSeparator.nodes, values, this.nodes);
-                    final int indexNodeCPT = getIndexOfCPT(this.nodes, values);
+                    int indexSepCPT = getIndexOfCPT(this.parentSeparator.nodes, values, this.nodes);
+                    int indexNodeCPT = getIndexOfCPT(this.nodes, values);
 
                     if (this.parentSeparator.childPotentials[indexSepCPT] > 0) {
                         this.prob[indexNodeCPT] *= (this.parentSeparator.parentPotentials[indexSepCPT] / this.parentSeparator.childPotentials[indexSepCPT]);
@@ -729,10 +729,10 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                 clear(this.margProb[iNode]);
             }
 
-            final int size = this.nodes.length;
-            final int[] values = new int[size];
+            int size = this.nodes.length;
+            int[] values = new int[size];
             for (int i = 0; i < this.cardinality; i++) {
-                final int indexNodeCPT = getIndexOfCPT(this.nodes, values);
+                int indexNodeCPT = getIndexOfCPT(this.nodes, values);
                 for (int iNode = 0; iNode < size; iNode++) {
                     this.margProb[iNode][values[iNode]] += this.prob[indexNodeCPT];
                 }
@@ -745,12 +745,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             }
         }
 
-        private int getRowIndex(final int nodeIndex, final int[] values, final Node[] nodes) {
+        private int getRowIndex(int nodeIndex, int[] values, Node[] nodes) {
             int index = 0;
 
-            final int[] parents = JunctionTreeAlgorithm.this.bayesIm.getParents(nodeIndex);
-            for (final int parent : parents) {
-                final Node node = JunctionTreeAlgorithm.this.bayesIm.getNode(parent);
+            int[] parents = JunctionTreeAlgorithm.this.bayesIm.getParents(nodeIndex);
+            for (int parent : parents) {
+                Node node = JunctionTreeAlgorithm.this.bayesIm.getNode(parent);
                 index *= JunctionTreeAlgorithm.this.bayesPm.getNumCategories(node);
                 for (int j = 0; j < nodes.length; j++) {
                     if (node == nodes[j]) {
@@ -762,7 +762,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             return index;
         }
 
-        private int getNodeIndex(final Node node) {
+        private int getNodeIndex(Node node) {
             for (int i = 0; i < this.nodes.length; i++) {
                 if (this.nodes[i] == node) {
                     return i;
@@ -772,18 +772,18 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             return -1;
         }
 
-        public void setEvidence(final Node node, final int value) {
-            final int nodeIndex = getNodeIndex(node);
+        public void setEvidence(Node node, int value) {
+            int nodeIndex = getNodeIndex(node);
             if (nodeIndex < 0) {
-                final String msg = String.format("Unable to find node %s in clique.", node.getName());
+                String msg = String.format("Unable to find node %s in clique.", node.getName());
                 throw new IllegalArgumentException(msg);
             }
 
-            final int size = this.nodes.length;
-            final int[] values = new int[size];
+            int size = this.nodes.length;
+            int[] values = new int[size];
             for (int i = 0; i < this.cardinality; i++) {
                 if (values[nodeIndex] != value) {
-                    final int indexNodeCPT = getIndexOfCPT(this.nodes, values);
+                    int indexNodeCPT = getIndexOfCPT(this.nodes, values);
                     this.prob[indexNodeCPT] = 0;
                 }
 
@@ -794,13 +794,13 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             updateEvidence(this);
         }
 
-        private void updateEvidence(final TreeNode source) {
+        private void updateEvidence(TreeNode source) {
             if (source != this) {
-                final int size = this.nodes.length;
-                final int[] values = new int[size];
+                int size = this.nodes.length;
+                int[] values = new int[size];
                 for (int i = 0; i < this.cardinality; i++) {
-                    final int indexNodeCPT = getIndexOfCPT(this.nodes, values);
-                    final int indexChildNodeCPT = getIndexOfCPT(source.parentSeparator.nodes, values, this.nodes);
+                    int indexNodeCPT = getIndexOfCPT(this.nodes, values);
+                    int indexChildNodeCPT = getIndexOfCPT(source.parentSeparator.nodes, values, this.nodes);
                     if (source.parentSeparator.parentPotentials[indexChildNodeCPT] != 0) {
                         this.prob[indexNodeCPT] *= source.parentSeparator.childPotentials[indexChildNodeCPT]
                                 / source.parentSeparator.parentPotentials[indexChildNodeCPT];
@@ -825,13 +825,13 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             }
         }
 
-        private double getLogJointSeparatorPotentials(final int[] nodeValues) {
+        private double getLogJointSeparatorPotentials(int[] nodeValues) {
             double logJointPotentials = Math.log(1);
 
             if (this.parentSeparator != null) {
-                final Node[] parentNodes = this.parentSeparator.nodes;
-                final int size = parentNodes.length;
-                final int[] values = new int[size];
+                Node[] parentNodes = this.parentSeparator.nodes;
+                int size = parentNodes.length;
+                int[] values = new int[size];
                 for (int iNode = 0; iNode < size; iNode++) {
                     values[iNode] = nodeValues[JunctionTreeAlgorithm.this.bayesIm.getNodeIndex(parentNodes[iNode])];
                 }
@@ -846,9 +846,9 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             return logJointPotentials;
         }
 
-        private double getLogJointClusterPotentials(final int[] nodeValues) {
-            final int size = this.nodes.length;
-            final int[] values = new int[size];
+        private double getLogJointClusterPotentials(int[] nodeValues) {
+            int size = this.nodes.length;
+            int[] values = new int[size];
             for (int iNode = 0; iNode < size; iNode++) {
                 values[iNode] = nodeValues[JunctionTreeAlgorithm.this.bayesIm.getNodeIndex(this.nodes[iNode])];
             }
@@ -861,11 +861,11 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             return logJointPotentials;
         }
 
-        public void setParentSeparator(final TreeSeparator parentSeparator) {
+        public void setParentSeparator(TreeSeparator parentSeparator) {
             this.parentSeparator = parentSeparator;
         }
 
-        public void addChildClique(final TreeNode child) {
+        public void addChildClique(TreeNode child) {
             this.children.add(child);
         }
 
@@ -876,13 +876,13 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         /**
          * Check if the clique contains the given node.
          */
-        public boolean contains(final Node node) {
+        public boolean contains(Node node) {
             return this.clique.contains(node);
         }
 
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < this.nodes.length; i++) {
                 sb.append(this.nodes[i].getName());
                 sb.append(": ");

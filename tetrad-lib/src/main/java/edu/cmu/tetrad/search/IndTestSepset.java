@@ -62,7 +62,7 @@ public class IndTestSepset implements IndependenceTest {
     /**
      * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
      */
-    public IndTestSepset(final SepsetMapDci sepset, final List<Node> nodes) {
+    public IndTestSepset(SepsetMapDci sepset, List<Node> nodes) {
         if (sepset == null) {
             throw new NullPointerException();
         }
@@ -71,7 +71,7 @@ public class IndTestSepset implements IndependenceTest {
         this.nodesToVariables = new HashMap<>();
         this.variablesToNodes = new HashMap<>();
 
-        for (final Node node : nodes) {
+        for (Node node : nodes) {
             this.nodesToVariables.put(node, node);
             this.variablesToNodes.put(node, node);
         }
@@ -82,12 +82,12 @@ public class IndTestSepset implements IndependenceTest {
     /**
      * Required by IndependenceTest.
      */
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        for (final Node var : vars) {
+        for (Node var : vars) {
             if (!getVariables().contains(var)) {
                 throw new IllegalArgumentException(
                         "All vars must be original vars");
@@ -100,10 +100,10 @@ public class IndTestSepset implements IndependenceTest {
     /**
      * @return the list of observed nodes in the given graph.
      */
-    private List<Node> calcObservedVars(final List<Node> nodes) {
-        final List<Node> observedVars = new ArrayList<>();
+    private List<Node> calcObservedVars(List<Node> nodes) {
+        List<Node> observedVars = new ArrayList<>();
 
-        for (final Node node : nodes) {
+        for (Node node : nodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 observedVars.add(getVariable(node));
             }
@@ -120,12 +120,12 @@ public class IndTestSepset implements IndependenceTest {
      * @param z a List of nodes (conditioning variables)
      * @return true iff x _||_ y | z
      */
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (final Node node : z) {
+        for (Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
@@ -134,8 +134,8 @@ public class IndTestSepset implements IndependenceTest {
         boolean independent = false;
 
         if (this.sepset.get(x, y) != null) {
-            final List<List<Node>> condSets = this.sepset.getSet(x, y);
-            for (final List<Node> condSet : condSets) {
+            List<List<Node>> condSets = this.sepset.getSet(x, y);
+            for (List<Node> condSet : condSets) {
                 if (condSet.size() == z.size() && condSet.containsAll(z)) {
                     final double pValue = 1.0;
 
@@ -162,17 +162,17 @@ public class IndTestSepset implements IndependenceTest {
 //        return false;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isDependent(Node x, Node y, List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -195,15 +195,15 @@ public class IndTestSepset implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> nodes = getVariables();
-        final List<String> nodeNames = new ArrayList<>();
-        for (final Node var : nodes) {
+        List<Node> nodes = getVariables();
+        List<String> nodeNames = new ArrayList<>();
+        for (Node var : nodes) {
             nodeNames.add(var.getName());
         }
         return nodeNames;
     }
 
-    public boolean determines(final List z, final Node x1) {
+    public boolean determines(List z, Node x1) {
         return z.contains(x1);
     }
 
@@ -211,13 +211,13 @@ public class IndTestSepset implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+            Node variable = getVariables().get(i);
 
             if (variable.getName().equals(name)) {
                 return variable;
@@ -230,14 +230,14 @@ public class IndTestSepset implements IndependenceTest {
     /**
      * @return the variable associated with the given node in the graph.
      */
-    public Node getVariable(final Node node) {
+    public Node getVariable(Node node) {
         return this.nodesToVariables.get(node);
     }
 
     /**
      * @return the node associated with the given variable in the graph.
      */
-    public Node getNode(final Node variable) {
+    public Node getNode(Node variable) {
         return this.variablesToNodes.get(variable);
     }
 
@@ -278,7 +278,7 @@ public class IndTestSepset implements IndependenceTest {
         return this.verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

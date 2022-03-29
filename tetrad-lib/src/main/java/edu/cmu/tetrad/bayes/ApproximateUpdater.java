@@ -74,7 +74,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
     //==============================CONSTRUCTORS===========================//
 
-    public ApproximateUpdater(final BayesIm bayesIm) {
+    public ApproximateUpdater(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -86,7 +86,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     /**
      * Constructs a new updater for the given Bayes net.
      */
-    public ApproximateUpdater(final BayesIm bayesIm, final Evidence evidence) {
+    public ApproximateUpdater(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -143,7 +143,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     /**
      * Sets new evidence for the next update operation.
      */
-    public void setEvidence(final Evidence evidence) {
+    public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
@@ -155,15 +155,15 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
         this.evidence = new Evidence(evidence);
 
-        final Graph graph = this.bayesIm.getBayesPm().getDag();
-        final Dag manipulatedGraph = createManipulatedGraph(graph);
-        final BayesPm manipulatedBayesPm = createUpdatedBayesPm(manipulatedGraph);
+        Graph graph = this.bayesIm.getBayesPm().getDag();
+        Dag manipulatedGraph = createManipulatedGraph(graph);
+        BayesPm manipulatedBayesPm = createUpdatedBayesPm(manipulatedGraph);
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedBayesPm);
 
         this.counts = null;
     }
 
-    public double getMarginal(final int variable, final int value) {
+    public double getMarginal(int variable, int value) {
         doUpdate();
         int sum = 0;
 
@@ -181,15 +181,15 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     /**
      * @return the joint marginal.
      */
-    public double getJointMarginal(final int[] variables, final int[] values) {
+    public double getJointMarginal(int[] variables, int[] values) {
         throw new UnsupportedOperationException();
     }
 
-    public double[] calculatePriorMarginals(final int nodeIndex) {
-        final Evidence evidence = getEvidence();
+    public double[] calculatePriorMarginals(int nodeIndex) {
+        Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
 
-        final double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
+        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0;
              i < getBayesIm().getNumColumns(nodeIndex); i++) {
@@ -200,8 +200,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
-    public double[] calculateUpdatedMarginals(final int nodeIndex) {
-        final double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
+    public double[] calculateUpdatedMarginals(int nodeIndex) {
+        double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0;
              i < getBayesIm().getNumColumns(nodeIndex); i++) {
@@ -232,9 +232,9 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         }
 
         // Get a tier ordering and convert it to an int array.
-        final Graph graph = getManipulatedGraph();
-        final List<Node> tierOrdering = graph.getCausalOrdering();
-        final int[] tiers = new int[tierOrdering.size()];
+        Graph graph = getManipulatedGraph();
+        List<Node> tierOrdering = graph.getCausalOrdering();
+        int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
             tiers[i] = getManipulatedBayesIm().getNodeIndex(tierOrdering.get(i));
@@ -250,7 +250,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
         // Construct the sample.
         while (numCounted < 1000 && ++numSurveyed < 10000) {
-            final int[] point = ApproximateUpdater.getSinglePoint(getBayesIm(), tiers);
+            int[] point = ApproximateUpdater.getSinglePoint(getBayesIm(), tiers);
 
             if (this.evidence.getProposition().isPermissibleCombination(point)) {
                 numCounted++;
@@ -262,25 +262,25 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         }
     }
 
-    private BayesIm createdUpdatedBayesIm(final BayesPm updatedBayesPm) {
+    private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
         return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.RANDOM);
     }
 
-    private BayesPm createUpdatedBayesPm(final Dag updatedGraph) {
+    private BayesPm createUpdatedBayesPm(Dag updatedGraph) {
         return new BayesPm(updatedGraph, this.bayesIm.getBayesPm());
     }
 
-    private Dag createManipulatedGraph(final Graph graph) {
-        final Dag updatedGraph = new Dag(graph);
+    private Dag createManipulatedGraph(Graph graph) {
+        Dag updatedGraph = new Dag(graph);
 
         // alters graph for manipulated evidenceItems
         for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
             if (this.evidence.isManipulated(i)) {
                 Node node = this.evidence.getNode(i);
                 node = updatedGraph.getNode(node.getName());
-                final Collection<Node> parents = updatedGraph.getParents(node);
+                Collection<Node> parents = updatedGraph.getParents(node);
 
-                for (final Node parent1 : parents) {
+                for (Node parent1 : parents) {
                     updatedGraph.removeEdge(node, parent1);
                 }
             }
@@ -289,23 +289,23 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         return updatedGraph;
     }
 
-    private static int[] getSinglePoint(final BayesIm bayesIm, final int[] tiers) {
-        final int[] point = new int[bayesIm.getNumNodes()];
-        final int[] combination = new int[bayesIm.getNumNodes()];
-        final RandomUtil randomUtil = RandomUtil.getInstance();
+    private static int[] getSinglePoint(BayesIm bayesIm, int[] tiers) {
+        int[] point = new int[bayesIm.getNumNodes()];
+        int[] combination = new int[bayesIm.getNumNodes()];
+        RandomUtil randomUtil = RandomUtil.getInstance();
 
-        for (final int nodeIndex : tiers) {
-            final double cutoff = randomUtil.nextDouble();
+        for (int nodeIndex : tiers) {
+            double cutoff = randomUtil.nextDouble();
 
             for (int k = 0; k < bayesIm.getNumParents(nodeIndex); k++) {
                 combination[k] = point[bayesIm.getParent(nodeIndex, k)];
             }
 
-            final int rowIndex = bayesIm.getRowIndex(nodeIndex, combination);
+            int rowIndex = bayesIm.getRowIndex(nodeIndex, combination);
             double sum = 0.0;
 
             for (int k = 0; k < bayesIm.getNumColumns(nodeIndex); k++) {
-                final double probability =
+                double probability =
                         bayesIm.getProbability(nodeIndex, rowIndex, k);
 
                 if (Double.isNaN(probability)) {
@@ -336,7 +336,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

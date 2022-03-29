@@ -91,40 +91,40 @@ class RegressionParamsEditorPanel extends JPanel {
      * Constructs the editor given the <code>Parameters</code> and the
      * <code>DataModel</code> that should be used.
      */
-    public RegressionParamsEditorPanel(final RegressionModel regressionModel, final Parameters parameters,
-                                       final DataModel model, final boolean logistic) {
+    public RegressionParamsEditorPanel(RegressionModel regressionModel, Parameters parameters,
+                                       DataModel model, boolean logistic) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         if (parameters == null) {
             throw new NullPointerException("The given params must not be null");
         }
         this.params = parameters;
         this.logistic = logistic;
-        final List<String> variableNames = regressionModel.getVariableNames();
+        List<String> variableNames = regressionModel.getVariableNames();
         this.regressionModel = regressionModel;
 
         // create components
         RegressionParamsEditorPanel.PREDICTORS_LIST = RegressionParamsEditorPanel.createList();
-        final VariableListModel predictorsModel = (VariableListModel) RegressionParamsEditorPanel.getPredictorsList().getModel();
+        VariableListModel predictorsModel = (VariableListModel) RegressionParamsEditorPanel.getPredictorsList().getModel();
         RegressionParamsEditorPanel.SOURCE_LIST = RegressionParamsEditorPanel.createList();
         if (logistic && model instanceof DataSet) {
             buildMap((DataSet) model);
             RegressionParamsEditorPanel.getSourceList().setCellRenderer(new LogisticRegRenderer());
         }
-        final VariableListModel variableModel = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
+        VariableListModel variableModel = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
         RegressionParamsEditorPanel.RESPONSE_FIELD = createResponse(RegressionParamsEditorPanel.getSourceList(), 100);
 
         // if regressors are already set use'em.
-        final List<String> regressors = regressionModel.getRegressorNames();
+        List<String> regressors = regressionModel.getRegressorNames();
         if (regressors != null) {
             predictorsModel.addAll(regressors);
-            final List<String> initVars = new ArrayList<>(variableNames);
+            List<String> initVars = new ArrayList<>(variableNames);
             initVars.removeAll(regressors);
             variableModel.addAll(initVars);
         } else {
             variableModel.addAll(variableNames);
         }
         // if target is set use it too
-        final String target = regressionModel.getTargetName();
+        String target = regressionModel.getTargetName();
         if (target != null) {
             variableModel.remove(target);
             //     response.setText(target);
@@ -142,13 +142,13 @@ class RegressionParamsEditorPanel extends JPanel {
         dragSource = DragSource.getDefaultDragSource();
         dragSource.createDefaultDragGestureRecognizer(RegressionParamsEditorPanel.getPredictorsList(), DnDConstants.ACTION_MOVE, new SourceListener());
         // build the gui
-        final Box box = Box.createHorizontalBox();
+        Box box = Box.createHorizontalBox();
         box.add(Box.createHorizontalStrut(10));
-        final Box label = RegressionParamsEditorPanel.createLabel("Variables:");
-        final int height = label.getPreferredSize().height + RegressionParamsEditorPanel.getResponseField().getPreferredSize().height + 10;
-        final Box vBox1 = Box.createVerticalBox();
+        Box label = RegressionParamsEditorPanel.createLabel("Variables:");
+        int height = label.getPreferredSize().height + RegressionParamsEditorPanel.getResponseField().getPreferredSize().height + 10;
+        Box vBox1 = Box.createVerticalBox();
         vBox1.add(label);
-        final JScrollPane pane = RegressionParamsEditorPanel.createScrollPane(RegressionParamsEditorPanel.getSourceList(), new Dimension(100, 350 + height));
+        JScrollPane pane = RegressionParamsEditorPanel.createScrollPane(RegressionParamsEditorPanel.getSourceList(), new Dimension(100, 350 + height));
         vBox1.add(pane);
         vBox1.add(Box.createVerticalStrut(10));
         vBox1.add(buildAlphaArea(this.params.getDouble("alpha", 0.001)));
@@ -161,7 +161,7 @@ class RegressionParamsEditorPanel extends JPanel {
         box.add(buildSelectorArea(label.getPreferredSize().height));
         box.add(Box.createHorizontalStrut(4));
 
-        final Box vBox = Box.createVerticalBox();
+        Box vBox = Box.createVerticalBox();
         vBox.add(RegressionParamsEditorPanel.createLabel("Response:"));
 
         vBox.add(RegressionParamsEditorPanel.getResponseField());
@@ -179,11 +179,11 @@ class RegressionParamsEditorPanel extends JPanel {
     }
 
     //============================= Private Methods =================================//
-    private static List<Comparable> getSelected(final JList list) {
-        final List selected = list.getSelectedValuesList();
-        final List<Comparable> selectedList = new ArrayList<>(selected == null ? 0 : selected.size());
+    private static List<Comparable> getSelected(JList list) {
+        List selected = list.getSelectedValuesList();
+        List<Comparable> selectedList = new ArrayList<>(selected == null ? 0 : selected.size());
         if (selected != null) {
-            for (final Object o : selected) {
+            for (Object o : selected) {
                 selectedList.add((Comparable) o);
             }
         }
@@ -194,16 +194,16 @@ class RegressionParamsEditorPanel extends JPanel {
      * Bulids the arrows that allow one to move variables around (can also use
      * drag and drop)
      */
-    private Box buildSelectorArea(final int startHeight) {
-        final Box box = Box.createVerticalBox();
-        final JButton moveToResponse = new JButton(">");
-        final JButton moveToPredictor = new JButton(">");
-        final JButton moveToSource = new JButton("<");
+    private Box buildSelectorArea(int startHeight) {
+        Box box = Box.createVerticalBox();
+        JButton moveToResponse = new JButton(">");
+        JButton moveToPredictor = new JButton(">");
+        JButton moveToSource = new JButton("<");
 
         moveToResponse.addActionListener((e) -> {
-            final VariableListModel sourceModel = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
-            final String target = RegressionParamsEditorPanel.getResponseField().getText();
-            final List<Comparable> selected = RegressionParamsEditorPanel.getSelected(RegressionParamsEditorPanel.getSourceList());
+            VariableListModel sourceModel = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
+            String target = RegressionParamsEditorPanel.getResponseField().getText();
+            List<Comparable> selected = RegressionParamsEditorPanel.getSelected(RegressionParamsEditorPanel.getSourceList());
             if (selected.isEmpty()) {
                 return;
             } else if (1 < selected.size()) {
@@ -224,25 +224,25 @@ class RegressionParamsEditorPanel extends JPanel {
         });
 
         moveToPredictor.addActionListener((e) -> {
-            final VariableListModel predictorsModel = (VariableListModel) RegressionParamsEditorPanel.getPredictorsList().getModel();
-            final VariableListModel sourceModel = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
-            final List<Comparable> selected = RegressionParamsEditorPanel.getSelected(RegressionParamsEditorPanel.getSourceList());
+            VariableListModel predictorsModel = (VariableListModel) RegressionParamsEditorPanel.getPredictorsList().getModel();
+            VariableListModel sourceModel = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
+            List<Comparable> selected = RegressionParamsEditorPanel.getSelected(RegressionParamsEditorPanel.getSourceList());
             sourceModel.removeAll(selected);
             predictorsModel.addAll(selected);
             this.regressionModel.setRegressorName(getPredictors());
         });
 
         moveToSource.addActionListener((e) -> {
-            final VariableListModel predictorsModel = (VariableListModel) RegressionParamsEditorPanel.getPredictorsList().getModel();
-            final VariableListModel sourceModel = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
-            final List<Comparable> selected = RegressionParamsEditorPanel.getSelected(RegressionParamsEditorPanel.getPredictorsList());
+            VariableListModel predictorsModel = (VariableListModel) RegressionParamsEditorPanel.getPredictorsList().getModel();
+            VariableListModel sourceModel = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
+            List<Comparable> selected = RegressionParamsEditorPanel.getSelected(RegressionParamsEditorPanel.getPredictorsList());
             // if not empty remove/add, otherwise try the response list.
             if (!selected.isEmpty()) {
                 predictorsModel.removeAll(selected);
                 sourceModel.addAll(selected);
                 this.regressionModel.setRegressorName(getPredictors());
             } else if (RegressionParamsEditorPanel.getResponseField().getText() != null && RegressionParamsEditorPanel.getResponseField().getText().length() != 0) {
-                final String text = RegressionParamsEditorPanel.getResponseField().getText();
+                String text = RegressionParamsEditorPanel.getResponseField().getText();
                 this.regressionModel.setTargetName(null);
                 RegressionParamsEditorPanel.getResponseField().setText(null);
                 sourceModel.addAll(Collections.singletonList(text));
@@ -261,24 +261,24 @@ class RegressionParamsEditorPanel extends JPanel {
     }
 
     private Box buildSortButton() {
-        final JButton sort = new JButton("Sort Variables");
+        JButton sort = new JButton("Sort Variables");
         sort.setFont(sort.getFont().deriveFont(11f));
         sort.setMargin(new Insets(3, 3, 3, 3));
         sort.addActionListener((e) -> {
-            final VariableListModel predictorsModel = (VariableListModel) RegressionParamsEditorPanel.getPredictorsList().getModel();
-            final VariableListModel sourceModel = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
+            VariableListModel predictorsModel = (VariableListModel) RegressionParamsEditorPanel.getPredictorsList().getModel();
+            VariableListModel sourceModel = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
             predictorsModel.sort();
             sourceModel.sort();
         });
-        final Box box = Box.createHorizontalBox();
+        Box box = Box.createHorizontalBox();
         box.add(sort);
         box.add(Box.createHorizontalGlue());
 
         return box;
     }
 
-    private Box buildAlphaArea(final double alpha) {
-        final DoubleTextField field = new DoubleTextField(alpha, 4, NumberFormatUtil.getInstance().getNumberFormat());
+    private Box buildAlphaArea(double alpha) {
+        DoubleTextField field = new DoubleTextField(alpha, 4, NumberFormatUtil.getInstance().getNumberFormat());
         field.setFilter((value, oldValue) -> {
             if (0.0 <= value && value <= 1.0) {
                 this.params.set("alpha", value);
@@ -288,15 +288,15 @@ class RegressionParamsEditorPanel extends JPanel {
             return oldValue;
         });
 
-        final Box box = Box.createHorizontalBox();
+        Box box = Box.createHorizontalBox();
         box.add(new JLabel("Alpha: "));
         box.add(field);
         box.add(Box.createHorizontalGlue());
         return box;
     }
 
-    private void buildMap(final DataSet model) {
-        for (final Node node : model.getVariables()) {
+    private void buildMap(DataSet model) {
+        for (Node node : model.getVariables()) {
             if (DataUtils.isBinary(model, model.getColumn(node))) {
                 RegressionParamsEditorPanel.getVarMap().put(node.getName(), 1);
             } else if (node instanceof DiscreteVariable) {
@@ -307,29 +307,29 @@ class RegressionParamsEditorPanel extends JPanel {
         }
     }
 
-    private static JScrollPane createScrollPane(final JList comp, final Dimension dim) {
-        final JScrollPane pane = new JScrollPane(comp);
+    private static JScrollPane createScrollPane(JList comp, Dimension dim) {
+        JScrollPane pane = new JScrollPane(comp);
         LayoutUtils.setAllSizes(pane, dim);
         return pane;
     }
 
-    private static Box createLabel(final String text) {
-        final JLabel label = new JLabel(text);
+    private static Box createLabel(String text) {
+        JLabel label = new JLabel(text);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        final Box box = Box.createHorizontalBox();
+        Box box = Box.createHorizontalBox();
         box.add(label);
         box.add(Box.createHorizontalGlue());
         return box;
     }
 
-    private JTextField createResponse(final JList list, final int width) {
-        final JTextField pane = new JTextField();
+    private JTextField createResponse(JList list, int width) {
+        JTextField pane = new JTextField();
         pane.setFont(RegressionParamsEditorPanel.getFONT());
         pane.setFocusable(true);
         pane.setEditable(false);
         pane.setBackground(list.getBackground());
 
-        final String target = this.regressionModel.getTargetName();
+        String target = this.regressionModel.getTargetName();
         if (target != null) {
             pane.setText(target);
         } else {
@@ -342,7 +342,7 @@ class RegressionParamsEditorPanel extends JPanel {
         }
         pane.addFocusListener(new FocusAdapter() {
             @Override
-            public void focusGained(final FocusEvent e) {
+            public void focusGained(FocusEvent e) {
                 RegressionParamsEditorPanel.getPredictorsList().clearSelection();
             }
         });
@@ -351,7 +351,7 @@ class RegressionParamsEditorPanel extends JPanel {
     }
 
     private static JList createList() {
-        final JList list = new JList(new VariableListModel());
+        JList list = new JList(new VariableListModel());
         list.setFont(RegressionParamsEditorPanel.getFONT());
         list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         list.setVisibleRowCount(10);
@@ -362,28 +362,28 @@ class RegressionParamsEditorPanel extends JPanel {
         try {
             return new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + "; class=java.lang.Object",
                     "Local Variable List");
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
     private List<String> getPredictors() {
-        final ListModel model = RegressionParamsEditorPanel.getPredictorsList().getModel();
-        final List<String> predictors = new ArrayList<>();
+        ListModel model = RegressionParamsEditorPanel.getPredictorsList().getModel();
+        List<String> predictors = new ArrayList<>();
         for (int i = 0; i < model.getSize(); i++) {
             predictors.add((String) model.getElementAt(i));
         }
         return predictors;
     }
 
-    private void addToSource(final String var) {
-        final VariableListModel model = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
+    private void addToSource(String var) {
+        VariableListModel model = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
         model.add(var);
     }
 
-    private boolean isBinary(final String node) {
-        final int i = RegressionParamsEditorPanel.getVarMap().get(node);
+    private boolean isBinary(String node) {
+        int i = RegressionParamsEditorPanel.getVarMap().get(node);
         return i == 1;
     }
 
@@ -414,13 +414,13 @@ class RegressionParamsEditorPanel extends JPanel {
      */
     private static class LogisticRegRenderer extends DefaultListCellRenderer {
 
-        public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String var = (String) value;
             if (var == null) {
                 setText(" ");
                 return this;
             }
-            final int binary = RegressionParamsEditorPanel.getVarMap().get(var);
+            int binary = RegressionParamsEditorPanel.getVarMap().get(var);
             if (binary == 1) {
                 var += " (Binary)";
             } else if (binary == 2) {
@@ -444,18 +444,18 @@ class RegressionParamsEditorPanel extends JPanel {
 
     private class TargetListener extends DropTargetAdapter {
 
-        public void drop(final DropTargetDropEvent dtde) {
-            final Transferable t = dtde.getTransferable();
-            final Component comp = dtde.getDropTargetContext().getComponent();
+        public void drop(DropTargetDropEvent dtde) {
+            Transferable t = dtde.getTransferable();
+            Component comp = dtde.getDropTargetContext().getComponent();
             if (comp instanceof JList || comp instanceof JTextField) {
                 try {
                     // if response, remove everything first
                     if (comp == RegressionParamsEditorPanel.getResponseField()) {
-                        final String var = RegressionParamsEditorPanel.getResponseField().getText();
+                        String var = RegressionParamsEditorPanel.getResponseField().getText();
                         if (var != null && var.length() != 0) {
                             addToSource(var);
                         }
-                        final List<Comparable> vars = (List<Comparable>) t.getTransferData(ListTransferable.FLAVOR);
+                        List<Comparable> vars = (List<Comparable>) t.getTransferData(ListTransferable.FLAVOR);
                         if (vars.isEmpty()) {
                             dtde.rejectDrop();
                             return;
@@ -473,16 +473,16 @@ class RegressionParamsEditorPanel extends JPanel {
                         RegressionParamsEditorPanel.getResponseField().setText((String) vars.get(0));
                         RegressionParamsEditorPanel.getResponseField().setCaretPosition(0);
                     } else {
-                        final JList list = (JList) comp;
-                        final VariableListModel model = (VariableListModel) list.getModel();
-                        final List<Comparable> vars = (List<Comparable>) t.getTransferData(ListTransferable.FLAVOR);
+                        JList list = (JList) comp;
+                        VariableListModel model = (VariableListModel) list.getModel();
+                        List<Comparable> vars = (List<Comparable>) t.getTransferData(ListTransferable.FLAVOR);
                         model.addAll(vars);
                     }
 
                     RegressionParamsEditorPanel.this.regressionModel.setTargetName(RegressionParamsEditorPanel.getResponseField().getText());
                     RegressionParamsEditorPanel.this.regressionModel.setRegressorName(getPredictors());
                     dtde.getDropTargetContext().dropComplete(true);
-                } catch (final Exception ex) {
+                } catch (Exception ex) {
                     dtde.rejectDrop();
                     ex.printStackTrace();
                 }
@@ -497,49 +497,49 @@ class RegressionParamsEditorPanel extends JPanel {
      */
     private class SourceListener extends DragSourceAdapter implements DragGestureListener {
 
-        public void dragDropEnd(final DragSourceDropEvent evt) {
+        public void dragDropEnd(DragSourceDropEvent evt) {
             if (evt.getDropSuccess()) {
-                final Component comp = evt.getDragSourceContext().getComponent();
-                final Transferable t = evt.getDragSourceContext().getTransferable();
+                Component comp = evt.getDragSourceContext().getComponent();
+                Transferable t = evt.getDragSourceContext().getTransferable();
                 if (t instanceof ListTransferable) {
                     try {
                         //noinspection unchecked
-                        final List<Comparable> o = (List<Comparable>) t.getTransferData(ListTransferable.FLAVOR);
+                        List<Comparable> o = (List<Comparable>) t.getTransferData(ListTransferable.FLAVOR);
                         if (comp instanceof JList) {
-                            final JList list = (JList) comp;
-                            final VariableListModel model = (VariableListModel) list.getModel();
-                            for (final Comparable c : o) {
+                            JList list = (JList) comp;
+                            VariableListModel model = (VariableListModel) list.getModel();
+                            for (Comparable c : o) {
                                 model.removeFirst(c);
                             }
                         } else {
-                            final JTextField pane = (JTextField) comp;
+                            JTextField pane = (JTextField) comp;
                             pane.setText(null);
                         }
 
                         RegressionParamsEditorPanel.this.regressionModel.setTargetName(RegressionParamsEditorPanel.getResponseField().getText());
                         RegressionParamsEditorPanel.this.regressionModel.setRegressorName(getPredictors());
-                    } catch (final Exception ex) {
+                    } catch (Exception ex) {
                         ex.printStackTrace();
                     }
                 }
             }
         }
 
-        public void dragGestureRecognized(final DragGestureEvent dge) {
-            final Component comp = dge.getComponent();
+        public void dragGestureRecognized(DragGestureEvent dge) {
+            Component comp = dge.getComponent();
             List selected = null;
             if (comp instanceof JList) {
-                final JList list = (JList) comp;
+                JList list = (JList) comp;
                 selected = list.getSelectedValuesList();
             } else {
-                final JTextField pane = (JTextField) comp;
-                final String text = pane.getText();
+                JTextField pane = (JTextField) comp;
+                String text = pane.getText();
                 if (text != null && text.length() != 0) {
                     selected = Collections.singletonList(text);
                 }
             }
             if (selected != null) {
-                final ListTransferable t = new ListTransferable(Arrays.asList(selected));
+                ListTransferable t = new ListTransferable(Arrays.asList(selected));
                 dge.startDrag(DragSource.DefaultMoveDrop, t, this);
             }
         }
@@ -557,34 +557,34 @@ class RegressionParamsEditorPanel extends JPanel {
             return this.delegate.size();
         }
 
-        public Object getElementAt(final int index) {
+        public Object getElementAt(int index) {
             return this.delegate.get(index);
         }
 
-        public void remove(final Comparable element) {
-            final int index = this.delegate.indexOf(element);
+        public void remove(Comparable element) {
+            int index = this.delegate.indexOf(element);
             if (0 <= index) {
                 this.delegate.remove(index);
                 this.fireIntervalRemoved(this, index, index);
             }
         }
 
-        public void add(final Comparable element) {
+        public void add(Comparable element) {
             this.delegate.add(element);
             this.fireIntervalAdded(this, this.delegate.size(), this.delegate.size());
         }
 
-        public void removeFirst(final Comparable element) {
+        public void removeFirst(Comparable element) {
             this.delegate.removeElement(element);
             this.fireContentsChanged(this, 0, this.delegate.size());
         }
 
-        public void removeAll(final List<? extends Comparable> elements) {
+        public void removeAll(List<? extends Comparable> elements) {
             this.delegate.removeAll(elements);
             this.fireContentsChanged(this, 0, this.delegate.size());
         }
 
-        public void addAll(final List<? extends Comparable> elements) {
+        public void addAll(List<? extends Comparable> elements) {
             this.delegate.addAll(elements);
             this.fireContentsChanged(this, 0, this.delegate.size());
         }
@@ -610,7 +610,7 @@ class RegressionParamsEditorPanel extends JPanel {
 
         private final List object;
 
-        public ListTransferable(final List object) {
+        public ListTransferable(List object) {
             if (object == null) {
                 throw new NullPointerException();
             }
@@ -621,11 +621,11 @@ class RegressionParamsEditorPanel extends JPanel {
             return new DataFlavor[]{ListTransferable.FLAVOR};
         }
 
-        public boolean isDataFlavorSupported(final DataFlavor flavor) {
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
             return flavor == ListTransferable.FLAVOR;
         }
 
-        public Object getTransferData(final DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
             if (ListTransferable.FLAVOR != flavor) {
                 throw new UnsupportedFlavorException(flavor);
             }

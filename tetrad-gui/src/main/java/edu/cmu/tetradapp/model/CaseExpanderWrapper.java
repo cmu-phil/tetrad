@@ -33,9 +33,9 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class CaseExpanderWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    private CaseExpanderWrapper(final DataWrapper wrapper) {
-        final DataFilter filter = new CaseExpander();
-        final DataSet columnDataModel =
+    private CaseExpanderWrapper(DataWrapper wrapper) {
+        DataFilter filter = new CaseExpander();
+        DataSet columnDataModel =
                 (DataSet) wrapper.getSelectedDataModel();
         setDataModel(filter.filter(columnDataModel));
         setSourceGraph(wrapper.getSourceGraph());

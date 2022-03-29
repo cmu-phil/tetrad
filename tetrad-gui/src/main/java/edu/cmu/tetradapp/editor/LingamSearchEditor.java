@@ -55,7 +55,7 @@ public class LingamSearchEditor extends AbstractSearchEditor
 
     //=========================CONSTRUCTORS============================//
 
-    public LingamSearchEditor(final LingamRunner runner) {
+    public LingamSearchEditor(LingamRunner runner) {
         super(runner, "Result Graph");
     }
 
@@ -74,14 +74,14 @@ public class LingamSearchEditor extends AbstractSearchEditor
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void layoutByGraph(final Graph graph) {
+    public void layoutByGraph(Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        final GraphWorkbench resultWorkbench = getWorkbench();
-        final Graph graph = resultWorkbench.getGraph();
-        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        GraphWorkbench resultWorkbench = getWorkbench();
+        Graph graph = resultWorkbench.getGraph();
+        IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
@@ -96,11 +96,11 @@ public class LingamSearchEditor extends AbstractSearchEditor
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(final String resultLabel) {
+    protected void setup(String resultLabel) {
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
         //JTabbedPane tabbedPane = new JTabbedPane();
-        final JTabbedPane tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Result", workbenchScroll(resultLabel));
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
@@ -116,26 +116,26 @@ public class LingamSearchEditor extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        final JPanel toolbar = new JPanel();
+        JPanel toolbar = new JPanel();
 
         getExecuteButton().setText("Execute*");
         getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 execute();
             }
         });
 
-        final Box b1 = Box.createVerticalBox();
-        final Box b21 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
+        Box b21 = Box.createVerticalBox();
 
-        final Box b211 = Box.createHorizontalBox();
+        Box b211 = Box.createHorizontalBox();
         b211.add(new JLabel("Prune Factor "));
-        final Parameters params = getAlgorithmRunner().getParams();
-        final double pruneFactor = params.getDouble("pruneFactor", 1.0);
-        final DoubleTextField field = new DoubleTextField(pruneFactor, 8, NumberFormatUtil.getInstance().getNumberFormat());
+        Parameters params = getAlgorithmRunner().getParams();
+        double pruneFactor = params.getDouble("pruneFactor", 1.0);
+        DoubleTextField field = new DoubleTextField(pruneFactor, 8, NumberFormatUtil.getInstance().getNumberFormat());
 
         field.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 if (value > 0.0) {
                     setPruneFactor(value);
                     return value;
@@ -149,34 +149,34 @@ public class LingamSearchEditor extends AbstractSearchEditor
 
         b21.add(b211);
 
-        final JPanel paramsPanel = new JPanel();
+        JPanel paramsPanel = new JPanel();
         paramsPanel.add(b21);
         paramsPanel.setBorder(new TitledBorder("Parameters"));
         b1.add(paramsPanel);
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
         b2.add(getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
         if (getAlgorithmRunner().getDataModel() instanceof DataSet) {
-            final Box b3 = Box.createHorizontalBox();
+            Box b3 = Box.createHorizontalBox();
             b3.add(Box.createGlue());
             b1.add(b3);
         }
 
         if (getAlgorithmRunner().getParams() instanceof Parameters) {
             b1.add(Box.createVerticalStrut(5));
-            final Box hBox = Box.createHorizontalBox();
+            Box hBox = Box.createHorizontalBox();
             hBox.add(Box.createHorizontalGlue());
             b1.add(hBox);
             b1.add(Box.createVerticalStrut(5));
         }
 
-        final Box b4 = Box.createHorizontalBox();
-        final JLabel label = new JLabel("<html>" + "*Please note that some" +
+        Box b4 = Box.createHorizontalBox();
+        JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -192,8 +192,8 @@ public class LingamSearchEditor extends AbstractSearchEditor
     }
 
 
-    private void setPruneFactor(final double value) {
-        final Parameters params = getAlgorithmRunner().getParams();
+    private void setPruneFactor(double value) {
+        Parameters params = getAlgorithmRunner().getParams();
         params.set("pruneFactor", value);
     }
 
@@ -208,9 +208,9 @@ public class LingamSearchEditor extends AbstractSearchEditor
 //        });
     }
 
-    protected void addSpecialMenus(final JMenuBar menuBar) {
+    protected void addSpecialMenus(JMenuBar menuBar) {
         if (!(getAlgorithmRunner() instanceof IGesRunner)) {
-            final JMenu test = new JMenu("Independence");
+            JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
             IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -218,7 +218,7 @@ public class LingamSearchEditor extends AbstractSearchEditor
             test.addSeparator();
         }
 
-        final JMenu graph = new JMenu("Graph");
+        JMenu graph = new JMenu("Graph");
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
@@ -237,12 +237,12 @@ public class LingamSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        final Parameters params = getAlgorithmRunner().getParams();
+        Parameters params = getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
 
-    public void setTestType(final IndTestType testType) {
+    public void setTestType(IndTestType testType) {
         super.setTestType(testType);
     }
 
@@ -250,7 +250,7 @@ public class LingamSearchEditor extends AbstractSearchEditor
         return super.getTestType();
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
@@ -260,7 +260,7 @@ public class LingamSearchEditor extends AbstractSearchEditor
 
     //================================PRIVATE METHODS====================//
 
-    public void doDefaultArrangement(final Graph resultGraph) {
+    public void doDefaultArrangement(Graph resultGraph) {
         if (getLatestWorkbenchGraph() != null) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
                     getLatestWorkbenchGraph());

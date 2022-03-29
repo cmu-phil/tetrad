@@ -50,7 +50,7 @@ final class LoadDataAction extends AbstractAction {
     /**
      * Creates a new load data action for the given dataEditor.
      */
-    public LoadDataAction(final DataEditor editor) {
+    public LoadDataAction(DataEditor editor) {
         super("Load Data...");
 
         if (editor == null) {
@@ -64,7 +64,7 @@ final class LoadDataAction extends AbstractAction {
      * Performs the action of loading a session from a file.
      */
     @Override
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
 
         // first warn user about other datasets being removed.
 //        if (!isDataEmpty()) {
@@ -77,31 +77,31 @@ final class LoadDataAction extends AbstractAction {
 //                return;
 //            }
 //        }
-        final JFileChooser chooser = LoadDataAction.getJFileChooser();
+        JFileChooser chooser = LoadDataAction.getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         // Sets the file chooser to allow multiple file selections
         chooser.setMultiSelectionEnabled(true);
         // Customize dialog title bar text
         chooser.setDialogTitle("Choose data files (choose multiple files with Ctrl or Shift key)");
         // The second argument sets both the title for the dialog window and the label for the approve button
-        final int _ret = chooser.showDialog(this.dataEditor, "Choose");
+        int _ret = chooser.showDialog(this.dataEditor, "Choose");
 
         if (_ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
 
         // Files array
-        final File[] files = chooser.getSelectedFiles();
+        File[] files = chooser.getSelectedFiles();
 
         Preferences.userRoot().put("fileSaveLocation", files[0].getParent());
 
-        final DataModelList dataModelList;
+        DataModelList dataModelList;
 
         // Show the data loader dialog to preview data ata and set their parameters
-        final LoadDataDialog loadData = new LoadDataDialog(files);
+        LoadDataDialog loadData = new LoadDataDialog(files);
         try {
             loadData.showDataLoaderDialog();
-        } catch (final IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(LoadDataAction.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -109,14 +109,14 @@ final class LoadDataAction extends AbstractAction {
 
         if (!isDataEmpty()) {
             final String message = "Would you like to replace the model data?";
-            final int option = JOptionPane.showOptionDialog(this.dataEditor, message, "Data Replacement",
+            int option = JOptionPane.showOptionDialog(this.dataEditor, message, "Data Replacement",
                     0, JOptionPane.QUESTION_MESSAGE,
                     null, new String[]{"Replace", "Keep"}, "Replace");
 
             keepData = option == 1;
         }
 
-        final DataModelList _dataModelList = loadData.getDataModels();
+        DataModelList _dataModelList = loadData.getDataModels();
 
         if (_dataModelList.isEmpty()) {
 //            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -143,9 +143,9 @@ final class LoadDataAction extends AbstractAction {
      * States whether the data is empty.
      */
     private boolean isDataEmpty() {
-        final DataWrapper wrapper = this.dataEditor.getDataWrapper();
-        final DataModelList dataModels = wrapper.getDataModelList();
-        for (final DataModel model : dataModels) {
+        DataWrapper wrapper = this.dataEditor.getDataWrapper();
+        DataModelList dataModels = wrapper.getDataModelList();
+        for (DataModel model : dataModels) {
             if (model instanceof DataSet) {
                 return ((DataSet) model).getNumRows() == 0;
             } else {
@@ -157,8 +157,8 @@ final class LoadDataAction extends AbstractAction {
     }
 
     private static JFileChooser getJFileChooser() {
-        final JFileChooser chooser = new JFileChooser();
-        final String sessionSaveLocation
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation
                 = Preferences.userRoot().get("fileSaveLocation", "");
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.resetChoosableFileFilters();

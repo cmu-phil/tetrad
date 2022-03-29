@@ -29,8 +29,8 @@ public class DegenerateGaussianLRT implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
-        final IndTestDegenerateGaussianLRT test = new IndTestDegenerateGaussianLRT(DataUtils.getMixedDataSet(dataSet));
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        IndTestDegenerateGaussianLRT test = new IndTestDegenerateGaussianLRT(DataUtils.getMixedDataSet(dataSet));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         return test;
     }
@@ -47,7 +47,7 @@ public class DegenerateGaussianLRT implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         return parameters;
     }

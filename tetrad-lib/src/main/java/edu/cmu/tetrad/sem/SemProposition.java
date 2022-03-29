@@ -59,7 +59,7 @@ public final class SemProposition implements TetradSerializable {
     /**
      * Creates a new Proposition which allows all values.
      */
-    public SemProposition(final SemIm semIm) {
+    public SemProposition(SemIm semIm) {
         if (semIm == null) {
             throw new NullPointerException();
         }
@@ -72,12 +72,12 @@ public final class SemProposition implements TetradSerializable {
         }
     }
 
-    public SemProposition(final SemProposition proposition) {
+    public SemProposition(SemProposition proposition) {
         this.semIm = proposition.semIm;
         this.values = Arrays.copyOf(proposition.values, proposition.values.length);
     }
 
-    public static SemProposition tautology(final SemIm semIm) {
+    public static SemProposition tautology(SemIm semIm) {
         return new SemProposition(semIm);
     }
 
@@ -135,7 +135,7 @@ public final class SemProposition implements TetradSerializable {
         return -1;
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
@@ -144,7 +144,7 @@ public final class SemProposition implements TetradSerializable {
             throw new IllegalArgumentException();
         }
 
-        final SemProposition proposition = (SemProposition) o;
+        SemProposition proposition = (SemProposition) o;
 
         if (!(this.semIm == proposition.semIm)) {
             return false;
@@ -169,12 +169,12 @@ public final class SemProposition implements TetradSerializable {
     }
 
     public String toString() {
-        final List nodes = this.semIm.getVariableNodes();
-        final StringBuilder buf = new StringBuilder();
+        List nodes = this.semIm.getVariableNodes();
+        StringBuilder buf = new StringBuilder();
         buf.append("\nProposition: ");
 
         for (int i = 0; i < nodes.size(); i++) {
-            final Node node = (Node) nodes.get(i);
+            Node node = (Node) nodes.get(i);
             buf.append("\n").append(node).append(" = ").append(this.values[i]);
         }
 
@@ -194,26 +194,26 @@ public final class SemProposition implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
-    public double getValue(final int i) {
+    public double getValue(int i) {
         return this.values[i];
     }
 
-    public void setValue(final int i, final double value) {
+    public void setValue(int i, double value) {
         this.values[i] = value;
     }
 
-    public double getValue(final Node node) {
-        final List nodes = this.semIm.getVariableNodes();
+    public double getValue(Node node) {
+        List nodes = this.semIm.getVariableNodes();
         return this.values[nodes.indexOf(node)];
     }
 
-    public void setValue(final Node node, final double value) {
-        final List nodes = this.semIm.getVariableNodes();
+    public void setValue(Node node, double value) {
+        List nodes = this.semIm.getVariableNodes();
         this.values[nodes.indexOf(node)] = value;
     }
 }

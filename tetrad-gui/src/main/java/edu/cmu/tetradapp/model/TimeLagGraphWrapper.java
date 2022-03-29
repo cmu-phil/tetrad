@@ -58,13 +58,13 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
 
     //=============================CONSTRUCTORS==========================//
 
-    public TimeLagGraphWrapper(final Parameters parameters) {
+    public TimeLagGraphWrapper(Parameters parameters) {
         this.graph = new TimeLagGraph();
         this.parameters = parameters;
         log();
     }
 
-    public TimeLagGraphWrapper(final TimeLagGraph graph, final Parameters parameters) {
+    public TimeLagGraphWrapper(TimeLagGraph graph, Parameters parameters) {
         if (graph == null) {
             throw new NullPointerException("Tetrad dag must not be null.");
         }
@@ -73,46 +73,46 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         log();
     }
 
-    public TimeLagGraphWrapper(final GraphWrapper graphWrapper) {
+    public TimeLagGraphWrapper(GraphWrapper graphWrapper) {
         if (graphWrapper == null) {
             throw new NullPointerException("No graph wrapper.");
         }
 
         this.parameters = graphWrapper.getParameters();
 
-        final TimeLagGraph graph = new TimeLagGraph();
+        TimeLagGraph graph = new TimeLagGraph();
 
-        final Graph _graph = graphWrapper.getGraph();
+        Graph _graph = graphWrapper.getGraph();
 
-        for (final Node node : _graph.getNodes()) {
-            final Node _node = node.like(node.getName() + ":0");
+        for (Node node : _graph.getNodes()) {
+            Node _node = node.like(node.getName() + ":0");
             _node.setNodeType(node.getNodeType());
             graph.addNode(_node);
         }
 
-        for (final Edge edge : _graph.getEdges()) {
+        for (Edge edge : _graph.getEdges()) {
             if (!Edges.isDirectedEdge(edge)) {
                 throw new IllegalArgumentException();
             }
 
-            final Node from = edge.getNode1();
-            final Node to = edge.getNode2();
+            Node from = edge.getNode1();
+            Node to = edge.getNode2();
 
-            final Node _from = graph.getNode(from.getName(), 1);
-            final Node _to = graph.getNode(to.getName(), 0);
+            Node _from = graph.getNode(from.getName(), 1);
+            Node _to = graph.getNode(to.getName(), 0);
 
             graph.addDirectedEdge(_from, _to);
         }
 
         this.graph = graph;
         int numLags = 1; // need to fix this!
-        final List<Node> variables = graph.getNodes();
-        final List<Integer> laglist = new ArrayList<>();
-        final IKnowledge knowledge1 = new Knowledge2();
+        List<Node> variables = graph.getNodes();
+        List<Integer> laglist = new ArrayList<>();
+        IKnowledge knowledge1 = new Knowledge2();
         int lag;
-        for (final Node node : variables) {
-            final String varName = node.getName();
-            final String tmp;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
@@ -123,9 +123,9 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
             }
         }
         numLags = Collections.max(laglist);
-        for (final Node node : variables) {
-            final String varName = node.getName();
-            final String tmp;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
@@ -138,7 +138,7 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         }
 
         System.out.println("Knowledge in graph = " + knowledge1);
-        final IKnowledge knowledge = knowledge1;
+        IKnowledge knowledge = knowledge1;
     }
 
     public TimeLagGraphWrapper() {
@@ -177,7 +177,7 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -194,7 +194,7 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -214,19 +214,19 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         return getGraph().getNodes();
     }
 
-    public void setGraph(final TimeLagGraph graph) {
+    public void setGraph(TimeLagGraph graph) {
         this.graph = graph;
     }
 
     public IKnowledge getKnowledge() {
         int numLags = 1; // need to fix this!
-        final List<Node> variables = this.graph.getNodes();
-        final List<Integer> laglist = new ArrayList<>();
-        final IKnowledge knowledge1 = new Knowledge2();
+        List<Node> variables = this.graph.getNodes();
+        List<Integer> laglist = new ArrayList<>();
+        IKnowledge knowledge1 = new Knowledge2();
         int lag;
-        for (final Node node : variables) {
-            final String varName = node.getName();
-            final String tmp;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
@@ -237,9 +237,9 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
             }
         }
         numLags = Collections.max(laglist);
-        for (final Node node : variables) {
-            final String varName = node.getName();
-            final String tmp;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);

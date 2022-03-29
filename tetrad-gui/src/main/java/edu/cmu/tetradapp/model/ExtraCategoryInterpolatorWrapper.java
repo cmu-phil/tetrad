@@ -37,9 +37,9 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class ExtraCategoryInterpolatorWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public ExtraCategoryInterpolatorWrapper(final DataWrapper wrapper, final Parameters params) {
-        final DataFilter interpolator = new ExtraCategoryInterpolator();
-        final DataSet columnDataModel =
+    public ExtraCategoryInterpolatorWrapper(DataWrapper wrapper, Parameters params) {
+        DataFilter interpolator = new ExtraCategoryInterpolator();
+        DataSet columnDataModel =
                 (DataSet) wrapper.getSelectedDataModel();
         setDataModel(interpolator.filter(columnDataModel));
         setSourceGraph(wrapper.getSourceGraph());

@@ -60,7 +60,7 @@ public final class DelimiterType implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private DelimiterType(final String name, final String regex) {
+    private DelimiterType(String name, String regex) {
         this.name = name;
         this.pattern = Pattern.compile(regex);
     }

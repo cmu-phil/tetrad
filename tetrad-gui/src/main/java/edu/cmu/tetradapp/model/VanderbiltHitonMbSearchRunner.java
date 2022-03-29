@@ -31,13 +31,13 @@ public class VanderbiltHitonMbSearchRunner extends AbstractMBSearchRunner {
     static final long serialVersionUID = 23L;
 
 
-    public VanderbiltHitonMbSearchRunner(final DataWrapper data, final Parameters params) {
+    public VanderbiltHitonMbSearchRunner(DataWrapper data, Parameters params) {
         super(data.getSelectedDataModel(), params);
     }
 
 
     public void execute() throws Exception {
-        final HitonMb search = new HitonMb(getIndependenceTest(),
+        HitonMb search = new HitonMb(getIndependenceTest(),
                 getParams().getInt("depth", -1), true);
         this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
         this.setSearchName(search.getAlgorithmName());

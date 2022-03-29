@@ -42,15 +42,15 @@ public class SplitCasesWrapper extends DataWrapper {
     /**
      * Constructs the wrapper given some data and the params.
      */
-    public SplitCasesWrapper(final DataWrapper data, final Parameters params) {
+    public SplitCasesWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
         if (params == null) {
             throw new NullPointerException("The given parameters must not be null");
         }
-        final DataSet originalData = (DataSet) data.getSelectedDataModel();
-        final DataModel model = SplitCasesWrapper.createSplits(originalData, params);
+        DataSet originalData = (DataSet) data.getSelectedDataModel();
+        DataModel model = SplitCasesWrapper.createSplits(originalData, params);
         this.setDataModel(model);
         this.setSourceGraph(data.getSourceGraph());
 
@@ -74,8 +74,8 @@ public class SplitCasesWrapper extends DataWrapper {
     /**
      * @return the splitNames selected by the editor.
      */
-    private static DataModel createSplits(final DataSet dataSet, final Parameters params) {
-        final List<Integer> indices = new ArrayList<>(dataSet.getNumRows());
+    private static DataModel createSplits(DataSet dataSet, Parameters params) {
+        List<Integer> indices = new ArrayList<>(dataSet.getNumRows());
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             indices.add(i);
         }
@@ -84,28 +84,28 @@ public class SplitCasesWrapper extends DataWrapper {
             Collections.shuffle(indices);
         }
 
-        final SplitCasesSpec spec = (SplitCasesSpec) params.get("splitCasesSpec", null);
-        final int numSplits = params.getInt("numSplits", 3);
-        final int sampleSize = spec.getSampleSize();
-        final int[] breakpoints = spec.getBreakpoints();
-        final List<String> splitNames = spec.getSplitNames();
+        SplitCasesSpec spec = (SplitCasesSpec) params.get("splitCasesSpec", null);
+        int numSplits = params.getInt("numSplits", 3);
+        int sampleSize = spec.getSampleSize();
+        int[] breakpoints = spec.getBreakpoints();
+        List<String> splitNames = spec.getSplitNames();
 
-        final int[] _breakpoints = new int[breakpoints.length + 2];
+        int[] _breakpoints = new int[breakpoints.length + 2];
         _breakpoints[0] = 0;
         _breakpoints[_breakpoints.length - 1] = sampleSize;
         System.arraycopy(breakpoints, 0, _breakpoints, 1, breakpoints.length);
 
-        final DataModelList list = new DataModelList();
-        final int ncols = dataSet.getNumColumns();
+        DataModelList list = new DataModelList();
+        int ncols = dataSet.getNumColumns();
         for (int n = 0; n < numSplits; n++) {
-            final int _sampleSize = _breakpoints[n + 1] - _breakpoints[n];
+            int _sampleSize = _breakpoints[n + 1] - _breakpoints[n];
 
-            final DataSet _data =
+            DataSet _data =
                     new BoxDataSet(new VerticalDoubleDataBox(_sampleSize, dataSet.getVariables().size()), dataSet.getVariables());
             _data.setName(splitNames.get(n));
 
             for (int i = 0; i < _sampleSize; i++) {
-                final int oldCase = indices.get(i + _breakpoints[n]);
+                int oldCase = indices.get(i + _breakpoints[n]);
 
                 for (int j = 0; j < ncols; j++) {
                     _data.setObject(i, j, dataSet.getObject(oldCase, j));

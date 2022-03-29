@@ -52,14 +52,14 @@ public final class ManualLagGraph implements LagGraph {
      *
      * @param params an LagGraphParams object.
      */
-    public ManualLagGraph(final ManualLagGraphParams params) {
+    public ManualLagGraph(ManualLagGraphParams params) {
         addFactors("G", params.getVarsPerInd());
         setMaxLagAllowable(params.getMlag());
 
         // Add edges one time step back.
-        for (final Iterator it = getFactors().iterator(); it.hasNext(); ) {
-            final String factor = (String) it.next();
-            final LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
+        for (Iterator it = getFactors().iterator(); it.hasNext(); ) {
+            String factor = (String) it.next();
+            LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
             addEdge(factor, laggedFactor);
         }
     }
@@ -76,7 +76,7 @@ public final class ManualLagGraph implements LagGraph {
 
     //=============================PUBLIC METHODS=======================//
 
-    public void addEdge(final String factor, final LaggedFactor laggedFactor)
+    public void addEdge(String factor, LaggedFactor laggedFactor)
             throws IllegalArgumentException {
         this.lagGraph.addEdge(factor, laggedFactor);
     }
@@ -85,7 +85,7 @@ public final class ManualLagGraph implements LagGraph {
         this.lagGraph.clearEdges();
     }
 
-    public void addFactor(final String factor) {
+    public void addFactor(String factor) {
         if (!NamingProtocol.isLegalName(factor)) {
             throw new IllegalArgumentException(
                     NamingProtocol.getProtocolDescription());
@@ -94,19 +94,19 @@ public final class ManualLagGraph implements LagGraph {
         this.lagGraph.addFactor(factor);
     }
 
-    public boolean existsFactor(final String factor) {
+    public boolean existsFactor(String factor) {
         return this.lagGraph.existsFactor(factor);
     }
 
-    public boolean existsEdge(final String factor, final LaggedFactor laggedFactor) {
+    public boolean existsEdge(String factor, LaggedFactor laggedFactor) {
         return this.lagGraph.existsEdge(factor, laggedFactor);
     }
 
-    public SortedSet getParents(final String factor) {
+    public SortedSet getParents(String factor) {
         return this.lagGraph.getParents(factor);
     }
 
-    public void removeEdge(final String factor, final LaggedFactor laggedFactor) {
+    public void removeEdge(String factor, LaggedFactor laggedFactor) {
         this.lagGraph.removeEdge(factor, laggedFactor);
     }
 
@@ -114,7 +114,7 @@ public final class ManualLagGraph implements LagGraph {
         return this.lagGraph.getMaxLagAllowable();
     }
 
-    public void setMaxLagAllowable(final int maxLagAllowable) {
+    public void setMaxLagAllowable(int maxLagAllowable) {
         this.lagGraph.setMaxLagAllowable(maxLagAllowable);
     }
 
@@ -122,7 +122,7 @@ public final class ManualLagGraph implements LagGraph {
         return this.lagGraph.getMaxLag();
     }
 
-    public void removeFactor(final String factor) {
+    public void removeFactor(String factor) {
         this.lagGraph.removeFactor(factor);
     }
 
@@ -130,7 +130,7 @@ public final class ManualLagGraph implements LagGraph {
         return this.lagGraph.getConnectivity();
     }
 
-    public void renameFactor(final String oldName, final String newName) {
+    public void renameFactor(String oldName, String newName) {
         this.lagGraph.renameFactor(oldName, newName);
     }
 
@@ -146,15 +146,15 @@ public final class ManualLagGraph implements LagGraph {
         return this.lagGraph.toString();
     }
 
-    public void addFactors(final String base, final int numFactors) {
+    public void addFactors(String base, int numFactors) {
         this.lagGraph.addFactors(base, numFactors);
     }
 
-    public void setLocation(final String factor, final PointXy point) {
+    public void setLocation(String factor, PointXy point) {
         this.lagGraph.setLocation(factor, point);
     }
 
-    public PointXy getLocation(final String factor) {
+    public PointXy getLocation(String factor) {
         return this.lagGraph.getLocation(factor);
     }
 
@@ -175,7 +175,7 @@ public final class ManualLagGraph implements LagGraph {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

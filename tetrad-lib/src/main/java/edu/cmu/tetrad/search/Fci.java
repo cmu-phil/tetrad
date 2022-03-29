@@ -125,7 +125,7 @@ public final class Fci implements GraphSearch {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public Fci(final IndependenceTest independenceTest) {
+    public Fci(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -138,7 +138,7 @@ public final class Fci implements GraphSearch {
      * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
      * search over.
      */
-    public Fci(final IndependenceTest independenceTest, final List<Node> searchVars) {
+    public Fci(IndependenceTest independenceTest, List<Node> searchVars) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -146,14 +146,14 @@ public final class Fci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
 
-        final Set<Node> remVars = new HashSet<>();
-        for (final Node node1 : this.variables) {
+        Set<Node> remVars = new HashSet<>();
+        for (Node node1 : this.variables) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
             boolean search = false;
-            for (final Node node2 : searchVars) {
+            for (Node node2 : searchVars) {
                 if (node1.getName().equals(node2.getName())) {
                     search = true;
                 }
@@ -172,7 +172,7 @@ public final class Fci implements GraphSearch {
         return this.depth;
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0: " + depth);
@@ -186,9 +186,9 @@ public final class Fci implements GraphSearch {
     }
 
     public Graph search() {
-        final long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
 
-        final Fas fas = new Fas(getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
@@ -200,12 +200,12 @@ public final class Fci implements GraphSearch {
         fas.setHeuristic(this.heuristic);
 
         //The PAG being constructed.
-        final Graph graph = fas.search();
+        Graph graph = fas.search();
         this.sepsets = fas.getSepsets();
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
-        final SepsetsPossibleDsep sp = new SepsetsPossibleDsep(graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
+        SepsetsPossibleDsep sp = new SepsetsPossibleDsep(graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
         sp.setVerbose(this.verbose);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
@@ -213,15 +213,15 @@ public final class Fci implements GraphSearch {
         if (isPossibleDsepSearchDone()) {
             new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest)).ruleR0(graph);
 
-            for (final Edge edge : new ArrayList<>(graph.getEdges())) {
+            for (Edge edge : new ArrayList<>(graph.getEdges())) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                final Node x = edge.getNode1();
-                final Node y = edge.getNode2();
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
-                final List<Node> sepset = sp.getSepset(x, y);
+                List<Node> sepset = sp.getSepset(x, y);
 
                 if (sepset != null) {
                     graph.removeEdge(x, y);
@@ -239,7 +239,7 @@ public final class Fci implements GraphSearch {
 
         // Step CI C (Zhang's step F3.)
 
-        final FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
+        FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
@@ -248,7 +248,7 @@ public final class Fci implements GraphSearch {
         fciOrient.doFinalOrientation(graph);
         graph.setPag(true);
 
-        final long stop = System.currentTimeMillis();
+        long stop = System.currentTimeMillis();
 
         this.elapsedTime = stop - start;
 
@@ -258,7 +258,7 @@ public final class Fci implements GraphSearch {
     /**
      * Sets the initial graph to use for FAS.
      */
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
@@ -279,7 +279,7 @@ public final class Fci implements GraphSearch {
     /**
      * Sets background knowledge for the search.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -299,7 +299,7 @@ public final class Fci implements GraphSearch {
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
-    public void setCompleteRuleSetUsed(final boolean completeRuleSetUsed) {
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
@@ -313,7 +313,7 @@ public final class Fci implements GraphSearch {
     /**
      * True iff the (time-consuming) possible dsep step should be done.
      */
-    public void setPossibleDsepSearchDone(final boolean possibleDsepSearchDone) {
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
@@ -327,7 +327,7 @@ public final class Fci implements GraphSearch {
     /**
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(final int maxPathLength) {
+    public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
         }
@@ -345,7 +345,7 @@ public final class Fci implements GraphSearch {
     /**
      * True iff verbose output should be printed.
      */
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -359,14 +359,14 @@ public final class Fci implements GraphSearch {
     /**
      * The FAS heuristic.
      */
-    public void setHeuristic(final int heuristic) {
+    public void setHeuristic(int heuristic) {
         this.heuristic = heuristic;
     }
 
     /**
      * The FAS stable option.
      */
-    public void setStable(final boolean stable) {
+    public void setStable(boolean stable) {
         this.stable = stable;
     }
 }

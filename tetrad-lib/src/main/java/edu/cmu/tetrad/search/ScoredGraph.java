@@ -35,7 +35,7 @@ public class ScoredGraph implements Comparable, TetradSerializable {
     private final Graph graph;
     private final Double score;
 
-    public ScoredGraph(final Graph graph, final Double score) {
+    public ScoredGraph(Graph graph, Double score) {
         this.graph = graph;
         this.score = score;
     }
@@ -56,8 +56,8 @@ public class ScoredGraph implements Comparable, TetradSerializable {
         return this.score.hashCode();
     }
 
-    public boolean equals(final Object o) {
-        final ScoredGraph _scoredGraph = (ScoredGraph) o;
+    public boolean equals(Object o) {
+        ScoredGraph _scoredGraph = (ScoredGraph) o;
 
         if (!this.score.equals(_scoredGraph.getScore())) {
             return false;
@@ -66,9 +66,9 @@ public class ScoredGraph implements Comparable, TetradSerializable {
         return this.graph.equals(_scoredGraph.getGraph());
     }
 
-    public int compareTo(final Object o) {
-        final Double thisScore = getScore();
-        final Double otherScore = ((ScoredGraph) o).getScore();
+    public int compareTo(Object o) {
+        Double thisScore = getScore();
+        Double otherScore = ((ScoredGraph) o).getScore();
         return thisScore.compareTo(otherScore);
     }
 }

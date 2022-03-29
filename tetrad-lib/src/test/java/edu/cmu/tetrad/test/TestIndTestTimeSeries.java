@@ -1045,13 +1045,13 @@ public class TestIndTestTimeSeries {
     private IndTestTimeSeries test;
 
     private void setUp() {
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
 
-        for (final String varName : this.varNames) {
+        for (String varName : this.varNames) {
             vars.add(new ContinuousVariable(varName));
         }
 
-        final Matrix _data = new Matrix(this.data.length, this.data[0].length);
+        Matrix _data = new Matrix(this.data.length, this.data[0].length);
 
         for (int i = 0; i < this.data.length; i++) {
             for (int j = 0; j < this.data[0].length; j++) {

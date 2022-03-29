@@ -53,15 +53,15 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CcdRunner(final DataWrapper dataWrapper, final Parameters params) {
+    public CcdRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public CcdRunner(final DataWrapper dataWrapper, final KnowledgeBoxModel knowledgeBoxModel, final Parameters params) {
+    public CcdRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public CcdRunner(final DataWrapper dataWrapper, final GraphWrapper externalGraph, final Parameters params) {
+    public CcdRunner(DataWrapper dataWrapper, GraphWrapper externalGraph, Parameters params) {
         super(dataWrapper, params);
         setExternalGraph(externalGraph.getGraph());
     }
@@ -70,7 +70,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(final GraphSource graphWrapper, final Parameters params) {
+    public CcdRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
@@ -78,33 +78,33 @@ public class CcdRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(final GraphWrapper graphWrapper, final Parameters params) {
+    public CcdRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(final GraphWrapper graphWrapper, final KnowledgeBoxModel knowledgeBoxModel, final Parameters params) {
+    public CcdRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(final DagWrapper dagWrapper, final Parameters params) {
+    public CcdRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public CcdRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
+    public CcdRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CcdRunner(final IndependenceFactsModel model, final Parameters params) {
+    public CcdRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public CcdRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public CcdRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -124,10 +124,10 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        final Ccd ccd = new Ccd(getIndependenceTest());
+        Ccd ccd = new Ccd(getIndependenceTest());
         ccd.setDepth(getParams().getInt("depth", -1));
         ccd.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
-        final Graph graph = ccd.search();
+        Graph graph = ccd.search();
 
         setResultGraph(graph);
 
@@ -146,7 +146,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -159,7 +159,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with <code>getTriplesList</code>
      */
     public List<String> getTriplesClassificationTypes() {
-        final List<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<>();
         names.add("Underlines");
         names.add("Dotted Underlines");
         return names;
@@ -169,9 +169,9 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given
      * node.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
-        final List<List<Triple>> triplesList = new ArrayList<>();
-        final Graph graph = getGraph();
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
+        Graph graph = getGraph();
         triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, graph));
         triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, graph));
         return triplesList;

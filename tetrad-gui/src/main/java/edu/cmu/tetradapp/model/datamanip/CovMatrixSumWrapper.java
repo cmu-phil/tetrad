@@ -41,12 +41,12 @@ public class CovMatrixSumWrapper extends DataWrapper {
     /**
      * Splits the given data set by collinear columns.
      */
-    public CovMatrixSumWrapper(final DataWrapper wrapper1, final DataWrapper wrapper2) {
+    public CovMatrixSumWrapper(DataWrapper wrapper1, DataWrapper wrapper2) {
         if (wrapper1 == null || wrapper2 == null) {
             throw new NullPointerException("The data must not be null");
         }
-        final DataModel model1 = wrapper1.getSelectedDataModel();
-        final DataModel model2 = wrapper2.getSelectedDataModel();
+        DataModel model1 = wrapper1.getSelectedDataModel();
+        DataModel model2 = wrapper2.getSelectedDataModel();
 
         if (!(model1 instanceof ICovarianceMatrix)) {
             throw new IllegalArgumentException("Expecting corrariance matrices.");
@@ -56,12 +56,12 @@ public class CovMatrixSumWrapper extends DataWrapper {
             throw new IllegalArgumentException("Expecting corrariance matrices.");
         }
 
-        final Matrix corr1 = ((ICovarianceMatrix) model1).getMatrix();
-        final Matrix corr2 = ((ICovarianceMatrix) model2).getMatrix();
+        Matrix corr1 = ((ICovarianceMatrix) model1).getMatrix();
+        Matrix corr2 = ((ICovarianceMatrix) model2).getMatrix();
 
-        final Matrix corr3 = calcSum(corr1, corr2);
+        Matrix corr3 = calcSum(corr1, corr2);
 
-        final ICovarianceMatrix covWrapper = new CovarianceMatrix(model1.getVariables(), corr3,
+        ICovarianceMatrix covWrapper = new CovarianceMatrix(model1.getVariables(), corr3,
                 ((ICovarianceMatrix) model1).getSampleSize());
 
         setDataModel(covWrapper);
@@ -125,16 +125,16 @@ public class CovMatrixSumWrapper extends DataWrapper {
 //
 //    }
 
-    private Matrix calcSum(final Matrix corr1, final Matrix corr2) {
+    private Matrix calcSum(Matrix corr1, Matrix corr2) {
         if (corr1.rows() != corr2.rows()) {
             throw new IllegalArgumentException("Covariance matrices must be the same size.");
         }
 
-        final Matrix corr3 = new Matrix(corr2.rows(), corr2.rows());
+        Matrix corr3 = new Matrix(corr2.rows(), corr2.rows());
 
         for (int i = 0; i < corr3.rows(); i++) {
             for (int j = 0; j < corr3.rows(); j++) {
-                final double v = corr1.get(i, j) + corr2.get(i, j);
+                double v = corr1.get(i, j) + corr2.get(i, j);
                 corr3.set(i, j, v);
                 corr3.set(j, i, v);
             }

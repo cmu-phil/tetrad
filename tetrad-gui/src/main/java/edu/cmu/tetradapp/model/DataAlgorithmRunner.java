@@ -48,7 +48,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * @param dataWrapper One or more data sets.
      * @param params      Parameters for doing the search.
      */
-    public DataAlgorithmRunner(final DataWrapper dataWrapper, final Parameters params) {
+    public DataAlgorithmRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -56,7 +56,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * @param dataWrapper One or more data sets.
      * @param params      Parameters for doing the search.
      */
-    public DataAlgorithmRunner(final Simulation dataWrapper, final Parameters params) {
+    public DataAlgorithmRunner(Simulation dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -64,7 +64,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * @param dataWrapper One or more data sets.
      * @param params      Parameters for doing the search.
      */
-    public DataAlgorithmRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public DataAlgorithmRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -72,7 +72,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * @param dataWrapper One or more data sets.
      * @param params      Parameters for doing the search.
      */
-    public DataAlgorithmRunner(final Simulation dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public DataAlgorithmRunner(Simulation dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -80,7 +80,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * @param dataWrapper One or more data sets.
      * @param params      Parameters for doing the search.
      */
-    public DataAlgorithmRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params) {
+    public DataAlgorithmRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.externalGraph = graphWrapper.getGraph();
     }
@@ -89,7 +89,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * @param dataWrapper One or more data sets.
      * @param params      Parameters for doing the search.
      */
-    public DataAlgorithmRunner(final Simulation dataWrapper, final GraphWrapper graphWrapper, final Parameters params) {
+    public DataAlgorithmRunner(Simulation dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.externalGraph = graphWrapper.getGraph();
     }
@@ -98,7 +98,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * @param dataWrapper One or more data sets.
      * @param params      Parameters for doing the search.
      */
-    public DataAlgorithmRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public DataAlgorithmRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.externalGraph = graphWrapper.getGraph();
     }
@@ -107,7 +107,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * @param dataWrapper One or more data sets.
      * @param params      Parameters for doing the search.
      */
-    public DataAlgorithmRunner(final Simulation dataWrapper, final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public DataAlgorithmRunner(Simulation dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.externalGraph = graphWrapper.getGraph();
     }
@@ -115,27 +115,27 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    private DataAlgorithmRunner(final GraphWrapper graphWrapper, final Parameters params) {
+    private DataAlgorithmRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public DataAlgorithmRunner(final GraphWrapper graphWrapper, final KnowledgeBoxModel knowledgeBoxModel, final Parameters params) {
+    public DataAlgorithmRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public DataAlgorithmRunner(final DagWrapper dagWrapper, final Parameters params) {
+    public DataAlgorithmRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public DataAlgorithmRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
+    public DataAlgorithmRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public DataAlgorithmRunner(final GraphWrapper graphModel, final IndependenceFactsModel facts, final Parameters params) {
+    public DataAlgorithmRunner(GraphWrapper graphModel, IndependenceFactsModel facts, Parameters params) {
         super(graphModel.getGraph(), params, null, facts.getFacts());
     }
 
-    public DataAlgorithmRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public DataAlgorithmRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -149,7 +149,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
@@ -163,10 +163,10 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        final IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        final int depth = getParams().getInt("depth", -1);
-        final Graph graph;
-        final Pc pc = new Pc(getIndependenceTest());
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        int depth = getParams().getInt("depth", -1);
+        Graph graph;
+        Pc pc = new Pc(getIndependenceTest());
         pc.setKnowledge(knowledge);
         pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         pc.setDepth(depth);
@@ -194,7 +194,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
             dataModel = getSourceGraph();
         }
 
-        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
@@ -206,7 +206,7 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        final List<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<>();
 //        names.add("ColliderDiscovery");
 //        names.add("Noncolliders");
         return names;
@@ -216,8 +216,8 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
-        final List<List<Triple>> triplesList = new ArrayList<>();
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -249,10 +249,10 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
         return getParams().getBoolean("aggressivelyPreventCycles", false);
     }
 
-    private void setPcFields(final Pc pc) {
+    private void setPcFields(Pc pc) {
         this.pcAdjacent = pc.getAdjacencies();
         this.pcNonadjacent = pc.getNonadjacencies();
-        final List<Node> pcNodes = getGraph().getNodes();
+        List<Node> pcNodes = getGraph().getNodes();
     }
 }
 

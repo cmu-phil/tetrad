@@ -41,16 +41,16 @@ public class TestSemUpdater {
     @Test
     public void testUpdate() {
 
-        final Graph graph = constructGraph1();
+        Graph graph = constructGraph1();
 
-        final SemPm semPm = new SemPm(graph);
-        final SemIm semIm = new SemIm(semPm);
+        SemPm semPm = new SemPm(graph);
+        SemIm semIm = new SemIm(semPm);
 
-        final List<Node> nodes = semIm.getVariableNodes();
+        List<Node> nodes = semIm.getVariableNodes();
 
-        final SemUpdater semUpdater = new SemUpdater(semIm);
+        SemUpdater semUpdater = new SemUpdater(semIm);
 
-        final SemEvidence evidence = new SemEvidence(semIm);
+        SemEvidence evidence = new SemEvidence(semIm);
         evidence.getProposition().setValue(nodes.get(4), 10.0);
         evidence.getProposition().setValue(nodes.get(2), 1.5);
 
@@ -63,13 +63,13 @@ public class TestSemUpdater {
     }
 
     private Graph constructGraph1() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node x1 = new GraphNode("X1");
-        final Node x2 = new GraphNode("X2");
-        final Node x3 = new GraphNode("X3");
-        final Node x4 = new GraphNode("X4");
-        final Node x5 = new GraphNode("X5");
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node x5 = new GraphNode("X5");
 
         graph.addNode(x1);
         graph.addNode(x2);

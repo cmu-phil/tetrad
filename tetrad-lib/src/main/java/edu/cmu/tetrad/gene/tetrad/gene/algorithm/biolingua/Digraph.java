@@ -53,21 +53,21 @@ public class Digraph extends BasicGraph {
      * Creates a OldDigraph with <code>gName</code> name, and <code>n</code>
      * nodes.
      */
-    public Digraph(final String gName, final int nNodes) {
+    public Digraph(String gName, int nNodes) {
         super(gName, nNodes);
     }
 
     /**
      * Creates a OldDigraph reading it from file <code>fname</code>.
      */
-    public Digraph(final String fname) throws IOException {
+    public Digraph(String fname) throws IOException {
         super(fname);
     }
 
     /**
      * Copy constructor.
      */
-    public Digraph(final Digraph digraph) {
+    public Digraph(Digraph digraph) {
         this("Clone_of_[" + digraph + "]", digraph.nNodes);
         for (int i = 0; i < digraph.nNodes; i++) {
             this.nodeNames[i] = digraph.nodeNames[i];
@@ -81,7 +81,7 @@ public class Digraph extends BasicGraph {
      * Returns a clone of this graph
      */
     public Object clone() {
-        final Digraph g2 =
+        Digraph g2 =
                 new Digraph("Clone_of_[" + this.graphName + "]", this.nNodes);
         for (int i = 0; i < this.nNodes; i++) {
             g2.nodeNames[i] = this.nodeNames[i];
@@ -100,8 +100,8 @@ public class Digraph extends BasicGraph {
     /**
      * Sets a value of edge between nodes i and j
      */
-    public void setEdge(final int i, final int j, final double value) {
-        final double e = this.getEdges().getDoubleValue(i, j);
+    public void setEdge(int i, int j, double value) {
+        double e = this.getEdges().getDoubleValue(i, j);
         this.getEdges().setDoubleValue(i, j, value);
         if ((e == 0.0) && (value != 0.0)) {
             this.nEdges++;
@@ -117,7 +117,7 @@ public class Digraph extends BasicGraph {
     /**
      * Returns the value of edge between nodes i and j
      */
-    public double getEdge(final int i, final int j) {
+    public double getEdge(int i, int j) {
         return this.getEdges().getDoubleValue(i, j);
     }
 
@@ -129,7 +129,7 @@ public class Digraph extends BasicGraph {
         int ne = 0;
         for (int i = 0; i < this.nNodes; i++) {
             for (int j = 0; j < this.nNodes; j++) {
-                final double e = this.getEdges().getDoubleValue(i, j);
+                double e = this.getEdges().getDoubleValue(i, j);
                 if (e != 0.0) {
                     s = s + i + "  " + j + " \t" + e +
                             "\n";  //+"\t// # "+ne+"\n";
@@ -143,7 +143,7 @@ public class Digraph extends BasicGraph {
     /**
      * Returns the number of parents of node i
      */
-    public int getNumParents(final int i) {
+    public int getNumParents(int i) {
         if ((i < 0) || (i >= this.getSize())) {
             this.badNodeIndex(i);
         }
@@ -154,11 +154,11 @@ public class Digraph extends BasicGraph {
      * Returns an array with the indexes of the parents of node i. If node i has
      * no parents it returns an array of size 0 (e.g. not null)
      */
-    public int[] getParents(final int j) {
+    public int[] getParents(int j) {
         if ((j < 0) || (j >= this.nNodes)) {
             this.badNodeIndex(j);
         }
-        final int[] ap = new int[this.nParents[j]];
+        int[] ap = new int[this.nParents[j]];
         int np = 0;
         for (int i = 0; i < this.nNodes; i++) {
             if (this.getEdges().getDoubleValue(i, j) != 0.0) {

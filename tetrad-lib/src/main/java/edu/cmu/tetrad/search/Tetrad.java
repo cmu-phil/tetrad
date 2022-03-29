@@ -38,7 +38,7 @@ public class Tetrad {
     private final Node l;
     private final double pValue;
 
-    public Tetrad(final Node i, final Node j, final Node k, final Node l) {
+    public Tetrad(Node i, Node j, Node k, Node l) {
 //        testDistinctness(i, j, k, l);
         this.i = i;
         this.j = j;
@@ -47,7 +47,7 @@ public class Tetrad {
         this.pValue = Double.NaN;
     }
 
-    public Tetrad(final Node i, final Node j, final Node k, final Node l, final double pValue) {
+    public Tetrad(Node i, Node j, Node k, Node l, double pValue) {
 //        testDistinctness(i, j, k, l);
         this.i = i;
         this.j = j;
@@ -98,9 +98,9 @@ public class Tetrad {
         return hash;
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == null) return false;
-        final Tetrad tetrad = (Tetrad) o;
+        Tetrad tetrad = (Tetrad) o;
         return (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.k && this.l == tetrad.l)
                 || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.k && this.l == tetrad.l)
                 || (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.l && this.l == tetrad.k)
@@ -112,7 +112,7 @@ public class Tetrad {
     }
 
     public String toString() {
-        final NumberFormat nf = new DecimalFormat("0.0000");
+        NumberFormat nf = new DecimalFormat("0.0000");
 
         if (Double.isNaN(this.pValue)) {
             return "s(" + this.i + "," + this.j + ")*s(" + this.k + "," + this.l + ")-s(" + this.i + "," + this.k + ")*s(" + this.j + "," + this.l + ")";
@@ -126,7 +126,7 @@ public class Tetrad {
     }
 
     public Set<Node> getNodes() {
-        final Set<Node> nodes = new HashSet<>();
+        Set<Node> nodes = new HashSet<>();
         nodes.add(this.i);
         nodes.add(this.j);
         nodes.add(this.k);

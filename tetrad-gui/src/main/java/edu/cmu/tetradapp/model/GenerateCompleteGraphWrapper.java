@@ -37,12 +37,12 @@ public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotA
     static final long serialVersionUID = 23L;
 
 
-    public GenerateCompleteGraphWrapper(final GraphSource source, final Parameters parameters) {
+    public GenerateCompleteGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
-    public GenerateCompleteGraphWrapper(final Graph graph) {
+    public GenerateCompleteGraphWrapper(Graph graph) {
         super(GenerateCompleteGraphWrapper.generateCompleteGraph(graph), "Generate Complete Graph");
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
@@ -56,7 +56,7 @@ public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotA
     //======================== Private Methods ================================//
 
 
-    private static Graph generateCompleteGraph(final Graph graph) {
+    private static Graph generateCompleteGraph(Graph graph) {
         return GraphUtils.completeGraph(graph);
     }
 

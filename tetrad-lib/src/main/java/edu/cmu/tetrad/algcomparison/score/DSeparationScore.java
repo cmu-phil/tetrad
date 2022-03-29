@@ -34,12 +34,12 @@ public class DSeparationScore implements ScoreWrapper {
 
     }
 
-    public DSeparationScore(final Graph graph) {
+    public DSeparationScore(Graph graph) {
         this.graph = graph;
     }
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         if (dataSet == null) {
             return new GraphScore(this.graph);
@@ -64,11 +64,11 @@ public class DSeparationScore implements ScoreWrapper {
     }
 
     @Override
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         return this.dataSet.getVariable(name);
     }
 
-    public void setGraph(final Graph graph) {
+    public void setGraph(Graph graph) {
         this.graph = graph;
     }
 

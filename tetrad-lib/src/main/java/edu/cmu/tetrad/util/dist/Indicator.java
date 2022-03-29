@@ -56,7 +56,7 @@ public class Indicator implements Distribution {
         return "Indicator";
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
             this.p = value;
         }
@@ -64,7 +64,7 @@ public class Indicator implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
             return this.p;
         }
@@ -72,7 +72,7 @@ public class Indicator implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Cutuff";
         }

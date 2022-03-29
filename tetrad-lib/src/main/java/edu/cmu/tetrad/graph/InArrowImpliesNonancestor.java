@@ -53,7 +53,7 @@ public final class InArrowImpliesNonancestor implements GraphConstraint {
     /**
      * @return true for edge A *-> B iff B is not an ancestor of A.
      */
-    public boolean isEdgeAddable(final Edge edge, final Graph graph) {
+    public boolean isEdgeAddable(Edge edge, Graph graph) {
         if (edge.getEndpoint1() == Endpoint.ARROW) {
             if (graph.isProperAncestorOf(edge.getNode1(), edge.getNode2())) {
                 return false;
@@ -70,21 +70,21 @@ public final class InArrowImpliesNonancestor implements GraphConstraint {
     /**
      * @return true.
      */
-    public boolean isNodeAddable(final Node node, final Graph graph) {
+    public boolean isNodeAddable(Node node, Graph graph) {
         return true;
     }
 
     /**
      * @return true.
      */
-    public boolean isEdgeRemovable(final Edge edge, final Graph graph) {
+    public boolean isEdgeRemovable(Edge edge, Graph graph) {
         return true;
     }
 
     /**
      * @return true.
      */
-    public boolean isNodeRemovable(final Node node, final Graph graph) {
+    public boolean isNodeRemovable(Node node, Graph graph) {
         return true;
     }
 
