@@ -59,12 +59,7 @@ final class ConstructTemplateAction extends AbstractAction {
     /**
      * The name of the template.
      */
-    private String templateName;
-
-    /**
-     * The session graph.
-     */
-    private SessionWrapper sessionWrapper;
+    private final String templateName;
 
     /**
      * The session workbench. Needed for selection.
@@ -126,12 +121,6 @@ final class ConstructTemplateAction extends AbstractAction {
         else {
             throw new IllegalStateException("Unrecognized template name: " + this.templateName);
         }
-    }
-
-    public void addChild(SessionEditorNode thisNode, String type) {
-        String name = nextName(type);
-        addNode(type, name, thisNode.getX() + 100, thisNode.getY() + 100);
-        addEdge(thisNode.getName(), name);
     }
 
     public void addParent(SessionEditorNode thisNode, String type) {
@@ -270,64 +259,6 @@ final class ConstructTemplateAction extends AbstractAction {
         selectSubgraph(nodes);
     }
 
-    private void updateFromSimulatedData(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef
-                = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
-                = sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
-
-        List<Node> nodes = new LinkedList<>();
-
-        String data = nextName("Data");
-        String search = nextName("Search");
-        String estimator = nextName("Estimator");
-        String updater = nextName("Updater");
-
-        nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Search", search, 150 + leftX, 100));
-        nodes.add(addNode("Estimator", estimator, 80 + leftX, 200));
-        nodes.add(addNode("Updater", updater, 80 + leftX, 300));
-
-        addEdge(data, search);
-        addEdge(data, estimator);
-        addEdge(search, estimator);
-        addEdge(estimator, updater);
-
-        selectSubgraph(nodes);
-    }
-
-    // Removed 4/9/2019 Folded into FOFC
-//    private void mimbuild(int leftX) {
-//        getSessionWorkbench().deselectAll();
-//
-//        List<Node> nodes = new LinkedList<>();
-//
-//        String graph = nextName("Graph");
-//        String pm = nextName("PM");
-//        String im = nextName("IM");
-//        String data = nextName("Simulation");
-//        String search = nextName("Search");
-//        String mimbuild = nextName("MIMBuild");
-//
-//        nodes.add(addNode("Graph", graph, leftX, 100));
-//        nodes.add(addNode("PM", pm, leftX, 200));
-//        nodes.add(addNode("IM", im, leftX, 300));
-//        nodes.add(addNode("Simulation", data, leftX, 400));
-//        nodes.add(addNode("Search", search, 125 + leftX, 400));
-//        nodes.add(addNode("Search", mimbuild, 65 + leftX, 500));
-//
-//        addEdge(graph, pm);
-//        addEdge(pm, im);
-//        addEdge(im, data);
-//        addEdge(data, search);
-//        addEdge(data, mimbuild);
-//        addEdge(search, mimbuild);
-//
-//        selectSubgraph(nodes);
-//    }
-
     private void estimateThenUpdateUsingSearchResult(int leftX) {
         SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
@@ -416,10 +347,8 @@ final class ConstructTemplateAction extends AbstractAction {
             i++;
             String name = base + i;
 
-            for (Object o : graph.getNodes()) {
-                Node node = (Node) (o);
-
-                if (node.getName().equals(name)) {
+            for (Node o : graph.getNodes()) {
+                if (o.getName().equals(name)) {
                     continue loop;
                 }
             }
@@ -438,11 +367,6 @@ final class ConstructTemplateAction extends AbstractAction {
                 = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
         return sessionWorkbench.getSessionWrapper();
-
-//        if (sessionWrapper == null) {
-//            this.sessionWrapper = getSessionWorkbench().getSessionWrapper();
-//        }
-//        return sessionWrapper;
     }
 
     private SessionEditorWorkbench getSessionWorkbench() {

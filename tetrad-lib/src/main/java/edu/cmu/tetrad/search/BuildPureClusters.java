@@ -1065,7 +1065,7 @@ public final class BuildPureClusters {
             swapElements(elements, i, max_idx, temp);
         }
 
-        //Now, within each cluster, select first those that belong to clusters with less than three latents.
+        //Now, within each cluster, select first those that belong to the clusters with less than three latents.
         //Then, in decreasing order of cluster size.
         int start = 0;
 

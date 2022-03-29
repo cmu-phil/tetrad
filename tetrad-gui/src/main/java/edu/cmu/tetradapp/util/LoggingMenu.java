@@ -30,8 +30,6 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 
 /**
@@ -45,7 +43,7 @@ class LoggingMenu extends JMenu {
     /**
      * The logger that we are display setup for.
      */
-    private TetradLoggerConfig config;
+    private final TetradLoggerConfig config;
 
 
     /**
@@ -85,11 +83,7 @@ class LoggingMenu extends JMenu {
     private void buildMenu() {
         this.removeAll();
         JMenuItem setup = new JMenuItem("Setup Log Events...");
-        setup.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                showLogSetupDialog();
-            }
-        });
+        setup.addActionListener(e -> showLogSetupDialog());
 
         JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem("Logging");
         menuItem.setSelected(TetradLogger.getInstance().isLogging());
@@ -98,11 +92,9 @@ class LoggingMenu extends JMenu {
         this.addSeparator();
         this.add(menuItem);
 
-        menuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-                TetradLogger.getInstance().setLogging(item.isSelected());
-            }
+        menuItem.addActionListener(e -> {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            TetradLogger.getInstance().setLogging(item.isSelected());
         });
     }
 
@@ -119,11 +111,9 @@ class LoggingMenu extends JMenu {
             JCheckBox checkBox = new JCheckBox(event.getDescription());
             checkBox.setHorizontalTextPosition(AbstractButton.RIGHT);
             checkBox.setSelected(config.isEventActive(id));
-            checkBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JCheckBox box = (JCheckBox) e.getSource();
-                    config.setEventActive(id, box.isSelected());
-                }
+            checkBox.addActionListener(e -> {
+                JCheckBox box = (JCheckBox) e.getSource();
+                config.setEventActive(id, box.isSelected());
             });
 
             panel.add(checkBox);
